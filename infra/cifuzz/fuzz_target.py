@@ -106,10 +106,9 @@ class FuzzTarget:
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
-    if self.latest_corpus_path:
-      command += docker.get_args_mapping_host_path_to_container(
-          self.latest_corpus_path)
-      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
+    command += docker.get_args_mapping_host_path_to_container(
+        self.latest_corpus_path)
+    command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
