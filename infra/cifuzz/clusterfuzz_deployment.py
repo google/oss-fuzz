@@ -254,10 +254,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
                   f'libFuzzer/{project_qualified_fuzz_target_name}/'
                   f'{self.CORPUS_ZIP_NAME}')
 
-    if http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
-      return corpus_dir
-
-    return None
+    http_utils.download_and_unpack_zip(corpus_url, corpus_dir)
+    return corpus_dir
 
 
 class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):

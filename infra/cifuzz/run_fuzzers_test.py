@@ -298,7 +298,8 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
         testcase = self.testcase2
       assert call_count != 2
       call_count += 1
-      self.fs.create_dir(self.CORPUS_DIR)
+      if not os.path.exists(self.CORPUS_DIR):
+        self.fs.create_dir(self.CORPUS_DIR)
       return fuzz_target.FuzzResult(testcase, self.STACKTRACE, self.CORPUS_DIR)
 
     mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
