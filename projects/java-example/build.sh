@@ -17,8 +17,9 @@
 
 # Build native library.
 JVM_INCLUDES="-I$JAVA_HOME/include -I$JAVA_HOME/include/linux"
+mkdir $OUT/native
 $CXX $CXXFLAGS $JVM_INCLUDES -fPIC -shared \
-    ExampleFuzzerNative.cpp -o $OUT/libnative.so
+    ExampleFuzzerNative.cpp -o $OUT/native/libnative.so
 
 BUILD_CLASSPATH=$JAZZER_API_PATH
 
@@ -41,7 +42,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java' -or -name '*FuzzerNative.java'); 
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir/native \
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
