@@ -40,11 +40,21 @@ function build_libsecp256k1() {
         make clean
     fi
 
+    SECP256K1_CONFIGURE_PARAMS="
+        --enable-static
+        --disable-tests
+        --disable-benchmark
+        --disable-exhaustive-tests
+        --enable-module-recovery
+        --enable-experimental
+        --enable-module-schnorrsig
+        --enable-module-ecdh"
+
     if [[ $CFLAGS = *sanitize=memory* ]]
     then
-        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --enable-module-schnorrsig --with-asm=no "$@"
+        ./configure $SECP256K1_CONFIGURE_PARAMS --with-asm=no "$@"
     else
-        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --enable-module-schnorrsig "$@"
+        ./configure $SECP256K1_CONFIGURE_PARAMS "$@"
     fi
     make
 
@@ -97,6 +107,7 @@ echo -n 'ECDSA_Verify,' >>extra_options.h
 echo -n 'ECDSA_Recover,' >>extra_options.h
 echo -n 'Schnorr_Sign,' >>extra_options.h
 echo -n 'Schnorr_Verify,' >>extra_options.h
+echo -n 'ECDH_Derive,' >>extra_options.h
 echo -n 'BignumCalc_Mod_2Exp256 ' >>extra_options.h
 echo -n '--curves=secp256k1 ' >>extra_options.h
 echo -n '--digests=NULL,SHA1,SHA256,SHA512,RIPEMD160,SHA3-256,SIPHASH64 ' >>extra_options.h
@@ -110,6 +121,14 @@ cd ../trezor/
 make -B -j$(nproc)
 cd ../botan/
 make -B -j$(nproc)
+cd ../schnorr_fun/
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
+if [[ $CFLAGS != *-m32* ]]
+then
+    make
+else
+    make -f Makefile.i386
+fi
 cd ../../
 
 # Build with 3 configurations of libsecp256k1
