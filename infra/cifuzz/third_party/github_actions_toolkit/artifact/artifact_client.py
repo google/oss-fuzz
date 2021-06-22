@@ -1,9 +1,9 @@
 """Public interface for artifact. Based on artifact-client.ts"""
 import logging
 
-from github_actions_toolkit.artifact import utils
-from github_actions_toolkit.artifact import upload_http_client
-from github_actions_toolkit.artifact import upload_specification
+from third_party.github_actions_toolkit.artifact import utils
+from third_party.github_actions_toolkit.artifact import upload_http_client
+from third_party.github_actions_toolkit.artifact import upload_specification
 
 
 def upload_artifact(name, files, root_directory, options=None):
