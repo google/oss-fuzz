@@ -84,5 +84,5 @@ def get_args_mapping_host_path_to_container(host_path, container_path=None):
   """Get arguments to docker run that will map |host_path| a path on the host to
   a path in the container. If |container_path| is specified, that path is mapped
   to. If not, then |host_path| is mapped to itself in the container."""
-  container_path = host_path if container_path is None
+  container_path = host_path if container_path is None else container_path
   return ['-v', f'{host_path}:{container_path}']
