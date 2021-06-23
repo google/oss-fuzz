@@ -258,7 +258,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
 
 class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
-  """Tests that CiFuzzTargetRunner works as intended."""
+  """Tests that BatchFuzzTargetRunnerTest works as intended."""
   WORKSPACE = 'workspace'
   STACKTRACE = b'stacktrace'
   CORPUS_DIR = 'corpus'
@@ -271,27 +271,23 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.testcase1)
     self.testcase2 = os.path.join(self.WORKSPACE, 'testcase-bbb')
     self.fs.create_file(self.testcase2)
+    self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                 workspace=self.WORKSPACE,
+                                                 project_name=EXAMPLE_PROJECT,
+                                                 build_integration_path='/',
+                                                 is_github=True)
 
+  @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
               return_value=True)
-  @mock.patch('filestore.github_actions.GithubActionsFilestore.upload_directory'
-             )
-  @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target,
-                                  mocked_get_fuzz_targets, _, __):
+                                  mocked_run_fuzz_target, _, __):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
-
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=self.WORKSPACE,
-                                            project_name=EXAMPLE_PROJECT,
-                                            build_integration_path='/')
-    runner = run_fuzzers.BatchFuzzTargetRunner(config)
-
-    mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
     runner.initialize()
+
     call_count = 0
 
     def mock_run_fuzz_target(_):
@@ -312,6 +308,45 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
+
+  @mock.patch('run_fuzzers.BaseFuzzTargetRunner.run_fuzz_targets',
+              return_value=False)
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build')
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
+  def test_run_fuzz_targets_upload_crashes_and_builds(
+      self, mocked_upload_crashes, mocked_upload_latest_build, _):
+    """Tests that run_fuzz_targets uploads crashes and builds correctly."""
+    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
+    runner.initialize()
+
+    expected_crashes_dir = 'workspace/out/artifacts'
+
+    def mock_upload_crashes(crashes_dir):
+      self.assertEqual(crashes_dir, expected_crashes_dir)
+      # Ensure it wasn't deleted first.
+      self.assertTrue(os.path.exists(crashes_dir))
+
+    mocked_upload_crashes.side_effect = mock_upload_crashes
+
+    expected_out_dir = 'workspace/out'
+    expected_build_dir = 'workspace/out/cifuzz-latest-build'
+    expected_corpus_dir = 'workspace/out/cifuzz-corpus'
+    self.fs.create_dir(expected_build_dir)
+    self.fs.create_dir(expected_corpus_dir)
+
+    def mock_upload_latest_build(out_dir):
+      self.assertEqual(out_dir, expected_out_dir)
+      # Ensure it wasn't deleted first.
+      self.assertFalse(os.path.exists(expected_crashes_dir))
+      self.assertFalse(os.path.exists(expected_build_dir))
+      self.assertFalse(os.path.exists(expected_corpus_dir))
+
+    mocked_upload_latest_build.side_effect = mock_upload_latest_build
+
+    self.assertFalse(runner.run_fuzz_targets())
+    self.assertEqual(mocked_upload_crashes.call_count, 1)
+    self.assertEqual(mocked_upload_latest_build.call_count, 1)
+
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),

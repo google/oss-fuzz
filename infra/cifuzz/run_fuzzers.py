@@ -177,10 +177,16 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
     return utils.get_fuzz_targets(self.out_dir, top_level_only=True)
 
   def run_fuzz_targets(self):
+    """Generates a coverage report. Always returns False since it never finds
+    any bugs."""
     generate_coverage_report.generate_coverage_report(
         self.fuzz_target_paths, self.out_dir, self.clusterfuzz_deployment,
         self.config)
     return False
+
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Fuzzes with |fuzz_target_obj| and returns the result."""
+    raise NotImplementedError('Child class must implement method.')
 
 
 class CiFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -217,9 +223,6 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
-    # !!!
-    # 1. Test returns result.
-    # 2. Test that it uploads build.
 
     self.clusterfuzz_deployment.upload_crashes(self.crashes_dir)
 
@@ -241,6 +244,8 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
     for directory in [
         self.clusterfuzz_deployment.get_corpus_dir(self.out_dir),
+        # This is the directory of the ClusterFuzz build, not the build we just
+        # did.
         self.clusterfuzz_deployment.get_build_dir(self.out_dir),
         self.crashes_dir,
     ]:
