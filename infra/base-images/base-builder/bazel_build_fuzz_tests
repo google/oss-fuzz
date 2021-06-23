@@ -52,6 +52,7 @@ declare -r BAZEL_BUILD_FLAGS=(
     "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
     "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
     "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
+    "--cxxopt=-stdlib=libc++" \
     "--linkopt=-lc++" \
     "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
     ${BAZEL_EXTRA_BUILD_FLAGS[*]}
