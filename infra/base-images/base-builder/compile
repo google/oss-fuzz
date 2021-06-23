@@ -146,6 +146,13 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     # Coverage builds require no instrumentation.
     cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
   fi
+
+  # Disable leak checking since the JVM triggers too many false positives.
+  # function and vptr are also disabled for now as Bazel uses clang instead of
+  # clang++ when linking the driver, which does not support these C++ UBSan
+  # features.
+  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
 fi
 
 echo "---------------------------------------------------------------"
