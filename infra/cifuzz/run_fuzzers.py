@@ -21,6 +21,7 @@ import time
 
 import clusterfuzz_deployment
 import fuzz_target
+import generate_coverage_report
 import stack_parser
 
 # pylint: disable=wrong-import-position,import-error
@@ -47,6 +48,10 @@ class BaseFuzzTargetRunner:
     self.out_dir = None
     self.fuzz_target_paths = None
     self.crashes_dir = None
+
+  def get_fuzz_targets(self):
+    """Returns fuzz targets in out_dir."""
+    return utils.get_fuzz_targets(self.out_dir)
 
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
@@ -77,7 +82,7 @@ class BaseFuzzTargetRunner:
                     self.crashes_dir)
       return False
 
-    self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
+    self.fuzz_target_paths = self.get_fuzz_targets()
     logging.info('Fuzz targets: %s', self.fuzz_target_paths)
     if not self.fuzz_target_paths:
       logging.error('No fuzz targets were found in out directory: %s.',
@@ -159,6 +164,29 @@ class BaseFuzzTargetRunner:
     return bug_found
 
 
+class CoverageTargetRunner(BaseFuzzTargetRunner):
+  """Runner that runs the 'coverage' command."""
+
+  @property
+  def quit_on_bug_found(self):
+    return False
+
+  def get_fuzz_targets(self):
+    """Returns fuzz targets in out_dir."""
+    # We only want fuzz targets from the root because during the coverage build,
+    # a lot of the image's filesystem is copied into /out for the purpose of
+    # generating coverage reports.
+    # TOOD(metzman): Figure out if top_level_only should be the only behavior
+    # for this function.
+    return utils.get_fuzz_targets(self.out_dir, top_level_only=True)
+
+  def run_fuzz_targets(self):
+    generate_coverage_report.generate_coverage_report(
+        self.fuzz_target_paths, self.out_dir, self.clusterfuzz_deployment,
+        self.config)
+    return False
+
+
 class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   """Runner for fuzz targets used in CI (patch-fuzzing) context."""
 
@@ -181,6 +209,8 @@ def get_fuzz_target_runner(config):
   logging.info('RUN_FUZZERS_MODE is: %s', config.run_fuzzers_mode)
   if config.run_fuzzers_mode == 'batch':
     return BatchFuzzTargetRunner(config)
+  if config.run_fuzzers_mode == 'coverage':
+    return CoverageTargetRunner(config)
   return CiFuzzTargetRunner(config)
 
 

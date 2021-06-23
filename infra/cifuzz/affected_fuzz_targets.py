@@ -17,7 +17,7 @@ import logging
 import os
 import sys
 
-import coverage
+import get_coverage
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -52,7 +52,7 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
     logging.error('No fuzz targets found in out dir.')
     return
 
-  coverage_getter = coverage.OssFuzzCoverageGetter(project_name, repo_path)
+  coverage_getter = get_coverage.OssFuzzCoverageGetter(project_name, repo_path)
   if not coverage_getter.fuzzer_stats_url:
     # Don't remove any fuzz targets unless we have data.
     logging.error('Could not find latest coverage report.')
