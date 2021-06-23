@@ -237,9 +237,11 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # host testcases. Thus, we will upload the build after fuzzing. But before
     # we zip the out directory we will remove these extra things that are now in
     # out.
-    # TODO(metzman): We should really be uploading latest build in
-    # build_fuzzers before we remove unaffected fuzzers. Otherwise, we lose
-    # fuzzers.
+    # TODO(metzman): We should really be uploading latest build in build_fuzzers
+    # before we remove unaffected fuzzers. Otherwise, we can lose fuzzers. This
+    # is probably more of a theoretical concern since in batch fuzzing, there is
+    # no code change and thus no fuzzers that are removed, but it's inelegant to
+    # put this here.
     # TODO(metzman): Don't pollute self.out_dir like this.
 
     for directory in [
