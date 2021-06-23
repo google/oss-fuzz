@@ -318,9 +318,7 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   if (c->destroyed != 1) {
     if (c->read->data != NULL) {
       ngx_connection_t *c2 = (ngx_connection_t*)c->read->data;
-      if (c2 != NULL) {
-        ngx_http_free_request((ngx_http_request_t*)c2->data, 0);
-      }
+      ngx_http_free_request((ngx_http_request_t*)c2->data, 0);
     }
     ngx_http_close_connection(c);
   }
