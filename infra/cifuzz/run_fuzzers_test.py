@@ -336,7 +336,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
     def mock_upload_latest_build(out_dir):
       self.assertEqual(out_dir, expected_out_dir)
-      # Ensure it wasn't deleted first.
+      # Ensure these were deleted before this function call.
       self.assertFalse(os.path.exists(expected_crashes_dir))
       self.assertFalse(os.path.exists(expected_build_dir))
       self.assertFalse(os.path.exists(expected_corpus_dir))
