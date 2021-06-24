@@ -1,9 +1,8 @@
 homepage: "https://github.com/google/maldoca"
 language: c++
-primary_contact: "bgrill@google.com"
+primary_contact: maldoca-eng@google.com
 auto_ccs:
-  - "dtao@google.com"
-  - "anise@google.com"
+  - anise@google.com
 main_repo: 'git@github.com:google/maldoca.git'
 sanitizers:
  - address

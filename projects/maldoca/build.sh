@@ -15,15 +15,7 @@
 #
 ################################################################################
 
-# MALDOCA_DEFINES="-D_MALDOCA_CHROME=1"
-# MALDOCA_WNOS="-Wno-sign-compare -Wno-error=unreachable-code"\ 
-# "-Wno-unused-private-field  -Wno-c++98-compat-pedantic -Wno-comment"\ 
-# "-Wno-ignored-qualifiers -Wno-unused-const-variable"
-# MALDOCA_SRC_DIR = "$SRC/maldoca"
-
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+export BAZEL_EXTRA_BUILD_FLAGS="--copt=-DMALDOCA_CHROME=1 --define MALDOCA_CHROME=1 --repo_env=CC=clang --cxxopt=--std=c++14 --cxxopt=-Wno-unused-result --verbose_failures"
 
 bazel clean
 bazel_build_fuzz_tests

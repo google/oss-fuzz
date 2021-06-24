@@ -22,7 +22,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1  --recurse-submodules https://github.com/google/maldoca/
+RUN git clone --depth 1 --recurse-submodules https://github.com/google/maldoca/
 COPY build.sh $SRC/
 RUN mkdir $SRC/maldoca/fuzz/
 COPY BUILD fuzz*.cc $SRC/maldoca/fuzz/

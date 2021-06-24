@@ -6,7 +6,7 @@
 #include "maldoca/service/proto/processing_config.pb.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-    const string config_data = R"pb(
+    const std::string config_data = R"pb(
         handler_configs {
         key: "office_parser"
         value {
@@ -27,20 +27,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         }
         })pb";
 
-    ProcessorConfig processor_config;
+    maldoca::ProcessorConfig processor_config;
     processor_config.ParseFromString(config_data);
-    DocProcessor doc_processor = DocProcessor(processor_config);
-    doc_processor.Init();
+    maldoca::DocProcessor doc_processor(processor_config);
 
-    ProcessDocumentRequest* process_doc_request;
-    std::string_view file_name{ "document.docx" };
-    std::string_view input = string_view(reinterpret_cast<const char *>(data), size);
+    maldoca::ProcessDocumentRequest process_doc_request;
+    const std::string file_name = "document.docx";
+    const char *input = reinterpret_cast<const char *>(data);
+
     process_doc_request.set_file_name(file_name);
     process_doc_request.set_doc_content(input);
 
-    ProcessDocumentRequest* document_response;
+    maldoca::ProcessDocumentResponse document_response;
 
-    ProcessDoc(file_name, doc, process_doc_request, document_response);
+    doc_processor.ProcessDoc(&process_doc_request, &document_response);
 
     return 0;
 
