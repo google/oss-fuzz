@@ -81,6 +81,7 @@ class FuzzTarget:
     self.target_name = os.path.basename(self.target_path)
     self.duration = int(duration)
     self.out_dir = out_dir
+    self.scratch_dir = make_scratch_dir(self.config.workspace)
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
     self.latest_corpus_path = None
@@ -100,7 +101,7 @@ class FuzzTarget:
     # directory.
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
+        self.target_name, self.scratch_dir)
     if self.latest_corpus_path:
       command += docker.get_args_mapping_host_path_to_container(
           self.latest_corpus_path)
@@ -255,7 +256,7 @@ class FuzzTarget:
     if not os.path.exists(testcase):
       raise ReproduceError('Testcase %s not found.' % testcase)
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
-        self.out_dir)
+        self.scratch_dir)
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
@@ -297,3 +298,10 @@ class FuzzTarget:
     if match:
       return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
     return None
+
+
+def make_scratch_dir(workspace):
+  """Makes a scratch directory that will be shared with the runner container."""
+  scratch_path = os.path.join(workspace, 'scratch')
+  os.makedirs(workspace, exist_ok=True)
+  return scratch_path
