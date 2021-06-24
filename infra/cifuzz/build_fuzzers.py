@@ -50,10 +50,9 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.out_dir = os.path.join(config.workspace, 'out')
-    os.makedirs(self.out_dir, exist_ok=True)
-    self.work_dir = os.path.join(config.workspace, 'work')
-    os.makedirs(self.work_dir, exist_ok=True)
+    self.workspace = docker.Workspace(config)
+    self.workspace.initialize_dir(self.workspace.out)
+    self.workspace.initialize_dir(self.workspace.work)
     self.image_repo_path = None
     self.host_repo_path = None
     self.repo_manager = None
@@ -75,13 +74,14 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        self.out_dir, self.config.sanitizer, self.config.language)
+        self.workspace.out, self.config.sanitizer, self.config.language)
     if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
     if self.config.sanitizer == 'memory':
-      docker_args.extend(_get_docker_build_fuzzers_args_msan(self.work_dir))
+      docker_args.extend(
+          _get_docker_build_fuzzers_args_msan(self.workspace.work))
       self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
@@ -111,7 +111,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        '--volumes-from', container, '-e', f'WORK={self.work_dir}',
+        '--volumes-from', container, '-e', f'WORK={self.workspace.work}',
         docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
@@ -121,7 +121,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     logging.info('Copying MSAN libs.')
     helper.docker_run([
         '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        f'cp -r /msan {self.work_dir}'
+        f'cp -r /msan {self.workspace.work}'
     ])
 
   def build(self):
@@ -146,7 +146,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     changed_files = self.ci_system.get_changed_code_under_test(
         self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
-        self.config.project_name, self.out_dir, changed_files,
+        self.config.project_name, self.workspace.out, changed_files,
         self.image_repo_path)
     return True
 

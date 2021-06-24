@@ -20,6 +20,7 @@ from unittest import mock
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
+import docker
 import test_helpers
 
 # NOTE: This integration test relies on
@@ -34,7 +35,11 @@ def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
-  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT}
+  defaults = {
+      'is_github': True,
+      'project_name': EXAMPLE_PROJECT,
+      'workspace': '/workspace'
+  }
   for default_key, default_value in defaults.items():
     if default_key not in kwargs:
       kwargs[default_key] = default_value
@@ -44,13 +49,12 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  return clusterfuzz_deployment.get_clusterfuzz_deployment(config)
+  workspace = docker.Workspace(config)
+  return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
 class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   """Tests OSSFuzz."""
-
-  OUT_DIR = '/out'
 
   def setUp(self):
     self.setUpPyfakefs()
@@ -59,9 +63,9 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
-    result = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    result = self.deployment.download_corpus(EXAMPLE_FUZZER)
     self.assertIsNotNone(result)
-    expected_corpus_dir = os.path.join(self.OUT_DIR, 'cifuzz-corpus',
+    expected_corpus_dir = os.path.join(self.deployment.workspace.corpora,
                                        EXAMPLE_FUZZER)
     expected_url = ('https://storage.googleapis.com/example-backup.'
                     'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
@@ -72,7 +76,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_fail(self, _):
     """Tests that when downloading fails, None is returned."""
-    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
     self.assertIsNone(corpus_path)
 
   def test_get_latest_build_name(self):

@@ -28,13 +28,11 @@ import utils
 class BaseClusterFuzzDeployment:
   """Base class for ClusterFuzz deployments."""
 
-  CORPUS_DIR_NAME = 'cifuzz-corpus'
-  BUILD_DIR_NAME = 'cifuzz-latest-build'
-
-  def __init__(self, config):
+  def __init__(self, config, workspace):
     self.config = config
+    self.workspace = workspace
 
-  def download_latest_build(self, parent_dir):
+  def download_latest_build(self):
     """Downloads the latest build from ClusterFuzz.
 
     Returns:
@@ -42,14 +40,14 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_latest_build(self, build_dir):
+  def upload_latest_build(self):
     """Uploads the latest build to the filestore.
     Returns:
       True on success.
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def download_corpus(self, target_name, parent_dir):
+  def download_corpus(self, target_name):
     """Downloads the corpus for |target_name| from ClusterFuzz to |parent_dir|.
 
     Returns:
@@ -57,48 +55,39 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_crashes(self, crashes_dir):
+  def upload_crashes(self):
     """Uploads crashes in |crashes_dir| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
-  def get_target_corpus_dir(self, target_name, parent_dir):
-    """Returns the path to the corpus dir for |target_name| within
-    |parent_dir|."""
-    return os.path.join(self.get_corpus_dir(parent_dir), target_name)
+  def get_target_corpus_dir(self, target_name):
+    """Returns the path to the corpus dir for |target_name|."""
+    return os.path.join(self.workspace.corpora, target_name)
 
-  def get_corpus_dir(self, parent_dir):
-    """Returns the path to the corpus dir within |parent_dir|."""
-    return os.path.join(parent_dir, self.CORPUS_DIR_NAME)
-
-  def get_build_dir(self, parent_dir):
-    """Returns the path to the build dir for within |parent_dir|."""
-    return os.path.join(parent_dir, self.BUILD_DIR_NAME)
-
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
-    """Uploads the corpus for |target_name| in |corpus_dir| to filestore."""
+  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
+    """Uploads the corpus for |target_name| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  def download_latest_build(self, parent_dir):
+  def download_latest_build(self):
     logging.info('download_latest_build not implemented for ClusterFuzzLite.')
 
-  def download_corpus(self, target_name, parent_dir):
+  def download_corpus(self, target_name):
     logging.info('download_corpus not implemented for ClusterFuzzLite.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
     logging.info('upload_corpus not implemented for ClusterFuzzLite.')
 
-  def upload_latest_build(self, build_dir):
+  def upload_latest_build(self):
     """Uploads the latest build to the filestore.
     Returns:
       True on success.
     """
     logging.info('upload_latest_build not implemented for ClusterFuzzLite.')
 
-  def upload_crashes(self, crashes_dir):
+  def upload_crashes(self):
     logging.info('upload_crashes not implemented for ClusterFuzzLite.')
 
 
@@ -129,19 +118,18 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
     return response.read().decode()
 
-  def download_latest_build(self, parent_dir):
+  def download_latest_build(self):
     """Downloads the latest OSS-Fuzz build from GCS.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
-    build_dir = self.get_build_dir(parent_dir)
-    if os.path.exists(build_dir):
+    if os.path.exists(self.workspace.clusterfuzz_build):
       # This function can be called multiple times, don't download the build
       # again.
-      return build_dir
+      return self.workspace.clusterfuzz_build
 
-    os.makedirs(build_dir, exist_ok=True)
+    os.makedirs(self.workspace.clusterfuzz_build, exist_ok=True)
 
     latest_build_name = self.get_latest_build_name()
     if not latest_build_name:
@@ -151,30 +139,31 @@ class OSSFuzz(BaseClusterFuzzDeployment):
                                         self.CLUSTERFUZZ_BUILDS,
                                         self.config.project_name,
                                         latest_build_name)
-    if http_utils.download_and_unpack_zip(oss_fuzz_build_url, build_dir):
-      return build_dir
+    if http_utils.download_and_unpack_zip(oss_fuzz_build_url,
+                                          self.workspace.clusterfuzz_build):
+      return self.workspace.clusterfuzz_build
 
     return None
 
-  def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_latest_build(self):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
 
-  def upload_crashes(self, crashes_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_crashes(self):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_crashes."""
     logging.info('Not uploading crashes on OSS-Fuzz.')
 
-  def download_corpus(self, target_name, parent_dir):
+  def download_corpus(self, target_name):
     """Downloads the latest OSS-Fuzz corpus for the target.
 
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
+    corpus_dir = self.get_target_corpus_dir(target_name)
 
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
@@ -199,36 +188,36 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
   ClusterFuzz to use."""
 
-  def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_latest_build(self):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
 
-  def upload_crashes(self, crashes_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_crashes(self):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_crashes."""
     logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
-  def download_corpus(self, target_name, parent_dir):  # pylint: disable=no-self-use,unused-argument
+  def download_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of download_corpus."""
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
 
-  def download_latest_build(self, parent_dir):  # pylint: disable=no-self-use,unused-argument
+  def download_latest_build(self):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of download_latest_build."""
     logging.info('Not downloading build because no ClusterFuzz deployment.')
 
 
-def get_clusterfuzz_deployment(config):
+def get_clusterfuzz_deployment(config, workspace):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
   if (config.platform == config.Platform.INTERNAL_GENERIC_CI or
       config.platform == config.Platform.INTERNAL_GITHUB):
     logging.info('Using OSS-Fuzz as ClusterFuzz deployment.')
-    return OSSFuzz(config)
+    return OSSFuzz(config, workspace)
   if config.platform == config.Platform.EXTERNAL_GENERIC_CI:
     logging.info('Not using a ClusterFuzz deployment.')
-    return NoClusterFuzzDeployment(config)
+    return NoClusterFuzzDeployment(config, workspace)
   logging.info('Using ClusterFuzzLite as ClusterFuzz deployment.')
-  return ClusterFuzzLite(config)
+  return ClusterFuzzLite(config, workspace)

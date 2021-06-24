@@ -20,6 +20,7 @@ import sys
 import time
 
 import clusterfuzz_deployment
+import docker
 import fuzz_target
 import generate_coverage_report
 import stack_parser
@@ -42,16 +43,17 @@ class BaseFuzzTargetRunner:
 
   def __init__(self, config):
     self.config = config
+    self.workspace = docker.Workspace(config)
     self.clusterfuzz_deployment = (
-        clusterfuzz_deployment.get_clusterfuzz_deployment(self.config))
+        clusterfuzz_deployment.get_clusterfuzz_deployment(
+            self.config, self.workspace))
+
     # Set by the initialize method.
-    self.out_dir = None
     self.fuzz_target_paths = None
-    self.crashes_dir = None
 
   def get_fuzz_targets(self):
-    """Returns fuzz targets in out_dir."""
-    return utils.get_fuzz_targets(self.out_dir)
+    """Returns fuzz targets in out directory."""
+    return utils.get_fuzz_targets(self.workspace.out)
 
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
@@ -69,24 +71,23 @@ class BaseFuzzTargetRunner:
           self.config.fuzz_seconds)
       return False
 
-    self.out_dir = os.path.join(self.config.workspace, 'out')
-    if not os.path.exists(self.out_dir):
-      logging.error('Out directory: %s does not exist.', self.out_dir)
+    if not os.path.exists(self.workspace.out):
+      logging.error('Out directory: %s does not exist.', self.workspace.out)
       return False
 
-    self.crashes_dir = os.path.join(self.out_dir, 'artifacts')
-    if not os.path.exists(self.crashes_dir):
-      os.mkdir(self.crashes_dir)
-    elif (not os.path.isdir(self.crashes_dir) or os.listdir(self.crashes_dir)):
+    if not os.path.exists(self.workspace.artifacts):
+      os.mkdir(self.workspace.artifacts)
+    elif (not os.path.isdir(self.workspace.artifacts) or
+          os.listdir(self.workspace.artifacts)):
       logging.error('Artifacts path: %s exists and is not an empty directory.',
-                    self.crashes_dir)
+                    self.workspace.artifacts)
       return False
 
     self.fuzz_target_paths = self.get_fuzz_targets()
     logging.info('Fuzz targets: %s', self.fuzz_target_paths)
     if not self.fuzz_target_paths:
       logging.error('No fuzz targets were found in out directory: %s.',
-                    self.out_dir)
+                    self.workspace.out)
       return False
 
     return True
@@ -110,11 +111,11 @@ class BaseFuzzTargetRunner:
     |fuzz_target|."""
     artifact_name = (f'{target.target_name}-{self.config.sanitizer}-'
                      f'{artifact_name}')
-    return os.path.join(self.crashes_dir, artifact_name)
+    return os.path.join(self.workspace.artifacts, artifact_name)
 
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
-    return fuzz_target.FuzzTarget(target_path, run_seconds, self.out_dir,
+    return fuzz_target.FuzzTarget(target_path, run_seconds, self.workspace,
                                   self.clusterfuzz_deployment, self.config)
 
   def run_fuzz_targets(self):
@@ -172,17 +173,17 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
     return False
 
   def get_fuzz_targets(self):
-    """Returns fuzz targets in out_dir."""
+    """Returns fuzz targets in out directory."""
     # We only want fuzz targets from the root because during the coverage build,
     # a lot of the image's filesystem is copied into /out for the purpose of
     # generating coverage reports.
     # TOOD(metzman): Figure out if top_level_only should be the only behavior
     # for this function.
-    return utils.get_fuzz_targets(self.out_dir, top_level_only=True)
+    return utils.get_fuzz_targets(self.workspace.out, top_level_only=True)
 
   def run_fuzz_targets(self):
     generate_coverage_report.generate_coverage_report(
-        self.fuzz_target_paths, self.out_dir, self.clusterfuzz_deployment,
+        self.fuzz_target_paths, self.workspace, self.clusterfuzz_deployment,
         self.config)
     return False
 

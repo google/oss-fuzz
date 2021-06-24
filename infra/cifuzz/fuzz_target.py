@@ -61,18 +61,18 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
-    out_dir: The location of where output artifacts are stored.
+    workspace: The workspace for storing things related to fuzzing.
   """
 
   # pylint: disable=too-many-arguments
-  def __init__(self, target_path, duration, out_dir, clusterfuzz_deployment,
+  def __init__(self, target_path, duration, workspace, clusterfuzz_deployment,
                config):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
-      out_dir: The location of where the output from crashes should be stored.
+      workspace: The path used for storing things needed for fuzzing.
       clusterfuzz_deployment: The object representing the ClusterFuzz
           deployment.
       config: The config of this project.
@@ -80,10 +80,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.target_path = target_path
     self.target_name = os.path.basename(self.target_path)
     self.duration = int(duration)
-    self.out_dir = out_dir
+    self.workspace = workspace
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
-    self.scratch_dir = make_scratch_dir(self.config.workspace)
     self.latest_corpus_path = None
 
   def fuzz(self):
@@ -93,16 +92,15 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    command, _ = docker.get_base_docker_run_command(self.out_dir,
+    command, _ = docker.get_base_docker_run_command(self.workspace,
                                                     self.config.sanitizer,
-                                                    self.config.language,
-                                                    self.scratch_dir)
+                                                    self.config.language)
 
     # TODO(metzman): Stop using /out for artifacts and corpus. Use another
     # directory.
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.scratch_dir)
+        self.target_name)
     if self.latest_corpus_path:
       command += docker.get_args_mapping_host_path_to_container(
           self.latest_corpus_path)
@@ -193,8 +191,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     os.chmod(target_path, stat.S_IRWXO)
 
     command, container = docker.get_base_docker_run_command(
-        self.out_dir, self.config.sanitizer, self.config.language,
-        self.scratch_dir)
+        self.workspace, self.config.sanitizer, self.config.language,
+        self.workspace)
     if container:
       command += ['-e', f'TESTCASE={testcase}']
     else:
@@ -257,8 +255,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     can't be reproduced on an older ClusterFuzz build of the target."""
     if not os.path.exists(testcase):
       raise ReproduceError('Testcase %s not found.' % testcase)
-    clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
-        self.scratch_dir)
+    clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build()
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
@@ -298,12 +295,5 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # instead.
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
-      return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
+      return os.path.join(self.workspace.out, match.group(1).decode('utf-8'))
     return None
-
-
-def make_scratch_dir(workspace):
-  """Makes a scratch directory that will be shared with the runner container."""
-  scratch_path = os.path.join(workspace, 'scratch')
-  os.makedirs(scratch_path, exist_ok=True)
-  return scratch_path

@@ -136,7 +136,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
     self.workspace = self.tmp_dir_obj.name
-    self.out_dir = os.path.join(self.workspace, 'out')
+    self.out_dir = os.path.join(self.workspace, 'scratch', 'out')
     test_helpers.patch_environ(self)
 
   def tearDown(self):

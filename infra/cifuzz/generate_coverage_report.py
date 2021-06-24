@@ -38,9 +38,9 @@ def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):
     clusterfuzz_deployment.download_corpus(target, out_dir)
 
 
-def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
-                             config):
+def generate_coverage_report(fuzz_target_paths, workspace,
+                             clusterfuzz_deployment, config):
   """Generates a coverage report using Clang's source based coverage."""
-  download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment)
-  run_coverage_command(out_dir, config)
+  download_corpora(workspace.out, fuzz_target_paths, clusterfuzz_deployment)
+  run_coverage_command(workspace.out, config)
   # TODO(metzman): Upload this build to the filestore.

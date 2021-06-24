@@ -94,3 +94,43 @@ def get_args_mapping_host_path_to_container(host_path, container_path=None):
   to. If not, then |host_path| is mapped to itself in the container."""
   container_path = host_path if container_path is None else container_path
   return ['-v', f'{host_path}:{container_path}']
+
+
+class Workspace:
+  """Class representing the workspace directory."""
+
+  def __init__(self, config):
+    self.workspace = config.workspace
+
+  def initialize_dir(self, directory):  # pylint: disable=no-self-use
+    """Creates directory if it doesn't already exist, otherwise does nothing."""
+    os.makedirs(directory, exist_ok=True)
+
+  @property
+  def out(self):
+    """The out directory used for storing the fuzzer build built by
+    build_fuzzers."""
+    # Use an out dir in scratch so we don't need to use $WORKSPACE/out which
+    # will be polluted by artifacts.
+    return os.path.join(self.workspace, 'build-out')
+
+  @property
+  def work(self):
+    """The directory used as the work directory for the fuzzer build/run."""
+    return os.path.join(self.workspace, 'work')
+
+  @property
+  def artifacts(self):
+    """The directory used to store artifacts for download by CI-system users."""
+    # This is hardcoded by a lot of clients, so we need to use this.
+    return os.path.join(self.workspace, 'out', 'artifacts')
+
+  @property
+  def clusterfuzz_build(self):
+    """The directory where builds from ClusterFuzz are stored."""
+    return os.path.join(self.workspace, 'clusterfuzz-build')
+
+  @property
+  def corpora(self):
+    """The directory where corpora from ClusterFuzz are stored."""
+    return os.path.join(self.workspace, 'corpora')
