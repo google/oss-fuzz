@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+"""Script for writing from project.yaml to .labels file."""
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+import os
+import json
+import sys
 
-# specific swift-nio
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN git clone --depth 1 https://github.com/apple/swift-nio.git
-COPY build.sh $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/swift-nio
+
+def main():
+  """Writes labels."""
+  if len(sys.argv) != 3:
+    print('Usage: write_labels.py labels_json out_dir', file=sys.stderr)
+    sys.exit(1)
+
+  labels_by_target = json.loads(sys.argv[1])
+  out = sys.argv[2]
+
+  for target_name, labels in labels_by_target.items():
+    with open(os.path.join(out, target_name + '.labels'), 'w') as file_handle:
+      file_handle.write('\n'.join(labels))
+
+
+if __name__ == '__main__':
+  main()

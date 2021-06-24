@@ -25,6 +25,8 @@ BASE_IMAGES = [
     'base-image',
     'base-clang',
     'base-builder',
+    'base-builder-new',
+    'base-builder-swift',
     'base-runner',
     'base-runner-debug',
 ]

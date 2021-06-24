@@ -15,14 +15,6 @@
 #
 ################################################################################
 
-(
-cd $SRC/llvm-project
-git apply ../llvmsymbol.diff
-cmake -G "Ninja" -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF llvm
-ninja -j$(nproc) llvm-symbolizer
-cp bin/llvm-symbolizer $OUT/
-)
-
 # build project
 cd FuzzTesting
 swift build -c debug -Xswiftc -sanitize=address,fuzzer -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib --sanitize=address
