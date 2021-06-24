@@ -44,7 +44,7 @@ def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
-  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT}
+  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT, 'workspace': '/workspace'}
   for default_key, default_value in defaults.items():
     if default_key not in kwargs:
       kwargs[default_key] = default_value

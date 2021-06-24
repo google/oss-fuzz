@@ -95,7 +95,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     logging.info('Running fuzzer: %s.', self.target_name)
     command, _ = docker.get_base_docker_run_command(self.out_dir,
                                                     self.config.sanitizer,
-                                                    self.config.language)
+                                                    self.config.language,
+                                                    self.scratch_dir)
 
     # TODO(metzman): Stop using /out for artifacts and corpus. Use another
     # directory.
@@ -192,7 +193,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     os.chmod(target_path, stat.S_IRWXO)
 
     command, container = docker.get_base_docker_run_command(
-        self.out_dir, self.config.sanitizer, self.config.language)
+        self.out_dir, self.config.sanitizer, self.config.language,
+        self.scratch_dir)
     if container:
       command += ['-e', f'TESTCASE={testcase}']
     else:
@@ -303,5 +305,5 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 def make_scratch_dir(workspace):
   """Makes a scratch directory that will be shared with the runner container."""
   scratch_path = os.path.join(workspace, 'scratch')
-  os.makedirs(workspace, exist_ok=True)
+  os.makedirs(scratch_path, exist_ok=True)
   return scratch_path

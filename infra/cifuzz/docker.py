@@ -53,7 +53,10 @@ def delete_images(images):
   utils.execute(['docker', 'builder', 'prune', '-f'])
 
 
-def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
+def get_base_docker_run_args(out_dir,
+                             sanitizer='address',
+                             language='c++',
+                             scratch_dir=None):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
@@ -68,14 +71,19 @@ def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
     docker_args += ['--volumes-from', docker_container, '-e', 'OUT=' + out_dir]
   else:
     docker_args += get_args_mapping_host_path_to_container(out_dir, '/out')
+    if scratch_dir:
+      docker_args += get_args_mapping_host_path_to_container(scratch_dir)
   return docker_args, docker_container
 
 
-def get_base_docker_run_command(out_dir, sanitizer='address', language='c++'):
+def get_base_docker_run_command(out_dir,
+                                sanitizer='address',
+                                language='c++',
+                                scratch_dir=None):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
-      out_dir, sanitizer, language)
+      out_dir, sanitizer, language, scratch_dir)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
 
