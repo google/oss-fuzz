@@ -228,14 +228,12 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
                                               result.corpus_path)
     return result
 
-
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
     """Cleans up after running |fuzz_target_obj|."""
     # This must be done after we upload the corpus, otherwise it will be deleted
     # before we get a chance to upload it. We can't delete the fuzz target
     # because it is needed when we upload the build.
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
-
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
