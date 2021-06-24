@@ -53,37 +53,27 @@ def delete_images(images):
   utils.execute(['docker', 'builder', 'prune', '-f'])
 
 
-def get_base_docker_run_args(out_dir,
-                             sanitizer='address',
-                             language='c++',
-                             scratch_dir=None):
+def get_base_docker_run_args(workspace, sanitizer='address', language='c++'):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
   docker_args += [
-      '-e',
-      f'SANITIZER={sanitizer}',
-      '-e',
-      f'FUZZING_LANGUAGE={language}',
+      '-e', f'SANITIZER={sanitizer}', '-e', f'FUZZING_LANGUAGE={language}',
+      '-e', 'OUT=' + workspace.out
   ]
   docker_container = utils.get_container_name()
   if docker_container:
-    docker_args += ['--volumes-from', docker_container, '-e', 'OUT=' + out_dir]
+    docker_args += ['--volumes-from', docker_container]
   else:
-    docker_args += get_args_mapping_host_path_to_container(out_dir, '/out')
-    if scratch_dir:
-      docker_args += get_args_mapping_host_path_to_container(scratch_dir)
+    docker_args += get_args_mapping_host_path_to_container(workspace.out)
   return docker_args, docker_container
 
 
-def get_base_docker_run_command(out_dir,
-                                sanitizer='address',
-                                language='c++',
-                                scratch_dir=None):
+def get_base_docker_run_command(workspace, sanitizer='address', language='c++'):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
-      out_dir, sanitizer, language, scratch_dir)
+      workspace, sanitizer, language)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
 
@@ -110,8 +100,7 @@ class Workspace:
   def out(self):
     """The out directory used for storing the fuzzer build built by
     build_fuzzers."""
-    # Use an out dir in scratch so we don't need to use $WORKSPACE/out which
-    # will be polluted by artifacts.
+    # Don't use 'out' because it needs to be used by artifacts.
     return os.path.join(self.workspace, 'build-out')
 
   @property

@@ -191,8 +191,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     os.chmod(target_path, stat.S_IRWXO)
 
     command, container = docker.get_base_docker_run_command(
-        self.workspace, self.config.sanitizer, self.config.language,
-        self.workspace)
+        self.workspace, self.config.sanitizer, self.config.language)
     if container:
       command += ['-e', f'TESTCASE={testcase}']
     else:
@@ -295,5 +294,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # instead.
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
-      return os.path.join(self.workspace.out, match.group(1).decode('utf-8'))
+      return os.path.join(self.workspace.artifacts,
+                          match.group(1).decode('utf-8'))
     return None
