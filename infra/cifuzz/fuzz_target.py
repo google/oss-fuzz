@@ -54,7 +54,7 @@ class ReproduceError(Exception):
   """Error for when we can't attempt to reproduce a crash."""
 
 
-class FuzzTarget:
+class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   """A class to manage a single fuzz target.
 
   Attributes:
@@ -81,9 +81,9 @@ class FuzzTarget:
     self.target_name = os.path.basename(self.target_path)
     self.duration = int(duration)
     self.out_dir = out_dir
-    self.scratch_dir = make_scratch_dir(self.config.workspace)
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
+    self.scratch_dir = make_scratch_dir(self.config.workspace)
     self.latest_corpus_path = None
 
   def fuzz(self):
