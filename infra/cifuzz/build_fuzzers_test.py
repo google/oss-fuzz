@@ -73,7 +73,8 @@ class BuildFuzzersTest(unittest.TestCase):
                                            project_repo_name=EXAMPLE_PROJECT,
                                            workspace=tmp_dir,
                                            pr_ref='refs/pull/1757/merge'))
-    docker_run_command = mocked_docker_run.call_args_list[0][0][0]
+
+      docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
       for idx, element in enumerate(command):
@@ -329,18 +330,6 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
           build_fuzzers.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
 
 
-class GetDockerBuildFuzzersArgsContainerTest(unittest.TestCase):
-  """Tests that _get_docker_build_fuzzers_args_container works as intended."""
-
-  def test_get_docker_build_fuzzers_args_container(self):
-    """Tests that _get_docker_build_fuzzers_args_container works as intended."""
-    out_dir = '/my/out'
-    container = 'my-container'
-    result = build_fuzzers._get_docker_build_fuzzers_args_container(
-        out_dir, container)
-    self.assertEqual(result, ['-e', 'OUT=/my/out', '--volumes-from', container])
-
-
 class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   """Tests that _get_docker_build_fuzzers_args_not_container works as
   intended."""
@@ -348,14 +337,10 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   def test_get_docker_build_fuzzers_args_no_container(self):
     """Tests that _get_docker_build_fuzzers_args_not_container works
     as intended."""
-    host_out_dir = '/cifuzz/out'
     host_repo_path = '/host/repo'
     result = build_fuzzers._get_docker_build_fuzzers_args_not_container(
-        host_out_dir, host_repo_path)
-    expected_result = [
-        '-e', 'OUT=/out', '-v', '/cifuzz/out:/out', '-v',
-        '/host/repo:/host/repo'
-    ]
+        host_repo_path)
+    expected_result = ['-v', '/host/repo:/host/repo']
     self.assertEqual(result, expected_result)
 
 

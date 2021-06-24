@@ -21,8 +21,7 @@ RUN apt-get update && \
     apt-get install -y \
       libxau-dev \
       pkg-config \
-      rsync \
-      zlib1g-dev 
+      rsync
 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
 RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
@@ -47,6 +46,6 @@ COPY build.sh $SRC/
 RUN apt-get install -y \
      python3-tk \
      tcl8.6-dev \
-     tk8.6-dev 
+     tk8.6-dev
 
 WORKDIR $SRC/Pillow

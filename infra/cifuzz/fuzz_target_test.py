@@ -65,12 +65,14 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     """Sets up example fuzz target to test is_reproducible method."""
-    self.fuzz_target_path = '/example/path'
+    self.fuzz_target_name = 'fuzz-target'
+    self.out_dir = '/example/outdir'
+    self.fuzz_target_path = os.path.join(self.out_dir, self.fuzz_target_name)
     self.testcase_path = '/testcase'
     deployment = _create_deployment()
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
                                               fuzz_target.REPRODUCE_ATTEMPTS,
-                                              '/example/outdir', deployment,
+                                              self.out_dir, deployment,
                                               deployment.config)
 
   def test_reproducible(self, _):
@@ -82,10 +84,14 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
       result = self.test_target.is_reproducible(self.testcase_path,
                                                 self.fuzz_target_path)
       mocked_execute.assert_called_once_with([
-          'docker', 'run', '--rm', '--privileged', '--volumes-from',
-          'container', '-e', 'OUT=/example', '-e',
+          'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
+          '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
+          'CIFUZZ=True', '-e', 'SANITIZER=' + self.test_target.config.sanitizer,
+          '-e', 'FUZZING_LANGUAGE=' + self.test_target.config.language,
+          '--volumes-from', 'container', '-e', 'OUT=' + self.out_dir, '-e',
           'TESTCASE=' + self.testcase_path, '-t',
-          'gcr.io/oss-fuzz-base/base-runner', 'reproduce', 'path', '-runs=100'
+          'gcr.io/oss-fuzz-base/base-runner', 'reproduce',
+          self.fuzz_target_name, '-runs=100'
       ])
       self.assertTrue(result)
       self.assertEqual(1, mocked_execute.call_count)
@@ -190,9 +196,8 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
       self.test_target.out_dir = tmp_dir
       self.assertTrue(self.test_target.is_crash_reportable(self.testcase_path))
     mocked_info.assert_called_with(
-        'The crash is reproducible. The crash doesn\'t reproduce '
-        'on old builds. This code change probably introduced the '
-        'crash.')
+        'The crash doesn\'t reproduce on previous build. '
+        'Code change (pr/commit) introduced crash.')
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -239,9 +244,9 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     mocked_is_reproducible.assert_any_call(self.testcase_path,
                                            self.oss_fuzz_target_path)
     mocked_info.assert_called_with(
-        'Crash is reproducible. Could not run recent build of '
-        'target to determine if this code change (pr/commit) introduced crash. '
-        'Assuming this code change introduced crash.')
+        'Could not run previous build of target to determine if this code '
+        'change (pr/commit) introduced crash. Assuming crash was newly '
+        'introduced.')
 
 
 if __name__ == '__main__':

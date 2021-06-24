@@ -25,11 +25,6 @@ import docker
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
-import utils
-
-# Default fuzz configuration.
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -79,21 +74,15 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    docker_args = get_common_docker_args(self.config.sanitizer,
-                                         self.config.language)
-    container = utils.get_container_name()
-
-    if container:
+    docker_args, docker_container = docker.get_base_docker_run_args(
+        self.out_dir, self.config.sanitizer, self.config.language)
+    if not docker_container:
       docker_args.extend(
-          _get_docker_build_fuzzers_args_container(self.out_dir, container))
-    else:
-      docker_args.extend(
-          _get_docker_build_fuzzers_args_not_container(self.out_dir,
-                                                       self.host_repo_path))
+          _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
     if self.config.sanitizer == 'memory':
       docker_args.extend(_get_docker_build_fuzzers_args_msan(self.work_dir))
-      self.handle_msan_prebuild(container)
+      self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
         docker.get_project_image_name(self.config.project_name),
@@ -102,24 +91,27 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     ])
     rm_path = os.path.join(self.image_repo_path, '*')
     image_src_path = os.path.dirname(self.image_repo_path)
-    bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-        rm_path, self.host_repo_path, image_src_path)
+    bash_command = (f'rm -rf {rm_path} && cp -r {self.host_repo_path} '
+                    f'{image_src_path} && compile')
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
+
+    # TODO(metzman): Stop using helper.docker_run so we can get rid of
+    # docker.get_base_docker_run_args and merge its contents into
+    # docker.get_base_docker_run_command.
     if not helper.docker_run(docker_args):
       logging.error('Building fuzzers failed.')
       return False
 
     if self.config.sanitizer == 'memory':
-      self.handle_msan_postbuild(container)
+      self.handle_msan_postbuild(docker_container)
     return True
 
   def handle_msan_postbuild(self, container):
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        '--volumes-from', container, '-e',
-        'WORK={work_dir}'.format(work_dir=self.work_dir),
+        '--volumes-from', container, '-e', f'WORK={self.work_dir}',
         docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
@@ -129,7 +121,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     logging.info('Copying MSAN libs.')
     helper.docker_run([
         '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
+        f'cp -r /msan {self.work_dir}'
     ])
 
   def build(self):
@@ -186,24 +178,6 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def get_common_docker_args(sanitizer, language):
-  """Returns a list of common docker arguments."""
-  return [
-      '--cap-add',
-      'SYS_PTRACE',
-      '-e',
-      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
-      '-e',
-      'SANITIZER=' + sanitizer,
-      '-e',
-      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
-      '-e',
-      'CIFUZZ=True',
-      '-e',
-      'FUZZING_LANGUAGE=' + language,
-  ]
-
-
 def check_fuzzer_build(out_dir,
                        sanitizer,
                        language,
@@ -224,55 +198,32 @@ def check_fuzzer_build(out_dir,
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  command = get_common_docker_args(sanitizer, language)
-
+  docker_args, _ = docker.get_base_docker_run_args(out_dir, sanitizer, language)
   if allowed_broken_targets_percentage is not None:
-    command += [
+    docker_args += [
         '-e',
         ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
          allowed_broken_targets_percentage)
     ]
 
-  container = utils.get_container_name()
-  if container:
-    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
-  else:
-    command += ['-v', '%s:/out' % out_dir]
-  command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  result = helper.docker_run(command)
+  docker_args.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
+  result = helper.docker_run(docker_args)
   if not result:
     logging.error('Check fuzzer build failed.')
     return False
   return True
 
 
-def _get_docker_build_fuzzers_args_container(host_out_dir, container):
-  """Returns arguments to the docker build arguments that are needed to use
-  |host_out_dir| when the host of the OSS-Fuzz builder container is another
-  container."""
-  return ['-e', 'OUT=' + host_out_dir, '--volumes-from', container]
-
-
-def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
+def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
   |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
-  image_out_dir = '/out'
-  return [
-      '-e',
-      'OUT=' + image_out_dir,
-      '-v',
-      '%s:%s' % (host_out_dir, image_out_dir),
-      '-v',
-      '%s:%s' % (host_repo_path, host_repo_path),
-  ]
+  return ['-v', f'{host_repo_path}:{host_repo_path}']
 
 
 def _get_docker_build_fuzzers_args_msan(work_dir):
   """Returns arguments to the docker build command that are needed to use
   MSAN."""
   # TODO(metzman): MSAN is broken, fix.
-  return [
-      '-e', 'MSAN_LIBS_PATH={msan_libs_path}'.format(
-          msan_libs_path=os.path.join(work_dir, 'msan'))
-  ]
+  msan_libs_path = os.path.join(work_dir, 'msan')
+  return ['-e', f'MSAN_LIBS_PATH={msan_libs_path}']

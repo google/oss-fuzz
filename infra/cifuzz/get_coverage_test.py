@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for coverage.py"""
+"""Tests for get_coverage.py"""
 import os
 import json
 import unittest
 from unittest import mock
 
-import coverage
+import get_coverage
 
 # pylint: disable=protected-access
 
@@ -39,7 +39,7 @@ with open(os.path.join(TEST_DATA_PATH,
 class GetFuzzerStatsDirUrlTest(unittest.TestCase):
   """Tests _get_fuzzer_stats_dir_url."""
 
-  @mock.patch('coverage.get_json_from_url',
+  @mock.patch('get_coverage.get_json_from_url',
               return_value={
                   'fuzzer_stats_dir':
                       'gs://oss-fuzz-coverage/systemd/fuzzer_stats/20210303'
@@ -50,7 +50,7 @@ class GetFuzzerStatsDirUrlTest(unittest.TestCase):
     NOTE: This test relies on the PROJECT_NAME repo's coverage report.
     The "example" project was not used because it has no coverage reports.
     """
-    result = coverage._get_fuzzer_stats_dir_url(PROJECT_NAME)
+    result = get_coverage._get_fuzzer_stats_dir_url(PROJECT_NAME)
     (url,), _ = mocked_get_json_from_url.call_args
     self.assertEqual(
         'https://storage.googleapis.com/oss-fuzz-coverage/'
@@ -63,19 +63,19 @@ class GetFuzzerStatsDirUrlTest(unittest.TestCase):
 
   def test_get_invalid_project(self):
     """Tests that passing a bad project returns None."""
-    self.assertIsNone(coverage._get_fuzzer_stats_dir_url('not-a-proj'))
+    self.assertIsNone(get_coverage._get_fuzzer_stats_dir_url('not-a-proj'))
 
 
 class GetTargetCoverageReportTest(unittest.TestCase):
   """Tests get_target_coverage_report."""
 
   def setUp(self):
-    with mock.patch('coverage._get_latest_cov_report_info',
+    with mock.patch('get_coverage._get_latest_cov_report_info',
                     return_value=PROJECT_COV_INFO):
-      self.coverage_getter = coverage.OssFuzzCoverageGetter(
+      self.coverage_getter = get_coverage.OssFuzzCoverageGetter(
           PROJECT_NAME, REPO_PATH)
 
-  @mock.patch('coverage.get_json_from_url', return_value={})
+  @mock.patch('get_coverage.get_json_from_url', return_value={})
   def test_valid_target(self, mocked_get_json_from_url):
     """Tests that a target's coverage report can be downloaded and parsed."""
     self.coverage_getter.get_target_coverage_report(FUZZ_TARGET)
@@ -89,10 +89,11 @@ class GetTargetCoverageReportTest(unittest.TestCase):
     self.assertIsNone(
         self.coverage_getter.get_target_coverage_report(INVALID_TARGET))
 
-  @mock.patch('coverage._get_latest_cov_report_info', return_value=None)
+  @mock.patch('get_coverage._get_latest_cov_report_info', return_value=None)
   def test_invalid_project_json(self, _):
     """Tests an invalid project JSON results in None being returned."""
-    coverage_getter = coverage.OssFuzzCoverageGetter(PROJECT_NAME, REPO_PATH)
+    coverage_getter = get_coverage.OssFuzzCoverageGetter(
+        PROJECT_NAME, REPO_PATH)
     self.assertIsNone(coverage_getter.get_target_coverage_report(FUZZ_TARGET))
 
 
@@ -100,9 +101,9 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
   """Tests get_files_covered_by_target."""
 
   def setUp(self):
-    with mock.patch('coverage._get_latest_cov_report_info',
+    with mock.patch('get_coverage._get_latest_cov_report_info',
                     return_value=PROJECT_COV_INFO):
-      self.coverage_getter = coverage.OssFuzzCoverageGetter(
+      self.coverage_getter = get_coverage.OssFuzzCoverageGetter(
           PROJECT_NAME, REPO_PATH)
 
   def test_valid_target(self):
@@ -111,8 +112,9 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
                            FUZZ_TARGET_COV_JSON_FILENAME),) as file_handle:
       fuzzer_cov_info = json.loads(file_handle.read())
 
-    with mock.patch('coverage.OssFuzzCoverageGetter.get_target_coverage_report',
-                    return_value=fuzzer_cov_info):
+    with mock.patch(
+        'get_coverage.OssFuzzCoverageGetter.get_target_coverage_report',
+        return_value=fuzzer_cov_info):
       file_list = self.coverage_getter.get_files_covered_by_target(FUZZ_TARGET)
 
     curl_files_list_path = os.path.join(TEST_DATA_PATH,
@@ -143,7 +145,7 @@ class IsFileCoveredTest(unittest.TestCase):
             }
         }
     }
-    self.assertTrue(coverage.is_file_covered(file_coverage))
+    self.assertTrue(get_coverage.is_file_covered(file_coverage))
 
   def test_is_file_covered_not_covered(self):
     """Tests that is_file_covered returns False for a not covered file."""
@@ -158,7 +160,7 @@ class IsFileCoveredTest(unittest.TestCase):
             }
         }
     }
-    self.assertFalse(coverage.is_file_covered(file_coverage))
+    self.assertFalse(get_coverage.is_file_covered(file_coverage))
 
 
 class GetLatestCovReportInfo(unittest.TestCase):
@@ -169,21 +171,21 @@ class GetLatestCovReportInfo(unittest.TestCase):
                             'latest_report_info/project.json')
 
   @mock.patch('logging.error')
-  @mock.patch('coverage.get_json_from_url', return_value={'coverage': 1})
+  @mock.patch('get_coverage.get_json_from_url', return_value={'coverage': 1})
   def test_get_latest_cov_report_info(self, mocked_get_json_from_url,
                                       mocked_error):
     """Tests that _get_latest_cov_report_info works as intended."""
-    result = coverage._get_latest_cov_report_info(self.PROJECT)
+    result = get_coverage._get_latest_cov_report_info(self.PROJECT)
     self.assertEqual(result, {'coverage': 1})
     mocked_error.assert_not_called()
     mocked_get_json_from_url.assert_called_with(self.LATEST_REPORT_INFO_URL)
 
   @mock.patch('logging.error')
-  @mock.patch('coverage.get_json_from_url', return_value=None)
+  @mock.patch('get_coverage.get_json_from_url', return_value=None)
   def test_get_latest_cov_report_info_fail(self, _, mocked_error):
     """Tests that _get_latest_cov_report_info works as intended when we can't
     get latest report info."""
-    result = coverage._get_latest_cov_report_info('project')
+    result = get_coverage._get_latest_cov_report_info('project')
     self.assertIsNone(result)
     mocked_error.assert_called_with(
         'Could not get the coverage report json from url: %s.',

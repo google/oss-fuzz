@@ -208,8 +208,8 @@ fi
 
 # Compile mpdecimal
 cd $SRC/
-tar zxf mpdecimal-2.5.0.tar.gz
-cd mpdecimal-2.5.0/
+tar zxf mpdecimal-2.5.1.tar.gz
+cd mpdecimal-2.5.1/
 ./configure
 cd libmpdec/
 make libmpdec.a -j$(nproc)
