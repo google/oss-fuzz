@@ -91,6 +91,10 @@ class BaseFuzzTargetRunner:
 
     return True
 
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
+    raise NotImplementedError('Child class must implement method.')
+
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     raise NotImplementedError('Child class must implement method.')
@@ -132,6 +136,7 @@ class BaseFuzzTargetRunner:
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       result = self.run_fuzz_target(target)
+      self.cleanup_after_fuzz_target_run(target)
 
       # It's OK if this goes negative since we take max when determining
       # run_seconds.
@@ -165,7 +170,7 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
 
   @property
   def quit_on_bug_found(self):
-    return False
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
 
   def get_fuzz_targets(self):
     """Returns fuzz targets in out_dir."""
@@ -186,7 +191,11 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    raise NotImplementedError('Child class must implement method.')
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
 
 
 class CiFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -196,10 +205,12 @@ class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   def quit_on_bug_found(self):
     return True
 
-  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
-    result = fuzz_target_obj.fuzz()
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
     fuzz_target_obj.free_disk_if_needed()
-    return result
+
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    return fuzz_target_obj.fuzz()
 
 
 class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -215,11 +226,16 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
                                               result.corpus_path)
+    return result
+
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
+    """Cleans up after running |fuzz_target_obj|."""
     # This must be done after we upload the corpus, otherwise it will be deleted
     # before we get a chance to upload it. We can't delete the fuzz target
     # because it is needed when we upload the build.
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
-    return result
+
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
