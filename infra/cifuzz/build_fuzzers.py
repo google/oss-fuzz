@@ -74,7 +74,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        self.workspace.out, self.config.sanitizer, self.config.language)
+        self.workspace, self.config.sanitizer, self.config.language)
     if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
@@ -178,7 +178,7 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def check_fuzzer_build(out_dir,
+def check_fuzzer_build(workspace,
                        sanitizer,
                        language,
                        allowed_broken_targets_percentage=None):
@@ -191,14 +191,15 @@ def check_fuzzer_build(out_dir,
   Returns:
     True if fuzzers are correct.
   """
-  if not os.path.exists(out_dir):
-    logging.error('Invalid out directory: %s.', out_dir)
+  if not os.path.exists(workspace.out):
+    logging.error('Invalid out directory: %s.', workspace.out)
     return False
-  if not os.listdir(out_dir):
-    logging.error('No fuzzers found in out directory: %s.', out_dir)
+  if not os.listdir(workspace.out):
+    logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  docker_args, _ = docker.get_base_docker_run_args(out_dir, sanitizer, language)
+  docker_args, _ = docker.get_base_docker_run_args(
+      workspace, sanitizer, language)
   if allowed_broken_targets_percentage is not None:
     docker_args += [
         '-e',
@@ -216,7 +217,7 @@ def check_fuzzer_build(out_dir,
 
 def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
-  |host_out_dir| when the host of the OSS-Fuzz builder container is not
+  |host_repo_path| when the host of the OSS-Fuzz builder container is not
   another container."""
   return ['-v', f'{host_repo_path}:{host_repo_path}']
 
