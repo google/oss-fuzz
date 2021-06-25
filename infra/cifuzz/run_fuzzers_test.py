@@ -271,9 +271,9 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
     out_dir = os.path.join(self.WORKSPACE, 'build-out')
     self.fs.create_dir(out_dir)
-    self.testcase1 = os.path.join(self.WORKSPACE, 'out', 'artifacts', 'testcase-aaa')
+    self.testcase1 = os.path.join(out_dir, 'testcase-aaa')
     self.fs.create_file(self.testcase1)
-    self.testcase2 = os.path.join(self.WORKSPACE, 'out', 'artifacts', 'testcase-bbb')
+    self.testcase2 = os.path.join(out_dir, 'testcase-bbb')
     self.fs.create_file(self.testcase2)
     self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                                  workspace=self.WORKSPACE,

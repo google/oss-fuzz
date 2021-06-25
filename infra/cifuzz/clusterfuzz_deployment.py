@@ -153,16 +153,16 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                     self.workspace.clusterfuzz_build, error)
 
   def upload_crashes(self):
-    if not os.listdir(self.workspace.crashes):
-      logging.info('No crashes in %s. Not uploading.', self.workspace.crashes)
+    if not os.listdir(self.workspace.artifacts):
+      logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
       return
 
     crashes_artifact_name = self._get_crashes_artifact_name()
 
-    logging.info('Uploading crashes in %s', self.workspace.crashes)
+    logging.info('Uploading crashes in %s', self.workspace.artifacts)
     try:
       self.filestore.upload_directory(crashes_artifact_name,
-                                      self.workspace.crashes)
+                                      self.workspace.artifacts)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
 
