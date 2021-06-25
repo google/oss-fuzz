@@ -83,7 +83,7 @@ function deploy_cloud_function {
 	--region us-central1 \
 	--set-env-vars GCP_PROJECT=$project,FUNCTION_REGION=us-central1 \
 	--max-instances 1 \
-	--memory 8192MB
+	--memory 2048MB
 }
 
 if [ $# == 1 ]; then
