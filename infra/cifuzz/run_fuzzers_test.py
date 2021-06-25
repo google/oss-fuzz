@@ -269,7 +269,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    self.out_dir = os.path.join(self.WORKSPACE, 'out')
+    self.out_dir = os.path.join(self.WORKSPACE, 'build-out')
     self.fs.create_dir(self.out_dir)
     self.testcase1 = os.path.join(self.WORKSPACE, 'testcase-aaa')
     self.fs.create_file(self.testcase1)
@@ -321,12 +321,14 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
       self, mocked_upload_crashes, mocked_upload_latest_build, _):
     """Tests that run_fuzz_targets uploads crashes and builds correctly."""
     runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
-    runner.initialize()
+    import pdb; pdb.set_trace()
+    self.assertTrue(runner.initialize())
 
     expected_crashes_dir = 'workspace/out/artifacts'
 
     def mock_upload_crashes():
       # Ensure it wasn't deleted first.
+      import pdb; pdb.set_trace()
       self.assertTrue(os.path.exists(runner.workspace.artifacts))
 
     mocked_upload_crashes.side_effect = mock_upload_crashes

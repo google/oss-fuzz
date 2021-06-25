@@ -76,7 +76,7 @@ class BaseFuzzTargetRunner:
       return False
 
     if not os.path.exists(self.workspace.artifacts):
-      os.mkdir(self.workspace.artifacts)
+      os.makedirs(self.workspace.artifacts)
     elif (not os.path.isdir(self.workspace.artifacts) or
           os.listdir(self.workspace.artifacts)):
       logging.error('Artifacts path: %s exists and is not an empty directory.',
