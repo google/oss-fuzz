@@ -175,7 +175,7 @@ def update_build_status(build_tag, status_filename):
     project['name'] = project_build.project
     print('Processing project', project['name'])
     # Sleep to avoid rate limits.
-    time.sleep(10)
+    time.sleep(5)
     return project
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
