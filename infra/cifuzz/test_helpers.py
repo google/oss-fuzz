@@ -48,6 +48,11 @@ def create_run_config(**kwargs):
   return _create_config(config_utils.RunFuzzersConfig, **kwargs)
 
 
+def create_workspace(workspace_path='/workspace'):
+  config = _create_run_config({'workspace': workspace_path})
+  return docker.Workspace(config)
+
+
 def patch_environ(testcase_obj, env=None):
   """Patch environment."""
   if env is None:

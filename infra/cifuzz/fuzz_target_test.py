@@ -74,7 +74,8 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     self.fuzz_target_name = 'fuzz-target'
     deployment = _create_deployment()
     self.workspace = deployment.workspace
-    self.fuzz_target_path = os.path.join(self.workspace.out, self.fuzz_target_name)
+    self.fuzz_target_path = os.path.join(self.workspace.out,
+                                         self.fuzz_target_name)
     self.testcase_path = '/testcase'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
                                               fuzz_target.REPRODUCE_ATTEMPTS,
@@ -93,10 +94,8 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
           'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
           '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
           'CIFUZZ=True', '-e', 'SANITIZER=' + self.test_target.config.sanitizer,
-          '-e', 'FUZZING_LANGUAGE=' + self.test_target.config.language,
-          '-e', 'OUT=' + self.workspace.out,
-          '--volumes-from', 'container',
-          '-e',
+          '-e', 'FUZZING_LANGUAGE=' + self.test_target.config.language, '-e',
+          'OUT=' + self.workspace.out, '--volumes-from', 'container', '-e',
           'TESTCASE=' + self.testcase_path, '-t',
           'gcr.io/oss-fuzz-base/base-runner', 'reproduce',
           self.fuzz_target_name, '-runs=100'
@@ -158,8 +157,7 @@ class GetTestCaseTest(unittest.TestCase):
     with open(testcase_path, 'rb') as test_fuzz_output:
       parsed_testcase = self.test_target.get_testcase(test_fuzz_output.read())
     self.assertEqual(
-        parsed_testcase,
-        '/workspace/out/artifacts/'
+        parsed_testcase, '/workspace/out/artifacts/'
         'crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_invalid_error_string(self):
