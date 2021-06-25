@@ -117,9 +117,9 @@ class Workspace:
   @property
   def clusterfuzz_build(self):
     """The directory where builds from ClusterFuzz are stored."""
-    return os.path.join(self.workspace, 'clusterfuzz-build')
+    return os.path.join(self.workspace, 'cifuzz-prev-build')
 
   @property
   def corpora(self):
     """The directory where corpora from ClusterFuzz are stored."""
-    return os.path.join(self.workspace, 'corpora')
+    return os.path.join(self.workspace, 'cifuzz-corpus')
