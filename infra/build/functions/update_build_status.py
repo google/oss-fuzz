@@ -175,7 +175,7 @@ def update_build_status(build_tag, status_filename):
     print('Processing project', project['name'])
     return project
 
-  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+  with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
     futures = []
     for project_build in BuildsHistory.query(
         BuildsHistory.build_tag == build_tag).order('project'):

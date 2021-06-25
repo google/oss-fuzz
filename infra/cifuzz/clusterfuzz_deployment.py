@@ -18,6 +18,8 @@ import sys
 import urllib.error
 import urllib.request
 
+import filestore_utils
+
 import http_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -50,7 +52,8 @@ class BaseClusterFuzzDeployment:
     raise NotImplementedError('Child class must implement method.')
 
   def download_corpus(self, target_name, parent_dir):
-    """Downloads the corpus for |target_name| from ClusterFuzz to |parent_dir|.
+    """Downloads the corpus for |target_name| from ClusterFuzz to a subdirectory
+    of |parent_dir|.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
@@ -78,28 +81,98 @@ class BaseClusterFuzzDeployment:
     """Uploads the corpus for |target_name| in |corpus_dir| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
+  def make_empty_corpus_dir(self, target_name, parent_dir):
+    """Makes an empty corpus directory for |target_name| in |parent_dir| and
+    returns the path to the directory."""
+    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
+    os.makedirs(corpus_dir, exist_ok=True)
+    return corpus_dir
+
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
+  BASE_BUILD_NAME = 'cifuzz-build-'
+
+  def __init__(self, config):
+    super().__init__(config)
+    self.filestore = filestore_utils.get_filestore(self.config)
+
   def download_latest_build(self, parent_dir):
-    logging.info('download_latest_build not implemented for ClusterFuzzLite.')
+    build_dir = self.get_build_dir(parent_dir)
+    if os.path.exists(build_dir):
+      # This path is necessary because download_latest_build can be called
+      # multiple times.That is the case because it is called only when we need
+      # to see if a bug is novel, i.e. until we want to check a bug is novel we
+      # don't want to waste time calling this, but therefore this method can be
+      # called if multiple bugs are found.
+      return build_dir
+
+    os.makedirs(build_dir, exist_ok=True)
+    build_name = self._get_build_name()
+
+    try:
+      if self.filestore.download_latest_build(build_name, build_dir):
+        return build_dir
+    except Exception as err:  # pylint: disable=broad-except
+      logging.error('Could not download latest build because of: %s.', err)
+
+    return None
 
   def download_corpus(self, target_name, parent_dir):
-    logging.info('download_corpus not implemented for ClusterFuzzLite.')
+    corpus_dir = self.make_empty_corpus_dir(target_name, parent_dir)
+    logging.debug('ClusterFuzzLite: downloading corpus for %s to %s.',
+                  target_name, parent_dir)
+    corpus_name = self._get_corpus_name(target_name)
+    try:
+      self.filestore.download_corpus(corpus_name, corpus_dir)
+    except Exception as err:  # pylint: disable=broad-except
+      logging.error('Failed to download corpus for target: %s. Error: %s.',
+                    target_name, str(err))
+    return corpus_dir
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
-    logging.info('upload_corpus not implemented for ClusterFuzzLite.')
+  def _get_build_name(self):
+    return self.BASE_BUILD_NAME + self.config.sanitizer
+
+  def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
+    """Returns the name of the corpus artifact."""
+    return 'corpus-{target_name}'.format(target_name=target_name)
+
+  def _get_crashes_artifact_name(self):  # pylint: disable=no-self-use
+    """Returns the name of the crashes artifact."""
+    return 'crashes'
+
+  def upload_corpus(self, target_name, corpus_dir):
+    """Upload the corpus produced by |target_name| in |corpus_dir|."""
+    logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
+    name = self._get_corpus_name(target_name)
+    try:
+      self.filestore.upload_directory(name, corpus_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload corpus for target: %s. Error: %s.',
+                    target_name, error)
 
   def upload_latest_build(self, build_dir):
-    """Uploads the latest build to the filestore.
-    Returns:
-      True on success.
-    """
-    logging.info('upload_latest_build not implemented for ClusterFuzzLite.')
+    logging.info('Uploading latest build in %s.', build_dir)
+    build_name = self._get_build_name()
+    try:
+      return self.filestore.upload_directory(build_name, build_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload latest build: %s. Error: %s.', build_dir,
+                    error)
 
   def upload_crashes(self, crashes_dir):
-    logging.info('upload_crashes not implemented for ClusterFuzzLite.')
+    if not os.listdir(crashes_dir):
+      logging.info('No crashes in %s. Not uploading.', crashes_dir)
+      return
+
+    crashes_artifact_name = self._get_crashes_artifact_name()
+
+    logging.info('Uploading crashes in %s', crashes_dir)
+    try:
+      self.filestore.upload_directory(crashes_artifact_name, crashes_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload crashes. Error: %s.', error)
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -166,7 +239,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
   def upload_crashes(self, crashes_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_crashes."""
-    logging.info('Not uploading crashes on OSS-Fuzz.')
+    logging.info('Not uploading crashes because on OSS-Fuzz.')
 
   def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
@@ -174,13 +247,9 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
-
-    os.makedirs(corpus_dir, exist_ok=True)
-    # TODO(metzman): Clean up this code.
+    corpus_dir = self.make_empty_corpus_dir(target_name, parent_dir)
     project_qualified_fuzz_target_name = target_name
     qualified_name_prefix = self.config.project_name + '_'
-
     if not target_name.startswith(qualified_name_prefix):
       project_qualified_fuzz_target_name = qualified_name_prefix + target_name
 
@@ -189,10 +258,9 @@ class OSSFuzz(BaseClusterFuzzDeployment):
                   f'libFuzzer/{project_qualified_fuzz_target_name}/'
                   f'{self.CORPUS_ZIP_NAME}')
 
-    if http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
-      return corpus_dir
-
-    return None
+    if not http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
+      logging.warning('Failed to download corpus for %s.', target_name)
+    return corpus_dir
 
 
 class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
@@ -215,10 +283,12 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   def download_corpus(self, target_name, parent_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of download_corpus."""
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
+    return self.make_empty_corpus_dir(target_name, parent_dir)
 
   def download_latest_build(self, parent_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of download_latest_build."""
-    logging.info('Not downloading build because no ClusterFuzz deployment.')
+    logging.info(
+        'Not downloading latest build because no ClusterFuzz deployment.')
 
 
 def get_clusterfuzz_deployment(config):
