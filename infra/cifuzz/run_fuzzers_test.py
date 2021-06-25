@@ -62,6 +62,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
+    # !!! Stop depending on build-out
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
       config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                               workspace=fuzzer_dir_copy,
@@ -346,7 +347,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
     generation."""
 
     with tempfile.TemporaryDirectory() as workspace:
-      out_dir = os.path.join(workspace, 'out')
+      out_dir = os.path.join(workspace, 'build-out')
       try:
         # Do coverage build.
         build_config = test_helpers.create_build_config(
@@ -372,7 +373,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
             TEST_DATA_PATH, 'example_coverage_report_summary.json')
         with open(expected_summary_path) as file_handle:
           expected_summary = json.loads(file_handle.read())
-        actual_summary_path = os.path.join(out_dir, 'report', 'linux',
+        actual_summary_path = os.path.join(workspace, 'build-out', 'report', 'linux',
                                            'summary.json')
         with open(actual_summary_path) as file_handle:
           actual_summary = json.loads(file_handle.read())
@@ -411,7 +412,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                                 project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
-        build_dir = os.path.join(workspace, 'out', self.BUILD_DIR_NAME)
+        build_dir = os.path.join(workspace, 'build-out', self.BUILD_DIR_NAME)
         self.assertNotEqual(0, len(os.listdir(build_dir)))
 
   @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
@@ -426,14 +427,14 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                               project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
-      build_dir = os.path.join(TEST_DATA_PATH, 'out', self.BUILD_DIR_NAME)
+      build_dir = os.path.join(TEST_DATA_PATH, 'build-out', self.BUILD_DIR_NAME)
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
 
   def test_invalid_build(self):
     """Tests run_fuzzers with an invalid ASAN build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
+      out_path = os.path.join(tmp_dir, 'build-out')
       os.mkdir(out_path)
       config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                               workspace=tmp_dir,
