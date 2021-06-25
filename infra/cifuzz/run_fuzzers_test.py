@@ -121,7 +121,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     expected_error_args = ('Fuzz_seconds argument must be greater than 1, '
                            'but was: %s.', fuzz_seconds)
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
+      out_path = os.path.join(tmp_dir, 'build-out')
       os.mkdir(out_path)
       with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
         mocked_get_fuzz_targets.return_value = [
@@ -134,16 +134,17 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   def test_initialize_no_out_dir(self):
     """Tests initialize fails with no out dir."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
+      out_path = os.path.join(tmp_dir, 'build-out')
       expected_error_args = ('Out directory: %s does not exist.', out_path)
       self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
 
   def test_initialize_nonempty_artifacts(self):
     """Tests initialize with a file artifacts path."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
+      out_path = os.path.join(tmp_dir, 'build-out')
       os.mkdir(out_path)
-      artifacts_path = os.path.join(out_path, 'artifacts')
+      os.makedirs(os.path.join(tmp_dir, 'out'))
+      artifacts_path = os.path.join(tmp_dir, 'out', 'artifacts')
       with open(artifacts_path, 'w') as artifacts_handle:
         artifacts_handle.write('fake')
       expected_error_args = (
@@ -154,8 +155,9 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   def test_initialize_bad_artifacts(self):
     """Tests initialize with a non-empty artifacts path."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      artifacts_path = os.path.join(out_path, 'artifacts')
+      out_path = os.path.join(tmp_dir, 'build-out')
+      os.mkdir(out_path)
+      artifacts_path = os.path.join(tmp_dir, 'out', 'artifacts')
       os.makedirs(artifacts_path)
       artifact_path = os.path.join(artifacts_path, 'artifact')
       with open(artifact_path, 'w') as artifact_handle:
@@ -172,8 +174,9 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     """Tests initialize with an empty artifacts dir."""
     mocked_get_fuzz_targets.return_value = ['fuzz-target']
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      artifacts_path = os.path.join(out_path, 'artifacts')
+      out_path = os.path.join(tmp_dir, 'build-out')
+      os.mkdir(out_path)
+      artifacts_path = os.path.join(tmp_dir, 'out', 'artifacts')
       os.makedirs(artifacts_path)
       runner = self._create_runner(workspace=tmp_dir)
       self.assertTrue(runner.initialize())
@@ -187,17 +190,17 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     """Tests initialize with no artifacts dir (the expected setting)."""
     mocked_get_fuzz_targets.return_value = ['fuzz-target']
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.makedirs(out_path)
+      out_path = os.path.join(tmp_dir, 'build-out')
+      os.mkdir(out_path)
       runner = self._create_runner(workspace=tmp_dir)
       self.assertTrue(runner.initialize())
       mocked_log_error.assert_not_called()
-      self.assertTrue(os.path.isdir(os.path.join(out_path, 'artifacts')))
+      self.assertTrue(os.path.isdir(os.path.join(tmp_dir, 'out', 'artifacts')))
 
   def test_initialize_no_fuzz_targets(self):
     """Tests initialize with no fuzz targets."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
+      out_path = os.path.join(tmp_dir, 'build-out')
       os.makedirs(out_path)
       expected_error_args = ('No fuzz targets were found in out directory: %s.',
                              out_path)
@@ -236,7 +239,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
                                   mocked_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
-    out_path = os.path.join(workspace, 'out')
+    out_path = os.path.join(workspace, 'build-out')
     self.fs.create_dir(out_path)
     config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                             workspace=workspace,
