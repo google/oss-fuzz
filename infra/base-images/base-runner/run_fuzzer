@@ -35,7 +35,6 @@ then
   rm -rf $CORPUS_DIR && mkdir -p $CORPUS_DIR
 fi
 
-
 SANITIZER=${SANITIZER:-}
 if [ -z $SANITIZER ]; then
   # If $SANITIZER is not specified (e.g. calling from `reproduce` command), it

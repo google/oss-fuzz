@@ -258,54 +258,94 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
 
 class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
-  """Tests that CiFuzzTargetRunner works as intended."""
+  """Tests that BatchFuzzTargetRunnerTest works as intended."""
+  WORKSPACE = 'workspace'
+  STACKTRACE = b'stacktrace'
+  CORPUS_DIR = 'corpus'
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.out_dir = os.path.join(self.WORKSPACE, 'out')
+    self.fs.create_dir(self.out_dir)
+    self.testcase1 = os.path.join(self.WORKSPACE, 'testcase-aaa')
+    self.fs.create_file(self.testcase1)
+    self.testcase2 = os.path.join(self.WORKSPACE, 'testcase-bbb')
+    self.fs.create_file(self.testcase2)
+    self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                 workspace=self.WORKSPACE,
+                                                 project_name=EXAMPLE_PROJECT,
+                                                 build_integration_path='/',
+                                                 is_github=True)
 
-  @mock.patch('utils.get_fuzz_targets')
+  @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+              return_value=True)
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target,
-                                  mocked_get_fuzz_targets):
+                                  mocked_run_fuzz_target, _, __):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
-    workspace = 'workspace'
-    out_path = os.path.join(workspace, 'out')
-    self.fs.create_dir(out_path)
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=workspace,
-                                            project_name=EXAMPLE_PROJECT)
-    runner = run_fuzzers.BatchFuzzTargetRunner(config)
-
-    mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
     runner.initialize()
-    testcase1 = os.path.join(workspace, 'testcase-aaa')
-    testcase2 = os.path.join(workspace, 'testcase-bbb')
-    self.fs.create_file(testcase1)
-    self.fs.create_file(testcase2)
-    stacktrace = b'stacktrace'
+
     call_count = 0
-    corpus_dir = 'corpus'
 
     def mock_run_fuzz_target(_):
       nonlocal call_count
       if call_count == 0:
-        testcase = testcase1
+        testcase = self.testcase1
       elif call_count == 1:
-        testcase = testcase2
+        testcase = self.testcase2
       assert call_count != 2
       call_count += 1
-      return fuzz_target.FuzzResult(testcase, stacktrace, corpus_dir)
+      if not os.path.exists(self.CORPUS_DIR):
+        self.fs.create_dir(self.CORPUS_DIR)
+      return fuzz_target.FuzzResult(testcase, self.STACKTRACE, self.CORPUS_DIR)
 
     mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
     magic_mock = mock.MagicMock()
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-address-testcase-aaa',
-                  os.listdir(runner.crashes_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
+
+  @mock.patch('run_fuzzers.BaseFuzzTargetRunner.run_fuzz_targets',
+              return_value=False)
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build')
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
+  def test_run_fuzz_targets_upload_crashes_and_builds(
+      self, mocked_upload_crashes, mocked_upload_latest_build, _):
+    """Tests that run_fuzz_targets uploads crashes and builds correctly."""
+    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
+    runner.initialize()
+
+    expected_crashes_dir = 'workspace/out/artifacts'
+
+    def mock_upload_crashes(crashes_dir):
+      self.assertEqual(crashes_dir, expected_crashes_dir)
+      # Ensure it wasn't deleted first.
+      self.assertTrue(os.path.exists(crashes_dir))
+
+    mocked_upload_crashes.side_effect = mock_upload_crashes
+
+    expected_out_dir = 'workspace/out'
+    expected_build_dir = 'workspace/out/cifuzz-latest-build'
+    expected_corpus_dir = 'workspace/out/cifuzz-corpus'
+    self.fs.create_dir(expected_build_dir)
+    self.fs.create_dir(expected_corpus_dir)
+
+    def mock_upload_latest_build(out_dir):
+      self.assertEqual(out_dir, expected_out_dir)
+      # Ensure these were deleted before this function call.
+      self.assertFalse(os.path.exists(expected_crashes_dir))
+      self.assertFalse(os.path.exists(expected_build_dir))
+      self.assertFalse(os.path.exists(expected_corpus_dir))
+
+    mocked_upload_latest_build.side_effect = mock_upload_latest_build
+
+    self.assertFalse(runner.run_fuzz_targets())
+    self.assertEqual(mocked_upload_crashes.call_count, 1)
+    self.assertEqual(mocked_upload_latest_build.call_count, 1)
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
@@ -394,9 +434,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
               side_effect=[True, True])
   def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=TEST_DATA_PATH,
-                                            project_name=EXAMPLE_PROJECT)
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)
