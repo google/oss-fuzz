@@ -18,6 +18,7 @@ import base64
 import concurrent.futures
 import json
 import sys
+import time
 
 import google.auth
 from googleapiclient.discovery import build
@@ -173,6 +174,8 @@ def update_build_status(build_tag, status_filename):
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
     print('Processing project', project['name'])
+    # Sleep to avoid rate limits.
+    time.sleep(10)
     return project
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
