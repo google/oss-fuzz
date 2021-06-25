@@ -205,18 +205,21 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
 
   def test_get_fuzz_target_artifact(self):
     """Tests that get_fuzz_target_artifact works as intended."""
-    runner = self._create_runner()
-    crashes_dir = 'crashes-dir'
-    runner.crashes_dir = crashes_dir
-    artifact_name = 'artifact-name'
-    target = mock.MagicMock()
-    target_name = 'target_name'
-    target.target_name = target_name
-    fuzz_target_artifact = runner.get_fuzz_target_artifact(
-        target, artifact_name)
-    expected_fuzz_target_artifact = (
-        'crashes-dir/target_name-address-artifact-name')
-    self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      runner = self._create_runner(workspace=tmp_dir)
+      crashes_dir = 'crashes-dir'
+      runner.crashes_dir = crashes_dir
+      artifact_name = 'artifact-name'
+      target = mock.MagicMock()
+      target_name = 'target_name'
+      target.target_name = target_name
+
+      fuzz_target_artifact = runner.get_fuzz_target_artifact(
+          target, artifact_name)
+      expected_fuzz_target_artifact = os.path.join(
+          tmp_dir, 'out', 'artifacts', 'target_name-address-artifact-name')
+
+      self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
 
 
 class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
@@ -253,7 +256,8 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-address-testcase', os.listdir(runner.crashes_dir))
+    self.assertIn('target1-address-testcase',
+                  os.listdir(runner.workspace.artifacts))
     self.assertEqual(mocked_run_fuzz_target.call_count, 1)
 
 
@@ -321,10 +325,9 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
     expected_crashes_dir = 'workspace/out/artifacts'
 
-    def mock_upload_crashes(crashes_dir):
-      self.assertEqual(crashes_dir, expected_crashes_dir)
+    def mock_upload_crashes():
       # Ensure it wasn't deleted first.
-      self.assertTrue(os.path.exists(crashes_dir))
+      self.assertTrue(os.path.exists(runner.workspace.artifacts))
 
     mocked_upload_crashes.side_effect = mock_upload_crashes
 
