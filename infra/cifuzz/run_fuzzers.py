@@ -239,38 +239,20 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
 
-    self.clusterfuzz_deployment.upload_crashes(self.crashes_dir)
+    self.clusterfuzz_deployment.upload_crashes()
 
     # We want to upload the build to the filestore after we do batch fuzzing.
-    # There are some problems with this. First, we don't want to upload the
-    # build before fuzzing, because if we download the latest build, we will
-    # consider the build we just uploaded to be the latest even though it
-    # shouldn't be (we really intend to download the build before the curent
-    # one.
-    # Second, the out directory is mounted into the runnner container and is
-    # used to pass the runner corpora, old builds and for the runner to pass the
-    # host testcases. Thus, we will upload the build after fuzzing. But before
-    # we zip the out directory we will remove these extra things that are now in
-    # out.
+    # There are some is a problem with this. We don't want to upload the build
+    # before fuzzing, because if we download the latest build, we will consider
+    # the build we just uploaded to be the latest even though it shouldn't be
+    # (we really intend to download the build before the curent one.
     # TODO(metzman): We should really be uploading latest build in build_fuzzers
     # before we remove unaffected fuzzers. Otherwise, we can lose fuzzers. This
     # is probably more of a theoretical concern since in batch fuzzing, there is
     # no code change and thus no fuzzers that are removed, but it's inelegant to
     # put this here.
-    # TODO(metzman): Don't pollute self.out_dir like this.
 
-    for directory in [
-        self.clusterfuzz_deployment.get_corpus_dir(self.out_dir),
-        # This is the directory of the ClusterFuzz build, not the build we just
-        # did.
-        self.clusterfuzz_deployment.get_build_dir(self.out_dir),
-        self.crashes_dir,
-    ]:
-      if os.path.exists(directory):
-        shutil.rmtree(directory)
-
-    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
-
+    self.clusterfuzz_deployment.upload_latest_build()
     return result
 
 

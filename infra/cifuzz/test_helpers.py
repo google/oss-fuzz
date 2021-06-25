@@ -20,6 +20,7 @@ import tempfile
 from unittest import mock
 
 import config_utils
+import docker
 
 
 def _create_config(config_cls, **kwargs):
@@ -49,7 +50,9 @@ def create_run_config(**kwargs):
 
 
 def create_workspace(workspace_path='/workspace'):
-  config = _create_run_config({'workspace': workspace_path})
+  """Returns a workspace located at |workspace_path| ('/workspace by'
+  default)."""
+  config = create_run_config(workspace=workspace_path)
   return docker.Workspace(config)
 
 

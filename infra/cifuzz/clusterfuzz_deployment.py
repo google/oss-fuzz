@@ -99,8 +99,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     build_name = self._get_build_name()
 
     try:
-      if self.filestore.download_latest_build(
-          build_name, self.workspace.clusterfuzz_build):
+      if self.filestore.download_latest_build(build_name,
+                                              self.workspace.clusterfuzz_build):
         return self.workspace.clusterfuzz_build
     except Exception as err:  # pylint: disable=broad-except
       logging.error('Could not download latest build because of: %s.', err)
@@ -150,8 +150,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                                              self.workspace.clusterfuzz_build)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload latest build: %s. Error: %s.',
-                    self.workspace.clusterfuzz_build,
-                    error)
+                    self.workspace.clusterfuzz_build, error)
 
   def upload_crashes(self):
     if not os.listdir(self.workspace.crashes):
@@ -160,9 +159,10 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     crashes_artifact_name = self._get_crashes_artifact_name()
 
-    logging.info('Uploading crashes in %s', crashes_dir)
+    logging.info('Uploading crashes in %s', self.workspace.crashes)
     try:
-      self.filestore.upload_directory(crashes_artifact_name, crashes_dir)
+      self.filestore.upload_directory(crashes_artifact_name,
+                                      self.workspace.crashes)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
 

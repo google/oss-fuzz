@@ -58,6 +58,7 @@ def _create_deployment(**kwargs):
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
+# !!! test upload_crashes
 class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   """Tests OSSFuzz."""
 
@@ -96,10 +97,9 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   @parameterized.parameterized.expand([
       ('upload_latest_build', tuple(),
        'Not uploading latest build because on OSS-Fuzz.'),
-      ('upload_corpus', ('target', ),
+      ('upload_corpus', ('target',),
        'Not uploading corpus because on OSS-Fuzz.'),
-      ('upload_crashes', tuple(),
-       'Not uploading crashes because on OSS-Fuzz.'),
+      ('upload_crashes', tuple(), 'Not uploading crashes because on OSS-Fuzz.'),
   ])
   def test_noop_methods(self, method, method_args, expected_message):
     """Tests that certain methods are noops for OSS-Fuzz."""
@@ -139,7 +139,8 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
   def test_download_corpus(self, mocked_download_corpus):
     """Tests that download_corpus works for a valid project."""
     result = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    expected_corpus_dir = os.path.join(WORKSPACE, 'cifuzz-corpus', EXAMPLE_FUZZER)
+    expected_corpus_dir = os.path.join(WORKSPACE, 'cifuzz-corpus',
+                                       EXAMPLE_FUZZER)
     self.assertEqual(result, expected_corpus_dir)
     mocked_download_corpus.assert_called_with('corpus-example_crash_fuzzer',
                                               expected_corpus_dir)
@@ -185,7 +186,8 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
                                             workspace=WORKSPACE,
                                             is_github=False)
     workspace = docker.Workspace(config)
-    self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
+    self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
+        config, workspace)
 
   @mock.patch('logging.info')
   def test_download_corpus(self, mocked_info):
@@ -238,8 +240,8 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
         workspace = docker.Workspace(config)
 
         self.assertIsInstance(
-            clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace),
-            expected_deployment_cls)
+            clusterfuzz_deployment.get_clusterfuzz_deployment(
+                config, workspace), expected_deployment_cls)
 
 
 if __name__ == '__main__':
