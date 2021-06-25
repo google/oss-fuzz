@@ -20,3 +20,4 @@ RUN git clone --depth 1 https://github.com/OpenVPN/openvpn openvpn
 WORKDIR openvpn
 COPY build.sh $SRC/
 COPY fuzz*.cpp $SRC/
+COPY fuzz*.h $SRC/openvpn/src/openvpn/

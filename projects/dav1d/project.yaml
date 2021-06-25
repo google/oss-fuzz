@@ -7,7 +7,6 @@ auto_ccs:
   - "b@rr-dav.id.au"
   - "dav1d-fuzz@videolan.org"
 vendor_ccs:
-  - "negge@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address

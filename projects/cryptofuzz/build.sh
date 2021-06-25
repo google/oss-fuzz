@@ -20,6 +20,15 @@
 
 export GO111MODULE=off
 
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    # Install nodejs/npm
+    # It is required for building noble-bls12-381
+    cd $SRC/
+    tar Jxf node-v14.17.1-linux-x64.tar.xz
+    export PATH="$PATH:$SRC/node-v14.17.1-linux-x64/bin/"
+fi
+
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
 
@@ -138,6 +147,72 @@ then
     make -B
 fi
 
+# Build blst
+cd $SRC/blst/
+# Patch to disable assembly
+# This is to prevent false positives, see:
+# https://github.com/google/oss-fuzz/issues/5914
+touch new_no_asm.h
+echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+echo "#else" >>new_no_asm.h
+echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+echo "#endif" >>new_no_asm.h
+cat src/no_asm.h >>new_no_asm.h
+mv new_no_asm.h src/no_asm.h
+CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+export BLST_INCLUDE_PATH=$(realpath bindings/)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+
+# Compile Cryptofuzz blst module
+cd $SRC/cryptofuzz/modules/blst/
+make -B -j$(nproc)
+
+# Build libsecp256k1
+cd $SRC/secp256k1/
+autoreconf -ivf
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SECP256K1"
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --enable-module-schnorrsig --enable-module-ecdh --with-asm=no
+else
+    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --enable-module-schnorrsig --enable-module-ecdh
+fi
+make
+export SECP256K1_INCLUDE_PATH=$(realpath include)
+export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
+
+# Compile Cryptofuzz libsecp256k1 module
+cd $SRC/cryptofuzz/modules/secp256k1/
+make -B -j$(nproc)
+
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    # noble-secp256k1
+    cd $SRC/cryptofuzz/modules/noble-secp256k1/
+    export NOBLE_SECP256K1_PATH="$SRC/noble-secp256k1/index.js"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_SECP256K1"
+    make -B
+
+    # noble-bls12-381
+    cd $SRC/noble-bls12-381/
+    cp math.ts new_index.ts
+    $(awk '/^export/ {print "tail -n +"FNR+1" index.ts"; exit}' index.ts) >>new_index.ts
+    mv new_index.ts index.ts
+    npm install && npm run build
+    export NOBLE_BLS12_381_PATH=$(realpath index.js)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_BLS12_381"
+    cd $SRC/cryptofuzz/modules/noble-bls12-381/
+    make -B
+
+    # noble-ed25519
+    cd $SRC/cryptofuzz/modules/noble-ed25519/
+    export NOBLE_ED25519_PATH="$SRC/noble-ed25519/index.js"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_ED25519"
+    make -B
+fi
+
 # Compile SymCrypt
 cd $SRC/SymCrypt/
 if [[ $CFLAGS != *sanitize=array-bounds* ]]
@@ -159,32 +234,6 @@ then
     cd $SRC/cryptofuzz/modules/symcrypt
     make -B
 fi
-
-# Compile Nettle
-mkdir $SRC/nettle-install/
-cd $SRC/nettle/
-bash .bootstrap
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    ./configure --disable-documentation --disable-openssl --prefix=`realpath ../nettle-install`
-else
-    ./configure --disable-documentation --disable-openssl --disable-assembler --prefix=`realpath ../nettle-install`
-fi
-make -j$(nproc)
-make install
-if [[ $CFLAGS != *-m32* ]]
-then
-export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib/libnettle.a`
-export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib/libhogweed.a`
-else
-export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib32/libnettle.a`
-export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib32/libhogweed.a`
-fi
-export NETTLE_INCLUDE_PATH=`realpath ../nettle-install/include`
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NETTLE"
-# Compile Cryptofuzz Nettle module
-cd $SRC/cryptofuzz/modules/nettle
-make -B
 
 # Compile libgmp
 if [[ $CFLAGS != *sanitize=memory* ]]

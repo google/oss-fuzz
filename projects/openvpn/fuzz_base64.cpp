@@ -13,6 +13,8 @@ limitations under the License.
 #include <stdlib.h>
 #include <string.h>
 
+#include "fuzz.h"
+
 extern "C" {
 #include "base64.h"
 }

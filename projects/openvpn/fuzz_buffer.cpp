@@ -9,22 +9,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <fuzzer/FuzzedDataProvider.h>
+
+#include "fuzz.h"
 
 extern "C" {
 #include "config.h"
 #include "syshead.h"
 #include "misc.h"
 #include "buffer.h"
-}
-
-// Returns a NULL-terminated C string that should be freed by the caller.
-char *get_modifiable_string(FuzzedDataProvider &provider) {
-  std::string s1 = provider.ConsumeRandomLengthString();
-  char *tmp = (char *)malloc(s1.size() + 1);
-  memcpy(tmp, s1.c_str(), s1.size());
-  tmp[s1.size()] = '\0';
-  return tmp;
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
