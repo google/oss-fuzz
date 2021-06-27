@@ -11,8 +11,8 @@ limitations under the License.
 */
 
 #include "config.h"
-#include "list.h"
 #include "syshead.h"
+#include "list.h"
 
 #include "fuzz_randomizer.h"
 
