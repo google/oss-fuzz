@@ -9,12 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-//#include <fuzzer/FuzzedDataProvider.h>
 
-//#include "fuzz.h"
-
-//extern "C" {
-//#include <sys/time.h>
 #include "config.h"
 #include "syshead.h"
 #include "init.h"
@@ -22,33 +17,20 @@ limitations under the License.
 #include "interval.h"
 #include "route.h"
 #include "buffer.h"
-//}
 
-ssize_t fuzz_get_random_data(void *buf, size_t len) {
-	return 0;
-}
+#include "fuzz_randomizer.h"
 
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  //FuzzedDataProvider provider(data, size);
 
-  //struct env_set* es = NULL;
+  fuzz_random_init(data, size);
+
   struct route_option_list opt, *dest;
   struct route_list rl;
-  //struct gc_arena gc;
 
   // Initialisation
   memset(&opt, 0, sizeof(opt));
-/*
-  gc = gc_new();
-  es = env_set_create(&gc);
 
-  opt.gc = &gc;
-  add_route_to_option_list(&opt, "a", "b", "d", "c");
-
-  // list init
-  //remote_endpoint = provider.ConsumeRandomLengthString().c_str();
-  */
   struct context c;
   memset(&c, 0, sizeof(struct context));
   gc_init(&c.gc);
@@ -69,7 +51,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   in_addr_t remote_host;
   ssize_t default_metric;
-  const char* remote_endpoint = "adsgas";
+  char *tmp0 =  get_random_string();
+  const char* remote_endpoint = tmp0;
 
   // init
   memset(&rl, 0, sizeof(struct route_list));
@@ -82,24 +65,33 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // call 2
   struct route_ipv4 r;
   struct route_option ro;
-  ro.network = "aasdf";
-  ro.netmask = "234234";
-  ro.gateway = "2341243";
-  ro.metric = ";sdkf;sldkf";
+  char *tmp1 =  get_random_string();
+  char *tmp2 =  get_random_string();
+  char *tmp3 =  get_random_string();
+  char *tmp4 =  get_random_string();
+  ro.network = tmp1;
+  ro.netmask = tmp2;
+  ro.gateway = tmp3;
+  ro.metric = tmp4;
   ro.next = NULL;
 
   memset(&r, 0, sizeof(struct route_ipv4));
   r.option = &ro;
-
   add_route(&r, NULL, 0, NULL, &c.es, &c);
   
 
 
   gc_free(&rl.gc);
-  //gc_free(&gc);
-  //gc_free(&rl);
   env_set_destroy(c.es);
   context_gc_free(&c);
+
+  free(tmp0);
+  free(tmp1);
+  free(tmp2);
+  free(tmp3);
+  free(tmp4);
+
+  fuzz_random_destroy();
 
   return 0;
 }
