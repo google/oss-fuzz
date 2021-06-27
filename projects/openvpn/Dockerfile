@@ -22,3 +22,4 @@ COPY build.sh $SRC/
 COPY fuzz*.cpp $SRC/
 COPY fuzz*.c $SRC/
 COPY fuzz*.h $SRC/openvpn/src/openvpn/
+COPY *.options $SRC/

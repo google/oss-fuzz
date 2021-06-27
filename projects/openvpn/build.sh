@@ -29,6 +29,8 @@ sed -i 's/select(/fuzz_select(/g' ./src/openvpn/proxy.c
 sed -i 's/send(/fuzz_send(/g' ./src/openvpn/proxy.c
 sed -i 's/recv(/fuzz_recv(/g' ./src/openvpn/proxy.c
 
+sed -i 's/fp = (flags/fp = stdout;\n\/\//g' ./src/openvpn/error.c
+
 # Build openvpn
 autoreconf -ivf
 ./configure --disable-lz4
@@ -39,14 +41,20 @@ cd src/openvpn
 rm openvpn.o
 ar r libopenvpn.a *.o
 
+# Compile our fuzz helper
 $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
-#for fuzzname in fuzz_base64 fuzz_dhcp fuzz_proxy fuzz_misc fuzz_buffer; do
-for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer; do
-    $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include  -I../../include -I../../src/compat -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\"  -Wall -I../../src/compat/ -I../../ -I./ -std=c99 $CFLAGS -c $SRC/${fuzzname}.c -o ${fuzzname}.o
+for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route; do
+    $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include  -I../../include -I../../src/compat \
+      -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\"  -Wall -std=c99 $CFLAGS \
+      -c $SRC/${fuzzname}.c -o ${fuzzname}.o
+
+    # Link with CXX
     $CXX ${CXXFLAGS} ${LIB_FUZZING_ENGINE} ./${fuzzname}.o -o $OUT/${fuzzname} $SRC/fuzz_randomizer.o \
         libopenvpn.a ../../src/compat/.libs/libcompat.a /usr/lib/x86_64-linux-gnu/libnsl.a \
         /usr/lib/x86_64-linux-gnu/libresolv.a /usr/lib/x86_64-linux-gnu/liblzo2.a \
         -lssl -lcrypto -ldl
 done
+
+cp $SRC/*.options $OUT/

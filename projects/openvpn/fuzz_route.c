@@ -25,7 +25,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   fuzz_random_init(data, size);
 
-  struct route_option_list opt, *dest;
+  struct route_option_list opt;
   struct route_list rl;
 
   // Initialisation
@@ -56,11 +56,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   // init
   memset(&rl, 0, sizeof(struct route_list));
-  init_route_list(&rl, &opt, remote_endpoint,default_metric, remote_host, &c.es, &c); 
+  init_route_list(&rl, &opt, remote_endpoint,default_metric, remote_host, c.es, &c); 
 
   // call 1  
   in_addr_t addr;
-  route_list_add_vpn_gateway(&rl, &c.es, addr);
+  route_list_add_vpn_gateway(&rl, c.es, addr);
 
   // call 2
   struct route_ipv4 r;
@@ -77,7 +77,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   memset(&r, 0, sizeof(struct route_ipv4));
   r.option = &ro;
-  add_route(&r, NULL, 0, NULL, &c.es, &c);
+  add_route(&r, NULL, 0, NULL, c.es, &c);
   
 
 
