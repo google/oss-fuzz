@@ -10,11 +10,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//#include "fuzz.h"
-//
-
-
-//extern "C" {
 #include "config.h"
 #include <sys/time.h>
 #include "syshead.h"
@@ -22,7 +17,6 @@ limitations under the License.
 #include "proxy.h"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-//}
 
 #include "fuzz_randomizer.h"
 
@@ -51,9 +45,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   fuzz_random_init(data, size);
 
-  //FuzzedDataProvider provider(data, size);
-  //prov = &provider;
-
   struct gc_arena gc = gc_new();
   struct http_proxy_info pi;
   ssize_t generic_ssizet;
@@ -66,8 +57,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&pi, 0, sizeof(pi));
 
   generic_ssizet = 0;
-  //std::string username = provider.ConsumeBytesAsString(
-  //    (provider.ConsumeIntegralInRange<uint32_t>(1, USER_PASS_LEN)));
   char *fuzz_usrnm = fuzz_random_get_string_max_length(USER_PASS_LEN);
   strcpy(pi.up.username, fuzz_usrnm);
   if (strlen(pi.up.username) == 0) {
@@ -78,8 +67,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  //std::string pass = provider.ConsumeBytesAsString(
-  //    (provider.ConsumeIntegralInRange<uint32_t>(1, USER_PASS_LEN)));
   char *pswd = fuzz_random_get_string_max_length(USER_PASS_LEN);
   strcpy(pi.up.password, pswd);
   if (strlen(pi.up.password) == 0) {
@@ -92,7 +79,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  //generic_ssizet = provider.ConsumeIntegralInRange(0, 4);
   generic_ssizet = fuzz_randomizer_get_int(0, 4);
   switch (generic_ssizet) {
   case 0:
@@ -126,12 +112,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     break;
   }
 
-  //char *tmp_authenticate = get_modifiable_string(provider);
   char *tmp_authenticate = get_random_string();
   pi.proxy_authenticate = tmp_authenticate;
 
   //if (provider.ConsumeProbability<double>() < 0.5) {
-
     //tmp = get_modifiable_string(provider);
     tmp = get_random_string();
     pi.options.custom_headers[0].name = tmp;
