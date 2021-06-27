@@ -16,6 +16,7 @@ limitations under the License.
 // Forward declared because we want to use FuzzedDataProvider,
 // which requires CPP.
 extern ssize_t fuzz_get_random_data(void *buf, size_t len);
+
 ssize_t fuzz_recv(int sockfd, void *buf, size_t len, int flags){
 	return fuzz_get_random_data(buf, len);
 }
