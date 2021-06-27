@@ -27,7 +27,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   es = env_set_create(&gc);
 
   int total_to_fuzz = fuzz_randomizer_get_int(1, 9);
-  for (int i = 0; i <5; i++) {
+  for (int i = 0; i <total_to_fuzz; i++) {
     int type = fuzz_randomizer_get_int(0, 5);
     char *tmp1 = get_random_string();
     char *tmp2 = get_random_string();

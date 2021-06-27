@@ -23,7 +23,6 @@ echo "#include \"fake_fuzz_header.h\"" >> $SRC/openvpn/src/openvpn/openvpn.c
 sed -i 's/read(/fuzz_read(/g' ./src/openvpn/console_systemd.c
 sed -i 's/fgets(/fuzz_fgets(/g' ./src/openvpn/console_builtin.c
 sed -i 's/fgets(/fuzz_fgets(/g' ./src/openvpn/misc.c
-sed -i 's/, tz/, (struct timezone*)tz/g' ./src/openvpn/otime.h
 sed -i 's/#include "forward.h"/#include "fuzz_header.h"\n#include "forward.h"/g' ./src/openvpn/proxy.c
 sed -i 's/select(/fuzz_select(/g' ./src/openvpn/proxy.c
 sed -i 's/send(/fuzz_send(/g' ./src/openvpn/proxy.c
