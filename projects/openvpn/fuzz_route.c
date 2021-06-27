@@ -77,6 +77,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   memset(&r, 0, sizeof(struct route_ipv4));
   r.option = &ro;
+  r.flags = RT_DEFINED;
   add_route(&r, NULL, 0, NULL, c.es, &c);
   
 

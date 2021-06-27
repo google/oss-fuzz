@@ -55,5 +55,3 @@ for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_rout
         /usr/lib/x86_64-linux-gnu/libresolv.a /usr/lib/x86_64-linux-gnu/liblzo2.a \
         -lssl -lcrypto -ldl
 done
-
-cp $SRC/*.options $OUT/
