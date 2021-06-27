@@ -10,17 +10,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "fuzz.h"
 
-extern "C" {
 #include "config.h"
 #include "syshead.h"
 #include "misc.h"
 #include "buffer.h"
-}
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  FuzzedDataProvider provider(data, size);
+#include "fuzz_randomizer.h"
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  fuzz_random_init(data,size);
 
   struct gc_arena gc;
   struct buffer *bufp;
@@ -34,16 +33,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   gc = gc_new();
   bufp = NULL;
 
-  int total_to_fuzz = provider.ConsumeIntegralInRange(1, 20);
+  int total_to_fuzz = fuzz_randomizer_get_int(1, 20);
   for (int i = 0; i < total_to_fuzz; i++) {
     if (bufp == NULL) {
-      generic_ssizet = provider.ConsumeIntegralInRange(0, 1);
+      generic_ssizet = fuzz_randomizer_get_int(0, 1);
       if (generic_ssizet == 0) {
-        _size = provider.ConsumeIntegralInRange(0, 100);
+        _size = fuzz_randomizer_get_int(0, 100);
         buf = alloc_buf_gc(_size, &gc);
         bufp = &buf;
       } else {
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf = string_alloc_buf(tmp, &gc);
         bufp = &buf;
         free(tmp);
@@ -51,7 +50,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       }
     } else {
 #define NUM_TARGETS 32
-      generic_ssizet = provider.ConsumeIntegralInRange(0, NUM_TARGETS);
+      generic_ssizet = fuzz_randomizer_get_int(0, NUM_TARGETS);
       switch (generic_ssizet) {
       case 0:
         buf_clear(bufp);
@@ -82,27 +81,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         buf_str(bufp);
         break;
       case 9:
-        generic_ssizet = provider.ConsumeIntegralInRange(0, 255);
+        generic_ssizet = fuzz_randomizer_get_int(0, 255);
         buf_rmtail(bufp, (uint8_t)generic_ssizet);
         break;
       case 10:
         buf_chomp(bufp);
         break;
       case 11:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         skip_leading_whitespace(tmp);
         free(tmp);
         tmp = NULL;
         break;
       case 12:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         chomp(tmp);
         free(tmp);
         tmp = NULL;
         break;
       case 13:
-        tmp = get_modifiable_string(provider);
-        tmp2 = get_modifiable_string(provider);
+        tmp = get_random_string();
+        tmp2 = get_random_string();
         rm_trailing_chars(tmp, tmp2);
         free(tmp);
         free(tmp2);
@@ -110,27 +109,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         tmp2 = NULL;
         break;
       case 14:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         string_clear(tmp);
         free(tmp);
         tmp = NULL;
         break;
       case 15:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf_string_match_head_str(bufp, tmp);
         free(tmp);
         tmp = NULL;
         break;
       case 16:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf_string_compare_advance(bufp, tmp);
         free(tmp);
         tmp = NULL;
         break;
       case 17:
-        generic_ssizet = provider.ConsumeIntegralInRange(0, 255);
+        generic_ssizet = fuzz_randomizer_get_int(0, 255);
 
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         if (strlen(tmp) > 0) {
           buf_parse(bufp, (int)generic_ssizet, tmp, strlen(tmp));
         }
@@ -139,33 +138,33 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         tmp = NULL;
         break;
       case 18:
-        tmp = get_modifiable_string(provider);
-        string_mod(tmp, provider.ConsumeIntegral<unsigned int>(),
-                   provider.ConsumeIntegral<unsigned int>(),
-                   provider.ConsumeIntegral<char>());
+        tmp = get_random_string();
+        string_mod(tmp, fuzz_randomizer_get_int(0, 12312),
+                   fuzz_randomizer_get_int(0, 23141234),
+                   (char)fuzz_randomizer_get_int(0, 255));
 
         free(tmp);
         tmp = NULL;
         break;
       case 19:
-        tmp = get_modifiable_string(provider);
-        match = provider.ConsumeIntegral<char>();
+        tmp = get_random_string();
+        match = (char)fuzz_randomizer_get_int(0, 255);
         if (match != 0) {
-          string_replace_leading(tmp, match, provider.ConsumeIntegral<char>());
+          string_replace_leading(tmp, match, (char)fuzz_randomizer_get_int(0, 255));
         }
 
         free(tmp);
         tmp = NULL;
         break;
       case 20:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf_write(bufp, tmp, strlen(tmp));
 
         free(tmp);
         tmp = NULL;
         break;
       case 21:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
 
         buf_write_prepend(bufp, tmp, strlen(tmp));
 
@@ -173,16 +172,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         tmp = NULL;
         break;
       case 22:
-        buf_write_u8(bufp, provider.ConsumeIntegral<int>());
+        buf_write_u8(bufp, fuzz_randomizer_get_int(0, 255));
         break;
       case 23:
-        buf_write_u16(bufp, provider.ConsumeIntegral<int>());
+        buf_write_u16(bufp, fuzz_randomizer_get_int(0, 1024));
         break;
       case 24:
-        buf_write_u32(bufp, provider.ConsumeIntegral<int>());
+        buf_write_u32(bufp, fuzz_randomizer_get_int(0, 12312));
         break;
       case 25:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf_catrunc(bufp, tmp);
         free(tmp);
         tmp = NULL;
@@ -191,10 +190,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         convert_to_one_line(bufp);
         break;
       case 27:
-        buf_advance(bufp, provider.ConsumeIntegral<int>());
+        buf_advance(bufp, fuzz_randomizer_get_int(0, 25523));
         break;
       case 28:
-        buf_prepend(bufp, provider.ConsumeIntegral<int>());
+        buf_prepend(bufp, fuzz_randomizer_get_int(0, 251235));
         break;
       case 29:
         buf_reverse_capacity(bufp);
@@ -206,7 +205,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         buf_forward_capacity(bufp);
         break;
       case 32:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buf_puts(bufp, tmp);
         free(tmp);
         tmp = NULL;
@@ -215,10 +214,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     if (buflistp == NULL) {
-      buflistp = buffer_list_new(provider.ConsumeIntegralInRange(0, 200));
+      buflistp = buffer_list_new(fuzz_randomizer_get_int(0, 200));
     } else {
 #define NUM_LIST_TARGETS 6
-      generic_ssizet = provider.ConsumeIntegralInRange(0, NUM_LIST_TARGETS);
+      generic_ssizet = fuzz_randomizer_get_int(0, NUM_LIST_TARGETS);
       switch (generic_ssizet) {
       case 0:
         buffer_list_free(buflistp);
@@ -228,7 +227,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         buffer_list_defined(buflistp);
         break;
       case 2:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buffer_list_push(buflistp, tmp);
         free(tmp);
         tmp = NULL;
@@ -240,16 +239,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         buffer_list_pop(buflistp);
         break;
       case 5:
-        tmp = get_modifiable_string(provider);
+        tmp = get_random_string();
         buffer_list_aggregate_separator(
-            buflistp, provider.ConsumeIntegralInRange(0, 1024), tmp);
+            buflistp, fuzz_randomizer_get_int(0, 1024), tmp);
 
         free(tmp);
         tmp = NULL;
         break;
       case 6:
         buffer_list_aggregate(buflistp,
-                              provider.ConsumeIntegralInRange(0, 1024));
+                              fuzz_randomizer_get_int(0, 1024));
         break;
       }
     }
@@ -258,6 +257,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Cleanup
   buffer_list_free(buflistp);
   gc_free(&gc);
+
+  fuzz_random_destroy();
 
   return 0;
 }

@@ -10,20 +10,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "fuzz.h"
-
-extern "C" {
-#include <sys/time.h>
 #include "config.h"
+#include <sys/time.h>
 #include "syshead.h"
-#include "proxy.h"
 #include "interval.h"
+#include "proxy.h"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-}
 
+#include "fuzz_randomizer.h"
 
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
+int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     CRYPTO_malloc_init();
     SSL_library_init();
@@ -38,15 +35,15 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
 }
 
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
 	char *tmp = NULL;
   char *tmp2 = NULL;
 
   if (size < 500) {
     return 0;
   }
-  FuzzedDataProvider provider(data, size);
-  prov = &provider;
+  fuzz_random_init(data, size);
 
   struct gc_arena gc = gc_new();
   struct http_proxy_info pi;
@@ -60,25 +57,29 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&pi, 0, sizeof(pi));
 
   generic_ssizet = 0;
-  std::string username = provider.ConsumeBytesAsString(
-      (provider.ConsumeIntegralInRange<uint32_t>(1, USER_PASS_LEN)));
-  strcpy(pi.up.username, username.c_str());
+  char *fuzz_usrnm = fuzz_random_get_string_max_length(USER_PASS_LEN);
+  strcpy(pi.up.username, fuzz_usrnm);
   if (strlen(pi.up.username) == 0) {
     gc_free(&gc);
     free_buf(&lookahead);
+    free(fuzz_usrnm);
+    fuzz_random_destroy();
     return 0;
   }
 
-  std::string pass = provider.ConsumeBytesAsString(
-      (provider.ConsumeIntegralInRange<uint32_t>(1, USER_PASS_LEN)));
-  strcpy(pi.up.password, pass.c_str());
+  char *pswd = fuzz_random_get_string_max_length(USER_PASS_LEN);
+  strcpy(pi.up.password, pswd);
   if (strlen(pi.up.password) == 0) {
     gc_free(&gc);
     free_buf(&lookahead);
+
+    free(pswd);
+    free(fuzz_usrnm);
+    fuzz_random_destroy();
     return 0;
   }
 
-  generic_ssizet = provider.ConsumeIntegralInRange(0, 4);
+  generic_ssizet = fuzz_randomizer_get_int(0, 4);
   switch (generic_ssizet) {
   case 0:
     pi.auth_method = HTTP_AUTH_NONE;
@@ -98,7 +99,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   pi.options.http_version = "1.1";
 
-  generic_ssizet = provider.ConsumeIntegralInRange(0, 4);
+  generic_ssizet = fuzz_randomizer_get_int(0, 4);
   switch (generic_ssizet) {
   case 0:
     pi.options.auth_retry = PAR_NO;
@@ -111,18 +112,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     break;
   }
 
-  char *tmp_authenticate = get_modifiable_string(provider);
+  char *tmp_authenticate = get_random_string();
   pi.proxy_authenticate = tmp_authenticate;
 
-  if (provider.ConsumeProbability<double>() < 0.5) {
-
-    tmp = get_modifiable_string(provider);
+  //if (provider.ConsumeProbability<double>() < 0.5) {
+    //tmp = get_modifiable_string(provider);
+    tmp = get_random_string();
     pi.options.custom_headers[0].name = tmp;
-    if (provider.ConsumeProbability<double>() < 0.5) {
-      tmp2 = get_modifiable_string(provider);
+    //if (provider.ConsumeProbability<double>() < 0.5) {
+      //tmp2 = get_modifiable_string(provider);
+      tmp2 = get_random_string();
       pi.options.custom_headers[0].content = tmp2;
-    }
-  }
+    //}
+  //}
 
   establish_http_proxy_passthru(&pi, 0, "1.2.3.4", "777", &evt, &lookahead,
                                 &signal_received);
@@ -132,5 +134,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (tmp != NULL)  free(tmp);
   if (tmp2 != NULL) free(tmp2);
+
+    free(pswd);
+    free(fuzz_usrnm);
+  fuzz_random_destroy();
+
+
   return 0;
 }

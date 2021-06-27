@@ -13,13 +13,9 @@ limitations under the License.
 #include <stdlib.h>
 #include <string.h>
 
-#include "fuzz.h"
-
-extern "C" {
 #include "base64.h"
-}
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size > 500) {
     return 0;
   }
