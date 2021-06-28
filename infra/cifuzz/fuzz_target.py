@@ -184,7 +184,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       Raises:
         ReproduceError if we can't attempt to reproduce the crash.
     """
-
     if not os.path.exists(target_path):
       raise ReproduceError(f'Target {target_path} not found.')
 
