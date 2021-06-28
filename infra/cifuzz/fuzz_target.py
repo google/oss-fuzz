@@ -138,7 +138,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    testcase = self.get_testcase(stderr)
+    testcase = get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None, self.latest_corpus_path)
@@ -286,16 +286,16 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  'Code change (pr/commit) introduced crash.')
     return True
 
-  def get_testcase(self, error_bytes):
-    """Gets the file from a fuzzer run stacktrace.
+def get_testcase(stderr_bytes):
+  """Gets the file from a fuzzer run stacktrace.
 
-    Args:
-      error_bytes: The bytes containing the output from the fuzzer.
+  Args:
+    stderr_bytes: The bytes containing the output from the fuzzer.
 
-    Returns:
-      The path to the testcase or None if not found.
-    """
-    match = re.search(rb'\bTest unit written to (.+)', error_bytes)
-    if match:
-      return match.group(1).decode('utf-8')
-    return None
+  Returns:
+    The path to the testcase or None if not found.
+  """
+  match = re.search(rb'\bTest unit written to (.+)', stderr_bytes)
+  if match:
+    return match.group(1).decode('utf-8')
+  return None

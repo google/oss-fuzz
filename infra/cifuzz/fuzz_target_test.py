@@ -143,31 +143,24 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
 class GetTestCaseTest(unittest.TestCase):
   """Tests get_testcase."""
 
-  def setUp(self):
-    """Sets up example fuzz target to test get_testcase method."""
-    deployment = _create_deployment()
-    self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
-                                              deployment.workspace, deployment,
-                                              deployment.config)
-
   def test_valid_error_string(self):
     """Tests that get_testcase returns the correct testcase give an error."""
     testcase_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  'test_data', 'example_crash_fuzzer_output.txt')
     with open(testcase_path, 'rb') as test_fuzz_output:
-      parsed_testcase = self.test_target.get_testcase(test_fuzz_output.read())
+      parsed_testcase = fuzz_target.get_testcase(test_fuzz_output.read())
     self.assertEqual(parsed_testcase,
                      './crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_invalid_error_string(self):
     """Tests that get_testcase returns None with a bad error string."""
-    self.assertIsNone(self.test_target.get_testcase(b''))
-    self.assertIsNone(self.test_target.get_testcase(b' Example crash string.'))
+    self.assertIsNone(fuzz_target.get_testcase(b''))
+    self.assertIsNone(fuzz_target.get_testcase(b' Example crash string.'))
 
   def test_encoding(self):
     """Tests that get_testcase accepts bytes and returns a string."""
     fuzzer_output = b'\x8fTest unit written to ./crash-1'
-    result = self.test_target.get_testcase(fuzzer_output)
+    result = fuzz_target.get_testcase(fuzzer_output)
     self.assertTrue(isinstance(result, str))
 
 
