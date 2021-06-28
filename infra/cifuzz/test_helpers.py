@@ -50,7 +50,7 @@ def create_run_config(**kwargs):
 
 
 def create_workspace(workspace_path='/workspace'):
-  """Returns a workspace located at |workspace_path| ('/workspace by'
+  """Returns a workspace located at |workspace_path| ('/workspace' by
   default)."""
   config = create_run_config(workspace=workspace_path)
   return docker.Workspace(config)
