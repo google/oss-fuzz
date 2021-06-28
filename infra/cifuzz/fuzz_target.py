@@ -110,9 +110,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         '-c'
     ]
 
-    options = LIBFUZZER_OPTIONS.copy() +  [
+    options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
-        f'-artifact_prefix={self.workspace.artifacts}/']
+        f'-artifact_prefix={self.workspace.artifacts}/'
+    ]
     options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 

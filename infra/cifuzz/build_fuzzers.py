@@ -198,8 +198,8 @@ def check_fuzzer_build(workspace,
     logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  docker_args, _ = docker.get_base_docker_run_args(
-      workspace, sanitizer, language)
+  docker_args, _ = docker.get_base_docker_run_args(workspace, sanitizer,
+                                                   language)
   if allowed_broken_targets_percentage is not None:
     docker_args += [
         '-e',

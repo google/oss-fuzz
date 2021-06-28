@@ -33,11 +33,11 @@ class TestRunCoverageCommand(unittest.TestCase):
     expected_docker_args = [
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++',
-        '-e', 'OUT=/workspace/build-out', '-v',
-        '/workspace/build-out:/workspace/build-out',
-        '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=',
-        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'coverage'
+        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
+        'OUT=/workspace/build-out', '-v',
+        '/workspace/build-out:/workspace/build-out', '-e',
+        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
+        'gcr.io/oss-fuzz-base/base-runner', 'coverage'
     ]
 
     config = test_helpers.create_run_config(project_name=PROJECT,
