@@ -162,6 +162,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = get_testcase(stderr)
+    assert not os.system(f'echo "FIND"; find -name {os.path.dirname(testcase)}')
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None, self.latest_corpus_path)
