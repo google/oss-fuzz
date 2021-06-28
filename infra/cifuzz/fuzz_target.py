@@ -131,6 +131,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     except subprocess.TimeoutExpired:
       pass
     logging.info('command: stdout: %s. stderr: %s.', c2_stdout, c2_stderr)
+    os.system(f'echo "FIND"; find / -name {os.path.basename(testcase)}; echo "find / -name {os.path.basename(testcase)}"')
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -163,7 +164,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = get_testcase(stderr)
-    assert not os.system(f'echo "FIND"; find / -name {os.path.basename(testcase)}; echo "find / -name {os.path.basename(testcase)}"')
+    os.system(f'echo "FIND"; find / -name {os.path.basename(testcase)}; echo "find / -name {os.path.basename(testcase)}"')
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None, self.latest_corpus_path)
