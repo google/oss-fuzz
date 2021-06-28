@@ -347,7 +347,6 @@ class CoverageReportIntegrationTest(unittest.TestCase):
     generation."""
 
     with tempfile.TemporaryDirectory() as workspace:
-      out_dir = os.path.join(workspace, 'build-out')
       try:
         # Do coverage build.
         build_config = test_helpers.create_build_config(

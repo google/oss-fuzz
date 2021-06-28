@@ -286,6 +286,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  'Code change (pr/commit) introduced crash.')
     return True
 
+
 def get_testcase(stderr_bytes):
   """Gets the file from a fuzzer run stacktrace.
 
