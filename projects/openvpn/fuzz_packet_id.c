@@ -28,16 +28,29 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   packet_id_init(&pid, seq_backtrack, time_backtrack, "name", 0);
 
-  update_time();
-  pin.time = fuzz_randomizer_get_int(0, 123123);
-  pin.id = fuzz_randomizer_get_int(0, 123123);
+  int total_sends = fuzz_randomizer_get_int(0, 10);
+  for (int i = 0; i < total_sends; i++) {
+    update_time();
+    pin.time = fuzz_randomizer_get_int(0, 0xfffffff);
+    pin.id = fuzz_randomizer_get_int(0, 0xfffffff);
 
-  packet_id_reap_test(&pid.rec);
-  bool test = packet_id_test(&pid.rec, &pin);
-  if (test) {
-    packet_id_add(&pid.rec, &pin);
+    packet_id_reap_test(&pid.rec);
+    bool test = packet_id_test(&pid.rec, &pin);
+    if (test) {
+      packet_id_add(&pid.rec, &pin);
+    }
   }
   packet_id_free(&pid);
+
+  struct gc_arena gc;
+  gc = gc_new();
+  struct buffer buf;
+  char *tmp = get_random_string();
+  buf = string_alloc_buf(tmp, &gc);
+  free(tmp);
+  packet_id_read(&pid, &buf, false);
+  packet_id_read(&pid, &buf, true);
+  gc_free(&gc);
 
 	char filename[256];
 	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
@@ -53,6 +66,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&p, 0, sizeof(struct packet_id_persist));
   packet_id_persist_init(&p);
   packet_id_persist_load(&p, filename);
+  gc = gc_new();
+  packet_id_persist_print(&p, &gc);
+  gc_free(&gc);
   packet_id_persist_close(&p); 
 
   fuzz_random_destroy();

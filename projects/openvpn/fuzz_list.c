@@ -16,9 +16,11 @@ limitations under the License.
 
 #include "fuzz_randomizer.h"
 
+#define KEY_SIZE 23
+
 /* Required for hash_init() */
 static uint32_t word_hash_function(const void *key, uint32_t iv) {
-  return hash_func(key, sizeof(key), iv);
+  return hash_func(key, KEY_SIZE, iv);
 }
 
 /* Required for hash_init() */
@@ -37,7 +39,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   int total_to_fuzz = fuzz_randomizer_get_int(1, 20);
   for (int i = 0; i < total_to_fuzz; i++) {
-    generic_ssizet = fuzz_randomizer_get_int(0, 7);
+    generic_ssizet = fuzz_randomizer_get_int(0, 8);
 
     switch (generic_ssizet) {
     case 0:
@@ -70,14 +72,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       if (hash) {
         void *key;
         void *value;
-        // FUZZER_GET_INTEGER(generic_ssizet, 4294967296);
-        generic_ssizet = fuzz_randomizer_get_int(0, 1234123);
-        key = (void *)generic_ssizet;
-        if (!hash_lookup(hash, &key)) {
-          // FUZZER_GET_INTEGER(generic_ssizet, 4294967296);
-          generic_ssizet = fuzz_randomizer_get_int(0, 123123);
+        char arr[KEY_SIZE];
+        memset(arr, 0, KEY_SIZE);
+        fuzz_get_random_data(arr, KEY_SIZE);
+        key = (void *)arr;
+        if (!hash_lookup(hash, key)) {
+          generic_ssizet = fuzz_randomizer_get_int(0, 0xfffffff);
           value = (void *)generic_ssizet;
-          hash_add(hash, &key, value, false);
+          hash_add(hash, key, value, false);
         }
       }
       break;
@@ -94,7 +96,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case 6:
       if (hash) {
         uint32_t hv;
-        generic_ssizet = fuzz_randomizer_get_int(0, 123123);
+        generic_ssizet = fuzz_randomizer_get_int(0, 0xfffffff);
         hv = generic_ssizet;
         hash_bucket(hash, hv);
       }
@@ -102,11 +104,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case 7:
       if (hash) {
         void *key;
-        generic_ssizet = fuzz_randomizer_get_int(0, 123123);
-        key = (void *)generic_ssizet;
-        hash_remove(hash, &key);
+        char arr[KEY_SIZE];
+        memset(arr, 0, KEY_SIZE);
+        fuzz_get_random_data(arr, KEY_SIZE);
+        key = (void *)arr;
+        hash_remove(hash, key);
       }
       break;
+    case 8:
+      if (hash) {
+        void *value;
+        generic_ssizet = fuzz_randomizer_get_int(0, 0xfffffff);
+        value = (void *)generic_ssizet;
+        hash_remove_by_value(hash, value);
+      }
     default:
       break;
     }

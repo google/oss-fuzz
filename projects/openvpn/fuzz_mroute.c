@@ -50,6 +50,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   mroute_addr_init(&a4);
   mroute_extract_addr_ether(&a1, &a2, &a3, &a3, vid, &buf);
 
+  if (size > sizeof(struct openvpn_sockaddr)) {
+    struct openvpn_sockaddr local_sock;
+    memcpy(&local_sock, data, sizeof(struct openvpn_sockaddr));
+    mroute_extract_openvpn_sockaddr(&a1, &local_sock, true);
+    mroute_extract_openvpn_sockaddr(&a1, &local_sock, false);
+  }
+
+  struct mroute_helper *mhelper = NULL;
+  mhelper = mroute_helper_init(fuzz_randomizer_get_int(0, 0xfffffff));
+  if (mhelper != NULL) {
+    mroute_helper_add_iroute46(mhelper, fuzz_randomizer_get_int(0, MR_HELPER_NET_LEN-1));
+    mroute_helper_free(mhelper);
+  }
+
   gc_free(&gc);
 
   fuzz_random_destroy();
