@@ -18,6 +18,7 @@ import sys
 
 import build_fuzzers
 import config_utils
+import docker
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -71,15 +72,13 @@ def main():
         config.project_name, config.commit_sha, config.pr_ref)
     return returncode
 
-  out_dir = os.path.join(config.workspace, 'out')
-
   if not config.bad_build_check:
     # If we've gotten to this point and we don't need to do bad_build_check,
     # then the build has succeeded.
     returncode = 0
   # yapf: disable
   elif build_fuzzers.check_fuzzer_build(
-      out_dir,
+      docker.workspace(config),
       config.sanitizer,
       config.language,
       allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
