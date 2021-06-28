@@ -117,6 +117,19 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
+    command2 = command.copy()
+    command2.extend([
+        '/bin/bash', '-c', f'ls {self.workspace.out}; ls {self.workspace}; ls /'
+    ])
+    process = subprocess.Popen(command2,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+
+    try:
+      _, stderr = process.communicate(timeout=self.duration)
+    except subprocess.TimeoutExpired:
+      logging.info('command: stdout: %s. stderr: %s.', _, stderr)
+
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -234,8 +247,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
     if not os.path.exists(testcase):
-      logging.error(os.path.exists(os.path.dirname(testcase)))
-      logging.error(os.listdir(testcase))
+      logging.error('exists: %s', os.path.exists(os.path.dirname(testcase)))
+      logging.error('contents: %s', os.listdir(os.path.dirname(testcase)))
       raise ReproduceError(f'Testcase {testcase} not found.')
 
     try:
