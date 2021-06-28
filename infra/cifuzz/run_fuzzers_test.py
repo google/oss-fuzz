@@ -423,7 +423,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)
       config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                              workspace=TEST_DATA_PATH,
+                                              workspace=workspace,
                                               project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)

@@ -33,7 +33,7 @@ logging.basicConfig(
 
 # Use a fixed seed for determinism. Use len_control=0 since we don't have enough
 # time fuzzing for len_control to make sense (probably).
-LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
+LIBFUZZER_OPTIONS = ['-seed=1337', '-len_control=0']
 
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
@@ -101,6 +101,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         self.target_name)
     command += docker.get_args_mapping_host_path_to_container(
         self.latest_corpus_path)
+    command += docker.get_args_mapping_host_path_to_container(
+        self.workspace.artifacts)
     command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
@@ -108,7 +110,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         '-c'
     ]
 
-    options = LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration)
+    options = LIBFUZZER_OPTIONS.copy() +  [
+        f'-max_total_time={self.duration}',
+        f'-artifact_prefix={self.workspace.artifacts}/']
+    options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
     command.append(run_fuzzer_command)
@@ -289,10 +294,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     Returns:
       The path to the testcase or None if not found.
     """
-    # TODO(metzman): Stop parsing and use libFuzzers' artifact_prefix option
-    # instead.
-    match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
+    match = re.search(rb'\bTest unit written to (.+)', error_bytes)
     if match:
-      return os.path.join(self.workspace.artifacts,
-                          match.group(1).decode('utf-8'))
+      return match.group(1).decode('utf-8')
     return None
