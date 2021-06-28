@@ -75,6 +75,9 @@ make check
 # Set up fuzzing seeds
 
 git submodule update --init -- ./fuzz_packet.in
-find ./fuzz_packet.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
 git submodule update --init -- ./fuzz_zscanner.in
-find ./fuzz_zscanner.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+# ./fuzz_dname_to_str.in/ and ./fuzz_dname_from_str.in/ are stored in the base repository
+find ./fuzz_packet.in/         -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
+find ./fuzz_zscanner.in/       -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+find ./fuzz_dname_to_str.in/   -type f -exec zip -u $OUT/fuzz_dname_to_str_seed_corpus.zip {} \;
+find ./fuzz_dname_from_str.in/ -type f -exec zip -u $OUT/fuzz_dname_from_str_seed_corpus.zip {} \;
