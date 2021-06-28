@@ -128,7 +128,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     try:
       _, stderr = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
-      logging.info('command: stdout: %s. stderr: %s.', _, stderr)
+      pass
+    logging.info('command: stdout: %s. stderr: %s.', _, stderr)
 
     command.append(run_fuzzer_command)
 
