@@ -157,8 +157,7 @@ class GetTestCaseTest(unittest.TestCase):
     with open(testcase_path, 'rb') as test_fuzz_output:
       parsed_testcase = self.test_target.get_testcase(test_fuzz_output.read())
     self.assertEqual(
-        parsed_testcase, '/workspace/out/artifacts/'
-        'crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
+        parsed_testcase, './crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_invalid_error_string(self):
     """Tests that get_testcase returns None with a bad error string."""

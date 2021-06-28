@@ -268,9 +268,9 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    test_files_path = os.path.join(self.tmp_dir_obj.name, 'build-out')
-    self.workspace = test_helpers.create_workspace(self.tmp_dir_obj.name)
-    shutil.copytree(os.path.join(TEST_DATA_PATH, 'out'), test_files_path)
+    workspace_path = os.path.join(self.tmp_dir_obj.name, 'workspace')
+    self.workspace = test_helpers.create_workspace(workspace_path)
+    shutil.copytree(TEST_DATA_PATH, workspace_path)
 
   def tearDown(self):
     self.tmp_dir_obj.cleanup()
