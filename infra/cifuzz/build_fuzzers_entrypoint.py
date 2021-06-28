@@ -13,7 +13,6 @@
 # limitations under the License.
 """Builds a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
-import os
 import sys
 
 import build_fuzzers
@@ -78,7 +77,7 @@ def main():
     returncode = 0
   # yapf: disable
   elif build_fuzzers.check_fuzzer_build(
-      docker.workspace(config),
+      docker.Workspace(config),
       config.sanitizer,
       config.language,
       allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
