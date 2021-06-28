@@ -119,17 +119,17 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     command2 = command.copy()
     command2.extend([
-        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /'
+        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /; echo "hiiii"; ls {self.workspace.artifacts}'
     ])
     process = subprocess.Popen(command2,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
 
     try:
-      _, stderr = process.communicate()
+      c2_stdout, c2_stderr = process.communicate()
     except subprocess.TimeoutExpired:
       pass
-    logging.info('command: stdout: %s. stderr: %s.', _, stderr)
+    logging.info('command: stdout: %s. stderr: %s.', c2_stdout, c2_stderr)
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -142,6 +142,16 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return FuzzResult(None, None, self.latest_corpus_path)
+
+    process2 = subprocess.Popen(command2,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+    try:
+      c2_stdout, c2_stderr = process2.communicate()
+    except subprocess.TimeoutExpired:
+      pass
+    logging.info('command: stdout: %s. stderr: %s.', c2_stdout, c2_stderr)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
