@@ -117,6 +117,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
+    os.system(f'echo "hi" > {self.workspace.workspace}/hi')
     command2 = command.copy()
     command2.extend([
         f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /; echo "hiiii"; ls {self.workspace.artifacts}'
