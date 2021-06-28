@@ -18,31 +18,15 @@ package fuzzing
 import (
 	"bytes"
 	"context"
-	"errors"
 	"gvisor.dev/gvisor/pkg/state"
 	"gvisor.dev/gvisor/pkg/buffer"
 )
 
-
-func doSaveAndLoad(toSave, toLoad *buffer.View) (err error) {
-	var buf bytes.Buffer
+func FuzzStateLoad(data []byte) int {
 	ctx := context.Background()
-	if _, err := state.Save(ctx, &buf, toSave); err != nil {
-		return errors.New("Save failed")
-	}
-	if _, err := state.Load(ctx, bytes.NewReader(buf.Bytes()), toLoad); err != nil {
-		return errors.New("Load failed")
-	}
-	return nil
-}
-
-func StateBufferFuzz(data []byte) int {
-	var v, toSave buffer.View
-	toSave.Append(data)
-
-	err := doSaveAndLoad(&toSave, &v)
-	if err != nil {
-		return 0
-	}
+	var toLoad *buffer.View
+	_, _ = state.Load(ctx, bytes.NewReader(data), toLoad)
 	return 1
 }
+
+
