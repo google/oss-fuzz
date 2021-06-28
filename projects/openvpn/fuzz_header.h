@@ -27,7 +27,9 @@ ssize_t fuzz_read(int sockfd, void *buf, size_t len){
 
 char *fuzz_fgets(char *s, int size, FILE *stream) {
   ssize_t v = fuzz_get_random_data(s, size-1);
-  if (s[0] == '\0') {
+  // We use fgets to get trusted input. As such, assume we have
+  // an ascii printable char at the beginning.
+  if (s[0] <= 0x21 || s[0] >= 0x7f) {
     s[0] = 'A';
   }
   s[size-1] = '\0';
