@@ -119,18 +119,17 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     command2 = command.copy()
     command2.extend([
-        '/bin/bash', '-c', f'ls {self.workspace.out}; ls {self.workspace}; ls /'
+        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /'
     ])
     process = subprocess.Popen(command2,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
 
     try:
-      _, stderr = process.communicate(timeout=self.duration)
+      _, stderr = process.communicate()
     except subprocess.TimeoutExpired:
       pass
     logging.info('command: stdout: %s. stderr: %s.', _, stderr)
-
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
