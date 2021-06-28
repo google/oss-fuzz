@@ -25,10 +25,13 @@ ssize_t fuzz_read(int sockfd, void *buf, size_t len){
 	return fuzz_get_random_data(buf, len);
 }
 
+
+
 char *fuzz_fgets(char *s, int size, FILE *stream) {
   ssize_t v = fuzz_get_random_data(s, size-1);
   // We use fgets to get trusted input. As such, assume we have
   // an ascii printable char at the beginning.
+  printf("Calling into fgets\n");
   if (s[0] <= 0x21 || s[0] >= 0x7f) {
     s[0] = 'A';
   }
@@ -46,4 +49,15 @@ int fuzz_select(int nfds, fd_set *readfds, fd_set *writefds,fd_set *exceptfds, s
 
 ssize_t fuzz_send(int sockfd, const void *buf, size_t len, int flags) {
   return len;
+}
+
+FILE *fp_p = NULL;
+FILE *fuzz_fopen(const char *pathname, const char *mode) {
+   if (mode == NULL) return fp_p;
+   return fp_p;
+}
+
+int fuzz_fclose(FILE *stream) {
+   if (stream == NULL) return 1;
+   return 2;
 }
