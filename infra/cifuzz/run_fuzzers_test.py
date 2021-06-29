@@ -62,7 +62,6 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
-    # !!! Stop depending on build-out
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
       config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                               workspace=fuzzer_dir_copy,

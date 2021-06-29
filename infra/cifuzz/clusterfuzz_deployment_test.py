@@ -58,7 +58,6 @@ def _create_deployment(**kwargs):
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
-# !!! test upload_crashes
 class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   """Tests OSSFuzz."""
 
