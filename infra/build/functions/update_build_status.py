@@ -18,7 +18,6 @@ import base64
 import concurrent.futures
 import json
 import sys
-import time
 
 import google.auth
 from googleapiclient.discovery import build
