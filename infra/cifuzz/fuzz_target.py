@@ -99,10 +99,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name)
-    command += docker.get_args_mapping_host_path_to_container(
-        self.latest_corpus_path)
-    # command += docker.get_args_mapping_host_path_to_container(
-    #     self.workspace.artifacts)
     command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
@@ -112,26 +108,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
+        # Make sure libFuzzer artifact files don't pollute $OUT.
         f'-artifact_prefix={self.workspace.artifacts}/'
     ]
     options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
-
-    os.system(f'echo "hi" > {self.workspace.workspace}/hi')
-    command2 = command.copy()
-    command2.extend([
-        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /; echo "ls {self.workspace.artifacts}"; ls {self.workspace.artifacts}; echo "find"; find / -name crash-*'
-    ])
-    process = subprocess.Popen(command2,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-
-    try:
-      c2_stdout, c2_stderr = process.communicate()
-    except subprocess.TimeoutExpired:
-      pass
-    logging.info('command: stdout: %s. stderr: %s.', c2_stdout, c2_stderr)
-    os.system(f'echo "FIND"; find / -name {self.workspace.artifacts}; echo "find / -name {self.workspace.artifacts}"')
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -145,16 +126,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return FuzzResult(None, None, self.latest_corpus_path)
 
-    process2 = subprocess.Popen(command2,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-
-    try:
-      c2_stdout, c2_stderr = process2.communicate()
-    except subprocess.TimeoutExpired:
-      pass
-    logging.info('command: stdout: %s. stderr: %s.', c2_stdout, c2_stderr)
-
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
@@ -164,7 +135,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = get_testcase(stderr)
-    os.system(f'echo "FIND"; find / -name {os.path.basename(testcase)}; echo "find / -name {os.path.basename(testcase)}"')
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None, self.latest_corpus_path)

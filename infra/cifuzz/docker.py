@@ -63,9 +63,11 @@ def get_base_docker_run_args(workspace, sanitizer='address', language='c++'):
   ]
   docker_container = utils.get_container_name()
   if docker_container:
+    # Don't map specific volumes if in a docker container, it breaks when
+    # running a sibling container.
     docker_args += ['--volumes-from', docker_container]
   else:
-    docker_args += get_args_mapping_host_path_to_container(workspace.out)
+    docker_args += _get_args_mapping_host_path_to_container(workspace.workspace)
   return docker_args, docker_container
 
 
@@ -78,10 +80,12 @@ def get_base_docker_run_command(workspace, sanitizer='address', language='c++'):
   return command, docker_container
 
 
-def get_args_mapping_host_path_to_container(host_path, container_path=None):
+def _get_args_mapping_host_path_to_container(host_path, container_path=None):
   """Get arguments to docker run that will map |host_path| a path on the host to
   a path in the container. If |container_path| is specified, that path is mapped
   to. If not, then |host_path| is mapped to itself in the container."""
+  # WARNING: Do not use this function when running in production (and
+  # --volumes-from) is used for mapping volumes. It will break production.
   container_path = host_path if container_path is None else container_path
   return ['-v', f'{host_path}:{container_path}']
 
