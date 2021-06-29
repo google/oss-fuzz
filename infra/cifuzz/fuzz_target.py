@@ -230,8 +230,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
     if not os.path.exists(testcase):
-      logging.error('exists: %s', os.path.exists(os.path.dirname(testcase)))
-      logging.error('contents: %s', os.listdir(os.path.dirname(testcase)))
       raise ReproduceError(f'Testcase {testcase} not found.')
 
     try:
