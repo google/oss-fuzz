@@ -10,6 +10,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifndef FUZZ_H
+#define FUZZ_H
+
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -61,3 +64,13 @@ int fuzz_fclose(FILE *stream) {
    if (stream == NULL) return 1;
    return 2;
 }
+
+//ssize_t fuzz_sendto(int sockfd, const void *buf, size_t len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen) {
+size_t fuzz_sendto(int sockfd, void *buf, size_t len, int flags, struct sockaddr *dest_addr, socklen_t addrlen) {
+  if (buf == NULL) {
+    return len;
+  }
+  return len;
+}
+
+#endif
