@@ -101,8 +101,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         self.target_name)
     command += docker.get_args_mapping_host_path_to_container(
         self.latest_corpus_path)
-    command += docker.get_args_mapping_host_path_to_container(
-        self.workspace.artifacts)
+    # command += docker.get_args_mapping_host_path_to_container(
+    #     self.workspace.artifacts)
     command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
