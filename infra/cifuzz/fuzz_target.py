@@ -120,7 +120,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     os.system(f'echo "hi" > {self.workspace.workspace}/hi')
     command2 = command.copy()
     command2.extend([
-        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /; echo "hiiii"; ls {self.workspace.artifacts}'
+        f'ls {self.workspace.out}; echo "hiiii"; ls {self.workspace.workspace}; echo "hiiii"; ls /; echo "ls {self.workspace.artifacts}"; ls {self.workspace.artifacts}; echo "find"; find / -name crash-*'
     ])
     process = subprocess.Popen(command2,
                                stdout=subprocess.PIPE,
