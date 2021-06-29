@@ -1,3 +1,5 @@
+#!/bin/bash -eu
+#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +16,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev liblzo2-dev libpam-dev 
-RUN git clone --depth 1 https://github.com/OpenVPN/openvpn openvpn
-WORKDIR openvpn
-COPY build.sh $SRC/
-COPY fuzz*.cpp $SRC/
-COPY fuzz*.c $SRC/
-COPY fuzz*.h $SRC/openvpn/src/openvpn/
+# Due to https://github.com/bazelbuild/bazel/issues/11128, affecting Bazel 4.0
+# or earlier, we cannot use the "@rules_fuzzing//" prefix for the label-typed
+# cc_engine configuration flag when fuzzing directly the rules_fuzzing workspace.
+#
+# This is NOT needed for any other Bazel repository that depends on
+# rules_fuzzing.
+export BAZEL_EXTRA_BUILD_FLAGS="--//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine"
+
+bazel_build_fuzz_tests

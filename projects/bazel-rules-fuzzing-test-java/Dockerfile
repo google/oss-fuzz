@@ -15,10 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev liblzo2-dev libpam-dev 
-RUN git clone --depth 1 https://github.com/OpenVPN/openvpn openvpn
-WORKDIR openvpn
+
+RUN git clone https://github.com/bazelbuild/rules_fuzzing.git
+WORKDIR $SRC/rules_fuzzing/
 COPY build.sh $SRC/
-COPY fuzz*.cpp $SRC/
-COPY fuzz*.c $SRC/
-COPY fuzz*.h $SRC/openvpn/src/openvpn/

@@ -9,28 +9,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "fuzz.h"
-
-extern "C" {
 #include "config.h"
 #include "syshead.h"
 #include "dhcp.h"
 #include "buffer.h"
-}
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+#include "fuzz_randomizer.h"
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   struct buffer ipbuf;
   in_addr_t ret;
 
-  ipbuf = alloc_buf(size);
-  if (buf_write(&ipbuf, data, size) != false) {
+  fuzz_random_init(data, size);
+  char *ran_val = get_random_string();
+
+  ipbuf = alloc_buf(strlen(ran_val));
+  if (buf_write(&ipbuf, ran_val, strlen(ran_val)) != false) {
     ret = dhcp_extract_router_msg(&ipbuf);
   }
   free_buf(&ipbuf);
+
+  fuzz_random_destroy();
+  free(ran_val);
 
   return 0;
 }

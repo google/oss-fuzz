@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev liblzo2-dev libpam-dev 
-RUN git clone --depth 1 https://github.com/OpenVPN/openvpn openvpn
-WORKDIR openvpn
-COPY build.sh $SRC/
-COPY fuzz*.cpp $SRC/
-COPY fuzz*.c $SRC/
-COPY fuzz*.h $SRC/openvpn/src/openvpn/
+bash -x ./test/fuzz/oss-fuzz-build.sh
