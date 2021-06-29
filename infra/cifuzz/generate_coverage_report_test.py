@@ -30,19 +30,19 @@ class TestRunCoverageCommand(unittest.TestCase):
   @mock.patch('helper.docker_run')
   def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
+    config = test_helpers.create_run_config(project_name=PROJECT,
+                                            sanitizer=SANITIZER)
+    workspace = test_helpers.create_workspace()
     expected_docker_args = [
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
         f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
         'OUT=/workspace/build-out', '-v',
-        '/workspace/build-out:/workspace/build-out', '-e',
+        f'{workspace.workspace}:{workspace.workspace}', '-e',
         'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
         'gcr.io/oss-fuzz-base/base-runner', 'coverage'
     ]
 
-    config = test_helpers.create_run_config(project_name=PROJECT,
-                                            sanitizer=SANITIZER)
-    workspace = test_helpers.create_workspace()
     generate_coverage_report.run_coverage_command(workspace, config)
     mocked_docker_run.assert_called_with(expected_docker_args)
 

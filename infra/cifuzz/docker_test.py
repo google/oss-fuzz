@@ -94,7 +94,8 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
         f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-e',
-        f'OUT={WORKSPACE.out}', '-v', f'{WORKSPACE.out}:{WORKSPACE.out}'
+        f'OUT={WORKSPACE.out}', '-v',
+        f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_args)
 
@@ -114,6 +115,6 @@ class GetBaseDockerRunCommandTest(unittest.TestCase):
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
         'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
         f'FUZZING_LANGUAGE={LANGUAGE}', '-e', f'OUT={WORKSPACE.out}', '-v',
-        f'{WORKSPACE.out}:{WORKSPACE.out}'
+        f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_command)
