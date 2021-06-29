@@ -221,7 +221,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
     return None
 
-  def upload_latest_build(self):  # pylint: disable=no-self-use,unused-argument
+  def upload_latest_build(self):  # pylint: disable=no-self-use
     """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
@@ -229,7 +229,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
 
-  def upload_crashes(self):  # pylint: disable=no-self-use,unused-argument
+  def upload_crashes(self):  # pylint: disable=no-self-use
     """Noop Impelementation of upload_crashes."""
     logging.info('Not uploading crashes because on OSS-Fuzz.')
 
@@ -259,7 +259,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
   ClusterFuzz to use."""
 
-  def upload_latest_build(self):  # pylint: disable=no-self-use,unused-argument
+  def upload_latest_build(self):  # pylint: disable=no-self-use
     """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
@@ -268,7 +268,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
 
-  def upload_crashes(self):  # pylint: disable=no-self-use,unused-argument
+  def upload_crashes(self):  # pylint: disable=no-self-use
     """Noop Impelementation of upload_crashes."""
     logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
@@ -277,7 +277,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
     return self.make_empty_corpus_dir(target_name)
 
-  def download_latest_build(self):  # pylint: disable=no-self-use,unused-argument
+  def download_latest_build(self):  # pylint: disable=no-self-use
     """Noop Impelementation of download_latest_build."""
     logging.info(
         'Not downloading latest build because no ClusterFuzz deployment.')
