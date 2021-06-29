@@ -411,8 +411,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                                 project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
-        build_dir = os.path.join(workspace, 'build-out', self.BUILD_DIR_NAME)
-        self.assertNotEqual(0, len(os.listdir(build_dir)))
 
   @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
               side_effect=[True, True])
@@ -426,9 +424,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                               project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
-      build_dir = os.path.join(TEST_DATA_PATH, 'build-out', self.BUILD_DIR_NAME)
-      self.assertTrue(os.path.exists(build_dir))
-      self.assertNotEqual(0, len(os.listdir(build_dir)))
 
   def test_invalid_build(self):
     """Tests run_fuzzers with an invalid ASAN build."""
