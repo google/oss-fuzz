@@ -72,7 +72,7 @@ class GetTargetCoverageReportTest(unittest.TestCase):
   def setUp(self):
     with mock.patch('get_coverage._get_latest_cov_report_info',
                     return_value=PROJECT_COV_INFO):
-      self.coverage_getter = get_coverage.OssFuzzCoverageGetter(
+      self.coverage_getter = get_coverage.OssFuzzProjectCoverage(
           PROJECT_NAME, REPO_PATH)
 
   @mock.patch('get_coverage.get_json_from_url', return_value={})
@@ -92,7 +92,7 @@ class GetTargetCoverageReportTest(unittest.TestCase):
   @mock.patch('get_coverage._get_latest_cov_report_info', return_value=None)
   def test_invalid_project_json(self, _):
     """Tests an invalid project JSON results in None being returned."""
-    coverage_getter = get_coverage.OssFuzzCoverageGetter(
+    coverage_getter = get_coverage.OssFuzzProjectCoverage(
         PROJECT_NAME, REPO_PATH)
     self.assertIsNone(coverage_getter.get_target_coverage_report(FUZZ_TARGET))
 
@@ -103,7 +103,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
   def setUp(self):
     with mock.patch('get_coverage._get_latest_cov_report_info',
                     return_value=PROJECT_COV_INFO):
-      self.coverage_getter = get_coverage.OssFuzzCoverageGetter(
+      self.coverage_getter = get_coverage.OssFuzzProjectCoverage(
           PROJECT_NAME, REPO_PATH)
 
   def test_valid_target(self):
@@ -113,7 +113,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
       fuzzer_cov_info = json.loads(file_handle.read())
 
     with mock.patch(
-        'get_coverage.OssFuzzCoverageGetter.get_target_coverage_report',
+        'get_coverage.OssFuzzProjectCoverage.get_target_coverage_report',
         return_value=fuzzer_cov_info):
       file_list = self.coverage_getter.get_files_covered_by_target(FUZZ_TARGET)
 

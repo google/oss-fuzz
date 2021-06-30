@@ -18,9 +18,10 @@ import sys
 import urllib.error
 import urllib.request
 
+import filestore
 import filestore_utils
-
 import http_utils
+import get_coverage
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -69,6 +70,14 @@ class BaseClusterFuzzDeployment:
     """Uploads the corpus for |target_name| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
+  def upload_project_coverage(self):
+    """Uploads the coverage report to the filestore."""
+    raise NotImplementedError('Child class must implement method.')
+
+  def get_project_coverage(self, repo_path):
+    """Returns the project coverage object for the project."""
+    raise NotImplementedError('Child class must implement method.')
+
   def make_empty_corpus_dir(self, target_name):
     """Makes an empty corpus directory for |target_name| in |parent_dir| and
     returns the path to the directory."""
@@ -81,6 +90,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
   BASE_BUILD_NAME = 'cifuzz-build-'
+  COVERAGE_NAME = 'coverage'
 
   def __init__(self, config, workspace):
     super().__init__(config, workspace)
@@ -165,6 +175,24 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                                       self.workspace.artifacts)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
+
+  def upload_project_coverage(self):
+    """Uploads the coverage report to the filestore."""
+    # TODO(metzman): Implement this.
+    raise NotImplementedError(
+        'Not implemented yet. Waiting until we can specify a directory for '
+        'coverage report directories.')
+
+  def get_project_coverage(self, repo_path):
+    """Returns the project coverage object for the project."""
+    try:
+      if self.filestore.download_coverage(self.workspace.clusterfuzz_coverage):
+        return None
+      return get_coverage.FilesystemProjectCoverage(
+          self.config.project_name, repo_path,
+          self.workspace.clusterfuzz_coverage)
+    except (get_coverage.CoverageError, filestore.FilestoreError):
+      return None
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -254,6 +282,18 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       logging.warning('Failed to download corpus for %s.', target_name)
     return corpus_dir
 
+  def upload_project_coverage(self):
+    """Noop Impelementation of upload_coverage_report."""
+    logging.info('Not uploading coverage report because on OSS-Fuzz.')
+
+  def get_project_coverage(self, repo_path):
+    """Returns the project coverage object for the project."""
+    try:
+      return get_coverage.OSSFuzzProjectCoverage(self.config.project_name,
+                                                 repo_path)
+    except get_coverage.CoverageError:
+      return None
+
 
 class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
@@ -281,6 +321,16 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     """Noop Impelementation of download_latest_build."""
     logging.info(
         'Not downloading latest build because no ClusterFuzz deployment.')
+
+  def upload_project_coverage(self):
+    """Noop Impelementation of upload_project_coverage."""
+    logging.info(
+        'Not uploading coverage report because no ClusterFuzz deployment.')
+
+  def get_project_coverage(self, repo_path):
+    """Noop Impelementation of get_project_coverage."""
+    logging.info(
+        'Not getting project coverage because no ClusterFuzz deployment.')
 
 
 def get_clusterfuzz_deployment(config, workspace):

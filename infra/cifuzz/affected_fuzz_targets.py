@@ -17,15 +17,13 @@ import logging
 import os
 import sys
 
-import get_coverage
-
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 
-def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
-                                   repo_path):
+def remove_unaffected_fuzz_targets(clusterfuzz_deployment, out_dir,
+                                   files_changed, repo_path):
   """Removes all non affected fuzz targets in the out directory.
 
   Args:
@@ -38,7 +36,6 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
   targets are unaffected. For example, this means that fuzz targets which don't
   have coverage data on will not be deleted.
   """
-  # TODO(metzman): Make this use clusterfuzz deployment.
   if not files_changed:
     # Don't remove any fuzz targets if there is no difference from HEAD.
     logging.info('No files changed compared to HEAD.')
@@ -52,13 +49,13 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
     logging.error('No fuzz targets found in out dir.')
     return
 
-  coverage_getter = get_coverage.OssFuzzCoverageGetter(project_name, repo_path)
-  if not coverage_getter.fuzzer_stats_url:
+  project_coverage = clusterfuzz_deployment.get_project_coverage(repo_path)
+  if not project_coverage:
     # Don't remove any fuzz targets unless we have data.
     logging.error('Could not find latest coverage report.')
     return
 
-  affected_fuzz_targets = get_affected_fuzz_targets(coverage_getter,
+  affected_fuzz_targets = get_affected_fuzz_targets(project_coverage,
                                                     fuzz_target_paths,
                                                     files_changed)
 
@@ -79,11 +76,11 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
                     fuzz_target_path)
 
 
-def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
+def is_fuzz_target_affected(project_coverage, fuzz_target_path, files_changed):
   """Returns True if a fuzz target (|fuzz_target_path|) is affected by
   |files_changed|."""
   fuzz_target = os.path.basename(fuzz_target_path)
-  covered_files = coverage_getter.get_files_covered_by_target(fuzz_target)
+  covered_files = project_coverage.get_files_covered_by_target(fuzz_target)
   if not covered_files:
     # Assume a fuzz target is affected if we can't get its coverage from
     # OSS-Fuzz.
@@ -104,12 +101,12 @@ def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
   return False
 
 
-def get_affected_fuzz_targets(coverage_getter, fuzz_target_paths,
+def get_affected_fuzz_targets(project_coverage, fuzz_target_paths,
                               files_changed):
   """Returns a list of paths of affected targets."""
   affected_fuzz_targets = set()
   for fuzz_target_path in fuzz_target_paths:
-    if is_fuzz_target_affected(coverage_getter, fuzz_target_path,
+    if is_fuzz_target_affected(project_coverage, fuzz_target_path,
                                files_changed):
       affected_fuzz_targets.add(fuzz_target_path)
 
