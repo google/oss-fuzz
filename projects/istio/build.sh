@@ -15,6 +15,5 @@
 #
 ################################################################################
 
+$SRC/istio/tests/fuzz/oss_fuzz_build.sh
 
-compile_go_fuzzer ./tests/fuzz FuzzParseInputs fuzz_parse_inputs
-compile_go_fuzzer ./tests/fuzz FuzzParseAndBuildSchema fuzz_parse_and_build_schema
