@@ -228,7 +228,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
       case 2:
         tmp = get_random_string();
-        buffer_list_push(buflistp, tmp);
+        if (strlen(tmp) < BUF_SIZE_MAX) {
+          buffer_list_push(buflistp, tmp);
+        }
         free(tmp);
         tmp = NULL;
         break;

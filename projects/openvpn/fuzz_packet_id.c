@@ -17,7 +17,6 @@ limitations under the License.
 
 #include "fuzz_randomizer.h"
 
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fuzz_random_init(data, size);
 
@@ -41,6 +40,26 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
   }
   packet_id_free(&pid);
+
+  // packet id send
+  char *tmp2 = get_random_string();
+  if (strlen(tmp2) > sizeof(struct packet_id_send)) {
+    struct packet_id_send pidsend;
+    memcmp(&pidsend, tmp2, sizeof(struct packet_id_send));
+
+    struct timeval tv;
+    tv.tv_sec = pidsend.time;
+    tv.tv_usec = 0;
+    if (localtime(&tv)) {
+      struct buffer iv_buffer;
+      buf_set_write(&iv_buffer, tmp2, strlen(tmp2));
+      packet_id_write(&pidsend, &iv_buffer, false, false);
+      packet_id_write(&pidsend, &iv_buffer, false, true);
+      packet_id_write(&pidsend, &iv_buffer, true, true);
+      packet_id_write(&pidsend, &iv_buffer, true, false);
+    }
+  }
+  free(tmp2);
 
   struct gc_arena gc;
   gc = gc_new();
@@ -66,12 +85,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&p, 0, sizeof(struct packet_id_persist));
   packet_id_persist_init(&p);
   packet_id_persist_load(&p, filename);
-  gc = gc_new();
-  packet_id_persist_print(&p, &gc);
-  gc_free(&gc);
+  //p.time = NULL;
+  struct timeval tv;
+  tv.tv_sec = p.time;
+  tv.tv_usec = 0;
+  if (localtime(&tv) != NULL) {
+    gc = gc_new();
+    p.id_last_written = fuzz_randomizer_get_int(0, 0xfffffff);
+    //packet_id_persist_print(&p, &gc);
+    packet_id_persist_save(&p);
+    gc_free(&gc);
+  }
+
   packet_id_persist_close(&p); 
 
   fuzz_random_destroy();
   return 0;
 }
-

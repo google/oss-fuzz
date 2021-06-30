@@ -31,11 +31,19 @@ sed -i 's/recv(/fuzz_recv(/g' ./src/openvpn/proxy.c
 sed -i 's/fopen/fuzz_fopen/g' ./src/openvpn/console_builtin.c
 sed -i 's/fclose/fuzz_fclose/g' ./src/openvpn/console_builtin.c
 
+sed -i 's/sendto/fuzz_sendto/g' ./src/openvpn/socket.h
+sed -i 's/#include "misc.h"/#include "misc.h"\nextern size_t fuzz_sendto(int sockfd, void *buf, size_t len, int flags, struct sockaddr *dest_addr, socklen_t addrlen);/g' ./src/openvpn/socket.h
+
 sed -i 's/fp = (flags/fp = stdout;\n\/\//g' ./src/openvpn/error.c
+
+sed -i 's/= write/= fuzz_write/g' ./src/openvpn/packet_id.c
+
+# Copy corpuses out
+zip -r $OUT/fuzz_verify_cert_seed_corpus.zip $SRC/boringssl/fuzz/cert_corpus
 
 # Build openvpn
 autoreconf -ivf
-./configure --disable-lz4
+./configure --disable-lz4 --with-crypto-library=openssl OPENSSL_LIBS="-L/usr/local/ssl/ -lssl -lcrypto" OPENSSL_CFLAGS="-I/usr/local/ssl/include/"
 make
 
 # Make openvpn object files into a library we can link fuzzers to
@@ -47,7 +55,7 @@ ar r libopenvpn.a *.o
 $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
-for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list; do
+for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list fuzz_verify_cert fuzz_forward; do
     $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include  -I../../include -I../../src/compat \
       -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\"  -Wall -std=c99 $CFLAGS \
       -c $SRC/${fuzzname}.c -o $SRC/${fuzzname}.o

@@ -10,6 +10,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifndef FUZZ_H
+#define FUZZ_H
+
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -25,7 +28,9 @@ ssize_t fuzz_read(int sockfd, void *buf, size_t len){
 	return fuzz_get_random_data(buf, len);
 }
 
-
+ssize_t fuzz_write(int fd, const void *buf, size_t count) {
+  return count;
+}
 
 char *fuzz_fgets(char *s, int size, FILE *stream) {
   ssize_t v = fuzz_get_random_data(s, size-1);
@@ -39,13 +44,11 @@ char *fuzz_fgets(char *s, int size, FILE *stream) {
   return s;
 }
 
-
 int fuzz_select(int nfds, fd_set *readfds, fd_set *writefds,fd_set *exceptfds, struct timeval *timeout) {
   char val;
   ssize_t c = fuzz_get_random_data(&val, 1);
   return c;
 }
-
 
 ssize_t fuzz_send(int sockfd, const void *buf, size_t len, int flags) {
   return len;
@@ -61,3 +64,12 @@ int fuzz_fclose(FILE *stream) {
    if (stream == NULL) return 1;
    return 2;
 }
+
+size_t fuzz_sendto(int sockfd, void *buf, size_t len, int flags, struct sockaddr *dest_addr, socklen_t addrlen) {
+  if (buf == NULL) {
+    return len;
+  }
+  return len;
+}
+
+#endif
