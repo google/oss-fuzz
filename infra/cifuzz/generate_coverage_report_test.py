@@ -30,17 +30,20 @@ class TestRunCoverageCommand(unittest.TestCase):
   @mock.patch('helper.docker_run')
   def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
+    config = test_helpers.create_run_config(project_name=PROJECT,
+                                            sanitizer=SANITIZER)
+    workspace = test_helpers.create_workspace()
     expected_docker_args = [
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-v',
-        f'{OUT_DIR}:/out', '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=',
-        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'coverage'
+        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
+        'OUT=/workspace/build-out', '-v',
+        f'{workspace.workspace}:{workspace.workspace}', '-e',
+        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
+        'gcr.io/oss-fuzz-base/base-runner', 'coverage'
     ]
 
-    config = test_helpers.create_run_config(project_name=PROJECT,
-                                            sanitizer=SANITIZER)
-    generate_coverage_report.run_coverage_command(OUT_DIR, config)
+    generate_coverage_report.run_coverage_command(workspace, config)
     mocked_docker_run.assert_called_with(expected_docker_args)
 
 
@@ -51,10 +54,7 @@ class DownloadCorporaTest(unittest.TestCase):
     """Tests that download_corpora works as intended."""
     clusterfuzz_deployment = mock.Mock()
     fuzz_target_paths = ['/path/to/fuzzer1', '/path/to/fuzzer2']
-    expected_calls = [
-        mock.call('fuzzer1', OUT_DIR),
-        mock.call('fuzzer2', OUT_DIR)
-    ]
-    generate_coverage_report.download_corpora(OUT_DIR, fuzz_target_paths,
+    expected_calls = [mock.call('fuzzer1'), mock.call('fuzzer2')]
+    generate_coverage_report.download_corpora(fuzz_target_paths,
                                               clusterfuzz_deployment)
     clusterfuzz_deployment.download_corpus.assert_has_calls(expected_calls)
