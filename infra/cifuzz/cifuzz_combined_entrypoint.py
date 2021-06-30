@@ -43,9 +43,9 @@ def main():
     0 on success or 1 on failure.
   """
   logging.debug("Using cifuzz_combined_entrypoint.")
-  build = build_fuzzers_entrypoint.build_fuzzers_entrypoint()
-  if build != 0:
-    return build
+  result = build_fuzzers_entrypoint.build_fuzzers_entrypoint()
+  if result != 0:
+    return result
   return run_fuzzers_entrypoint.run_fuzzers_entrypoint()
 
 
