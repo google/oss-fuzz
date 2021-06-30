@@ -36,6 +36,8 @@ sed -i 's/#include "misc.h"/#include "misc.h"\nextern size_t fuzz_sendto(int soc
 
 sed -i 's/fp = (flags/fp = stdout;\n\/\//g' ./src/openvpn/error.c
 
+sed -i 's/= write/= fuzz_write/g' ./src/openvpn/packet_id.c
+
 # Copy corpuses out
 zip -r $OUT/fuzz_verify_cert_seed_corpus.zip $SRC/boringssl/fuzz/cert_corpus
 
@@ -53,7 +55,7 @@ ar r libopenvpn.a *.o
 $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
-for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list fuzz_verify_cert; do
+for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list fuzz_verify_cert fuzz_forward; do
     $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include  -I../../include -I../../src/compat \
       -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\"  -Wall -std=c99 $CFLAGS \
       -c $SRC/${fuzzname}.c -o $SRC/${fuzzname}.o
