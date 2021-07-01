@@ -28,30 +28,8 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def main():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github.
-
-  Note: The resulting clusterfuzz binaries of this build are placed in
-  the directory: ${GITHUB_WORKSPACE}/out
-
-  Required environment variables:
-    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
-    GITHUB_REPOSITORY: The name of the Github repo that called this script.
-    GITHUB_SHA: The commit SHA that triggered this script.
-    GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
-    GITHUB_EVENT_PATH:
-      The path to the file containing the POST payload of the webhook:
-      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
-    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
-    DRY_RUN: If true, no failures will surface.
-    SANITIZER: The sanitizer to use when running fuzzers.
-
-  Returns:
-    0 on success or 1 on failure.
-  """
+def build_fuzzers_entrypoint():
+  """Builds OSS-Fuzz project's fuzzers for CI tools."""
   config = config_utils.BuildFuzzersConfig()
 
   if config.dry_run:
@@ -86,6 +64,30 @@ def main():
     returncode = 0
 
   return returncode
+
+
+def main():
+  """Builds OSS-Fuzz project's fuzzers for CI tools.
+
+  Note: The resulting fuzz target binaries of this build are placed in
+  the directory: ${GITHUB_WORKSPACE}/out
+
+  Required environment variables:
+    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
+    GITHUB_REPOSITORY: The name of the Github repo that called this script.
+    GITHUB_SHA: The commit SHA that triggered this script.
+    GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
+    GITHUB_EVENT_PATH:
+      The path to the file containing the POST payload of the webhook:
+      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
+    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
+    DRY_RUN: If true, no failures will surface.
+    SANITIZER: The sanitizer to use when running fuzzers.
+
+  Returns:
+    0 on success or nonzero on failure.
+  """
+  return build_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':
