@@ -48,6 +48,7 @@ class TestRequestBuilds(unittest.TestCase):
 
   def setUp(self):
     test_utils.reset_ds_emulator()
+    self.maxDiff = None  # pylint: disable=invalid-name
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('datetime.datetime')
