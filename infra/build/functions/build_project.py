@@ -155,7 +155,9 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
       ],
   })
 
-  for fuzzing_engine in project_yaml['fuzzing_engines']:
+  # Sort engines to make AFL first to test if libFuzzer has an advantage in
+  # finding bugs first since it is generally built first.
+  for fuzzing_engine in sorted(project_yaml['fuzzing_engines']):
     for sanitizer in get_sanitizers(project_yaml):
       for architecture in project_yaml['architectures']:
         if not is_supported_configuration(fuzzing_engine, sanitizer,
