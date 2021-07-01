@@ -1,6 +1,6 @@
 homepage: "https://libigl.github.io"
 language: c++
-primary_contact: ""
+primary_contact: "github@jdumas.org"
 auto_ccs:
   - "Adam@adalogics.com"
 sanitizers:
