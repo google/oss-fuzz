@@ -39,103 +39,6 @@
   {
     "name": "gcr.io/oss-fuzz/test-project",
     "env": [
-      "FUZZING_ENGINE=libfuzzer",
-      "SANITIZER=address",
-      "OUT=/workspace/out/address",
-      "MSAN_LIBS_PATH=/workspace/msan",
-      "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner",
-    "env": [
-      "FUZZING_ENGINE=libfuzzer",
-      "SANITIZER=address",
-      "OUT=/workspace/out/address",
-      "MSAN_LIBS_PATH=/workspace/msan",
-      "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner",
-    "env": [
-      "FUZZING_ENGINE=libfuzzer",
-      "SANITIZER=address",
-      "OUT=/workspace/out/address",
-      "MSAN_LIBS_PATH=/workspace/msan",
-      "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz/test-project",
-    "args": [
-      "bash",
-      "-c",
-      "cd /workspace/out/address && zip -r test-project-address-202001010000.zip *"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/uploader",
-    "args": [
-      "/workspace/srcmap.json",
-      "test_url"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/uploader",
-    "args": [
-      "/workspace/out/address/test-project-address-202001010000.zip",
-      "test_url"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/uploader",
-    "args": [
-      "/workspace/targets.list.address",
-      "test_url"
-    ]
-  },
-  {
-    "name": "gcr.io/cloud-builders/curl",
-    "args": [
-      "-H",
-      "Content-Type: text/plain",
-      "-X",
-      "PUT",
-      "-d",
-      "test-project-address-202001010000.zip",
-      "test_url"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz/test-project",
-    "args": [
-      "bash",
-      "-c",
-      "rm -r /workspace/out/address"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz/test-project",
-    "env": [
       "FUZZING_ENGINE=afl",
       "SANITIZER=address",
       "OUT=/workspace/out/address",
@@ -266,6 +169,103 @@
     "name": "gcr.io/oss-fuzz-base/base-runner",
     "env": [
       "FUZZING_ENGINE=honggfuzz",
+      "SANITIZER=address",
+      "OUT=/workspace/out/address",
+      "MSAN_LIBS_PATH=/workspace/msan",
+      "ARCHITECTURE=x86_64",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.address"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "cd /workspace/out/address && zip -r test-project-address-202001010000.zip *"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/srcmap.json",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/out/address/test-project-address-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/targets.list.address",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/curl",
+    "args": [
+      "-H",
+      "Content-Type: text/plain",
+      "-X",
+      "PUT",
+      "-d",
+      "test-project-address-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /workspace/out/address"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "env": [
+      "FUZZING_ENGINE=libfuzzer",
+      "SANITIZER=address",
+      "OUT=/workspace/out/address",
+      "MSAN_LIBS_PATH=/workspace/msan",
+      "ARCHITECTURE=x86_64",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "env": [
+      "FUZZING_ENGINE=libfuzzer",
+      "SANITIZER=address",
+      "OUT=/workspace/out/address",
+      "MSAN_LIBS_PATH=/workspace/msan",
+      "ARCHITECTURE=x86_64",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "env": [
+      "FUZZING_ENGINE=libfuzzer",
       "SANITIZER=address",
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
