@@ -59,51 +59,19 @@ def move_directory_contents(src_directory, dst_directory):
   subprocess.check_call(command)
 
 
-def is_elf(filepath):
-  """Returns True if |filepath| is an ELF file."""
-  result = subprocess.run(['file', filepath],
-                          stdout=subprocess.PIPE,
-                          check=False)
-  return b'ELF' in result.stdout
-
-
-def is_shell_script(filepath):
-  """Returns True if |filepath| is a shell script."""
-  result = subprocess.run(['file', filepath],
-                          stdout=subprocess.PIPE,
-                          check=False)
-  return b'shell script' in result.stdout
-
-
 def find_fuzz_targets(directory):
   """Returns paths to fuzz targets in |directory|."""
-  # TODO(https://github.com/google/oss-fuzz/issues/4585): Use libClusterFuzz for
-  # this.
-  fuzz_targets = []
-  for filename in os.listdir(directory):
-    path = os.path.join(directory, filename)
-    if filename == 'llvm-symbolizer':
-      continue
-    if filename.startswith('afl-'):
-      continue
-    if filename.startswith('jazzer_'):
-      continue
-    if not os.path.isfile(path):
-      continue
-    if not os.stat(path).st_mode & EXECUTABLE:
-      continue
-    # Fuzz targets can either be ELF binaries or shell scripts (e.g. wrapper
-    # scripts for Python and JVM targets or rules_fuzzing builds with runfiles
-    # trees).
-    if not is_elf(path) and not is_shell_script(path):
-      continue
-    if os.getenv('FUZZING_ENGINE') != 'none':
-      with open(path, 'rb') as file_handle:
-        binary_contents = file_handle.read()
-        if b'LLVMFuzzerTestOneInput' not in binary_contents:
-          continue
-    fuzz_targets.append(path)
-  return fuzz_targets
+  result = subprocess.run(['targets_list'],
+                          stderr=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          check=False)
+  if result.returncode != 0:
+    print('ERROR: failed to list fuzz targets')
+    print(result.stderr)
+    return []
+  # targets_list returns one fuzz target filename per non-empty line.
+  target_filenames = result.stdout.decode("utf-8").strip().split("\n")
+  return [os.path.join(directory, filename) for filename in target_filenames]
 
 
 def do_bad_build_check(fuzz_target):
