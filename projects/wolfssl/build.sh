@@ -31,6 +31,8 @@ then
     CFLAGS="" CXXFLAGS="" ./b2 headers
     cp -R boost/ /usr/include/
 
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
+
     OLD_CFLAGS="$CFLAGS"
     OLD_CXXFLAGS="$CXXFLAGS"
 
@@ -77,11 +79,23 @@ then
     echo -n '"' >>extra_options.h
     echo -n '--force-module=wolfCrypt ' >>extra_options.h
     echo -n '--digests=NULL ' >>extra_options.h
-    echo -n '--operations=BignumCalc,DH_GenerateKeyPair,DH_Derive,ECC_GenerateKeyPair,ECC_PrivateToPublic,ECC_ValidatePubkey,ECDSA_Verify,ECDSA_Sign' >>extra_options.h
+    echo -n '--operations=' >>extra_options.h
+    echo -n 'BignumCalc,' >>extra_options.h
+    echo -n 'DH_GenerateKeyPair,' >>extra_options.h
+    echo -n 'DH_Derive,' >>extra_options.h
+    echo -n 'ECC_GenerateKeyPair,' >>extra_options.h
+    echo -n 'ECC_PrivateToPublic,' >>extra_options.h
+    echo -n 'ECC_ValidatePubkey,' >>extra_options.h
+    echo -n 'ECDSA_Verify,' >>extra_options.h
+    echo -n 'ECDSA_Sign,' >>extra_options.h
+    echo -n 'ECIES_Encrypt,' >>extra_options.h
+    echo -n 'ECIES_Decrypt,' >>extra_options.h
+    echo -n 'ECC_Point_Add,' >>extra_options.h
+    echo -n 'ECC_Point_Mul,' >>extra_options.h
+    echo -n 'ECDH_Derive ' >>extra_options.h
     echo -n '"' >>extra_options.h
 
     # Build Botan
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
     cd $SRC/botan
     if [[ $CFLAGS != *-m32* ]]
     then
