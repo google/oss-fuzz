@@ -1,4 +1,5 @@
-# Copyright 2021 Google Inc.
+#!/bin/bash -eux
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,30 +14,20 @@
 # limitations under the License.
 #
 ################################################################################
-#!/bin/bash
 
-# generic swift
-apt-get update && apt install -y wget \
-           binutils \
-           libc6-dev \
-           libcurl3 \
-           libedit2 \
-           libgcc-5-dev \
-           libpython2.7 \
-           libsqlite3-0 \
-           libstdc++-5-dev \
-           libxml2 \
-           pkg-config \
-           tzdata \
-           zlib1g-dev
+
+SWIFT_PACKAGES="wget binutils libc6-dev libcurl3 libedit2 libgcc-5-dev libpython2.7 libsqlite3-0 libstdc++-5-dev libxml2 pkg-config tzdata zlib1g-dev"
+SWIFT_SYMBOLIZER_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
+apt-get update && apt install -y $SWIFT_PACKAGES && \
+  apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends  
+
 
 wget https://swift.org/builds/swift-5.3.3-release/ubuntu1604/swift-5.3.3-RELEASE/swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
 tar xzf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
 cp -r swift-5.3.3-RELEASE-ubuntu16.04/usr/* /usr/
+rm -rf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
 
-# generic swift symbolizer
-apt-get update && apt-get install -y build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev --no-install-recommends
-
+# TODO: Move to a seperate work dir
 git clone --depth 1 https://github.com/llvm/llvm-project.git
 cd llvm-project
 git apply ../llvmsymbol.diff --verbose
@@ -52,3 +43,10 @@ cmake -G "Ninja" \
     -DLLVM_INCLUDE_TESTS=OFF llvm
 ninja -j$(nproc) llvm-symbolizer
 cp bin/llvm-symbolizer $OUT/
+
+cd $SRC
+rm -rf llvm-project llvmsymbol.diff
+
+# TODO: Cleanup packages
+apt-get remove --purge -y wget zlib1g-dev
+apt-get autoremove -y

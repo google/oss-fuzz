@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -136,13 +136,13 @@ RUN cd $SRC && \
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     precompile_honggfuzz precompile_afl debug_afl srcmap bazel_build_fuzz_tests \
-    write_labels.py /usr/local/bin/
+    write_labels.py \
+    # Swift installation
+    install_swift.sh \
+    /usr/local/bin/
 
-COPY detect_repo.py /opt/cifuzz/
-
-# Swift installation
-COPY install_swift.sh $SRC
 COPY llvmsymbol.diff $SRC
+COPY detect_repo.py /opt/cifuzz/
 
 RUN precompile_honggfuzz
 RUN precompile_afl
