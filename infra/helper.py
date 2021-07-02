@@ -28,6 +28,7 @@ import re
 import subprocess
 import sys
 import templates
+import utils
 
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
@@ -688,22 +689,7 @@ def check_build(args):
 
 def _get_fuzz_targets(project_name):
   """Returns names of fuzz targest build in the project's /out directory."""
-  fuzz_targets = []
-  for name in os.listdir(_get_out_dir(project_name)):
-    if name.startswith('afl-'):
-      continue
-    if name.startswith('jazzer_'):
-      continue
-    if name == 'llvm-symbolizer':
-      continue
-
-    path = os.path.join(_get_out_dir(project_name), name)
-    # Python and JVM fuzz targets are only executable for the root user, so
-    # we can't use os.access.
-    if os.path.isfile(path) and (os.stat(path).st_mode & 0o111):
-      fuzz_targets.append(name)
-
-  return fuzz_targets
+  return utils.get_fuzz_targets(_get_out_dir(project_name))
 
 
 def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
