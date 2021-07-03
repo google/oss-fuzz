@@ -1,8 +1,9 @@
 homepage: "https://github.com/gin-gonic/gin"
 main_repo: "https://github.com/gin-gonic/gin"
-primary_contact: ""
+primary_contact: "thinkerou@gmail.com"
 auto_ccs :
   - "adam@adalogics.com"
+  - "appleboy.tw@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer
