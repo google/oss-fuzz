@@ -44,4 +44,5 @@ tools/boost_install \
 tools/build
 
 WORKDIR boost
-COPY build.sh *.cc $SRC/
+COPY build.sh $SRC/
+
