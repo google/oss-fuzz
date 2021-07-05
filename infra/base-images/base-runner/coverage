@@ -86,7 +86,7 @@ function run_fuzz_target {
   local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
-  timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
+  timeout $TIMEOUT perf record -g -o $DUMPS_DIR/$target.perf $OUT/$target $args &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
@@ -121,6 +121,8 @@ function run_fuzz_target {
     llvm-cov export -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $LOGS_DIR/$target.json
   fi
+
+  perf script -i $DUMPS_DIR/$target.perf | /root/perf/stackcollapse-perf.pl | grep LLVMFuzzerTestOneInput | /root/perf/flamegraph.pl > $REPORT_ROOT_DIR/perf-$target.svg
 }
 
 function run_go_fuzz_target {

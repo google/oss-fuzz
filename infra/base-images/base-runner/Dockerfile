@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y \
     lib32gcc1 \
     libc6-i386 \
     libcap2 \
+    linux-tools-generic linux-tools-`uname -r` \
     python3 \
     python3-pip \
     python3-setuptools \
@@ -102,6 +103,8 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
     wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar -O /opt/jacoco-agent.jar && \
     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check && \
     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
+
+RUN git clone --depth 1 https://github.com/brendangregg/FlameGraph /root/perf
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
