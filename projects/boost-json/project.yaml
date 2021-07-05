@@ -2,5 +2,5 @@ homepage: "http://www.boost.org/"
 language: c++
 primary_contact: "pauldreikossfuzz@gmail.com"
 auto_ccs:  
-   - "xxxxxxx@gmail.com"
+   - "vinnie.falco@gmail.com"
 main_repo: 'https://github.com/boostorg/json.git'
