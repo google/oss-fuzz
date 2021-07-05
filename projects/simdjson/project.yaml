@@ -1,4 +1,4 @@
-homepage: "https://github.com/simdjson/simdjson"
+homepage: "https://simdjson.org/"
 language: c++
 primary_contact: "pauldreikossfuzz@gmail.com"
 auto_ccs:
