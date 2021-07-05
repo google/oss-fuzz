@@ -20,6 +20,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
 RUN ls
+RUN git -C boost submodule update --init libs/json
+RUN git -C boost/libs/json checkout develop
 RUN git -C boost submodule update --init --depth 1 \
 libs/align/ \
 libs/assert \
@@ -31,7 +33,6 @@ libs/exception/ \
 libs/headers/ \
 libs/intrusive/ \
 libs/io \
-libs/json \
 libs/move/ \
 libs/mp11/ \
 libs/smart_ptr/ \
