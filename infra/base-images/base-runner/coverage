@@ -122,7 +122,7 @@ function run_fuzz_target {
       $shared_libraries $LLVM_COV_COMMON_ARGS > $LOGS_DIR/$target.json
   fi
 
-  perf script -i $DUMPS_DIR/$target.perf | /root/perf/stackcollapse-perf.pl | grep LLVMFuzzerTestOneInput | /root/perf/flamegraph.pl > $REPORT_ROOT_DIR/perf-$target.svg
+  perf script -i $DUMPS_DIR/$target.perf | /root/perf/stackcollapse-perf.pl | grep LLVMFuzzerTestOneInput | rcfilt | /root/perf/flamegraph.pl > $REPORT_ROOT_DIR/perf-$target.svg
 }
 
 function run_go_fuzz_target {
