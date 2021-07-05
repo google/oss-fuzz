@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 #RUN apt-get update && apt-get install -y g++
 
-RUN git clone --depth 1 --single-branch --branch boost-1.76.0 https://github.com/boostorg/boost.git
+RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
 RUN ls
 RUN git -C boost submodule update --init --depth 1 \
