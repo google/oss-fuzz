@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 git://thekelleys.org.uk/dnsmasq.git dnsmasq    
 WORKDIR dnsmasq
 COPY build.sh $SRC/
-COPY fuzz_util.cpp $SRC/fuzz_util.cpp
 COPY fuzz*.c $SRC/
 COPY fuzz*.h $SRC/
 
