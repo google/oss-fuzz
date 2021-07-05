@@ -33,6 +33,7 @@ libs/intrusive/ \
 libs/io \
 libs/json \
 libs/move/ \
+libs/mp11/ \
 libs/smart_ptr/ \
 libs/static_assert \
 libs/system/ \
