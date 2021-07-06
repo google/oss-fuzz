@@ -75,3 +75,33 @@ extern "C" size_t fuzz_get_random_data(void *buf, size_t len) {
   return ret_val;
 }
  
+
+// Simple garbage collector
+#define GB_SIZE 100
+void *pointer_arr[GB_SIZE];
+static int pointer_idx = 0;
+
+// If the garbage collector is used then this must be called as first thing
+// during a fuzz run.
+extern "C" void gb_init() {
+  pointer_idx = 0;
+
+   for (int i = 0; i < GB_SIZE; i++) {
+     pointer_arr[i] = NULL;
+   }
+}
+
+extern "C" void gb_cleanup() {
+  for(int i = 0; i < GB_SIZE; i++) {
+    if (pointer_arr[i] != NULL) {
+      free(pointer_arr[i]);
+    }
+  }
+}
+
+extern "C" char *gb_get_random_string() {
+  char *tmp = get_random_string();
+  pointer_arr[pointer_idx++] = (void*)tmp;
+  return tmp;
+}
+

@@ -19,3 +19,7 @@ char *get_random_string();
 int fuzz_randomizer_get_int(int min, int max);
 size_t fuzz_get_random_data(void *buf, size_t len);
 char *fuzz_random_get_string_max_length(int max_len);
+
+void gb_init();
+void gb_cleanup();
+char *gb_get_random_string();
