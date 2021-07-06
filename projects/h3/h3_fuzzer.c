@@ -55,11 +55,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   if (compactedCount < 2) {
     int uncompactRes = 10;
-    int64_t uncompactedSize =
-        uncompactCellsSize(compacted, inputSize, uncompactRes);
+    int64_t uncompactedSize;
+    H3Error err2 =
+        uncompactCellsSize(compacted, inputSize, uncompactRes, &uncompactedSize);
 
     H3Index *uncompacted = calloc(uncompactedSize, sizeof(H3Index));
-    int err2 = uncompactCells(compacted, compactedCount, uncompacted,
+    int err3 = uncompactCells(compacted, compactedCount, uncompacted,
                               uncompactedSize, uncompactRes);
     free(uncompacted);
   }
