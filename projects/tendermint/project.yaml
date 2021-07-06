@@ -1,9 +1,11 @@
 homepage: "https://github.com/tendermint/tendermint"
-primary_contact: "security@tendermint.com"
+primary_contact: "security@interchain.io"
 auto_ccs:
   - fuzzing@orijtech.com
   - emmanuel@orijtech.com
   - cuong@orijtech.com
+  - tess@interchain.io
+  - tychoish@interchain.io
 language: go
 fuzzing_engines:
   - libfuzzer
