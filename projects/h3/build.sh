@@ -17,9 +17,9 @@
 
 mkdir build
 cd build
+sed -i '21d' $SRC/h3/CMakeLists.txt
 cmake ..
 make -j$(nproc)
-
 $CC $CFLAGS -DH3_PREFIX="" \
     -I/src/h3/src/apps/applib/include \
     -I/src/h3/src/h3lib/include \
