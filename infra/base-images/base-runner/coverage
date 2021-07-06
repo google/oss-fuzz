@@ -79,7 +79,7 @@ function run_fuzz_target {
   # because (A) corpuses are already minimized; (B) we do not use sancov, and so
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-merge=1 -timeout=100 -close_fd_mask=3 $corpus_dummy $corpus_real"
+  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
