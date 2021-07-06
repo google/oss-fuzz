@@ -144,7 +144,7 @@ function run_java_fuzz_target {
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
   local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*"
-  local args="-merge=1 -timeout=100 -close_fd_mask=3 --nohooks \
+  local args="-merge=1 -timeout=100 --nohooks \
       --additional_jvm_args=-javaagent:/opt/jacoco-agent.jar=$jacoco_args \
       $corpus_dummy $corpus_real"
 
