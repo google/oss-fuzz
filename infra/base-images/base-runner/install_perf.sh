@@ -28,7 +28,7 @@ perf --version ||
     export tagname=v`uname -r | cut -d- -f1 | sed 's/\.0$//'`
     git clone --depth 1 --branch $tagname git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
     cd linux-stable/tools/perf/
-    apt-get install -y flex bison
+    apt-get install -y flex bison make
     # clang finds errors such as tautological-bitwise-compare
     CC=gcc DESTDIR=/usr/ make install
 )
