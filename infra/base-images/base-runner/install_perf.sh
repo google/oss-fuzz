@@ -1,4 +1,4 @@
-#!/bin/bash -u
+#!/bin/bash -eux
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,4 +31,7 @@ perf --version ||
     apt-get install -y flex bison make
     # clang finds errors such as tautological-bitwise-compare
     CC=gcc DESTDIR=/usr/ make install
+    apt-get remove -y --purge flex bison
+    cd ../../..
+    rm -Rf linux-stable
 )
