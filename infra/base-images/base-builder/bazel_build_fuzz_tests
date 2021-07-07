@@ -22,10 +22,17 @@
 : "${BAZEL_TOOL:=bazel}"
 : "${BAZEL_EXTRA_BUILD_FLAGS:=}"
 
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+    BAZEL_LANGUAGE=java
+else
+    BAZEL_LANGUAGE=cc
+fi
+
 if [[ -z "${BAZEL_FUZZ_TEST_QUERY:-}" ]]; then
     BAZEL_FUZZ_TEST_QUERY="
         let all_fuzz_tests = attr(tags, \"${BAZEL_FUZZ_TEST_TAG}\", \"//...\") in
-        \$all_fuzz_tests - attr(tags, \"${BAZEL_FUZZ_TEST_EXCLUDE_TAG}\", \$all_fuzz_tests)
+        let lang_fuzz_tests = attr(generator_function, \"^${BAZEL_LANGUAGE}_fuzz_test\$\", \$all_fuzz_tests) in
+        \$lang_fuzz_tests - attr(tags, \"${BAZEL_FUZZ_TEST_EXCLUDE_TAG}\", \$lang_fuzz_tests)
     "
 fi
 
@@ -45,6 +52,7 @@ declare -r BAZEL_BUILD_FLAGS=(
     "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
     "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
     "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
+    "--cxxopt=-stdlib=libc++" \
     "--linkopt=-lc++" \
     "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
     ${BAZEL_EXTRA_BUILD_FLAGS[*]}

@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'infra/**'
+      - '.github/workflows/**'
 
 jobs:
   build:
@@ -15,8 +16,9 @@ jobs:
           access_token: ${{ github.token }}
 
       - uses: actions/checkout@v2
-      - run: |  # Needed for git diff to work.
-          git fetch origin master --depth 1
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Setup python environment
@@ -30,7 +32,7 @@ jobs:
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
 
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@master
         with:
           version: '298.0.0'
       - run: |

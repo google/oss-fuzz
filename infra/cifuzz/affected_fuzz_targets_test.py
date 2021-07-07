@@ -30,15 +30,15 @@ EXAMPLE_PROJECT = 'example'
 
 EXAMPLE_FILE_CHANGED = 'test.txt'
 
-TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'test_data')
+TEST_DATA_OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'test_data', 'build-out')
 
 
 class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
-  TEST_FUZZER_1 = os.path.join(TEST_DATA_PATH, 'out', 'example_crash_fuzzer')
-  TEST_FUZZER_2 = os.path.join(TEST_DATA_PATH, 'out', 'example_nocrash_fuzzer')
+  TEST_FUZZER_1 = os.path.join(TEST_DATA_OUT_PATH, 'example_crash_fuzzer')
+  TEST_FUZZER_2 = os.path.join(TEST_DATA_OUT_PATH, 'example_nocrash_fuzzer')
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -61,9 +61,9 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
     # utils.is_fuzz_target_local. This function relies on the executable bit
     # being set, which doesn't work properly in fakefs.
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
+        'get_coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
     ) as mocked_get_files:
-      with mock.patch('coverage._get_fuzzer_stats_dir_url', return_value=1):
+      with mock.patch('get_coverage._get_fuzzer_stats_dir_url', return_value=1):
         mocked_get_files.side_effect = side_effect
         shutil.copy(self.TEST_FUZZER_1, tmp_dir)
         shutil.copy(self.TEST_FUZZER_2, tmp_dir)

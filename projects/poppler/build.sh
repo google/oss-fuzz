@@ -46,7 +46,7 @@ make -j$(nproc)
 make install
 
 pushd $SRC/Little-CMS
-./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+./autogen.sh --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 make -j$(nproc)
 make install
 

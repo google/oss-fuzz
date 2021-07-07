@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get install --yes cmake gperf
+RUN apt-get install --yes cmake
+RUN curl -L http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz -O
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/kcodecs.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/extra-cmake-modules.git

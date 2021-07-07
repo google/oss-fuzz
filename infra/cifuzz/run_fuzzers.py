@@ -20,7 +20,9 @@ import sys
 import time
 
 import clusterfuzz_deployment
+import docker
 import fuzz_target
+import generate_coverage_report
 import stack_parser
 
 # pylint: disable=wrong-import-position,import-error
@@ -41,12 +43,17 @@ class BaseFuzzTargetRunner:
 
   def __init__(self, config):
     self.config = config
+    self.workspace = docker.Workspace(config)
     self.clusterfuzz_deployment = (
-        clusterfuzz_deployment.get_clusterfuzz_deployment(self.config))
+        clusterfuzz_deployment.get_clusterfuzz_deployment(
+            self.config, self.workspace))
+
     # Set by the initialize method.
-    self.out_dir = None
     self.fuzz_target_paths = None
-    self.crashes_dir = None
+
+  def get_fuzz_targets(self):
+    """Returns fuzz targets in out directory."""
+    return utils.get_fuzz_targets(self.workspace.out)
 
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
@@ -64,54 +71,51 @@ class BaseFuzzTargetRunner:
           self.config.fuzz_seconds)
       return False
 
-    self.out_dir = os.path.join(self.config.workspace, 'out')
-    if not os.path.exists(self.out_dir):
-      logging.error('Out directory: %s does not exist.', self.out_dir)
+    if not os.path.exists(self.workspace.out):
+      logging.error('Out directory: %s does not exist.', self.workspace.out)
       return False
 
-    self.crashes_dir = os.path.join(self.out_dir, 'artifacts')
-    if not os.path.exists(self.crashes_dir):
-      os.mkdir(self.crashes_dir)
-    elif (not os.path.isdir(self.crashes_dir) or os.listdir(self.crashes_dir)):
+    if not os.path.exists(self.workspace.artifacts):
+      os.makedirs(self.workspace.artifacts)
+    elif (not os.path.isdir(self.workspace.artifacts) or
+          os.listdir(self.workspace.artifacts)):
       logging.error('Artifacts path: %s exists and is not an empty directory.',
-                    self.crashes_dir)
+                    self.workspace.artifacts)
       return False
 
-    self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
+    self.fuzz_target_paths = self.get_fuzz_targets()
     logging.info('Fuzz targets: %s', self.fuzz_target_paths)
     if not self.fuzz_target_paths:
       logging.error('No fuzz targets were found in out directory: %s.',
-                    self.out_dir)
+                    self.workspace.out)
       return False
 
     return True
 
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
+    raise NotImplementedError('Child class must implement method.')
+
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    # TODO(metzman): Make children implement this so that the batch runner can
-    # do things differently.
-    result = fuzz_target_obj.fuzz()
-    fuzz_target_obj.free_disk_if_needed()
-    return result
+    raise NotImplementedError('Child class must implement method.')
 
   @property
   def quit_on_bug_found(self):
     """Property that is checked to determine if fuzzing should quit after first
     bug is found."""
-    raise NotImplementedError('Child class must implement method')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_fuzz_target_artifact(self, target, artifact_name):
     """Returns the path of a fuzzing artifact named |artifact_name| for
     |fuzz_target|."""
-    artifact_name = '{target_name}-{sanitizer}-{artifact_name}'.format(
-        target_name=target.target_name,
-        sanitizer=self.config.sanitizer,
-        artifact_name=artifact_name)
-    return os.path.join(self.crashes_dir, artifact_name)
+    artifact_name = (f'{target.target_name}-{self.config.sanitizer}-'
+                     f'{artifact_name}')
+    return os.path.join(self.workspace.artifacts, artifact_name)
 
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
-    return fuzz_target.FuzzTarget(target_path, run_seconds, self.out_dir,
+    return fuzz_target.FuzzTarget(target_path, run_seconds, self.workspace,
                                   self.clusterfuzz_deployment, self.config)
 
   def run_fuzz_targets(self):
@@ -133,6 +137,7 @@ class BaseFuzzTargetRunner:
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       result = self.run_fuzz_target(target)
+      self.cleanup_after_fuzz_target_run(target)
 
       # It's OK if this goes negative since we take max when determining
       # run_seconds.
@@ -161,12 +166,52 @@ class BaseFuzzTargetRunner:
     return bug_found
 
 
+class CoverageTargetRunner(BaseFuzzTargetRunner):
+  """Runner that runs the 'coverage' command."""
+
+  @property
+  def quit_on_bug_found(self):
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
+
+  def get_fuzz_targets(self):
+    """Returns fuzz targets in out directory."""
+    # We only want fuzz targets from the root because during the coverage build,
+    # a lot of the image's filesystem is copied into /out for the purpose of
+    # generating coverage reports.
+    # TOOD(metzman): Figure out if top_level_only should be the only behavior
+    # for this function.
+    return utils.get_fuzz_targets(self.workspace.out, top_level_only=True)
+
+  def run_fuzz_targets(self):
+    """Generates a coverage report. Always returns False since it never finds
+    any bugs."""
+    generate_coverage_report.generate_coverage_report(
+        self.fuzz_target_paths, self.workspace, self.clusterfuzz_deployment,
+        self.config)
+    return False
+
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Fuzzes with |fuzz_target_obj| and returns the result."""
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
+    raise NotImplementedError('Not implemented for CoverageTargetRunner.')
+
+
 class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   """Runner for fuzz targets used in CI (patch-fuzzing) context."""
 
   @property
   def quit_on_bug_found(self):
     return True
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after running |fuzz_target_obj|."""
+    fuzz_target_obj.free_disk_if_needed()
+
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    return fuzz_target_obj.fuzz()
 
 
 class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -176,6 +221,40 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   def quit_on_bug_found(self):
     return False
 
+  def run_fuzz_target(self, fuzz_target_obj):
+    """Fuzzes with |fuzz_target_obj| and returns the result."""
+    result = fuzz_target_obj.fuzz()
+    logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.corpus_path)
+    return result
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
+    """Cleans up after running |fuzz_target_obj|."""
+    # This must be done after we upload the corpus, otherwise it will be deleted
+    # before we get a chance to upload it. We can't delete the fuzz target
+    # because it is needed when we upload the build.
+    fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
+
+  def run_fuzz_targets(self):
+    result = super().run_fuzz_targets()
+
+    self.clusterfuzz_deployment.upload_crashes()
+
+    # We want to upload the build to the filestore after we do batch fuzzing.
+    # There are some is a problem with this. We don't want to upload the build
+    # before fuzzing, because if we download the latest build, we will consider
+    # the build we just uploaded to be the latest even though it shouldn't be
+    # (we really intend to download the build before the curent one.
+    # TODO(metzman): We should really be uploading latest build in build_fuzzers
+    # before we remove unaffected fuzzers. Otherwise, we can lose fuzzers. This
+    # is probably more of a theoretical concern since in batch fuzzing, there is
+    # no code change and thus no fuzzers that are removed, but it's inelegant to
+    # put this here.
+
+    self.clusterfuzz_deployment.upload_latest_build()
+    return result
+
 
 def get_fuzz_target_runner(config):
   """Returns a fuzz target runner object based on the run_fuzzers_mode of
@@ -183,6 +262,8 @@ def get_fuzz_target_runner(config):
   logging.info('RUN_FUZZERS_MODE is: %s', config.run_fuzzers_mode)
   if config.run_fuzzers_mode == 'batch':
     return BatchFuzzTargetRunner(config)
+  if config.run_fuzzers_mode == 'coverage':
+    return CoverageTargetRunner(config)
   return CiFuzzTargetRunner(config)
 
 

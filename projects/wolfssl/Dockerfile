@@ -27,6 +27,16 @@ RUN git clone --depth 1 https://github.com/google/wycheproof.git
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
+# Retrieve corpora from other projects
+RUN wget https://storage.googleapis.com/pub/gsutil.tar.gz -O $SRC/gsutil.tar.gz
+RUN tar zxf $SRC/gsutil.tar.gz
+ENV PATH="${PATH}:$SRC/gsutil"
+RUN gsutil cp gs://bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip $SRC/corpus_bearssl.zip
+RUN gsutil cp gs://nettle-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/nettle_cryptofuzz-nettle-with-mini-gmp/public.zip $SRC/corpus_nettle.zip
+RUN gsutil cp gs://libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip $SRC/corpus_libecc.zip
+RUN gsutil cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip $SRC/corpus_relic.zip
+RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz.zip
+
 WORKDIR wolfssl
 
 COPY build.sh $SRC/

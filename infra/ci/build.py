@@ -38,7 +38,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 def get_changed_files_output():
   """Returns the output of a git command that discovers changed files."""
   branch_commit_hash = subprocess.check_output(
-      ['git', 'merge-base', 'FETCH_HEAD', 'origin/HEAD']).strip().decode()
+      ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode()
 
   return subprocess.check_output(
       ['git', 'diff', '--name-only', branch_commit_hash + '..']).decode()
@@ -217,7 +217,7 @@ def build_base_images():
   ]
   for image in images:
     try:
-      execute_helper_command(['build_image', image, '--no-pull'])
+      execute_helper_command(['build_image', image, '--no-pull', '--cache'])
     except subprocess.CalledProcessError:
       return 1
 

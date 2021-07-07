@@ -15,19 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get	github.com/go-openapi/swag \
-		github.com/go-openapi/validate \
-		gopkg.in/warnings.v0 \
-		github.com/gorilla/mux \
-		github.com/prometheus/client_golang/prometheus \ 
-		github.com/pkg/errors \
-		github.com/sirupsen/logrus \
-		gopkg.in/gcfg.v1 \
-		github.com/valyala/fasthttp \
-		gopkg.in/natefinch/lumberjack.v2 \
-		github.com/emirpasic/gods/maps/treemap \
-		github.com/emirpasic/gods/utils \
-		github.com/willf/bitset
 RUN git clone https://github.com/dragonflyoss/Dragonfly
 COPY build.sh $SRC/
 WORKDIR $SRC/Dragonfly

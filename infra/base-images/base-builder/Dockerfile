@@ -97,7 +97,7 @@ RUN rustup component add rust-src --toolchain nightly
 ENV OSSFUZZ_RUSTPATH /rust
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
-ENV BAZELISK_VERSION 1.7.4
+ENV BAZELISK_VERSION 1.9.0
 RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
     chmod +x /usr/local/bin/bazel
 

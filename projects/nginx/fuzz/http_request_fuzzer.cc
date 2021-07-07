@@ -286,6 +286,7 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
       255, &ngx_log); // 255 - (hopefully unused) socket descriptor
 
   c->shared = 1;
+  c->destroyed = 0;
   c->type = SOCK_STREAM;
   c->pool = ngx_create_pool(256, ngx_cycle->log);
   c->sockaddr = ls->sockaddr;
@@ -301,10 +302,24 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   c->socklen = ls->socklen;
   c->local_sockaddr = ls->sockaddr;
   c->local_socklen = ls->socklen;
+  c->data = NULL;
 
   read_event1.ready = 1;
   write_event1.ready = write_event1.delayed = 1;
 
   // Will redirect to http parser
   ngx_http_init_connection(c);
+
+  // We do not provide working timers or events, and thus we have to manually
+  // clean up the requests we created. We do this here.
+  // Cross-referencing: https://trac.nginx.org/nginx/ticket/2080#no1).I
+  // This is a fix that should be bettered in the future, by creating proper
+  // timers and events.
+  if (c->destroyed != 1) {
+    if (c->read->data != NULL) {
+      ngx_connection_t *c2 = (ngx_connection_t*)c->read->data;
+      ngx_http_free_request((ngx_http_request_t*)c2->data, 0);
+    }
+    ngx_http_close_connection(c);
+  }
 }

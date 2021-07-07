@@ -31,6 +31,8 @@ then
     CFLAGS="" CXXFLAGS="" ./b2 headers
     cp -R boost/ /usr/include/
 
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
+
     OLD_CFLAGS="$CFLAGS"
     OLD_CXXFLAGS="$CXXFLAGS"
 
@@ -77,11 +79,23 @@ then
     echo -n '"' >>extra_options.h
     echo -n '--force-module=wolfCrypt ' >>extra_options.h
     echo -n '--digests=NULL ' >>extra_options.h
-    echo -n '--operations=BignumCalc,DH_GenerateKeyPair,DH_Derive,ECC_GenerateKeyPair,ECC_PrivateToPublic,ECC_ValidatePubkey,ECDSA_Verify,ECDSA_Sign' >>extra_options.h
+    echo -n '--operations=' >>extra_options.h
+    echo -n 'BignumCalc,' >>extra_options.h
+    echo -n 'DH_GenerateKeyPair,' >>extra_options.h
+    echo -n 'DH_Derive,' >>extra_options.h
+    echo -n 'ECC_GenerateKeyPair,' >>extra_options.h
+    echo -n 'ECC_PrivateToPublic,' >>extra_options.h
+    echo -n 'ECC_ValidatePubkey,' >>extra_options.h
+    echo -n 'ECDSA_Verify,' >>extra_options.h
+    echo -n 'ECDSA_Sign,' >>extra_options.h
+    echo -n 'ECIES_Encrypt,' >>extra_options.h
+    echo -n 'ECIES_Decrypt,' >>extra_options.h
+    echo -n 'ECC_Point_Add,' >>extra_options.h
+    echo -n 'ECC_Point_Mul,' >>extra_options.h
+    echo -n 'ECDH_Derive ' >>extra_options.h
     echo -n '"' >>extra_options.h
 
     # Build Botan
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
     cd $SRC/botan
     if [[ $CFLAGS != *-m32* ]]
     then
@@ -98,7 +112,7 @@ then
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all/
     cd $SRC/wolfssl-sp-math-all/
     autoreconf -ivf
-    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
@@ -121,7 +135,7 @@ then
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all-8bit/
     cd $SRC/wolfssl-sp-math-all-8bit/
     autoreconf -ivf
-    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DSP_WORD_SIZE=8"
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DSP_WORD_SIZE=8 -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
@@ -188,16 +202,27 @@ then
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
     unset WOLFCRYPT_INCLUDE_PATH
 
+    mkdir $SRC/cryptofuzz-seed-corpus/
+
     # Convert Wycheproof test vectors to Cryptofuzz corpus format
-    mkdir $SRC/corpus-cryptofuzz-wycheproof/
-    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/corpus-cryptofuzz-wycheproof/ \;
+    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+
+    # Unpack corpora from other projects
+    unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_cryptofuzz.zip -d $SRC/cryptofuzz_seed_corpus/
+
     # Pack it
-    zip -j $SRC/cryptofuzz_wycheproof_seed_corpus.zip $SRC/corpus-cryptofuzz-wycheproof/*
+    cd $SRC/cryptofuzz_seed_corpus
+    zip -r $SRC/cryptofuzz_seed_corpus.zip .
+
     # Use it as the seed corpus for each Cryptofuzz-based fuzzer
-    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math-all_seed_corpus.zip
-    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math-all-8bit_seed_corpus.zip
-    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math_seed_corpus.zip
-    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-disable-fastmath_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math-all_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math-all-8bit_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-disable-fastmath_seed_corpus.zip
 
     # Build SSL/SSH fuzzers
     NEW_SRC=$SRC/wolf-ssl-ssh-fuzzers/oss-fuzz/projects/wolf-ssl-ssh/

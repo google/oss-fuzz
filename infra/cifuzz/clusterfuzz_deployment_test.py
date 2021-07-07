@@ -16,11 +16,13 @@
 import os
 import unittest
 from unittest import mock
-import urllib.error
 
+import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
+import config_utils
+import docker
 import test_helpers
 
 # NOTE: This integration test relies on
@@ -30,12 +32,19 @@ EXAMPLE_PROJECT = 'example'
 # An example fuzzer that triggers an error.
 EXAMPLE_FUZZER = 'example_crash_fuzzer'
 
+WORKSPACE = '/workspace'
+EXPECTED_LATEST_BUILD_PATH = os.path.join(WORKSPACE, 'cifuzz-prev-build')
+
 
 def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
-  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT}
+  defaults = {
+      'is_github': True,
+      'project_name': EXAMPLE_PROJECT,
+      'workspace': WORKSPACE,
+  }
   for default_key, default_value in defaults.items():
     if default_key not in kwargs:
       kwargs[default_key] = default_value
@@ -45,25 +54,23 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  return clusterfuzz_deployment.get_clusterfuzz_deployment(config)
+  workspace = docker.Workspace(config)
+  return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
 class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   """Tests OSSFuzz."""
 
-  OUT_DIR = '/out'
-
   def setUp(self):
     self.setUpPyfakefs()
     self.deployment = _create_deployment()
 
-  @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
-              return_value=True)
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
-    result = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    result = self.deployment.download_corpus(EXAMPLE_FUZZER)
     self.assertIsNotNone(result)
-    expected_corpus_dir = os.path.join(self.OUT_DIR, 'cifuzz-corpus',
+    expected_corpus_dir = os.path.join(self.deployment.workspace.corpora,
                                        EXAMPLE_FUZZER)
     expected_url = ('https://storage.googleapis.com/example-backup.'
                     'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
@@ -71,12 +78,14 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     call_args, _ = mocked_download_and_unpack_zip.call_args
     self.assertEqual(call_args, (expected_url, expected_corpus_dir))
 
-  @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
-              return_value=False)
-  def test_download_fail(self, _):
-    """Tests that when downloading fails, None is returned."""
-    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
-    self.assertIsNone(corpus_path)
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
+  def test_download_corpus_fail(self, _):
+    """Tests that when downloading fails, an empty corpus directory is still
+    returned."""
+    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
+    self.assertEqual(corpus_path,
+                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
+    self.assertEqual(os.listdir(corpus_path), [])
 
   def test_get_latest_build_name(self):
     """Tests that the latest build name can be retrieved from GCS."""
@@ -84,58 +93,154 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(latest_build_name.endswith('.zip'))
     self.assertTrue('address' in latest_build_name)
 
+  @parameterized.parameterized.expand([
+      ('upload_latest_build', tuple(),
+       'Not uploading latest build because on OSS-Fuzz.'),
+      ('upload_corpus', ('target',),
+       'Not uploading corpus because on OSS-Fuzz.'),
+      ('upload_crashes', tuple(), 'Not uploading crashes because on OSS-Fuzz.'),
+  ])
+  def test_noop_methods(self, method, method_args, expected_message):
+    """Tests that certain methods are noops for OSS-Fuzz."""
+    with mock.patch('logging.info') as mocked_info:
+      method = getattr(self.deployment, method)
+      self.assertIsNone(method(*method_args))
+      mocked_info.assert_called_with(expected_message)
 
-class DownloadUrlTest(unittest.TestCase):
-  """Tests that download_url works."""
-  URL = 'example.com/file'
-  FILE_PATH = '/tmp/file'
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
+  def test_download_latest_build(self, mocked_download_and_unpack_zip):
+    """Tests that downloading the latest build works as intended under normal
+    circumstances."""
+    self.assertEqual(self.deployment.download_latest_build(),
+                     EXPECTED_LATEST_BUILD_PATH)
+    expected_url = ('https://storage.googleapis.com/clusterfuzz-builds/example/'
+                    'example-address-202008030600.zip')
+    mocked_download_and_unpack_zip.assert_called_with(
+        expected_url, EXPECTED_LATEST_BUILD_PATH)
 
-  @mock.patch('time.sleep')
-  @mock.patch('urllib.request.urlretrieve', return_value=True)
-  def test_download_url_no_error(self, mocked_urlretrieve, _):
-    """Tests that download_url works when there is no error."""
-    self.assertTrue(
-        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
-    self.assertEqual(1, mocked_urlretrieve.call_count)
-
-  @mock.patch('time.sleep')
-  @mock.patch('logging.error')
-  @mock.patch('urllib.request.urlretrieve',
-              side_effect=urllib.error.HTTPError(None, None, None, None, None))
-  def test_download_url_http_error(self, mocked_urlretrieve, mocked_error, _):
-    """Tests that download_url doesn't retry when there is an HTTP error."""
-    self.assertFalse(
-        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
-    mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
-    self.assertEqual(1, mocked_urlretrieve.call_count)
-
-  @mock.patch('time.sleep')
-  @mock.patch('logging.error')
-  @mock.patch('urllib.request.urlretrieve', side_effect=ConnectionResetError)
-  def test_download_url_connection_error(self, mocked_urlretrieve, mocked_error,
-                                         mocked_sleep):
-    """Tests that download_url doesn't retry when there is an HTTP error."""
-    self.assertFalse(
-        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
-    self.assertEqual(3, mocked_urlretrieve.call_count)
-    self.assertEqual(3, mocked_sleep.call_count)
-    mocked_error.assert_called_with('Failed to download %s, %d times.',
-                                    self.URL, 3)
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
+  def test_download_latest_build_fail(self, _):
+    """Tests that download_latest_build returns None when it fails to download a
+    build."""
+    self.assertIsNone(self.deployment.download_latest_build())
 
 
-class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
-  """Tests download_and_unpack_zip."""
+class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
+  """Tests for ClusterFuzzLite."""
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.deployment = _create_deployment(run_fuzzers_mode='batch',
+                                         build_integration_path='/')
 
-  @mock.patch('urllib.request.urlretrieve', return_value=True)
-  def test_bad_zip_download(self, _):
-    """Tests download_and_unpack_zip returns none when a bad zip is passed."""
-    self.fs.create_file('/url_tmp.zip', contents='Test file.')
-    self.assertFalse(
-        clusterfuzz_deployment.download_and_unpack_zip('/not/a/real/url',
-                                                       '/extract-directory'))
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
+              return_value=True)
+  def test_download_corpus(self, mocked_download_corpus):
+    """Tests that download_corpus works for a valid project."""
+    result = self.deployment.download_corpus(EXAMPLE_FUZZER)
+    expected_corpus_dir = os.path.join(WORKSPACE, 'cifuzz-corpus',
+                                       EXAMPLE_FUZZER)
+    self.assertEqual(result, expected_corpus_dir)
+    mocked_download_corpus.assert_called_with('corpus-example_crash_fuzzer',
+                                              expected_corpus_dir)
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
+              side_effect=Exception)
+  def test_download_corpus_fail(self, _):
+    """Tests that when downloading fails, an empty corpus directory is still
+    returned."""
+    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
+    self.assertEqual(corpus_path,
+                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
+    self.assertEqual(os.listdir(corpus_path), [])
+
+  @mock.patch(
+      'filestore.github_actions.GithubActionsFilestore.download_latest_build',
+      return_value=True)
+  def test_download_latest_build(self, mocked_download_latest_build):
+    """Tests that downloading the latest build works as intended under normal
+    circumstances."""
+    self.assertEqual(self.deployment.download_latest_build(),
+                     EXPECTED_LATEST_BUILD_PATH)
+    expected_artifact_name = 'cifuzz-build-address'
+    mocked_download_latest_build.assert_called_with(expected_artifact_name,
+                                                    EXPECTED_LATEST_BUILD_PATH)
+
+  @mock.patch(
+      'filestore.github_actions.GithubActionsFilestore.download_latest_build',
+      side_effect=Exception)
+  def test_download_latest_build_fail(self, _):
+    """Tests that download_latest_build returns None when it fails to download a
+    build."""
+    self.assertIsNone(self.deployment.download_latest_build())
+
+
+class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
+  """Tests for NoClusterFuzzDeployment."""
+
+  def setUp(self):
+    self.setUpPyfakefs()
+    config = test_helpers.create_run_config(project_name=EXAMPLE_PROJECT,
+                                            build_integration_path='/',
+                                            workspace=WORKSPACE,
+                                            is_github=False)
+    workspace = docker.Workspace(config)
+    self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
+        config, workspace)
+
+  @mock.patch('logging.info')
+  def test_download_corpus(self, mocked_info):
+    """Tests that download corpus returns the path to the empty corpus
+    directory."""
+    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
+    self.assertEqual(corpus_path,
+                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
+    mocked_info.assert_called_with(
+        'Not downloading corpus because no ClusterFuzz deployment.')
+
+  @parameterized.parameterized.expand([
+      ('upload_latest_build', tuple(),
+       'Not uploading latest build because no ClusterFuzz deployment.'),
+      ('upload_corpus', ('target',),
+       'Not uploading corpus because no ClusterFuzz deployment.'),
+      ('upload_crashes', tuple(),
+       'Not uploading crashes because no ClusterFuzz deployment.'),
+      ('download_latest_build', tuple(),
+       'Not downloading latest build because no ClusterFuzz deployment.')
+  ])
+  def test_noop_methods(self, method, method_args, expected_message):
+    """Tests that certain methods are noops for NoClusterFuzzDeployment."""
+    with mock.patch('logging.info') as mocked_info:
+      method = getattr(self.deployment, method)
+      self.assertIsNone(method(*method_args))
+      mocked_info.assert_called_with(expected_message)
+
+
+class GetClusterFuzzDeploymentTest(unittest.TestCase):
+  """Tests for get_clusterfuzz_deployment."""
+
+  @parameterized.parameterized.expand([
+      (config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI,
+       clusterfuzz_deployment.OSSFuzz),
+      (config_utils.BaseConfig.Platform.INTERNAL_GITHUB,
+       clusterfuzz_deployment.OSSFuzz),
+      (config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI,
+       clusterfuzz_deployment.NoClusterFuzzDeployment),
+      (config_utils.BaseConfig.Platform.EXTERNAL_GITHUB,
+       clusterfuzz_deployment.ClusterFuzzLite),
+  ])
+  def test_get_clusterfuzz_deployment(self, platform, expected_deployment_cls):
+    """Tests that get_clusterfuzz_deployment returns the correct value."""
+    with mock.patch('config_utils.BaseConfig.platform',
+                    return_value=platform,
+                    new_callable=mock.PropertyMock):
+      with mock.patch('filestore_utils.get_filestore', return_value=None):
+        config = _create_config()
+        workspace = docker.Workspace(config)
+
+        self.assertIsInstance(
+            clusterfuzz_deployment.get_clusterfuzz_deployment(
+                config, workspace), expected_deployment_cls)
 
 
 if __name__ == '__main__':

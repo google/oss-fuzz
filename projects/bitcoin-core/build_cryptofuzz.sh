@@ -40,15 +40,25 @@ function build_libsecp256k1() {
         make clean
     fi
 
+    SECP256K1_CONFIGURE_PARAMS="
+        --enable-static
+        --disable-tests
+        --disable-benchmark
+        --disable-exhaustive-tests
+        --enable-module-recovery
+        --enable-experimental
+        --enable-module-schnorrsig
+        --enable-module-ecdh"
+
     if [[ $CFLAGS = *sanitize=memory* ]]
     then
-        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --with-asm=no "$@"
+        ./configure $SECP256K1_CONFIGURE_PARAMS --with-asm=no "$@"
     else
-        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental "$@"
+        ./configure $SECP256K1_CONFIGURE_PARAMS "$@"
     fi
     make
 
-    export SECP256K1_INCLUDE_PATH=$(realpath include)
+    export SECP256K1_INCLUDE_PATH=$(realpath .)
     export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
 
     # Build libsecp256k1 Cryptofuzz module
@@ -84,18 +94,48 @@ cd $SRC/cryptofuzz
 python gen_repository.py
 rm extra_options.h
 echo -n '"' >>extra_options.h
-echo -n '--operations=Digest,HMAC,KDF_HKDF,SymmetricEncrypt,SymmetricDecrypt,ECC_PrivateToPublic,ECC_ValidatePubkey,ECDSA_Sign,ECDSA_Verify,ECDSA_Recover,BignumCalc_Mod_2Exp256 ' >>extra_options.h
+echo -n '--operations=' >>extra_options.h
+echo -n 'Digest,' >>extra_options.h
+echo -n 'HMAC,' >>extra_options.h
+echo -n 'KDF_HKDF,' >>extra_options.h
+echo -n 'SymmetricEncrypt,' >>extra_options.h
+echo -n 'SymmetricDecrypt,' >>extra_options.h
+echo -n 'ECC_PrivateToPublic,' >>extra_options.h
+echo -n 'ECC_ValidatePubkey,' >>extra_options.h
+echo -n 'ECC_Point_Add,' >>extra_options.h
+echo -n 'ECC_Point_Mul,' >>extra_options.h
+echo -n 'ECDSA_Sign,' >>extra_options.h
+echo -n 'ECDSA_Verify,' >>extra_options.h
+echo -n 'ECDSA_Recover,' >>extra_options.h
+echo -n 'Schnorr_Sign,' >>extra_options.h
+echo -n 'Schnorr_Verify,' >>extra_options.h
+echo -n 'ECDH_Derive,' >>extra_options.h
+echo -n 'BignumCalc_Mod_2Exp256 ' >>extra_options.h
+echo -n 'BignumCalc_Mod_SECP256K1 ' >>extra_options.h
 echo -n '--curves=secp256k1 ' >>extra_options.h
 echo -n '--digests=NULL,SHA1,SHA256,SHA512,RIPEMD160,SHA3-256,SIPHASH64 ' >>extra_options.h
 echo -n '--ciphers=CHACHA20,AES_256_CBC ' >>extra_options.h
-echo -n '--calcops=Add,And,Div,IsEq,IsGt,IsGte,IsLt,IsLte,IsOdd,Mul,NumBits,Or,Set,Sub,Xor ' >>extra_options.h
+echo -n '--calcops=' >>extra_options.h
+# Bitcoin Core arith_uint256.cpp operations
+echo -n 'Add,And,Div,IsEq,IsGt,IsGte,IsLt,IsLte,IsOdd,Mul,NumBits,Or,Set,Sub,Xor,' >>extra_options.h
+# libsecp256k1 scalar operations
+echo -n 'IsZero,IsOne,IsEven,Add,Mul,InvMod,IsEq,CondSet,Bit,Set,RShift ' >>extra_options.h
 echo -n '"' >>extra_options.h
 cd modules/bitcoin/
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BITCOIN"
 make -B -j$(nproc)
 cd ../trezor/
 make -B -j$(nproc)
 cd ../botan/
 make -B -j$(nproc)
+cd ../schnorr_fun/
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
+if [[ $CFLAGS != *-m32* ]]
+then
+    make
+else
+    make -f Makefile.i386
+fi
 cd ../../
 
 # Build with 3 configurations of libsecp256k1
