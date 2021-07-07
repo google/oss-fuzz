@@ -35,9 +35,6 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
-COPY install_perf.sh $WORK
-RUN $WORK/install_perf.sh && rm $WORK/install_perf.sh
-
 RUN apt-get update && apt-get install -y \
     binutils \
     file \
