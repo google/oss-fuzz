@@ -35,6 +35,9 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
+COPY install_perf.sh $WORK
+RUN $WORK/install_perf.sh
+
 RUN apt-get update && apt-get install -y \
     binutils \
     file \
@@ -43,7 +46,6 @@ RUN apt-get update && apt-get install -y \
     lib32gcc1 \
     libc6-i386 \
     libcap2 \
-    linux-tools-common linux-tools-generic \
     python3 \
     python3-pip \
     python3-setuptools \
