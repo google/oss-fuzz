@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y \
     lib32gcc1 \
     libc6-i386 \
     libcap2 \
-    linux-tools-generic linux-tools-`uname -r` \
+    linux-tools-common linux-tools-generic \
     python3 \
     python3-pip \
     python3-setuptools \
