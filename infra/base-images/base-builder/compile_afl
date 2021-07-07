@@ -56,9 +56,9 @@ test $(($RANDOM % 100)) -lt 40 && {
   export AFL_ENABLE_DICTIONARY=1
 }
 
-# 40% chance to perform CMPLOG/REDQUEEN.
+# 60% chance to perform CMPLOG/REDQUEEN.
 rm -f "$OUT/afl_cmplog.txt"
-test $(($RANDOM % 100)) -lt 20 && {
+test $(($RANDOM % 100)) -lt 60 && {
   export AFL_LLVM_CMPLOG=1
   touch "$OUT/afl_cmplog.txt"
 }
