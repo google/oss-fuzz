@@ -18,7 +18,6 @@ import base64
 import concurrent.futures
 import json
 import sys
-import time
 
 import google.auth
 from googleapiclient.discovery import build
@@ -34,7 +33,7 @@ from datastore_entities import Project
 BADGE_DIR = 'badge_images'
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
 DESTINATION_BADGE_DIR = 'badges'
-MAX_BUILD_LOGS = 3
+MAX_BUILD_LOGS = 7
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 
@@ -174,10 +173,9 @@ def update_build_status(build_tag, status_filename):
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
     print('Processing project', project['name'])
-    time.sleep(2)
     return project
 
-  with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     futures = []
     for project_build in BuildsHistory.query(
         BuildsHistory.build_tag == build_tag).order('project'):
