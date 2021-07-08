@@ -54,25 +54,38 @@ then
   CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 fi
 
+# Undefine NDEBUG to enable asserts.
+export BAZEL_EXTRA_BUILD_FLAGS="--copt=-UNDEBUG"
+
 # Run the build!
 bazel_build_fuzz_tests
 
 # OSS-Fuzz rule doesn't build data dependencies
 bazel build //testdata:fuzzer_binary_gen
 
-# OSS-Fuzz rule doesn't package runfiles yet:
-# https://github.com/bazelbuild/rules_fuzzing/issues/100
-mkdir -p $OUT/lldb_eval_libfuzzer_test.runfiles
-# fuzzer_binary
-mkdir -p $OUT/lldb_eval_libfuzzer_test.runfiles/lldb_eval/testdata
-cp $SRC/lldb-eval/bazel-bin/testdata/fuzzer_binary $OUT/lldb_eval_libfuzzer_test.runfiles/lldb_eval/testdata/
-cp $SRC/lldb-eval/testdata/fuzzer_binary.cc $OUT/lldb_eval_libfuzzer_test.runfiles/lldb_eval/testdata/
-# lldb-server
-mkdir -p $OUT/lldb_eval_libfuzzer_test.runfiles/llvm_project/bin
-cp $SRC/llvm/bin/lldb-server $OUT/lldb_eval_libfuzzer_test.runfiles/llvm_project/bin/lldb-server
-
 # OSS-Fuzz rule doesn't handle dynamic dependencies
-# Copy liblldb.so and path RPATH of the fuzz target
+# Copy liblldb.so
 mkdir -p $OUT/lib
 cp $SRC/llvm/lib/liblldb.so* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/lldb_eval_libfuzzer_test
+
+# List of targets to fuzz.
+TARGETS=(
+  lldb_eval_libfuzzer_test
+  lldb_vs_lldb_eval_libfuzzer_test
+)
+
+# Preparation of each target.
+for target in ${TARGETS[@]}; do
+  # OSS-Fuzz rule doesn't package runfiles yet:
+  # https://github.com/bazelbuild/rules_fuzzing/issues/100
+  mkdir -p $OUT/$target.runfiles
+  # fuzzer_binary
+  mkdir -p $OUT/$target.runfiles/lldb_eval/testdata
+  cp $SRC/lldb-eval/bazel-bin/testdata/fuzzer_binary $OUT/$target.runfiles/lldb_eval/testdata/
+  cp $SRC/lldb-eval/testdata/fuzzer_binary.cc $OUT/$target.runfiles/lldb_eval/testdata/
+  # lldb-server
+  mkdir -p $OUT/$target.runfiles/llvm_project/bin
+  cp $SRC/llvm/bin/lldb-server $OUT/$target.runfiles/llvm_project/bin/lldb-server
+  # Patch RPATH of the fuzz target
+  patchelf --set-rpath '$ORIGIN/lib' $OUT/$target
+done
