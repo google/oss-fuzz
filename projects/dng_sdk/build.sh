@@ -21,4 +21,5 @@ rm dng_xmp*
 find . -name "*.cpp" -exec $CXX $CXXFLAGS -DqDNGUseLibJPEG=1 -DqDNGUseXMP=0 -DqDNGThreadSafe=1 -c {} \;
 ar cr libdns_sdk.a *.o
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp ./libdns_sdk.a -I./ -l:libjpeg.a -lz -o $OUT/dng_parser_fuzzer
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp -o $OUT/dng_parser_fuzzer \
+  ./libdns_sdk.a -I./ -l:libjpeg.a -lz
