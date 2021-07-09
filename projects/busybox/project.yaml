@@ -1,0 +1,6 @@
+homepage: "https://github.com/mirror/busybox"
+main_repo: "https://github.com/mirror/busybox"
+language: c
+primary_contact: "someoneat@busybox.com"
+auto_ccs:
+ - "david@adalogics.com"

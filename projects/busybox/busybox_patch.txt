@@ -1,0 +1,34 @@
+diff --git a/libbb/time.c b/libbb/time.c
+index cf5f2e5c8..915f64623 100644
+--- a/libbb/time.c
++++ b/libbb/time.c
+@@ -59,7 +59,8 @@ void FAST_FUNC parse_datestr(const char *date_str, struct tm *ptm)
+ 		} else
+ #endif
+ 		{
+-			bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++			//bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++			return;
+ 		}
+ 		if (end == ':') {
+ 			/* xxx:SS */
+@@ -189,7 +190,8 @@ void FAST_FUNC parse_datestr(const char *date_str, struct tm *ptm)
+ 			ptm->tm_mon -= 1; /* Adjust month from 1-12 to 0-11 */
+ 		} else {
+  err:
+-			bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++			//bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++			return;
+ 		}
+ 		ptm->tm_sec = 0; /* assume zero if [.SS] is not given */
+ 		if (end == '.') {
+@@ -214,7 +216,8 @@ void FAST_FUNC parse_datestr(const char *date_str, struct tm *ptm)
+ 		}
+ 	}
+ 	if (end != '\0') {
+-		bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++		//bb_error_msg_and_die(bb_msg_invalid_date, date_str);
++		return;
+ 	}
+ }
+ 
