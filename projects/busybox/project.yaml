@@ -4,3 +4,6 @@ language: c
 primary_contact: "someoneat@busybox.com"
 auto_ccs:
  - "david@adalogics.com"
+sanitizer:
+  - address
+  - memory
