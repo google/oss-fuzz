@@ -15,23 +15,26 @@
 #
 ################################################################################
 
-# try the easiest way first and check if installation succeeded
+# This script will install the perf tool
+# Try a simple way first, check if it succeeded, otherwise try harder...
+
+# Try the easiest way first and check if installation succeeded.
 apt-get update && apt-get install -y linux-tools-common linux-tools-generic
 perf --version ||
 (
-    # try to get kernel specific package if generic was not good enough
+    # Try to get kernel specific package if generic was not good enough.
     apt-get install -y linux-tools-`uname -r`
     perf --version
 ) ||
 (
-    # last way is to recompile from right kernel tag
+    # Last way is to recompile from right kernel tag.
     export tagname=v`uname -r | cut -d- -f1 | sed 's/\.0$//'`
     git clone --depth 1 --branch $tagname git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-    cd linux-stable/tools/perf/
+    pushd linux-stable/tools/perf/
     apt-get install -y flex bison make
     # clang finds errors such as tautological-bitwise-compare
     CC=gcc DESTDIR=/usr/ make install
     apt-get remove -y --purge flex bison
-    cd ../../..
-    rm -Rf linux-stable
+    popd
+    rm -rf linux-stable
 )

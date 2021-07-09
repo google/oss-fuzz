@@ -103,7 +103,8 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check && \
     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
 
-RUN git clone --depth 1 https://github.com/brendangregg/FlameGraph /root/perf
+ENV PERF_DIR=/root/perf
+RUN git clone --depth 1 https://github.com/brendangregg/FlameGraph $PERF_DIR
 COPY install_perf.sh $WORK
 RUN $WORK/install_perf.sh && rm $WORK/install_perf.sh
 
