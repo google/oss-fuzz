@@ -16,8 +16,11 @@
 ################################################################################
 
 # Changes in the code so we can fuzz it.
+git apply $SRC/crypto_patch.txt
+
 echo "" >> $SRC/openvpn/src/openvpn/openvpn.c
 echo "ssize_t fuzz_get_random_data(void *buf, size_t len) { return 0; }" >> $SRC/openvpn/src/openvpn/fake_fuzz_header.h
+echo "int fuzz_success;" >> $SRC/openvpn/src/openvpn/fake_fuzz_header.h
 echo "#include \"fake_fuzz_header.h\"" >> $SRC/openvpn/src/openvpn/openvpn.c
 
 sed -i 's/read(/fuzz_read(/g' ./src/openvpn/console_systemd.c
@@ -35,6 +38,10 @@ sed -i 's/sendto/fuzz_sendto/g' ./src/openvpn/socket.h
 sed -i 's/#include "misc.h"/#include "misc.h"\nextern size_t fuzz_sendto(int sockfd, void *buf, size_t len, int flags, struct sockaddr *dest_addr, socklen_t addrlen);/g' ./src/openvpn/socket.h
 
 sed -i 's/fp = (flags/fp = stdout;\n\/\//g' ./src/openvpn/error.c
+
+sed -i 's/crypto_msg(M_FATAL/crypto_msg(M_WARN/g' ./src/openvpn/crypto_openssl.c
+sed -i 's/msg(M_FATAL, \"Cipher/return;msg(M_FATAL, \"Cipher/g' ./src/openvpn/crypto.c
+sed -i 's/msg(M_FATAL/msg(M_WARN/g' ./src/openvpn/crypto.c
 
 sed -i 's/= write/= fuzz_write/g' ./src/openvpn/packet_id.c
 
@@ -55,7 +62,7 @@ ar r libopenvpn.a *.o
 $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
-for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list fuzz_verify_cert fuzz_forward; do
+for fuzzname in fuzz_dhcp fuzz_misc fuzz_base64 fuzz_proxy fuzz_buffer fuzz_route fuzz_packet_id fuzz_mroute fuzz_list fuzz_verify_cert fuzz_forward fuzz_crypto; do
     $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include  -I../../include -I../../src/compat \
       -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\"  -Wall -std=c99 $CFLAGS \
       -c $SRC/${fuzzname}.c -o $SRC/${fuzzname}.o
