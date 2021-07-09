@@ -1,0 +1,6 @@
+homepage: "https://www.isc.org/dhcp/"
+main_repo: "https://gitlab.isc.org/isc-projects/dhcp"
+language: c
+primary_contact: "someoneat@isc.org"
+auto_ccs:
+ - "david@adalogics.com"
