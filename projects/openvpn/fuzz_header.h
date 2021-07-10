@@ -32,6 +32,10 @@ ssize_t fuzz_write(int fd, const void *buf, size_t count) {
   return count;
 }
 
+int fuzz_isatty(int fd) {
+  return 1;
+}
+
 char *fuzz_fgets(char *s, int size, FILE *stream) {
   ssize_t v = fuzz_get_random_data(s, size-1);
   // We use fgets to get trusted input. As such, assume we have

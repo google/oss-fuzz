@@ -30,6 +30,7 @@ sed -i 's/#include "forward.h"/#include "fuzz_header.h"\n#include "forward.h"/g'
 sed -i 's/select(/fuzz_select(/g' ./src/openvpn/proxy.c
 sed -i 's/send(/fuzz_send(/g' ./src/openvpn/proxy.c
 sed -i 's/recv(/fuzz_recv(/g' ./src/openvpn/proxy.c
+sed -i 's/isatty/fuzz_isatty/g' ./src/openvpn/console_builtin.c
 
 sed -i 's/fopen/fuzz_fopen/g' ./src/openvpn/console_builtin.c
 sed -i 's/fclose/fuzz_fclose/g' ./src/openvpn/console_builtin.c
