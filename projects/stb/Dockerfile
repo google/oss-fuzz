@@ -31,5 +31,8 @@ RUN wget -O $SRC/stbi/tga.zip https://github.com/richgel999/tga_test_files/archi
 
 RUN wget -O $SRC/stbi/gif.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/gif.dict
 
+# Maintain compatibility with master branch until a new release
+RUN cp $SRC/stbi/gif.tar.gz $SRC/stbi/jpg.tar.gz $SRC/stbi/bmp.zip $SRC/stbi/gif.dict $SRC/stb
+
 WORKDIR stb
 COPY build.sh $SRC/
