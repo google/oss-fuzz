@@ -1,0 +1,11 @@
+homepage: "https://github.com/google/gts"
+language: TypeScript
+primary_contact: "beckwith@google.com"
+auto_ccs:
+  - "bencoe@google.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/google/gts.git'
