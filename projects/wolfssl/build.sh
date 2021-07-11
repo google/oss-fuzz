@@ -113,7 +113,16 @@ then
     cd $SRC/wolfssl-normal-math/
     autoreconf -ivf
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
-    ./configure $WOLFCRYPT_CONFIGURE_PARAMS
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure $WOLFCRYPT_CONFIGURE_PARAMS
+    else
+        # Compiling instrumented 32 bit normal math with asm is currently
+        # not possible because it results in Clang error messages such as:
+        #
+        # wolfcrypt/src/tfm.c:3154:11: error: inline assembly requires more registers than available
+        ./configure $WOLFCRYPT_CONFIGURE_PARAMS --disable-asm
+    fi
     make -j$(nproc)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-normal-math/src/.libs/libwolfssl.a"
