@@ -1,0 +1,10 @@
+homepage: "https://github.com/HowardHinnant/date"
+main_repo: "https://github.com/HowardHinnant/date"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
