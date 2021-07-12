@@ -1,0 +1,10 @@
+homepage: "https://parity.io"
+primary_contact: "security@parity.io"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+fuzzing_engines:
+  - honggfuzz
+language: rust
+main_repo: 'https://github.com/paritytech/substrate'
