@@ -1,0 +1,11 @@
+homepage: "https://github.com/jbeder/yaml-cpp"
+language: c++
+primary_contact: "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
