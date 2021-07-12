@@ -1,0 +1,6 @@
+homepage: "https://github.com/apple/cups"
+primary_contact: "skau@chromium.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
