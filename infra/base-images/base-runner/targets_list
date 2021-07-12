@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for binary in $(find $OUT/ -executable -type f); do
+for binary in $(find $OUT/ -maxdepth 1 -executable -type f); do
   [[ "$binary" != *.so ]] || continue
   [[ $(basename "$binary") != jazzer_driver* ]] || continue
   file "$binary" | grep -e ELF -e "shell script" > /dev/null 2>&1 || continue
