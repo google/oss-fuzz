@@ -1,0 +1,9 @@
+homepage: "https://swift.org"
+language: c++
+primary_contact: "mishal_shah@apple.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+main_repo: 'https://github.com/apple/swift.git'

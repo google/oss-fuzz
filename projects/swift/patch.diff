@@ -1,0 +1,22 @@
+diff --git a/tools/swift-reflection-fuzzer/swift-reflection-fuzzer.cpp b/tools/swift-reflection-fuzzer/swift-reflection-fuzzer.cpp
+index a47ac394e35..48fb5ce622d 100644
+--- a/tools/swift-reflection-fuzzer/swift-reflection-fuzzer.cpp
++++ b/tools/swift-reflection-fuzzer/swift-reflection-fuzzer.cpp
+@@ -102,6 +102,8 @@ public:
+       }
+       return true;
+     }
++    default:
++      return false;
+     }
+ 
+     return false;
+@@ -131,6 +133,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+   auto reader = std::make_shared<ObjectMemoryReader>();
+   NativeReflectionContext context(std::move(reader));
+   context.addImage(RemoteAddress(Data));
+-  context.getBuilder().dumpAllSections(std::cout);
++  FILE *fout=fopen("/dev/null", "wb");
++  context.getBuilder().dumpAllSections(fout);
+   return 0; // Non-zero return values are reserved for future use.
+ }
