@@ -1,0 +1,10 @@
+homepage: "https://github.com/aio-libs/aiohttp"
+language: python
+primary_contact: ""
+auto_ccs :
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
