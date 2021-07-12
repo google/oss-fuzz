@@ -28,6 +28,6 @@ RUN apt-get update && \
 	libglib2.0-dev \
 	libpcre3-dev \
 	xmlto
-RUN git clone --depth 1 https://github.com/SELinuxProject/selinux
+RUN git clone https://github.com/evverx/selinux && cd selinux && git fetch origin move-fuzzer && git checkout FETCH_HEAD
 WORKDIR selinux
 COPY build.sh $SRC/
