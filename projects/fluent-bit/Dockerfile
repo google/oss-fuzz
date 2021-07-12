@@ -14,7 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake flex bison
+RUN apt-get update && apt-get install -y make flex bison
 RUN git clone https://github.com/fluent/fluent-bit/
 
 WORKDIR $SRC
