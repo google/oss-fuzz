@@ -1,0 +1,10 @@
+homepage: "https://github.com/TarsCloud/Tars"
+main_repo: "https://github.com/TarsCloud/TarsCpp"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
