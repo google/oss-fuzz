@@ -1,0 +1,10 @@
+homepage: "https://github.com/magiclen/html-escape"
+main_repo: "https://github.com/magiclen/html-escape"
+primary_contact: "david@adalogics.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
