@@ -71,7 +71,8 @@ ENV AFL_FUZZER_ARGS="-m none"
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
 RUN chmod +x $SRC/installer_linux && \
     SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
+    rm $SRC/installer_linux && \
+    rm -rf /root/.go/src /root/.go/test /root/.cache
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
