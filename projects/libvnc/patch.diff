@@ -1,0 +1,118 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fdca4d81..ca515802 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -598,6 +598,10 @@ if(FFMPEG_FOUND)
+   )
+ endif(FFMPEG_FOUND)
+ 
++if(DEFINED ENV{LIB_FUZZING_ENGINE})
++  add_executable(fuzz_server ${LIBVNCSRVEXAMPLE_DIR}/fuzz_server.c)
++  target_link_libraries(fuzz_server vncserver ${CMAKE_THREAD_LIBS_INIT} ${CARBON_LIBRARY} ${IOKIT_LIBRARY} ${IOSURFACE_LIBRARY} $ENV{LIB_FUZZING_ENGINE})
++endif()
+ 
+ foreach(e ${LIBVNCSERVER_EXAMPLES})
+   add_executable(examples_${e} ${LIBVNCSRVEXAMPLE_DIR}/${e}.c)
+diff --git a/libvncserver/rfbserver.c b/libvncserver/rfbserver.c
+index 44ca2153..585995c7 100644
+--- a/libvncserver/rfbserver.c
++++ b/libvncserver/rfbserver.c
+@@ -356,6 +356,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
+       rfbReleaseClientIterator(iterator);
+       rfbLog("  %lu other clients\n", (unsigned long) otherClientsCount);
+ 
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+       if(!rfbSetNonBlocking(sock)) {
+ 	rfbCloseSocket(sock);
+ 	return NULL;
+@@ -368,6 +369,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
+ 
+       FD_SET(sock,&(rfbScreen->allFds));
+ 		rfbScreen->maxFd = rfbMax(sock,rfbScreen->maxFd);
++#endif
+ 
+       INIT_MUTEX(cl->outputMutex);
+       INIT_MUTEX(cl->refCountMutex);
+@@ -467,6 +469,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
+       cl->pipe_notify_client_thread[1] = -1;
+ #endif
+ 
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+ #ifdef LIBVNCSERVER_WITH_WEBSOCKETS
+       /*
+        * Wait a few ms for the client to send WebSockets connection (TLS/SSL or plain)
+@@ -477,6 +480,7 @@ rfbNewTCPOrUDPClient(rfbScreenInfoPtr rfbScreen,
+         rfbClientConnectionGone(cl);
+         return NULL;
+       }
++#endif
+ #endif
+ 
+       sprintf(pv,rfbProtocolVersionFormat,rfbScreen->protocolMajorVersion, 
+diff --git a/libvncserver/sockets.c b/libvncserver/sockets.c
+index 2c87376b..35397fef 100644
+--- a/libvncserver/sockets.c
++++ b/libvncserver/sockets.c
+@@ -545,6 +545,9 @@ rfbDisconnectUDPSock(rfbScreenInfoPtr rfbScreen)
+ void
+ rfbCloseClient(rfbClientPtr cl)
+ {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    cl->sock = RFB_INVALID_SOCKET;
++#endif
+     rfbExtensionData* extension;
+ 
+     for(extension=cl->extensions; extension; extension=extension->next)
+@@ -614,6 +617,12 @@ rfbConnect(rfbScreenInfoPtr rfbScreen,
+     return sock;
+ }
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++size_t fuzz_offset;
++size_t fuzz_size;
++const uint8_t *fuzz_data;
++#endif
++
+ /*
+  * ReadExact reads an exact number of bytes from a client.  Returns 1 if
+  * those bytes have been read, 0 if the other end has closed, or -1 if an error
+@@ -623,6 +632,14 @@ rfbConnect(rfbScreenInfoPtr rfbScreen,
+ int
+ rfbReadExactTimeout(rfbClientPtr cl, char* buf, int len, int timeout)
+ {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    if (fuzz_offset + len <= fuzz_size) {
++        memcpy(buf, fuzz_data + fuzz_offset, len);
++        fuzz_offset += len;
++        return 1;
++    }
++    return 0;
++#endif
+     rfbSocket sock = cl->sock;
+     int n;
+     fd_set fds;
+@@ -715,6 +732,14 @@ int rfbReadExact(rfbClientPtr cl,char* buf,int len)
+ int
+ rfbPeekExactTimeout(rfbClientPtr cl, char* buf, int len, int timeout)
+ {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    if (fuzz_offset + len <= fuzz_size) {
++        memcpy(buf, fuzz_data + fuzz_offset, len);
++        fuzz_offset += len;
++        return 1;
++    }
++    return 0;
++#endif
+     rfbSocket sock = cl->sock;
+     int n;
+     fd_set fds;
+@@ -793,6 +818,9 @@ rfbWriteExact(rfbClientPtr cl,
+               const char *buf,
+               int len)
+ {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    return 1;
++#endif
+     rfbSocket sock = cl->sock;
+     int n;
+     fd_set fds;
