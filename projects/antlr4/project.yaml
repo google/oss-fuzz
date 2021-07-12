@@ -1,0 +1,6 @@
+homepage: "https://github.com/antlr/antlr4"
+main_repo: 'https://github.com/antlr/antlr4'
+primary_contact: "david@adalogics.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
