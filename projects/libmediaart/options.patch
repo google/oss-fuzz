@@ -1,0 +1,11 @@
+--- master/meson_options.txt	2020-11-26 22:59:13.512982679 +0000
++++ ceyhun/meson_options.txt	2020-11-26 23:05:40.821306905 +0000
+@@ -1,3 +1,8 @@
+ option('image_library', type: 'combo', choices: ['auto', 'gdk-pixbuf', 'qt4', 'qt5'],
+        description: 'Which image processing backend to use')
+ option('with-docs', type : 'combo', choices : ['auto', 'yes', 'no'], value : 'auto')
++option('introspection',
++       description: 'Whether to generate the API introspection data (requires GObject-Introspection)',
++       type: 'feature',
++       value: 'auto',
++       yield: true)

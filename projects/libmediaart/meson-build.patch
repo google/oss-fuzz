@@ -1,0 +1,81 @@
+--- master/libmediaart/meson.build	2020-11-26 23:11:37.191049527 +0000
++++ meson.build	2020-11-26 23:51:38.967476462 +0000
+@@ -30,34 +30,50 @@
+ 
+ libmediaart_dependencies = [glib, gio_unix, gobject, image_library]
+ 
+-libmediaart = shared_library(
+-  'mediaart-' + libmediaart_api_version,
+-  libmediaart_sources, marshal[0], marshal[1],
+-  version: libmediaart_ltversion,
+-  soversion: libmediaart_soversion,
+-  dependencies: libmediaart_dependencies,
+-  c_args: libmediaart_cflags + visibility_cflags,
+-  include_directories: root_inc,
+-  install: true,
+-)
+-
+-libmediaart_gir_and_typelib = gnome.generate_gir(libmediaart,
+-  sources: libmediaart_sources + libmediaart_introspection_sources + libmediaart_public_headers,
+-  nsversion: libmediaart_api_version,
+-  namespace: 'MediaArt',
+-  identifier_prefix: 'MediaArt',
+-  symbol_prefix: 'media_art',
+-  includes: ['Gio-2.0', 'GObject-2.0'],
+-  extra_args: libmediaart_cflags + [
+-    '--c-include=libmediaart/mediaart.h',
+-  ],
+-  install: true
+-)
+-
+-libmediaart_vapi = gnome.generate_vapi('libmediaart-' + libmediaart_api_version,
+-  sources: libmediaart_gir_and_typelib[0],
+-  packages: 'gio-2.0',
+-  install: true)
++if get_option('default_library') == 'static'
++  libmediaart = static_library(
++    'mediaart-' + libmediaart_api_version,
++    libmediaart_sources, marshal[0], marshal[1],
++    dependencies: libmediaart_dependencies,
++    c_args: libmediaart_cflags + visibility_cflags,
++    include_directories: root_inc,
++    install: true,
++  )
++else
++  libmediaart = shared_library(
++    'mediaart-' + libmediaart_api_version,
++    libmediaart_sources, marshal[0], marshal[1],
++    version: libmediaart_ltversion,
++    soversion: libmediaart_soversion,
++    dependencies: libmediaart_dependencies,
++    c_args: libmediaart_cflags + visibility_cflags,
++    include_directories: root_inc,
++    install: true,
++  )
++endif
++
++gir = find_program('g-ir-scanner', required : get_option('introspection'))
++build_gir = gir.found() and (not meson.is_cross_build() or get_option('introspection').enabled())
++
++if build_gir
++  libmediaart_gir_and_typelib = gnome.generate_gir(libmediaart,
++    sources: libmediaart_sources + libmediaart_introspection_sources + libmediaart_public_headers,
++    nsversion: libmediaart_api_version,
++    namespace: 'MediaArt',
++    identifier_prefix: 'MediaArt',
++    symbol_prefix: 'media_art',
++    includes: ['Gio-2.0', 'GObject-2.0'],
++    extra_args: libmediaart_cflags + [
++      '--c-include=libmediaart/mediaart.h',
++    ],
++    install: true
++  )
++
++  libmediaart_vapi = gnome.generate_vapi('libmediaart-' + libmediaart_api_version,
++    sources: libmediaart_gir_and_typelib[0],
++    packages: 'gio-2.0',
++    install: true)
++endif
+ 
+ libmediaart_dep = declare_dependency(
+   link_with: libmediaart,
