@@ -1,0 +1,10 @@
+homepage: "https://github.com/raphlinus/pulldown-cmark"
+main_repo: "https://github.com/raphlinus/pulldown-cmark"
+primary_contact: ""
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "evverx@gmail.com"
