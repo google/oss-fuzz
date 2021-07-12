@@ -1,0 +1,6 @@
+homepage: "https://github.com/stan-dev/stanc3"
+primary_contact: "adamhaber@gmail.com"
+language: ocaml
+auto_ccs:
+  - "rb3234@columbia.edu"
+  - "rok.cesnovar@fri.uni-lj.si"
