@@ -1,0 +1,6 @@
+homepage: "https://github.com/facebook/folly"
+main_repo: "https://github.com/facebook/folly"
+primary_contact: "david@adalogics.com"
+language: c++
+auto_ccs :
+  - "david@adalogics.com"
