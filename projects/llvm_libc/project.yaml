@@ -1,0 +1,16 @@
+homepage: "https://llvm.org/docs/Proposals/LLVMLibC.html"
+language: c++
+primary_contact: "paulatoth@google.com"
+auto_ccs:
+  - "sivachandra@google.com"
+
+sanitizers:
+  - address
+  - memory
+
+# The LLVM build currently supports only libFuzzer
+fuzzing_engines:
+  - libfuzzer
+
+# Bug reports are public by default:
+view_restrictions: none
