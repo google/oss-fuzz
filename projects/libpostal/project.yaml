@@ -1,0 +1,7 @@
+homepage: "https://github.com/openvenues/libpostal"
+primary_contact: "alex.gaynor@gmail.com"
+auto_ccs: []
+sanitizers:
+  - address
+  - memory
+  - undefined
