@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+echo "Precompiling AFLplusplus"
 
-# specific swift-nio
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN git clone --depth 1 https://github.com/apple/swift-nio.git
-COPY build.sh $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/swift-nio
+pushd $SRC/aflplusplus > /dev/null
+make clean
+# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
+# down with sanitizers.
+SAVE_CXXFLAGS=$CXXFLAGS
+SAVE_CFLAGS=$CFLAGS
+unset CXXFLAGS
+unset CFLAGS
+export AFL_IGNORE_UNKNOWN_ENVS=1
+make clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make
+make -C utils/aflpp_driver
+
+popd > /dev/null
+
+echo "Done."

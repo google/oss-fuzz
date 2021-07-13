@@ -1,0 +1,66 @@
+#!/bin/bash -eux
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Deterimine srcmap of checked out source code
+
+SRCMAP=$(tempfile)
+echo "{}" > $SRCMAP
+
+# $1 - json file, $2 - jq program
+function jq_inplace() {
+  F=$(tempfile) && cat $1 | jq "$2" > $F && mv $F $1
+}
+
+PATHS_TO_SCAN="$SRC"
+
+if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  PATHS_TO_SCAN="$PATHS_TO_SCAN $GOPATH"
+fi
+
+# Git
+for DOT_GIT_DIR in $(find $PATHS_TO_SCAN -name ".git" -type d); do
+  GIT_DIR=$(dirname $DOT_GIT_DIR)
+  cd $GIT_DIR
+  GIT_URL=$(git config --get remote.origin.url)
+  GIT_REV=$(git rev-parse HEAD)
+  jq_inplace $SRCMAP ".\"$GIT_DIR\" = { type: \"git\", url: \"$GIT_URL\", rev: \"$GIT_REV\" }"
+done
+
+# Subversion
+for DOT_SVN_DIR in $(find $PATHS_TO_SCAN -name ".svn" -type d); do
+  SVN_DIR=$(dirname $DOT_SVN_DIR)
+  cd $SVN_DIR
+  SVN_URL=$(svn info | grep "^URL:" | sed  's/URL: //g')
+  SVN_REV=$(svn info -r HEAD | grep "^Revision:" | sed  's/Revision: //g')
+  jq_inplace $SRCMAP ".\"$SVN_DIR\" = { type: \"svn\", url: \"$SVN_URL\", rev: \"$SVN_REV\" }"
+done
+
+# Mercurial
+for DOT_HG_DIR in $(find $PATHS_TO_SCAN -name ".hg" -type d); do
+  HG_DIR=$(dirname $DOT_HG_DIR)
+  cd $HG_DIR
+  HG_URL=$(hg paths default)
+  HG_REV=$(hg --debug id -r. -i)
+  jq_inplace $SRCMAP ".\"$HG_DIR\" = { type: \"hg\", url: \"$HG_URL\", rev: \"$HG_REV\" }"
+done
+
+if [ "${OSSFUZZ_REVISION-}" != "" ]; then
+  jq_inplace $SRCMAP ".\"/src\" = { type: \"git\", url: \"https://github.com/google/oss-fuzz.git\", rev: \"$OSSFUZZ_REVISION\" }"
+fi
+
+cat $SRCMAP
+rm $SRCMAP

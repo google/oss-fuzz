@@ -14,11 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+FROM gcr.io/oss-fuzz-base/base-builder-new
 
-# specific swift-nio
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN git clone --depth 1 https://github.com/apple/swift-nio.git
-COPY build.sh $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/swift-nio
+RUN install_swift.sh

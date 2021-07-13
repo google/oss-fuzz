@@ -1,0 +1,30 @@
+ac9ee01fcbfac745aaedca0393a8e1c8a33acd8d is the first bad commit
+commit ac9ee01fcbfac745aaedca0393a8e1c8a33acd8d
+Author: John Doe <johndoe@example.com>
+Date:   Tue Aug 6 08:41:53 2019 +0000
+
+    [compiler-rt] Implement getrandom interception
+    
+    Summary:
+    Straightforward implementation of `getrandom` syscall and libc
+    hooks.
+    
+    Test Plan: Local MSAN failures caused by uninstrumented `getrandom`
+    calls stop failing.
+    
+    Patch by John Doe 3.
+    
+    Reviewers: jonhdoe2, johndoe
+    
+    Reviewed By: johndoe
+    
+    Subscribers: johndoe4, johndoe5, #sanitizers, llvm-commits
+    
+    Tags: #sanitizers, #llvm
+    
+    Differential Revision: https://reviews.llvm.org/D65551
+    
+    llvm-svn: 367999
+
+:040000 040000 8db10511ca83cc7b0265c7703684cd386350151b 62508fdc5e8919bbb2a0bd185cc109868192cdb0 M      compiler-rt
+bisect run success
