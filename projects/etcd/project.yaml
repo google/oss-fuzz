@@ -1,6 +1,6 @@
 homepage: "https://etcd.io"
 main_repo: "https://github.com/etcd-io/etcd"
-primary_contact: ""
+primary_contact: "ptab@google.com"
 auto_ccs :
   - "adam@adalogics.com"
 language: go
