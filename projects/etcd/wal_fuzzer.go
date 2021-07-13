@@ -16,9 +16,12 @@
 package wal
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 
+	"go.etcd.io/etcd/raft/v3/raftpb"
+	"go.etcd.io/etcd/server/v3/wal/walpb"
 	"go.uber.org/zap"
 )
 
@@ -32,6 +35,24 @@ func FuzzWalCreate(data []byte) int {
 	if err != nil {
 		return 0
 	}
-	defer w.Close()
+	if err = w.SaveSnapshot(walpb.Snapshot{}); err != nil {
+		return 0
+	}
+	if err = w.Save(raftpb.HardState{}, []raftpb.Entry{{Index: 0}}); err != nil {
+		return 0
+	}
+	w.Close()
+	neww, err := Open(zap.NewExample(), p, walpb.Snapshot{})
+	if err != nil {
+		return 0
+	}
+	defer neww.Close()
+	metadata, _, _, err := neww.ReadAll()
+	if err != nil {
+		return 0
+	}
+	if !bytes.Equal(data, metadata) {
+		panic("data and metadata are not similar, but they should be")
+	}
 	return 1
 }
