@@ -52,7 +52,7 @@ func FuzzWalCreate(data []byte) int {
 		return 0
 	}
 	if !bytes.Equal(data, metadata) {
-		panic("data and metadata are not similar, but they should be")
+		panic("data and metadata are not equal, but they should be")
 	}
 	return 1
 }
