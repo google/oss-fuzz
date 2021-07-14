@@ -15,7 +15,7 @@
 ##############################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake make libtool
+RUN apt-get update && apt-get install -y autoconf automake make libtool pkg-config
 RUN git clone --depth 1 https://git.torproject.org/tor.git
 RUN git clone --depth 1 https://git.torproject.org/fuzzing-corpora.git tor-fuzz-corpora
 RUN git clone --depth 1 https://github.com/madler/zlib.git
