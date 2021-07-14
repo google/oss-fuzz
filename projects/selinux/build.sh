@@ -14,13 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-export DESTDIR=$(pwd)/DESTDIR
-export LDFLAGS="${LDFLAGS:-} $CFLAGS"
-
-find -name Makefile | xargs sed -i 's/,-z,defs//'
-make V=1 -j$(nproc) install
-
-$CC $CFLAGS -I$DESTDIR/usr/include -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -c -o secilc-fuzzer.o $SRC/secilc-fuzzer.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE secilc-fuzzer.o $DESTDIR/usr/lib/libsepol.a -o $OUT/secilc-fuzzer
-zip -r $OUT/secilc-fuzzer_seed_corpus.zip secilc/test
+./scripts/oss-fuzz.sh
