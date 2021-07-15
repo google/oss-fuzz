@@ -1,0 +1,6 @@
+homepage: "https://apr.apache.org/"
+language: c
+primary_contact: "someone@apache.org"
+main_repo: "https://apr.apache.org/"
+auto_ccs:
+ - "david@adalogics.com"
