@@ -1,9 +1,10 @@
 homepage: "https://github.com/uber/h3"
 language: c
-primary_contact: "isaac@isaacbrodsky.com"
+primary_contact: "isaacbrodsky@live.com"
 auto_ccs:
   - "Adam@adalogics.com"
   - "h3-dev@googlegroups.com"
+  - "isv.damocles@gmail.com"
 sanitizers:
   - address
   - undefined
