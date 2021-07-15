@@ -1,0 +1,6 @@
+homepage: "https://httpd.apache.org/"
+language: c
+primary_contact: "someone_at_apache@apache.org"
+auto_ccs:
+ - "david@adalogics.com"
+main_repo: "https://httpd.apache.org/"
