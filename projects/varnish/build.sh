@@ -19,6 +19,6 @@
 git apply --ignore-whitespace $SRC/patch.diff
 # build project
 ./autogen.sh
-./configure
+./configure PCRE2_LIBS=-l:libpcre2-8.a
 make -j$(nproc)
 cp bin/varnishd/*_fuzzer $OUT/
