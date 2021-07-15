@@ -1,0 +1,6 @@
+homepage: "https://sourceforge.net/projects/faac/"
+language: c
+primary_contact: "someone@faad2.com"
+auto_ccs:
+ - "david@adalogics.com"
+main_repo: "https://github.com/knik0/faad2"
