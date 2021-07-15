@@ -5,6 +5,7 @@ auto_ccs:
   - "Adam@adalogics.com"
   - "h3-dev@googlegroups.com"
   - "isv.damocles@gmail.com"
+  - "ajfriend@gmail.com"
 sanitizers:
   - address
   - undefined
