@@ -16,9 +16,11 @@
 
 import atheris
 
-import yaml
+with atheris.instrument_imports():
+  import yaml
 
 
+@atheris.instrument_func
 def TestOneInput(input_bytes):
   try:
     context = yaml.load(input_bytes, Loader=yaml.FullLoader)

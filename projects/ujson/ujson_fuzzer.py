@@ -29,7 +29,7 @@ coverage.
 """
 
 import sys
-import atheris_no_libfuzzer as atheris
+import atheris
 import ujson
 
 

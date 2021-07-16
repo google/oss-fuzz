@@ -16,7 +16,8 @@
 
 import sys
 import atheris
-import bleach
+with atheris.instrument_imports():
+  import bleach
 
 
 def TestOneInput(input_bytes):

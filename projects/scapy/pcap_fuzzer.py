@@ -14,13 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import io
 import sys
 import atheris
 
-import scapy
-import scapy.error
-import scapy.utils
+with atheris.instrument_imports():
+  import io
+  import scapy
+  import scapy.error
+  import scapy.utils
 
 
 def TestOneInput(input_bytes):
