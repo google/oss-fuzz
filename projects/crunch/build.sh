@@ -18,5 +18,5 @@
 cd crnlib
 sed -i 's/c1,c2,len, get8(s)/(stbi_uc)c1,(stbi_uc)c2,(stbi_uc)len, (stbi_uc)get8(s)/g' ./crn_stb_image.cpp
 sed -i 's/\"\\0\\0\\04\\02\\06\"\[num_chans\]/(mz_uint8)(\"\\0\\0\\04\\02\\06\"\[num_chans\])/g' ./crn_miniz.cpp
-make V=1
+make fuzz V=1
 cp crunch_fuzz $OUT/crunch_fuzz
