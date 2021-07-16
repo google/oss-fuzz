@@ -195,5 +195,5 @@ class BuildFuzzersConfig(BaseConfig):
     # var is set to '0'?
     self.keep_unaffected_fuzz_targets = (
         # Not from a PR or push.
-        (not self.pr_ref and not self.base_commit) or
+        (not self.base_ref and not self.base_commit) or
         bool(os.getenv('KEEP_UNAFFECTED_FUZZERS')))

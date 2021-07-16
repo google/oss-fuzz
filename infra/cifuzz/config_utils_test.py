@@ -78,19 +78,13 @@ class BuildFuzzersConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertTrue(config.keep_unaffected_fuzz_targets)
 
-  def test_keep_unaffected_defaults_to_true_when_pr(self):
+  def test_keep_unaffected_defaults_to_false_when_pr(self):
     """Tests that keep_unaffected_fuzz_targets defaults to false when from a
     pr."""
+    os.environ['GITHUB_BASE_REF'] = 'base-ref'
     config = self._create_config()
-    config.pr_ref = 'pr_ref'
     self.assertFalse(config.keep_unaffected_fuzz_targets)
 
-  def test_keep_unaffected_defaults_to_true_when_push(self):
-    """Tests that keep_unaffected_fuzz_targets defaults to false when from a
-    push."""
-    config = self._create_config()
-    config.base_commit = 'commit'
-    self.assertFalse(config.keep_unaffected_fuzz_targets)
 
 class RunFuzzersConfigTest(unittest.TestCase):
   """Tests for RunFuzzersConfig."""
