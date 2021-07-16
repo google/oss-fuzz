@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone https://github.com/BinomialLLC/crunch
+#RUN git clone https://github.com/BinomialLLC/crunch
+RUN git clone https://github.com/DavidKorczynski/crunch
 WORKDIR crunch
 COPY build.sh $SRC/
-COPY Makefile $SRC/crunch/crnlib/Makefile
-COPY crunch_fuzz.cpp $SRC/crunch/crnlib/crunch_fuzz.cpp
+#COPY Makefile $SRC/crunch/crnlib/Makefile
+#COPY crunch_fuzz.cpp $SRC/crunch/crnlib/crunch_fuzz.cpp
