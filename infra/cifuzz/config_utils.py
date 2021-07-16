@@ -164,7 +164,7 @@ class BuildFuzzersConfig(BaseConfig):
     if event == 'push':
       self.base_commit = event_data['before']
       logging.debug('base_commit: %s', self.base_commit)
-    else:
+    elif event == 'pull_request':
       self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
       logging.debug('pr_ref: %s', self.pr_ref)
 
@@ -193,5 +193,7 @@ class BuildFuzzersConfig(BaseConfig):
 
     # TODO(metzman): Use better system for interpreting env vars. What if env
     # var is set to '0'?
-    self.keep_unaffected_fuzz_targets = bool(
-        os.getenv('KEEP_UNAFFECTED_FUZZERS'))
+    self.keep_unaffected_fuzz_targets = (
+        # Not from a PR or push.
+        (not self.pr_ref and not self.base_commit) or
+        bool(os.getenv('KEEP_UNAFFECTED_FUZZERS')))
