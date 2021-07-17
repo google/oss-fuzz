@@ -191,7 +191,7 @@ then
     cd $SRC/wolfssl-sp-math/
     autoreconf -ivf
     # -DHAVE_ECC_BRAINPOOL and -DHAVE_ECC_KOBLITZ are lacking from the CFLAGS; these are not supported by SP math
-    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_PUBLIC_ECC_ADD_DBL"
     # SP math does not support custom curves, so remove that flag
     export WOLFCRYPT_CONFIGURE_PARAMS_SP_MATH=${WOLFCRYPT_CONFIGURE_PARAMS//"--enable-ecccustcurves"/}
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS_SP_MATH --enable-sp --enable-sp-math
