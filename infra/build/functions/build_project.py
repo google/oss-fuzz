@@ -228,7 +228,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     # (see https://github.com/google/oss-fuzz/issues/6035).
                     ('export HOME=/root; rm -r /out && cd /src && cd {workdir} '
                      '&& mkdir -p {out} && compile || (echo "{failure_msg}" '
-                     '&& false')
+                     '&& false)'
                     ).format(workdir=workdir, out=out, failure_msg=failure_msg),
                 ],
             })
