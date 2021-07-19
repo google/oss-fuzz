@@ -89,3 +89,5 @@ for target in ${TARGETS[@]}; do
   # Patch RPATH of the fuzz target
   patchelf --set-rpath '$ORIGIN/lib' $OUT/$target
 done
+
+cp $SRC/lldb_vs_lldb_eval_libfuzzer_test.options $OUT/

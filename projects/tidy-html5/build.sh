@@ -27,7 +27,7 @@ for fuzzer in tidy_config_fuzzer tidy_fuzzer; do
         $SRC/${fuzzer}.c -o ${fuzzer}.o
     ${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
         -o $OUT/${fuzzer} \
-        $LIB_FUZZING_ENGINE libtidys.a
+        $LIB_FUZZING_ENGINE libtidy.a
 done
 
 cp ${SRC}/*.options ${OUT}/
