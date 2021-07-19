@@ -49,7 +49,7 @@
     "args": [
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -146,7 +146,7 @@
     "args": [
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -243,7 +243,7 @@
     "args": [
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
