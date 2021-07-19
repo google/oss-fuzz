@@ -22,5 +22,6 @@ RUN apt-get update \
 RUN git clone --depth 1 https://github.com/google/lldb-eval
 
 COPY build.sh $SRC/
+COPY lldb_vs_lldb_eval_libfuzzer_test.options $SRC/
 
 WORKDIR $SRC/lldb-eval
