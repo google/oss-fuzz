@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO(jonathanmetzman): Remove this once
+# https://github.com/google/oss-fuzz/issues/6035 is fixed properly.
+rm -rf /builder/home/.hunter
+
 cd $SRC/myanmar-tools/clients/cpp
 mkdir build
 cd build
