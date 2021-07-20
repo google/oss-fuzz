@@ -13,7 +13,6 @@
 # limitations under the License.
 """Tests for affected_fuzz_targets.py"""
 import os
-import sys
 import shutil
 import tempfile
 import unittest
@@ -25,7 +24,6 @@ import affected_fuzz_targets
 import clusterfuzz_deployment
 import docker
 import test_helpers
-
 
 # pylint: disable=protected-access
 
@@ -66,14 +64,16 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
                                             project_name=EXAMPLE_PROJECT,
                                             workspace='/workspace')
     workspace = docker.Workspace(config)
-    deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
+    deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
+        config, workspace)
     # We can't use fakefs in this test because this test executes
     # utils.is_fuzz_target_local. This function relies on the executable bit
     # being set, which doesn't work properly in fakefs.
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
         'get_coverage.OSSFuzzCoverage.get_files_covered_by_target'
     ) as mocked_get_files:
-      with mock.patch('get_coverage._get_oss_fuzz_fuzzer_stats_dir_url', return_value=1):
+      with mock.patch('get_coverage._get_oss_fuzz_fuzzer_stats_dir_url',
+                      return_value=1):
         mocked_get_files.side_effect = side_effect
         shutil.copy(self.TEST_FUZZER_1, tmp_dir)
         shutil.copy(self.TEST_FUZZER_2, tmp_dir)
