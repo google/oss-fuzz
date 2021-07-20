@@ -53,7 +53,7 @@ class OSSFuzzCoverage(BaseCoverage):
   # The path to get OSS-Fuzz project's latest report json file.
   LATEST_COVERAGE_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
-  def __init__(self, repo_path, oss_fuzz_roject_name):
+  def __init__(self, repo_path, oss_fuzz_project_name):
     """Constructor for OssFuzzCoverage. Callers should check that
     fuzzer_stats_url is initialized."""
     super().__init__(repo_path)

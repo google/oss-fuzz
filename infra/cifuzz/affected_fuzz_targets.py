@@ -104,8 +104,7 @@ def get_affected_fuzz_targets(coverage, fuzz_target_paths, files_changed):
   """Returns a list of paths of affected targets."""
   affected_fuzz_targets = set()
   for fuzz_target_path in fuzz_target_paths:
-    if is_fuzz_target_affected(project_coverage, fuzz_target_path,
-                               files_changed):
+    if is_fuzz_target_affected(coverage, fuzz_target_path, files_changed):
       affected_fuzz_targets.add(fuzz_target_path)
 
   return affected_fuzz_targets
