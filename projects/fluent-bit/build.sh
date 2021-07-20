@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-cd fluent-bit/build
+cd fluent-bit
+sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
+sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
+
+cd build
 
 export CFLAGS="$CFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
 export CXXFLAGS="$CXXFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
