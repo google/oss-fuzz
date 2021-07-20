@@ -55,8 +55,7 @@ def remove_unaffected_fuzz_targets(clusterfuzz_deployment, out_dir,
     logging.error('Could not find latest coverage report.')
     return
 
-  affected_fuzz_targets = get_affected_fuzz_targets(coverage,
-                                                    fuzz_target_paths,
+  affected_fuzz_targets = get_affected_fuzz_targets(coverage, fuzz_target_paths,
                                                     files_changed)
 
   if not affected_fuzz_targets:

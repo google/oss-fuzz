@@ -136,9 +136,9 @@ class OSSFuzzCoverage(BaseCoverage):
   def _get_latest_cov_report_info(self):
     """Gets and returns a dictionary containing the latest coverage report info
     for |project|."""
-    latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
-                                            self.LATEST_COVERAGE_INFO_PATH,
-                                            self.oss_fuzz_project_name + '.json')
+    latest_report_info_url = utils.url_join(
+        utils.GCS_BASE_URL, self.LATEST_COVERAGE_INFO_PATH,
+        self.oss_fuzz_project_name + '.json')
     latest_cov_info = http_utils.get_json_from_url(latest_report_info_url)
     if latest_cov_info is None:
       logging.error('Could not get the coverage report json from url: %s.',
