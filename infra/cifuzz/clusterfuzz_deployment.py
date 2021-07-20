@@ -178,7 +178,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
-    # TODO(metzman): Implement this.
+    # TODO(jonathanmetzman): Implement this.
     raise NotImplementedError(
         'Not implemented yet. Waiting until we can specify a directory for '
         'coverage report directories.')
@@ -186,7 +186,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     try:
-      if self.filestore.download_coverage(self.workspace.clusterfuzz_coverage):
+      if not self.filestore.download_coverage(
+          self.workspace.clusterfuzz_coverage):
         return None
       return get_coverage.FilesystemCoverage(
           repo_path, self.workspace.clusterfuzz_coverage)
