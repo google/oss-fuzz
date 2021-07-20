@@ -309,7 +309,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_crashes."""
     logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
-  def download_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
+  def download_corpus(self, target_name):
     """Noop Implementation of download_corpus."""
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
     return self.make_empty_corpus_dir(target_name)

@@ -364,7 +364,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
             workspace=workspace,
             project_name=EXAMPLE_PROJECT,
             sanitizer=self.SANITIZER,
-            run_fuzzers_mode='coverage')
+            run_fuzzers_mode='coverage',
+            is_github=True,
+            # Set build integration path so it's not internal.
+            build_integration_path='/')
         result = run_fuzzers.run_fuzzers(run_config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
         expected_summary_path = os.path.join(
