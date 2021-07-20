@@ -39,7 +39,8 @@ class TestRunCoverageCommand(unittest.TestCase):
         f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
         'OUT=/workspace/build-out', '-v',
         f'{workspace.workspace}:{workspace.workspace}', '-e',
-        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
+        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-e',
+        f'COVERAGE_OUTPUT_DIR={workspace.coverage_report}', '-t',
         'gcr.io/oss-fuzz-base/base-runner', 'coverage'
     ]
 

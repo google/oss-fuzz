@@ -36,3 +36,7 @@ class BaseFilestore:
   def download_latest_build(self, name, dst_directory):
     """Downloads the latest build with |name| to |dst_directory|."""
     raise NotImplementedError('Child class must implement method.')
+
+  def download_coverage(self, dst_directory):
+    """Downloads the latest project coverage report."""
+    raise NotImplementedError('Child class must implement method.')

@@ -23,7 +23,8 @@ def run_coverage_command(workspace, config):
   docker_args, _ = docker.get_base_docker_run_args(workspace, config.sanitizer,
                                                    config.language)
   docker_args += [
-      '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
+      '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-e',
+      f'COVERAGE_OUTPUT_DIR={workspace.coverage_report}', '-t',
       docker.BASE_RUNNER_TAG, 'coverage'
   ]
   return helper.docker_run(docker_args)

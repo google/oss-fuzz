@@ -15,27 +15,51 @@
 import logging
 import os
 import sys
-import json
-import urllib.error
-import urllib.request
+
+import http_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
-# The path to get project's latest report json file.
-LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
+# The path to get OSS-Fuzz project's latest report json file.`
+OSS_FUZZ_LATEST_COVERAGE_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
 
-class OssFuzzCoverageGetter:
+# pylint: disable=too-few-public-methods
+class CoverageError(Exception):
+  """Exceptions for project coverage."""
+
+
+class BaseCoverage:
+  """Gets coverage data for a project."""
+
+  def __init__(self, repo_path):
+    self.repo_path = _normalize_repo_path(repo_path)
+
+  def get_files_covered_by_target(self, target):
+    """Returns a list of source files covered by the specific fuzz target.
+
+    Args:
+      target: The name of the fuzz target whose coverage is requested.
+
+    Returns:
+      A list of files that the fuzz targets covers or None.
+    """
+    raise NotImplementedError('Child class must implement method.')
+
+
+class OSSFuzzCoverage(BaseCoverage):
   """Gets coverage data for a project from OSS-Fuzz."""
 
-  def __init__(self, project_name, repo_path):
-    """Constructor for OssFuzzCoverageGetter. Callers should check that
-    fuzzer_stats_url is initialized."""
-    self.project_name = project_name
-    self.repo_path = _normalize_repo_path(repo_path)
-    self.fuzzer_stats_url = _get_fuzzer_stats_dir_url(self.project_name)
+  def __init__(self, repo_path, oss_fuzz_project_name):
+    """Constructor for OSSFuzzCoverage."""
+    super().__init__(repo_path)
+    self.oss_fuzz_project_name = oss_fuzz_project_name
+    self.fuzzer_stats_url = _get_oss_fuzz_fuzzer_stats_dir_url(
+        self.oss_fuzz_project_name)
+    if self.fuzzer_stats_url is None:
+      raise CoverageError('Could not get latest coverage.')
 
   def get_target_coverage_report(self, target):
     """Get the coverage report for a specific fuzz target.
@@ -50,7 +74,7 @@ class OssFuzzCoverageGetter:
       return None
 
     target_url = utils.url_join(self.fuzzer_stats_url, target + '.json')
-    return get_json_from_url(target_url)
+    return http_utils.get_json_from_url(target_url)
 
   def get_files_covered_by_target(self, target):
     """Gets a list of source files covered by the specific fuzz target.
@@ -89,6 +113,64 @@ class OssFuzzCoverageGetter:
     return affected_file_list
 
 
+def _get_oss_fuzz_latest_cov_report_info(oss_fuzz_project_name):
+  """Gets and returns a dictionary containing the latest coverage report info
+  for |project|."""
+  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
+                                          OSS_FUZZ_LATEST_COVERAGE_INFO_PATH,
+                                          oss_fuzz_project_name + '.json')
+  latest_cov_info = http_utils.get_json_from_url(latest_report_info_url)
+  if latest_cov_info is None:
+    logging.error('Could not get the coverage report json from url: %s.',
+                  latest_report_info_url)
+    return None
+  return latest_cov_info
+
+
+def _get_oss_fuzz_fuzzer_stats_dir_url(oss_fuzz_project_name):
+  """Gets latest coverage report info for a specific OSS-Fuzz project from
+  GCS.
+
+  Args:
+    oss_fuzz_project_name: The name of the project.
+
+  Returns:
+    The projects coverage report info in json dict or None on failure.
+  """
+  latest_cov_info = _get_oss_fuzz_latest_cov_report_info(oss_fuzz_project_name)
+
+  if not latest_cov_info:
+    return None
+
+  if 'fuzzer_stats_dir' not in latest_cov_info:
+    logging.error('fuzzer_stats_dir not in latest coverage info.')
+    return None
+
+  fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
+  fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
+  return fuzzer_stats_dir_url
+
+
+class FilesystemCoverage(BaseCoverage):
+  """Class that gets a project's coverage from the filesystem."""
+
+  def __init__(self, repo_path, project_coverage_dir):
+    super().__init__(repo_path)
+    self.project_coverage_dir = project_coverage_dir
+
+  def get_files_covered_by_target(self, target):
+    """Returns a list of source files covered by the specific fuzz target.
+
+    Args:
+      target: The name of the fuzz target whose coverage is requested.
+
+    Returns:
+      A list of files that the fuzz targets covers or None.
+    """
+    # TODO(jonathanmetzman): Implement this.
+    raise NotImplementedError('Implementation TODO.')
+
+
 def is_file_covered(file_cov):
   """Returns whether the file is covered."""
   return file_cov['summary']['regions']['covered']
@@ -106,64 +188,3 @@ def _normalize_repo_path(repo_path):
   if not repo_path.endswith('/'):
     repo_path += '/'
   return repo_path
-
-
-def _get_latest_cov_report_info(project_name):
-  """Gets and returns a dictionary containing the latest coverage report info
-  for |project|."""
-  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
-                                          LATEST_REPORT_INFO_PATH,
-                                          project_name + '.json')
-  latest_cov_info = get_json_from_url(latest_report_info_url)
-  if latest_cov_info is None:
-    logging.error('Could not get the coverage report json from url: %s.',
-                  latest_report_info_url)
-    return None
-  return latest_cov_info
-
-
-def _get_fuzzer_stats_dir_url(project_name):
-  """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
-
-  Args:
-    project_name: The name of the relevant OSS-Fuzz project.
-
-  Returns:
-    The projects coverage report info in json dict or None on failure.
-  """
-  latest_cov_info = _get_latest_cov_report_info(project_name)
-
-  if not latest_cov_info:
-    return None
-
-  if 'fuzzer_stats_dir' not in latest_cov_info:
-    logging.error('fuzzer_stats_dir not in latest coverage info.')
-    return None
-
-  fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
-  fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
-  return fuzzer_stats_dir_url
-
-
-def get_json_from_url(url):
-  """Gets a json object from a specified HTTP URL.
-
-  Args:
-    url: The url of the json to be downloaded.
-
-  Returns:
-    A dictionary deserialized from JSON or None on failure.
-  """
-  try:
-    response = urllib.request.urlopen(url)
-  except urllib.error.HTTPError:
-    logging.error('HTTP error with url %s.', url)
-    return None
-
-  try:
-    # read().decode() fixes compatibility issue with urllib response object.
-    result_json = json.loads(response.read().decode())
-  except (ValueError, TypeError, json.JSONDecodeError) as err:
-    logging.error('Loading json from url %s failed with: %s.', url, str(err))
-    return None
-  return result_json
