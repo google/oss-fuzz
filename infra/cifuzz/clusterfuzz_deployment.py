@@ -250,15 +250,15 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     return None
 
   def upload_latest_build(self):  # pylint: disable=no-self-use
-    """Noop Impelementation of upload_latest_build."""
+    """Noop Implementation of upload_latest_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
   def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
-    """Noop Impelementation of upload_corpus."""
+    """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
 
   def upload_crashes(self):  # pylint: disable=no-self-use
-    """Noop Impelementation of upload_crashes."""
+    """Noop Implementation of upload_crashes."""
     logging.info('Not uploading crashes because on OSS-Fuzz.')
 
   def download_corpus(self, target_name):
@@ -283,7 +283,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     return corpus_dir
 
   def upload_project_coverage(self):
-    """Noop Impelementation of upload_coverage_report."""
+    """Noop Implementation of upload_coverage_report."""
     logging.info('Not uploading coverage report because on OSS-Fuzz.')
 
   def get_project_coverage(self, repo_path):
@@ -300,35 +300,35 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   ClusterFuzz to use."""
 
   def upload_latest_build(self):  # pylint: disable=no-self-use
-    """Noop Impelementation of upload_latest_build."""
+    """Noop Implementation of upload_latest_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
 
   def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
-    """Noop Impelementation of upload_corpus."""
+    """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
 
   def upload_crashes(self):  # pylint: disable=no-self-use
-    """Noop Impelementation of upload_crashes."""
+    """Noop Implementation of upload_crashes."""
     logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
   def download_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
-    """Noop Impelementation of download_corpus."""
+    """Noop Implementation of download_corpus."""
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
     return self.make_empty_corpus_dir(target_name)
 
   def download_latest_build(self):  # pylint: disable=no-self-use
-    """Noop Impelementation of download_latest_build."""
+    """Noop Implementation of download_latest_build."""
     logging.info(
         'Not downloading latest build because no ClusterFuzz deployment.')
 
   def upload_project_coverage(self):
-    """Noop Impelementation of upload_project_coverage."""
+    """Noop Implementation of upload_project_coverage."""
     logging.info(
         'Not uploading coverage report because no ClusterFuzz deployment.')
 
   def get_project_coverage(self, repo_path):
-    """Noop Impelementation of get_project_coverage."""
+    """Noop Implementation of get_project_coverage."""
     logging.info(
         'Not getting project coverage because no ClusterFuzz deployment.')
 
