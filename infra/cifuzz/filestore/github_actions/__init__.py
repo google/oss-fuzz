@@ -29,6 +29,7 @@ def tar_directory(directory, archive_path):
   |archive_path| with a .tar suffix. |archive_path| should not end in .tar."""
   parent_directory = os.path.dirname(os.path.abspath(directory))
   basename = os.path.basename(directory)
+  import pdb; pdb.set_trace()
   shutil.make_archive(archive_path,
                       'tar',
                       root_dir=parent_directory,
