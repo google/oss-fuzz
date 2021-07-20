@@ -95,11 +95,9 @@ class BaseConfig:
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
+    # TODO(ochang): Error out if both oss_fuzz and build_integration_path is not
+    # set.
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
-
-    if not self.oss_fuzz_project_name and not self.build_integration_path:
-      raise RuntimeError(
-          'build-integration-path must be set if not an OSS-Fuzz project.')
 
     self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
