@@ -70,11 +70,11 @@ class BaseClusterFuzzDeployment:
     """Uploads the corpus for |target_name| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_project_coverage(self):
+  def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
     raise NotImplementedError('Child class must implement method.')
 
-  def get_project_coverage(self, repo_path):
+  def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     raise NotImplementedError('Child class must implement method.')
 
@@ -176,21 +176,20 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
 
-  def upload_project_coverage(self):
+  def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
     # TODO(metzman): Implement this.
     raise NotImplementedError(
         'Not implemented yet. Waiting until we can specify a directory for '
         'coverage report directories.')
 
-  def get_project_coverage(self, repo_path):
+  def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     try:
       if self.filestore.download_coverage(self.workspace.clusterfuzz_coverage):
         return None
-      return get_coverage.FilesystemProjectCoverage(
-          self.config.project_name, repo_path,
-          self.workspace.clusterfuzz_coverage)
+      return get_coverage.FilesystemCoverage(
+          repo_path, self.workspace.clusterfuzz_coverage)
     except (get_coverage.CoverageError, filestore.FilestoreError):
       return None
 
@@ -282,15 +281,14 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       logging.warning('Failed to download corpus for %s.', target_name)
     return corpus_dir
 
-  def upload_project_coverage(self):
+  def upload_coverage(self):
     """Noop Implementation of upload_coverage_report."""
     logging.info('Not uploading coverage report because on OSS-Fuzz.')
 
-  def get_project_coverage(self, repo_path):
+  def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     try:
-      return get_coverage.OSSFuzzProjectCoverage(self.config.project_name,
-                                                 repo_path)
+      return get_coverage.OSSFuzzCoverage(self.config.project_name, repo_path)
     except get_coverage.CoverageError:
       return None
 
@@ -322,13 +320,13 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     logging.info(
         'Not downloading latest build because no ClusterFuzz deployment.')
 
-  def upload_project_coverage(self):
-    """Noop Implementation of upload_project_coverage."""
+  def upload_coverage(self):
+    """Noop Implementation of upload_coverage."""
     logging.info(
         'Not uploading coverage report because no ClusterFuzz deployment.')
 
-  def get_project_coverage(self, repo_path):
-    """Noop Implementation of get_project_coverage."""
+  def get_coverage(self, repo_path):
+    """Noop Implementation of get_coverage."""
     logging.info(
         'Not getting project coverage because no ClusterFuzz deployment.')
 

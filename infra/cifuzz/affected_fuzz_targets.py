@@ -49,13 +49,13 @@ def remove_unaffected_fuzz_targets(clusterfuzz_deployment, out_dir,
     logging.error('No fuzz targets found in out dir.')
     return
 
-  project_coverage = clusterfuzz_deployment.get_project_coverage(repo_path)
-  if not project_coverage:
+  coverage = clusterfuzz_deployment.get_coverage(repo_path)
+  if not coverage:
     # Don't remove any fuzz targets unless we have data.
     logging.error('Could not find latest coverage report.')
     return
 
-  affected_fuzz_targets = get_affected_fuzz_targets(project_coverage,
+  affected_fuzz_targets = get_affected_fuzz_targets(coverage,
                                                     fuzz_target_paths,
                                                     files_changed)
 
@@ -76,11 +76,11 @@ def remove_unaffected_fuzz_targets(clusterfuzz_deployment, out_dir,
                     fuzz_target_path)
 
 
-def is_fuzz_target_affected(project_coverage, fuzz_target_path, files_changed):
+def is_fuzz_target_affected(coverage, fuzz_target_path, files_changed):
   """Returns True if a fuzz target (|fuzz_target_path|) is affected by
   |files_changed|."""
   fuzz_target = os.path.basename(fuzz_target_path)
-  covered_files = project_coverage.get_files_covered_by_target(fuzz_target)
+  covered_files = coverage.get_files_covered_by_target(fuzz_target)
   if not covered_files:
     # Assume a fuzz target is affected if we can't get its coverage from
     # OSS-Fuzz.
@@ -101,8 +101,7 @@ def is_fuzz_target_affected(project_coverage, fuzz_target_path, files_changed):
   return False
 
 
-def get_affected_fuzz_targets(project_coverage, fuzz_target_paths,
-                              files_changed):
+def get_affected_fuzz_targets(coverage, fuzz_target_paths, files_changed):
   """Returns a list of paths of affected targets."""
   affected_fuzz_targets = set()
   for fuzz_target_path in fuzz_target_paths:

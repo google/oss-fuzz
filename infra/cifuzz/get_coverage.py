@@ -29,11 +29,10 @@ class CoverageError(Exception):
   """Exceptions for project coverage."""
 
 
-class BaseProjectCoverage:
+class BaseCoverage:
   """Gets coverage data for a project."""
 
-  def __init__(self, project_name, repo_path):
-    self.project_name = project_name
+  def __init__(self, repo_path):
     self.repo_path = _normalize_repo_path(repo_path)
 
   def get_files_covered_by_target(self, target):
@@ -48,16 +47,17 @@ class BaseProjectCoverage:
     raise NotImplementedError('Child class must implement method.')
 
 
-class OSSFuzzProjectCoverage(BaseProjectCoverage):
+class OSSFuzzCoverage(BaseCoverage):
   """Gets coverage data for a project from OSS-Fuzz."""
 
   # The path to get OSS-Fuzz project's latest report json file.
   LATEST_COVERAGE_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
-  def __init__(self, project_name, repo_path):
-    """Constructor for OssFuzzProjectCoverage. Callers should check that
+  def __init__(self, repo_path, oss_fuzz_roject_name):
+    """Constructor for OssFuzzCoverage. Callers should check that
     fuzzer_stats_url is initialized."""
-    super().__init__(project_name, repo_path)
+    super().__init__(repo_path)
+    self.oss_fuzz_project_name = oss_fuzz_project_name
     self.fuzzer_stats_url = self._get_fuzzer_stats_dir_url()
     if self.fuzzer_stats_url is None:
       raise CoverageError('Could not get latest coverage.')
@@ -117,9 +117,6 @@ class OSSFuzzProjectCoverage(BaseProjectCoverage):
     """Gets latest coverage report info for a specific OSS-Fuzz project from
     GCS.
 
-    Args:
-      project_name: The name of the relevant OSS-Fuzz project.
-
     Returns:
       The projects coverage report info in json dict or None on failure.
     """
@@ -141,7 +138,7 @@ class OSSFuzzProjectCoverage(BaseProjectCoverage):
     for |project|."""
     latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
                                             self.LATEST_COVERAGE_INFO_PATH,
-                                            self.project_name + '.json')
+                                            self.oss_fuzz_project_name + '.json')
     latest_cov_info = http_utils.get_json_from_url(latest_report_info_url)
     if latest_cov_info is None:
       logging.error('Could not get the coverage report json from url: %s.',
@@ -150,11 +147,11 @@ class OSSFuzzProjectCoverage(BaseProjectCoverage):
     return latest_cov_info
 
 
-class FilesystemProjectCoverage(BaseProjectCoverage):
+class FilesystemCoverage(BaseCoverage):
   """Class that gets a project's coverage from the filesystem."""
 
-  def __init__(self, project_name, repo_path, project_coverage_dir):
-    super().__init__(project_name, repo_path)
+  def __init__(self, repo_path, project_coverage_dir):
+    super().__init__(repo_path)
     self.project_coverage_dir = project_coverage_dir
 
   def get_files_covered_by_target(self, target):
@@ -166,7 +163,8 @@ class FilesystemProjectCoverage(BaseProjectCoverage):
     Returns:
       A list of files that the fuzz targets covers or None.
     """
-    raise NotImplementedError('Child class must implement method.')
+    # TODO(jonathanmetzman): Implement this.
+    raise NotImplementedError('Implementation TODO.')
 
 
 def is_file_covered(file_cov):
