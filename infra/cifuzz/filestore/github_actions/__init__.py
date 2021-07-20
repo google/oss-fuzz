@@ -29,7 +29,6 @@ def tar_directory(directory, archive_path):
   |archive_path| with a .tar suffix. |archive_path| should not end in .tar."""
   parent_directory = os.path.dirname(os.path.abspath(directory))
   basename = os.path.basename(directory)
-  import pdb; pdb.set_trace()
   shutil.make_archive(archive_path,
                       'tar',
                       root_dir=parent_directory,
@@ -55,9 +54,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     with tempfile.TemporaryDirectory() as temp_dir:
       archive_path = os.path.join(temp_dir, name)
       archive_path = tar_directory(directory, archive_path)
-    file_paths = [archive_path]
+      file_paths = [archive_path]
 
-    return artifact_client.upload_artifact(name, file_paths, temp_dir)
+      return artifact_client.upload_artifact(name, file_paths, temp_dir)
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
