@@ -22,9 +22,11 @@ import http_utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
+# The path to get OSS-Fuzz project's latest report json file.`
+OSS_FUZZ_LATEST_COVERAGE_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
+
+
 # pylint: disable=too-few-public-methods
-
-
 class CoverageError(Exception):
   """Exceptions for project coverage."""
 
@@ -50,15 +52,12 @@ class BaseCoverage:
 class OSSFuzzCoverage(BaseCoverage):
   """Gets coverage data for a project from OSS-Fuzz."""
 
-  # The path to get OSS-Fuzz project's latest report json file.
-  LATEST_COVERAGE_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
-
   def __init__(self, repo_path, oss_fuzz_project_name):
-    """Constructor for OssFuzzCoverage. Callers should check that
-    fuzzer_stats_url is initialized."""
+    """Constructor for OSSFuzzCoverage."""
     super().__init__(repo_path)
     self.oss_fuzz_project_name = oss_fuzz_project_name
-    self.fuzzer_stats_url = self._get_fuzzer_stats_dir_url()
+    self.fuzzer_stats_url = _get_oss_fuzz_fuzzer_stats_dir_url(
+        self.oss_fuzz_project_name)
     if self.fuzzer_stats_url is None:
       raise CoverageError('Could not get latest coverage.')
 
@@ -113,38 +112,43 @@ class OSSFuzzCoverage(BaseCoverage):
 
     return affected_file_list
 
-  def _get_fuzzer_stats_dir_url(self):
-    """Gets latest coverage report info for a specific OSS-Fuzz project from
-    GCS.
 
-    Returns:
-      The projects coverage report info in json dict or None on failure.
-    """
-    latest_cov_info = self._get_latest_cov_report_info()
+def _get_oss_fuzz_latest_cov_report_info(oss_fuzz_project_name):
+  """Gets and returns a dictionary containing the latest coverage report info
+  for |project|."""
+  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
+                                          OSS_FUZZ_LATEST_COVERAGE_INFO_PATH,
+                                          oss_fuzz_project_name + '.json')
+  latest_cov_info = http_utils.get_json_from_url(latest_report_info_url)
+  if latest_cov_info is None:
+    logging.error('Could not get the coverage report json from url: %s.',
+                  latest_report_info_url)
+    return None
+  return latest_cov_info
 
-    if not latest_cov_info:
-      return None
 
-    if 'fuzzer_stats_dir' not in latest_cov_info:
-      logging.error('fuzzer_stats_dir not in latest coverage info.')
-      return None
+def _get_oss_fuzz_fuzzer_stats_dir_url(oss_fuzz_project_name):
+  """Gets latest coverage report info for a specific OSS-Fuzz project from
+  GCS.
 
-    fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
-    fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
-    return fuzzer_stats_dir_url
+  Args:
+    oss_fuzz_project_name: The name of the project.
 
-  def _get_latest_cov_report_info(self):
-    """Gets and returns a dictionary containing the latest coverage report info
-    for |project|."""
-    latest_report_info_url = utils.url_join(
-        utils.GCS_BASE_URL, self.LATEST_COVERAGE_INFO_PATH,
-        self.oss_fuzz_project_name + '.json')
-    latest_cov_info = http_utils.get_json_from_url(latest_report_info_url)
-    if latest_cov_info is None:
-      logging.error('Could not get the coverage report json from url: %s.',
-                    latest_report_info_url)
-      return None
-    return latest_cov_info
+  Returns:
+    The projects coverage report info in json dict or None on failure.
+  """
+  latest_cov_info = _get_oss_fuzz_latest_cov_report_info(oss_fuzz_project_name)
+
+  if not latest_cov_info:
+    return None
+
+  if 'fuzzer_stats_dir' not in latest_cov_info:
+    logging.error('fuzzer_stats_dir not in latest coverage info.')
+    return None
+
+  fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
+  fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
+  return fuzzer_stats_dir_url
 
 
 class FilesystemCoverage(BaseCoverage):
