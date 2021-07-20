@@ -19,17 +19,13 @@ import os
 import sys
 
 import affected_fuzz_targets
+import clusterfuzz_deployment
 import continuous_integration
 import docker
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
-import utils
-
-# Default fuzz configuration.
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -55,10 +51,12 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.out_dir = os.path.join(config.workspace, 'out')
-    os.makedirs(self.out_dir, exist_ok=True)
-    self.work_dir = os.path.join(config.workspace, 'work')
-    os.makedirs(self.work_dir, exist_ok=True)
+    self.workspace = docker.Workspace(config)
+    self.workspace.initialize_dir(self.workspace.out)
+    self.workspace.initialize_dir(self.workspace.work)
+    self.clusterfuzz_deployment = (
+        clusterfuzz_deployment.get_clusterfuzz_deployment(
+            self.config, self.workspace))
     self.image_repo_path = None
     self.host_repo_path = None
     self.repo_manager = None
@@ -79,21 +77,16 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    docker_args = get_common_docker_args(self.config.sanitizer,
-                                         self.config.language)
-    container = utils.get_container_name()
-
-    if container:
+    docker_args, docker_container = docker.get_base_docker_run_args(
+        self.workspace, self.config.sanitizer, self.config.language)
+    if not docker_container:
       docker_args.extend(
-          _get_docker_build_fuzzers_args_container(self.out_dir, container))
-    else:
-      docker_args.extend(
-          _get_docker_build_fuzzers_args_not_container(self.out_dir,
-                                                       self.host_repo_path))
+          _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
     if self.config.sanitizer == 'memory':
-      docker_args.extend(_get_docker_build_fuzzers_args_msan(self.work_dir))
-      self.handle_msan_prebuild(container)
+      docker_args.extend(
+          _get_docker_build_fuzzers_args_msan(self.workspace.work))
+      self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
         docker.get_project_image_name(self.config.project_name),
@@ -106,19 +99,23 @@ class Builder:  # pylint: disable=too-many-instance-attributes
                     f'{image_src_path} && compile')
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
+
+    # TODO(metzman): Stop using helper.docker_run so we can get rid of
+    # docker.get_base_docker_run_args and merge its contents into
+    # docker.get_base_docker_run_command.
     if not helper.docker_run(docker_args):
       logging.error('Building fuzzers failed.')
       return False
 
     if self.config.sanitizer == 'memory':
-      self.handle_msan_postbuild(container)
+      self.handle_msan_postbuild(docker_container)
     return True
 
   def handle_msan_postbuild(self, container):
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        '--volumes-from', container, '-e', f'WORK={self.work_dir}',
+        '--volumes-from', container, '-e', f'WORK={self.workspace.work}',
         docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
@@ -128,7 +125,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     logging.info('Copying MSAN libs.')
     helper.docker_run([
         '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        f'cp -r /msan {self.work_dir}'
+        f'cp -r /msan {self.workspace.work}'
     ])
 
   def build(self):
@@ -153,7 +150,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     changed_files = self.ci_system.get_changed_code_under_test(
         self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
-        self.config.project_name, self.out_dir, changed_files,
+        self.clusterfuzz_deployment, self.workspace.out, changed_files,
         self.image_repo_path)
     return True
 
@@ -185,25 +182,7 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def get_common_docker_args(sanitizer, language):
-  """Returns a list of common docker arguments."""
-  return [
-      '--cap-add',
-      'SYS_PTRACE',
-      '-e',
-      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
-      '-e',
-      'SANITIZER=' + sanitizer,
-      '-e',
-      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
-      '-e',
-      'CIFUZZ=True',
-      '-e',
-      'FUZZING_LANGUAGE=' + language,
-  ]
-
-
-def check_fuzzer_build(out_dir,
+def check_fuzzer_build(workspace,
                        sanitizer,
                        language,
                        allowed_broken_targets_percentage=None):
@@ -216,55 +195,35 @@ def check_fuzzer_build(out_dir,
   Returns:
     True if fuzzers are correct.
   """
-  if not os.path.exists(out_dir):
-    logging.error('Invalid out directory: %s.', out_dir)
+  if not os.path.exists(workspace.out):
+    logging.error('Invalid out directory: %s.', workspace.out)
     return False
-  if not os.listdir(out_dir):
-    logging.error('No fuzzers found in out directory: %s.', out_dir)
+  if not os.listdir(workspace.out):
+    logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  command = get_common_docker_args(sanitizer, language)
-
+  docker_args, _ = docker.get_base_docker_run_args(workspace, sanitizer,
+                                                   language)
   if allowed_broken_targets_percentage is not None:
-    command += [
+    docker_args += [
         '-e',
         ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
          allowed_broken_targets_percentage)
     ]
 
-  container = utils.get_container_name()
-  if container:
-    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
-  else:
-    command += ['-v', f'{out_dir}:/out']
-  command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  result = helper.docker_run(command)
+  docker_args.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
+  result = helper.docker_run(docker_args)
   if not result:
     logging.error('Check fuzzer build failed.')
     return False
   return True
 
 
-def _get_docker_build_fuzzers_args_container(host_out_dir, container):
+def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
-  |host_out_dir| when the host of the OSS-Fuzz builder container is another
-  container."""
-  return ['-e', 'OUT=' + host_out_dir, '--volumes-from', container]
-
-
-def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
-  """Returns arguments to the docker build arguments that are needed to use
-  |host_out_dir| when the host of the OSS-Fuzz builder container is not
+  |host_repo_path| when the host of the OSS-Fuzz builder container is not
   another container."""
-  image_out_dir = '/out'
-  return [
-      '-e',
-      'OUT=' + image_out_dir,
-      '-v',
-      f'{host_out_dir}:{image_out_dir}',
-      '-v',
-      f'{host_repo_path}:{host_repo_path}',
-  ]
+  return ['-v', f'{host_repo_path}:{host_repo_path}']
 
 
 def _get_docker_build_fuzzers_args_msan(work_dir):

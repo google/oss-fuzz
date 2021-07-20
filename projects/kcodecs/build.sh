@@ -16,6 +16,20 @@
 ################################################################################
 
 cd $SRC
+tar xzf gperf*.tar.gz && rm -f gperf*.tar.gz
+cd gperf*
+FUZZ_CFLAGS="${CFLAGS}"
+FUZZ_CXXFLAGS="${CXXFLAGS}"
+unset CFLAGS
+unset CXXFLAGS
+# gperf is a code generator, so no need to sanitize it
+./configure --prefix=/usr
+make -j$(nproc) install
+export CFLAGS="${FUZZ_CFLAGS}"
+export CXXFLAGS="${FUZZ_CXXFLAGS}"
+
+
+cd $SRC
 cd extra-cmake-modules
 cmake .
 make install

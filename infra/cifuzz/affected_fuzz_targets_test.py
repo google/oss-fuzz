@@ -21,6 +21,9 @@ from unittest import mock
 import parameterized
 
 import affected_fuzz_targets
+import clusterfuzz_deployment
+import docker
+import test_helpers
 
 # pylint: disable=protected-access
 
@@ -30,15 +33,15 @@ EXAMPLE_PROJECT = 'example'
 
 EXAMPLE_FILE_CHANGED = 'test.txt'
 
-TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'test_data')
+TEST_DATA_OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'test_data', 'build-out')
 
 
 class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
-  TEST_FUZZER_1 = os.path.join(TEST_DATA_PATH, 'out', 'example_crash_fuzzer')
-  TEST_FUZZER_2 = os.path.join(TEST_DATA_PATH, 'out', 'example_nocrash_fuzzer')
+  TEST_FUZZER_1 = os.path.join(TEST_DATA_OUT_PATH, 'example_crash_fuzzer')
+  TEST_FUZZER_2 = os.path.join(TEST_DATA_OUT_PATH, 'example_nocrash_fuzzer')
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -57,18 +60,26 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   # yapf: enable
   def test_remove_unaffected_fuzz_targets(self, side_effect, expected_dir_len):
     """Tests that remove_unaffected_fuzzers has the intended effect."""
+    config = test_helpers.create_run_config(is_github=True,
+                                            project_name=EXAMPLE_PROJECT,
+                                            workspace='/workspace')
+    workspace = docker.Workspace(config)
+    deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
+        config, workspace)
     # We can't use fakefs in this test because this test executes
     # utils.is_fuzz_target_local. This function relies on the executable bit
     # being set, which doesn't work properly in fakefs.
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
+        'get_coverage.OSSFuzzCoverage.get_files_covered_by_target'
     ) as mocked_get_files:
-      with mock.patch('coverage._get_fuzzer_stats_dir_url', return_value=1):
+      with mock.patch('get_coverage._get_oss_fuzz_fuzzer_stats_dir_url',
+                      return_value=1):
         mocked_get_files.side_effect = side_effect
         shutil.copy(self.TEST_FUZZER_1, tmp_dir)
         shutil.copy(self.TEST_FUZZER_2, tmp_dir)
+
         affected_fuzz_targets.remove_unaffected_fuzz_targets(
-            EXAMPLE_PROJECT, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
+            deployment, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
         self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 

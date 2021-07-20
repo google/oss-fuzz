@@ -40,6 +40,7 @@ popd
 
 # lcms
 pushd $SRC/lcms
+./autogen.sh
 ./configure \
   --enable-static \
   --disable-shared \

@@ -44,7 +44,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/ReemKufi-0.6.tar.gz \
     https://dev-www.libreoffice.org/src/Scheherazade-2.100.zip \
     https://dev-www.libreoffice.org/src/EmojiOneColor-SVGinOT-1.3.tar.gz \
-    https://dev-www.libreoffice.org/src/culmus-0.131.tar.gz \
+    https://dev-www.libreoffice.org/src/culmus-0.133.tar.gz \
     https://dev-www.libreoffice.org/src/libre-hebrew-1.0.tar.gz \
     https://dev-www.libreoffice.org/src/alef-1.001.tar.gz \
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
@@ -53,7 +53,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/boost_1_75_0.tar.xz \
     https://dev-www.libreoffice.org/src/box2d-2.3.1.tar.gz \
     https://dev-www.libreoffice.org/src/dtoa-20180411.tgz \
-    https://dev-www.libreoffice.org/src/expat-2.2.8.tar.bz2 \
+    https://dev-www.libreoffice.org/src/expat-2.4.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.3.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.11.tar.gz \
     https://dev-www.libreoffice.org/src/0168229624cfac409e766913506961a8-ucpp-1.3.2.tar.gz \
@@ -67,16 +67,16 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.71.0.tar.xz \
-    https://dev-www.libreoffice.org/src/xmlsec1-1.2.31.tar.gz \
+    https://dev-www.libreoffice.org/src/xmlsec1-1.2.32.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.3.tar.xz \
     https://dev-www.libreoffice.org/src/libcdr-0.1.7.tar.xz \
     https://dev-www.libreoffice.org/src/libcmis-0.5.2.tar.xz \
     https://dev-www.libreoffice.org/src/libe-book-0.1.3.tar.xz \
-    https://dev-www.libreoffice.org/src/libetonyek-0.1.9.tar.xz \
+    https://dev-www.libreoffice.org/src/libetonyek-0.1.10.tar.xz \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.2.tar.xz \
     https://dev-www.libreoffice.org/src/libmspub-0.1.4.tar.xz \
-    https://dev-www.libreoffice.org/src/libmwaw-0.3.17.tar.xz \
+    https://dev-www.libreoffice.org/src/libmwaw-0.3.19.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.8.tar.xz \
     https://dev-www.libreoffice.org/src/liborcus-0.16.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.4.tar.xz \
@@ -90,15 +90,16 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/poppler-21.01.0.tar.xz \
+    https://dev-www.libreoffice.org/src/poppler-data-0.4.10.tar.gz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.1.1i.tar.gz \
-    https://dev-www.libreoffice.org/src/language-subtag-registry-2020-12-18.tar.bz2 \
+    https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.14.tgz \
     https://dev-www.libreoffice.org/src/harfbuzz-2.6.0.tar.xz \
     https://dev-www.libreoffice.org/src/glm-0.9.9.7.zip \
-    https://dev-www.libreoffice.org/src/icu4c-68_1-src.tgz \
-    https://dev-www.libreoffice.org/src/icu4c-68_1-data.zip \
-    https://dev-www.libreoffice.org/src/libxml2-2.9.10.tar.gz \
+    https://dev-www.libreoffice.org/src/icu4c-69_1-src.tgz \
+    https://dev-www.libreoffice.org/src/icu4c-69_1-data.zip \
+    https://dev-www.libreoffice.org/src/libxml2-2.9.12.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.34.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.7.0.tar.gz \
     https://dev-www.libreoffice.org/src/lxml-4.1.1.tgz \

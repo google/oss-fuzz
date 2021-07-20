@@ -10,9 +10,9 @@ import urllib.request
 
 import requests
 
-from github_actions_toolkit.artifact import config_variables
-from github_actions_toolkit.artifact import utils
-from github_actions_toolkit import http_client
+from third_party.github_actions_toolkit.artifact import config_variables
+from third_party.github_actions_toolkit.artifact import utils
+from third_party.github_actions_toolkit import http_client
 
 
 def upload_file(parameters):

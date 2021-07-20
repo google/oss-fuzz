@@ -3,6 +3,7 @@ language: c++
 primary_contact: "wfisher@ucar.edu"
 auto_ccs:
 - "p.antoine@catenacyber.fr"
+- "dmh@ucar.edu"
 
 sanitizers:
 - address

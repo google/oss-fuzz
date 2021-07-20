@@ -155,7 +155,9 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
       ],
   })
 
-  for fuzzing_engine in project_yaml['fuzzing_engines']:
+  # Sort engines to make AFL first to test if libFuzzer has an advantage in
+  # finding bugs first since it is generally built first.
+  for fuzzing_engine in sorted(project_yaml['fuzzing_engines']):
     for sanitizer in get_sanitizers(project_yaml):
       for architecture in project_yaml['architectures']:
         if not is_supported_configuration(fuzzing_engine, sanitizer,
@@ -222,9 +224,13 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} '
-                     '&& compile || (echo "{failure_msg}" && false)'
-                    ).format(workdir=workdir, out=out, failure_msg=failure_msg),
+                    # Reset HOME so that it doesn't point to a persisted volume
+                    # (see https://github.com/google/oss-fuzz/issues/6035).
+                    ('export HOME=/root; rm -r /out && cd /src && cd {workdir} '
+                     '&& mkdir -p {out} && compile || (echo "{failure_msg}" '
+                     '&& false)').format(workdir=workdir,
+                                         out=out,
+                                         failure_msg=failure_msg),
                 ],
             })
 

@@ -73,7 +73,8 @@ class BuildFuzzersTest(unittest.TestCase):
                                            project_repo_name=EXAMPLE_PROJECT,
                                            workspace=tmp_dir,
                                            pr_ref='refs/pull/1757/merge'))
-    docker_run_command = mocked_docker_run.call_args_list[0][0][0]
+
+      docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
       for idx, element in enumerate(command):
@@ -135,7 +136,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
     self.workspace = self.tmp_dir_obj.name
-    self.out_dir = os.path.join(self.workspace, 'out')
+    self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
   def tearDown(self):
@@ -267,29 +268,32 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    self.test_files_path = os.path.join(self.tmp_dir_obj.name, 'test_files')
-    shutil.copytree(TEST_DATA_PATH, self.test_files_path)
+    workspace_path = os.path.join(self.tmp_dir_obj.name, 'workspace')
+    self.workspace = test_helpers.create_workspace(workspace_path)
+    shutil.copytree(TEST_DATA_PATH, workspace_path)
 
   def tearDown(self):
     self.tmp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-    test_fuzzer_dir = os.path.join(self.test_files_path, 'out')
     self.assertTrue(
-        build_fuzzers.check_fuzzer_build(test_fuzzer_dir, self.SANITIZER,
+        build_fuzzers.check_fuzzer_build(self.workspace, self.SANITIZER,
                                          self.LANGUAGE))
 
-  def test_not_a_valid_fuzz_path(self):
-    """Tests that False is returned when a bad path is given."""
+  def test_not_a_valid_path(self):
+    """Tests that False is returned when a nonexistent path is given."""
+    workspace = test_helpers.create_workspace('not/a/valid/path')
     self.assertFalse(
-        build_fuzzers.check_fuzzer_build('not/a/valid/path', self.SANITIZER,
+        build_fuzzers.check_fuzzer_build(workspace, self.SANITIZER,
                                          self.LANGUAGE))
 
-  def test_not_a_valid_fuzzer(self):
-    """Checks a directory that exists but does not have fuzzers is False."""
+  def test_no_valid_fuzzers(self):
+    """Tests that False is returned when an empty directory is given."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      workspace = test_helpers.create_workspace(tmp_dir)
     self.assertFalse(
-        build_fuzzers.check_fuzzer_build(self.test_files_path, self.SANITIZER,
+        build_fuzzers.check_fuzzer_build(workspace, self.SANITIZER,
                                          self.LANGUAGE))
 
   @mock.patch('helper.docker_run')
@@ -297,8 +301,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
     docker if passed to check_fuzzer_build."""
     mocked_docker_run.return_value = 0
-    test_fuzzer_dir = os.path.join(TEST_DATA_PATH, 'out')
-    build_fuzzers.check_fuzzer_build(test_fuzzer_dir,
+    build_fuzzers.check_fuzzer_build(self.workspace,
                                      self.SANITIZER,
                                      self.LANGUAGE,
                                      allowed_broken_targets_percentage='0')
@@ -329,18 +332,6 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
           build_fuzzers.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
 
 
-class GetDockerBuildFuzzersArgsContainerTest(unittest.TestCase):
-  """Tests that _get_docker_build_fuzzers_args_container works as intended."""
-
-  def test_get_docker_build_fuzzers_args_container(self):
-    """Tests that _get_docker_build_fuzzers_args_container works as intended."""
-    out_dir = '/my/out'
-    container = 'my-container'
-    result = build_fuzzers._get_docker_build_fuzzers_args_container(
-        out_dir, container)
-    self.assertEqual(result, ['-e', 'OUT=/my/out', '--volumes-from', container])
-
-
 class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   """Tests that _get_docker_build_fuzzers_args_not_container works as
   intended."""
@@ -348,14 +339,10 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   def test_get_docker_build_fuzzers_args_no_container(self):
     """Tests that _get_docker_build_fuzzers_args_not_container works
     as intended."""
-    host_out_dir = '/cifuzz/out'
     host_repo_path = '/host/repo'
     result = build_fuzzers._get_docker_build_fuzzers_args_not_container(
-        host_out_dir, host_repo_path)
-    expected_result = [
-        '-e', 'OUT=/out', '-v', '/cifuzz/out:/out', '-v',
-        '/host/repo:/host/repo'
-    ]
+        host_repo_path)
+    expected_result = ['-v', '/host/repo:/host/repo']
     self.assertEqual(result, expected_result)
 
 
