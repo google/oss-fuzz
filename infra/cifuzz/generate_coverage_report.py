@@ -44,4 +44,4 @@ def generate_coverage_report(fuzz_target_paths, workspace,
   """Generates a coverage report using Clang's source based coverage."""
   download_corpora(fuzz_target_paths, clusterfuzz_deployment)
   run_coverage_command(workspace, config)
-  # TODO(metzman): Upload this build to the filestore.
+  clusterfuzz_deployment.upload_coverage()
