@@ -299,6 +299,8 @@ else
 
 fi
 
+chmod -R +r $COVERAGE_OUTPUT_DIR
+
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
