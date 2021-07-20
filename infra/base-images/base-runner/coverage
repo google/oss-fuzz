@@ -299,7 +299,9 @@ else
 
 fi
 
-chmod -R +r $COVERAGE_OUTPUT_DIR
+# Make sure report is readable.
+chmod -R +r $REPORT_ROOT_DIR
+find $REPORT_ROOT_DIR -type d -exec chmod +x {} +
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
