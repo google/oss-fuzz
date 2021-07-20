@@ -299,6 +299,10 @@ else
 
 fi
 
+# Make sure report is readable.
+chmod -R +r $REPORT_ROOT_DIR
+find $REPORT_ROOT_DIR -type d -exec chmod +x {} +
+
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
