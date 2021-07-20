@@ -84,4 +84,4 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def download_coverage(self, name, dst_directory):
     """Downloads the latest project coverage report."""
-    return self.download_artifact(name, dst_directory)
+    return self._download_artifact(name, dst_directory)

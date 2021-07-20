@@ -20,6 +20,8 @@ import sys
 
 import requests
 
+import filestore
+
 # pylint: disable=wrong-import-position,import-error
 
 sys.path.append(
@@ -68,11 +70,11 @@ def _get_items(url, headers):
     params = {'per_page': _MAX_ITEMS_PER_PAGE, 'page': str(page_counter)}
     response = _do_get_request(url, params=params, headers=headers)
     response_json = response.json()
-
     if not response.status_code == 200:
       # Check that request was successful.
       logging.error('Request to %s failed. Code: %d. Response: %s',
                     response.request.url, response.status_code, response_json)
+      raise filestore.FilestoreError('Github API request failed.')
 
     if total_num_items == float('inf'):
       # Set proper total_num_items

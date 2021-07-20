@@ -371,8 +371,8 @@ class CoverageReportIntegrationTest(unittest.TestCase):
             TEST_DATA_PATH, 'example_coverage_report_summary.json')
         with open(expected_summary_path) as file_handle:
           expected_summary = json.loads(file_handle.read())
-        actual_summary_path = os.path.join(workspace, 'build-out', 'report',
-                                           'linux', 'summary.json')
+        actual_summary_path = os.path.join(workspace, 'cifuzz-coverage',
+                                           'report', 'linux', 'summary.json')
         with open(actual_summary_path) as file_handle:
           actual_summary = json.loads(file_handle.read())
         self.assertEqual(expected_summary, actual_summary)

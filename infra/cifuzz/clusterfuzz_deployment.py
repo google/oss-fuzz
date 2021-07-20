@@ -187,7 +187,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the project coverage object for the project."""
     try:
       if not self.filestore.download_coverage(
-          self.workspace.clusterfuzz_coverage):
+          self.COVERAGE_NAME, self.workspace.clusterfuzz_coverage):
         return None
       return get_coverage.FilesystemCoverage(
           repo_path, self.workspace.clusterfuzz_coverage)
