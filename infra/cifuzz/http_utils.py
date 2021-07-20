@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility module for HTTP."""
+import json
 import logging
 import os
 import sys
@@ -69,6 +70,23 @@ def download_url(*args, **kwargs):
     return _download_url(*args, **kwargs)
   except Exception:  # pylint: disable=broad-except
     return False
+
+
+def get_json_from_url(url):
+  """Gets a json object from a specified HTTP URL.
+
+  Args:
+    url: The url of the json to be downloaded.
+
+  Returns:
+    A dictionary deserialized from JSON or None on failure.
+  """
+  response = requests.get(url)
+  try:
+    return response.json()
+  except (ValueError, TypeError, json.JSONDecodeError) as err:
+    logging.error('Loading json from url %s failed with: %s.', url, str(err))
+    return None
 
 
 @retry.wrap(_DOWNLOAD_URL_RETRIES, _DOWNLOAD_URL_BACKOFF)

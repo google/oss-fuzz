@@ -19,6 +19,7 @@ import os
 import sys
 
 import affected_fuzz_targets
+import clusterfuzz_deployment
 import continuous_integration
 import docker
 
@@ -53,6 +54,9 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     self.workspace = docker.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
+    self.clusterfuzz_deployment = (
+        clusterfuzz_deployment.get_clusterfuzz_deployment(
+            self.config, self.workspace))
     self.image_repo_path = None
     self.host_repo_path = None
     self.repo_manager = None
@@ -146,7 +150,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     changed_files = self.ci_system.get_changed_code_under_test(
         self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
-        self.config.project_name, self.workspace.out, changed_files,
+        self.clusterfuzz_deployment, self.workspace.out, changed_files,
         self.image_repo_path)
     return True
 

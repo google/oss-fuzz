@@ -142,6 +142,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def tearDown(self):
     self.tmp_dir_obj.cleanup()
 
+  # @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.get_coverage',
+  #             return_value=None)
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
     project_name = 'external-project'

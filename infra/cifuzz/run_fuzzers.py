@@ -225,8 +225,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.fuzz()
     logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
-    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
-                                              result.corpus_path)
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
