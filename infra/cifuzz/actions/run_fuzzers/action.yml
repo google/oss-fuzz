@@ -48,9 +48,6 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
     RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
-    # TODO(metzman): Even though this param is used for building, it's needed
-    # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
-    # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'

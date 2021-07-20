@@ -21,6 +21,7 @@ import logging
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
+import docker
 import helper
 import repo_manager
 import retry
@@ -132,11 +133,11 @@ class InternalGithub(GithubCiMixin, BaseCi):
     assert self.config.pr_ref or self.config.commit_sha
     # detect_main_repo builds the image as a side effect.
     inferred_url, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.project_name, repo_name=self.config.project_repo_name))
+        self.config.oss_fuzz_project_name,
+        repo_name=self.config.project_repo_name))
 
     if not inferred_url or not image_repo_path:
-      logging.error('Could not detect repo from project %s.',
-                    self.config.project_name)
+      logging.error('Could not detect repo.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -171,11 +172,11 @@ class InternalGeneric(BaseCi):
     logging.info('Building OSS-Fuzz project.')
     # detect_main_repo builds the image as a side effect.
     _, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.project_name, repo_name=self.config.project_repo_name))
+        self.config.oss_fuzz_project_name,
+        repo_name=self.config.project_repo_name))
 
     if not image_repo_path:
-      logging.error('Could not detect repo from project %s.',
-                    self.config.project_name)
+      logging.error('Could not detect repo.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -194,13 +195,13 @@ _IMAGE_BUILD_BACKOFF = 2
 
 
 @retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF)
-def build_external_project_docker_image(project_name, project_src,
-                                        build_integration_path):
+def build_external_project_docker_image(project_src, build_integration_path):
   """Builds the project builder image for an external (non-OSS-Fuzz) project.
   Returns True on success."""
   dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
-  tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
-  command = ['-t', tag, '-f', dockerfile_path, project_src]
+  command = [
+      '-t', docker.EXTERNAL_PROJECT_IMAGE, '-f', dockerfile_path, project_src
+  ]
   return helper.docker_build(command)
 
 
@@ -215,10 +216,10 @@ class ExternalGeneric(BaseCi):
     manager = repo_manager.RepoManager(self.config.project_src_path)
     build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, build_integration_abs_path):
+    if not build_external_project_docker_image(manager.repo_dir,
+                                               build_integration_abs_path):
       logging.error('Failed to build external project: %s.',
-                    self.config.project_name)
+                    self.config.oss_fuzz_project_name)
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -252,8 +253,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
 
     build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, build_integration_abs_path):
+    if not build_external_project_docker_image(manager.repo_dir,
+                                               build_integration_abs_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,

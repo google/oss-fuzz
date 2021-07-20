@@ -89,7 +89,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
-        docker.get_project_image_name(self.config.project_name),
+        docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
     ])

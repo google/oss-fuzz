@@ -42,7 +42,7 @@ def _create_config(**kwargs):
   attribute of Config."""
   defaults = {
       'is_github': True,
-      'project_name': EXAMPLE_PROJECT,
+      'oss_fuzz_project_name': EXAMPLE_PROJECT,
       'workspace': WORKSPACE,
   }
   for default_key, default_value in defaults.items():
@@ -180,10 +180,11 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    config = test_helpers.create_run_config(project_name=EXAMPLE_PROJECT,
-                                            build_integration_path='/',
-                                            workspace=WORKSPACE,
-                                            is_github=False)
+    config = test_helpers.create_run_config(
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        build_integration_path='/',
+        workspace=WORKSPACE,
+        is_github=False)
     workspace = docker.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)

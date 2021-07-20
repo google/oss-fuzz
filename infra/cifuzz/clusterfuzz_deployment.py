@@ -210,15 +210,17 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       A string with the latest build version or None.
     """
-    version_file = (f'{self.config.project_name}-{self.config.sanitizer}'
-                    '-latest.version')
+    version_file = (
+        f'{self.config.oss_fuzz_project_name}-{self.config.sanitizer}'
+        '-latest.version')
     version_url = utils.url_join(utils.GCS_BASE_URL, self.CLUSTERFUZZ_BUILDS,
-                                 self.config.project_name, version_file)
+                                 self.config.oss_fuzz_project_name,
+                                 version_file)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
       logging.error('Error getting latest build version for %s from: %s.',
-                    self.config.project_name, version_url)
+                    self.config.oss_fuzz_project_name, version_url)
       return None
     return response.read().decode()
 
@@ -241,7 +243,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
     oss_fuzz_build_url = utils.url_join(utils.GCS_BASE_URL,
                                         self.CLUSTERFUZZ_BUILDS,
-                                        self.config.project_name,
+                                        self.config.oss_fuzz_project_name,
                                         latest_build_name)
     if http_utils.download_and_unpack_zip(oss_fuzz_build_url,
                                           self.workspace.clusterfuzz_build):
@@ -269,11 +271,11 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """
     corpus_dir = self.make_empty_corpus_dir(target_name)
     project_qualified_fuzz_target_name = target_name
-    qualified_name_prefix = self.config.project_name + '_'
+    qualified_name_prefix = self.config.oss_fuzz_project_name + '_'
     if not target_name.startswith(qualified_name_prefix):
       project_qualified_fuzz_target_name = qualified_name_prefix + target_name
 
-    corpus_url = (f'{utils.GCS_BASE_URL}{self.config.project_name}'
+    corpus_url = (f'{utils.GCS_BASE_URL}{self.config.oss_fuzz_project_name}'
                   '-backup.clusterfuzz-external.appspot.com/corpus/'
                   f'libFuzzer/{project_qualified_fuzz_target_name}/'
                   f'{self.CORPUS_ZIP_NAME}')

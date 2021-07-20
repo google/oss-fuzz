@@ -30,7 +30,7 @@ class TestRunCoverageCommand(unittest.TestCase):
   @mock.patch('helper.docker_run')
   def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
-    config = test_helpers.create_run_config(project_name=PROJECT,
+    config = test_helpers.create_run_config(oss_fuzz_project_name=PROJECT,
                                             sanitizer=SANITIZER)
     workspace = test_helpers.create_workspace()
     expected_docker_args = [
