@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-if [ "$SANITIZER" = "coverage" ]
-then
-    exit 0 
-fi
+#if [ "$SANITIZER" = "coverage" ]
+#then
+#    exit 0 
+#fi
 
 cd OpenSK
 cargo fuzz build
