@@ -25,16 +25,18 @@ from third_party.github_actions_toolkit.artifact import artifact_client
 
 
 def tar_directory(directory, archive_path):
-  """Tars a |directory| and returns the path of the result. The path will be
-  |archive_path| with a .tar suffix. |archive_path| should not end in .tar."""
+  """Tars a |directory| and stores archive at |archive_path|. |archive_path|
+  must end in .tar"""
+  assert archive_path.endswith('.tar')
+  # Do this because make_archive will append the extension to archive_path.
+  archive_path = os.path.splitext('.tar')[0]
+
   parent_directory = os.path.dirname(os.path.abspath(directory))
   basename = os.path.basename(directory)
   shutil.make_archive(archive_path,
                       'tar',
                       root_dir=parent_directory,
                       base_dir=basename)
-  archive_path += '.tar'
-  return archive_path
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
@@ -52,8 +54,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
     with tempfile.TemporaryDirectory() as temp_dir:
-      archive_path = os.path.join(temp_dir, name)
-      archive_path = tar_directory(directory, archive_path)
+      archive_path = os.path.join(temp_dir, name + '.tar')
+      tar_directory(directory, archive_path)
       file_paths = [archive_path]
 
       return artifact_client.upload_artifact(name, file_paths, temp_dir)
