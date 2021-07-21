@@ -151,7 +151,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     # This test is dependant on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     config = test_helpers.create_build_config(
-        oss_fuzz_project_name=oss_fuzz_project_name,
         project_repo_name=oss_fuzz_project_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
@@ -175,7 +174,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         self.tmp_dir_obj.name)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
-        oss_fuzz_project_name=oss_fuzz_project_name,
         project_repo_name=oss_fuzz_project_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
