@@ -135,13 +135,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
   def setUp(self):
-    self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    self.workspace = self.tmp_dir_obj.name
+    self.temp_dir_obj = tempfile.TemporaryDirectory()
+    self.workspace = self.temp_dir_obj.name
     self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
   def tearDown(self):
-    self.tmp_dir_obj.cleanup()
+    self.temp_dir_obj.cleanup()
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
@@ -171,7 +171,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     # github.com/jonathanmetzman/cifuzz-external-example.
     manager = repo_manager.clone_repo_and_get_manager(
         'https://github.com/jonathanmetzman/cifuzz-external-example',
-        self.tmp_dir_obj.name)
+        self.temp_dir_obj.name)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
         project_repo_name=project_repo_name,
@@ -269,13 +269,13 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   LANGUAGE = 'c++'
 
   def setUp(self):
-    self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    workspace_path = os.path.join(self.tmp_dir_obj.name, 'workspace')
+    self.temp_dir_obj = tempfile.TemporaryDirectory()
+    workspace_path = os.path.join(self.temp_dir_obj.name, 'workspace')
     self.workspace = test_helpers.create_workspace(workspace_path)
     shutil.copytree(TEST_DATA_PATH, workspace_path)
 
   def tearDown(self):
-    self.tmp_dir_obj.cleanup()
+    self.temp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""

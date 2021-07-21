@@ -113,7 +113,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                                               self.workspace.clusterfuzz_build):
         return self.workspace.clusterfuzz_build
     except Exception as err:  # pylint: disable=broad-except
-      logging.error('Could not download latest build because of: %s.', err)
+      logging.error('Could not download latest build because of: %s', err)
 
     return None
 
@@ -125,7 +125,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     try:
       self.filestore.download_corpus(corpus_name, corpus_dir)
     except Exception as err:  # pylint: disable=broad-except
-      logging.error('Failed to download corpus for target: %s. Error: %s.',
+      logging.error('Failed to download corpus for target: %s. Error: %s',
                     target_name, str(err))
     return corpus_dir
 
@@ -159,7 +159,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       return self.filestore.upload_directory(build_name,
                                              self.workspace.clusterfuzz_build)
     except Exception as error:  # pylint: disable=broad-except
-      logging.error('Failed to upload latest build: %s. Error: %s.',
+      logging.error('Failed to upload latest build: %s. Error: %s',
                     self.workspace.clusterfuzz_build, error)
 
   def upload_crashes(self):
@@ -174,7 +174,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       self.filestore.upload_directory(crashes_artifact_name,
                                       self.workspace.artifacts)
     except Exception as error:  # pylint: disable=broad-except
-      logging.error('Failed to upload crashes. Error: %s.', error)
+      logging.error('Failed to upload crashes. Error: %s', error)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
