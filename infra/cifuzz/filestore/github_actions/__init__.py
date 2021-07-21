@@ -56,7 +56,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def _get_artifact_name(self, name):
     if name.startswith(self.ARTIFACT_PREFIX):
       return name
-    return f'{self.ARTIFACT_PREFIX}-{name}'
+    return f'{self.ARTIFACT_PREFIX}{name}'
 
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
