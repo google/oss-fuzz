@@ -103,7 +103,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   def _create_runner(self, **kwargs):  # pylint: disable=no-self-use
     defaults = {
         'fuzz_seconds': FUZZ_SECONDS,
-        'oss_fuzz_oss_fuzz_project_name': EXAMPLE_PROJECT
+        'oss_fuzz_project_name': EXAMPLE_PROJECT
     }
     for default_key, default_value in defaults.items():
       if default_key not in kwargs:
