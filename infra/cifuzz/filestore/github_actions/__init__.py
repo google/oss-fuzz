@@ -89,6 +89,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         logging.error('Artifact zip did not contain a tarfile.')
         return False
 
+      # TODO(jonathanmetzman): Replace this with archive.unpack from
+      # libClusterFuzz so we can avoid path traversal issues.
       with tarfile.TarFile(artifact_tarfile_path) as artifact_tarfile:
         artifact_tarfile.extractall(dst_directory)
     return True
