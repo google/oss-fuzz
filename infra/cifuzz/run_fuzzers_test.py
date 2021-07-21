@@ -344,7 +344,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
   def setUp(self):
     test_helpers.patch_environ(self)
 
-  def test_coverage_report(self):
+  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
+              '.upload_artifact',
+              return_value=True)
+  def test_coverage_report(self, _):
     """Tests generation of coverage reports end-to-end, from building to
     generation."""
 
@@ -367,7 +370,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
             workspace=workspace,
             oss_fuzz_project_name=EXAMPLE_PROJECT,
             sanitizer=self.SANITIZER,
-            run_fuzzers_mode='coverage')
+            run_fuzzers_mode='coverage',
+            is_github=True,
+            # Set build integration path so it's not internal.
+            build_integration_path='/')
         result = run_fuzzers.run_fuzzers(run_config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
         expected_summary_path = os.path.join(
