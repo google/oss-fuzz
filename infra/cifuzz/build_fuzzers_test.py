@@ -145,13 +145,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
-    oss_fuzz_project_name = 'external-project'
+    project_repo_name = 'external-project'
     build_integration_path = 'fuzzer-build-integration'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     # This test is dependant on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     config = test_helpers.create_build_config(
-        project_repo_name=oss_fuzz_project_name,
+        project_repo_name=project_repo_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
         git_url=git_url,
@@ -164,7 +164,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_external_generic_project(self):
     """Tests building fuzzers from an external project not on Github."""
-    oss_fuzz_project_name = 'cifuzz-external-example'
+    project_repo_name = 'cifuzz-external-example'
     build_integration_path = 'fuzzer-build-integration'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     # This test is dependant on the state of
@@ -174,7 +174,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         self.tmp_dir_obj.name)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
-        project_repo_name=oss_fuzz_project_name,
+        project_repo_name=project_repo_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
         git_url=git_url,

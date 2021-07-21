@@ -118,7 +118,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     return None
 
   def download_corpus(self, target_name):
-    print('here')
     corpus_dir = self.make_empty_corpus_dir(target_name)
     logging.debug('ClusterFuzzLite: downloading corpus for %s to %s.',
                   target_name, corpus_dir)
