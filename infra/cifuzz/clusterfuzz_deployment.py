@@ -118,6 +118,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     return None
 
   def download_corpus(self, target_name):
+    print('here')
     corpus_dir = self.make_empty_corpus_dir(target_name)
     logging.debug('ClusterFuzzLite: downloading corpus for %s to %s.',
                   target_name, corpus_dir)
@@ -291,7 +292,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     try:
-      return get_coverage.OSSFuzzCoverage(repo_path, self.config.project_name)
+      return get_coverage.OSSFuzzCoverage(
+          repo_path, self.config.oss_fuzz_project_name)
     except get_coverage.CoverageError:
       return None
 

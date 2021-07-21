@@ -285,7 +285,6 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.config = test_helpers.create_run_config(
         fuzz_seconds=FUZZ_SECONDS,
         workspace=self.WORKSPACE,
-        oss_fuzz_project_name=EXAMPLE_PROJECT,
         build_integration_path='/',
         is_github=True)
 
