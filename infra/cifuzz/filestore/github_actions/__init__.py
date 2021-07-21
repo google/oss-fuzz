@@ -31,12 +31,12 @@ def tar_directory(directory, archive_path):
   # Do this because make_archive will append the extension to archive_path.
   archive_path = os.path.splitext(archive_path)[0]
 
-  parent_directory = os.path.dirname(os.path.abspath(directory))
+  root_directory = os.path.abspath(directory)
   basename = os.path.basename(directory)
   shutil.make_archive(archive_path,
                       'tar',
-                      root_dir=parent_directory,
-                      base_dir=basename)
+                      root_dir=root_directory,
+                      base_dir='./')
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
