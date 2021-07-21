@@ -102,3 +102,8 @@ def set_gcp_environment():
   os.environ['DATASTORE_DATASET'] = TEST_PROJECT_ID
   os.environ['GCP_PROJECT'] = TEST_PROJECT_ID
   os.environ['FUNCTION_REGION'] = 'us-central1'
+
+
+def get_test_data_file_path(filename):
+  """Returns the path to a test data file with name |filename|."""
+  return os.path.join(os.path.dirname(__file__), 'test_data', filename)
