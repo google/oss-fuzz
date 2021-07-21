@@ -70,7 +70,7 @@ class TestRequestCoverageBuilds(unittest.TestCase):
         'expected_build_steps.json')
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_coverage_build_steps = json.load(
-          expected_coverage_build_steps_file)
+          expected_build_steps_file)
 
     with ndb.Client().context():
       Project(name='test-project',
