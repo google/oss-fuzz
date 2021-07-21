@@ -14,6 +14,7 @@
 """Tests for github_actions."""
 import os
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -84,3 +85,17 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     dst_dir = 'corpus-dir'
     self.assertFalse(filestore.download_corpus(name, dst_dir))
     mocked_warning.assert_called_with('Could not download artifact: %s.', name)
+
+
+class TarDirectoryTest(unittest.TestCase):
+  def test_tar_directory(self):
+    """Tests that tar_directory writes the archive to the correct location."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+      archive_path = os.path.join(temp_dir, 'myarchive.tar')
+      archived_dir = os.path.join(temp_dir, 'toarchive')
+      os.mkdir(archived_dir)
+      archived_file_path = os.path.join(archived_dir, 'file1')
+      with open(archived_file_path, 'w') as file_handle:
+        file_handle.write('hi')
+      github_actions.tar_directory(archived_dir, archive_path)
+      self.assertTrue(os.path.exists(archive_path))

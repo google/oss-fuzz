@@ -29,7 +29,7 @@ def tar_directory(directory, archive_path):
   must end in .tar"""
   assert archive_path.endswith('.tar')
   # Do this because make_archive will append the extension to archive_path.
-  archive_path = os.path.splitext('.tar')[0]
+  archive_path = os.path.splitext(archive_path)[0]
 
   parent_directory = os.path.dirname(os.path.abspath(directory))
   basename = os.path.basename(directory)
