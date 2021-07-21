@@ -282,11 +282,10 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.testcase1)
     self.testcase2 = os.path.join(out_dir, 'testcase-bbb')
     self.fs.create_file(self.testcase2)
-    self.config = test_helpers.create_run_config(
-        fuzz_seconds=FUZZ_SECONDS,
-        workspace=self.WORKSPACE,
-        build_integration_path='/',
-        is_github=True)
+    self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                 workspace=self.WORKSPACE,
+                                                 build_integration_path='/',
+                                                 is_github=True)
 
   @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',

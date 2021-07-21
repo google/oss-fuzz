@@ -292,8 +292,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
     try:
-      return get_coverage.OSSFuzzCoverage(
-          repo_path, self.config.oss_fuzz_project_name)
+      return get_coverage.OSSFuzzCoverage(repo_path,
+                                          self.config.oss_fuzz_project_name)
     except get_coverage.CoverageError:
       return None
 

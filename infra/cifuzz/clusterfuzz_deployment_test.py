@@ -182,10 +182,9 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    config = test_helpers.create_run_config(
-        build_integration_path='/',
-        workspace=WORKSPACE,
-        is_github=False)
+    config = test_helpers.create_run_config(build_integration_path='/',
+                                            workspace=WORKSPACE,
+                                            is_github=False)
     workspace = docker.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
