@@ -36,7 +36,6 @@ def _create_config(config_cls, **kwargs):
   for key, value in kwargs.items():
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
     setattr(config, key, value)
-
   return config
 
 

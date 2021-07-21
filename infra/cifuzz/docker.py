@@ -45,6 +45,7 @@ _DEFAULT_DOCKER_RUN_COMMAND = [
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
+  # TODO(ochang): We may need unique names to support parallel fuzzing.
   if project:
     return PROJECT_TAG_PREFIX + project
 
