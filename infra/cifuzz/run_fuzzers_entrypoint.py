@@ -33,7 +33,7 @@ def delete_unneeded_docker_images(config):
   if not config.low_disk_space:
     return
   logging.info('Deleting builder docker images to save disk space.')
-  project_image = docker.get_project_image_name(config.project_name)
+  project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
       docker.BASE_RUNNER_TAG,

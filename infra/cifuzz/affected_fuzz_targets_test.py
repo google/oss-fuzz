@@ -60,9 +60,10 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   # yapf: enable
   def test_remove_unaffected_fuzz_targets(self, side_effect, expected_dir_len):
     """Tests that remove_unaffected_fuzzers has the intended effect."""
-    config = test_helpers.create_run_config(is_github=True,
-                                            project_name=EXAMPLE_PROJECT,
-                                            workspace='/workspace')
+    config = test_helpers.create_run_config(
+        is_github=True,
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        workspace='/workspace')
     workspace = docker.Workspace(config)
     deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)

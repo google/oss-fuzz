@@ -27,7 +27,6 @@ def remove_unaffected_fuzz_targets(clusterfuzz_deployment, out_dir,
   """Removes all non affected fuzz targets in the out directory.
 
   Args:
-    project_name: The name of the relevant OSS-Fuzz project.
     out_dir: The location of the fuzz target binaries.
     files_changed: A list of files changed compared to HEAD.
     repo_path: The location of the OSS-Fuzz repo in the docker image.

@@ -65,7 +65,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
       config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                               workspace=fuzzer_dir_copy,
-                                              project_name='curl',
+                                              oss_fuzz_project_name='curl',
                                               sanitizer=sanitizer)
       result = run_fuzzers.run_fuzzers(config)
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
@@ -101,7 +101,10 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   """Tests BaseFuzzTargetRunner."""
 
   def _create_runner(self, **kwargs):  # pylint: disable=no-self-use
-    defaults = {'fuzz_seconds': FUZZ_SECONDS, 'project_name': EXAMPLE_PROJECT}
+    defaults = {
+        'fuzz_seconds': FUZZ_SECONDS,
+        'oss_fuzz_project_name': EXAMPLE_PROJECT
+    }
     for default_key, default_value in defaults.items():
       if default_key not in kwargs:
         kwargs[default_key] = default_value
@@ -241,9 +244,10 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'build-out')
     self.fs.create_dir(out_path)
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=workspace,
-                                            project_name=EXAMPLE_PROJECT)
+    config = test_helpers.create_run_config(
+        fuzz_seconds=FUZZ_SECONDS,
+        workspace=workspace,
+        oss_fuzz_project_name=EXAMPLE_PROJECT)
     runner = run_fuzzers.CiFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']
@@ -280,7 +284,6 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.testcase2)
     self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                                  workspace=self.WORKSPACE,
-                                                 project_name=EXAMPLE_PROJECT,
                                                  build_integration_path='/',
                                                  is_github=True)
 
@@ -349,7 +352,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
       try:
         # Do coverage build.
         build_config = test_helpers.create_build_config(
-            project_name=EXAMPLE_PROJECT,
+            oss_fuzz_project_name=EXAMPLE_PROJECT,
             project_repo_name='oss-fuzz',
             workspace=workspace,
             commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
@@ -362,7 +365,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
         run_config = test_helpers.create_run_config(
             fuzz_seconds=FUZZ_SECONDS,
             workspace=workspace,
-            project_name=EXAMPLE_PROJECT,
+            oss_fuzz_project_name=EXAMPLE_PROJECT,
             sanitizer=self.SANITIZER,
             run_fuzzers_mode='coverage')
         result = run_fuzzers.run_fuzzers(run_config)
@@ -405,9 +408,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
       with tempfile.TemporaryDirectory() as tmp_dir:
         workspace = os.path.join(tmp_dir, 'workspace')
         shutil.copytree(TEST_DATA_PATH, workspace)
-        config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                                workspace=workspace,
-                                                project_name=EXAMPLE_PROJECT)
+        config = test_helpers.create_run_config(
+            fuzz_seconds=FUZZ_SECONDS,
+            workspace=workspace,
+            oss_fuzz_project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
 
@@ -418,9 +422,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)
-      config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                              workspace=workspace,
-                                              project_name=EXAMPLE_PROJECT)
+      config = test_helpers.create_run_config(
+          fuzz_seconds=FUZZ_SECONDS,
+          workspace=workspace,
+          oss_fuzz_project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
@@ -429,9 +434,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'build-out')
       os.mkdir(out_path)
-      config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                              workspace=tmp_dir,
-                                              project_name=EXAMPLE_PROJECT)
+      config = test_helpers.create_run_config(
+          fuzz_seconds=FUZZ_SECONDS,
+          workspace=tmp_dir,
+          oss_fuzz_project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.ERROR)
 
@@ -452,7 +458,7 @@ class GetFuzzTargetRunnerTest(unittest.TestCase):
       run_config = test_helpers.create_run_config(
           fuzz_seconds=FUZZ_SECONDS,
           workspace=tmp_dir,
-          project_name='example',
+          oss_fuzz_project_name='example',
           run_fuzzers_mode=run_fuzzers_mode)
       runner = run_fuzzers.get_fuzz_target_runner(run_config)
       self.assertTrue(isinstance(runner, fuzz_target_runner_cls))

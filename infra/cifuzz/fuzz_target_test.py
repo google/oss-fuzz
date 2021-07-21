@@ -47,7 +47,7 @@ def _create_config(**kwargs):
   attribute of Config."""
   defaults = {
       'is_github': True,
-      'project_name': EXAMPLE_PROJECT,
+      'oss_fuzz_project_name': EXAMPLE_PROJECT,
       'workspace': '/workspace'
   }
   for default_key, default_value in defaults.items():

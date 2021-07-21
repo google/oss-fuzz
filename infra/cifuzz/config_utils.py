@@ -37,11 +37,6 @@ def _get_sanitizer():
   return os.getenv('SANITIZER', 'address').lower()
 
 
-def _get_project_name():
-  # TODO(metzman): Remove OSS-Fuzz reference.
-  return os.getenv('OSS_FUZZ_PROJECT_NAME')
-
-
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
   return environment.get_bool('DRY_RUN', 'false')
@@ -94,13 +89,16 @@ class BaseConfig:
 
   def __init__(self):
     self.workspace = os.getenv('GITHUB_WORKSPACE')
-    self.project_name = _get_project_name()
+    self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
     self.project_repo_owner, self.project_repo_name = (
         _get_project_repo_owner_and_name())
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
+    # TODO(ochang): Error out if both oss_fuzz and build_integration_path is not
+    # set.
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+
     self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
@@ -113,7 +111,7 @@ class BaseConfig:
   @property
   def is_internal(self):
     """Returns True if this is an OSS-Fuzz project."""
-    return not self.build_integration_path
+    return bool(self.oss_fuzz_project_name)
 
   @property
   def platform(self):

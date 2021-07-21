@@ -44,9 +44,8 @@ def build_fuzzers_entrypoint():
     return returncode
 
   if not build_fuzzers.build_fuzzers(config):
-    logging.error(
-        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.project_name, config.commit_sha, config.pr_ref)
+    logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
+                  config.commit_sha, config.pr_ref)
     return returncode
 
   if not config.bad_build_check:

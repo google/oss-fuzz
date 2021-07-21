@@ -42,7 +42,7 @@ def _create_config(**kwargs):
   attribute of Config."""
   defaults = {
       'is_github': True,
-      'project_name': EXAMPLE_PROJECT,
+      'oss_fuzz_project_name': EXAMPLE_PROJECT,
       'workspace': WORKSPACE,
   }
   for default_key, default_value in defaults.items():
@@ -131,7 +131,9 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.deployment = _create_deployment(run_fuzzers_mode='batch',
-                                         build_integration_path='/')
+                                         build_integration_path='/',
+                                         oss_fuzz_project_name='',
+                                         is_github=True)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
               return_value=True)
@@ -180,8 +182,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    config = test_helpers.create_run_config(project_name=EXAMPLE_PROJECT,
-                                            build_integration_path='/',
+    config = test_helpers.create_run_config(build_integration_path='/',
                                             workspace=WORKSPACE,
                                             is_github=False)
     workspace = docker.Workspace(config)

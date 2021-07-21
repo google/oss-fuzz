@@ -33,6 +33,8 @@ _DEFAULT_DOCKER_RUN_ARGS = [
     'ARCHITECTURE=' + DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 
+EXTERNAL_PROJECT_IMAGE = 'external-project'
+
 _DEFAULT_DOCKER_RUN_COMMAND = [
     'docker',
     'run',
@@ -43,7 +45,11 @@ _DEFAULT_DOCKER_RUN_COMMAND = [
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
-  return PROJECT_TAG_PREFIX + project
+  # TODO(ochang): We may need unique names to support parallel fuzzing.
+  if project:
+    return PROJECT_TAG_PREFIX + project
+
+  return EXTERNAL_PROJECT_IMAGE
 
 
 def delete_images(images):
