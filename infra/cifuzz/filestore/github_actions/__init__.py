@@ -51,8 +51,15 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     super().__init__(config)
     self.github_api_http_headers = github_api.get_http_auth_headers(config)
 
+
+  def _get_artifact_name(self, name):
+    if name.startswith('cifuzz-'):
+      return name
+    return f'cifuzz-{name}'
+
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
+    name = self.get_artifact_name(name)
     with tempfile.TemporaryDirectory() as temp_dir:
       archive_path = os.path.join(temp_dir, name + '.tar')
       tar_directory(directory, archive_path)
@@ -74,6 +81,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def _download_artifact(self, name, dst_directory):
     """Downloads artifact with |name| to |dst_directory|."""
+    name = self._get_artifact_name(name)
     artifact = self._find_artifact(name)
     if not artifact:
       logging.warning('Could not download artifact: %s.', name)

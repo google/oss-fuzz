@@ -89,7 +89,7 @@ class BaseClusterFuzzDeployment:
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  BASE_BUILD_NAME = 'cifuzz-build-'
+  BASE_BUILD_NAME = 'build-'
   COVERAGE_NAME = 'coverage'
 
   def __init__(self, config, workspace):
