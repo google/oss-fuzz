@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/OpenSK"
 main_repo: "https://github.com/google/OpenSK"
-primary_contact: "david@adalogics.com"
+primary_contact: "opensk@google.com"
 sanitizers:
   - address
 fuzzing_engines:
