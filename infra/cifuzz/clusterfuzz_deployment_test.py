@@ -164,7 +164,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
-    expected_artifact_name = 'cifuzz-build-address'
+    expected_artifact_name = 'build-address'
     mocked_download_latest_build.assert_called_with(expected_artifact_name,
                                                     EXPECTED_LATEST_BUILD_PATH)
 

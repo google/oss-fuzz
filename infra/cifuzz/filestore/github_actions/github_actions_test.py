@@ -70,7 +70,8 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     name = 'build-name'
     build_dir = 'build-dir'
     self.assertIsNone(filestore.download_latest_build(name, build_dir))
-    mocked_warning.assert_called_with('Could not download artifact: %s.', name)
+    mocked_warning.assert_called_with('Could not download artifact: %s.',
+                                      'cifuzz-' + name)
 
   @mock.patch('logging.warning')
   @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
@@ -85,7 +86,8 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     name = 'corpus-name'
     dst_dir = 'corpus-dir'
     self.assertFalse(filestore.download_corpus(name, dst_dir))
-    mocked_warning.assert_called_with('Could not download artifact: %s.', name)
+    mocked_warning.assert_called_with('Could not download artifact: %s.',
+                                      'cifuzz-' + name)
 
 
 class TarDirectoryTest(unittest.TestCase):
