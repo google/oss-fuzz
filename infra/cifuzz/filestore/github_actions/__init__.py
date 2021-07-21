@@ -32,7 +32,6 @@ def tar_directory(directory, archive_path):
   archive_path = os.path.splitext(archive_path)[0]
 
   root_directory = os.path.abspath(directory)
-  basename = os.path.basename(directory)
   shutil.make_archive(archive_path,
                       'tar',
                       root_dir=root_directory,
