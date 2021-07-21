@@ -47,15 +47,16 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   downloading artifacts from other runs. The standard GitHub API does support
   this however."""
 
+  ARTIFACT_PREFIX = 'cifuzz-'
+
   def __init__(self, config):
     super().__init__(config)
     self.github_api_http_headers = github_api.get_http_auth_headers(config)
 
-
   def _get_artifact_name(self, name):
-    if name.startswith('cifuzz-'):
+    if name.startswith(self.ARTIFACT_PREFIX):
       return name
-    return f'cifuzz-{name}'
+    return f'{self.ARTIFACT_PREFIX}-{name}'
 
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
