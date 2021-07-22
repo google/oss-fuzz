@@ -59,7 +59,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
-    name = self.get_artifact_name(name)
+    name = self._get_artifact_name(name)
     with tempfile.TemporaryDirectory() as temp_dir:
       archive_path = os.path.join(temp_dir, name + '.tar')
       tar_directory(directory, archive_path)
