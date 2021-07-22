@@ -75,7 +75,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def _find_artifact(self, name):
     """Finds an artifact using the GitHub API and returns it."""
-    logging.debug('listing artifact')
+    logging.debug('Listing artifacts.')
     artifacts = self._list_artifacts()
     artifact = github_api.find_artifact(name, artifacts)
     logging.debug('Artifact: %s.', artifact)

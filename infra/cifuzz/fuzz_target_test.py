@@ -195,7 +195,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
       self.test_target.out_dir = tmp_dir
       self.assertTrue(self.test_target.is_crash_reportable(self.testcase_path))
     mocked_info.assert_called_with(
-        'The crash doesn\'t reproduce on previous build. '
+        'The crash is not reproducible on previous build. '
         'Code change (pr/commit) introduced crash.')
 
   # yapf: disable
