@@ -53,6 +53,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     self.github_api_http_headers = github_api.get_http_auth_headers(config)
 
   def _get_artifact_name(self, name):
+    """Returns |name| prefixed with |self.ARITFACT_PREFIX| if it isn't already
+    prefixed. Otherwise returns |name|."""
     if name.startswith(self.ARTIFACT_PREFIX):
       return name
     return f'{self.ARTIFACT_PREFIX}{name}'
