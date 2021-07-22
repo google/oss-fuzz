@@ -121,14 +121,12 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def download_corpus(self, target_name):
     corpus_dir = self.make_empty_corpus_dir(target_name)
-    logging.info('Downloading corpus for %s to %s.',
-                 target_name, corpus_dir)
+    logging.info('Downloading corpus for %s to %s.', target_name, corpus_dir)
     corpus_name = self._get_corpus_name(target_name)
     try:
       self.filestore.download_corpus(corpus_name, corpus_dir)
-      logging.info(
-          'Done downloading corpus. Contains %d elements.',
-          len(os.listdir(corpus_dir)))
+      logging.info('Done downloading corpus. Contains %d elements.',
+                   len(os.listdir(corpus_dir)))
     except Exception as err:  # pylint: disable=broad-except
       logging.error('Failed to download corpus for target: %s. Error: %s',
                     target_name, str(err))
@@ -159,8 +157,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_latest_build(self):
     """Upload the build produced by CIFuzz as the latest build."""
-    logging.info('Uploading latest build in %s.',
-                 self.workspace.out)
+    logging.info('Uploading latest build in %s.', self.workspace.out)
     build_name = self._get_build_name()
     try:
       result = self.filestore.upload_directory(build_name, self.workspace.out)
@@ -178,8 +175,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     crashes_artifact_name = self._get_crashes_artifact_name()
 
-    logging.info('Uploading crashes in %s.',
-                 self.workspace.artifacts)
+    logging.info('Uploading crashes in %s.', self.workspace.artifacts)
     try:
       self.filestore.upload_directory(crashes_artifact_name,
                                       self.workspace.artifacts)
