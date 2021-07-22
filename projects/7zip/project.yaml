@@ -1,0 +1,6 @@
+homepage: "https://sourceforge.net/p/sevenzip"
+language: C
+primary_contact: "someone@7zip.com"
+auto_ccs:
+ - "david@adalogics.com"
+main_repo: "https://sourceforge.net/p/sevenzip"
