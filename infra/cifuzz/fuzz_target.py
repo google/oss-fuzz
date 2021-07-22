@@ -19,12 +19,8 @@ import re
 import shutil
 import stat
 import subprocess
-import sys
 
 import docker
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 logging.basicConfig(

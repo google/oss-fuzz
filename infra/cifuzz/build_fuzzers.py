@@ -16,15 +16,11 @@ CI tools to build fuzzers."""
 
 import logging
 import os
-import sys
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
 import continuous_integration
 import docker
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 
 logging.basicConfig(

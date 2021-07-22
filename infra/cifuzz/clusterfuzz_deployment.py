@@ -14,17 +14,13 @@
 """Module for interacting with the ClusterFuzz deployment."""
 import logging
 import os
-import sys
 import urllib.error
 import urllib.request
 
 import filestore
 import filestore_utils
-import http_utils
 import get_coverage
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import http_utils
 import utils
 
 

@@ -21,11 +21,8 @@ from unittest import mock
 
 import parameterized
 
-# pylint: disable=wrong-import-position
-INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(INFRA_DIR)
-
-OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import build_fuzzers
 import continuous_integration

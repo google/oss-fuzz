@@ -14,12 +14,8 @@
 """Module for determining coverage of fuzz targets."""
 import logging
 import os
-import sys
 
 import http_utils
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 # The path to get OSS-Fuzz project's latest report json file.`

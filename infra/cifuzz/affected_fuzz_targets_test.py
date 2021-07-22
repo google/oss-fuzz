@@ -14,11 +14,15 @@
 """Tests for affected_fuzz_targets.py"""
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
 import parameterized
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import affected_fuzz_targets
 import clusterfuzz_deployment

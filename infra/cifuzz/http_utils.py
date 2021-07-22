@@ -15,14 +15,11 @@
 import json
 import logging
 import os
-import sys
 import tempfile
 import zipfile
 
 import requests
 
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import retry
 
 _DOWNLOAD_URL_RETRIES = 3

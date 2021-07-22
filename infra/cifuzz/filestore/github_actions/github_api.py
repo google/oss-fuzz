@@ -16,17 +16,10 @@ github_actions_toolkit which only deals with the actions API. We need to use
 both."""
 import logging
 import os
-import sys
 
 import requests
 
 import filestore
-
-# pylint: disable=wrong-import-position,import-error
-
-sys.path.append(
-    os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
-                 os.path.pardir))
 import retry
 
 _MAX_ITEMS_PER_PAGE = 100

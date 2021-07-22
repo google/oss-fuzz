@@ -16,7 +16,6 @@ import enum
 import logging
 import os
 import shutil
-import sys
 import time
 
 import clusterfuzz_deployment
@@ -24,10 +23,6 @@ import docker
 import fuzz_target
 import generate_coverage_report
 import stack_parser
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import utils
 
 
