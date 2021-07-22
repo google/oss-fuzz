@@ -15,10 +15,7 @@
 (CUT)."""
 import logging
 import os
-import sys
 
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 

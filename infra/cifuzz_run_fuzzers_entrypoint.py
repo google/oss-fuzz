@@ -15,9 +15,9 @@
 import logging
 import sys
 
-import config_utils
-import docker
-import run_fuzzers
+from cifuzz import config_utils
+from cifuzz import docker
+from cifuzz import run_fuzzers
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
