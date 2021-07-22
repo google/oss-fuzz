@@ -19,9 +19,6 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: false
   run-fuzzers-mode:
     description: |
       The mode to run the fuzzers with ("ci" or "batch").

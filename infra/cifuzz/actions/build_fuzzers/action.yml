@@ -21,9 +21,6 @@ inputs:
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: false
   bad-build-check:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false

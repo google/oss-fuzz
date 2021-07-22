@@ -34,7 +34,7 @@ inputs:
       hardcode the token.
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
-    required: false
+    required: true
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
