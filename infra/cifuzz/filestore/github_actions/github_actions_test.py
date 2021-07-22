@@ -50,7 +50,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
 
   def _get_expected_http_headers(self):
     return {
-        'Authorization': 'token {token}'.format(token=self.github_token),
+        'Authorization': f'token {self.github_token}',
         'Accept': 'application/vnd.github.v3+json',
     }
 

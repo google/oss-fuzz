@@ -24,6 +24,7 @@ def run_coverage_command(workspace, config):
                                                    config.language)
   docker_args += [
       '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-e',
+      f'CORPUS_DIR={workspace.corpora}', '-e',
       f'COVERAGE_OUTPUT_DIR={workspace.coverage_report}', '-t',
       docker.BASE_RUNNER_TAG, 'coverage'
   ]
@@ -32,8 +33,7 @@ def run_coverage_command(workspace, config):
 
 def download_corpora(fuzz_target_paths, clusterfuzz_deployment):
   """Downloads corpora for fuzz targets in |fuzz_target_paths| using
-  clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz."""
-  # TODO(metzman): Download to /corpus dir.
+  |clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz."""
   for target_path in fuzz_target_paths:
     target = os.path.basename(target_path)
     clusterfuzz_deployment.download_corpus(target)
