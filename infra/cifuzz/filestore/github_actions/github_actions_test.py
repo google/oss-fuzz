@@ -40,7 +40,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
 
   def _get_expected_http_headers(self):
     return {
-        'Authorization': 'token {token}'.format(token=self.github_token),
+        'Authorization': f'token {self.github_token}',
         'Accept': 'application/vnd.github.v3+json',
     }
 
@@ -49,8 +49,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     """Tests that _list_artifacts works as intended."""
     owner = 'exampleowner'
     repo = 'examplerepo'
-    os.environ['GITHUB_REPOSITORY'] = '{owner}/{repo}'.format(owner=owner,
-                                                              repo=repo)
+    os.environ['GITHUB_REPOSITORY'] = f'{owner}/{repo}'
     config = test_helpers.create_run_config(github_token=self.github_token)
     filestore = github_actions.GithubActionsFilestore(config)
     filestore._list_artifacts()
