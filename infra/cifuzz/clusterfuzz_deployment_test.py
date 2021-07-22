@@ -176,6 +176,14 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     build."""
     self.assertIsNone(self.deployment.download_latest_build())
 
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.'
+              'upload_directory')
+  def test_upload_latest_build(self, mocked_upload_directory):
+    """Tests that upload_latest_build works as intended."""
+    self.deployment.upload_latest_build()
+    mocked_upload_directory.assert_called_with('build-address',
+                                               '/workspace/build-out')
+
 
 class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   """Tests for NoClusterFuzzDeployment."""
