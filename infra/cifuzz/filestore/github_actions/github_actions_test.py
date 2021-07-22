@@ -120,6 +120,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                      expected_artifact_name + '.tar')
 
   def _create_corpus_dir(self):
+    """Sets up pyfakefs and creates a corpus directory containing
+    self.testcase."""
     self.setUpPyfakefs()
     self.fs.create_file(self.testcase, contents='hi')
 
