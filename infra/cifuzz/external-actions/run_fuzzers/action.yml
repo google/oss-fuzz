@@ -2,9 +2,6 @@
 name: 'run-fuzzers'
 description: 'Runs fuzz target binaries for a specified length of time.'
 inputs:
-  oss-fuzz-project-name:
-    description: 'The OSS-Fuzz project name.'
-    required: true
   language:
     description: 'Programming language project is written in.'
     required: false
@@ -19,6 +16,9 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
+  build-integration-path:
+    description: "The path to the the project's build integration."
+    required: true
   run-fuzzers-mode:
     description: |
       The mode to run the fuzzers with ("ci" or "batch").
@@ -34,7 +34,7 @@ inputs:
       hardcode the token.
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
-    required: false
+    required: true
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'

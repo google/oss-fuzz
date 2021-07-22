@@ -2,9 +2,6 @@
 name: 'build-fuzzers'
 description: "Builds an OSS-Fuzz project's fuzzers."
 inputs:
-  oss-fuzz-project-name:
-    description: 'Name of the corresponding OSS-Fuzz project.'
-    required: true
   language:
     description: 'Programming language project is written in.'
     required: false
@@ -21,6 +18,9 @@ inputs:
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
+  build-integration-path:
+    description: "The path to the the project's build integration."
+    required: true
   bad-build-check:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
