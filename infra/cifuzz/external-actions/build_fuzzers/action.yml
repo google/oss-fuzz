@@ -25,6 +25,19 @@ inputs:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
     default: true
+  storage-repo:
+    description: |
+      The git repo to use for storing certain artifacts from fuzzing.
+    required: false
+  storage-repo-branch:
+    description: |
+      The branch of the git repo to use for storing certain artifacts from
+      fuzzing.
+    required: false
+  storage-repo-branch-coverage:
+    description: |
+      The branch of the git repo to use for storing coverage reports.
+    required: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'

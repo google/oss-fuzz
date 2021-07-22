@@ -89,8 +89,7 @@ class BaseClusterFuzzDeployment:
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  BASE_BUILD_NAME = 'build-'
-  COVERAGE_NAME = 'coverage'
+  COVERAGE_NAME = 'latest'
 
   def __init__(self, config, workspace):
     super().__init__(config, workspace)
@@ -110,8 +109,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     try:
       logging.info('Downloading latest build.')
-      if self.filestore.download_latest_build(build_name,
-                                              self.workspace.clusterfuzz_build):
+      if self.filestore.download_build(build_name,
+                                       self.workspace.clusterfuzz_build):
         logging.info('Done downloading latest build.')
         return self.workspace.clusterfuzz_build
     except Exception as err:  # pylint: disable=broad-except
@@ -133,15 +132,15 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     return corpus_dir
 
   def _get_build_name(self):
-    return self.BASE_BUILD_NAME + self.config.sanitizer
+    return self.config.sanitizer + '-latest'
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
-    return 'corpus-{target_name}'.format(target_name=target_name)
+    return target_name
 
   def _get_crashes_artifact_name(self):  # pylint: disable=no-self-use
     """Returns the name of the crashes artifact."""
-    return 'crashes'
+    return 'current'
 
   def upload_corpus(self, target_name):
     """Upload the corpus produced by |target_name|."""
@@ -149,7 +148,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
     name = self._get_corpus_name(target_name)
     try:
-      self.filestore.upload_directory(name, corpus_dir)
+      self.filestore.upload_corpus(name, corpus_dir)
       logging.info('Done uploading corpus.')
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
@@ -160,7 +159,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     logging.info('Uploading latest build in %s.', self.workspace.out)
     build_name = self._get_build_name()
     try:
-      result = self.filestore.upload_directory(build_name, self.workspace.out)
+      result = self.filestore.upload_build(build_name, self.workspace.out)
       logging.info('Done uploading latest build.')
       return result
     except Exception as error:  # pylint: disable=broad-except
@@ -177,16 +176,16 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     logging.info('Uploading crashes in %s.', self.workspace.artifacts)
     try:
-      self.filestore.upload_directory(crashes_artifact_name,
-                                      self.workspace.artifacts)
+      self.filestore.upload_crashes(crashes_artifact_name,
+                                    self.workspace.artifacts)
       logging.info('Done uploading crashes.')
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s', error)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
-    self.filestore.upload_directory(self.COVERAGE_NAME,
-                                    self.workspace.coverage_report)
+    self.filestore.upload_coverage(self.COVERAGE_NAME,
+                                   self.workspace.coverage_report)
 
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""

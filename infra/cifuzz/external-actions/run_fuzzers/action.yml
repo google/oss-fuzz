@@ -35,6 +35,19 @@ inputs:
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
     required: true
+  storage-repo:
+    description: |
+      The git repo to use for storing certain artifacts from fuzzing.
+    required: false
+  storage-repo-branch:
+    description: |
+      The branch of the git repo to use for storing certain artifacts from
+      fuzzing.
+    required: false
+  storage-repo-branch-coverage:
+    description: |
+      The branch of the git repo to use for storing coverage reports.
+    required: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -48,3 +61,6 @@ runs:
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
+    GIT_STORE_REPO: ${{ inputs.storage-repo }}
+    GIT_STORE_BRANCH: ${{ inputs.storage-repo-branch }}
+    GIT_STORE_BRANCH_COVERAGE: ${{ inputs.storage-repo-branch-coverage }}

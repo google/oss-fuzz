@@ -107,6 +107,10 @@ class BaseConfig:
     self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
 
     self.github_token = os.environ.get('GITHUB_TOKEN')
+    self.git_store_repo = os.environ.get('GIT_STORE_REPO')
+    self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
+    self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
+                                                    self.git_store_branch)
 
   @property
   def is_internal(self):
