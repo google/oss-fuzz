@@ -26,7 +26,7 @@ class GetHttpAuthHeaders(unittest.TestCase):
     github_token = 'example githubtoken'
     run_config = test_helpers.create_run_config(github_token=github_token)
     expected_headers = {
-        'Authorization': 'token {token}'.format(token=github_token),
+        'Authorization': f'token {github_token}',
         'Accept': 'application/vnd.github.v3+json',
     }
     self.assertEqual(expected_headers,

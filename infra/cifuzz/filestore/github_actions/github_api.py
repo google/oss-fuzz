@@ -37,7 +37,7 @@ _GET_BACKOFF = 1
 
 def get_http_auth_headers(config):
   """Returns HTTP headers for authentication to the API."""
-  authorization = 'token {token}'.format(token=config.github_token)
+  authorization = f'token {config.github_token}'
   return {
       'Authorization': authorization,
       'Accept': 'application/vnd.github.v3+json'
