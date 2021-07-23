@@ -4,5 +4,6 @@ primary_contact: "xim.andrew@gmail.com"
 auto_ccs:
   - ouyangyunshu@google.com
   - mmoroz@google.com
+  - david@adalogics.com
 sanitizers:
   - address
