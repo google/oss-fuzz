@@ -15,5 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/containerd/containerd/contrib/fuzz FuzzFiltersParse fuzz_filters_parse
-compile_go_fuzzer github.com/containerd/containerd/contrib/fuzz FuzzPlatformsParse fuzz_platforms_parse
+$SRC/containerd/contrib/fuzz/oss_fuzz_build.sh
