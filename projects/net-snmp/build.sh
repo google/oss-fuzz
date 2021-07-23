@@ -21,11 +21,11 @@
 make
 
 # build fuzzers (remember to link statically)
-for fuzzname in snmp_pdu_parse_fuzzer snmp_parse_fuzzer snmp_scoped_pdu_parse_fuzzer agentx_parse_fuzzer; do
-  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx $SRC/${fuzzname}.c -o $WORK/${fuzzname}.o
-  $CXX $CXXFLAGS $WORK/${fuzzname}.o \
+for fuzzname in snmp_pdu_parse snmp_parse snmp_scoped_pdu_parse agentx_parse snmp_octet snmp_mib; do
+  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx $SRC/${fuzzname}_fuzzer.c -o $WORK/${fuzzname}_fuzzer.o
+  $CXX $CXXFLAGS $WORK/${fuzzname}_fuzzer.o \
         $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
         agent/.libs/libnetsnmpagent.a \
         -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
-        -o $OUT/${fuzzname}
+        -o $OUT/${fuzzname}_fuzzer
 done
