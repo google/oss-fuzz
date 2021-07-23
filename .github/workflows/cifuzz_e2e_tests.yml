@@ -1,4 +1,4 @@
-name: Infra tests
+name: cifuzz e2e test
 on:
   pull_request:
     paths:
