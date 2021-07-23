@@ -18,22 +18,19 @@ jobs:
         uses: styfle/cancel-workflow-action@0.8.0
         with:
           access_token: ${{ github.token }}
-      - name: echo env vars
-        run: echo "GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_BASE_REF $GITHUB_BASE_REF GITHUB_REF $GITHUB_REF GITHUB_HEAD_REF $GITHUB_HEAD_REF GITHUB_ACTION_REF $GITHUB_ACTION_REF GITHUB_SHA $GITHUB_SHA"
-
-      # - name: Build Fuzzers
-      #   id: build
-      #   uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@${{ github.head_ref }}
-      #   with:
-      #     build-integration-path: 'projects/cifuzz-example'
-      #     oss-fuzz-project-name: ''
-      #     sanitizer: ${{ matrix.sanitizer }}
-      # - name: Run Fuzzers
-      #   id: run
-      #   uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@${{ github.head_ref }}
-      #   with:
-      #     build-integration-path: 'projects/cifuzz-example'
-      #     sanitizer: ${{ matrix.sanitizer }}
-      #     oss-fuzz-project-name: ''
-      #     fuzz-seconds: 600
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Fuzzers
+        id: build
+        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@${{ github.head_ref }}
+        with:
+          build-integration-path: 'projects/cifuzz-example'
+          oss-fuzz-project-name: ''
+          sanitizer: ${{ matrix.sanitizer }}
+      - name: Run Fuzzers
+        id: run
+        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@${{ github.head_ref }}
+        with:
+          build-integration-path: 'projects/cifuzz-example'
+          sanitizer: ${{ matrix.sanitizer }}
+          oss-fuzz-project-name: ''
+          fuzz-seconds: 600
+          github-token: ${{ secrets.GITHUB_TOKEN }}
