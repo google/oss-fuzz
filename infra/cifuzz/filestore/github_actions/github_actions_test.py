@@ -73,7 +73,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     filestore = github_actions.GithubActionsFilestore(self.config)
     name = 'build-name'
     build_dir = 'build-dir'
-    self.assertIsNone(filestore.download_latest_build(name, build_dir))
+    self.assertFalse(filestore.download_latest_build(name, build_dir))
     mocked_warning.assert_called_with('Could not download artifact: %s.',
                                       'cifuzz-' + name)
 
@@ -99,6 +99,11 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     """Tests that upload_directory invokes tar_directory and
     artifact_client.upload_artifact properly."""
     self._create_corpus_dir()
+
+    def mock_tar_directory(_, archive_path):
+      self.fs.create_file(archive_path)
+
+    mocked_tar_directory.side_effect = mock_tar_directory
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_directory(self.artifact_name, self.corpus_dir)
 

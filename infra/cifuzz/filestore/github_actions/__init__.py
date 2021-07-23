@@ -65,7 +65,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     with tempfile.TemporaryDirectory() as temp_dir:
       archive_path = os.path.join(temp_dir, name + '.tar')
       tar_directory(directory, archive_path)
-      _raw_upload_directory(name, directory)
+      _raw_upload_directory(name, temp_dir)
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
