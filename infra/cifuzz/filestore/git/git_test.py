@@ -46,13 +46,13 @@ class GitFilestoreTest(unittest.TestCase):
     self.download_dir = tempfile.TemporaryDirectory()
     self.addCleanup(self.download_dir.cleanup)
 
-    with open(os.path.join(self.local_dir.name, 'a'), 'w') as f:
-      f.write('')
+    with open(os.path.join(self.local_dir.name, 'a'), 'w') as handle:
+      handle.write('')
 
     os.makedirs(os.path.join(self.local_dir.name, 'b'))
 
-    with open(os.path.join(self.local_dir.name, 'b', 'c'), 'w') as f:
-      f.write('')
+    with open(os.path.join(self.local_dir.name, 'b', 'c'), 'w') as handle:
+      handle.write('')
 
     self.git_repo = git.git_runner(self.git_dir.name)
     self.git_repo('init', '--bare')
@@ -65,21 +65,22 @@ class GitFilestoreTest(unittest.TestCase):
     self.mock_ci_filestore = mock.MagicMock()
     self.git_store = git.GitFilestore(self.config, self.mock_ci_filestore)
 
-  def assert_dirs_same(self, a, b):
+  def assert_dirs_same(self, first, second):
     """Asserts two dirs are the same."""
-    dcmp = filecmp.dircmp(a, b)
+    dcmp = filecmp.dircmp(first, second)
     if dcmp.diff_files or dcmp.left_only or dcmp.right_only:
       return False
 
-    return all(self.assert_dirs_same(
-        os.path.join(a, subdir),
-        os.path.join(b, subdir)) for subdir in dcmp.common_dirs)
+    return all(
+        self.assert_dirs_same(os.path.join(first, subdir),
+                              os.path.join(second, subdir))
+        for subdir in dcmp.common_dirs)
 
   def get_repo_filelist(self, branch):
     """Get files in repo."""
     return subprocess.check_output([
-        'git', '-C', self.git_dir.name,
-        'ls-tree', '-r', '--name-only', branch]).decode().splitlines()
+        'git', '-C', self.git_dir.name, 'ls-tree', '-r', '--name-only', branch
+    ]).decode().splitlines()
 
   def test_upload_download_corpus(self):
     """Tests uploading and downloading corpus."""
