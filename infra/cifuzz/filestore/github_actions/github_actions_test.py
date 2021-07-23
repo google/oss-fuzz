@@ -178,7 +178,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self._create_local_dir()
     with tempfile.TemporaryDirectory() as temp_dir:
       # Create a tarball.
-      archive_path = os.path.join(temp_dir, f'cifuzz-corpus.tar')
+      archive_path = os.path.join(temp_dir, 'cifuzz-corpus.tar')
       github_actions.tar_directory(self.local_dir, archive_path)
 
       artifact_download_dst_dir = os.path.join(temp_dir, 'dst')
@@ -198,7 +198,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
       filestore = github_actions.GithubActionsFilestore(self.config)
       self.assertTrue(
           filestore._download_artifact('corpus', artifact_download_dst_dir))
-      mocked_find_artifact.assert_called_with(f'cifuzz-corpus')
+      mocked_find_artifact.assert_called_with('cifuzz-corpus')
       self.assertTrue(
           os.path.exists(
               os.path.join(artifact_download_dst_dir,

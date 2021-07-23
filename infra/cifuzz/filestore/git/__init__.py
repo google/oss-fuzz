@@ -61,6 +61,7 @@ class GitFilestore(filestore.BaseFilestore):
 
     self._git('clean', '-fxd')
 
+  # pylint: disable=too-many-arguments
   def _upload_to_git(self,
                      message,
                      branch,
