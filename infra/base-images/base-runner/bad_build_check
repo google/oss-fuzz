@@ -361,7 +361,7 @@ function check_seed_corpus {
 
   # Set up common fuzzing arguments, otherwise "run_fuzzer" errors out.
   if [ -z "$FUZZER_ARGS" ]; then
-    export FUZZER_ARGS="-rss_limit_mb=2560 -timeout=25"
+    export FUZZER_ARGS="-rss_limit_mb=2560 -timeout=65"
   fi
 
   bash -c "run_fuzzer $FUZZER_NAME -runs=0" &> $FUZZER_OUTPUT
