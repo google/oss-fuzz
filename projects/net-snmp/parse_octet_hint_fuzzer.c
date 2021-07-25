@@ -16,10 +16,11 @@
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
     if (getenv("NETSNMP_DEBUGGING") != NULL) {
@@ -34,27 +35,18 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
     return 0;
 }
 
-int SecmodInMsg_CB(struct snmp_secmod_incoming_params *sp1) {
-    return SNMPERR_SUCCESS;
-}
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    char *filename;
-    if (asprintf(&filename, "/tmp/fuzzed-mib.%d", getpid()) == -1) {
-        return 0;
-    }
+    char *hint, *value;
+    int value_start, new_val_len;
+    unsigned char *new_val;
 
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) {
-        return 0;
-    }
-    fwrite(data, size, 1, fp);
-    fclose(fp);
-
-    // Read the file
-    read_mib(filename);
-
-    unlink(filename);
-    free(filename);
-    return 0;
+    hint = strndup((const char *)data, size);
+    value_start = strlen(hint);
+    assert(value_start <= size);
+    value = strndup((const char *)data + value_start, size - value_start);
+    parse_octet_hint(hint, value, &new_val, &new_val_len);
+    free(new_val);
+    free(hint);
+    free(value);
+    return 0; 
 }

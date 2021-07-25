@@ -19,7 +19,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
     if (getenv("NETSNMP_DEBUGGING") != NULL) {
@@ -34,27 +33,14 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
     return 0;
 }
 
-int SecmodInMsg_CB(struct snmp_secmod_incoming_params *sp1) {
-    return SNMPERR_SUCCESS;
-}
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    char *filename;
-    if (asprintf(&filename, "/tmp/fuzzed-mib.%d", getpid()) == -1) {
-        return 0;
-    }
+    oid *objid = malloc(MAX_OID_LEN * sizeof(oid));
+    size_t objidlen = MAX_OID_LEN;
+    char *input;
 
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) {
-        return 0;
-    }
-    fwrite(data, size, 1, fp);
-    fclose(fp);
-
-    // Read the file
-    read_mib(filename);
-
-    unlink(filename);
-    free(filename);
+    input = strndup((const char *)data, size);
+    read_objid(input, objid, &objidlen);
+    free(objid);
+    free(input);
     return 0;
 }
