@@ -73,7 +73,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def upload_crashes(self, name, directory):
     """Uploads the crashes at |directory| to |name|."""
-    return self._upload_directory(self.CRASHES_PREFIX + name, directory)
+    return self._raw_upload_directory(self.CRASHES_PREFIX + name, directory)
 
   def upload_corpus(self, name, directory):
     """Uploads the corpus at |directory| to |name|."""
