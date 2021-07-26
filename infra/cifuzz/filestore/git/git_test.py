@@ -17,7 +17,6 @@ import filecmp
 import os
 import tempfile
 import subprocess
-import sys
 import unittest
 from unittest import mock
 
