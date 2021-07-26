@@ -1,6 +1,5 @@
 homepage: "http://www.xmlsoft.org/"
 language: c++
-primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "akilsrin@apple.com"
   - "ddkilzer@apple.com"

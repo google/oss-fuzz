@@ -15,8 +15,5 @@
 #
 ################################################################################
 
-
-
-compile_go_fuzzer ./conf Fuzz fuzz_conf
-compile_go_fuzzer ./server FuzzClient fuzz_client
-
+compile_go_fuzzer github.com/nats-io/nats-server/v2/conf Fuzz fuzz_conf
+compile_go_fuzzer github.com/nats-io/nats-server/v2/server FuzzClient fuzz_client

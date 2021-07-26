@@ -69,9 +69,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     with tempfile.TemporaryDirectory() as temp_dir:
       archive_path = os.path.join(temp_dir, name + '.tar')
       tar_directory(directory, archive_path)
-      file_paths = [archive_path]
-
-      return artifact_client.upload_artifact(name, file_paths, temp_dir)
+      _raw_upload_directory(name, temp_dir)
 
   def upload_crashes(self, name, directory):
     """Uploads the crashes at |directory| to |name|."""
@@ -102,16 +100,13 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     return artifact
 
   def _download_artifact(self, name, dst_directory):
-    """Downloads artifact with |name| to |dst_directory|."""
+    """Downloads artifact with |name| to |dst_directory|. Returns True on
+    success."""
     name = self._get_artifact_name(name)
-    artifact = self._find_artifact(name)
-    if not artifact:
-      logging.warning('Could not download artifact: %s.', name)
-      return artifact
-    download_url = artifact['archive_download_url']
+
     with tempfile.TemporaryDirectory() as temp_dir:
-      if not http_utils.download_and_unpack_zip(
-          download_url, temp_dir, headers=self.github_api_http_headers):
+      if not self._raw_download_artifact(name, temp_dir):
+        logging.warning('Could not download artifact: %s.', name)
         return False
 
       artifact_tarfile_path = os.path.join(temp_dir, name + '.tar')
@@ -124,6 +119,17 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       with tarfile.TarFile(artifact_tarfile_path) as artifact_tarfile:
         artifact_tarfile.extractall(dst_directory)
     return True
+
+  def _raw_download_artifact(self, name, dst_directory):
+    """Downloads the artifact with |name| to |dst_directory|. Returns True on
+    success. Does not do any untarring or adding prefix to |name|."""
+    artifact = self._find_artifact(name)
+    if not artifact:
+      logging.warning('Could not find artifact: %s.', name)
+      return False
+    download_url = artifact['archive_download_url']
+    return http_utils.download_and_unpack_zip(
+        download_url, dst_directory, headers=self.github_api_http_headers)
 
   def _list_artifacts(self):
     """Returns a list of artifacts."""
@@ -138,3 +144,15 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_coverage(self, name, dst_directory):
     """Downloads the latest project coverage report."""
     return self._download_artifact(self.COVERAGE_PREFIX + name, dst_directory)
+
+
+def _raw_upload_directory(name, directory):
+  """Uploads the artifacts located in |directory| to |name|. Does not do any
+  tarring or adding prefixes to |name|."""
+  # Get file paths.
+  artifact_paths = []
+  for root, _, curr_file_paths in os.walk(directory):
+    for file_path in curr_file_paths:
+      artifact_paths.append(os.path.join(root, file_path))
+  logging.debug('Artifact paths: %s.', artifact_paths)
+  return artifact_client.upload_artifact(name, artifact_paths, directory)

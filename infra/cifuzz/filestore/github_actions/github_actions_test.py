@@ -72,7 +72,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     filestore = github_actions.GithubActionsFilestore(self.config)
     name = 'name'
     build_dir = 'build-dir'
-    self.assertIsNone(filestore.download_build(name, build_dir))
+    self.assertFalse(filestore.download_build(name, build_dir))
     mocked_warning.assert_called_with('Could not download artifact: %s.',
                                       'cifuzz-build-' + name)
 
@@ -97,6 +97,12 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   def test_upload_corpus(self, mocked_upload_artifact, mocked_tar_directory):
     """Test uploading corpus."""
     self._create_local_dir()
+
+    def mock_tar_directory(_, archive_path):
+      self.fs.create_file(archive_path)
+
+    mocked_tar_directory.side_effect = mock_tar_directory
+
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_corpus('target', self.local_dir)
     self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
@@ -108,6 +114,12 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   def test_upload_crashes(self, mocked_upload_artifact, mocked_tar_directory):
     """Test uploading crashes."""
     self._create_local_dir()
+
+    def mock_tar_directory(_, archive_path):
+      self.fs.create_file(archive_path)
+
+    mocked_tar_directory.side_effect = mock_tar_directory
+
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_crashes('current', self.local_dir)
     self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
@@ -119,6 +131,12 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   def test_upload_build(self, mocked_upload_artifact, mocked_tar_directory):
     """Test uploading build."""
     self._create_local_dir()
+
+    def mock_tar_directory(_, archive_path):
+      self.fs.create_file(archive_path)
+
+    mocked_tar_directory.side_effect = mock_tar_directory
+
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_build('sanitizer', self.local_dir)
     self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
@@ -130,6 +148,12 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   def test_upload_coverage(self, mocked_upload_artifact, mocked_tar_directory):
     """Test uploading coverage."""
     self._create_local_dir()
+
+    def mock_tar_directory(_, archive_path):
+      self.fs.create_file(archive_path)
+
+    mocked_tar_directory.side_effect = mock_tar_directory
+
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_coverage('latest', self.local_dir)
     self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
