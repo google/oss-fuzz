@@ -13,7 +13,7 @@
 # limitations under the License.
 """Module for a git based filestore."""
 
-from distutils.dir_util import copy_tree
+from distutils import dir_util
 import logging
 import os
 import shutil
@@ -22,7 +22,10 @@ import tempfile
 
 import filestore
 
+import retry
+
 _PUSH_RETRIES = 3
+_PUSH_BACKOFF = 1
 _GIT_EMAIL = 'cifuzz@clusterfuzz.com'
 _GIT_NAME = 'CIFuzz'
 _CORPUS_DIR = 'corpus'
@@ -44,6 +47,17 @@ class GitFilestore(filestore.BaseFilestore):
   the CI for larger artifacts or artifacts which make sense to be included as
   the result of a workflow run."""
 
+  def __init__(self, config, ci_filestore):
+    super().__init__(config)
+    self.repo_path = tempfile.mkdtemp()
+    self._git = git_runner(self.repo_path)
+    self._clone(self.config.git_store_repo)
+
+    self._ci_filestore = ci_filestore
+
+  def __del__(self):
+    shutil.rmtree(self.repo_path)
+
   def _clone(self, repo_url):
     """Clones repo URL."""
     self._git('clone', repo_url, '.')
@@ -62,6 +76,7 @@ class GitFilestore(filestore.BaseFilestore):
     self._git('clean', '-fxd')
 
   # pylint: disable=too-many-arguments
+  @retry.wrap(_PUSH_RETRIES, _PUSH_BACKOFF)
   def _upload_to_git(self,
                      message,
                      branch,
@@ -70,42 +85,21 @@ class GitFilestore(filestore.BaseFilestore):
                      replace=False):
     """Uploads a directory to git. If `replace` is True, then existing contents in
     the upload_path is deleted."""
-    for _ in range(1 + _PUSH_RETRIES):
-      self._reset_git(branch)
+    self._reset_git(branch)
 
-      full_repo_path = os.path.join(self.repo_path, upload_path)
-      if replace and os.path.exists(full_repo_path):
-        shutil.rmtree(full_repo_path)
+    full_repo_path = os.path.join(self.repo_path, upload_path)
+    if replace and os.path.exists(full_repo_path):
+      shutil.rmtree(full_repo_path)
 
-      copy_tree(local_path, full_repo_path)
-      self._git('add', '.')
-      try:
-        self._git('commit', '-m', message)
-      except subprocess.CalledProcessError:
-        logging.debug('No changes, skipping git push.')
-        return
-
-      try:
-        self._git('push', 'origin', branch)
-      except subprocess.CalledProcessError:
-        # Conflict, retry
-        logging.debug('Error while pushing %s, retrying.', upload_path)
-        continue
-
+    dir_util.copy_tree(local_path, full_repo_path)
+    self._git('add', '.')
+    try:
+      self._git('commit', '-m', message)
+    except subprocess.CalledProcessError:
+      logging.debug('No changes, skipping git push.')
       return
 
-    logging.error('Failed to upload %s.', upload_path)
-
-  def __init__(self, config, ci_filestore):
-    super().__init__(config)
-    self.repo_path = tempfile.mkdtemp()
-    self._git = git_runner(self.repo_path)
-    self._clone(self.config.git_store_repo)
-
-    self._ci_filestore = ci_filestore
-
-  def __del__(self):
-    shutil.rmtree(self.repo_path)
+    self._git('push', 'origin', branch)
 
   def upload_crashes(self, name, directory):
     """Uploads the crashes at |directory| to |name|."""
@@ -136,7 +130,7 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Corpus does not exist at %s.', path)
       return False
 
-    copy_tree(path, dst_directory)
+    dir_util.copy_tree(path, dst_directory)
     return True
 
   def download_build(self, name, dst_directory):
@@ -151,5 +145,5 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Coverage does not exist at %s.', path)
       return False
 
-    copy_tree(path, dst_directory)
+    dir_util.copy_tree(path, dst_directory)
     return True
