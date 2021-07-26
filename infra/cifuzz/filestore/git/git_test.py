@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for git."""
-
 import filecmp
 import os
 import tempfile
 import subprocess
 import unittest
 from unittest import mock
+
+# pylint: disable=wrong-import-position
+INFRA_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))))
+sys.path.append(INFRA_DIR)
 
 from filestore import git
 import test_helpers
