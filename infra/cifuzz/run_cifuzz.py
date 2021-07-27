@@ -16,12 +16,11 @@ docker image. This cannot depend on any CIFuzz code or third party packages."""
 import os
 import subprocess
 import tempfile
+import logging
 
 INFRA_DIR = os.path.dirname(os.path.dirname(__file__))
 
 DEFAULT_ENVS = [('DRY_RUN', '0'), ('SANITIZER', 'address')]
-
-REQUIRED_ENVS = ['PROJECT_SRC_PATH', 'WORKSPACE']
 
 BASE_CIFUZZ_TAG = 'gcr.io/oss-fuzz-base/'
 
@@ -33,17 +32,22 @@ def set_default_env_var_if_unset(env_var, default_value):
     os.environ[env_var] = default_value
 
 
-def docker_run(name, workdir):
+def docker_run(name, workdir, project_src_path):
   """Runs a CIFuzz docker container with |name|."""
   command = [
       'docker', 'run', '--name', name, '--rm', '-e', 'PROJECT_SRC_PATH', '-e',
       'BUILD_INTEGRATION_PATH', '-e', 'OSS_FUZZ_PROJECT_NAME', '-e',
       'GITHUB_WORKSPACE', '-e', 'GITHUB_EVENT_NAME', '-e', 'GITHUB_REPOSITORY',
       '-e', 'GITHUB_EVENT_NAME', '-e', 'DRY_RUN', '-e', 'CI', '-e', 'SANITIZER',
-      '-e', 'GITHUB_SHA', '-v', '$PROJECT_SRC_PATH:$PROJECT_SRC_PATH', '-v',
-      '/var/run/docker.sock:/var/run/docker.sock', '-v', f'{workdir}:{workdir}',
-      f'gcr.io/oss-fuzz-base/{name}'
+      '-e', 'GITHUB_SHA'
   ]
+  if project_src_path:
+    command += ['-v', f'{project_src_path}:{project_src_path}']
+  command += [
+      '-v', '/var/run/docker.sock:/var/run/docker.sock', '-v',
+      f'{workdir}:{workdir}', f'gcr.io/oss-fuzz-base/{name}'
+  ]
+  print('Running docker command:', command)
   subprocess.run(command, check=True)
 
 
@@ -61,15 +65,29 @@ def main():
   for env_var, default_value in DEFAULT_ENVS:
     set_default_env_var_if_unset(env_var, default_value)
 
-  for env_var in REQUIRED_ENVS:
-    assert os.environ.get(env_var) is not None, f'{env_var} not set'
+  if 'GITHUB_REPOSITORY' not in os.environ:
+    repository = os.getenv('REPOSITORY')
+    assert repository
+    os.environ['GITHUB_REPOSITORY'] = repository
+
+  project_src_path = os.getenv('PROJECT_SRC_PATH')
 
   with tempfile.TemporaryDirectory() as temp_dir:
-    os.environ['GITHUB_WORKSPACE'] = temp_dir
+    if 'GITHUB_WORKSPACE' not in os.environ:
+      if 'WORKSPACE' not in os.environ:
+        os.environ['GITHUB_WORKSPACE'] = temp_dir
+      else:
+        os.environ['GITHUB_WORKSPACE'] = os.environ['WORKSPACE']
+
+    workdir = os.environ['GITHUB_WORKSPACE']
+
     docker_build('build_fuzzers')
-    docker_run('build_fuzzers', temp_dir)
+    docker_run('build_fuzzers', workdir, project_src_path)
     docker_build('run_fuzzers')
-    docker_run('run_fuzzers', temp_dir)
+    try:
+      docker_run('run_fuzzers', workdir, project_src_path)
+    except subprocess.CalledProcessError:
+      logging.error('run_fuzzers failed')
 
 
 if __name__ == '__main__':

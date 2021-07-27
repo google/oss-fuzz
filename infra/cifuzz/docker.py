@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for dealing with docker."""
+import logging
 import os
 import sys
 
@@ -68,6 +69,7 @@ def get_base_docker_run_args(workspace, sanitizer='address', language='c++'):
       '-e', 'OUT=' + workspace.out
   ]
   docker_container = utils.get_container_name()
+  logging.info('Docker container: %s.', docker_container)
   if docker_container:
     # Don't map specific volumes if in a docker container, it breaks when
     # running a sibling container.
