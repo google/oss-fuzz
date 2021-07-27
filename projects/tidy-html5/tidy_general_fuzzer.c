@@ -84,7 +84,7 @@ int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* 
   uint8_t decider;
 
   // We need enough data for picking all of the options. One byte per option.
-  if (size < (sizeof(bool_options)/sizeof(TidyOptionId))) {
+  if (size < 5+(sizeof(bool_options)/sizeof(bool_options[0]))) {
     return 0;
   }
 
