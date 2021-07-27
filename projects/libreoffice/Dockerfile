@@ -66,7 +66,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/neon-0.31.2.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.71.0.tar.xz \
+    https://dev-www.libreoffice.org/src/curl-7.78.0.tar.xz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.32.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.3.tar.xz \
@@ -95,7 +95,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/openssl-1.1.1i.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.14.tgz \
-    https://dev-www.libreoffice.org/src/harfbuzz-2.6.0.tar.xz \
+    https://dev-www.libreoffice.org/src/harfbuzz-2.8.2.tar.xz \
     https://dev-www.libreoffice.org/src/glm-0.9.9.7.zip \
     https://dev-www.libreoffice.org/src/icu4c-69_1-src.tgz \
     https://dev-www.libreoffice.org/src/icu4c-69_1-data.zip \
