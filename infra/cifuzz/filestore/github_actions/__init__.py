@@ -47,6 +47,10 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   this however."""
 
   ARTIFACT_PREFIX = 'cifuzz-'
+  BUILD_PREFIX = 'build-'
+  CRASHES_PREFIX = 'crashes-'
+  CORPUS_PREFIX = 'corpus-'
+  COVERAGE_PREFIX = 'coverage-'
 
   def __init__(self, config):
     super().__init__(config)
@@ -59,7 +63,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       return name
     return f'{self.ARTIFACT_PREFIX}{name}'
 
-  def upload_directory(self, name, directory):  # pylint: disable=no-self-use
+  def _upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
     name = self._get_artifact_name(name)
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -67,9 +71,25 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       tar_directory(directory, archive_path)
       _raw_upload_directory(name, temp_dir)
 
+  def upload_crashes(self, name, directory):
+    """Uploads the crashes at |directory| to |name|."""
+    return _raw_upload_directory(self.CRASHES_PREFIX + name, directory)
+
+  def upload_corpus(self, name, directory):
+    """Uploads the corpus at |directory| to |name|."""
+    return self._upload_directory(self.CORPUS_PREFIX + name, directory)
+
+  def upload_build(self, name, directory):
+    """Uploads the build at |directory| to |name|."""
+    return self._upload_directory(self.BUILD_PREFIX + name, directory)
+
+  def upload_coverage(self, name, directory):
+    """Uploads the coverage report at |directory| to |name|."""
+    return self._upload_directory(self.COVERAGE_PREFIX + name, directory)
+
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
-    return self._download_artifact(name, dst_directory)
+    return self._download_artifact(self.CORPUS_PREFIX + name, dst_directory)
 
   def _find_artifact(self, name):
     """Finds an artifact using the GitHub API and returns it."""
@@ -117,13 +137,13 @@ class GithubActionsFilestore(filestore.BaseFilestore):
                                      self.config.project_repo_name,
                                      self.github_api_http_headers)
 
-  def download_latest_build(self, name, dst_directory):
-    """Downloads latest build with name |name| to |dst_directory|."""
-    return self._download_artifact(name, dst_directory)
+  def download_build(self, name, dst_directory):
+    """Downloads the build with name |name| to |dst_directory|."""
+    return self._download_artifact(self.BUILD_PREFIX + name, dst_directory)
 
   def download_coverage(self, name, dst_directory):
     """Downloads the latest project coverage report."""
-    return self._download_artifact(name, dst_directory)
+    return self._download_artifact(self.COVERAGE_PREFIX + name, dst_directory)
 
 
 def _raw_upload_directory(name, directory):

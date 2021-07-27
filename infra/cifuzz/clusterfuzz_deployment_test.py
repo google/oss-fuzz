@@ -143,7 +143,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     expected_corpus_dir = os.path.join(WORKSPACE, 'cifuzz-corpus',
                                        EXAMPLE_FUZZER)
     self.assertEqual(result, expected_corpus_dir)
-    mocked_download_corpus.assert_called_with('corpus-example_crash_fuzzer',
+    mocked_download_corpus.assert_called_with('example_crash_fuzzer',
                                               expected_corpus_dir)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
@@ -156,33 +156,30 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
                      '/workspace/cifuzz-corpus/example_crash_fuzzer')
     self.assertEqual(os.listdir(corpus_path), [])
 
-  @mock.patch(
-      'filestore.github_actions.GithubActionsFilestore.download_latest_build',
-      return_value=True)
-  def test_download_latest_build(self, mocked_download_latest_build):
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
+              return_value=True)
+  def test_download_latest_build(self, mocked_download_build):
     """Tests that downloading the latest build works as intended under normal
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
-    expected_artifact_name = 'build-address'
-    mocked_download_latest_build.assert_called_with(expected_artifact_name,
-                                                    EXPECTED_LATEST_BUILD_PATH)
+    expected_artifact_name = 'address-latest'
+    mocked_download_build.assert_called_with(expected_artifact_name,
+                                             EXPECTED_LATEST_BUILD_PATH)
 
-  @mock.patch(
-      'filestore.github_actions.GithubActionsFilestore.download_latest_build',
-      side_effect=Exception)
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
+              side_effect=Exception)
   def test_download_latest_build_fail(self, _):
     """Tests that download_latest_build returns None when it fails to download a
     build."""
     self.assertIsNone(self.deployment.download_latest_build())
 
-  @mock.patch('filestore.github_actions.GithubActionsFilestore.'
-              'upload_directory')
-  def test_upload_latest_build(self, mocked_upload_directory):
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.' 'upload_build')
+  def test_upload_latest_build(self, mocked_upload_build):
     """Tests that upload_latest_build works as intended."""
     self.deployment.upload_latest_build()
-    mocked_upload_directory.assert_called_with('build-address',
-                                               '/workspace/build-out')
+    mocked_upload_build.assert_called_with('address-latest',
+                                           '/workspace/build-out')
 
 
 class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
