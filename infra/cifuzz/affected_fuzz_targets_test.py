@@ -22,7 +22,7 @@ import parameterized
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
-import docker
+import config_utils
 import test_helpers
 
 # pylint: disable=protected-access
@@ -64,7 +64,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
         is_github=True,
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         workspace='/workspace')
-    workspace = docker.Workspace(config)
+    workspace = config_utils.Workspace(config)
     deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
     # We can't use fakefs in this test because this test executes

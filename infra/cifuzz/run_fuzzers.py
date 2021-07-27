@@ -20,7 +20,7 @@ import sys
 import time
 
 import clusterfuzz_deployment
-import docker
+import config_utils
 import fuzz_target
 import generate_coverage_report
 import stack_parser
@@ -43,7 +43,7 @@ class BaseFuzzTargetRunner:
 
   def __init__(self, config):
     self.config = config
-    self.workspace = docker.Workspace(config)
+    self.workspace = config_utils.Workspace(config)
     self.clusterfuzz_deployment = (
         clusterfuzz_deployment.get_clusterfuzz_deployment(
             self.config, self.workspace))

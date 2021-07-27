@@ -20,6 +20,7 @@ import sys
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
+import config_utils
 import continuous_integration
 import docker
 
@@ -51,7 +52,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.workspace = docker.Workspace(config)
+    self.workspace = config_utils.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
     self.clusterfuzz_deployment = (
