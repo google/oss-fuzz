@@ -108,22 +108,16 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
                        'corpus-target')
 
-  @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
               '.upload_artifact')
-  def test_upload_crashes(self, mocked_upload_artifact, mocked_tar_directory):
+  def test_upload_crashes(self, mocked_upload_artifact):
     """Test uploading crashes."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
-      self.fs.create_file(archive_path)
-
-    mocked_tar_directory.side_effect = mock_tar_directory
-
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_crashes('current', self.local_dir)
-    self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
-                       'crashes-current')
+    mocked_upload_artifact.assert_has_calls(
+        [mock.call('crashes-current', ['/local-dir/testcase'], '/local-dir')])
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
