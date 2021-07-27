@@ -1,6 +1,8 @@
 homepage: "https://httpd.apache.org/"
 language: c
-primary_contact: "someone_at_apache@apache.org"
+primary_contact: "david@adalogics.com"
 auto_ccs:
- - "david@adalogics.com"
-main_repo: "https://httpd.apache.org/"
+ - "stefan.eissing@greenbytes.de"
+ - "covener@gmail.com"
+ - "ylavic.dev@gmail.com"
+main_repo: "https://github.com/apache/httpd"

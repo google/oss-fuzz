@@ -17,12 +17,27 @@
 
 unset CPP
 unset CXX
-./configure
-make -i
 
+# Download apr and apr-utils and place them in httpd folder
+cd $SRC/
+mkdir deps
+cd deps
+wget https://downloads.apache.org//apr/apr-1.7.0.tar.gz
+tar -xf apr-1.7.0.tar.gz
+mv apr-1.7.0 $SRC/httpd/srclib/apr
 
-for fuzzname in utils parse; do
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -I./include -I./os/unix -I/usr/include/apr-1.0/ \
+wget https://downloads.apache.org//apr/apr-util-1.6.1.tar.gz
+tar -xf apr-util-1.6.1.tar.gz
+mv apr-util-1.6.1 $SRC/httpd/srclib/apr-util
+
+# Build httpd
+cd $SRC/httpd
+./configure --with-included-apr
+make
+
+# Build the fuzzers
+for fuzzname in utils parse tokenize addr_parse; do
+  $CC $CFLAGS $LIB_FUZZING_ENGINE -I./include -I./os/unix -I./srclib/apr/include -I./srclib/apr-util/include/ \
     $SRC/fuzz_${fuzzname}.c -o $OUT/fuzz_${fuzzname} \
     ./modules.o buildmark.o \
     -Wl,--start-group ./server/.libs/libmain.a \
@@ -30,7 +45,7 @@ for fuzzname in utils parse; do
                       ./modules/http/.libs/libmod_http.a \
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
-                      /usr/lib/x86_64-linux-gnu/libaprutil-1.a \
-                      /usr/lib/x86_64-linux-gnu/libapr-1.a \
+                      ./srclib/apr-util/.libs/libaprutil-1.a \
+                      ./srclib/apr/.libs/libapr-1.a \
     -Wl,--end-group -luuid -lpcre
 done
