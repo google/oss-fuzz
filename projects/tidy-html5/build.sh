@@ -22,7 +22,7 @@ cd ${WORK}/tidy-html5
 cmake -GNinja ${SRC}/tidy-html5/
 ninja
 
-for fuzzer in tidy_config_fuzzer tidy_fuzzer; do
+for fuzzer in tidy_config_fuzzer tidy_fuzzer tidy_xml_fuzzer tidy_parse_string_fuzzer tidy_parse_file_fuzzer tidy_general_fuzzer; do
     ${CC} ${CFLAGS} -c -I${SRC}/tidy-html5/include \
         $SRC/${fuzzer}.c -o ${fuzzer}.o
     ${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
