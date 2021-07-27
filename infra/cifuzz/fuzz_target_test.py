@@ -23,7 +23,7 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
-import docker
+import config_utils
 import fuzz_target
 import test_helpers
 
@@ -59,7 +59,7 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  workspace = docker.Workspace(config)
+  workspace = config_utils.Workspace(config)
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 

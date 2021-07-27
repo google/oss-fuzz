@@ -83,8 +83,8 @@ class GitFilestore(filestore.BaseFilestore):
                      upload_path,
                      local_path,
                      replace=False):
-    """Uploads a directory to git. If `replace` is True, then existing contents in
-    the upload_path is deleted."""
+    """Uploads a directory to git. If `replace` is True, then existing contents
+    in the upload_path is deleted."""
     self._reset_git(branch)
 
     full_repo_path = os.path.join(self.repo_path, upload_path)
