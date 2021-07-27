@@ -1,0 +1,8 @@
+homepage: "https://frrouting.org"
+language: c++
+primary_contact: "security@lists.frrouting.org"
+auto_ccs:
+- "qlyoung@qlyoung.net"
+fuzzing_engines:
+ - libfuzzer
+main_repo: 'https://github.com/FRRouting/frr'
