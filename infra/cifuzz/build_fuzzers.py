@@ -95,8 +95,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     ])
     rm_path = os.path.join(self.image_repo_path, '*')
     image_src_path = os.path.dirname(self.image_repo_path)
-    bash_command = (f'rm -rf {rm_path} && cp -r {self.host_repo_path} '
-                    f'{image_src_path} && compile')
+    bash_command = (f'cd / && rm -rf {rm_path} && cp -r {self.host_repo_path} '
+                    f'{image_src_path} && cd - && compile')
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
