@@ -81,15 +81,12 @@ void set_option(const uint8_t** data, size_t *size, TidyDoc *tdoc, TidyOptionId 
 }
 
 int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* errbuf) {
-
-  if (size < 40) {
-    return 0;
-  }
-
   uint8_t decider;
 
-  int rc = -1;
-  Bool ok;
+  // We need enough data for picking all of the options. One byte per option.
+  if (size < (sizeof(bool_options)/sizeof(TidyOptionId))) {
+    return 0;
+  }
 
   TidyDoc tdoc = tidyCreate();
 
