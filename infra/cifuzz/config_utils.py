@@ -45,9 +45,7 @@ def _is_dry_run():
 def get_project_src_path(workspace):
   """Returns the manually checked out path of the project's source if specified
   or None."""
-  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
-  # PROJECT_SRC_PATH.
-  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+  path = os.getenv('PROJECT_SRC_PATH')
   if not path:
     logging.debug('No PROJECT_SRC_PATH.')
     return path
