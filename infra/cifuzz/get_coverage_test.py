@@ -70,8 +70,8 @@ class GetOssFuzzFuzzerStatsDirUrlTest(unittest.TestCase):
         get_coverage._get_oss_fuzz_fuzzer_stats_dir_url('not-a-proj'))
 
 
-class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
-  """Tests OSSFuzzCoverage.get_target_coverage_report."""
+class OSSFuzzCoverageGetTargetCoverageTest(unittest.TestCase):
+  """Tests OSSFuzzCoverage.get_target_coverage."""
 
   def setUp(self):
     with mock.patch('get_coverage._get_oss_fuzz_latest_cov_report_info',
@@ -82,7 +82,7 @@ class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
   @mock.patch('http_utils.get_json_from_url', return_value={})
   def test_valid_target(self, mocked_get_json_from_url):
     """Tests that a target's coverage report can be downloaded and parsed."""
-    self.oss_fuzz_coverage.get_target_coverage_report(FUZZ_TARGET)
+    self.oss_fuzz_coverage.get_target_coverage(FUZZ_TARGET)
     (url,), _ = mocked_get_json_from_url.call_args
     self.assertEqual(
         'https://storage.googleapis.com/oss-fuzz-coverage/'
@@ -91,7 +91,7 @@ class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
   def test_invalid_target(self):
     """Tests that passing an invalid target coverage report returns None."""
     self.assertIsNone(
-        self.oss_fuzz_coverage.get_target_coverage_report(INVALID_TARGET))
+        self.oss_fuzz_coverage.get_target_coverage(INVALID_TARGET))
 
   @mock.patch('get_coverage._get_oss_fuzz_latest_cov_report_info',
               return_value=None)
@@ -130,7 +130,7 @@ class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
     fuzzer_cov_data = _get_example_curl_coverage()
-    with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage_report',
+    with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
                     return_value=fuzzer_cov_data):
       file_list = self.oss_fuzz_coverage.get_files_covered_by_target(
           FUZZ_TARGET)

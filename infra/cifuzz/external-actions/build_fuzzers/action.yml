@@ -49,5 +49,6 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
