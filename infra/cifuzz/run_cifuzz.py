@@ -19,10 +19,8 @@ import tempfile
 import logging
 
 INFRA_DIR = os.path.dirname(os.path.dirname(__file__))
-
 DEFAULT_ENVS = [('DRY_RUN', '0'), ('SANITIZER', 'address')]
-
-BASE_CIFUZZ_TAG = 'gcr.io/oss-fuzz-base/'
+BASE_CIFUZZ_DOCKER_TAG = 'gcr.io/oss-fuzz-base'
 
 
 def set_default_env_var_if_unset(env_var, default_value):
@@ -45,7 +43,7 @@ def docker_run(name, workdir, project_src_path):
     command += ['-v', f'{project_src_path}:{project_src_path}']
   command += [
       '-v', '/var/run/docker.sock:/var/run/docker.sock', '-v',
-      f'{workdir}:{workdir}', f'gcr.io/oss-fuzz-base/{name}'
+      f'{workdir}:{workdir}', f'{BASE_CIFUZZ_DOCKER_TAG}/{name}'
   ]
   print('Running docker command:', command)
   subprocess.run(command, check=True)
@@ -54,7 +52,7 @@ def docker_run(name, workdir, project_src_path):
 def docker_build(image):
   """Builds the CIFuzz |image|. Only suitable for building CIFuzz images."""
   command = [
-      'docker', 'build', '-t', BASE_CIFUZZ_TAG + image, '--file',
+      'docker', 'build', '-t', f'{BASE_CIFUZZ_DOCKER_TAG}/{image}', '--file',
       f'{image}.Dockerfile', '.'
   ]
   subprocess.run(command, check=True, cwd=INFRA_DIR)
@@ -74,10 +72,7 @@ def main():
 
   with tempfile.TemporaryDirectory() as temp_dir:
     if 'GITHUB_WORKSPACE' not in os.environ:
-      if 'WORKSPACE' not in os.environ:
-        os.environ['GITHUB_WORKSPACE'] = temp_dir
-      else:
-        os.environ['GITHUB_WORKSPACE'] = os.environ['WORKSPACE']
+      os.environ['GITHUB_WORKSPACE'] = os.environ.get('WORKSPACE', temp_dir)
 
     workdir = os.environ['GITHUB_WORKSPACE']
 
@@ -87,7 +82,7 @@ def main():
     try:
       docker_run('run_fuzzers', workdir, project_src_path)
     except subprocess.CalledProcessError:
-      logging.error('run_fuzzers failed')
+      logging.error('run_fuzzers failed.')
 
 
 if __name__ == '__main__':
