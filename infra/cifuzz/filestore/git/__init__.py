@@ -18,9 +18,16 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import filestore
+
+# pylint: disable=wrong-import-position
+INFRA_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))))
+sys.path.append(INFRA_DIR)
 
 import retry
 
