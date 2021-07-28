@@ -29,22 +29,24 @@ import repo_manager
 
 class FixGitRepoForDiffTest(unittest.TestCase):
   """Tests for fix_git_repo_for_diff."""
+
   @mock.patch('utils.execute')
   def test_fix_git_repo_for_diff(self, mocked_execute):
     """Tests that fix_git_repo_for_diff works as intended."""
     repo_dir = '/dir'
     repo_manager_obj = repo_manager.RepoManager(repo_dir)
     continuous_integration.fix_git_repo_for_diff(repo_manager_obj)
-    expected_command = ['git',
-                        'symbolic-ref',
-                        'refs/remotes/origin/HEAD',
-                        'refs/remotes/origin/master']
+    expected_command = [
+        'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
+        'refs/remotes/origin/master'
+    ]
 
     mocked_execute.assert_called_with(expected_command, location=repo_dir)
 
 
 class GetBuildCommand(unittest.TestCase):
   """Tests for get_build_command."""
+
   def test_build_command(self):
     """Tests that get_build_command works as intended."""
     self.assertEqual(continuous_integration.get_build_command(), 'compile')
@@ -52,13 +54,13 @@ class GetBuildCommand(unittest.TestCase):
 
 class GetReplaceRepoAndBuildCommand(unittest.TestCase):
   """Tests for get_replace_repo_and_build_command."""
+
   def test_get_replace_repo_and_build_command(self):
     """Tests that get_replace_repo_and_build_command works as intended."""
     host_repo_path = '/path/on/host/to/repo'
     image_repo_path = '/src/repo'
     command = continuous_integration.get_replace_repo_and_build_command(
-        host_repo_path,
-        image_repo_path)
+        host_repo_path, image_repo_path)
     expected_command = ('cd / && rm -rf /src/repo/* && '
                         'cp -r /path/on/host/to/repo /src && cd - '
                         '&& compile')
@@ -67,18 +69,19 @@ class GetReplaceRepoAndBuildCommand(unittest.TestCase):
 
 class BuildExternalProjetDockerImage(unittest.TestCase):
   """Tests for build_external_project_docker_image."""
+
   @mock.patch('helper.docker_build')
   def test_build_external_project_docker_image(self, mocked_docker_build):
     """Tests that build_external_project_docker_image works as intended."""
     project_src = '/path/to/project/src'
     build_integration_path = '/path/to/build/integration'
     continuous_integration.build_external_project_docker_image(
-        project_src,
-        build_integration_path)
+        project_src, build_integration_path)
 
-    mocked_docker_build.assert_called_with(
-        ['-t', 'external-project', '-f',
-         f'{build_integration_path}/Dockerfile', project_src])
+    mocked_docker_build.assert_called_with([
+        '-t', 'external-project', '-f', f'{build_integration_path}/Dockerfile',
+        project_src
+    ])
 
 
 # TODO(metzman): Write tests for the rest of continuous_integration.py.
