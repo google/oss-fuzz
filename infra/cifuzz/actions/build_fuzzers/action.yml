@@ -38,4 +38,3 @@ runs:
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
-    REPOSITORY: ${{ github.repository }}

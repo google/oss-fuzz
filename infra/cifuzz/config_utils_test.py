@@ -120,20 +120,20 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   def test_empty_repository(self):
     """Tests that the correct result is returned when repository is an empty
     string."""
-    os.environ['REPOSITORY'] = ''
+    os.environ['GITHUB_REPOSITORY'] = ''
     self.assertEqual(config_utils._get_project_repo_owner_and_name(), ('', ''))
 
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
-    os.environ['REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
+    os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
     self.assertEqual(config_utils._get_project_repo_owner_and_name(),
                      (self.repo_owner, self.repo_name))
 
   def test_nongithub_repository(self):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
-    os.environ['REPOSITORY'] = self.repo_name
+    os.environ['GITHUB_REPOSITORY'] = self.repo_name
     self.assertEqual(config_utils._get_project_repo_owner_and_name(),
                      ('', self.repo_name))
 
