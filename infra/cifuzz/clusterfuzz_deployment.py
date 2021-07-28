@@ -192,10 +192,12 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     try:
       if not self.filestore.download_coverage(
           self.COVERAGE_NAME, self.workspace.clusterfuzz_coverage):
+        logging.error('Could not download coverage.')
         return None
       return get_coverage.FilesystemCoverage(
           repo_path, self.workspace.clusterfuzz_coverage)
     except (get_coverage.CoverageError, filestore.FilestoreError):
+      logging.error('Could not get coverage.')
       return None
 
 
