@@ -112,7 +112,7 @@ class BaseConfig:
     # TODO(metzman): Parse env like we do in ClusterFuzz.
     self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
 
-    self.token = os.environ.get('GITHUB_TOKEN')
+    self.github_token = os.environ.get('GITHUB_TOKEN')
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
