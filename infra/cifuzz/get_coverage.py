@@ -51,7 +51,6 @@ class BaseCoverage:
     if not target_cov:
       logging.info('No coverage available for %s', target)
       return None
-    logging.info('!!! rp: %s .TARGET COV %s', self.repo_path, target_cov)
 
     coverage_per_file = get_coverage_per_file(target_cov)
     if not coverage_per_file:
