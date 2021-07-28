@@ -190,11 +190,14 @@ def check_fuzzer_build(workspace,
   """Checks the integrity of the built fuzzers.
 
   Args:
-    out_dir: The directory containing the fuzzer binaries.
+    workspace: The workspace used by CIFuzz.
     sanitizer: The sanitizer the fuzzers are built with.
+    language: The programming language the fuzzers are written in.
+    allowed_broken_targets_percentage (optional): A custom percentage of broken
+        targets to allow.
 
   Returns:
-    True if fuzzers are correct.
+    True if fuzzers pass OSS-Fuzz's build check.
   """
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)

@@ -44,7 +44,7 @@ class BaseCoverage:
       target: The name of the fuzz target whose coverage is requested.
 
     Returns:
-      A list of files that the fuzz targets covers or None.
+      A list of files that the fuzz target covers or None.
     """
     raise NotImplementedError('Child class must implement method.')
 
@@ -83,7 +83,7 @@ class OSSFuzzCoverage(BaseCoverage):
       target: The name of the fuzz target whose coverage is requested.
 
     Returns:
-      A list of files that the fuzz targets covers or None.
+      A list of files that the fuzz target covers or None.
     """
     target_cov = self.get_target_coverage_report(target)
     if not target_cov:
@@ -165,7 +165,7 @@ class FilesystemCoverage(BaseCoverage):
       target: The name of the fuzz target whose coverage is requested.
 
     Returns:
-      A list of files that the fuzz targets covers or None.
+      A list of files that the fuzz target covers or None.
     """
     # TODO(jonathanmetzman): Implement this.
     raise NotImplementedError('Implementation TODO.')
