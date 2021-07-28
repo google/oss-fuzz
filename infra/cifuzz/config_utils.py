@@ -20,11 +20,20 @@ import json
 
 import environment
 
+DEFAULT_LANGUAGE = 'c++'
+DEFAULT_SANITIZER = 'address'
+
 
 def _get_project_repo_owner_and_name():
-  # Includes owner and repo name.
-  github_repository = os.getenv('GITHUB_REPOSITORY', '')
-  return os.path.split(github_repository)
+  """Returns a tuple containing the project repo owner and the name of the
+  repo."""
+  # On GitHub this includes owner and repo name.
+  repository = os.getenv('GITHUB_REPOSITORY', '')
+  # Use os.path.split. When GITHUB_REPOSITORY just contains the name of the
+  # repo, this will return a tuple containing an empty string and the repo name.
+  # When GITHUB_REPOSITORY contains the repo owner followed by a slash and then
+  # the repo name, it will return a tuple containing the owner and repo name.
+  return os.path.split(repository)
 
 
 def _get_pr_ref(event):
@@ -34,7 +43,7 @@ def _get_pr_ref(event):
 
 
 def _get_sanitizer():
-  return os.getenv('SANITIZER', 'address').lower()
+  return os.getenv('SANITIZER', DEFAULT_SANITIZER).lower()
 
 
 def _is_dry_run():
@@ -57,9 +66,6 @@ def get_project_src_path(workspace):
   # If |src| is not absolute, assume we are running in GitHub actions.
   # TODO(metzman): Don't make this assumption.
   return os.path.join(workspace, path)
-
-
-DEFAULT_LANGUAGE = 'c++'
 
 
 def _get_language():
@@ -90,8 +96,10 @@ class BaseConfig:
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
     self.project_repo_owner, self.project_repo_name = (
         _get_project_repo_owner_and_name())
+
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
+
     self.sanitizer = _get_sanitizer()
     # TODO(ochang): Error out if both oss_fuzz and build_integration_path is not
     # set.
