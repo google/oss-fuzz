@@ -243,10 +243,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       raise error
 
     if not reproducible_on_code_change:
-      # TODO(metzman): Allow users to specify if unreproducible crashes should
-      # be reported.
       logging.info('Crash is not reproducible.')
-      return False
+      return self.config.report_unreproducible_crashes
 
     logging.info('Crash is reproducible.')
     return self.is_crash_novel(testcase)

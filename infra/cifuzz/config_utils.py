@@ -165,6 +165,9 @@ class RunFuzzersConfig(BaseConfig):
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
            (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
 
+    self.report_unreproducible_crashes = environment.get_bool(
+        'REPORT_UNREPRODUCIBLE_CRASHES', False)
+
 
 class BuildFuzzersConfig(BaseConfig):
   """Class containing constant configuration for building fuzzers in CIFuzz."""
