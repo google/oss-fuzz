@@ -23,7 +23,6 @@ import environment
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
 
-
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
 # the environment.py helpers for getting env vars, since it can cause values
