@@ -18,20 +18,11 @@
 unset CPP
 unset CXX
 
-# Download apr and apr-utils and place them in httpd folder
-cd $SRC/
-mkdir deps
-cd deps
-wget https://downloads.apache.org//apr/apr-1.7.0.tar.gz
-tar -xf apr-1.7.0.tar.gz
-mv apr-1.7.0 $SRC/httpd/srclib/apr
-
-wget https://downloads.apache.org//apr/apr-util-1.6.1.tar.gz
-tar -xf apr-util-1.6.1.tar.gz
-mv apr-util-1.6.1 $SRC/httpd/srclib/apr-util
+# Download apr and place in httpd srclib folder. Apr-2.0 includes apr-utils
+svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 
 # Build httpd
-cd $SRC/httpd
+./buildconf
 ./configure --with-included-apr
 make
 
@@ -45,7 +36,6 @@ for fuzzname in utils parse tokenize addr_parse; do
                       ./modules/http/.libs/libmod_http.a \
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
-                      ./srclib/apr-util/.libs/libaprutil-1.a \
-                      ./srclib/apr/.libs/libapr-1.a \
+                      ./srclib/apr/.libs/libapr-2.a \
     -Wl,--end-group -luuid -lpcre
 done

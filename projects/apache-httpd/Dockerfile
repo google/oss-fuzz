@@ -15,18 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget libpcre3 libpcre3-dev  uuid-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget libpcre3 \
+                                         libpcre3-dev uuid-dev pkg-config libtool-bin
 RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.4.1.tar.gz && \
     tar -xf expat-2.4.1.tar.gz && \
     cd expat-2.4.1 && \
     ./configure && \
     make && \
     make install
-
-RUN wget https://downloads.apache.org//httpd/httpd-2.4.48.tar.bz2 && \
-    tar -xf httpd-2.4.48.tar.bz2 && \
-    mv httpd-2.4.48 httpd
+RUN svn checkout https://svn.apache.org/repos/asf/httpd/httpd/trunk/ httpd
 WORKDIR httpd
-
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
