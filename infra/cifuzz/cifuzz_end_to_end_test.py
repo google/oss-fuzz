@@ -22,6 +22,7 @@ CIFUZZ_DIR = os.path.dirname(os.path.abspath(__file__))
 EXTERNAL_PROJECT_PATH = os.path.join(CIFUZZ_DIR, 'test_data',
                                      'external-project')
 
+
 # This test will fail if not run as root because the fuzzer build process
 # creates binaries that only root can write to.
 # Use a seperate env var to keep this seperate from integration tests which
