@@ -16,17 +16,17 @@ import os
 import tempfile
 import unittest
 
-
 import run_cifuzz
-
 
 CIFUZZ_DIR = os.path.dirname(os.path.abspath(__file__))
 EXTERNAL_PROJECT_PATH = os.path.join('CIFUZZ_DIR', 'external-project')
 
-@unittest.skipIf(not os.getenv('END_TO_END_TESTS'),
-                 'END_TO_END_TESTS=1 not set')
+
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class EndToEndTest(unittest.TestCase):
   """End-to-End tests for CIFuzz."""
+
   def test_simple(self):
     """Simple end-to-end test using run_cifuzz.main()."""
     os.environ['REPOSITORY'] = 'external-project'
