@@ -51,21 +51,21 @@ def _is_dry_run():
   return environment.get_bool('DRY_RUN', 'false')
 
 
-def get_project_src_path(workspace):
+def get_project_src_path(workspace, is_github):
   """Returns the manually checked out path of the project's source if specified
-  or None."""
+  or None. Returns the path relative to |workspace| if |is_github| since on
+  github the checkout will be relative to there."""
   path = os.getenv('PROJECT_SRC_PATH')
   if not path:
     logging.debug('No PROJECT_SRC_PATH.')
     return path
 
-  logging.debug('PROJECT_SRC_PATH set.')
-  if os.path.isabs(path):
-    return path
-
-  # If |src| is not absolute, assume we are running in GitHub actions.
-  # TODO(metzman): Don't make this assumption.
-  return os.path.join(workspace, path)
+  logging.debug('PROJECT_SRC_PATH set: %s.', path)
+  if is_github:
+    # On GitHub, they don't know the absolute path, it is relative to
+    # |workspace|.
+    return os.path.join(workspace, path)
+  return path
 
 
 def _get_language():
@@ -193,7 +193,7 @@ class BuildFuzzersConfig(BaseConfig):
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.project_src_path = get_project_src_path(self.workspace)
+    self.project_src_path = get_project_src_path(self.workspace, self.is_github)
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')

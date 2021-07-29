@@ -160,5 +160,38 @@ class GetSanitizerTest(unittest.TestCase):
     self.assertEqual(config_utils._get_sanitizer(), self.sanitizer)
 
 
+class GetProjectSrcPathTest(unittest.TestCase):
+  """Tests for get_project_src_path."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    self.workspace = '/workspace'
+    self.project_src_dir_name = 'project-src'
+
+  def test_unset(self):
+    """Tests that get_project_src_path returns None when no PROJECT_SRC_PATH is
+    set."""
+    self.assertIsNone(
+        config_utils.get_project_src_path(self.workspace, is_github=True))
+
+  def test_github(self):
+    """Tests that get_project_src_path returns the correct result on GitHub."""
+    os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
+    expected_project_src_path = os.path.join(self.workspace,
+                                             self.project_src_dir_name)
+    self.assertEqual(
+        config_utils.get_project_src_path(self.workspace, is_github=True),
+        expected_project_src_path)
+
+  def test_not_github(self):
+    """Tests that get_project_src_path returns the correct result not on
+    GitHub."""
+    project_src_path = os.path.join('/', self.project_src_dir_name)
+    os.environ['PROJECT_SRC_PATH'] = project_src_path
+    self.assertEqual(
+        config_utils.get_project_src_path(self.workspace, is_github=True),
+        project_src_path)
+
+
 if __name__ == '__main__':
   unittest.main()
