@@ -21,7 +21,6 @@ import config_utils
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
