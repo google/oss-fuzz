@@ -37,5 +37,5 @@ for fuzzname in utils parse tokenize addr_parse; do
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
                       ./srclib/apr/.libs/libapr-2.a \
-    -Wl,--end-group -luuid -lpcre
+    -Wl,--end-group -luuid -lpcre -lcrypt
 done
