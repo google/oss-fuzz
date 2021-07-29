@@ -19,11 +19,15 @@ import unittest
 import run_cifuzz
 
 CIFUZZ_DIR = os.path.dirname(os.path.abspath(__file__))
-EXTERNAL_PROJECT_PATH = os.path.join('CIFUZZ_DIR', 'external-project')
+EXTERNAL_PROJECT_PATH = os.path.join(CIFUZZ_DIR, 'test_data',
+                                     'external-project')
 
-
-@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                 'INTEGRATION_TESTS=1 not set')
+# This test will fail if not run as root because the fuzzer build process
+# creates binaries that only root can write to.
+# Use a seperate env var to keep this seperate from integration tests which
+# don't have this annoying property.
+@unittest.skipIf(not os.getenv('END_TO_END_TESTS'),
+                 'END_TO_END_TESTS=1 not set')
 class EndToEndTest(unittest.TestCase):
   """End-to-End tests for CIFuzz."""
 
