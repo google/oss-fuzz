@@ -200,7 +200,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_valid_pull_request(self):
     """Tests building fuzzers with valid pull request."""
-    # TODO(metzman): What happens when this branch closes?
     config = test_helpers.create_build_config(
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',

@@ -23,6 +23,13 @@ import environment
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
 
+# This module deals a lot with env variables. Many of these will be set by users
+# and others beyond CIFuzz's control. Thus, you should be careful about using
+# the environment.py helpers for getting env vars, since it can cause values
+# that should be interpreted as strings to be returned as other types (bools or
+# ints for example). The environment.py helpers should not be used for values
+# that are supposed to be strings.
+
 
 def _get_project_repo_owner_and_name():
   """Returns a tuple containing the project repo owner and the name of the
@@ -38,7 +45,7 @@ def _get_project_repo_owner_and_name():
 
 def _get_pr_ref(event):
   if event == 'pull_request':
-    return environment.get('GITHUB_REF')
+    return os.getenv('GITHUB_REF')
   return None
 
 
@@ -48,7 +55,7 @@ def _get_sanitizer():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return environment.get_bool('DRY_RUN', 'false')
+  return environment.get_bool('DRY_RUN', False)
 
 
 def get_project_src_path(workspace, is_github):
@@ -109,8 +116,7 @@ class BaseConfig:
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
-    # TODO(metzman): Parse env like we do in ClusterFuzz.
-    self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
+    self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
     self.github_token = os.environ.get('GITHUB_TOKEN')
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
@@ -197,12 +203,9 @@ class BuildFuzzersConfig(BaseConfig):
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
-    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', 'true')
-
-    # TODO(metzman): Use better system for interpreting env vars. What if env
-    # var is set to '0'?
-    self.keep_unaffected_fuzz_targets = bool(
-        os.getenv('KEEP_UNAFFECTED_FUZZERS'))
+    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
+    self.keep_unaffected_fuzz_targets = environment.get_bool(
+        'KEEP_UNAFFECTED_FUZZERS')
 
 
 class Workspace:

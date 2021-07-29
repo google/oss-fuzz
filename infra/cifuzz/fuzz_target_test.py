@@ -63,8 +63,6 @@ def _create_deployment(**kwargs):
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
-# TODO(metzman): Use patch from test_libs/helpers.py in clusterfuzz so that we
-# don't need to accept this as an argument in every test method.
 @mock.patch('utils.get_container_name', return_value='container')
 class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   """Tests the is_reproducible method in the fuzz_target.FuzzTarget class."""
