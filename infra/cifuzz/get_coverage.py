@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for determining coverage of fuzz targets."""
+import json
 import logging
 import os
 import sys
@@ -46,47 +47,9 @@ class BaseCoverage:
     Returns:
       A list of files that the fuzz target covers or None.
     """
-    raise NotImplementedError('Child class must implement method.')
-
-
-class OSSFuzzCoverage(BaseCoverage):
-  """Gets coverage data for a project from OSS-Fuzz."""
-
-  def __init__(self, repo_path, oss_fuzz_project_name):
-    """Constructor for OSSFuzzCoverage."""
-    super().__init__(repo_path)
-    self.oss_fuzz_project_name = oss_fuzz_project_name
-    self.fuzzer_stats_url = _get_oss_fuzz_fuzzer_stats_dir_url(
-        self.oss_fuzz_project_name)
-    if self.fuzzer_stats_url is None:
-      raise CoverageError('Could not get latest coverage.')
-
-  def get_target_coverage_report(self, target):
-    """Get the coverage report for a specific fuzz target.
-
-    Args:
-      target: The name of the fuzz target whose coverage is requested.
-
-    Returns:
-      The target's coverage json dict or None on failure.
-    """
-    if not self.fuzzer_stats_url:
-      return None
-
-    target_url = utils.url_join(self.fuzzer_stats_url, target + '.json')
-    return http_utils.get_json_from_url(target_url)
-
-  def get_files_covered_by_target(self, target):
-    """Gets a list of source files covered by the specific fuzz target.
-
-    Args:
-      target: The name of the fuzz target whose coverage is requested.
-
-    Returns:
-      A list of files that the fuzz target covers or None.
-    """
-    target_cov = self.get_target_coverage_report(target)
+    target_cov = self.get_target_coverage(target)
     if not target_cov:
+      logging.info('No coverage available for %s', target)
       return None
 
     coverage_per_file = get_coverage_per_file(target_cov)
@@ -111,6 +74,45 @@ class OSSFuzzCoverage(BaseCoverage):
       affected_file_list.append(relative_path)
 
     return affected_file_list
+
+  def get_target_coverage(self, target):
+    """Get the coverage report for a specific fuzz target.
+
+    Args:
+      target: The name of the fuzz target whose coverage is requested.
+
+    Returns:
+      The target's coverage json dict or None on failure.
+    """
+    raise NotImplementedError('Child class must implement method.')
+
+
+class OSSFuzzCoverage(BaseCoverage):
+  """Gets coverage data for a project from OSS-Fuzz."""
+
+  def __init__(self, repo_path, oss_fuzz_project_name):
+    """Constructor for OSSFuzzCoverage."""
+    super().__init__(repo_path)
+    self.oss_fuzz_project_name = oss_fuzz_project_name
+    self.fuzzer_stats_url = _get_oss_fuzz_fuzzer_stats_dir_url(
+        self.oss_fuzz_project_name)
+    if self.fuzzer_stats_url is None:
+      raise CoverageError('Could not get latest coverage.')
+
+  def get_target_coverage(self, target):
+    """Get the coverage report for a specific fuzz target.
+
+    Args:
+      target: The name of the fuzz target whose coverage is requested.
+
+    Returns:
+      The target's coverage json dict or None on failure.
+    """
+    if not self.fuzzer_stats_url:
+      return None
+
+    target_url = utils.url_join(self.fuzzer_stats_url, target + '.json')
+    return http_utils.get_json_from_url(target_url)
 
 
 def _get_oss_fuzz_latest_cov_report_info(oss_fuzz_project_name):
@@ -158,17 +160,29 @@ class FilesystemCoverage(BaseCoverage):
     super().__init__(repo_path)
     self.project_coverage_dir = project_coverage_dir
 
-  def get_files_covered_by_target(self, target):
-    """Returns a list of source files covered by the specific fuzz target.
+  def get_target_coverage(self, target):
+    """Get the coverage report for a specific fuzz target.
 
     Args:
       target: The name of the fuzz target whose coverage is requested.
 
     Returns:
-      A list of files that the fuzz target covers or None.
+      The target's coverage json dict or None on failure.
     """
-    # TODO(jonathanmetzman): Implement this.
-    raise NotImplementedError('Implementation TODO.')
+    logging.info('Getting coverage for %s from filesystem.', target)
+    fuzzer_stats_json_path = os.path.join(self.project_coverage_dir,
+                                          'fuzzer_stats', target + '.json')
+    if not os.path.exists(fuzzer_stats_json_path):
+      logging.warning('%s does not exist.', fuzzer_stats_json_path)
+      return None
+
+    with open(fuzzer_stats_json_path) as fuzzer_stats_json_file_handle:
+      try:
+        return json.load(fuzzer_stats_json_file_handle)
+      except json.decoder.JSONDecodeError as err:
+        logging.error('Could not decode: %s. Error: %s.',
+                      fuzzer_stats_json_path, err)
+        return None
 
 
 def is_file_covered(file_cov):

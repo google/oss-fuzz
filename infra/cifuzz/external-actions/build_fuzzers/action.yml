@@ -38,6 +38,14 @@ inputs:
     description: |
       The branch of the git repo to use for storing coverage reports.
     required: false
+  github-token:
+    description: |
+      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
+      You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
+      hardcode the token.
+      TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
+      Document locking this down.
+    required: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -49,5 +57,6 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
