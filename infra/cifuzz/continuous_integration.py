@@ -32,6 +32,9 @@ import utils
 BuildPreparationResult = collections.namedtuple(
     'BuildPreparationResult', ['success', 'image_repo_path', 'repo_manager'])
 
+_IMAGE_BUILD_TRIES = 3
+_IMAGE_BUILD_BACKOFF = 2
+
 
 def fix_git_repo_for_diff(repo_manager_obj):
   """Fixes git repos cloned by the "checkout" action so that diffing works on
@@ -52,12 +55,12 @@ class BaseCi:
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image and gets the source code we need to
     fuzz."""
-    raise NotImplementedError('Children must implement this method.')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""
-    raise NotImplementedError('Children must implement this method.')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
@@ -65,6 +68,29 @@ class BaseCi:
     fix_git_repo_for_diff(repo_manager_obj)
     logging.info('Diffing against %s.', base)
     return repo_manager_obj.get_git_diff(base)
+
+  def get_build_command(self, host_repo_path, image_repo_path):
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    raise NotImplementedError('Child class must implement method.')
+
+
+def get_build_command():
+  """Returns the command to build the project inside the project builder
+  container."""
+  return 'compile'
+
+
+def get_replace_repo_and_build_command(host_repo_path, image_repo_path):
+  """Returns the command to replace the repo located at |image_repo_path| with
+  |host_repo_path| and build the project inside the project builder
+  container."""
+  rm_path = os.path.join(image_repo_path, '*')
+  image_src_path = os.path.dirname(image_repo_path)
+  build_command = get_build_command()
+  command = (f'cd / && rm -rf {rm_path} && cp -r {host_repo_path} '
+             f'{image_src_path} && cd - && {build_command}')
+  return command
 
 
 def get_ci(config):
@@ -159,6 +185,12 @@ class InternalGithub(GithubCiMixin, BaseCi):
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container. Command also replaces |image_repo_path| with
+    |host_repo_path|."""
+    return get_replace_repo_and_build_command(host_repo_path, image_repo_path)
+
 
 class InternalGeneric(BaseCi):
   """Class representing CI for an OSS-Fuzz project on a CI other than Github
@@ -189,9 +221,11 @@ class InternalGeneric(BaseCi):
   def get_diff_base(self):
     return 'origin...'
 
-
-_IMAGE_BUILD_TRIES = 3
-_IMAGE_BUILD_BACKOFF = 2
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container. Command also replaces |image_repo_path| with
+    |host_repo_path|."""
+    return get_replace_repo_and_build_command(host_repo_path, image_repo_path)
 
 
 @retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF)
@@ -229,6 +263,11 @@ class ExternalGeneric(BaseCi):
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    return get_build_command()
+
 
 class ExternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for a non-OSS-Fuzz project on Github Actions."""
@@ -264,3 +303,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
+
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    return get_build_command()
