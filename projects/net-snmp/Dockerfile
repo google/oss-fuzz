@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf libtool libssl-dev
-RUN git clone https://github.com/DavidKorczynski/net-snmp net-snmp && cd net-snmp && git checkout oss-fuzz
+RUN git clone https://github.com/net-snmp/net-snmp net-snmp
 WORKDIR net-snmp
 COPY build.sh $SRC/
