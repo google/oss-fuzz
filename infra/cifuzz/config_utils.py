@@ -101,10 +101,8 @@ class BaseConfig:
     self.dry_run = _is_dry_run()
 
     self.sanitizer = _get_sanitizer()
-    # TODO(ochang): Error out if both oss_fuzz and build_integration_path is not
-    # set.
-    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
 
+    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
@@ -117,6 +115,23 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+
+  def validate(self):
+    """Returns False if the configuration is invalid."""
+    # Do validation here so that unittests don't need to make a fully-valid
+    # config.
+    if (self.build_integration_path is None and
+        self.oss_fuzz_project_name is None):
+      logging.error('Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
+                    'Otherwise must set BUILD_INTEGRATION_PATH. '
+                    'Neither is set.')
+      return False
+
+    if not self.workspace:
+      logging.error('Must set GITHUB_WORKSPACE.')
+      return False
+
+    return True
 
   @property
   def is_internal(self):

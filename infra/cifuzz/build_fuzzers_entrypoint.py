@@ -38,8 +38,7 @@ def build_fuzzers_entrypoint():
     # The default return code when an error occurs.
     returncode = 1
 
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
+  if not config.validate():
     return returncode
 
   if not build_fuzzers.build_fuzzers(config):

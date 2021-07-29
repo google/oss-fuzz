@@ -14,6 +14,7 @@
 """Module for getting the configuration CIFuzz needs to run."""
 import os
 import unittest
+from unittest import mock
 
 import config_utils
 import test_helpers
@@ -55,6 +56,34 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['SANITIZER'] = 'address'
     config = self._create_config()
     self.assertFalse(config.is_coverage)
+
+  @mock.patch('logging.error')
+  def test_validate_oss_fuzz_project_name_or_build_integration_path(
+      self, mocked_error):
+    """Tests that validate returns False if neither OSS_FUZZ_PROJECT_NAME or
+    BUILD_INTEGRATION_PATH is set."""
+    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with(
+        'Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
+        'Otherwise must set BUILD_INTEGRATION_PATH. '
+        'Neither is set.')
+
+  @mock.patch('logging.error')
+  def test_validate_no_workspace(self, mocked_error):
+    """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with('Must set GITHUB_WORKSPACE.')
+
+  def test_validate(self):
+    """Tests that validate returns True if config is valid."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    config = self._create_config()
+    self.assertTrue(config.validate())
 
 
 class BuildFuzzersConfigTest(unittest.TestCase):
