@@ -21,7 +21,7 @@ import stat
 import subprocess
 import sys
 
-import run_fuzzers_utils
+import base_runner_utils
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
@@ -91,7 +91,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    env = run_fuzzers_utils.get_env(self.config, self.workspace)
+    env = base_runner_utils.get_env(self.config, self.workspace)
     env['RUN_FUZZERS_MODE'] = 'interactive'
 
     # If corpus can be downloaded, use it for fuzzing.
@@ -183,7 +183,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    env = run_fuzzers_utils.get_env(self.config, self.workspace)
+    env = base_runner_utils.get_env(self.config, self.workspace)
     env['TESTCASE'] = testcase
     command = ['reproduce', self.target_name, '-runs=100']
 

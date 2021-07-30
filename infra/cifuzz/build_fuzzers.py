@@ -19,6 +19,7 @@ import os
 import sys
 
 import affected_fuzz_targets
+import base_runner_utils
 import clusterfuzz_deployment
 import config_utils
 import continuous_integration
@@ -27,6 +28,7 @@ import docker
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
+import utils
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -190,7 +192,7 @@ def check_fuzzer_build(config):
   Returns:
     True if fuzzers pass OSS-Fuzz's build check.
   """
-  workspace = config_utils.Workspace(config),
+  workspace = config_utils.Workspace(config)
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)
     return False
@@ -198,12 +200,13 @@ def check_fuzzer_build(config):
     logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  env = run_fuzzers_utils.get_env(config, workspace)
+  env = base_runner_utils.get_env(config, workspace)
   if config.allowed_broken_targets_percentage is not None:
     env['ALLOWED_BROKEN_TARGETS_PERCENTAGE'] = (
         config.allowed_broken_targets_percentage)
 
-  utils.execute('test_all.py', env=env)
+  _, _, retcode = utils.execute('test_all.py', env=env)
+  return retcode == 0
 
 
 def _get_docker_build_fuzzers_args_not_container(host_repo_path):

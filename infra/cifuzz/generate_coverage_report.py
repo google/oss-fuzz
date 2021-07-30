@@ -14,13 +14,13 @@
 """Module for generating coverage reports."""
 import os
 
-import run_fuzzers_utils
+import base_runner_utils
 import utils
 
 
 def run_coverage_command(config, workspace):
   """Runs the coverage command in base-runner to generate a coverage report."""
-  env = run_fuzzers_utils.get_env(config, workspace)
+  env = base_runner_utils.get_env(config, workspace)
   env['HTTP_PORT'] = ''
   env['COVERAGE_EXTRA_ARGS'] = ''
   env['CORPUS_DIR'] = workspace.corpora
