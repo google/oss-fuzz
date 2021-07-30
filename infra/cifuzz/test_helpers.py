@@ -71,8 +71,8 @@ def patch_environ(testcase_obj, env=None, empty=False, runner=False):
 
   if runner:
     base_runner_dir = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
-    os.environ['PATH'] = (
-        os.environ.get('PATH', '') + os.pathsep + base_runner_dir)
+    os.environ['PATH'] = (os.environ.get('PATH', '') + os.pathsep +
+                          base_runner_dir)
     if 'GOPATH' not in os.environ:
       os.environ['GOPATH'] = '/root/go'
 

@@ -285,8 +285,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-    with mock.patch('base_runner_utils.get_env', return_value=env):
-      self.assertTrue(build_fuzzers.check_fuzzer_build(self.config))
+    self.assertTrue(build_fuzzers.check_fuzzer_build(self.config))
 
   def test_not_a_valid_path(self):
     """Tests that False is returned when a nonexistent path is given."""

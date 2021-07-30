@@ -190,7 +190,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      out, err, returncode = utils.execute(command, env=env)
+      _, _, returncode = utils.execute(command, env=env)
 
       if returncode != 0:
         logging.info('Reproduce command returned: %s. Reproducible on %s.',

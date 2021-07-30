@@ -60,6 +60,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
   FUZZER = None
 
   def setUp(self):
+    """Patch the environ so that we can execute runner scripts."""
     test_helpers.patch_environ(self, runner=True)
 
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
@@ -360,12 +361,12 @@ class CoverageReportIntegrationTest(unittest.TestCase):
       copy_command = ('cp -r /opt/code_coverage /shared && '
                       'cp $(which llvm-profdata) /shared && '
                       'cp $(which llvm-cov) /shared')
-      assert helper.docker_run(['-v', f'{shared}:/shared',
-                                'gcr.io/oss-fuzz-base/base-runner',
-                         'bash', '-c', copy_command])
+      assert helper.docker_run([
+          '-v', f'{shared}:/shared', 'gcr.io/oss-fuzz-base/base-runner', 'bash',
+          '-c', copy_command
+      ])
 
-      os.environ['CODE_COVERAGE_SRC'] = os.path.join(
-          shared, 'code_coverage')
+      os.environ['CODE_COVERAGE_SRC'] = os.path.join(shared, 'code_coverage')
       os.environ['PATH'] += os.pathsep + shared
       try:
         # Do coverage build.
@@ -383,11 +384,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
                          'find /out -type d -exec chmod +x {} +')
 
         # Get rid of this here and make 'compile' do this.
-        assert helper.docker_run(['-v',
-                                  f'{os.path.join(temp_dir, "build-out")}:/out',
-                                  'gcr.io/oss-fuzz-base/base-builder',
-                                  'bash', '-c', chmod_command])
-
+        assert helper.docker_run([
+            '-v', f'{os.path.join(temp_dir, "build-out")}:/out',
+            'gcr.io/oss-fuzz-base/base-builder', 'bash', '-c', chmod_command
+        ])
 
         # Generate report.
         run_config = test_helpers.create_run_config(
