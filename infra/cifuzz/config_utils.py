@@ -208,6 +208,8 @@ class BuildFuzzersConfig(BaseConfig):
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
     self.keep_unaffected_fuzz_targets = (
+        # Not from a commit or PR.
+        # pylint: disable=consider-using-ternary
         (not self.base_ref and not self.base_commit) or
         environment.get_bool('KEEP_UNAFFECTED_FUZZERS'))
 
