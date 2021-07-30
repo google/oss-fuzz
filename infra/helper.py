@@ -847,8 +847,8 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if not (check_project_exists(args.project_name) or
-          args.build_integration_path):
+  if not (args.build_integration_path or
+          check_project_exists(args.project_name)):
     return False
 
   project_language = _get_project_language(args.project_name)
@@ -913,8 +913,8 @@ def coverage(args):
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
-  if not (check_project_exists(args.project_name) or
-          args.build_integration_path):
+  if not (args.build_integration_path or
+          check_project_exists(args.project_name)):
     return False
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
@@ -973,7 +973,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
-  if not (is_external and check_project_exists(project_name)):
+  if not (is_external or check_project_exists(project_name)):
     return err_result
 
   if not _check_fuzzer_exists(project_name, fuzzer_name):
@@ -1052,9 +1052,11 @@ def generate(args):
   """Generates empty project files."""
   return _generate_impl(args.project_name, args.build_integration_path)
 
+
 def _get_current_datetime():
   """Returns this year. Needed for mocking."""
   return datetime.datetime.now()
+
 
 def _generate_impl(project_name, build_integration_path):
   """Implementation of generate(). Useful for testing."""

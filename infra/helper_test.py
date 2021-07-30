@@ -23,6 +23,8 @@ from pyfakefs import fake_filesystem_unittest
 import helper
 import templates
 
+# pylint: disable=no-self-use,protected-access
+
 
 class ShellTest(unittest.TestCase):
   """Tests 'shell' command."""
@@ -40,7 +42,6 @@ class ShellTest(unittest.TestCase):
     mocked_build_image_impl.assert_called_with(image_name, None, None)
     self.assertTrue(result)
 
-# pylint: disable=no-self-use
 
 class BuildImageImplTest(unittest.TestCase):
   """Tests for build_image_impl."""
@@ -101,24 +102,21 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
 
-  def _verify_templated_files(self, templates, directory):
-    template_args = {
-        'project_name': self.PROJECT_NAME,
-        'year': 2021
-    }
-    for filename, template in templates.items():
+  def _verify_templated_files(self, template_dict, directory):
+    template_args = {'project_name': self.PROJECT_NAME, 'year': 2021}
+    for filename, template in template_dict.items():
       file_path = os.path.join(directory, filename)
       with open(file_path, 'r') as file_handle:
         contents = file_handle.read()
       self.assertEqual(contents, template % template_args)
 
-  @mock.patch('helper._get_current_datetime', return_value=datetime.datetime(
-      year=2021, month=1, day=1))
+  @mock.patch('helper._get_current_datetime',
+              return_value=datetime.datetime(year=2021, month=1, day=1))
   def test_generate_oss_fuzz_project(self, _):
     """Tests that the correct files are generated for an OSS-Fuzz project."""
     helper._generate_impl(self.PROJECT_NAME, None)
-    self._verify_templated_files(templates.TEMPLATES, os.path.join(
-        'projects', self.PROJECT_NAME))
+    self._verify_templated_files(templates.TEMPLATES,
+                                 os.path.join('projects', self.PROJECT_NAME))
 
   def test_generate_external_project(self):
     """Tests that the correct files are generated for a non-OSS-Fuzz project."""
