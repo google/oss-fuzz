@@ -952,9 +952,8 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
   return run_function(run_args)
 
 
-def generate(args):
-  """Generates empty project files."""
-  if len(args.project_name) > MAX_PROJECT_NAME_LENGTH:
+def _validate_project_name(project_name):
+  if len(project_name) > MAX_PROJECT_NAME_LENGTH:
     print('Project name needs to be less than or equal to %d characters.' %
           MAX_PROJECT_NAME_LENGTH,
           file=sys.stderr)
@@ -964,8 +963,8 @@ def generate(args):
     print('Invalid project name.', file=sys.stderr)
     return False
 
-  directory = os.path.join('projects', args.project_name)
 
+def _create_build_integration_directory(directory):
   try:
     os.mkdir(directory)
   except OSError as error:
@@ -974,23 +973,40 @@ def generate(args):
     print(directory, 'already exists.', file=sys.stderr)
     return False
 
+
+def _is_external(args):
+  return bool(args.build_integration_dir)
+
+def _template_file(filename, template, template_args, directory):
+  file_path = os.path.join(directory, filename)
+  with open(file_path, 'w') as file_handle:
+    file_handle.write(template % template_args)
+
+  if filename == 'build.sh':
+    os.chmod(file_path, 0o755)
+
+def generate(args):
+  """Generates empty project files."""
+  if _is_external(args):
+    directory = args.build_integration_path
+    project_templates = templates.EXTERNAL_TEMPLATES
+  else:
+    if not _validate_project_name(args.project_name):
+      return False
+    directory = os.path.join('projects', args.project_name)
+    project_templates = templates.TEMPLATES
+
+  if not _create_build_integration_directory(directory):
+    return False
+
   print('Writing new files to', directory)
 
   template_args = {
       'project_name': args.project_name,
       'year': datetime.datetime.now().year
   }
-  with open(os.path.join(directory, 'project.yaml'), 'w') as file_handle:
-    file_handle.write(templates.PROJECT_YAML_TEMPLATE % template_args)
-
-  with open(os.path.join(directory, 'Dockerfile'), 'w') as file_handle:
-    file_handle.write(templates.DOCKER_TEMPLATE % template_args)
-
-  build_sh_path = os.path.join(directory, 'build.sh')
-  with open(build_sh_path, 'w') as file_handle:
-    file_handle.write(templates.BUILD_TEMPLATE % template_args)
-
-  os.chmod(build_sh_path, 0o755)
+  for filename, template in project_templates.items():
+    _template_file(filename, template, template_args, directory)
   return True
 
 
