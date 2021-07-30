@@ -20,16 +20,15 @@
 # net-snmp build is not parallel-make safe; do not add -j
 make
 
-# build fuzzers (remember to link statically)
-$CC $CFLAGS -c -Iinclude $SRC/snmp_pdu_parse_fuzzer.c -o $WORK/snmp_pdu_parse_fuzzer.o
-$CXX $CXXFLAGS $WORK/snmp_pdu_parse_fuzzer.o \
-      $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
-      -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
-      -o $OUT/snmp_pdu_parse_fuzzer
-
-$CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx $SRC/agentx_parse_fuzzer.c -o $WORK/agentx_parse_fuzzer.o
-$CXX $CXXFLAGS $WORK/agentx_parse_fuzzer.o \
-      $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
-      agent/.libs/libnetsnmpagent.a \
-      -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
-      -o $OUT/agentx_parse_fuzzer
+# build fuzzers and link statically
+fuzzers=$(find ./fuzzing -name "*_fuzzer.c")
+suffix="_fuzzer\.c"
+for fuzzer in ${fuzzers}; do
+  fuzzname=$(basename -- ${fuzzer%$suffix})
+  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx ./fuzzing/${fuzzname}_fuzzer.c -o $WORK/${fuzzname}_fuzzer.o
+  $CXX $CXXFLAGS $WORK/${fuzzname}_fuzzer.o \
+        $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
+        agent/.libs/libnetsnmpagent.a \
+        -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
+        -o $OUT/${fuzzname}_fuzzer
+done

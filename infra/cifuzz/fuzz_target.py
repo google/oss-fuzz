@@ -187,6 +187,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         ReproduceError if we can't attempt to reproduce the crash.
     """
     if not os.path.exists(target_path):
+      logging.info('Target: %s does not exist.', target_path)
       raise ReproduceError(f'Target {target_path} not found.')
 
     os.chmod(target_path, stat.S_IRWXO)
@@ -242,10 +243,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       raise error
 
     if not reproducible_on_code_change:
-      # TODO(metzman): Allow users to specify if unreproducible crashes should
-      # be reported.
       logging.info('Crash is not reproducible.')
-      return False
+      return self.config.report_unreproducible_crashes
 
     logging.info('Crash is reproducible.')
     return self.is_crash_novel(testcase)
@@ -278,7 +277,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       logging.info('The crash is reproducible on previous build. '
                    'Code change (pr/commit) did not introduce crash.')
       return False
-    logging.info('The crash doesn\'t reproduce on previous build. '
+    logging.info('The crash is not reproducible on previous build. '
                  'Code change (pr/commit) introduced crash.')
     return True
 

@@ -64,7 +64,7 @@ RUN export PYTHON_DEPS="\
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    atheris pyinstaller==4.1 six==1.15.0 && \
+    atheris==1.0.11 pyinstaller==4.1 six==1.15.0 && \
     rm -rf /tmp/*
 
 # Download and install the latest stable Go.
@@ -181,7 +181,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 405382cbddea8b99543c3fddcaa5738b1ed3ade3
+    git checkout 4fe572b80f76ff0b0e916b639d1e04d5af48b157
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \

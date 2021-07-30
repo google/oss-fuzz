@@ -16,10 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf libtool libssl-dev
-RUN git clone --depth 1 git://git.code.sf.net/p/net-snmp/code net-snmp
+RUN git clone https://github.com/net-snmp/net-snmp net-snmp
 WORKDIR net-snmp
 COPY build.sh $SRC/
-#
-# Until the project moves the fuzzers to the source tree
-COPY snmp_pdu_parse_fuzzer.c $SRC/
-COPY agentx_parse_fuzzer.c $SRC/

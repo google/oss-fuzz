@@ -44,7 +44,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -60,7 +61,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -76,7 +78,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -141,7 +144,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -157,7 +161,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -173,7 +178,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -238,7 +244,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -254,7 +261,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -270,7 +278,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",

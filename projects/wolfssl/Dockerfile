@@ -36,6 +36,16 @@ RUN gsutil cp gs://nettle-backup.clusterfuzz-external.appspot.com/corpus/libFuzz
 RUN gsutil cp gs://libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip $SRC/corpus_libecc.zip
 RUN gsutil cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip $SRC/corpus_relic.zip
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz.zip
+RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all/public.zip $SRC/corpus_wolfssl_sp-math-all.zip
+RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all-8bit/public.zip $SRC/corpus_wolfssl_sp-math-all-8bit.zip
+RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math/public.zip $SRC/corpus_wolfssl_sp-math.zip
+RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-disable-fastmath/public.zip $SRC/corpus_wolfssl_disable-fastmath.zip
+
+# Botan corpora, which require a special import procedure
+RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p256/public.zip $SRC/corpus_botan_ecc_p256.zip
+RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p384/public.zip $SRC/corpus_botan_ecc_p384.zip
+RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p521/public.zip $SRC/corpus_botan_ecc_p521.zip
+RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_bp256/public.zip $SRC/corpus_botan_ecc_bp256.zip
 
 WORKDIR wolfssl
 

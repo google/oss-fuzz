@@ -5,8 +5,11 @@ auto_ccs:
  - "julius.pfrommer@gmail.com"
  - "chris_paul.iatrou@tu-dresden.de"
  - "ari.breitkreuz@gmail.com"
+fuzzing_engines:
+ - libfuzzer
+ - afl
 sanitizers:
-- address
-- undefined
-- memory
+ - address
+ - undefined
+ - memory
 main_repo: 'https://github.com/open62541/open62541.git'

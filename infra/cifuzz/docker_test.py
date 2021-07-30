@@ -21,7 +21,7 @@ import docker
 CONTAINER_NAME = 'example-container'
 config = config_utils.RunFuzzersConfig()
 config.workspace = '/workspace'
-WORKSPACE = docker.Workspace(config)
+WORKSPACE = config_utils.Workspace(config)
 SANITIZER = 'example-sanitizer'
 LANGUAGE = 'example-language'
 

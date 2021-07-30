@@ -23,3 +23,5 @@ char *fuzz_random_get_string_max_length(int max_len);
 void gb_init();
 void gb_cleanup();
 char *gb_get_random_string();
+
+int fuzz_success;

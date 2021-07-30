@@ -1,6 +1,6 @@
 homepage: "http://www.html-tidy.org/"
 language: c++
-primary_contact: "sbucur@google.com"
+primary_contact: "balthisar@gmail.com"
 auto_ccs:
   - "nmarrow@google.com"
   - "pmokati@google.com"

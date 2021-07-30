@@ -17,12 +17,10 @@ import sys
 
 import build_fuzzers
 import config_utils
-import docker
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -44,9 +42,8 @@ def build_fuzzers_entrypoint():
     return returncode
 
   if not build_fuzzers.build_fuzzers(config):
-    logging.error(
-        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.project_name, config.commit_sha, config.pr_ref)
+    logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
+                  config.commit_sha, config.pr_ref)
     return returncode
 
   if not config.bad_build_check:
@@ -55,7 +52,7 @@ def build_fuzzers_entrypoint():
     returncode = 0
   # yapf: disable
   elif build_fuzzers.check_fuzzer_build(
-      docker.Workspace(config),
+      config_utils.Workspace(config),
       config.sanitizer,
       config.language,
       allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
