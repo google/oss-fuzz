@@ -151,11 +151,10 @@ class BaseConfig:
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
-  RUN_FUZZERS_MODES = {'batch', 'ci', 'coverage'}
+  RUN_FUZZERS_MODES = {'batch', 'ci', 'coverage', 'prune'}
 
   def __init__(self):
     super().__init__()
-    self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
     if self.is_coverage:
       self.run_fuzzers_mode = 'coverage'
@@ -164,6 +163,12 @@ class RunFuzzersConfig(BaseConfig):
       raise Exception(
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
            (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
+
+    if run_fuzzers_mode == 'prune':
+      # Unlimited time.
+      default_fuzz_seconds = None
+    self.fuzz_seconds = int(
+        os.environ.get('FUZZ_SECONDS', default_fuzz_seconds))
 
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
