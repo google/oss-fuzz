@@ -143,7 +143,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 
   logging.info('Checking for crash')
   out, err, return_code = helper.reproduce_impl(project_name,
-                                                None,
+                                                False,
                                                 fuzz_target,
                                                 False, [], [],
                                                 test_case_path,

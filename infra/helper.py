@@ -75,6 +75,13 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   parser = get_parser()
   args = parse_args(parser)
 
+  if (bool(getattr(args, 'project_src_path')) != getattr(
+      args, 'build_integration_path')):
+    print(
+        'Must specifiy both project-src-path and build-integration-path, '
+        'not just one.',
+        file=sys.stderr)
+
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
@@ -124,10 +131,15 @@ def parse_args(parser, args=None):
   return parser.parse_args(args)
 
 
-def _add_build_integration_path_arg(parser):
+def _add_external_project_args(parser):
   parser.add_argument('--build-integration-path',
                       help=('Path to the build integration for non-OSS-Fuzz '
                             'projects.'),
+                      default=None)
+
+  parser.add_argument('--project-src-path',
+                      help=('Path to the root of the external project\'s '
+                            'source code.'),
                       default=None)
 
 
@@ -139,7 +151,7 @@ def get_parser():  # pylint: disable=too-many-statements
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project_name')
-  _add_build_integration_path_arg(generate_parser)
+  _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
                                              help='Build an image.')
@@ -154,7 +166,7 @@ def get_parser():  # pylint: disable=too-many-statements
   build_image_parser.add_argument('--no-pull',
                                   action='store_true',
                                   help='Do not pull latest base image.')
-  _add_build_integration_path_arg(build_image_parser)
+  _add_external_project_args(build_image_parser)
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -180,7 +192,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                     help='do not clean existing artifacts '
                                     '(default).')
   build_fuzzers_parser.set_defaults(clean=False)
-  _add_build_integration_path_arg(build_fuzzers_parser)
+  _add_external_project_args(build_fuzzers_parser)
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
@@ -196,7 +208,7 @@ def get_parser():  # pylint: disable=too-many-statements
   check_build_parser.add_argument('fuzzer_name',
                                   help='name of the fuzzer',
                                   nargs='?')
-  _add_build_integration_path_arg(check_build_parser)
+  _add_external_project_args(check_build_parser)
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
@@ -210,7 +222,7 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
                                  nargs=argparse.REMAINDER)
-  _add_build_integration_path_arg(run_fuzzer_parser)
+  _add_external_project_args(run_fuzzer_parser)
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -235,7 +247,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                help='additional arguments to '
                                'pass to llvm-cov utility.',
                                nargs='*')
-  _add_build_integration_path_arg(coverage_parser)
+  _add_external_project_args(coverage_parser)
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -256,7 +268,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 help='arguments to pass to the fuzzer',
                                 nargs=argparse.REMAINDER)
   _add_environment_args(reproduce_parser)
-  _add_build_integration_path_arg(reproduce_parser)
+  _add_external_project_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -268,7 +280,7 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
-  _add_build_integration_path_arg(shell_parser)
+  _add_external_project_args(shell_parser)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
@@ -400,6 +412,7 @@ def _add_environment_args(parser):
 
 
 def build_image_impl(image_name,
+                     project_src_path=None,
                      build_integration_path=None,
                      cache=True,
                      pull=False):
@@ -411,9 +424,7 @@ def build_image_impl(image_name,
   elif build_integration_path:
     image_project = 'oss-fuzz'
     # External projects need to use the repo root as the build directory.
-    # TODO(metzman): What if this isn't the root? What if we have a project with
-    # layout project/test/build-integration.
-    docker_build_dir = os.path.dirname(os.path.dirname(build_integration_path))
+    docker_build_dir = project_src_path
     docker_file_path = os.path.join(build_integration_path, 'Dockerfile')
   else:
     image_project = 'oss-fuzz'
@@ -428,12 +439,11 @@ def build_image_impl(image_name,
   if not cache:
     build_args.append('--no-cache')
 
-  build_args += [
-      '-t', 'gcr.io/%s/%s' % (image_project, image_name)
-  ]
+  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name)]
   if docker_file_path:
     build_args += [
-        '--file', docker_file_path,
+        '--file',
+        docker_file_path,
     ]
   build_args.append(docker_build_dir)
   return docker_build(build_args)
@@ -543,6 +553,7 @@ def build_image(args):
 
   # If build_image is called explicitly, don't use cache.
   if build_image_impl(args.project_name,
+                      args.project_src_path,
                       args.build_integration_path,
                       cache=args.cache,
                       pull=pull):
@@ -553,6 +564,7 @@ def build_image(args):
 
 def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     project_name,
+    project_src_path,
     build_integration_path,
     clean,
     engine,
@@ -562,7 +574,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     source_path,
     mount_path=None):
   """Builds fuzzers."""
-  if not build_image_impl(project_name, build_integration_path):
+  if not build_image_impl(project_name, project_src_path,
+                          build_integration_path):
     return False
 
   project_out_dir = _get_out_dir(project_name)
@@ -660,6 +673,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 def build_fuzzers(args):
   """Builds fuzzers."""
   return build_fuzzers_impl(args.project_name,
+                            args.project_src_path,
                             args.build_integration_path,
                             args.clean,
                             args.engine,
@@ -949,7 +963,7 @@ def reproduce(args):
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
     project_name,
-    build_integration_path,
+    is_external,
     fuzzer_name,
     valgrind,
     env_to_add,
@@ -958,7 +972,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
-  if not (check_project_exists(project_name) or build_integration_path):
+  if not (is_external and check_project_exists(project_name)):
     return err_result
 
   if not _check_fuzzer_exists(project_name, fuzzer_name):
@@ -1062,7 +1076,8 @@ def generate(args):
 
 def shell(args):
   """Runs a shell within a docker image."""
-  if not build_image_impl(args.project_name, args.build_integration_path):
+  if not build_image_impl(args.project_name, args.project_src_path,
+                          args.build_integration_path):
     return False
 
   env = [
