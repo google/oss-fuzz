@@ -23,7 +23,7 @@ svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 
 # Build httpd
 ./buildconf
-./configure --with-included-apr
+./configure --with-included-apr --enable-pool-debug
 make
 
 # Build the fuzzers
