@@ -384,12 +384,14 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(image_name, cache=True, pull=False):
+def build_image_impl(
+    image_name, build_integration_path, cache=True, pull=False):
   """Builds image."""
-  proj_is_base_image = is_base_image(image_name)
-  if proj_is_base_image:
+  if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
     dockerfile_dir = os.path.join('infra', 'base-images', image_name)
+  elif build_integration_path:
+    dockerfile_dir = build_integration_path
   else:
     image_project = 'oss-fuzz'
     if not check_project_exists(image_name):
@@ -512,7 +514,8 @@ def build_image(args):
     print('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(args.project_name, cache=args.cache, pull=pull):
+  if build_image_impl(
+      args.project_name, args.build_integration_path, cache=args.cache, pull=pull):
     return True
 
   return False
@@ -520,6 +523,7 @@ def build_image(args):
 
 def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     project_name,
+    build_integration_path,
     clean,
     engine,
     sanitizer,
@@ -528,7 +532,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     source_path,
     mount_path=None):
   """Builds fuzzers."""
-  if not build_image_impl(project_name):
+  if not build_image_impl(project_name, build_integration_path):
     return False
 
   project_out_dir = _get_out_dir(project_name)
@@ -626,6 +630,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 def build_fuzzers(args):
   """Builds fuzzers."""
   return build_fuzzers_impl(args.project_name,
+                            args.build_integration_path,
                             args.clean,
                             args.engine,
                             args.sanitizer,
@@ -1012,7 +1017,7 @@ def generate(args):
 
 def shell(args):
   """Runs a shell within a docker image."""
-  if not build_image_impl(args.project_name):
+  if not build_image_impl(args.project_name, args.build_integration_path):
     return False
 
   env = [
