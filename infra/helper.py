@@ -404,16 +404,22 @@ def build_image_impl(image_name,
                      cache=True,
                      pull=False):
   """Builds image."""
+  docker_file_path = None
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
-    dockerfile_dir = os.path.join('infra', 'base-images', image_name)
+    docker_build_dir = os.path.join('infra', 'base-images', image_name)
   elif build_integration_path:
-    dockerfile_dir = build_integration_path
+    image_project = 'oss-fuzz'
+    # External projects need to use the repo root as the build directory.
+    # TODO(metzman): What if this isn't the root? What if we have a project with
+    # layout project/test/build-integration.
+    docker_build_dir = os.path.dirname(os.path.dirname(build_integration_path))
+    docker_file_path = os.path.join(build_integration_path, 'Dockerfile')
   else:
     image_project = 'oss-fuzz'
     if not check_project_exists(image_name):
       return False
-    dockerfile_dir = os.path.join('projects', image_name)
+    docker_build_dir = os.path.join('projects', image_name)
 
   if pull and not pull_images():
     return False
@@ -423,8 +429,13 @@ def build_image_impl(image_name,
     build_args.append('--no-cache')
 
   build_args += [
-      '-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir
+      '-t', 'gcr.io/%s/%s' % (image_project, image_name)
   ]
+  if docker_file_path:
+    build_args += [
+        '--file', docker_file_path,
+    ]
+  build_args.append(docker_build_dir)
   return docker_build(build_args)
 
 
@@ -1024,7 +1035,7 @@ def _template_project_file(filename, template, template_args, directory):
 
 def generate(args):
   """Generates empty project files."""
-  if args.build_integration_dir:
+  if args.build_integration_path:
     # External project.
     directory = args.build_integration_path
     project_templates = templates.EXTERNAL_TEMPLATES
