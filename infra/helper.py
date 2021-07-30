@@ -124,6 +124,13 @@ def parse_args(parser, args=None):
   return parser.parse_args(args)
 
 
+def _add_build_integration_path_arg(parser):
+  parser.add_argument('--build-integration-path',
+                      help=('Path to the build integration for non-OSS-Fuzz '
+                            'projects.'),
+                      default=None)
+
+
 def get_parser():  # pylint: disable=too-many-statements
   """Returns an argparse parser."""
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
@@ -132,6 +139,7 @@ def get_parser():  # pylint: disable=too-many-statements
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project_name')
+  _add_build_integration_path_arg(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
                                              help='Build an image.')
@@ -146,6 +154,7 @@ def get_parser():  # pylint: disable=too-many-statements
   build_image_parser.add_argument('--no-pull',
                                   action='store_true',
                                   help='Do not pull latest base image.')
+  _add_build_integration_path_arg(build_image_parser)
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -171,6 +180,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                     help='do not clean existing artifacts '
                                     '(default).')
   build_fuzzers_parser.set_defaults(clean=False)
+  _add_build_integration_path_arg(build_fuzzers_parser)
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
@@ -199,6 +209,7 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
                                  nargs=argparse.REMAINDER)
+  _add_build_integration_path_arg(build_image_parser)
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -223,6 +234,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                help='additional arguments to '
                                'pass to llvm-cov utility.',
                                nargs='*')
+  _add_build_integration_path_arg(build_image_parser)
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -243,6 +255,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 help='arguments to pass to the fuzzer',
                                 nargs=argparse.REMAINDER)
   _add_environment_args(reproduce_parser)
+  _add_build_integration_path_arg(build_image_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -254,6 +267,7 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
+  _add_build_integration_path_arg(build_image_parser)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
@@ -384,8 +398,10 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(
-    image_name, build_integration_path, cache=True, pull=False):
+def build_image_impl(image_name,
+                     build_integration_path=None,
+                     cache=True,
+                     pull=False):
   """Builds image."""
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
@@ -514,8 +530,10 @@ def build_image(args):
     print('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(
-      args.project_name, args.build_integration_path, cache=args.cache, pull=pull):
+  if build_image_impl(args.project_name,
+                      args.build_integration_path,
+                      cache=args.cache,
+                      pull=pull):
     return True
 
   return False
@@ -649,7 +667,8 @@ def _add_oss_fuzz_ci_if_needed(env):
 
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
-  if not check_project_exists(args.project_name):
+  if not (args.build_integration_path or
+          check_project_exists(args.project_name)):
     return False
 
   if (args.fuzzer_name and
@@ -801,7 +820,8 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if not check_project_exists(args.project_name):
+  if not (check_project_exists(args.project_name) or
+          args.build_integration_path):
     return False
 
   project_language = _get_project_language(args.project_name)
@@ -812,7 +832,8 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if not args.no_corpus_download and not args.corpus_dir:
+  if ((not args.no_corpus_download and not args.corpus_dir) or
+      args.build_integration_path):
     if not download_corpora(args):
       return False
 
@@ -865,7 +886,8 @@ def coverage(args):
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
-  if not check_project_exists(args.project_name):
+  if not (check_project_exists(args.project_name) or
+          args.build_integration_path):
     return False
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
@@ -908,12 +930,14 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind,
-                        args.e, args.fuzzer_args, args.testcase_path)
+  return reproduce_impl(args.project_name, args.build_integration_path,
+                        args.fuzzer_name, args.valgrind, args.e,
+                        args.fuzzer_args, args.testcase_path)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
     project_name,
+    build_integration_path,
     fuzzer_name,
     valgrind,
     env_to_add,
@@ -922,7 +946,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
-  if not check_project_exists(project_name):
+  if not (check_project_exists(project_name) or build_integration_path):
     return err_result
 
   if not _check_fuzzer_exists(project_name, fuzzer_name):
@@ -958,18 +982,23 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
 
 
 def _validate_project_name(project_name):
+  """Validates |project_name| is a valid OSS-Fuzz project name."""
   if len(project_name) > MAX_PROJECT_NAME_LENGTH:
     print('Project name needs to be less than or equal to %d characters.' %
           MAX_PROJECT_NAME_LENGTH,
           file=sys.stderr)
     return False
 
-  if not VALID_PROJECT_NAME_REGEX.match(args.project_name):
+  if not VALID_PROJECT_NAME_REGEX.match(project_name):
     print('Invalid project name.', file=sys.stderr)
     return False
 
+  return True
+
 
 def _create_build_integration_directory(directory):
+  """Returns True on successful creation of a build integration directory.
+  Suitable for OSS-Fuzz and external projects."""
   try:
     os.mkdir(directory)
   except OSError as error:
@@ -977,12 +1006,13 @@ def _create_build_integration_directory(directory):
       raise
     print(directory, 'already exists.', file=sys.stderr)
     return False
+  return True
 
 
-def _is_external(args):
-  return bool(args.build_integration_dir)
-
-def _template_file(filename, template, template_args, directory):
+def _template_project_file(filename, template, template_args, directory):
+  """Templates |template| using |template_args| and writes the result to
+  |directory|/|filename|. Sets the file to executable if |filename| is
+  build.sh."""
   file_path = os.path.join(directory, filename)
   with open(file_path, 'w') as file_handle:
     file_handle.write(template % template_args)
@@ -990,12 +1020,15 @@ def _template_file(filename, template, template_args, directory):
   if filename == 'build.sh':
     os.chmod(file_path, 0o755)
 
+
 def generate(args):
   """Generates empty project files."""
-  if _is_external(args):
+  if args.build_integration_dir:
+    # External project.
     directory = args.build_integration_path
     project_templates = templates.EXTERNAL_TEMPLATES
   else:
+    # Internal project.
     if not _validate_project_name(args.project_name):
       return False
     directory = os.path.join('projects', args.project_name)
@@ -1011,7 +1044,7 @@ def generate(args):
       'year': datetime.datetime.now().year
   }
   for filename, template in project_templates.items():
-    _template_file(filename, template, template_args, directory)
+    _template_project_file(filename, template, template_args, directory)
   return True
 
 

@@ -99,6 +99,13 @@ EXTERNAL_BUILD_TEMPLATE = """\
 #     $LIB_FUZZING_ENGINE /path/to/library.a
 """
 
-TEMPLATES = {'build.sh': BUILD_TEMPLATE, 'Dockerfile', DOCKER_TEMPLATE, 'project.yaml': PROJECT_YAML_TEMPLATE}
+TEMPLATES = {
+    'build.sh': BUILD_TEMPLATE,
+    'Dockerfile': DOCKER_TEMPLATE,
+    'project.yaml': PROJECT_YAML_TEMPLATE
+}
 
-EXTERNAL_TEMPLATES = {'build.sh': EXTERNAL_BUILD_TEMPLATE, 'Dockerfile', EXTERNAL_DOCKER_TEMPLATE}
+EXTERNAL_TEMPLATES = {
+    'build.sh': EXTERNAL_BUILD_TEMPLATE,
+    'Dockerfile': EXTERNAL_DOCKER_TEMPLATE
+}

@@ -224,6 +224,7 @@ def build_fuzzers_from_commit(commit,
       ])
 
     result = helper.build_fuzzers_impl(project_name=build_data.project_name,
+                                       build_integration_path=None,
                                        clean=True,
                                        engine=build_data.engine,
                                        sanitizer=build_data.sanitizer,
