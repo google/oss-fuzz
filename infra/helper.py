@@ -81,7 +81,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
         'Must specifiy both project-src-path and build-integration-path, '
         'not just one.',
         file=sys.stderr)
-    return 0
+    return 1
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
@@ -859,7 +859,7 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if ((not args.no_corpus_download and not args.corpus_dir) or
+  if (not args.no_corpus_download and not args.corpus_dir and not
       args.build_integration_path):
     if not download_corpora(args):
       return False
