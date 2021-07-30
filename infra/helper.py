@@ -75,12 +75,13 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   parser = get_parser()
   args = parse_args(parser)
 
-  if (bool(getattr(args, 'project_src_path')) != getattr(
-      args, 'build_integration_path')):
+  if (bool(getattr(args, 'project_src_path', None)) != bool(getattr(
+      args, 'build_integration_path', None))):
     print(
         'Must specifiy both project-src-path and build-integration-path, '
         'not just one.',
         file=sys.stderr)
+    return 0
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
@@ -956,7 +957,7 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(args.project_name, args.build_integration_path,
+  return reproduce_impl(args.project_name, bool(args.build_integration_path),
                         args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
