@@ -94,7 +94,7 @@ class BaseFuzzTargetRunner:
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Cleans up after running |fuzz_target_obj|."""
-    raise NotImplementedError('Child class must implement method.')
+    fuzz_target_obj.free_disk_if_needed()
 
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
@@ -166,6 +166,21 @@ class BaseFuzzTargetRunner:
     return bug_found
 
 
+class PruneTargetRunner(BaseFuzzTargetRunner):
+
+  @property
+  def quit_on_bug_found(self):
+    return False
+
+  def run_fuzz_target(self, fuzz_target_obj):
+    """Prunes with |fuzz_target_obj| and returns the result."""
+    result = fuzz_target_obj.fuzz()
+    logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.pruned_corpus_path)
+    return result
+
+
 class CoverageTargetRunner(BaseFuzzTargetRunner):
   """Runner that runs the 'coverage' command."""
 
@@ -206,10 +221,6 @@ class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   def quit_on_bug_found(self):
     return True
 
-  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
-    """Cleans up after running |fuzz_target_obj|."""
-    fuzz_target_obj.free_disk_if_needed()
-
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     return fuzz_target_obj.fuzz()
 
@@ -225,7 +236,8 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.fuzz()
     logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
-    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name)
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.corpus_path)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
@@ -263,6 +275,8 @@ def get_fuzz_target_runner(config):
     return BatchFuzzTargetRunner(config)
   if config.run_fuzzers_mode == 'coverage':
     return CoverageTargetRunner(config)
+  if config.run_fuzzers_mode == 'prune':
+    return PruneTargetRunner(config)
   return CiFuzzTargetRunner(config)
 
 

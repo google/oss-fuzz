@@ -164,11 +164,11 @@ class RunFuzzersConfig(BaseConfig):
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
            (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
 
-    if run_fuzzers_mode == 'prune':
-      # Unlimited time.
+    if self.run_fuzzers_mode == 'prune':
+      # Unlimited time by default.
       default_fuzz_seconds = None
-    self.fuzz_seconds = int(
-        os.environ.get('FUZZ_SECONDS', default_fuzz_seconds))
+    self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS',
+                                           default_fuzz_seconds))
 
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
@@ -263,3 +263,8 @@ class Workspace:
   def corpora(self):
     """The directory where corpora from ClusterFuzz are stored."""
     return os.path.join(self.workspace, 'cifuzz-corpus')
+
+  @property
+  def merged_corpora(self):
+    """The directory where corpora from ClusterFuzz are stored."""
+    return os.path.join(self.workspace, 'cifuzz-merged-corpus')

@@ -46,8 +46,9 @@ COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
     'Could not run previous build of target to determine if this code change '
     '(pr/commit) introduced crash. Assuming crash was newly introduced.')
 
-FuzzResult = collections.namedtuple('FuzzResult',
-                                    ['testcase', 'stacktrace', 'corpus_path'])
+FuzzResult = collections.namedtuple(
+    'FuzzResult',
+    ['testcase', 'stacktrace', 'corpus_path', 'pruned_corpus_path'])
 
 
 class ReproduceError(Exception):
@@ -84,9 +85,25 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
     self.latest_corpus_path = None
+    self.pruned_corpus_path = None
 
-  def fuzz(self):
+  def prune(self):
+    """Prunes the corpus."""
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name)
+    self.pruned_corpus_path = os.path.join(self.workspace.merged_corpora,
+                                           self.target_name)
+    os.makedirs(self.pruned_corpus_path)
+    merge_options = [
+        '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
+    ]
+    return self.fuzz(use_corpus=False, extra_libfuzzer_options=merge_options)
+
+  def fuzz(self, use_corpus=False, extra_libfuzzer_options=None):
     """Starts the fuzz target run for the length of time specified by duration.
+    Args:
+      use_corpus: Specify a corpus if True.
+      extra_libfuzzer_options: Extra options to pass to libFuzzer.
 
     Returns:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
@@ -96,10 +113,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                                     self.config.sanitizer,
                                                     self.config.language)
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name)
-    command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
+    if use_corpus:
+      # If corpus can be downloaded use it for fuzzing.
+      self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+          self.target_name)
+      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
         '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',
@@ -111,6 +129,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         # Make sure libFuzzer artifact files don't pollute $OUT.
         f'-artifact_prefix={self.workspace.artifacts}/'
     ]
+    if extra_libfuzzer_options:
+      options.extend(extra_libfuzzer_options)
+
     options = ' '.join(options)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
     command.append(run_fuzzer_command)
@@ -124,29 +145,34 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return FuzzResult(None, None, self.latest_corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path,
+                        self.pruned_corpus_path)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return FuzzResult(None, None, self.latest_corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path,
+                        self.pruned_corpus_path)
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return FuzzResult(None, None, self.latest_corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path,
+                        self.pruned_corpus_path)
 
     utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
                        (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, stderr, self.latest_corpus_path)
+      return FuzzResult(testcase, stderr, self.latest_corpus_path,
+                        self.pruned_corpus_path)
 
     # We found a bug but we won't report it.
-    return FuzzResult(None, None, self.latest_corpus_path)
+    return FuzzResult(None, None, self.latest_corpus_path,
+                      self.pruned_corpus_path)
 
   def free_disk_if_needed(self, delete_fuzz_target=True):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
@@ -158,10 +184,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
-    if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
-      # Use ignore_errors=True to fix
-      # https://github.com/google/oss-fuzz/issues/5383.
-      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
+    for corpus_path in [self.latest_corpus_path, self.pruned_corpus_path]:
+      if corpus_path and os.path.exists(corpus_path):
+        # Use ignore_errors=True to fix
+        # https://github.com/google/oss-fuzz/issues/5383.
+        shutil.rmtree(corpus_path, ignore_errors=True)
 
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):
