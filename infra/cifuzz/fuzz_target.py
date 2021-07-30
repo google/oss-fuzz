@@ -21,8 +21,7 @@ import stat
 import subprocess
 import sys
 
-import docker
-
+import run_fuzzers_utils
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
@@ -92,19 +91,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    command, _ = docker.get_base_docker_run_command(self.workspace,
-                                                    self.config.sanitizer,
-                                                    self.config.language)
+    env = run_fuzzers_utils.get_env(self.config, self.workspace)
+    env['RUN_FUZZERS_MODE'] = 'interactive'
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name)
-    command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
-
-    command += [
-        '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',
-        '-c'
-    ]
+    # If corpus can be downloaded, use it for fuzzing.
+    env['CORPUS_DIR'] = self.latest_corpus_path
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
@@ -112,11 +103,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         f'-artifact_prefix={self.workspace.artifacts}/'
     ]
     options = ' '.join(options)
-    run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
-    command.append(run_fuzzer_command)
+    command = f'run_fuzzer {self.target_name} {options}'
 
-    logging.info('Running command: %s', ' '.join(command))
+    logging.info('Running command: %s', command)
     process = subprocess.Popen(command,
+                               env=env,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
 
@@ -192,16 +183,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    command, container = docker.get_base_docker_run_command(
-        self.workspace, self.config.sanitizer, self.config.language)
-    if container:
-      command += ['-e', f'TESTCASE={testcase}']
-    else:
-      command += ['-v', f'{testcase}:/testcase']
-
-    command += [
-        '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'
-    ]
+    env = run_fuzzers_utils.get_env(self.config, self.workspace)
+    env['TESTCASE'] = testcase
+    command = ['reproduce', self.target_name, '-runs=100']
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):

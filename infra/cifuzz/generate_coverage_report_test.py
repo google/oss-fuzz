@@ -45,7 +45,7 @@ class TestRunCoverageCommand(unittest.TestCase):
         'gcr.io/oss-fuzz-base/base-runner', 'coverage'
     ]
 
-    generate_coverage_report.run_coverage_command(workspace, config)
+    generate_coverage_report.run_coverage_command(config, workspace)
     mocked_docker_run.assert_called_with(expected_docker_args)
 
 

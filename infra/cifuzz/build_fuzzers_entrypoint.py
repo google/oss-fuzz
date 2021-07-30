@@ -51,12 +51,7 @@ def build_fuzzers_entrypoint():
     # then the build has succeeded.
     returncode = 0
   # yapf: disable
-  elif build_fuzzers.check_fuzzer_build(
-      config_utils.Workspace(config),
-      config.sanitizer,
-      config.language,
-      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
-  ):
+  elif build_fuzzers.check_fuzzer_build(config):
     # yapf: enable
     returncode = 0
 

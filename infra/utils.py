@@ -38,7 +38,7 @@ def chdir_to_root():
     os.chdir(helper.OSS_FUZZ_DIR)
 
 
-def execute(command, location=None, check_result=False):
+def execute(command, env=None, location=None, check_result=False):
   """ Runs a shell command in the specified directory location.
 
   Args:
@@ -58,7 +58,8 @@ def execute(command, location=None, check_result=False):
   process = subprocess.Popen(command,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             cwd=location)
+                             cwd=location,
+                             env=env)
   out, err = process.communicate()
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')

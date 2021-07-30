@@ -22,16 +22,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
-BASE_RUNNER_TAG = 'gcr.io/oss-fuzz-base/base-runner'
 MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-    'ARCHITECTURE=' + DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+    '--cap-add', 'SYS_PTRACE', '-e',
+    'FUZZING_ENGINE=' + config_utils.DEFAULT_ENGINE, '-e',
+    'ARCHITECTURE=' + config_utils.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 
 EXTERNAL_PROJECT_IMAGE = 'external-project'
