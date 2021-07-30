@@ -21,6 +21,8 @@ from unittest import mock
 
 import config_utils
 
+INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def _create_config(config_cls, **kwargs):
   """Creates a config object from |config_cls| and then sets every attribute
@@ -55,7 +57,7 @@ def create_workspace(workspace_path='/workspace'):
   return config_utils.Workspace(config)
 
 
-def patch_environ(testcase_obj, env=None, empty=False):
+def patch_environ(testcase_obj, env=None, empty=False, runner=False):
   """Patch environment."""
   if env is None:
     env = {}
@@ -66,6 +68,13 @@ def patch_environ(testcase_obj, env=None, empty=False):
   if empty:
     for key in os.environ.copy():
       del os.environ[key]
+
+  if runner:
+    base_runner_dir = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
+    os.environ['PATH'] = (
+        os.environ.get('PATH', '') + os.pathsep + base_runner_dir)
+    if 'GOPATH' not in os.environ:
+      os.environ['GOPATH'] = '/root/go'
 
 
 @contextlib.contextmanager

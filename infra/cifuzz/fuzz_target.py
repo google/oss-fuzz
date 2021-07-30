@@ -92,9 +92,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     """
     logging.info('Running fuzzer: %s.', self.target_name)
     env = base_runner_utils.get_env(self.config, self.workspace)
-    env['RUN_FUZZERS_MODE'] = 'interactive'
+    env['RUN_FUZZER_MODE'] = 'interactive'
 
     # If corpus can be downloaded, use it for fuzzing.
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name)
     env['CORPUS_DIR'] = self.latest_corpus_path
 
     options = LIBFUZZER_OPTIONS.copy() + [
@@ -102,8 +104,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         # Make sure libFuzzer artifact files don't pollute $OUT.
         f'-artifact_prefix={self.workspace.artifacts}/'
     ]
-    options = ' '.join(options)
-    command = f'run_fuzzer {self.target_name} {options}'
+    command = ['run_fuzzer', self.target_name] + options
 
     logging.info('Running command: %s', command)
     process = subprocess.Popen(command,
@@ -189,7 +190,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, returncode = utils.execute(command, env=env)
+      out, err, returncode = utils.execute(command, env=env)
+
       if returncode != 0:
         logging.info('Reproduce command returned: %s. Reproducible on %s.',
                      returncode, target_path)

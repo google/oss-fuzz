@@ -27,7 +27,6 @@ sys.path.append(INFRA_DIR)
 
 OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
-import base_runner_utils
 import build_fuzzers
 import continuous_integration
 import repo_manager
@@ -279,15 +278,13 @@ class CheckFuzzerBuildTest(unittest.TestCase):
         pr_ref='refs/pull/1757/merge')
     self.workspace = test_helpers.create_workspace(workspace_path)
     shutil.copytree(TEST_DATA_PATH, workspace_path)
+    test_helpers.patch_environ(self, runner=True)
 
   def tearDown(self):
     self.temp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-    base_runner_dir = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
-    env = base_runner_utils.get_env(self.config, self.workspace)
-    env['PATH'] += os.pathsep + base_runner_dir
     with mock.patch('base_runner_utils.get_env', return_value=env):
       self.assertTrue(build_fuzzers.check_fuzzer_build(self.config))
 
