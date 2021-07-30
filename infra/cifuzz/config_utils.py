@@ -264,6 +264,8 @@ class BuildFuzzersConfig(BaseConfig):
     self.keep_unaffected_fuzz_targets = environment.get_bool(
         'KEEP_UNAFFECTED_FUZZ_TARGETS')
 
+    self.output_sarif = environment.get_bool('OUTPUT_SARIF', False)
+
     self.upload_build = environment.get_bool('UPLOAD_BUILD', False)
     if not self.keep_unaffected_fuzz_targets:
       has_base_for_diff = (self.base_ref or self.base_commit)

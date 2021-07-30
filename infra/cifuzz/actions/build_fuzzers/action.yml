@@ -32,6 +32,10 @@ inputs:
     description: "Whether to keep unaffected fuzzers or delete them."
     required: false
     default: false
+  output-sarif:
+    description: "Whether to output fuzzing results to SARIF."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -48,3 +52,4 @@ runs:
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
     KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}
+    OUTPUT_SARIF: ${{ inputs.output-sarif }}

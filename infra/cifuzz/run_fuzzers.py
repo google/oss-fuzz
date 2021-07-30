@@ -22,6 +22,7 @@ import clusterfuzz_deployment
 import fuzz_target
 import generate_coverage_report
 import workspace_utils
+import sarif_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -140,6 +141,8 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
+      if self.config.write_sarif:
+        write_fuzz_result_to_sarif(result, target_path, self.workspace)
       bug_found = True
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
@@ -147,6 +150,12 @@ class BaseFuzzTargetRunner:
 
     self.clusterfuzz_deployment.upload_crashes()
     return bug_found
+
+
+def write_fuzz_result_to_sarif(result, target_path, workspace):
+  """Write results of fuzzing to SARIF."""
+  sarif_utils.write_stacktrace_to_sarif(result.stacktrace, target_path,
+                                        workspace)
 
 
 class PruneTargetRunner(BaseFuzzTargetRunner):
