@@ -196,6 +196,7 @@ def get_parser():  # pylint: disable=too-many-statements
   check_build_parser.add_argument('fuzzer_name',
                                   help='name of the fuzzer',
                                   nargs='?')
+  _add_build_integration_path_arg(check_build_parser)
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
@@ -209,7 +210,7 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
                                  nargs=argparse.REMAINDER)
-  _add_build_integration_path_arg(build_image_parser)
+  _add_build_integration_path_arg(run_fuzzer_parser)
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -234,7 +235,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                help='additional arguments to '
                                'pass to llvm-cov utility.',
                                nargs='*')
-  _add_build_integration_path_arg(build_image_parser)
+  _add_build_integration_path_arg(coverage_parser)
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -255,7 +256,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 help='arguments to pass to the fuzzer',
                                 nargs=argparse.REMAINDER)
   _add_environment_args(reproduce_parser)
-  _add_build_integration_path_arg(build_image_parser)
+  _add_build_integration_path_arg(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -267,7 +268,7 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
-  _add_build_integration_path_arg(build_image_parser)
+  _add_build_integration_path_arg(shell_parser)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
