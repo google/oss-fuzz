@@ -75,8 +75,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   parser = get_parser()
   args = parse_args(parser)
 
-  if (bool(getattr(args, 'project_src_path', None)) != bool(getattr(
-      args, 'build_integration_path', None))):
+  if (bool(getattr(args, 'project_src_path', None)) != bool(
+      getattr(args, 'build_integration_path', None))):
     print(
         'Must specifiy both project-src-path and build-integration-path, '
         'not just one.',
@@ -859,8 +859,8 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if (not args.no_corpus_download and not args.corpus_dir and not
-      args.build_integration_path):
+  if (not args.no_corpus_download and not args.corpus_dir and
+      not args.build_integration_path):
     if not download_corpora(args):
       return False
 
@@ -1027,7 +1027,7 @@ def _create_build_integration_directory(directory):
   """Returns True on successful creation of a build integration directory.
   Suitable for OSS-Fuzz and external projects."""
   try:
-    os.mkdir(directory)
+    os.makedirs(directory)
   except OSError as error:
     if error.errno != errno.EEXIST:
       raise
@@ -1050,15 +1050,23 @@ def _template_project_file(filename, template, template_args, directory):
 
 def generate(args):
   """Generates empty project files."""
-  if args.build_integration_path:
+  return _generate_impl(args.project_name, args.build_integration_path)
+
+def _get_current_datetime():
+  """Returns this year. Needed for mocking."""
+  return datetime.datetime.now()
+
+def _generate_impl(project_name, build_integration_path):
+  """Implementation of generate(). Useful for testing."""
+  if build_integration_path:
     # External project.
-    directory = args.build_integration_path
+    directory = build_integration_path
     project_templates = templates.EXTERNAL_TEMPLATES
   else:
     # Internal project.
-    if not _validate_project_name(args.project_name):
+    if not _validate_project_name(project_name):
       return False
-    directory = os.path.join('projects', args.project_name)
+    directory = os.path.join('projects', project_name)
     project_templates = templates.TEMPLATES
 
   if not _create_build_integration_directory(directory):
@@ -1067,8 +1075,8 @@ def generate(args):
   print('Writing new files to', directory)
 
   template_args = {
-      'project_name': args.project_name,
-      'year': datetime.datetime.now().year
+      'project_name': project_name,
+      'year': _get_current_datetime().year
   }
   for filename, template in project_templates.items():
     _template_project_file(filename, template, template_args, directory)
