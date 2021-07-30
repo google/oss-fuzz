@@ -13,7 +13,6 @@
 # limitations under the License.
 """Utilities for scripts from gcr.io/oss-fuzz-base/base-runner."""
 
-
 import os
 
 import config_utils
@@ -29,4 +28,6 @@ def get_env(config, workspace):
   env['CIFUZZ'] = 'True'
   env['FUZZING_ENGINE'] = config_utils.DEFAULT_ENGINE
   env['ARCHITECTURE'] = config_utils.DEFAULT_ARCHITECTURE
+  # Do this so we don't fail in tests.
+  env['FUZZER_ARGS'] = '-rss_limit_mb=2560 -timeout=25'
   return env

@@ -55,7 +55,7 @@ def create_workspace(workspace_path='/workspace'):
   return config_utils.Workspace(config)
 
 
-def patch_environ(testcase_obj, env=None):
+def patch_environ(testcase_obj, env=None, empty=False):
   """Patch environment."""
   if env is None:
     env = {}
@@ -63,6 +63,9 @@ def patch_environ(testcase_obj, env=None):
   patcher = mock.patch.dict(os.environ, env)
   testcase_obj.addCleanup(patcher.stop)
   patcher.start()
+  if empty:
+    for key in os.environ.copy():
+      del os.environ[key]
 
 
 @contextlib.contextmanager

@@ -71,6 +71,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     """Sets up example fuzz target to test is_reproducible method."""
     self.fuzz_target_name = 'fuzz-target'
     deployment = _create_deployment()
+    self.config = deployment.config
     self.workspace = deployment.workspace
     self.fuzz_target_path = os.path.join(self.workspace.out,
                                          self.fuzz_target_name)
@@ -80,6 +81,8 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
                                          self.workspace, deployment,
                                          deployment.config)
 
+    test_helpers.patch_environ(self, empty=True)
+
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
@@ -88,16 +91,18 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     with mock.patch('utils.execute', side_effect=all_repro) as mocked_execute:
       result = self.target.is_reproducible(self.testcase_path,
                                            self.fuzz_target_path)
-      mocked_execute.assert_called_once_with([
-          'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
-          '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
-          'CIFUZZ=True', '-e', 'SANITIZER=' + self.target.config.sanitizer,
-          '-e', 'FUZZING_LANGUAGE=' + self.target.config.language, '-e',
-          'OUT=' + self.workspace.out, '--volumes-from', 'container', '-e',
-          'TESTCASE=' + self.testcase_path, '-t',
-          'gcr.io/oss-fuzz-base/base-runner', 'reproduce',
-          self.fuzz_target_name, '-runs=100'
-      ])
+      expected_command = ['reproduce', 'fuzz-target', '-runs=100']
+      expected_env = {
+          'SANITIZER': self.config.sanitizer,
+          'FUZZING_LANGUAGE': 'c++',
+          'OUT': self.workspace.out,
+          'CIFUZZ': 'True',
+          'FUZZING_ENGINE': 'libfuzzer',
+          'ARCHITECTURE': 'x86_64',
+          'TESTCASE': self.testcase_path,
+          'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25'
+      }
+      mocked_execute.assert_called_once_with(expected_command, env=expected_env)
       self.assertTrue(result)
       self.assertEqual(1, mocked_execute.call_count)
 
