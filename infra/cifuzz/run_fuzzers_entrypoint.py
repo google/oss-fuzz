@@ -36,7 +36,6 @@ def delete_unneeded_docker_images(config):
   project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
-      docker.BASE_RUNNER_TAG,
       docker.MSAN_LIBS_BUILDER_TAG,
   ]
   docker.delete_images(images)
