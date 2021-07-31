@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+sed -i 's/git@/https:\/\//g' .gitmodules
+sed -i 's/:taos/\/taos/g' .gitmodules
+sed -i 's/\.git//g' .gitmodules
+
 git submodule update --init --recursive
 sed -i 's/-Werror//g' ./cmake/define.inc
 mkdir debug && cd debug
@@ -28,11 +32,16 @@ $CC $CFLAGS -DLINUX -DUSE_LIBICONV -D_LINUX -D_M_X64 \
      -I/src/tdengine/src/inc -I/src/tdengine/src/os/inc \
      -I/src/tdengine/src/util/inc -I/src/tdengine/src/common/inc \
      -I/src/tdengine/src/tsdb/inc -I/src/tdengine/src/query/inc \
-     -o sql-fuzzer.o -c $SRC/sql-fuzzer.c
+     -o sql-fuzzer.o -c $SRC/tdengine/tests/fuzz//sql-fuzzer.c
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE sql-fuzzer.o -o $OUT/sql-fuzzer \
-     ../../../debug/src/common/CMakeFiles/common.dir/src/tglobal.c.o  \
-     ../lib/libtaos_static.a ../lib/libtrpc.a ../lib/libquery.a \
-     ../lib/libtsdb.a ../lib/libcommon.a ../lib/libtfs.a ../lib/libtutil.a \
-     ../lib/liblz4.a ../lib/libosdetail.a ../lib/libos.a ../lib/libz.a  \
-     ../lib/librmonotonic.a -lm -lrt -lpthread
+      ../../../debug/src/common/CMakeFiles/common.dir/src/tglobal.c.o  \
+      -Wl,--start-group \
+      ../lib/libtaos_static.a  ../lib/libtrpc.a ../lib/libtutil.a \
+      ../lib/libquery.a  ../lib/libtsdb.a ../lib/libcommon.a \
+       ../lib/libtfs.a ../lib/liblz4.a ../lib/libos.a \
+       ../lib/liboslinux.a ../lib/libz.a ../lib/librmonotonic.a \
+       ../lib/liblua.a \
+       -Wl,--end-group -lpthread -ldl
+
+cp $SRC/*.options $OUT/

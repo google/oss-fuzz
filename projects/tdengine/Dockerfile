@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-#RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential
 RUN apt-get update && apt-get install -y  libtool build-essential
 RUN git clone --depth 1 https://github.com/taosdata/TDengine tdengine
 WORKDIR tdengine
 COPY build.sh $SRC/
-COPY sql-fuzzer.c $SRC/
+COPY *.options $SRC/
