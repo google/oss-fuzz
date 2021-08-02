@@ -69,11 +69,13 @@ DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.cifuzz'
 
 class Project:
 
-  def __init__(self, project_name_or_path, is_external):
+  def __init__(self, project_name_or_path, is_external=False,
+               build_integration_path='.cifuzz'):
     self.is_external = True
     if self.is_external:
       self.name = os.path.dirname(project_name_or_path)
       self.path = project_name_or_path
+      self.build_integration_path =
     else:
       self.name = project_name_or_path
       self.path = path.join(OSS_FUZZ_DIR, 'projects', self.name)
@@ -1064,17 +1066,16 @@ def _get_current_datetime():
 
 def _generate_impl(project, build_integration_path):
   """Implementation of generate(). Useful for testing."""
-  if build_integration_path:
+  if project.is_external:
     # External project.
-    directory = build_integration_path
     project_templates = templates.EXTERNAL_TEMPLATES
   else:
     # Internal project.
-    if not _validate_project(project):
+    if not _validate_project_name(project.name):
       return False
-    directory = os.path.join('projects', project)
     project_templates = templates.TEMPLATES
 
+  directory = project.build_integration_path
   if not _create_build_integration_directory(directory):
     return False
 
