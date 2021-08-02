@@ -47,15 +47,11 @@ def run_fuzzers_entrypoint():
   This action can be added to any OSS-Fuzz project's workflow that uses
   Github."""
   config = config_utils.RunFuzzersConfig()
-  config.validate()
   # The default return code when an error occurs.
   returncode = 1
   if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0
-
-  if not config.validate():
-    return returncode
 
   delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.

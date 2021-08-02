@@ -80,6 +80,9 @@ def _get_language():
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 
+class ConfigurationError(Exception):
+  """Error for invalid configuration."""
+
 
 class BaseConfig:
   """Object containing constant configuration for CIFuzz."""
@@ -115,6 +118,9 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+
+    if not self.valdiate() and not os.getenv('CIFUZZ_TEST'):
+      raise ConfigurationError('Invalid Configuration.')
 
   def validate(self):
     """Returns False if the configuration is invalid."""

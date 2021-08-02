@@ -38,9 +38,6 @@ def build_fuzzers_entrypoint():
     # The default return code when an error occurs.
     returncode = 1
 
-  if not config.validate():
-    return returncode
-
   if not build_fuzzers.build_fuzzers(config):
     logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
                   config.commit_sha, config.pr_ref)
