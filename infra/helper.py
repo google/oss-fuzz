@@ -62,6 +62,8 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
+DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.cifuzz'
+
 # pylint: disable=too-many-lines
 
 
@@ -74,14 +76,6 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
 
   parser = get_parser()
   args = parse_args(parser)
-
-  if (bool(getattr(args, 'project_src_path', None)) != bool(
-      getattr(args, 'build_integration_path', None))):
-    print(
-        'Must specifiy both project-src-path and build-integration-path, '
-        'not just one.',
-        file=sys.stderr)
-    return 1
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
@@ -126,10 +120,16 @@ def bool_to_retcode(boolean):
 
 
 def parse_args(parser, args=None):
-  """Parses |args| using |parser| and returns parsed args."""
+  """Parses |args| using |parser| and returns parsed args. Also changes
+  |args.build_integration_path| to have correct default behavior."""
   # Use default argument None for args so that in production, argparse does its
   # normal behavior, but unittesting is easier.
-  return parser.parse_args(args)
+  parsed_args = parser.parse_args(args)
+
+  if args.project_src_path and args.build_integration_path is None:
+    args.build_integration_path = os.path.join(
+        args.project_src_path,
+        DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
 
 
 def _add_external_project_args(parser):
@@ -422,7 +422,7 @@ def build_image_impl(image_name,
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
     docker_build_dir = os.path.join('infra', 'base-images', image_name)
-  elif build_integration_path:
+  elif project_src_path:
     image_project = 'oss-fuzz'
     # External projects need to use the repo root as the build directory.
     docker_build_dir = project_src_path
@@ -694,8 +694,7 @@ def _add_oss_fuzz_ci_if_needed(env):
 
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
-  if not (args.build_integration_path or
-          check_project_exists(args.project_name)):
+  if not (args.project_src_path or check_project_exists(args.project_name)):
     return False
 
   if (args.fuzzer_name and
@@ -847,8 +846,7 @@ def coverage(args):
         file=sys.stderr)
     return False
 
-  if not (args.build_integration_path or
-          check_project_exists(args.project_name)):
+  if not (args.project_src_path or check_project_exists(args.project_name)):
     return False
 
   project_language = _get_project_language(args.project_name)
@@ -860,7 +858,7 @@ def coverage(args):
     return False
 
   if (not args.no_corpus_download and not args.corpus_dir and
-      not args.build_integration_path):
+      not args.project_src_path):
     if not download_corpora(args):
       return False
 
@@ -913,7 +911,7 @@ def coverage(args):
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
-  if not (args.build_integration_path or
+  if not (args.project_src_path or
           check_project_exists(args.project_name)):
     return False
 
@@ -957,7 +955,7 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(args.project_name, bool(args.build_integration_path),
+  return reproduce_impl(args.project_name, bool(args.project_src_path),
                         args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
