@@ -39,15 +39,16 @@ def chdir_to_root():
 
 
 def execute(command, env=None, location=None, check_result=False):
-  """ Runs a shell command in the specified directory location.
+  """Runs a shell command in the specified directory location.
 
   Args:
     command: The command as a list to be run.
+    env: (optional) an environment to pass to Popen to run the command in.
     location: The directory the command is run in.
     check_result: Should an exception be thrown on failed command.
 
   Returns:
-    stdout, stderr, error code.
+    stdout, stderr, return code.
 
   Raises:
     RuntimeError: running a command resulted in an error.

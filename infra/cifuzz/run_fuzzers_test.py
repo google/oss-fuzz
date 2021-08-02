@@ -380,10 +380,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
             is_github=True)
         self.assertTrue(build_fuzzers.build_fuzzers(build_config))
 
+        # TODO(metzman): Get rid of this here and make 'compile' do this.
         chmod_command = ('chmod -R +r /out && '
                          'find /out -type d -exec chmod +x {} +')
 
-        # Get rid of this here and make 'compile' do this.
         assert helper.docker_run([
             '-v', f'{os.path.join(temp_dir, "build-out")}:/out',
             'gcr.io/oss-fuzz-base/base-builder', 'bash', '-c', chmod_command
