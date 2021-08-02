@@ -62,7 +62,7 @@ class BaseConfigTest(unittest.TestCase):
       self, mocked_error):
     """Tests that validate returns False if neither OSS_FUZZ_PROJECT_NAME or
     BUILD_INTEGRATION_PATH is set."""
-    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    os.environ['WORKSPACE'] = '/workspace'
     config = self._create_config()
     self.assertFalse(config.validate())
     mocked_error.assert_called_with(
@@ -76,12 +76,12 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with('Must set GITHUB_WORKSPACE.')
+    mocked_error.assert_called_with('Must set WORKSPACE.')
 
   def test_validate(self):
     """Tests that validate returns True if config is valid."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
-    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    os.environ['WORKSPACE'] = '/workspace'
     config = self._create_config()
     self.assertTrue(config.validate())
 
@@ -142,35 +142,36 @@ class RunFuzzersConfigTest(unittest.TestCase):
 
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
-  """Tests for _get_project_repo_owner_and_name."""
+  """Tests for CiEnvGetter.get_project_repo_owner_and_name."""
 
   def setUp(self):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
+    self.getter = config_utils.CiEnvGetter(is_github=True)
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(config_utils._get_project_repo_owner_and_name(), ('', ''))
+    self.assertEqual(self.getter.get_project_repo_owner_and_name(), ('', ''))
 
   def test_empty_repository(self):
     """Tests that the correct result is returned when repository is an empty
     string."""
     os.environ['GITHUB_REPOSITORY'] = ''
-    self.assertEqual(config_utils._get_project_repo_owner_and_name(), ('', ''))
+    self.assertEqual(self.getter.get_project_repo_owner_and_name(), ('', ''))
 
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(config_utils._get_project_repo_owner_and_name(),
+    self.assertEqual(self.getter.get_project_repo_owner_and_name(),
                      (self.repo_owner, self.repo_name))
 
   def test_nongithub_repository(self):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = self.repo_name
-    self.assertEqual(config_utils._get_project_repo_owner_and_name(),
+    self.assertEqual(self.getter.get_project_repo_owner_and_name(),
                      ('', self.repo_name))
 
 
@@ -207,26 +208,26 @@ class GetProjectSrcPathTest(unittest.TestCase):
   def test_unset(self):
     """Tests that get_project_src_path returns None when no PROJECT_SRC_PATH is
     set."""
-    self.assertIsNone(
-        config_utils.get_project_src_path(self.workspace, is_github=True))
+    getter = config_utils.CiEnvGetter(is_github=True)
+    self.assertIsNone(getter.get_project_src_path(self.workspace))
 
   def test_github(self):
     """Tests that get_project_src_path returns the correct result on GitHub."""
     os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
     expected_project_src_path = os.path.join(self.workspace,
                                              self.project_src_dir_name)
-    self.assertEqual(
-        config_utils.get_project_src_path(self.workspace, is_github=True),
-        expected_project_src_path)
+    getter = config_utils.CiEnvGetter(is_github=True)
+    self.assertEqual(getter.get_project_src_path(self.workspace),
+                     expected_project_src_path)
 
   def test_not_github(self):
     """Tests that get_project_src_path returns the correct result not on
     GitHub."""
     project_src_path = os.path.join('/', self.project_src_dir_name)
     os.environ['PROJECT_SRC_PATH'] = project_src_path
-    self.assertEqual(
-        config_utils.get_project_src_path(self.workspace, is_github=True),
-        project_src_path)
+    getter = config_utils.CiEnvGetter(is_github=False)
+    self.assertEqual(getter.get_project_src_path(self.workspace),
+                     project_src_path)
 
 
 if __name__ == '__main__':
