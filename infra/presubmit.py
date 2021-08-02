@@ -406,7 +406,7 @@ def run_nonbuild_tests(parallel):
 
   # TODO(metzman): Get rid of this once config_utils stops using it.
   env = os.environ.copy()
-  env['CIFUZZ_TEST'] = 1
+  env['CIFUZZ_TEST'] = '1'
 
   return subprocess.run(command, check=False, env=env).returncode == 0
 
