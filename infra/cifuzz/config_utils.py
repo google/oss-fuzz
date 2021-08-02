@@ -23,6 +23,13 @@ import environment
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
 
+# This module deals a lot with env variables. Many of these will be set by users
+# and others beyond CIFuzz's control. Thus, you should be careful about using
+# the environment.py helpers for getting env vars, since it can cause values
+# that should be interpreted as strings to be returned as other types (bools or
+# ints for example). The environment.py helpers should not be used for values
+# that are supposed to be strings.
+
 
 def _get_project_repo_owner_and_name():
   """Returns a tuple containing the project repo owner and the name of the
@@ -38,7 +45,7 @@ def _get_project_repo_owner_and_name():
 
 def _get_pr_ref(event):
   if event == 'pull_request':
-    return environment.get('GITHUB_REF')
+    return os.getenv('GITHUB_REF')
   return None
 
 
@@ -48,24 +55,24 @@ def _get_sanitizer():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return environment.get_bool('DRY_RUN', 'false')
+  return environment.get_bool('DRY_RUN', False)
 
 
-def get_project_src_path(workspace):
+def get_project_src_path(workspace, is_github):
   """Returns the manually checked out path of the project's source if specified
-  or None."""
+  or None. Returns the path relative to |workspace| if |is_github| since on
+  github the checkout will be relative to there."""
   path = os.getenv('PROJECT_SRC_PATH')
   if not path:
     logging.debug('No PROJECT_SRC_PATH.')
     return path
 
-  logging.debug('PROJECT_SRC_PATH set.')
-  if os.path.isabs(path):
-    return path
-
-  # If |src| is not absolute, assume we are running in GitHub actions.
-  # TODO(metzman): Don't make this assumption.
-  return os.path.join(workspace, path)
+  logging.debug('PROJECT_SRC_PATH set: %s.', path)
+  if is_github:
+    # On GitHub, they don't know the absolute path, it is relative to
+    # |workspace|.
+    return os.path.join(workspace, path)
+  return path
 
 
 def _get_language():
@@ -79,6 +86,10 @@ def _get_language():
 
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
+
+
+class ConfigurationError(Exception):
+  """Error for invalid configuration."""
 
 
 class BaseConfig:
@@ -101,22 +112,41 @@ class BaseConfig:
     self.dry_run = _is_dry_run()
 
     self.sanitizer = _get_sanitizer()
-    # TODO(ochang): Error out if both oss_fuzz and build_integration_path is not
-    # set.
-    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
 
+    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
-    # TODO(metzman): Parse env like we do in ClusterFuzz.
-    self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
+    self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
     self.github_token = os.environ.get('GITHUB_TOKEN')
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+
+    # TODO(metzman): Fix tests to create valid configurations and get rid of
+    # CIFUZZ_TEST here and in presubmit.py.
+    if not self.validate() and not os.getenv('CIFUZZ_TEST'):
+      raise ConfigurationError('Invalid Configuration.')
+
+  def validate(self):
+    """Returns False if the configuration is invalid."""
+    # Do validation here so that unittests don't need to make a fully-valid
+    # config.
+    if (self.build_integration_path is None and
+        self.oss_fuzz_project_name is None):
+      logging.error('Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
+                    'Otherwise must set BUILD_INTEGRATION_PATH. '
+                    'Neither is set.')
+      return False
+
+    if not self.workspace:
+      logging.error('Must set GITHUB_WORKSPACE.')
+      return False
+
+    return True
 
   @property
   def is_internal(self):
@@ -159,6 +189,9 @@ class RunFuzzersConfig(BaseConfig):
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
            (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
 
+    self.report_unreproducible_crashes = environment.get_bool(
+        'REPORT_UNREPRODUCIBLE_CRASHES', False)
+
 
 class BuildFuzzersConfig(BaseConfig):
   """Class containing constant configuration for building fuzzers in CIFuzz."""
@@ -172,7 +205,7 @@ class BuildFuzzersConfig(BaseConfig):
     if event == 'push':
       self.base_commit = event_data['before']
       logging.debug('base_commit: %s', self.base_commit)
-    else:
+    elif event == 'pull_request':
       self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
       logging.debug('pr_ref: %s', self.pr_ref)
 
@@ -193,16 +226,16 @@ class BuildFuzzersConfig(BaseConfig):
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.project_src_path = get_project_src_path(self.workspace)
+    self.project_src_path = get_project_src_path(self.workspace, self.is_github)
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
-    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', 'true')
-
-    # TODO(metzman): Use better system for interpreting env vars. What if env
-    # var is set to '0'?
-    self.keep_unaffected_fuzz_targets = bool(
-        os.getenv('KEEP_UNAFFECTED_FUZZERS'))
+    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
+    # pylint: disable=consider-using-ternary
+    self.keep_unaffected_fuzz_targets = (
+        # Not from a commit or PR.
+        (not self.base_ref and not self.base_commit) or
+        environment.get_bool('KEEP_UNAFFECTED_FUZZERS'))
 
 
 class Workspace:

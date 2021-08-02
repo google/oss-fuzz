@@ -22,19 +22,19 @@ from unittest import mock
 import config_utils
 
 
-def _create_config(config_cls, **kwargs):
+@mock.patch('config_utils._is_dry_run', return_value=True)
+@mock.patch('config_utils.get_project_src_path', return_value=None)
+@mock.patch('os.path.basename', return_value=None)
+def _create_config(config_cls, _, __, ___, **kwargs):
   """Creates a config object from |config_cls| and then sets every attribute
   that is a key in |kwargs| to the corresponding value. Asserts that each key in
   |kwargs| is an attribute of config."""
-  with mock.patch('os.path.basename', return_value=None), mock.patch(
-      'config_utils.get_project_src_path',
-      return_value=None), mock.patch('config_utils._is_dry_run',
-                                     return_value=True):
+  with mock.patch('config_utils.BaseConfig.validate', return_value=True):
     config = config_cls()
-
   for key, value in kwargs.items():
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
     setattr(config, key, value)
+
   return config
 
 

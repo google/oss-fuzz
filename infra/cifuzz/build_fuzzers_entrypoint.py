@@ -21,7 +21,6 @@ import config_utils
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -37,10 +36,6 @@ def build_fuzzers_entrypoint():
   else:
     # The default return code when an error occurs.
     returncode = 1
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
 
   if not build_fuzzers.build_fuzzers(config):
     logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',

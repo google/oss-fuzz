@@ -14,6 +14,7 @@
 """Module for getting the configuration CIFuzz needs to run."""
 import os
 import unittest
+from unittest import mock
 
 import config_utils
 import test_helpers
@@ -56,6 +57,34 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertFalse(config.is_coverage)
 
+  @mock.patch('logging.error')
+  def test_validate_oss_fuzz_project_name_or_build_integration_path(
+      self, mocked_error):
+    """Tests that validate returns False if neither OSS_FUZZ_PROJECT_NAME or
+    BUILD_INTEGRATION_PATH is set."""
+    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with(
+        'Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
+        'Otherwise must set BUILD_INTEGRATION_PATH. '
+        'Neither is set.')
+
+  @mock.patch('logging.error')
+  def test_validate_no_workspace(self, mocked_error):
+    """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with('Must set GITHUB_WORKSPACE.')
+
+  def test_validate(self):
+    """Tests that validate returns True if config is valid."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    os.environ['GITHUB_WORKSPACE'] = '/workspace'
+    config = self._create_config()
+    self.assertTrue(config.validate())
+
 
 class BuildFuzzersConfigTest(unittest.TestCase):
   """Tests for BuildFuzzersConfig."""
@@ -73,8 +102,15 @@ class BuildFuzzersConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertEqual(config.base_ref, expected_base_ref)
 
-  def test_keep_unaffected_defaults_to_false(self):
-    """Tests that keep_unaffected_fuzz_targets defaults to false."""
+  def test_keep_unaffected_defaults_to_true(self):
+    """Tests that keep_unaffected_fuzz_targets defaults to true."""
+    config = self._create_config()
+    self.assertTrue(config.keep_unaffected_fuzz_targets)
+
+  def test_keep_unaffected_defaults_to_false_when_pr(self):
+    """Tests that keep_unaffected_fuzz_targets defaults to false when from a
+    pr."""
+    os.environ['GITHUB_BASE_REF'] = 'base-ref'
     config = self._create_config()
     self.assertFalse(config.keep_unaffected_fuzz_targets)
 
@@ -158,6 +194,39 @@ class GetSanitizerTest(unittest.TestCase):
     """Tests that that _get_sanitizer handles capitalization properly."""
     os.environ['SANITIZER'] = self.sanitizer.upper()
     self.assertEqual(config_utils._get_sanitizer(), self.sanitizer)
+
+
+class GetProjectSrcPathTest(unittest.TestCase):
+  """Tests for get_project_src_path."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    self.workspace = '/workspace'
+    self.project_src_dir_name = 'project-src'
+
+  def test_unset(self):
+    """Tests that get_project_src_path returns None when no PROJECT_SRC_PATH is
+    set."""
+    self.assertIsNone(
+        config_utils.get_project_src_path(self.workspace, is_github=True))
+
+  def test_github(self):
+    """Tests that get_project_src_path returns the correct result on GitHub."""
+    os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
+    expected_project_src_path = os.path.join(self.workspace,
+                                             self.project_src_dir_name)
+    self.assertEqual(
+        config_utils.get_project_src_path(self.workspace, is_github=True),
+        expected_project_src_path)
+
+  def test_not_github(self):
+    """Tests that get_project_src_path returns the correct result not on
+    GitHub."""
+    project_src_path = os.path.join('/', self.project_src_dir_name)
+    os.environ['PROJECT_SRC_PATH'] = project_src_path
+    self.assertEqual(
+        config_utils.get_project_src_path(self.workspace, is_github=True),
+        project_src_path)
 
 
 if __name__ == '__main__':
