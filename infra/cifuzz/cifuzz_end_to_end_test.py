@@ -17,6 +17,7 @@ import tempfile
 import unittest
 
 import run_cifuzz
+import test_helpers
 
 CIFUZZ_DIR = os.path.dirname(os.path.abspath(__file__))
 EXTERNAL_PROJECT_PATH = os.path.join(CIFUZZ_DIR, 'test_data',

@@ -84,6 +84,7 @@ def main():
       docker_run('run_fuzzers', workdir, project_src_path)
     except subprocess.CalledProcessError:
       logging.error('run_fuzzers failed.')
+      return 1
     return 0
 
 
