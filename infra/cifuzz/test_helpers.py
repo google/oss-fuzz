@@ -29,12 +29,15 @@ def _create_config(config_cls, **kwargs):
   with mock.patch('os.path.basename', return_value=None), mock.patch(
       'config_utils.get_project_src_path',
       return_value=None), mock.patch('config_utils._is_dry_run',
-                                     return_value=True):
+                                     return_value=True), mock.patch(
+                                         'config_utils.BaseConfig.validate',
+                                         return_value=True):
     config = config_cls()
 
   for key, value in kwargs.items():
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
     setattr(config, key, value)
+
   return config
 
 

@@ -368,7 +368,6 @@ class CoverageReportIntegrationTest(unittest.TestCase):
         run_config = test_helpers.create_run_config(
             fuzz_seconds=FUZZ_SECONDS,
             workspace=workspace,
-            oss_fuzz_project_name=EXAMPLE_PROJECT,
             sanitizer=self.SANITIZER,
             run_fuzzers_mode='coverage',
             is_github=True,
