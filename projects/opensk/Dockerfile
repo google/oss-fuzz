@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang uuid-runtime
 
-RUN git clone --recurse-submodules https://github.com/google/OpenSK  && \
+RUN git clone --depth 1 https://github.com/google/OpenSK  && \
     cd OpenSK && \
     ./setup.sh && \
     ./fuzzing_setup.sh
