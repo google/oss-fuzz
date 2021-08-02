@@ -34,6 +34,7 @@ def _create_config(config_cls, _, __, ___, **kwargs):
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
     setattr(config, key, value)
 
+  assert config.validate()
   return config
 
 
