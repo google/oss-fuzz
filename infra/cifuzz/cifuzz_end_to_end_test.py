@@ -32,6 +32,9 @@ EXTERNAL_PROJECT_PATH = os.path.join(CIFUZZ_DIR, 'test_data',
 class EndToEndTest(unittest.TestCase):
   """End-to-End tests for CIFuzz."""
 
+  def setUp(self):
+    test_helpers.patch_env(self, runner=True)
+
   def test_simple(self):
     """Simple end-to-end test using run_cifuzz.main()."""
     os.environ['REPOSITORY'] = 'external-project'
@@ -39,7 +42,5 @@ class EndToEndTest(unittest.TestCase):
     os.environ['BUILD_INTEGRATION_PATH'] = 'cifuzz-build-integration'
     with tempfile.TemporaryDirectory() as temp_dir:
       os.environ['WORKSPACE'] = temp_dir
-      # This test is weird because running the fuzzer results in a crash which
-      # main returns 0 on.
       # TODO(metzman): Verify the crash, affected fuzzers and other things.
-      self.assertEqual(run_cifuzz.main(), 0)
+      self.assertEqual(run_cifuzz.main(), 1)
