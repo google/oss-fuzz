@@ -52,10 +52,6 @@ def run_fuzzers_entrypoint():
     # Sets the default return code on error to success.
     returncode = 0
 
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
   delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.
   result = run_fuzzers.run_fuzzers(config)
