@@ -73,7 +73,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
 
-  logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+  logging.basicConfig(level=logging.DEBUG)
 
   parser = get_parser()
   args = parse_args(parser)
