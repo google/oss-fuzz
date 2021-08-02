@@ -20,8 +20,8 @@ import docker
 import test_helpers
 
 CONTAINER_NAME = 'example-container'
-config = test_helpers.create_run_config(
-    oss_fuzz_project_name='project', workspace='/workspace')
+config = test_helpers.create_run_config(oss_fuzz_project_name='project',
+                                        workspace='/workspace')
 config.workspace = '/workspace'
 WORKSPACE = config_utils.Workspace(config)
 SANITIZER = 'example-sanitizer'
