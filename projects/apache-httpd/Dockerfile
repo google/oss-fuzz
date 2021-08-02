@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +14,16 @@
 #
 ################################################################################
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-
-build_and_copy() {
-  pushd "$1"
-  cargo +nightly fuzz build --release --debug-assertions
-  for f in fuzz/fuzz_targets/*.rs
-  do
-    cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
-  done
-  popd
-}
-
-cd OpenSK
-
-# Main OpenSK fuzzing targets
-build_and_copy "."
-
-# persistent storage library
-build_and_copy libraries/persistent_store
-
-# CBOR crate
-build_and_copy libraries/cbor
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget libpcre3 \
+                                         libpcre3-dev uuid-dev pkg-config libtool-bin
+RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.4.1.tar.gz && \
+    tar -xf expat-2.4.1.tar.gz && \
+    cd expat-2.4.1 && \
+    ./configure && \
+    make && \
+    make install
+RUN svn checkout https://svn.apache.org/repos/asf/httpd/httpd/trunk/ httpd
+WORKDIR httpd
+COPY build.sh $SRC/
+COPY fuzz_*.c $SRC/
