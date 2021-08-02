@@ -58,7 +58,11 @@ def create_workspace(workspace_path='/workspace'):
 
 
 def patch_environ(testcase_obj, env=None, empty=False, runner=False):
-  """Patch environment."""
+  """Patch environment. |testcase_obj| is the unittest.TestCase that contains
+  tests. |env|, if specified, is a dictionary of environment variables to start
+  from. If |empty| is True then the new patched environment will be empty. If
+  |runner| is True then the necessary environment variables will be set to run
+  the scripts from base-runner."""
   if env is None:
     env = {}
 
@@ -70,10 +74,14 @@ def patch_environ(testcase_obj, env=None, empty=False, runner=False):
       del os.environ[key]
 
   if runner:
+    # Add the scripts for base-runner to the path since the wont be in
+    # /usr/local/bin on host machines during testing.
     base_runner_dir = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
     os.environ['PATH'] = (os.environ.get('PATH', '') + os.pathsep +
                           base_runner_dir)
     if 'GOPATH' not in os.environ:
+      # A GOPATH must be set or else the coverage script fails, even for getting
+      # the coverage of non-Go programs.
       os.environ['GOPATH'] = '/root/go'
 
 
