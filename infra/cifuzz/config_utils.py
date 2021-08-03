@@ -59,59 +59,99 @@ def _get_language():
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 
 
-class CiEnvGetter:
-  """Class for getting environment variables that are CI-specific."""
+class BaseCiEnvironment:
+  """Base class for CiEnvironment subclasses."""
 
-  # Mapping from generic variable names to GitHub-specific ones. This is used on
-  # GitHub to get the variable values from the environment.
-  GITHUB_ENV_VAR_MAPPING = {
-      'WORKSPACE': 'GITHUB_WORKSPACE',
-      'REPOSITORY': 'GITHUB_REPOSITORY',
-      'TOKEN': 'GITHUB_TOKEN',
-      'GIT_SHA': 'GITHUB_SHA'
-  }
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    raise NotImplementedError('Child class must implment method.')
 
-  def __init__(self, is_github):
-    self.is_github = is_github
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    raise NotImplementedError('Child class must implment method.')
 
-  def _map_variable(self, variable):
-    # Returns the ci-specific variable name if needed.
-    if self.is_github:
-      return self.GITHUB_ENV_VAR_MAPPING[variable]
-    return variable
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    raise NotImplementedError('Child class must implment method.')
 
-  def get(self, variable):
-    """Returns the value of variable in the environment."""
-    return os.getenv(self._map_variable(variable))
-
-  def get_project_repo_owner_and_name(self):
-    """Returns a tuple containing the project repo owner and the name of the
-    repo."""
-    variable = self._map_variable('REPOSITORY')
-    # On GitHub this includes owner and repo name.
-    repository = os.getenv(variable, '')
-    # Use os.path.split. When GITHUB_REPOSITORY just contains the name of the
-    # repo, this will return a tuple containing an empty string and the repo
-    # name. When GITHUB_REPOSITORY contains the repo owner followed by a slash
-    # and then the repo name, it will return a tuple containing the owner and
-    # repo name.
-    return os.path.split(repository)
-
-  def get_project_src_path(self, workspace):
+  @property
+  def project_src_path(self):
     """Returns the manually checked out path of the project's source if
-    specified or None. Returns the path relative to |workspace| if
-    |self.is_github| since on github the checkout will be relative to there."""
+    specified or None."""
+
     path = os.getenv('PROJECT_SRC_PATH')
     if not path:
       logging.debug('No PROJECT_SRC_PATH.')
       return path
 
     logging.debug('PROJECT_SRC_PATH set: %s.', path)
-    if self.is_github:
-      # On GitHub, they don't know the absolute path, it is relative to
-      # |workspace|.
-      return os.path.join(workspace, path)
     return path
+
+
+class GenericCiEnvironment(BaseCiEnvironment):
+  """CI Environment for generic CI systems."""
+
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    return os.getenv('WORKSPACE')
+
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    return os.getenv('GIT_SHA')
+
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    return os.getenv('TOKEN')
+
+  @property
+  def project_repo_owner_and_name(self):
+    """Returns a tuple containing the project repo owner and None."""
+    repository = os.getenv('REPOSITORY')
+    # Repo owner is a githubism.
+    return None, repository
+
+
+class GithubEnvironment(BaseCiEnvironment):
+  """CI environment for GitHub."""
+
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    return os.getenv('GITHUB_WORKSPACE')
+
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    return os.getenv('GITHUB_SHA')
+
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    return os.getenv('GITHUB_TOKEN')
+
+  @property
+  def project_src_path(self):
+    """Returns the manually checked out path of the project's source if
+    specified or None. The path returned is relative to |self.workspace| since
+    on github the checkout will be relative to there."""
+    # On GitHub, they don't know the absolute path, it is relative to
+    # |workspace|.
+    return os.path.join(self.workspace, super().project_src_path)
+
+  @property
+  def project_repo_owner_and_name(self):
+    """Returns a tuple containing the project repo owner and the name of the
+    repo."""
+    # On GitHub this includes owner and repo name.
+    repository = os.getenv('GITHUB_REPOSITORY')
+    # Use os.path.split to split owner from repo.
+    return os.path.split(repository)
 
 
 class ConfigError(Exception):
@@ -128,18 +168,18 @@ class BaseConfig:
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
     EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
-  def _get(self, variable):
-    return self._getter.get(variable)
-
   def __init__(self):
+    # Need to set these before calling self.platform.
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
-
-    self._getter = CiEnvGetter(self.is_github)
-    self.workspace = self._get('WORKSPACE')
+    logging.debug('Is github: %s.', self.is_github)
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
+
+    self._ci_env = _get_ci_environment(self.platform)
+    self.workspace = self._ci_env.workspace
+
     self.project_repo_owner, self.project_repo_name = (
-        self._getter.get_project_repo_owner_and_name())
+        self._ci_env.project_repo_owner_and_name)
 
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
@@ -148,10 +188,9 @@ class BaseConfig:
 
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.language = _get_language()
-    logging.debug('Is github: %s.', self.is_github)
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
-    self.github_token = self._get('TOKEN')
+    self.github_token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
@@ -203,6 +242,19 @@ class BaseConfig:
     return self.sanitizer == 'coverage'
 
 
+_CI_ENVIRONMENT_MAPPING = {
+    BaseConfig.Platform.EXTERNAL_GITHUB: GithubEnvironment,
+    BaseConfig.Platform.INTERNAL_GITHUB: GithubEnvironment,
+    BaseConfig.Platform.INTERNAL_GENERIC_CI: GenericCiEnvironment,
+    BaseConfig.Platform.EXTERNAL_GENERIC_CI: GenericCiEnvironment,
+}
+
+
+def _get_ci_environment(platform):
+  """Returns the CI environment object for |platform|."""
+  return _CI_ENVIRONMENT_MAPPING[platform]()
+
+
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
@@ -248,7 +300,7 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.commit_sha = self._get('GIT_SHA')
+    self.commit_sha = self._ci_env.git_sha
     event = os.getenv('GITHUB_EVENT_NAME')
 
     self.pr_ref = None
@@ -257,7 +309,7 @@ class BuildFuzzersConfig(BaseConfig):
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.project_src_path = self._getter.get_project_src_path(self.workspace)
+    self.project_src_path = self._ci_env.project_src_path
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')

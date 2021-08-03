@@ -142,37 +142,40 @@ class RunFuzzersConfigTest(unittest.TestCase):
 
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
-  """Tests for CiEnvGetter.get_project_repo_owner_and_name."""
+  """Tests for BaseCiEnv.get_project_repo_owner_and_name."""
 
   def setUp(self):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
-    self.getter = config_utils.CiEnvGetter(is_github=True)
+    self.github_env = config_utils.GithubEnv()
+    self.generic_ci_env = config_utils.GenericCiEnv()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(self.getter.get_project_repo_owner_and_name(), ('', ''))
+    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
+                     (None, None))
 
   def test_empty_repository(self):
     """Tests that the correct result is returned when repository is an empty
     string."""
-    os.environ['GITHUB_REPOSITORY'] = ''
-    self.assertEqual(self.getter.get_project_repo_owner_and_name(), ('', ''))
+    os.environ['REPOSITORY'] = ''
+    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
+                     (None, ''))
 
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(self.getter.get_project_repo_owner_and_name(),
+    self.assertEqual(self.github_env.project_repo_owner_and_name,
                      (self.repo_owner, self.repo_name))
 
   def test_nongithub_repository(self):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = self.repo_name
-    self.assertEqual(self.getter.get_project_repo_owner_and_name(),
-                     ('', self.repo_name))
+    os.environ['REPOSITORY'] = self.repo_name
+    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
+                     (None, self.repo_name))
 
 
 class GetSanitizerTest(unittest.TestCase):
