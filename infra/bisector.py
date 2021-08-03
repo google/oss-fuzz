@@ -142,13 +142,14 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
     return utils.execute(command + args)
 
   logging.info('Checking for crash')
-  out, err, return_code = helper.reproduce_impl(project_name,
-                                                False,
-                                                fuzz_target,
-                                                False, [], [],
-                                                test_case_path,
-                                                run_function=docker_run,
-                                                err_result=(None, None, None))
+  out, err, return_code = helper.reproduce_impl(
+      project=helper.Project(project_name),
+      fuzzer_name=fuzz_target,
+      valgrind=False, env_to_add=[],
+      fuzzer_args=[],
+      testcase_path=test_case_path,
+      run_function=docker_run,
+      err_result=(None, None, None))
   if return_code is None:
     return None
 

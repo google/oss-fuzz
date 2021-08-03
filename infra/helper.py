@@ -69,17 +69,23 @@ DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.cifuzz'
 
 
 class Project:
+  """Class representing a project that is in OSS-Fuzz or an external project
+  (ClusterFuzzLite user)."""
 
-  def __init__(self, project_name_or_path, is_external=False,
+  def __init__(self,
+               project_name_or_path,
+               is_external=False,
                build_integration_path='.cifuzz'):
-    self.is_external = True
+    self.is_external = is_external
     if self.is_external:
       self.name = os.path.dirname(project_name_or_path)
       self.path = project_name_or_path
-      self.build_integration_path =
+      self.build_integration_path = os.path.join(self.path,
+                                                 build_integration_path)
     else:
       self.name = project_name_or_path
-      self.path = path.join(OSS_FUZZ_DIR, 'projects', self.name)
+      self.path = os.path.join(OSS_FUZZ_DIR, 'projects', self.name)
+      self.build_integration_path = self.path
 
   @property
   def dockerfile_path(self):
@@ -89,6 +95,10 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
+    if self.is_external:
+      # TODO(metzman): Handle this properly.
+      return 'c++'
+
     project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
@@ -97,8 +107,7 @@ class Project:
         if match:
           return match.group(1)
 
-    if not self.is_external:
-      print('WARNING: language not specified in project.yaml.')
+    logging.warning('Language not specified in project.yaml.')
     return None
 
   @property
@@ -109,12 +118,12 @@ class Project:
   @property
   def work(self):
     """Returns the out dir for the project. Creates it if needed."""
-    return _get_project_build_subdir(project, 'work')
+    return _get_project_build_subdir(self.name, 'work')
 
   @property
   def corpus(self):
     """Returns the out dir for the project. Creates it if needed."""
-    return _get_project_build_subdir(project, 'corpus')
+    return _get_project_build_subdir(self.name, 'corpus')
 
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements
@@ -498,7 +507,7 @@ def _workdir_from_dockerfile(project):
   with open(project.dockerfile_path) as file_handle:
     lines = file_handle.readlines()
 
-  return workdir_from_lines(lines, default=os.path.join('/src', project_name))
+  return workdir_from_lines(lines, default=os.path.join('/src', project.name))
 
 
 def docker_run(run_args, print_output=True):
@@ -598,8 +607,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if not build_image_impl(project, project_src_path, build_integration_path):
     return False
 
-  project_work_dir = _get_work_dir(project)
-  project_language = project.language
 
   if clean:
     logging.info('Cleaning existing build artifacts.')
@@ -613,7 +620,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
     docker_run([
         '-v',
-        '%s:/work' % project_work_dir, '-t',
+        '%s:/work' % project.work, '-t',
         'gcr.io/oss-fuzz/%s' % project, '/bin/bash', '-c', 'rm -rf /work/*'
     ])
 
@@ -627,8 +634,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
   _add_oss_fuzz_ci_if_needed(env)
 
-  if args.project.language:
-    env.append('FUZZING_LANGUAGE=' + args.project.language)
+  if project.language:
+    env.append('FUZZING_LANGUAGE=' + project.language)
 
   if env_to_add:
     env += env_to_add
@@ -637,7 +644,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if sanitizer == 'memory':
     docker_run([
         '-v',
-        '%s:/work' % project_work_dir, 'gcr.io/oss-fuzz-base/msan-libs-builder',
+        '%s:/work' % project.work, 'gcr.io/oss-fuzz-base/msan-libs-builder',
         'bash', '-c', 'cp -r /msan /work'
     ])
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
@@ -663,7 +670,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   command += [
       '-v',
       '%s:/out' % project.out, '-v',
-      '%s:/work' % project_work_dir, '-t',
+      '%s:/work' % project.work, '-t',
       'gcr.io/oss-fuzz/%s' % project
   ]
 
@@ -675,9 +682,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   # Patch MSan builds to use instrumented shared libraries.
   if sanitizer == 'memory':
     docker_run(
-        ['-v',
-         '%s:/out' % project.out, '-v',
-         '%s:/work' % project_work_dir] + _env_to_docker_args(env) + [
+        ['-v', '%s:/out' % project.out, '-v',
+         '%s:/work' % project.work] + _env_to_docker_args(env) + [
              'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
              'patch_build.py', '/out'
          ])
@@ -959,14 +965,13 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(args.project, bool(args.project_src_path),
+  return reproduce_impl(args.project,
                         args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
     project,
-    is_external,
     fuzzer_name,
     valgrind,
     env_to_add,
@@ -1052,7 +1057,7 @@ def _template_project_file(filename, template, template_args, directory):
 
 def generate(args):
   """Generates empty project files."""
-  return _generate_impl(args.project, args.build_integration_path)
+  return _generate_impl(args.project)
 
 
 def _get_current_datetime():
@@ -1060,7 +1065,7 @@ def _get_current_datetime():
   return datetime.datetime.now()
 
 
-def _generate_impl(project, build_integration_path):
+def _generate_impl(project):
   """Implementation of generate(). Useful for testing."""
   if project.is_external:
     # External project.
@@ -1075,7 +1080,7 @@ def _generate_impl(project, build_integration_path):
   if not _create_build_integration_directory(directory):
     return False
 
-  print('Writing new files to', directory)
+  logging.info('Writing new files to: %s.', directory)
 
   template_args = {
       'project_name': project,
@@ -1121,7 +1126,7 @@ def shell(args):
   run_args.extend([
       '-v',
       '%s:/out' % out_dir, '-v',
-      '%s:/work' % _get_work_dir(args.project), '-t',
+      '%s:/work' % args.project.work, '-t',
       'gcr.io/%s/%s' % (image_project, args.project), '/bin/bash'
   ])
 

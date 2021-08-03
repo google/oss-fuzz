@@ -223,7 +223,8 @@ def build_fuzzers_from_commit(commit,
           post_checkout_step,
       ])
 
-    result = helper.build_fuzzers_impl(project_name=build_data.project_name,
+    project = helper.Project(build_data.project_name)
+    result = helper.build_fuzzers_impl(project=project,
                                        project_src_path=None,
                                        build_integration_path=None,
                                        clean=True,

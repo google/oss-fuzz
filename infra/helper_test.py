@@ -114,13 +114,13 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
               return_value=datetime.datetime(year=2021, month=1, day=1))
   def test_generate_oss_fuzz_project(self, _):
     """Tests that the correct files are generated for an OSS-Fuzz project."""
-    helper._generate_impl(self.PROJECT_NAME, None)
+    helper._generate_impl(self.PROJECT_NAME)
     self._verify_templated_files(templates.TEMPLATES,
                                  os.path.join('projects', self.PROJECT_NAME))
 
   def test_generate_external_project(self):
     """Tests that the correct files are generated for a non-OSS-Fuzz project."""
     build_integration_path = '/project-src/build-integration'
-    helper._generate_impl(self.PROJECT_NAME, build_integration_path)
+    helper._generate_impl(self.PROJECT_NAME)
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
                                  build_integration_path)
