@@ -403,7 +403,12 @@ def run_nonbuild_tests(parallel):
     command.extend(['-n', 'auto'])
   command += list(relevant_dirs)
   print('Running non-build tests.')
-  return subprocess.run(command, check=False).returncode == 0
+
+  # TODO(metzman): Get rid of this once config_utils stops using it.
+  env = os.environ.copy()
+  env['CIFUZZ_TEST'] = '1'
+
+  return subprocess.run(command, check=False, env=env).returncode == 0
 
 
 def run_tests(_=None, parallel=False, skip_build_tests=False):

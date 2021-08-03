@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y btrfs-progs libc-dev pkg-config libseccomp-dev gcc wget
 RUN git clone --depth 1 https://github.com/containerd/containerd
 COPY build.sh $SRC/
 WORKDIR $SRC/containerd

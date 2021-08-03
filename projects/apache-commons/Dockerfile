@@ -52,6 +52,9 @@ RUN zip -uj $SRC/CompressTarFuzzer_seed_corpus.zip commons-compress/src/test/res
 # Imaging
 RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-imaging.git
 
+# Geometry
+RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-geometry.git
+
 # Copy build script and all fuzzers
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/

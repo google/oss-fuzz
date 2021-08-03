@@ -18,15 +18,24 @@
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-PROJECTS="compress imaging"
+PROJECTS="compress imaging geometry"
+GEOMETRY_MODULE="commons-geometry-io-euclidean"
 
 for project in $PROJECTS; do
   cd $SRC/commons-$project
   MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Djdk.version=15"
-  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
   -Dexpression=project.version -q -DforceStdout)
-  cp "target/commons-$project-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+
+  if [ $project = 'geometry' ]; then
+    # commons-geometry is a multi-module project and requires special handling in order
+    # to build and extract the proper module (commons-geometry-io-euclidean)
+    $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -am -pl $GEOMETRY_MODULE $MAVEN_ARGS
+    cp "$GEOMETRY_MODULE/target/$GEOMETRY_MODULE-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+  else
+    $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+    cp "target/commons-$project-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+  fi
 
   ALL_JARS="commons-$project.jar"
 

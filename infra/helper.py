@@ -22,6 +22,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import argparse
 import datetime
 import errno
+import logging
 import os
 import pipes
 import re
@@ -122,6 +123,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   os.chdir(OSS_FUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
+
+  logging.basicConfig(level=logging.INFO)
 
   parser = get_parser()
   args = parse_args(parser)
@@ -351,7 +354,7 @@ def is_base_image(image_name):
 def check_project_exists(project):
   """Checks if a project exists."""
   if not os.path.exists(project.name):
-    print(project_name, 'does not exist', file=sys.stderr)
+    logging.error('%s does not exist.', project.name)
     return False
 
   return True
@@ -368,9 +371,8 @@ def _check_fuzzer_exists(project, fuzzer_name):
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
-    print(fuzzer_name,
-          'does not seem to exist. Please run build_fuzzers first.',
-          file=sys.stderr)
+    logging.error('%s does not seem to exist. Please run build_fuzzers first.',
+                  fuzzer_name)
     return False
 
   return True
@@ -509,7 +511,7 @@ def docker_run(run_args, print_output=True):
 
   command.extend(run_args)
 
-  print('Running:', _get_command_string(command))
+  logging.info('Running: %s.', _get_command_string(command))
   stdout = None
   if not print_output:
     stdout = open(os.devnull, 'w')
@@ -526,12 +528,12 @@ def docker_build(build_args):
   """Calls `docker build`."""
   command = ['docker', 'build']
   command.extend(build_args)
-  print('Running:', _get_command_string(command))
+  logging.info('Running: %s.', _get_command_string(command))
 
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
-    print('docker build failed.', file=sys.stderr)
+    logging.error('Docker build failed.')
     return False
 
   return True
@@ -540,12 +542,12 @@ def docker_build(build_args):
 def docker_pull(image):
   """Call `docker pull`."""
   command = ['docker', 'pull', image]
-  print('Running:', _get_command_string(command))
+  logging.info('Running: %s', _get_command_string(command))
 
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
-    print('docker pull failed.', file=sys.stderr)
+    logging.error('Docker pull failed.')
     return False
 
   return True
@@ -554,7 +556,7 @@ def docker_pull(image):
 def build_image(args):
   """Builds docker image."""
   if args.pull and args.no_pull:
-    print('Incompatible arguments --pull and --no-pull.')
+    logging.error('Incompatible arguments --pull and --no-pull.')
     return False
 
   if args.pull:
@@ -566,9 +568,9 @@ def build_image(args):
     pull = y_or_n.lower() == 'y'
 
   if pull:
-    print('Pulling latest base images...')
+    logging.error('Pulling latest base images...')
   else:
-    print('Using cached base images...')
+    logging.error('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
   if build_image_impl(args.project,
@@ -600,7 +602,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   project_language = project.language
 
   if clean:
-    print('Cleaning existing build artifacts.')
+    logging.info('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
     docker_run([
@@ -616,7 +618,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     ])
 
   else:
-    print('Keeping existing build artifacts as-is (if any).')
+    logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
@@ -650,8 +652,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
     else:
       if workdir == '/src':
-        print('Cannot use local checkout with "WORKDIR: /src".',
-              file=sys.stderr)
+        logging.error('Cannot use local checkout with "WORKDIR: /src".')
         return False
 
       command += [
@@ -668,7 +669,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
   result = docker_run(command)
   if not result:
-    print('Building fuzzers failed.', file=sys.stderr)
+    logging.error('Building fuzzers failed.')
     return False
 
   # Patch MSan builds to use instrumented shared libraries.
@@ -716,7 +717,8 @@ def check_build(args):
 
   fuzzing_language = args.project.language
   if not fuzzing_language:
-    print('WARNING: language not specified in project.yaml. Defaulting to C++.')
+    logging.warning(
+        'Language not specified in project.yaml. Defaulting to C++.')
     fuzzing_language = 'c++'
 
   env = [
@@ -742,9 +744,9 @@ def check_build(args):
 
   result = docker_run(run_args)
   if result:
-    print('Check build passed.')
+    logging.info('Check build passed.')
   else:
-    print('Check build failed.')
+    logging.error('Check build failed.')
 
   return result
 
@@ -789,8 +791,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
 
   # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
   if corpus_listing.returncode:
-    print('WARNING: corpus for {0} not found:\n'.format(fuzz_target),
-          file=sys.stderr)
+    logging.warning('Corpus for %s not found:\n', fuzz_target)
     return
 
   if output:
@@ -819,10 +820,8 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print(
-        'ERROR: gsutil not found. Please install it from '
-        'https://cloud.google.com/storage/docs/gsutil_install',
-        file=sys.stderr)
+    logging.error('gsutil not found. Please install it from '
+                  'https://cloud.google.com/storage/docs/gsutil_install')
     return False
 
   if args.fuzz_target:
@@ -837,12 +836,12 @@ def download_corpora(args):
       _get_latest_corpus(args.project, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
-      print('ERROR: corpus download for %s failed: %s' %
-            (fuzz_target, str(error)),
-            file=sys.stderr)
+      logging.error('Corpus download for %s failed: %s.', fuzz_target,
+                    str(error))
       return False
 
-  print('Downloading corpora for %s project to %s' % (args.project, corpus_dir))
+  logging.info('Downloading corpora for %s project to %s.', args.project.name,
+               corpus_dir)
   thread_pool = ThreadPool()
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
@@ -850,20 +849,18 @@ def download_corpora(args):
 def coverage(args):
   """Generates code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
-    print(
-        'ERROR: --corpus-dir requires specifying a particular fuzz target '
-        'using --fuzz-target',
-        file=sys.stderr)
+    logging.error(
+        '--corpus-dir requires specifying a particular fuzz target using '
+        '--fuzz-target')
     return False
 
   if not args.project.exists:
     return False
 
   if args.project.language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-    print(
-        'ERROR: Project is written in %s, coverage for it is not supported yet.'
-        % args.project.language,
-        file=sys.stderr)
+    logging.error(
+        'Project is written in %s, coverage for it is not supported yet.',
+        args.project.language)
     return False
 
   if (not args.no_corpus_download and not args.corpus_dir and
@@ -890,8 +887,8 @@ def coverage(args):
 
   if args.corpus_dir:
     if not os.path.exists(args.corpus_dir):
-      print('ERROR: the path provided in --corpus-dir argument does not exist',
-            file=sys.stderr)
+      logging.error('The path provided in --corpus-dir argument does not '
+                    'exist.')
       return False
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, args.fuzz_target)])
@@ -911,9 +908,9 @@ def coverage(args):
 
   result = docker_run(run_args)
   if result:
-    print('Successfully generated clang code coverage report.')
+    logging.info('Successfully generated clang code coverage report.')
   else:
-    print('Failed to generate clang code coverage report.')
+    logging.error('Failed to generate clang code coverage report.')
 
   return result
 
@@ -939,8 +936,7 @@ def run_fuzzer(args):
 
   if args.corpus_dir:
     if not os.path.exists(args.corpus_dir):
-      print('ERROR: the path provided in --corpus-dir argument does not exist',
-            file=sys.stderr)
+      logging.error('The path provided in --corpus-dir argument does not exist')
       return False
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend([
@@ -1017,13 +1013,13 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
 def _validate_project_name(project_name):
   """Validates |project_name| is a valid OSS-Fuzz project name."""
   if len(project_name) > MAX_PROJECT_NAME_LENGTH:
-    print('Project name needs to be less than or equal to %d characters.' %
-          MAX_PROJECT_NAME_LENGTH,
-          file=sys.stderr)
+    logging.error(
+        'Project name needs to be less than or equal to %d characters.',
+        MAX_PROJECT_NAME_LENGTH)
     return False
 
   if not VALID_PROJECT_NAME_REGEX.match(project_name):
-    print('Invalid project name.', file=sys.stderr)
+    logging.info('Invalid project name: %s.', project_name)
     return False
 
   return True
@@ -1037,7 +1033,7 @@ def _create_build_integration_directory(directory):
   except OSError as error:
     if error.errno != errno.EEXIST:
       raise
-    print(directory, 'already exists.', file=sys.stderr)
+    logging.error('%s already exists.', directory)
     return False
   return True
 
