@@ -38,7 +38,7 @@ class ShellTest(unittest.TestCase):
     parser = helper.get_parser()
     args = helper.parse_args(parser, unparsed_args)
     args.sanitizer = 'address'
-    result = helper.shell(args)
+    result = helper.shell(helper.Project(image_name), args)
     mocked_build_image_impl.assert_called_with(image_name, None, None)
     self.assertTrue(result)
 
@@ -74,8 +74,8 @@ class BuildImageImplTest(unittest.TestCase):
   def test_oss_fuzz_project(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with an OSS-Fuzz
     project."""
-    image_name = 'example'
-    helper.build_image_impl(image_name)
+    project_name = 'example'
+    helper.build_image_impl(helper.Project(project_name))
     mocked_docker_build.assert_called_with(
         ['-t', 'gcr.io/oss-fuzz/example', 'projects/example'])
 
@@ -83,14 +83,15 @@ class BuildImageImplTest(unittest.TestCase):
   def test_external_project(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with a non-OSS-Fuzz
     project."""
-    image_name = 'example'
     project_src_path = '/project-src'
-    build_integration_path = '/project-src/build-integration'
-    helper.build_image_impl(image_name, project_src_path,
-                            build_integration_path)
+    build_integration_path = '/example/build-integration'
+    project = helper.Project(project_src_path,
+                             is_external=True,
+                             build_integration_path=build_integration_path)
+    helper.build_image_impl(project)
     mocked_docker_build.assert_called_with([
         '-t', 'gcr.io/oss-fuzz/example', '--file',
-        '/project-src/build-integration/Dockerfile', '/project-src'
+        '/project-src/build-integration/Dockerfile', project_src_path
     ])
 
 

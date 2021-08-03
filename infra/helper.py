@@ -75,7 +75,7 @@ class Project:
   def __init__(self,
                project_name_or_path,
                is_external=False,
-               build_integration_path='.cifuzz'):
+               build_integration_path=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH):
     self.is_external = is_external
     if self.is_external:
       self.name = os.path.dirname(project_name_or_path)
@@ -190,14 +190,7 @@ def parse_args(parser, args=None):
   |args.build_integration_path| to have correct default behavior."""
   # Use default argument None for args so that in production, argparse does its
   # normal behavior, but unittesting is easier.
-  parsed_args = parser.parse_args(args)
-
-  if (parsed_args.project_src_path and
-      parsed_args.build_integration_path is None):
-    parsed_args.build_integration_path = os.path.join(
-        parsed_args.project_src_path, DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
-
-  return parsed_args
+  return parser.parse_args(args)
 
 
 def _add_external_project_args(parser):
@@ -211,9 +204,7 @@ def _add_external_project_args(parser):
                             'source code.'),
                       default=None)
 
-  parser.add_argument('--external',
-                      help='Is project external?',
-                      default=False)
+  parser.add_argument('--external', help='Is project external?', default=False)
 
 
 def get_parser():  # pylint: disable=too-many-statements
@@ -462,8 +453,8 @@ def build_image_impl(project, cache=True, pull=False):
     docker_file_path = None
   elif project.is_external:
     # External projects need to use the repo root as the build directory.
-    docker_file_path = os.path.join(
-        project.build_integration_path, 'Dockerfile')
+    docker_file_path = os.path.join(project.build_integration_path,
+                                    'Dockerfile')
     docker_build_dir = project.path
     image_project = 'oss-fuzz'
   else:
@@ -591,9 +582,7 @@ def build_image(project, args):
     logging.error('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(project,
-                      cache=args.cache,
-                      pull=pull):
+  if build_image_impl(project, cache=args.cache, pull=pull):
     return True
 
   return False
@@ -611,7 +600,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   """Builds fuzzers."""
   if not build_image_impl(project):
     return False
-
 
   if clean:
     logging.info('Cleaning existing build artifacts.')
@@ -720,8 +708,7 @@ def check_build(project, args):
   if not check_project_exists(project):
     return False
 
-  if (args.fuzzer_name and
-      not _check_fuzzer_exists(project, args.fuzzer_name)):
+  if (args.fuzzer_name and not _check_fuzzer_exists(project, args.fuzzer_name)):
     return False
 
   fuzzing_language = project.language
@@ -742,8 +729,7 @@ def check_build(project, args):
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % project.out, '-t',
-      'gcr.io/oss-fuzz-base/base-runner'
+      '%s:/out' % project.out, '-t', 'gcr.io/oss-fuzz-base/base-runner'
   ]
 
   if args.fuzzer_name:
@@ -906,7 +892,7 @@ def coverage(project, args):
 
   run_args.extend([
       '-v',
-      '%s:/out' % args.out),
+      '%s:/out' % args.out,
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
@@ -968,8 +954,7 @@ def run_fuzzer(project, args):
 
 def reproduce(project, args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(project,
-                        args.fuzzer_name, args.valgrind, args.e,
+  return reproduce_impl(project, args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
 
