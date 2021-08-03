@@ -324,8 +324,8 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   @mock.patch('run_fuzzers.BaseFuzzTargetRunner.run_fuzz_targets',
               return_value=False)
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
-  def test_run_fuzz_targets_upload_crashes_and_builds(
-      self, mocked_upload_crashes,  _):
+  def test_run_fuzz_targets_upload_crashes_and_builds(self,
+                                                      mocked_upload_crashes, _):
     """Tests that run_fuzz_targets uploads crashes and builds correctly."""
     runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
     # TODO(metzman): Don't rely on this failing gracefully.
