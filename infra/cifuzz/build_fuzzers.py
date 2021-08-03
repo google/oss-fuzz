@@ -20,7 +20,6 @@ import sys
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
-import config_utils
 import continuous_integration
 import docker
 import workspace_utils

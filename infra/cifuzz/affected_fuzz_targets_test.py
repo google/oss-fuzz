@@ -22,7 +22,6 @@ import parameterized
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
-import config_utils
 import test_helpers
 import workspace_utils
 

@@ -23,7 +23,6 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
-import config_utils
 import fuzz_target
 import test_helpers
 import workspace_utils

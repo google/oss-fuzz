@@ -15,6 +15,7 @@
 
 import os
 
+
 class Workspace:
   """Class representing the workspace directory."""
 

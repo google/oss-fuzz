@@ -20,7 +20,6 @@ import sys
 import time
 
 import clusterfuzz_deployment
-import config_utils
 import fuzz_target
 import generate_coverage_report
 import stack_parser
