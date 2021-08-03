@@ -15,6 +15,7 @@
 docker image. This cannot depend on any CIFuzz code or third party packages."""
 import os
 import subprocess
+import sys
 import tempfile
 import logging
 
@@ -83,7 +84,9 @@ def main():
       docker_run('run_fuzzers', workdir, project_src_path)
     except subprocess.CalledProcessError:
       logging.error('run_fuzzers failed.')
+      return 1
+    return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
