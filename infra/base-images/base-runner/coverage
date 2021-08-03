@@ -61,6 +61,8 @@ objects=""
 # Number of CPUs available, this is needed for running tests in parallel.
 NPROC=$(nproc)
 
+CORPUS_DIR=${CORPUS_DIR:-"/corpus"}
+
 function run_fuzz_target {
   local target=$1
 
@@ -69,7 +71,7 @@ function run_fuzz_target {
   local profraw_file="$DUMPS_DIR/$target.%1m.profraw"
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
@@ -122,7 +124,7 @@ function run_go_fuzz_target {
   local target=$1
 
   echo "Running go target $target"
-  export FUZZ_CORPUS_DIR="/corpus/${target}/"
+  export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
   $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   # translate from golangish paths to current absolute paths
@@ -138,7 +140,7 @@ function run_java_fuzz_target {
   local exec_file="$DUMPS_DIR/$target.exec"
   local class_dump_dir="$DUMPS_DIR/${target}_classes/"
   mkdir "$class_dump_dir"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"

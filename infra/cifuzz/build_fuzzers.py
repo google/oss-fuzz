@@ -20,6 +20,7 @@ import sys
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
+import config_utils
 import continuous_integration
 import docker
 
@@ -51,7 +52,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.workspace = docker.Workspace(config)
+    self.workspace = config_utils.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
     self.clusterfuzz_deployment = (
@@ -89,15 +90,13 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
-        docker.get_project_image_name(self.config.project_name),
+        docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
     ])
-    rm_path = os.path.join(self.image_repo_path, '*')
-    image_src_path = os.path.dirname(self.image_repo_path)
-    bash_command = (f'rm -rf {rm_path} && cp -r {self.host_repo_path} '
-                    f'{image_src_path} && compile')
-    docker_args.append(bash_command)
+    build_command = self.ci_system.get_build_command(self.host_repo_path,
+                                                     self.image_repo_path)
+    docker_args.append(build_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
     # TODO(metzman): Stop using helper.docker_run so we can get rid of
@@ -189,11 +188,14 @@ def check_fuzzer_build(workspace,
   """Checks the integrity of the built fuzzers.
 
   Args:
-    out_dir: The directory containing the fuzzer binaries.
+    workspace: The workspace used by CIFuzz.
     sanitizer: The sanitizer the fuzzers are built with.
+    language: The programming language the fuzzers are written in.
+    allowed_broken_targets_percentage (optional): A custom percentage of broken
+        targets to allow.
 
   Returns:
-    True if fuzzers are correct.
+    True if fuzzers pass OSS-Fuzz's build check.
   """
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)

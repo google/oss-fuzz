@@ -195,6 +195,10 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
         env.append('ARCHITECTURE=' + architecture)
         env.append('FUZZING_LANGUAGE=' + language)
 
+        # Set HOME so that it doesn't point to a persisted volume (see
+        # https://github.com/google/oss-fuzz/issues/6035).
+        env.append('HOME=/root')
+
         workdir = workdir_from_dockerfile(dockerfile_lines)
         if not workdir:
           workdir = '/src'
@@ -224,9 +228,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    # Reset HOME so that it doesn't point to a persisted volume
-                    # (see https://github.com/google/oss-fuzz/issues/6035).
-                    ('export HOME=/root; rm -r /out && cd /src && cd {workdir} '
+                    ('rm -r /out && cd /src && cd {workdir} '
                      '&& mkdir -p {out} && compile || (echo "{failure_msg}" '
                      '&& false)').format(workdir=workdir,
                                          out=out,

@@ -69,10 +69,11 @@ class BuildFuzzersTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       build_fuzzers.build_fuzzers(
-          test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
-                                           project_repo_name=EXAMPLE_PROJECT,
-                                           workspace=tmp_dir,
-                                           pr_ref='refs/pull/1757/merge'))
+          test_helpers.create_build_config(
+              oss_fuzz_project_name=EXAMPLE_PROJECT,
+              project_repo_name=EXAMPLE_PROJECT,
+              workspace=tmp_dir,
+              pr_ref='refs/pull/1757/merge'))
 
       docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
@@ -99,7 +100,7 @@ class InternalGithubBuildTest(unittest.TestCase):
   def _create_builder(self, tmp_dir):
     """Creates an InternalGithubBuilder and returns it."""
     config = test_helpers.create_build_config(
-        project_name=self.PROJECT_NAME,
+        oss_fuzz_project_name=self.PROJECT_NAME,
         project_repo_name=self.PROJECT_REPO_NAME,
         workspace=tmp_dir,
         sanitizer=self.SANITIZER,
@@ -134,24 +135,23 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
   def setUp(self):
-    self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    self.workspace = self.tmp_dir_obj.name
+    self.temp_dir_obj = tempfile.TemporaryDirectory()
+    self.workspace = self.temp_dir_obj.name
     self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
   def tearDown(self):
-    self.tmp_dir_obj.cleanup()
+    self.temp_dir_obj.cleanup()
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
-    project_name = 'external-project'
+    project_repo_name = 'external-project'
     build_integration_path = 'fuzzer-build-integration'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     # This test is dependant on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     config = test_helpers.create_build_config(
-        project_name=project_name,
-        project_repo_name=project_name,
+        project_repo_name=project_repo_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
         git_url=git_url,
@@ -164,18 +164,17 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_external_generic_project(self):
     """Tests building fuzzers from an external project not on Github."""
-    project_name = 'cifuzz-external-example'
+    project_repo_name = 'cifuzz-external-example'
     build_integration_path = 'fuzzer-build-integration'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     # This test is dependant on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     manager = repo_manager.clone_repo_and_get_manager(
         'https://github.com/jonathanmetzman/cifuzz-external-example',
-        self.tmp_dir_obj.name)
+        self.temp_dir_obj.name)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
-        project_name=project_name,
-        project_repo_name=project_name,
+        project_repo_name=project_repo_name,
         workspace=self.workspace,
         build_integration_path=build_integration_path,
         git_url=git_url,
@@ -189,7 +188,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def test_valid_commit(self):
     """Tests building fuzzers with valid inputs."""
     config = test_helpers.create_build_config(
-        project_name=EXAMPLE_PROJECT,
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
@@ -201,31 +200,32 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_valid_pull_request(self):
     """Tests building fuzzers with valid pull request."""
-    # TODO(metzman): What happens when this branch closes?
-    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
-                                              project_repo_name='oss-fuzz',
-                                              workspace=self.workspace,
-                                              pr_ref='refs/pull/1757/merge',
-                                              base_ref='master',
-                                              is_github=True)
+    config = test_helpers.create_build_config(
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        project_repo_name='oss-fuzz',
+        workspace=self.workspace,
+        pr_ref='refs/pull/1757/merge',
+        base_ref='master',
+        is_github=True)
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Tests building fuzzers with invalid pull request."""
-    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
-                                              project_repo_name='oss-fuzz',
-                                              workspace=self.workspace,
-                                              pr_ref='ref-1/merge',
-                                              base_ref='master',
-                                              is_github=True)
+    config = test_helpers.create_build_config(
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        project_repo_name='oss-fuzz',
+        workspace=self.workspace,
+        pr_ref='ref-1/merge',
+        base_ref='master',
+        is_github=True)
     self.assertTrue(build_fuzzers.build_fuzzers(config))
 
-  def test_invalid_project_name(self):
+  def test_invalid_oss_fuzz_project_name(self):
     """Tests building fuzzers with invalid project name."""
     config = test_helpers.create_build_config(
-        project_name='not_a_valid_project',
+        oss_fuzz_project_name='not_a_valid_project',
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
@@ -234,7 +234,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def test_invalid_repo_name(self):
     """Tests building fuzzers with invalid repo name."""
     config = test_helpers.create_build_config(
-        project_name=EXAMPLE_PROJECT,
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='not-real-repo',
         workspace=self.workspace,
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
@@ -242,18 +242,19 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_commit_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
-    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
-                                              project_repo_name='oss-fuzz',
-                                              workspace=self.workspace,
-                                              commit_sha='',
-                                              is_github=True)
+    config = test_helpers.create_build_config(
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        project_repo_name='oss-fuzz',
+        workspace=self.workspace,
+        commit_sha='',
+        is_github=True)
     with self.assertRaises(AssertionError):
       build_fuzzers.build_fuzzers(config)
 
   def test_invalid_workspace(self):
     """Tests building fuzzers with invalid workspace."""
     config = test_helpers.create_build_config(
-        project_name=EXAMPLE_PROJECT,
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=os.path.join(self.workspace, 'not', 'a', 'dir'),
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
@@ -267,13 +268,13 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   LANGUAGE = 'c++'
 
   def setUp(self):
-    self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    workspace_path = os.path.join(self.tmp_dir_obj.name, 'workspace')
+    self.temp_dir_obj = tempfile.TemporaryDirectory()
+    workspace_path = os.path.join(self.temp_dir_obj.name, 'workspace')
     self.workspace = test_helpers.create_workspace(workspace_path)
     shutil.copytree(TEST_DATA_PATH, workspace_path)
 
   def tearDown(self):
-    self.tmp_dir_obj.cleanup()
+    self.temp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
@@ -318,11 +319,12 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
 
   @classmethod
   def _create_config(cls, tmp_dir, sanitizer):
-    return test_helpers.create_build_config(project_name=cls.PROJECT_NAME,
-                                            project_repo_name=cls.PROJECT_NAME,
-                                            workspace=tmp_dir,
-                                            pr_ref=cls.PR_REF,
-                                            sanitizer=sanitizer)
+    return test_helpers.create_build_config(
+        oss_fuzz_project_name=cls.PROJECT_NAME,
+        project_repo_name=cls.PROJECT_NAME,
+        workspace=tmp_dir,
+        pr_ref=cls.PR_REF,
+        sanitizer=sanitizer)
 
   @parameterized.parameterized.expand([('memory',), ('undefined',)])
   def test_valid_project_curl(self, sanitizer):

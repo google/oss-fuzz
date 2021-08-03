@@ -13,5 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#github.com/go-redis/redis/fuzz is not a module, so needs local build
-compile_go_fuzzer ./fuzz Fuzz fuzz gofuzz
+compile_go_fuzzer github.com/go-redis/redis/v8/fuzz Fuzz fuzz gofuzz

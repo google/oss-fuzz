@@ -6,6 +6,7 @@ auto_ccs:
   - cuong@orijtech.com
   - tess@interchain.io
   - tychoish@interchain.io
+  - william@interchain.io
 language: go
 fuzzing_engines:
   - libfuzzer

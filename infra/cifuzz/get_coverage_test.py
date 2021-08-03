@@ -17,6 +17,7 @@ import json
 import unittest
 from unittest import mock
 
+from pyfakefs import fake_filesystem_unittest
 import pytest
 
 import get_coverage
@@ -69,8 +70,8 @@ class GetOssFuzzFuzzerStatsDirUrlTest(unittest.TestCase):
         get_coverage._get_oss_fuzz_fuzzer_stats_dir_url('not-a-proj'))
 
 
-class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
-  """Tests OSSFuzzCoverage.get_target_coverage_report."""
+class OSSFuzzCoverageGetTargetCoverageTest(unittest.TestCase):
+  """Tests OSSFuzzCoverage.get_target_coverage."""
 
   def setUp(self):
     with mock.patch('get_coverage._get_oss_fuzz_latest_cov_report_info',
@@ -81,7 +82,7 @@ class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
   @mock.patch('http_utils.get_json_from_url', return_value={})
   def test_valid_target(self, mocked_get_json_from_url):
     """Tests that a target's coverage report can be downloaded and parsed."""
-    self.oss_fuzz_coverage.get_target_coverage_report(FUZZ_TARGET)
+    self.oss_fuzz_coverage.get_target_coverage(FUZZ_TARGET)
     (url,), _ = mocked_get_json_from_url.call_args
     self.assertEqual(
         'https://storage.googleapis.com/oss-fuzz-coverage/'
@@ -90,7 +91,7 @@ class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
   def test_invalid_target(self):
     """Tests that passing an invalid target coverage report returns None."""
     self.assertIsNone(
-        self.oss_fuzz_coverage.get_target_coverage_report(INVALID_TARGET))
+        self.oss_fuzz_coverage.get_target_coverage(INVALID_TARGET))
 
   @mock.patch('get_coverage._get_oss_fuzz_latest_cov_report_info',
               return_value=None)
@@ -98,6 +99,23 @@ class OSSFuzzCoverageGetTargetCoverageReportTest(unittest.TestCase):
     """Tests an invalid project JSON results in None being returned."""
     with pytest.raises(get_coverage.CoverageError):
       get_coverage.OSSFuzzCoverage(REPO_PATH, PROJECT_NAME)
+
+
+def _get_expected_curl_covered_file_list():
+  """Returns the expected covered file list for
+  FUZZ_TARGET_COV_JSON_FILENAME."""
+  curl_files_list_path = os.path.join(TEST_DATA_PATH,
+                                      'example_curl_file_list.json')
+  with open(curl_files_list_path) as file_handle:
+    return json.loads(file_handle.read())
+
+
+def _get_example_curl_coverage():
+  """Returns the contents of the fuzzer stats JSON file for
+  FUZZ_TARGET_COV_JSON_FILENAME."""
+  with open(os.path.join(TEST_DATA_PATH,
+                         FUZZ_TARGET_COV_JSON_FILENAME)) as file_handle:
+    return json.loads(file_handle.read())
 
 
 class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
@@ -111,25 +129,46 @@ class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
-    with open(os.path.join(TEST_DATA_PATH,
-                           FUZZ_TARGET_COV_JSON_FILENAME)) as file_handle:
-      fuzzer_cov_info = json.loads(file_handle.read())
-
-    with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage_report',
-                    return_value=fuzzer_cov_info):
+    fuzzer_cov_data = _get_example_curl_coverage()
+    with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
+                    return_value=fuzzer_cov_data):
       file_list = self.oss_fuzz_coverage.get_files_covered_by_target(
           FUZZ_TARGET)
 
-    curl_files_list_path = os.path.join(TEST_DATA_PATH,
-                                        'example_curl_file_list.json')
-    with open(curl_files_list_path) as file_handle:
-      expected_file_list = json.loads(file_handle.read())
+    expected_file_list = _get_expected_curl_covered_file_list()
     self.assertCountEqual(file_list, expected_file_list)
 
   def test_invalid_target(self):
     """Tests passing invalid fuzz target returns None."""
     self.assertIsNone(
         self.oss_fuzz_coverage.get_files_covered_by_target(INVALID_TARGET))
+
+
+class FilesystemCoverageGetFilesCoveredByTargetTest(
+    fake_filesystem_unittest.TestCase):
+  """Tests FilesystemCoverage.get_files_covered_by_target."""
+
+  def setUp(self):
+    _fuzzer_cov_data = _get_example_curl_coverage()
+    self._expected_file_list = _get_expected_curl_covered_file_list()
+    self.coverage_path = '/coverage'
+    self.filesystem_coverage = get_coverage.FilesystemCoverage(
+        REPO_PATH, self.coverage_path)
+    self.setUpPyfakefs()
+    self.fs.create_file(os.path.join(self.coverage_path, 'fuzzer_stats',
+                                     FUZZ_TARGET + '.json'),
+                        contents=json.dumps(_fuzzer_cov_data))
+
+  def test_valid_target(self):
+    """Tests that covered files can be retrieved from a coverage report."""
+    file_list = self.filesystem_coverage.get_files_covered_by_target(
+        FUZZ_TARGET)
+    self.assertCountEqual(file_list, self._expected_file_list)
+
+  def test_invalid_target(self):
+    """Tests passing invalid fuzz target returns None."""
+    self.assertIsNone(
+        self.filesystem_coverage.get_files_covered_by_target(INVALID_TARGET))
 
 
 class IsFileCoveredTest(unittest.TestCase):

@@ -19,9 +19,6 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: false
   run-fuzzers-mode:
     description: |
       The mode to run the fuzzers with ("ci" or "batch").
@@ -38,6 +35,10 @@ inputs:
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
     required: false
+  report-unreproducible-crashes:
+    description: 'If True, then unreproducible crashes will be reported by CIFuzz.'
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -48,9 +49,7 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
     RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
-    # TODO(metzman): Even though this param is used for building, it's needed
-    # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
-    # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
+    REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}

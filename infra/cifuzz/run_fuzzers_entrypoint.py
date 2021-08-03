@@ -33,10 +33,9 @@ def delete_unneeded_docker_images(config):
   if not config.low_disk_space:
     return
   logging.info('Deleting builder docker images to save disk space.')
-  project_image = docker.get_project_image_name(config.project_name)
+  project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
-      docker.BASE_RUNNER_TAG,
       docker.MSAN_LIBS_BUILDER_TAG,
   ]
   docker.delete_images(images)
@@ -52,10 +51,6 @@ def run_fuzzers_entrypoint():
   if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
 
   delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.

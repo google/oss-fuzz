@@ -41,13 +41,8 @@ def check_artifact_name(name):
   for invalid_char in INVALID_ARTIFACT_NAME_CHARACTERS:
     if invalid_char in name:
       raise Exception(
-          ('Artifact name is invalid: {name}. '
-           'Contains char: "{invalid_char}. '
-           'Invalid chars are: {invalid_artifact_name_characters}.').format(
-               name=name,
-               invalid_char=invalid_char,
-               invalid_artifact_name_characters=INVALID_ARTIFACT_NAME_CHARACTERS
-           ))
+          f'Artifact name is invalid: {name}. Contains char: "{invalid_char}". '
+          f'Invalid chars are: {INVALID_ARTIFACT_NAME_CHARACTERS}.')
 
 
 def check_artifact_file_path(artifact_file_path):
@@ -58,22 +53,20 @@ def check_artifact_file_path(artifact_file_path):
   for invalid_char in INVALID_ARTIFACT_NAME_CHARACTERS:
     if invalid_char in artifact_file_path:
       raise Exception(
-          ('Artifact path: {artifact_file_path} is invalid, contains '
-           'invalid char: {invalid_char}.').format(
-               artifact_file_path=artifact_file_path,
-               invalid_char=invalid_char))
+          f'Artifact path: {artifact_file_path} is invalid, contains '
+          f'invalid char: {invalid_char}.')
 
 
 def get_content_range(start, end, total):
   """Returns the content range for an HTTP request."""
-  return 'bytes {start}-{end}/{total}'.format(start=start, end=end, total=total)
+  return f'bytes {start}-{end}/{total}'
 
 
 def get_http_request_headers():
   """Returns commonly needed headers for HTTP requests to Github actions
   APIs."""
   auth_token = config_variables.get_runtime_token()
-  authorization = 'Bearer {auth_token}'.format(auth_token=auth_token)
+  authorization = f'Bearer {auth_token}'
   return {'Authorization': authorization}
 
 
@@ -87,9 +80,7 @@ def get_upload_headers(  # pylint: disable=too-many-arguments
   """Based on getUploadHeaders implemented in utils.ts"""
   request_options = get_http_request_headers()
   api_version = get_api_version()
-  request_options['Accept'] = (
-      'application/json;api-version={api_version}'.format(
-          api_version=api_version))
+  request_options['Accept'] = f'application/json;api-version={api_version}'
 
   if content_type:
     request_options['Content-Type'] = content_type
@@ -123,8 +114,5 @@ def get_artifact_url(work_flow_run_id=None):
     work_flow_run_id = config_variables.get_work_flow_run_id()
   runtime_url = config_variables.get_runtime_url()
   api_version = get_api_version()
-  return (('{runtime_url}_apis/pipelines/workflows/{work_flow_run_id}/artifacts'
-           '?api-version={api_version}').format(
-               runtime_url=runtime_url,
-               work_flow_run_id=work_flow_run_id,
-               api_version=api_version))
+  return (f'{runtime_url}_apis/pipelines/workflows/{work_flow_run_id}/artifacts'
+          f'?api-version={api_version}')
