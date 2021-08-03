@@ -209,6 +209,7 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+    self.builds_storage = os.getenv('BUILDS_STORAGE')
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
@@ -231,6 +232,9 @@ class BaseConfig:
     if self.language not in constants.LANGUAGES:
       logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
                     constants.LANGUAGES)
+
+    if self.builds_storage and self.builds_storage != 'GITHUB_ARTIFACT':
+      logging.error('Only "GITHUB_ARTIFACT" is supported for builds-storage.')
       return False
 
     return True

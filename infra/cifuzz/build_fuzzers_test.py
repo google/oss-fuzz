@@ -97,10 +97,10 @@ class InternalGithubBuildTest(unittest.TestCase):
   COMMIT_SHA = 'fake'
   PR_REF = 'fake'
 
-  def _create_builder(self, tmp_dir):
+  def _create_builder(self, tmp_dir, oss_fuzz_project_name=PROJECT_NAME):
     """Creates an InternalGithubBuilder and returns it."""
     config = test_helpers.create_build_config(
-        oss_fuzz_project_name=self.PROJECT_NAME,
+        oss_fuzz_project_name=oss_fuzz_project_name,
         project_repo_name=self.PROJECT_REPO_NAME,
         workspace=tmp_dir,
         sanitizer=self.SANITIZER,
@@ -127,6 +127,28 @@ class InternalGithubBuildTest(unittest.TestCase):
 
     self.assertEqual(os.path.basename(builder.host_repo_path),
                      os.path.basename(image_repo_path))
+
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+              return_value=True)
+  def test_upload_build_disabled(self, mock_upload_build):
+    """Test upload build (disabled)."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      builder = self._create_builder(tmp_dir)
+      builder.upload_build()
+
+    mock_upload_build.assert_not_called()
+
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+              return_value=True)
+  def test_upload_build(self, mock_upload_build):
+    """Test upload build."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      builder = self._create_builder(tmp_dir, oss_fuzz_project_name='')
+      builder.config.builds_storage = 'GITHUB_ARTIFACT'
+      builder.config.oss_fuzz_project_name = ''
+      builder.upload_build()
+
+    mock_upload_build.assert_called_once()
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
