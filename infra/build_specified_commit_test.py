@@ -41,7 +41,7 @@ class BuildImageIntegrationTest(unittest.TestCase):
     """Tests if the fuzzers can build at a specified commit.
 
     This is done by using a known regression range for a specific test case.
-    the old commit should show the error when its fuzzers run and the new one
+    The old commit should show the error when its fuzzers run and the new one
     should not.
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
