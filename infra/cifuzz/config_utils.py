@@ -20,6 +20,8 @@ import json
 
 import environment
 
+DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_ARCHITECTURE = 'x86_64'
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
 
