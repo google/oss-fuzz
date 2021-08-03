@@ -757,7 +757,7 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    logging.error('ERROR: gsutil not found. Please install it from '
+    logging.error('gsutil not found. Please install it from '
                   'https://cloud.google.com/storage/docs/gsutil_install')
     return False
 
