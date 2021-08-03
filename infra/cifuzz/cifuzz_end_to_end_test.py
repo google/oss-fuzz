@@ -34,7 +34,7 @@ class EndToEndTest(unittest.TestCase):
   """End-to-End tests for CIFuzz."""
 
   def setUp(self):
-    test_helpers.patch_env(self, runner=True)
+    test_helpers.patch_environ(self, runner=True)
 
   def test_simple(self):
     """Simple end-to-end test using run_cifuzz.main()."""
