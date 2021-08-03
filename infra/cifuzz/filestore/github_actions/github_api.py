@@ -102,8 +102,7 @@ def find_artifact(artifact_name, artifacts):
 
 
 def list_artifacts(owner, repo, headers):
-  """Returns a generator of all the artifacts for |owner/repo|."""
-  import pdb; pdb.set_trace()
+  """Returns a generator of all the artifacts for |owner|/|repo|."""
   url = _get_artifacts_list_api_url(owner, repo)
   logging.debug('Getting artifacts from: %s', url)
   return _get_items(url, headers)

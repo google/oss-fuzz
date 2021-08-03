@@ -86,7 +86,9 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['LANGUAGE'] = 'invalid-language'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.', os.environ['LANGUAGE'], config_utils.LANGUAGES)
+    mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
+                                    os.environ['LANGUAGE'],
+                                    config_utils.LANGUAGES)
 
   @mock.patch('logging.error')
   def test_validate_invalid_sanitizer(self, mocked_error):
@@ -96,7 +98,9 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['SANITIZER'] = 'invalid-sanitizer'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with('Invalid SANITIZER: %s. Must be one of: %s.', os.environ['SANITIZER'], config_utils.SANITIZERS)
+    mocked_error.assert_called_with(
+        'Invalid SANITIZER: %s. Must be one of: %s.', os.environ['SANITIZER'],
+        config_utils.SANITIZERS)
 
   def test_validate(self):
     """Tests that validate returns True if config is valid."""
@@ -160,17 +164,20 @@ class RunFuzzersConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, run_fuzzers_mode)
 
-  def test_run_validate(self):
+  def test_run_config_validate(self):
     """Tests that _run_config_validate returns True when the config is valid."""
     self.assertTrue(self._create_config()._run_config_validate())
 
   @mock.patch('logging.error')
-  def test_run_validate(self, mocked_error):
-    """Tests that _run_config_validate returns True when the config is valid."""
+  def test_run_config_invalid_mode(self, mocked_error):
+    """Tests that _run_config_validate returns False when run_fuzzers_mode is
+    invalid."""
     fake_mode = 'fake-mode'
     os.environ['RUN_FUZZERS_MODE'] = fake_mode
     self.assertFalse(self._create_config()._run_config_validate())
-    mocked_error.assert_called_with('Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.', fake_mode, config_utils.RUN_FUZZERS_MODES)
+    mocked_error.assert_called_with(
+        'Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.', fake_mode,
+        config_utils.RUN_FUZZERS_MODES)
 
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
@@ -254,8 +261,7 @@ class ProjectSrcPathTest(unittest.TestCase):
     expected_project_src_path = os.path.join(self.workspace,
                                              self.project_src_dir_name)
     github_env = config_utils.GithubEnvironment()
-    self.assertEqual(github_env.project_src_path,
-                     expected_project_src_path)
+    self.assertEqual(github_env.project_src_path, expected_project_src_path)
 
   def test_not_github(self):
     """Tests that project_src_path returns the correct result not on
@@ -263,8 +269,7 @@ class ProjectSrcPathTest(unittest.TestCase):
     project_src_path = os.path.join('/', self.project_src_dir_name)
     os.environ['PROJECT_SRC_PATH'] = project_src_path
     generic_ci_env = config_utils.GenericCiEnvironment()
-    self.assertEqual(generic_ci_env.project_src_path,
-                     project_src_path)
+    self.assertEqual(generic_ci_env.project_src_path, project_src_path)
 
 
 if __name__ == '__main__':

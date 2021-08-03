@@ -25,13 +25,13 @@ RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 # TODO(metzman): Make one source of truth for these in helper.py
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 LANGUAGES = [
-      'c',
-      'c++',
-      'go',
-      'jvm',
-      'python',
-      'rust',
-      'swift',
+    'c',
+    'c++',
+    'go',
+    'jvm',
+    'python',
+    'rust',
+    'swift',
 ]
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
@@ -157,7 +157,7 @@ class GithubEnvironment(BaseCiEnvironment):
     # |workspace|.
     project_src_path = super().project_src_path
     if project_src_path is None:
-      return
+      return project_src_path
     return os.path.join(self.workspace, project_src_path)
 
   @property
@@ -238,8 +238,8 @@ class BaseConfig:
       return False
 
     if self.language not in LANGUAGES:
-      logging.error('Invalid LANGUAGE: %s. Must be one of: %s.',
-                    self.language, LANGUAGES)
+      logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
+                    LANGUAGES)
       return False
 
     return True
@@ -283,7 +283,6 @@ def _get_ci_environment(platform):
 
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
-
 
   def __init__(self):
     super().__init__()
