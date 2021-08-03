@@ -48,130 +48,19 @@ else
   FUZZER_OUT="/tmp/${FUZZER}_${FUZZING_ENGINE}_${SANITIZER}_out"
 fi
 
-function get_dictionary() {
-  local options_file="$FUZZER.options"
-  local dict_file="$FUZZER.dict"
-  local dict=""
-  if [[ -f "$options_file" ]]; then
-    dict=$(sed -n 's/^\s*dict\s*=\s*\(.*\)/\1/p' "$options_file" | tail -1)
-  fi
-  if [[ -z "$dict" && -f "$dict_file" ]]; then
-    dict="$dict_file"
-  fi
-  [[ -z "$dict" ]] && return
-  if [[ "$FUZZING_ENGINE" = "libfuzzer" ]]; then
-     printf -- "-dict=%s" "$dict"
-  elif [[ "$FUZZING_ENGINE" = "afl" ]]; then
-     printf -- "-x %s" "$dict"
-  elif [[ "$FUZZING_ENGINE" = "honggfuzz" ]]; then
-     printf -- "--dict %s" "$dict"
-  else
-     printf "Unexpected FUZZING_ENGINE: $FUZZING_ENGINE, ignoring\n" >&2
-  fi
-}
-
 rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
-
 if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   echo "Using seed corpus: $SEED_CORPUS"
-  unzip -o -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
+  # Unpacked by libClusterFuzz.
 fi
 
-OPTIONS_FILE="${FUZZER}.options"
-CUSTOM_LIBFUZZER_OPTIONS=""
-
-if [ -f $OPTIONS_FILE ]; then
-  custom_asan_options=$(parse_options.py $OPTIONS_FILE asan)
-  if [ ! -z $custom_asan_options ]; then
-    export ASAN_OPTIONS="$ASAN_OPTIONS:$custom_asan_options"
-  fi
-
-  custom_msan_options=$(parse_options.py $OPTIONS_FILE msan)
-  if [ ! -z $custom_msan_options ]; then
-    export MSAN_OPTIONS="$MSAN_OPTIONS:$custom_msan_options"
-  fi
-
-  custom_ubsan_options=$(parse_options.py $OPTIONS_FILE ubsan)
-  if [ ! -z $custom_ubsan_options ]; then
-    export UBSAN_OPTIONS="$UBSAN_OPTIONS:$custom_ubsan_options"
-  fi
-
-  CUSTOM_LIBFUZZER_OPTIONS=$(parse_options.py $OPTIONS_FILE libfuzzer)
-fi
-
-if [[ "$FUZZING_ENGINE" = afl ]]; then
-
-  # Set afl++ environment options.
-  export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0:detect_odr_violation=0:"
-  export MSAN_OPTIONS="$MSAN_OPTIONS:exit_code=86:symbolize=0"
-  export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
-  export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
-  export AFL_SKIP_CPUFREQ=1
-  export AFL_TRY_AFFINITY=1
-  export AFL_FAST_CAL=1
-  export AFL_CMPLOG_ONLY_NEW=1
-  export AFL_FORKSRV_INIT_TMOUT=30000
-  # If $OUT/afl_cmplog.txt is present this means the target was compiled for
-  # CMPLOG. So we have to add the proper parameters to afl-fuzz.
-  test -e "$OUT/afl_cmplog.txt" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -c $OUT/$FUZZER"
-  # If $OUT/afl++.dict we load it as a dictionary for afl-fuzz.
-  test -e "$OUT/afl++.dict" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -x $OUT/afl++.dict"
-  # Ensure timeout is a bit larger than 1sec as some of the OSS-Fuzz fuzzers
-  # are slower than this.
-  AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -t 5000+"
-  # AFL expects at least 1 file in the input dir.
-  echo input > ${CORPUS_DIR}/input
-  echo afl++ setup:
-  env|grep AFL_
-  cat "$OUT/afl_options.txt"
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
-
-elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
-
-  # Honggfuzz expects at least 1 file in the input dir.
-  echo input > $CORPUS_DIR/input
-  # --exit_upon_crash: exit whith a first crash seen
-  # -R (report): save report file to this location
-  # -W (working dir): where the crashes go
-  # -v (verbose): don't use VTE UI, just stderr
-  # -z: use software-instrumentation of clang (trace-pc-guard....)
-  # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
-  # -f: location of the initial (and destination) file corpus
-  # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
-
+if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
+  CLUSTERFUZZ_ENGINE=libFuzzer
 else
-
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
-
-  if [ -z ${SKIP_SEED_CORPUS:-} ]; then
-    CMD_LINE="$CMD_LINE $CORPUS_DIR"
-  fi
-
-  if [ ! -z $CUSTOM_LIBFUZZER_OPTIONS ]; then
-    CMD_LINE="$CMD_LINE $CUSTOM_LIBFUZZER_OPTIONS"
-  fi
-
-  if [[ ! "$CMD_LINE" =~ "-dict=" ]]; then
-    if [ -f "$FUZZER.dict" ]; then
-      CMD_LINE="$CMD_LINE -dict=$FUZZER.dict"
-    fi
-  fi
-
-  CMD_LINE="$CMD_LINE < /dev/null"
-
+  CLUSTERFUZZ_ENGINE=$FUZZING_ENGINE
 fi
 
-echo $CMD_LINE
-
-# Unset OUT so the fuzz target can't rely on it.
-unset OUT
-
-if [ ! -z "$DEBUGGER" ]; then
-  CMD_LINE="$DEBUGGER $CMD_LINE"
-fi
-
-bash -c "$CMD_LINE"
-
+python3 -m clusterfuzz.fuzz -t $OUT/$FUZZER \
+  -e $CLUSTERFUZZ_ENGINE -s $SANITIZER -c $CORPUS_DIR -o $FUZZER_OUT

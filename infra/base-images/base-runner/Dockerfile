@@ -37,15 +37,13 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
 
 RUN apt-get update && apt-get install -y \
     binutils \
+    ca-certificates \
     file \
     fonts-dejavu \
     git \
     lib32gcc1 \
     libc6-i386 \
     libcap2 \
-    python3 \
-    python3-pip \
-    python3-setuptools \
     unzip \
     wget \
     zip --no-install-recommends
@@ -103,6 +101,9 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check && \
     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
 
+# Install libClusterFuzz, which is used for running fuzzers.
+RUN python3 -m pip install clusterfuzz
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     collect_dft \
@@ -114,7 +115,6 @@ COPY bad_build_check \
     rcfilt \
     reproduce \
     run_fuzzer \
-    parse_options.py \
     targets_list \
     test_all.py \
     test_one.py \
