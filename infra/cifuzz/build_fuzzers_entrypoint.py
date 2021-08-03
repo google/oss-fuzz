@@ -17,6 +17,7 @@ import sys
 
 import build_fuzzers
 import config_utils
+import workspace_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -48,7 +49,7 @@ def build_fuzzers_entrypoint():
     returncode = 0
   # yapf: disable
   elif build_fuzzers.check_fuzzer_build(
-      config_utils.Workspace(config),
+      workspace_utils.Workspace(config),
       config.sanitizer,
       config.language,
       allowed_broken_targets_percentage=config.allowed_broken_targets_percentage

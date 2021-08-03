@@ -23,6 +23,7 @@ from pyfakefs import fake_filesystem_unittest
 import clusterfuzz_deployment
 import config_utils
 import test_helpers
+import workspace_utils
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -53,7 +54,7 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  workspace = config_utils.Workspace(config)
+  workspace = workspace_utils.Workspace(config)
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
@@ -189,7 +190,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     config = test_helpers.create_run_config(build_integration_path='/',
                                             workspace=WORKSPACE,
                                             is_github=False)
-    workspace = config_utils.Workspace(config)
+    workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
 
@@ -241,7 +242,7 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
                     new_callable=mock.PropertyMock):
       with mock.patch('filestore_utils.get_filestore', return_value=None):
         config = _create_config()
-        workspace = config_utils.Workspace(config)
+        workspace = workspace_utils.Workspace(config)
 
         self.assertIsInstance(
             clusterfuzz_deployment.get_clusterfuzz_deployment(
