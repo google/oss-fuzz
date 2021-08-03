@@ -78,6 +78,26 @@ class BaseConfigTest(unittest.TestCase):
     self.assertFalse(config.validate())
     mocked_error.assert_called_with('Must set WORKSPACE.')
 
+  @mock.patch('logging.error')
+  def test_validate_invalid_language(self, mocked_error):
+    """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    os.environ['WORKSPACE'] = '/workspace'
+    os.environ['LANGUAGE'] = 'invalid-language'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.', os.environ['LANGUAGE'], config_utils.LANGUAGES)
+
+  @mock.patch('logging.error')
+  def test_validate_invalid_sanitizer(self, mocked_error):
+    """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
+    os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
+    os.environ['WORKSPACE'] = '/workspace'
+    os.environ['SANITIZER'] = 'invalid-sanitizer'
+    config = self._create_config()
+    self.assertFalse(config.validate())
+    mocked_error.assert_called_with('Invalid SANITIZER: %s. Must be one of: %s.', os.environ['SANITIZER'], config_utils.SANITIZERS)
+
   def test_validate(self):
     """Tests that validate returns True if config is valid."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
@@ -140,6 +160,18 @@ class RunFuzzersConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, run_fuzzers_mode)
 
+  def test_run_validate(self):
+    """Tests that _run_config_validate returns True when the config is valid."""
+    self.assertTrue(self._create_config()._run_config_validate())
+
+  @mock.patch('logging.error')
+  def test_run_validate(self, mocked_error):
+    """Tests that _run_config_validate returns True when the config is valid."""
+    fake_mode = 'fake-mode'
+    os.environ['RUN_FUZZERS_MODE'] = fake_mode
+    self.assertFalse(self._create_config()._run_config_validate())
+    mocked_error.assert_called_with('Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.', fake_mode, config_utils.RUN_FUZZERS_MODES)
+
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   """Tests for BaseCiEnv.get_project_repo_owner_and_name."""
@@ -148,8 +180,8 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
-    self.github_env = config_utils.GithubEnv()
-    self.generic_ci_env = config_utils.GenericCiEnv()
+    self.github_env = config_utils.GithubEnvironment()
+    self.generic_ci_env = config_utils.GenericCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
@@ -200,36 +232,38 @@ class GetSanitizerTest(unittest.TestCase):
     self.assertEqual(config_utils._get_sanitizer(), self.sanitizer)
 
 
-class GetProjectSrcPathTest(unittest.TestCase):
-  """Tests for get_project_src_path."""
+class ProjectSrcPathTest(unittest.TestCase):
+  """Tests for project_src_path."""
 
   def setUp(self):
     test_helpers.patch_environ(self)
     self.workspace = '/workspace'
+    os.environ['GITHUB_WORKSPACE'] = self.workspace
+
     self.project_src_dir_name = 'project-src'
 
   def test_unset(self):
-    """Tests that get_project_src_path returns None when no PROJECT_SRC_PATH is
+    """Tests that project_src_path returns None when no PROJECT_SRC_PATH is
     set."""
-    getter = config_utils.CiEnvGetter(is_github=True)
-    self.assertIsNone(getter.get_project_src_path(self.workspace))
+    github_env = config_utils.GithubEnvironment()
+    self.assertIsNone(github_env.project_src_path)
 
   def test_github(self):
-    """Tests that get_project_src_path returns the correct result on GitHub."""
+    """Tests that project_src_path returns the correct result on GitHub."""
     os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
     expected_project_src_path = os.path.join(self.workspace,
                                              self.project_src_dir_name)
-    getter = config_utils.CiEnvGetter(is_github=True)
-    self.assertEqual(getter.get_project_src_path(self.workspace),
+    github_env = config_utils.GithubEnvironment()
+    self.assertEqual(github_env.project_src_path,
                      expected_project_src_path)
 
   def test_not_github(self):
-    """Tests that get_project_src_path returns the correct result not on
+    """Tests that project_src_path returns the correct result not on
     GitHub."""
     project_src_path = os.path.join('/', self.project_src_dir_name)
     os.environ['PROJECT_SRC_PATH'] = project_src_path
-    getter = config_utils.CiEnvGetter(is_github=False)
-    self.assertEqual(getter.get_project_src_path(self.workspace),
+    generic_ci_env = config_utils.GenericCiEnvironment()
+    self.assertEqual(generic_ci_env.project_src_path,
                      project_src_path)
 
 

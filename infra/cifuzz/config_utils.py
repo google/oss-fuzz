@@ -20,6 +20,19 @@ import json
 
 import environment
 
+RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
+
+# TODO(metzman): Make one source of truth for these in helper.py
+SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
+LANGUAGES = [
+      'c',
+      'c++',
+      'go',
+      'jvm',
+      'python',
+      'rust',
+      'swift',
+]
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
 
@@ -142,7 +155,10 @@ class GithubEnvironment(BaseCiEnvironment):
     on github the checkout will be relative to there."""
     # On GitHub, they don't know the absolute path, it is relative to
     # |workspace|.
-    return os.path.join(self.workspace, super().project_src_path)
+    project_src_path = super().project_src_path
+    if project_src_path is None:
+      return
+    return os.path.join(self.workspace, project_src_path)
 
   @property
   def project_repo_owner_and_name(self):
@@ -170,8 +186,8 @@ class BaseConfig:
 
   def __init__(self):
     # Need to set these before calling self.platform.
-    event_path = os.getenv('GITHUB_EVENT_PATH')
-    self.is_github = bool(event_path)
+    self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
+    self.is_github = bool(self._github_event_path)
     logging.debug('Is github: %s.', self.is_github)
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
 
@@ -190,7 +206,7 @@ class BaseConfig:
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
-    self.github_token = self._ci_env.token
+    self.token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
@@ -214,6 +230,16 @@ class BaseConfig:
 
     if not self.workspace:
       logging.error('Must set WORKSPACE.')
+      return False
+
+    if self.sanitizer not in SANITIZERS:
+      logging.error('Invalid SANITIZER: %s. Must be one of: %s.',
+                    self.sanitizer, SANITIZERS)
+      return False
+
+    if self.language not in LANGUAGES:
+      logging.error('Invalid LANGUAGE: %s. Must be one of: %s.',
+                    self.language, LANGUAGES)
       return False
 
     return True
@@ -258,7 +284,6 @@ def _get_ci_environment(platform):
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
-  RUN_FUZZERS_MODES = {'batch', 'ci', 'coverage'}
 
   def __init__(self):
     super().__init__()
@@ -267,23 +292,33 @@ class RunFuzzersConfig(BaseConfig):
     if self.is_coverage:
       self.run_fuzzers_mode = 'coverage'
 
-    if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
-      raise Exception(
-          ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
-           (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
-
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
+
+    # TODO(metzman): Fix tests to create valid configurations and get rid of
+    # CIFUZZ_TEST here and in presubmit.py.
+    if not os.getenv('CIFUZZ_TEST') and not self._run_config_validate():
+      raise ConfigError('Invalid Run Configuration.')
+
+  def _run_config_validate(self):
+    """Do extra validation on RunFuzzersConfig.__init__(). Do not name this
+    validate or else it will be called when using the parent's __init__ and will
+    fail. Returns True if valid."""
+    if self.run_fuzzers_mode not in RUN_FUZZERS_MODES:
+      logging.error('Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.',
+                    self.run_fuzzers_mode, RUN_FUZZERS_MODES)
+      return False
+
+    return True
 
 
 class BuildFuzzersConfig(BaseConfig):
   """Class containing constant configuration for building fuzzers in CIFuzz."""
 
   def _get_config_from_event_path(self, event):
-    event_path = os.getenv('GITHUB_EVENT_PATH')
-    if not event_path:
+    if not self._github_event_path:
       return
-    with open(event_path, encoding='utf-8') as file_handle:
+    with open(self._github_event_path, encoding='utf-8') as file_handle:
       event_data = json.load(file_handle)
     if event == 'push':
       self.base_commit = event_data['before']
@@ -297,8 +332,6 @@ class BuildFuzzersConfig(BaseConfig):
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
-    # TODO(metzman): Some of this config is very CI-specific. Move it into the
-    # CI class.
     super().__init__()
     self.commit_sha = self._ci_env.git_sha
     event = os.getenv('GITHUB_EVENT_NAME')
@@ -336,6 +369,9 @@ class Workspace:
     """The out directory used for storing the fuzzer build built by
     build_fuzzers."""
     # Don't use 'out' because it needs to be used by artifacts.
+    # TODO(metzman): Migrate existing to using CIFuzz's artifact upload ability,
+    # instead of running the upload_artifact action after the run_fuzzers
+    # action.
     return os.path.join(self.workspace, 'build-out')
 
   @property
@@ -366,5 +402,6 @@ class Workspace:
 
   @property
   def corpora(self):
-    """The directory where corpora from ClusterFuzz are stored."""
+    """The directory where corpora from ClusterFuzz and from fuzzing in CIFuzz
+    are stored."""
     return os.path.join(self.workspace, 'cifuzz-corpus')

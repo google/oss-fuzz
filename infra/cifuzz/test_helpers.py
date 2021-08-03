@@ -23,7 +23,8 @@ import config_utils
 
 
 @mock.patch('config_utils._is_dry_run', return_value=True)
-@mock.patch('config_utils.CiEnvGetter.get_project_src_path', return_value=None)
+@mock.patch('config_utils.GenericCiEnvironment.project_src_path',
+            return_value=None)
 @mock.patch('os.path.basename', return_value=None)
 def _create_config(config_cls, _, __, ___, **kwargs):
   """Creates a config object from |config_cls| and then sets every attribute

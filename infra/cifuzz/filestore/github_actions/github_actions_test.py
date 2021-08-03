@@ -43,6 +43,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self.owner = 'exampleowner'
     self.repo = 'examplerepo'
     os.environ['GITHUB_REPOSITORY'] = f'{self.owner}/{self.repo}'
+    os.environ['GITHUB_EVENT_PATH'] = '/fake'
     self.config = test_helpers.create_run_config(token=self.token)
     self.local_dir = '/local-dir'
     self.testcase = os.path.join(self.local_dir, 'testcase')

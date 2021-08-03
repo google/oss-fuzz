@@ -100,7 +100,7 @@ class ProjectYamlChecker:
       'view_restrictions',
   ]
 
-  LANGUAGES_SUPPORTED = [
+  SUPPORTED_LANGUAGES = [
       'c',
       'c++',
       'go',
@@ -226,10 +226,10 @@ class ProjectYamlChecker:
     language = self.data.get('language')
     if not language:
       self.error('Missing "language" attribute in project.yaml.')
-    elif language not in self.LANGUAGES_SUPPORTED:
+    elif language not in self.SUPPORTED_LANGUAGES:
       self.error(
           '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=self.LANGUAGES_SUPPORTED))
+              language=language, supported=self.SUPPORTED_LANGUAGES))
 
 
 def _check_one_project_yaml(project_yaml_filename):
