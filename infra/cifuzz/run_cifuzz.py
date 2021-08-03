@@ -14,6 +14,7 @@
 """Script for running CIFuzz end-to-end. This is meant to work outside any
 docker image. This cannot depend on any CIFuzz code or third party packages."""
 import os
+import sys
 import subprocess
 import tempfile
 import logging
@@ -83,7 +84,8 @@ def main():
       docker_run('run_fuzzers', workdir, project_src_path)
     except subprocess.CalledProcessError:
       logging.error('run_fuzzers failed.')
+    return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

@@ -16,10 +16,16 @@
 import contextlib
 import os
 import shutil
+import sys
 import tempfile
 from unittest import mock
 
 import config_utils
+import docker
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import helper
 
 
 def _create_config(config_cls, **kwargs):
@@ -72,3 +78,26 @@ def temp_dir_copy(directory):
     temp_copy_path = os.path.join(temp_dir, os.path.basename(directory))
     shutil.copytree(directory, temp_copy_path)
     yield temp_copy_path
+
+
+@contextlib.contextmanager
+def temp_dir_for_docker():
+  """Returns a temporary directory for mounting in docker that gets deleted
+  later. The directory works well for mounting because the deletion will be done
+  by docker, so any root-owned files can be deleted, even if tests aren't run by
+  root."""
+  with tempfile.TemporaryDirectory() as temp_dir:
+    yield temp_dir
+    docker_delete_dir(temp_dir)
+
+
+def docker_delete_dir(directory, docker_image=docker.BASE_BUILDER_TAG):
+  """Deletes |directory| using docker. This is useful because some
+  files/directories created by docker are owned by root and thus the test won't
+  be able to delete them. Runs the rm command in |docker_image|."""
+  mount_name = '/directory-to-delete'
+  if not helper.docker_run([
+      '-v', f'{directory}:{mount_name}', '-t', docker_image, '/bin/bash', '-c',
+      f'rm -rf {mount_name}/*'
+  ]):
+    raise RuntimeError(f'Could not delete {directory}')
