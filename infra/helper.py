@@ -146,24 +146,29 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     else:
       args.sanitizer = 'address'
 
+  build_integration_path = getattr(args, 'build_integration_path', None)
+  name_or_path = getattr(args, 'project_src_path', args.project_name)
+  is_external = getattr(args, 'is_external', False)
+  project = Project(name_or_path, is_external, build_integration_path)
+
   if args.command == 'generate':
-    result = generate(args)
+    result = generate(project)
   elif args.command == 'build_image':
-    result = build_image(args)
+    result = build_image(project, args)
   elif args.command == 'build_fuzzers':
-    result = build_fuzzers(args)
+    result = build_fuzzers(project, args)
   elif args.command == 'check_build':
-    result = check_build(args)
+    result = check_build(project, args)
   elif args.command == 'download_corpora':
-    result = download_corpora(args)
+    result = download_corpora(project, args)
   elif args.command == 'run_fuzzer':
-    result = run_fuzzer(args)
+    result = run_fuzzer(project, args)
   elif args.command == 'coverage':
-    result = coverage(args)
+    result = coverage(project, args)
   elif args.command == 'reproduce':
-    result = reproduce(args)
+    result = reproduce(project, args)
   elif args.command == 'shell':
-    result = shell(args)
+    result = shell(project, args)
   elif args.command == 'pull_images':
     result = pull_images()
   else:
@@ -205,6 +210,10 @@ def _add_external_project_args(parser):
                       help=('Path to the root of the external project\'s '
                             'source code.'),
                       default=None)
+
+  parser.add_argument('--external',
+                      help='Is project external?',
+                      default=False)
 
 
 def get_parser():  # pylint: disable=too-many-statements
@@ -362,7 +371,7 @@ def is_base_image(image_name):
 
 def check_project_exists(project):
   """Checks if a project exists."""
-  if not os.path.exists(project.name):
+  if not os.path.exists(project.path):
     logging.error('%s does not exist.', project.name)
     return False
 
@@ -443,26 +452,26 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(image_name,
-                     project_src_path=None,
-                     build_integration_path=None,
-                     cache=True,
-                     pull=False):
+def build_image_impl(project, cache=True, pull=False):
   """Builds image."""
-  docker_file_path = None
+  image_name = project.name
+
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
     docker_build_dir = os.path.join('infra', 'base-images', image_name)
-  elif project_src_path:
-    image_project = 'oss-fuzz'
+    docker_file_path = None
+  elif project.is_external:
     # External projects need to use the repo root as the build directory.
-    docker_build_dir = project_src_path
-    docker_file_path = os.path.join(build_integration_path, 'Dockerfile')
-  else:
+    docker_file_path = os.path.join(
+        project.build_integration_path, 'Dockerfile')
+    docker_build_dir = project.path
     image_project = 'oss-fuzz'
-    if not check_project_exists(image_name):
+  else:
+    if not check_project_exists(project):
       return False
-    docker_build_dir = os.path.join('projects', image_name)
+    docker_file_path = None
+    docker_build_dir = project.path
+    image_project = 'oss-fuzz'
 
   if pull and not pull_images():
     return False
@@ -562,7 +571,7 @@ def docker_pull(image):
   return True
 
 
-def build_image(args):
+def build_image(project, args):
   """Builds docker image."""
   if args.pull and args.no_pull:
     logging.error('Incompatible arguments --pull and --no-pull.')
@@ -582,9 +591,7 @@ def build_image(args):
     logging.error('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(args.project,
-                      args.project_src_path,
-                      args.build_integration_path,
+  if build_image_impl(project,
                       cache=args.cache,
                       pull=pull):
     return True
@@ -594,8 +601,6 @@ def build_image(args):
 
 def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     project,
-    project_src_path,
-    build_integration_path,
     clean,
     engine,
     sanitizer,
@@ -604,7 +609,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     source_path,
     mount_path=None):
   """Builds fuzzers."""
-  if not build_image_impl(project, project_src_path, build_integration_path):
+  if not build_image_impl(project):
     return False
 
 
@@ -691,11 +696,9 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   return True
 
 
-def build_fuzzers(args):
+def build_fuzzers(project, args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project,
-                            args.project_src_path,
-                            args.build_integration_path,
+  return build_fuzzers_impl(project,
                             args.clean,
                             args.engine,
                             args.sanitizer,
@@ -712,16 +715,16 @@ def _add_oss_fuzz_ci_if_needed(env):
     env.append('OSS_FUZZ_CI=' + oss_fuzz_ci)
 
 
-def check_build(args):
+def check_build(project, args):
   """Checks that fuzzers in the container execute without errors."""
-  if not args.projects.exists:
+  if not check_project_exists(project):
     return False
 
   if (args.fuzzer_name and
-      not _check_fuzzer_exists(args.project, args.fuzzer_name)):
+      not _check_fuzzer_exists(project, args.fuzzer_name)):
     return False
 
-  fuzzing_language = args.project.language
+  fuzzing_language = project.language
   if not fuzzing_language:
     logging.warning(
         'Language not specified in project.yaml. Defaulting to C++.')
@@ -739,7 +742,7 @@ def check_build(args):
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % _get_out_dir(args.project), '-t',
+      '%s:/out' % project.out, '-t',
       'gcr.io/oss-fuzz-base/base-runner'
   ]
 
@@ -760,7 +763,7 @@ def check_build(args):
 def _get_fuzz_targets(project):
   """Returns names of fuzz targest build in the project's /out directory."""
   fuzz_targets = []
-  for name in os.listdir(_get_out_dir(project)):
+  for name in os.listdir(project.out):
     if name.startswith('afl-'):
       continue
     if name.startswith('jazzer_'):
@@ -768,7 +771,7 @@ def _get_fuzz_targets(project):
     if name == 'llvm-symbolizer':
       continue
 
-    path = os.path.join(_get_out_dir(project), name)
+    path = os.path.join(project.out, name)
     # Python and JVM fuzz targets are only executable for the root user, so
     # we can't use os.access.
     if os.path.isfile(path) and (os.stat(path).st_mode & 0o111):
@@ -817,9 +820,9 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
-def download_corpora(args):
+def download_corpora(project, args):
   """Downloads most recent corpora from GCS for the given project."""
-  if not args.project.exists:
+  if not check_project_exists(project):
     return False
 
   try:
@@ -852,7 +855,7 @@ def download_corpora(args):
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
-def coverage(args):
+def coverage(project, args):
   """Generates code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
     logging.error(
@@ -860,24 +863,24 @@ def coverage(args):
         '--fuzz-target')
     return False
 
-  if not args.project.exists:
+  if not check_project_exists(project):
     return False
 
-  if args.project.language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+  if project.language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
     logging.error(
         'Project is written in %s, coverage for it is not supported yet.',
-        args.project.language)
+        project.language)
     return False
 
   if (not args.no_corpus_download and not args.corpus_dir and
-      not args.project_src_path):
-    if not download_corpora(args):
+      not project.is_external):
+    if not download_corpora(project, args):
       return False
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
-      'FUZZING_LANGUAGE=%s' % args.project.language,
-      'PROJECT=%s' % args.project,
+      'FUZZING_LANGUAGE=%s' % project.language,
+      'PROJECT=%s' % project.name,
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
@@ -899,11 +902,11 @@ def coverage(args):
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, args.fuzz_target)])
   else:
-    run_args.extend(['-v', '%s:/corpus' % args.project.corpus])
+    run_args.extend(['-v', '%s:/corpus' % project.corpus])
 
   run_args.extend([
       '-v',
-      '%s:/out' % _get_out_dir(args.project),
+      '%s:/out' % args.out),
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
@@ -921,12 +924,12 @@ def coverage(args):
   return result
 
 
-def run_fuzzer(args):
+def run_fuzzer(project, args):
   """Runs a fuzzer in the container."""
-  if not args.project.exists:
+  if not check_project_exists(project):
     return False
 
-  if not _check_fuzzer_exists(args.project, args.fuzzer_name):
+  if not _check_fuzzer_exists(project, args.fuzzer_name):
     return False
 
   env = [
@@ -953,7 +956,7 @@ def run_fuzzer(args):
 
   run_args.extend([
       '-v',
-      '%s:/out' % _get_out_dir(args.project),
+      '%s:/out' % project.out,
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
@@ -963,9 +966,9 @@ def run_fuzzer(args):
   return docker_run(run_args)
 
 
-def reproduce(args):
+def reproduce(project, args):
   """Reproduces a specific test case from a specific project."""
-  return reproduce_impl(args.project,
+  return reproduce_impl(project,
                         args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
@@ -980,7 +983,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
-  if not project.exists:
+  if not check_project_exists(project):
     return err_result
 
   if not _check_fuzzer_exists(project, fuzzer_name):
@@ -1002,7 +1005,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % _get_out_dir(project),
+      '%s:/out' % project.out,
       '-v',
       '%s:/testcase' % _get_absolute_path(testcase_path),
       '-t',
@@ -1055,9 +1058,9 @@ def _template_project_file(filename, template, template_args, directory):
     os.chmod(file_path, 0o755)
 
 
-def generate(args):
+def generate(project):
   """Generates empty project files."""
-  return _generate_impl(args.project)
+  return _generate_impl(project)
 
 
 def _get_current_datetime():
@@ -1091,10 +1094,9 @@ def _generate_impl(project):
   return True
 
 
-def shell(args):
+def shell(project, args):
   """Runs a shell within a docker image."""
-  if not build_image_impl(args.project, args.project_src_path,
-                          args.build_integration_path):
+  if not build_image_impl(project):
     return False
 
   env = [
@@ -1103,18 +1105,18 @@ def shell(args):
       'ARCHITECTURE=' + args.architecture,
   ]
 
-  if args.project != 'base-runner-debug':
-    env.append('FUZZING_LANGUAGE=' + args.project.language)
+  if project.name != 'base-runner-debug':
+    env.append('FUZZING_LANGUAGE=' + project.language)
 
   if args.e:
     env += args.e
 
-  if is_base_image(args.project):
+  if is_base_image(project.name):
     image_project = 'oss-fuzz-base'
     out_dir = _get_out_dir()
   else:
     image_project = 'oss-fuzz'
-    out_dir = _get_out_dir(args.project)
+    out_dir = project.out
 
   run_args = _env_to_docker_args(env)
   if args.source_path:
@@ -1127,7 +1129,7 @@ def shell(args):
       '-v',
       '%s:/out' % out_dir, '-v',
       '%s:/work' % args.project.work, '-t',
-      'gcr.io/%s/%s' % (image_project, args.project), '/bin/bash'
+      'gcr.io/%s/%s' % (image_project, project.name), '/bin/bash'
   ])
 
   docker_run(run_args)
