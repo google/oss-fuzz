@@ -91,7 +91,7 @@ class Project:
   @property
   def dockerfile_path(self):
     """Returns path to the project Dockerfile."""
-    return os.path.join(self.path, 'Dockerfile')
+    return os.path.join(self.build_integration_path, 'Dockerfile')
 
   @property
   def language(self):
@@ -193,8 +193,9 @@ def parse_args(parser, args=None):
 
   # Use hacky method for extracting attributes so that ShellTest works.
   # TODO(metzman): Fix this.
-  is_external = getattr(parsed_args, 'is_external', False)
-  build_integration_path = getattr(parsed_args, 'build_integration_path', False)
+  is_external = getattr(parsed_args, 'external', False)
+  build_integration_path = getattr(parsed_args, 'build_integration_path',
+                                   DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
 
   parsed_args.project = Project(parsed_args.project, is_external,
                                 build_integration_path)
@@ -459,17 +460,11 @@ def build_image_impl(project, cache=True, pull=False):
     image_project = 'oss-fuzz-base'
     docker_build_dir = os.path.join(OSS_FUZZ_DIR, 'infra', 'base-images',
                                     image_name)
-    docker_file_path = None
-  elif project.is_external:
-    # External projects need to use the repo root as the build directory.
-    docker_file_path = os.path.join(project.build_integration_path,
-                                    'Dockerfile')
-    docker_build_dir = project.path
-    image_project = 'oss-fuzz'
+    dockerfile_path = os.path.join(docker_build_dir, 'Dockerfile')
   else:
     if not check_project_exists(project):
       return False
-    docker_file_path = None
+    dockerfile_path = project.dockerfile_path
     docker_build_dir = project.path
     image_project = 'oss-fuzz'
 
@@ -480,12 +475,10 @@ def build_image_impl(project, cache=True, pull=False):
   if not cache:
     build_args.append('--no-cache')
 
-  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name)]
-  if docker_file_path:
-    build_args += [
-        '--file',
-        docker_file_path,
-    ]
+  build_args += [
+      '-t',
+      'gcr.io/%s/%s' % (image_project, image_name), '--file', dockerfile_path
+  ]
   build_args.append(docker_build_dir)
   return docker_build(build_args)
 
