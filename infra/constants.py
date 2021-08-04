@@ -15,7 +15,7 @@
 ################################################################################
 """Constants for OSS-Fuzz."""
 
-DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH = '.cifuzz'
+DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH = '.clusterfuzzlite'
 
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
