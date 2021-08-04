@@ -19,25 +19,12 @@ import os
 import json
 
 import environment
+import helper
 
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 
 # TODO(metzman): Make one source of truth for these in helper.py
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
-LANGUAGES = [
-    'c',
-    'c++',
-    'go',
-    'jvm',
-    'python',
-    'rust',
-    'swift',
-]
-
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
-DEFAULT_LANGUAGE = 'c++'
-DEFAULT_SANITIZER = 'address'
 
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
@@ -54,7 +41,7 @@ def _get_pr_ref(event):
 
 
 def _get_sanitizer():
-  return os.getenv('SANITIZER', DEFAULT_SANITIZER).lower()
+  return os.getenv('SANITIZER', helper.DEFAULT_SANITIZER).lower()
 
 
 def _is_dry_run():
@@ -69,7 +56,7 @@ def _get_language():
   # getting it from the project.yaml) is outweighed by the complexity in
   # implementing this. A lot of the complexity comes from our unittests not
   # setting a proper projet at this point.
-  return os.getenv('LANGUAGE', DEFAULT_LANGUAGE)
+  return os.getenv('LANGUAGE', helper.DEFAULT_LANGUAGE)
 
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
@@ -240,9 +227,9 @@ class BaseConfig:
                     self.sanitizer, SANITIZERS)
       return False
 
-    if self.language not in LANGUAGES:
+    if self.language not in helper.LANGUAGES:
       logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
-                    LANGUAGES)
+                    helper.LANGUAGES)
       return False
 
     return True
