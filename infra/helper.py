@@ -63,6 +63,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
+# TODO(jonathanmetzman): Enforce this.
 DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.cifuzz'
 
 # pylint: disable=too-many-lines
