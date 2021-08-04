@@ -19,6 +19,7 @@ import os
 import json
 
 import environment
+import helper
 
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 

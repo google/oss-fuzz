@@ -73,13 +73,14 @@ class BuildExternalProjetDockerImage(unittest.TestCase):
   @mock.patch('helper.docker_build')
   def test_build_external_project_docker_image(self, mocked_docker_build):
     """Tests that build_external_project_docker_image works as intended."""
+    build_integration_path = '.clusterfuzzlite'
     project_src = '/path/to/project/src'
     continuous_integration.build_external_project_docker_image(
-        project_src)
+        project_src, build_integration_path)
 
     mocked_docker_build.assert_called_with([
-        '-t', 'external-project', '-f', f'.clusterfuzzlite/Dockerfile',
-        project_src
+        '-t', 'external-project', '-f',
+        os.path.join('.clusterfuzzlite', 'Dockerfile'), project_src
     ])
 
 
