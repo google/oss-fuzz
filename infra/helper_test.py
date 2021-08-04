@@ -15,6 +15,7 @@
 
 import datetime
 import os
+import tempfile
 import unittest
 from unittest import mock
 
@@ -57,17 +58,20 @@ class BuildImageImplTest(unittest.TestCase):
   def test_pull(self, mocked_pull_images, _):
     """Tests that pull=True is handled properly."""
     image_name = 'base-image'
-    helper.build_image_impl(helper.Project(image_name), pull=True)
+    self.assertTrue(
+        helper.build_image_impl(helper.Project(image_name), pull=True))
     mocked_pull_images.assert_called_with()
 
   @mock.patch('helper.docker_build')
   def test_base_image(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with a base-image."""
     image_name = 'base-image'
-    helper.build_image_impl(helper.Project(image_name))
+    self.assertTrue(helper.build_image_impl(helper.Project(image_name)))
+    build_dir = os.path.join(helper.OSS_FUZZ_DIR,
+                             'infra/base-images/base-image')
     mocked_docker_build.assert_called_with([
-        '-t', 'gcr.io/oss-fuzz-base/base-image',
-        os.path.join(helper.OSS_FUZZ_DIR, 'infra/base-images/base-image')
+        '-t', 'gcr.io/oss-fuzz-base/base-image', '--file',
+        os.path.join(build_dir, 'Dockerfile'), build_dir
     ])
 
   @mock.patch('helper.docker_build')
@@ -75,26 +79,30 @@ class BuildImageImplTest(unittest.TestCase):
     """Tests that build_image_impl works as intended with an OSS-Fuzz
     project."""
     project_name = 'example'
-    helper.build_image_impl(helper.Project(project_name))
+    self.assertTrue(helper.build_image_impl(helper.Project(project_name)))
+    build_dir = os.path.join(helper.OSS_FUZZ_DIR, 'projects', project_name)
     mocked_docker_build.assert_called_with([
-        '-t', 'gcr.io/oss-fuzz/example',
-        os.path.join(helper.OSS_FUZZ_DIR, 'projects/example')
+        '-t', 'gcr.io/oss-fuzz/example', '--file',
+        os.path.join(build_dir, 'Dockerfile'), build_dir
     ])
 
   @mock.patch('helper.docker_build')
   def test_external_project(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with a non-OSS-Fuzz
     project."""
-    project_src_path = '/example'
-    build_integration_path = 'build-integration'
-    project = helper.Project(project_src_path,
-                             is_external=True,
-                             build_integration_path=build_integration_path)
-    helper.build_image_impl(project)
-    mocked_docker_build.assert_called_with([
-        '-t', 'gcr.io/oss-fuzz/example', '--file',
-        '/example/build-integration/Dockerfile', project_src_path
-    ])
+    with tempfile.TemporaryDirectory() as temp_dir:
+      project_src_path = os.path.join(temp_dir, 'example')
+      os.mkdir(project_src_path)
+      build_integration_path = 'build-integration'
+      project = helper.Project(project_src_path,
+                               is_external=True,
+                               build_integration_path=build_integration_path)
+      self.assertTrue(helper.build_image_impl(project))
+      mocked_docker_build.assert_called_with([
+          '-t', 'gcr.io/oss-fuzz/example', '--file',
+          os.path.join(project_src_path, build_integration_path, 'Dockerfile'),
+          project_src_path
+      ])
 
 
 class GenerateImplTest(fake_filesystem_unittest.TestCase):
@@ -131,3 +139,80 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
                        build_integration_path=build_integration_path))
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
                                  build_integration_path)
+
+
+class ProjectTest(fake_filesystem_unittest.TestCase):
+  """Tests for Project class."""
+
+  def setUp(self):
+    self.project_name = 'project'
+    self.internal_project = helper.Project(self.project_name)
+    self.external_project_path = os.path.join('path', 'to', self.project_name)
+    self.external_project = helper.Project(self.external_project_path,
+                                           is_external=True)
+    self.setUpPyfakefs()
+
+  def test_init_external_project(self):
+    """Tests __init__ method for external projects."""
+    self.assertEqual(self.external_project.name, self.project_name)
+    self.assertEqual(self.external_project.path, self.external_project_path)
+    self.assertEqual(
+        self.external_project.build_integration_path,
+        os.path.join(self.external_project_path,
+                     helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH))
+
+  def test_init_internal_project(self):
+    """Tests __init__ method for internal projects."""
+    self.assertEqual(self.internal_project.name, self.project_name)
+    path = os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.project_name)
+    self.assertEqual(self.internal_project.path, path)
+    self.assertEqual(self.internal_project.build_integration_path, path)
+
+  def test_dockerfile_path_internal_project(self):
+    """Tests that dockerfile_path works as intended."""
+    self.assertEqual(
+        self.internal_project.dockerfile_path,
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.project_name,
+                     'Dockerfile'))
+
+  def test_dockerfile_path_external_project(self):
+    """Tests that dockerfile_path works as intended."""
+    self.assertEqual(
+        self.external_project.dockerfile_path,
+        os.path.join(self.external_project_path,
+                     helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH,
+                     'Dockerfile'))
+
+  def test_out(self):
+    """Tests that out works as intended."""
+    out_dir = self.internal_project.out
+    self.assertEqual(
+        out_dir,
+        os.path.join(helper.OSS_FUZZ_DIR, 'build', 'out', self.project_name))
+    self.assertTrue(os.path.exists(out_dir))
+
+  def test_work(self):
+    """Tests that work works as intended."""
+    work_dir = self.internal_project.work
+    self.assertEqual(
+        work_dir,
+        os.path.join(helper.OSS_FUZZ_DIR, 'build', 'work', self.project_name))
+    self.assertTrue(os.path.exists(work_dir))
+
+  def test_corpus(self):
+    """Tests that corpus works as intended."""
+    corpus_dir = self.internal_project.corpus
+    self.assertEqual(
+        corpus_dir,
+        os.path.join(helper.OSS_FUZZ_DIR, 'build', 'corpus', self.project_name))
+    self.assertTrue(os.path.exists(corpus_dir))
+
+  def test_language_internal_project(self):
+    """Tests that language works as intended for an internal project."""
+    project_yaml_path = os.path.join(self.internal_project.path, 'project.yaml')
+    self.fs.create_file(project_yaml_path, contents='language: python')
+    self.assertEqual(self.internal_project.language, 'python')
+
+  def test_language_external_project(self):
+    """Tests that language works as intended for an external project."""
+    self.assertEqual(self.external_project.language, 'c++')
