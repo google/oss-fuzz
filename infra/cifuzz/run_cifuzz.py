@@ -31,20 +31,19 @@ def set_default_env_var_if_unset(env_var, default_value):
     os.environ[env_var] = default_value
 
 
-def docker_run(name, workdir, project_src_path):
+def docker_run(name, workspace, project_src_path):
   """Runs a CIFuzz docker container with |name|."""
   command = [
       'docker', 'run', '--name', name, '--rm', '-e', 'PROJECT_SRC_PATH', '-e',
       'BUILD_INTEGRATION_PATH', '-e', 'OSS_FUZZ_PROJECT_NAME', '-e',
-      'GITHUB_WORKSPACE', '-e', 'GITHUB_EVENT_NAME', '-e', 'GITHUB_REPOSITORY',
-      '-e', 'GITHUB_EVENT_NAME', '-e', 'DRY_RUN', '-e', 'CI', '-e', 'SANITIZER',
-      '-e', 'GITHUB_SHA'
+      'WORKSPACE', '-e', 'REPOSITORY', '-e', 'DRY_RUN', '-e', 'CI', '-e',
+      'SANITIZER', '-e', 'GIT_SHA'
   ]
   if project_src_path:
     command += ['-v', f'{project_src_path}:{project_src_path}']
   command += [
       '-v', '/var/run/docker.sock:/var/run/docker.sock', '-v',
-      f'{workdir}:{workdir}', f'{BASE_CIFUZZ_DOCKER_TAG}/{name}'
+      f'{workspace}:{workspace}', f'{BASE_CIFUZZ_DOCKER_TAG}/{name}'
   ]
   print('Running docker command:', command)
   subprocess.run(command, check=True)
@@ -64,24 +63,22 @@ def main():
   for env_var, default_value in DEFAULT_ENVS:
     set_default_env_var_if_unset(env_var, default_value)
 
-  if 'GITHUB_REPOSITORY' not in os.environ:
-    repository = os.getenv('REPOSITORY')
-    assert repository
-    os.environ['GITHUB_REPOSITORY'] = repository
+  repository = os.getenv('REPOSITORY')
+  assert repository
 
   project_src_path = os.getenv('PROJECT_SRC_PATH')
 
   with tempfile.TemporaryDirectory() as temp_dir:
-    if 'GITHUB_WORKSPACE' not in os.environ:
-      os.environ['GITHUB_WORKSPACE'] = os.environ.get('WORKSPACE', temp_dir)
+    if 'WORKSPACE' not in os.environ:
+      os.environ['WORKSPACE'] = temp_dir
 
-    workdir = os.environ['GITHUB_WORKSPACE']
+    workspace = os.environ['WORKSPACE']
 
     docker_build('build_fuzzers')
-    docker_run('build_fuzzers', workdir, project_src_path)
+    docker_run('build_fuzzers', workspace, project_src_path)
     docker_build('run_fuzzers')
     try:
-      docker_run('run_fuzzers', workdir, project_src_path)
+      docker_run('run_fuzzers', workspace, project_src_path)
     except subprocess.CalledProcessError:
       logging.error('run_fuzzers failed.')
       return 1

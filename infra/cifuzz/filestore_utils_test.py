@@ -17,6 +17,7 @@ from unittest import mock
 
 import parameterized
 
+import config_utils
 import filestore
 from filestore import github_actions
 import filestore_utils
@@ -39,10 +40,12 @@ class GetFilestoreTest(unittest.TestCase):
     filestore_impl = filestore_utils.get_filestore(run_config)
     self.assertIsInstance(filestore_impl, filestore_cls)
 
-  def test_get_filestore_unsupported_platform(self):
+  @mock.patch('config_utils.BaseConfig.platform', return_value='other')
+  @mock.patch('config_utils._get_ci_environment',
+              return_value=config_utils.GenericCiEnvironment())
+  def test_get_filestore_unsupported_platform(self, _, __):
     """Tests that get_filestore exceptions given a platform it doesn't
     support."""
-    with mock.patch('config_utils.BaseConfig.platform', return_value='other'):
-      run_config = test_helpers.create_run_config()
-      with self.assertRaises(filestore.FilestoreError):
-        filestore_utils.get_filestore(run_config)
+    run_config = test_helpers.create_run_config()
+    with self.assertRaises(filestore.FilestoreError):
+      filestore_utils.get_filestore(run_config)

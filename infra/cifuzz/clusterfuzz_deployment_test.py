@@ -225,6 +225,10 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 class GetClusterFuzzDeploymentTest(unittest.TestCase):
   """Tests for get_clusterfuzz_deployment."""
 
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    os.environ['GITHUB_REPOSITORY'] = 'owner/myproject'
+
   @parameterized.parameterized.expand([
       (config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI,
        clusterfuzz_deployment.OSSFuzz),

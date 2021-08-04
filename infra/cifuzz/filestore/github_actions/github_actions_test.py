@@ -39,17 +39,18 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     test_helpers.patch_environ(self)
-    self.github_token = 'example githubtoken'
+    self.token = 'example githubtoken'
     self.owner = 'exampleowner'
     self.repo = 'examplerepo'
     os.environ['GITHUB_REPOSITORY'] = f'{self.owner}/{self.repo}'
-    self.config = test_helpers.create_run_config(github_token=self.github_token)
+    os.environ['GITHUB_EVENT_PATH'] = '/fake'
+    self.config = test_helpers.create_run_config(token=self.token)
     self.local_dir = '/local-dir'
     self.testcase = os.path.join(self.local_dir, 'testcase')
 
   def _get_expected_http_headers(self):
     return {
-        'Authorization': f'token {self.github_token}',
+        'Authorization': f'token {self.token}',
         'Accept': 'application/vnd.github.v3+json',
     }
 
