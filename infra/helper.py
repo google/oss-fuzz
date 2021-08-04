@@ -191,8 +191,9 @@ def parse_args(parser, args=None):
   # Use hacky method for extracting attributes so that ShellTest works.
   # TODO(metzman): Fix this.
   is_external = getattr(parsed_args, 'external', False)
-  build_integration_path = getattr(parsed_args, 'build_integration_path',
-                                   DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
+  build_integration_path = getattr(
+      parsed_args, 'build_integration_path',
+      constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
 
   parsed_args.project = Project(parsed_args.project, is_external,
                                 build_integration_path)
