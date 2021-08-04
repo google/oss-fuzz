@@ -88,8 +88,7 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertFalse(config.validate())
     mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
-                                    os.environ['LANGUAGE'],
-                                    helper.LANGUAGES)
+                                    os.environ['LANGUAGE'], helper.LANGUAGES)
 
   @mock.patch('logging.error')
   def test_validate_invalid_sanitizer(self, mocked_error):
