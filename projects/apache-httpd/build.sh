@@ -27,8 +27,10 @@ svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 make
 
 # Build the fuzzers
-for fuzzname in utils parse tokenize addr_parse; do
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -I./include -I./os/unix -I./srclib/apr/include -I./srclib/apr-util/include/ \
+for fuzzname in utils parse tokenize addr_parse uri; do
+  $CC $CFLAGS $LIB_FUZZING_ENGINE \
+    -I$SRC/fuzz-headers/lang/c -I./include -I./os/unix \
+    -I./srclib/apr/include -I./srclib/apr-util/include/ \
     $SRC/fuzz_${fuzzname}.c -o $OUT/fuzz_${fuzzname} \
     ./modules.o buildmark.o \
     -Wl,--start-group ./server/.libs/libmain.a \
