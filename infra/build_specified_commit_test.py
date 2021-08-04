@@ -67,11 +67,9 @@ class BuildImageIntegrationTest(unittest.TestCase):
                                          env_to_add=[],
                                          fuzzer_args=[],
                                          testcase_path=test_repo.testcase_path)
-      build_specified_commit.build_fuzzers_from_commit(
-          test_repo.project_name,
-          test_repo_manager,
-          host_src_dir,
-          build_data)
+      build_specified_commit.build_fuzzers_from_commit(test_repo.project_name,
+                                                       test_repo_manager,
+                                                       host_src_dir, build_data)
       new_result = helper.reproduce_impl(test_repo.project_name,
                                          test_repo.fuzz_target, False, [], [],
                                          test_repo.testcase_path)
