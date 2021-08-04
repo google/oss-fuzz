@@ -38,7 +38,6 @@ class ShellTest(unittest.TestCase):
     parser = helper.get_parser()
     args = helper.parse_args(parser, unparsed_args)
     args.sanitizer = 'address'
-    project = helper.Project(image_name)
     result = helper.shell(args)
     self.assertTrue(result)
 

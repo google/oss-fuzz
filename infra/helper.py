@@ -197,7 +197,7 @@ def parse_args(parser, args=None):
   build_integration_path = getattr(parsed_args, 'build_integration_path', False)
 
   parsed_args.project = Project(parsed_args.project, is_external,
-                              build_integration_path)
+                                build_integration_path)
   return parsed_args
 
 
