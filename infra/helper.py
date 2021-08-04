@@ -78,7 +78,7 @@ class Project:
                build_integration_path=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH):
     self.is_external = is_external
     if self.is_external:
-      self.name = os.path.dirname(project_name_or_path)
+      self.name = os.path.basename(os.path.abspath(project_name_or_path))
       self.path = project_name_or_path
       self.build_integration_path = os.path.join(self.path,
                                                  build_integration_path)
@@ -113,6 +113,7 @@ class Project:
   @property
   def out(self):
     """Returns the out dir for the project. Creates it if needed."""
+
     return _get_out_dir(self.name)
 
   @property
@@ -146,10 +147,13 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     else:
       args.sanitizer = 'address'
 
-  build_integration_path = getattr(args, 'build_integration_path', None)
-  name_or_path = getattr(args, 'project_src_path', args.project_name)
-  is_external = getattr(args, 'is_external', False)
-  project = Project(name_or_path, is_external, build_integration_path)
+  name_or_path = getattr(args, 'project', None)
+  if name_or_path is None:
+    project = None
+  else:
+    build_integration_path = getattr(args, 'build_integration_path', None)
+    is_external = getattr(args, 'external', False)
+    project = Project(name_or_path, is_external, build_integration_path)
 
   if args.command == 'generate':
     result = generate(project)
@@ -197,14 +201,9 @@ def _add_external_project_args(parser):
   parser.add_argument('--build-integration-path',
                       help=('Path to the build integration for non-OSS-Fuzz '
                             'projects.'),
-                      default=None)
+                      default=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
 
-  parser.add_argument('--project-src-path',
-                      help=('Path to the root of the external project\'s '
-                            'source code.'),
-                      default=None)
-
-  parser.add_argument('--external', help='Is project external?', default=False)
+  parser.add_argument('--external', help='Is project external?', default=False, action='store_true',)
 
 
 def get_parser():  # pylint: disable=too-many-statements
@@ -608,13 +607,13 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     docker_run([
         '-v',
         '%s:/out' % project.out, '-t',
-        'gcr.io/oss-fuzz/%s' % project, '/bin/bash', '-c', 'rm -rf /out/*'
+        'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /out/*'
     ])
 
     docker_run([
         '-v',
         '%s:/work' % project.work, '-t',
-        'gcr.io/oss-fuzz/%s' % project, '/bin/bash', '-c', 'rm -rf /work/*'
+        'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /work/*'
     ])
 
   else:
@@ -664,7 +663,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       '-v',
       '%s:/out' % project.out, '-v',
       '%s:/work' % project.work, '-t',
-      'gcr.io/oss-fuzz/%s' % project
+      'gcr.io/oss-fuzz/%s' % project.name
   ]
 
   result = docker_run(command)
@@ -892,7 +891,7 @@ def coverage(project, args):
 
   run_args.extend([
       '-v',
-      '%s:/out' % args.out,
+      '%s:/out' % project.out,
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
