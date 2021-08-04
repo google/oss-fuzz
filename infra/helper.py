@@ -823,7 +823,7 @@ def download_corpora(project, args):
   else:
     fuzz_targets = _get_fuzz_targets(args.project)
 
-  corpus_dir = args.project.corpus
+  corpus_dir = project.corpus
 
   def _download_for_single_target(fuzz_target):
     try:
@@ -834,7 +834,7 @@ def download_corpora(project, args):
                     str(error))
       return False
 
-  logging.info('Downloading corpora for %s project to %s.', args.project.name,
+  logging.info('Downloading corpora for %s project to %s.', project.name,
                corpus_dir)
   thread_pool = ThreadPool()
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
@@ -1112,7 +1112,7 @@ def shell(project, args):
   run_args.extend([
       '-v',
       '%s:/out' % out_dir, '-v',
-      '%s:/work' % args.project.work, '-t',
+      '%s:/work' % project.work, '-t',
       'gcr.io/%s/%s' % (image_project, project.name), '/bin/bash'
   ])
 
