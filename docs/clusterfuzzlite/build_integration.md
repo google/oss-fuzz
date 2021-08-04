@@ -218,15 +218,13 @@ coverage tools. Please refer to
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
 information on code coverage generation.
 
-
-**Note:** Currently, ClusterFuzzLite only supports AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
-configurations.
+**Note:** Currently, ClusterFuzzLite only supports AddressSanitizer (address)
+and UndefinedBehaviorSanitizer (undefined) configurations.
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 If everything works locally, it should also work on ClusterFuzzLite. If you
 check in your files and experience failures, review your [dependencies]({{site.baseurl }}/further-reading/fuzzer-environment/#dependencies).
-
 
 ## Debugging Problems
 
