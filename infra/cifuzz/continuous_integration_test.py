@@ -78,7 +78,7 @@ class BuildExternalProjetDockerImage(unittest.TestCase):
         project_src)
 
     mocked_docker_build.assert_called_with([
-        '-t', 'external-project', '-f', f'.cifuzz/Dockerfile',
+        '-t', 'external-project', '-f', f'.clusterfuzzlite/Dockerfile',
         project_src
     ])
 
