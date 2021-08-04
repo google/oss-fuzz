@@ -16,9 +16,14 @@
 import logging
 import enum
 import os
+import sys
 import json
 
 import environment
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import helper
 
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
