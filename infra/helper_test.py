@@ -68,8 +68,8 @@ class BuildImageImplTest(unittest.TestCase):
     image_name = 'base-image'
     helper.build_image_impl(helper.Project(image_name))
     mocked_docker_build.assert_called_with([
-        '-t', 'gcr.io/oss-fuzz-base/base-image', os.path.join(
-            helper.OSS_FUZZ_DIR, 'infra/base-images/base-image')
+        '-t', 'gcr.io/oss-fuzz-base/base-image',
+        os.path.join(helper.OSS_FUZZ_DIR, 'infra/base-images/base-image')
     ])
 
   @mock.patch('helper.docker_build')
@@ -78,9 +78,10 @@ class BuildImageImplTest(unittest.TestCase):
     project."""
     project_name = 'example'
     helper.build_image_impl(helper.Project(project_name))
-    mocked_docker_build.assert_called_with(
-        ['-t', 'gcr.io/oss-fuzz/example',
-         os.path.join(helper.OSS_FUZZ_DIR, 'projects/example')])
+    mocked_docker_build.assert_called_with([
+        '-t', 'gcr.io/oss-fuzz/example',
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects/example')
+    ])
 
   @mock.patch('helper.docker_build')
   def test_external_project(self, mocked_docker_build):
@@ -105,7 +106,6 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
-    self.maxDiff = None
 
   def _verify_templated_files(self, template_dict, directory):
     template_args = {'project_name': self.PROJECT_NAME, 'year': 2021}
@@ -120,11 +120,16 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   def test_generate_oss_fuzz_project(self, _):
     """Tests that the correct files are generated for an OSS-Fuzz project."""
     helper._generate_impl(helper.Project(self.PROJECT_NAME))
-    self._verify_templated_files(templates.TEMPLATES,
-                                 os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME))
+    self._verify_templated_files(
+        templates.TEMPLATES,
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME))
 
   def test_generate_external_project(self):
     """Tests that the correct files are generated for a non-OSS-Fuzz project."""
     build_integration_path = '/newfakeproject/build-integration'
-    helper._generate_impl(helper.Project('/newfakeproject/', is_external=True, build_integration_path=build_integration_path))
-    self._verify_templated_files(templates.EXTERNAL_TEMPLATES, build_integration_path)
+    helper._generate_impl(
+        helper.Project('/newfakeproject/',
+                       is_external=True,
+                       build_integration_path=build_integration_path))
+    self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
+                                 build_integration_path)

@@ -453,8 +453,8 @@ def build_image_impl(project, cache=True, pull=False):
 
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
-    docker_build_dir = os.path.join(
-        OSS_FUZZ_DIR, 'infra', 'base-images', image_name)
+    docker_build_dir = os.path.join(OSS_FUZZ_DIR, 'infra', 'base-images',
+                                    image_name)
     docker_file_path = None
   elif project.is_external:
     # External projects need to use the repo root as the build directory.
