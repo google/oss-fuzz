@@ -74,12 +74,11 @@ class BuildExternalProjetDockerImage(unittest.TestCase):
   def test_build_external_project_docker_image(self, mocked_docker_build):
     """Tests that build_external_project_docker_image works as intended."""
     project_src = '/path/to/project/src'
-    build_integration_path = '/path/to/build/integration'
     continuous_integration.build_external_project_docker_image(
-        project_src, build_integration_path)
+        project_src)
 
     mocked_docker_build.assert_called_with([
-        '-t', 'external-project', '-f', f'{build_integration_path}/Dockerfile',
+        '-t', 'external-project', '-f', f'.cifuzz/Dockerfile',
         project_src
     ])
 

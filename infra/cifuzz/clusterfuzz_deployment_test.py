@@ -131,7 +131,6 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.deployment = _create_deployment(run_fuzzers_mode='batch',
-                                         build_integration_path='/',
                                          oss_fuzz_project_name='',
                                          is_github=True)
 
@@ -187,8 +186,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    config = test_helpers.create_run_config(build_integration_path='/',
-                                            workspace=WORKSPACE,
+    config = test_helpers.create_run_config(workspace=WORKSPACE,
                                             is_github=False)
     workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(

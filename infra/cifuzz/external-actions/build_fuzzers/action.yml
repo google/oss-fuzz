@@ -18,9 +18,6 @@ inputs:
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: true
   bad-build-check:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
@@ -56,7 +53,6 @@ runs:
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
-    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}

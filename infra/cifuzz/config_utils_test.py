@@ -33,13 +33,11 @@ class BaseConfigTest(unittest.TestCase):
 
   def test_language_default(self):
     """Tests that the correct default language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
     config = self._create_config()
     self.assertEqual(config.language, 'c++')
 
   def test_language(self):
     """Tests that the correct language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
     language = 'python'
     os.environ['LANGUAGE'] = language
     config = self._create_config()
@@ -56,19 +54,6 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['SANITIZER'] = 'address'
     config = self._create_config()
     self.assertFalse(config.is_coverage)
-
-  @mock.patch('logging.error')
-  def test_validate_oss_fuzz_project_name_or_build_integration_path(
-      self, mocked_error):
-    """Tests that validate returns False if neither OSS_FUZZ_PROJECT_NAME or
-    BUILD_INTEGRATION_PATH is set."""
-    os.environ['WORKSPACE'] = '/workspace'
-    config = self._create_config()
-    self.assertFalse(config.validate())
-    mocked_error.assert_called_with(
-        'Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
-        'Otherwise must set BUILD_INTEGRATION_PATH. '
-        'Neither is set.')
 
   @mock.patch('logging.error')
   def test_validate_no_workspace(self, mocked_error):
