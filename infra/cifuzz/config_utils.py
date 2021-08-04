@@ -19,13 +19,12 @@ import os
 import sys
 import json
 
-import constants
 import environment
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import helper
+import constants
 
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
