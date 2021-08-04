@@ -16,9 +16,15 @@
 import logging
 import enum
 import os
+import sys
 import json
 
 import environment
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import helper
 
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 
@@ -205,7 +211,7 @@ class BaseConfig:
 
     self.sanitizer = _get_sanitizer()
 
-    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+    self.build_integration_path = helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
@@ -224,13 +230,6 @@ class BaseConfig:
     """Returns False if the configuration is invalid."""
     # Do validation here so that unittests don't need to make a fully-valid
     # config.
-    if (self.build_integration_path is None and
-        self.oss_fuzz_project_name is None):
-      logging.error('Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
-                    'Otherwise must set BUILD_INTEGRATION_PATH. '
-                    'Neither is set.')
-      return False
-
     if not self.workspace:
       logging.error('Must set WORKSPACE.')
       return False

@@ -63,8 +63,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
-# TODO(jonathanmetzman): Enforce this.
-DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.cifuzz'
+DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.clusterfuzzlite'
 
 # pylint: disable=too-many-lines
 
@@ -194,20 +193,11 @@ def parse_args(parser, args=None):
   # Use hacky method for extracting attributes so that ShellTest works.
   # TODO(metzman): Fix this.
   is_external = getattr(parsed_args, 'external', False)
-  build_integration_path = getattr(parsed_args, 'build_integration_path',
-                                   DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
-
-  parsed_args.project = Project(parsed_args.project, is_external,
-                                build_integration_path)
+  parsed_args.project = Project(parsed_args.project, is_external)
   return parsed_args
 
 
 def _add_external_project_args(parser):
-  parser.add_argument('--build-integration-path',
-                      help=('Path to the build integration for non-OSS-Fuzz '
-                            'projects.'),
-                      default=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
-
   parser.add_argument(
       '--external',
       help='Is project external?',

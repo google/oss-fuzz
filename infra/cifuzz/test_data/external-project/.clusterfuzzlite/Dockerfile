@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make
 
 COPY . $SRC/external-project
 WORKDIR $SRC/external-project
-COPY cifuzz-build-integration/build.sh $SRC/
+COPY .clusterfuzzlite/build.sh $SRC/

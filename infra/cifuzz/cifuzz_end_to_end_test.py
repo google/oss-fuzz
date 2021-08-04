@@ -40,7 +40,6 @@ class EndToEndTest(unittest.TestCase):
     """Simple end-to-end test using run_cifuzz.main()."""
     os.environ['REPOSITORY'] = 'external-project'
     os.environ['PROJECT_SRC_PATH'] = EXTERNAL_PROJECT_PATH
-    os.environ['BUILD_INTEGRATION_PATH'] = 'cifuzz-build-integration'
     with tempfile.TemporaryDirectory() as temp_dir:
       os.environ['WORKSPACE'] = temp_dir
       # TODO(metzman): Verify the crash, affected fuzzers and other things.
