@@ -203,7 +203,12 @@ def _add_external_project_args(parser):
                             'projects.'),
                       default=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH)
 
-  parser.add_argument('--external', help='Is project external?', default=False, action='store_true',)
+  parser.add_argument(
+      '--external',
+      help='Is project external?',
+      default=False,
+      action='store_true',
+  )
 
 
 def get_parser():  # pylint: disable=too-many-statements
