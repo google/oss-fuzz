@@ -17,6 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget libpcre3 \
                                          libpcre3-dev uuid-dev pkg-config libtool-bin
+
+RUN git clone https://github.com/AdaLogics/fuzz-headers
+
 RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.4.1.tar.gz && \
     tar -xf expat-2.4.1.tar.gz && \
     cd expat-2.4.1 && \
