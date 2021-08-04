@@ -38,8 +38,9 @@ class ShellTest(unittest.TestCase):
     parser = helper.get_parser()
     args = helper.parse_args(parser, unparsed_args)
     args.sanitizer = 'address'
-    result = helper.shell(helper.Project(image_name), args)
-    mocked_build_image_impl.assert_called_with(image_name, None, None)
+    project = helper.Project(image_name)
+    result = helper.shell(project, args)
+    mocked_build_image_impl.assert_called_with(project)
     self.assertTrue(result)
 
 
@@ -50,7 +51,7 @@ class BuildImageImplTest(unittest.TestCase):
   def test_no_cache(self, mocked_docker_build):
     """Tests that cache=False is handled properly."""
     image_name = 'base-image'
-    helper.build_image_impl(image_name, cache=False)
+    helper.build_image_impl(helper.Project(image_name), cache=False)
     self.assertIn('--no-cache', mocked_docker_build.call_args_list[0][0][0])
 
   @mock.patch('helper.docker_build')
@@ -58,16 +59,17 @@ class BuildImageImplTest(unittest.TestCase):
   def test_pull(self, mocked_pull_images, _):
     """Tests that pull=True is handled properly."""
     image_name = 'base-image'
-    helper.build_image_impl(image_name, pull=True)
+    helper.build_image_impl(helper.Project(image_name), pull=True)
     mocked_pull_images.assert_called_with()
 
   @mock.patch('helper.docker_build')
   def test_base_image(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with a base-image."""
     image_name = 'base-image'
-    helper.build_image_impl(image_name)
+    helper.build_image_impl(helper.Project(image_name))
     mocked_docker_build.assert_called_with([
-        '-t', 'gcr.io/oss-fuzz-base/base-image', 'infra/base-images/base-image'
+        '-t', 'gcr.io/oss-fuzz-base/base-image', os.path.join(
+            helper.OSS_FUZZ_DIR, 'infra/base-images/base-image')
     ])
 
   @mock.patch('helper.docker_build')
@@ -77,21 +79,22 @@ class BuildImageImplTest(unittest.TestCase):
     project_name = 'example'
     helper.build_image_impl(helper.Project(project_name))
     mocked_docker_build.assert_called_with(
-        ['-t', 'gcr.io/oss-fuzz/example', 'projects/example'])
+        ['-t', 'gcr.io/oss-fuzz/example',
+         os.path.join(helper.OSS_FUZZ_DIR, 'projects/example')])
 
   @mock.patch('helper.docker_build')
   def test_external_project(self, mocked_docker_build):
     """Tests that build_image_impl works as intended with a non-OSS-Fuzz
     project."""
-    project_src_path = '/project-src'
-    build_integration_path = '/example/build-integration'
+    project_src_path = '/example'
+    build_integration_path = 'build-integration'
     project = helper.Project(project_src_path,
                              is_external=True,
                              build_integration_path=build_integration_path)
     helper.build_image_impl(project)
     mocked_docker_build.assert_called_with([
         '-t', 'gcr.io/oss-fuzz/example', '--file',
-        '/project-src/build-integration/Dockerfile', project_src_path
+        '/example/build-integration/Dockerfile', project_src_path
     ])
 
 
@@ -102,6 +105,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
+    self.maxDiff = None
 
   def _verify_templated_files(self, template_dict, directory):
     template_args = {'project_name': self.PROJECT_NAME, 'year': 2021}
@@ -115,13 +119,12 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
               return_value=datetime.datetime(year=2021, month=1, day=1))
   def test_generate_oss_fuzz_project(self, _):
     """Tests that the correct files are generated for an OSS-Fuzz project."""
-    helper._generate_impl(self.PROJECT_NAME)
+    helper._generate_impl(helper.Project(self.PROJECT_NAME))
     self._verify_templated_files(templates.TEMPLATES,
-                                 os.path.join('projects', self.PROJECT_NAME))
+                                 os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME))
 
   def test_generate_external_project(self):
     """Tests that the correct files are generated for a non-OSS-Fuzz project."""
-    build_integration_path = '/project-src/build-integration'
-    helper._generate_impl(self.PROJECT_NAME)
-    self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
-                                 build_integration_path)
+    build_integration_path = '/newfakeproject/build-integration'
+    helper._generate_impl(helper.Project('/newfakeproject/', is_external=True, build_integration_path=build_integration_path))
+    self._verify_templated_files(templates.EXTERNAL_TEMPLATES, build_integration_path)
