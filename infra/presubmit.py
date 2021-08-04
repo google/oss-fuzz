@@ -23,7 +23,7 @@ import sys
 import unittest
 import yaml
 
-import helper
+import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -75,9 +75,9 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-      'sanitizers': helper.SANITIZERS,
-      'architectures': helper.ARCHITECTURES,
-      'fuzzing_engines': helper.ENGINES,
+      'sanitizers': constants.SANITIZERS,
+      'architectures': constants.ARCHITECTURES,
+      'fuzzing_engines': constants.ENGINES,
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -218,10 +218,10 @@ class ProjectYamlChecker:
     language = self.data.get('language')
     if not language:
       self.error('Missing "language" attribute in project.yaml.')
-    elif language not in helper.LANGUAGES:
+    elif language not in constants.LANGUAGES:
       self.error(
           '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=helper.LANGUAGES))
+              language=language, supported=constants.LANGUAGES))
 
 
 def _check_one_project_yaml(project_yaml_filename):
