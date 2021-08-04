@@ -20,6 +20,7 @@ import tempfile
 from unittest import mock
 
 import config_utils
+import workspace_utils
 
 
 @mock.patch('config_utils._is_dry_run', return_value=True)
@@ -52,7 +53,7 @@ def create_workspace(workspace_path='/workspace'):
   """Returns a workspace located at |workspace_path| ('/workspace' by
   default)."""
   config = create_run_config(workspace=workspace_path)
-  return config_utils.Workspace(config)
+  return workspace_utils.Workspace(config)
 
 
 def patch_environ(testcase_obj, env=None):
