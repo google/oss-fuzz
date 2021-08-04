@@ -284,3 +284,5 @@ here to significantly improve performance.
 if (size < kMinInputLength || size > kMaxInputLength)
   return 0;
 ```
+
+TODO(metzman): We probably want a TOC for lang-specific guides (which we still need to add).
