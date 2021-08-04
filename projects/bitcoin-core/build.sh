@@ -23,13 +23,6 @@ cd $SRC/bitcoin-core/
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
   export BUILD_TRIPLET="i686-pc-linux-gnu"
-  # Temporary workaround for:
-  #   CXXLD    test/fuzz/fuzz
-  # test/fuzz/test_fuzz_fuzz-multiplication_overflow.o: In function `void (anonymous namespace)::TestMultiplicationOverflow<long long>(FuzzedDataProvider&)':
-  # /src/bitcoin-core/src/test/fuzz/multiplication_overflow.cpp:30: undefined reference to `__mulodi4'
-  # clang-12: error: linker command failed with exit code 1 (use -v to see invocation)
-  # Makefile:5495: recipe for target 'test/fuzz/fuzz' failed
-  sed -i 's|defined(HAVE_BUILTIN_MUL_OVERFLOW)|defined(IGNORE_BUILTIN_MUL_OVERFLOW)|g' "./src/test/fuzz/multiplication_overflow.cpp"
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
