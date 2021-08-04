@@ -15,7 +15,6 @@
 ################################################################################
 """Constants for OSS-Fuzz."""
 
-# TODO(jonathanmetzman): Enforce this.
 DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH = '.cifuzz'
 
 DEFAULT_LANGUAGE = 'c++'

@@ -29,7 +29,6 @@ class GetFilestoreTest(unittest.TestCase):
 
   @parameterized.parameterized.expand([
       ({
-          'build_integration_path': '/',
           'is_github': True,
       }, github_actions.GithubActionsFilestore),
   ])

@@ -35,6 +35,5 @@ runs:
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
-    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}

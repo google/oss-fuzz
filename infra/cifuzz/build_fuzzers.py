@@ -64,8 +64,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
   def build_image_and_checkout_src(self):
     """Builds the project builder image and checkout source code for the patch
-    we want to fuzz (if necessary). Returns True on success.
-    Must be implemented by child classes."""
+    we want to fuzz (if necessary). Returns True on success."""
     result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False

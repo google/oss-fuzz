@@ -43,6 +43,15 @@ _DEFAULT_DOCKER_RUN_COMMAND = [
 ]
 
 
+def get_docker_env_vars(env_mapping):
+  """Returns a list of docker arguments that sets each key in |env_mapping| as
+  an env var and the value of that key in |env_mapping| as the value."""
+  env_var_args = []
+  for env_var, env_var_val in env_mapping.items():
+    env_var_args.extend(['-e', f'{env_var}={env_var_val}'])
+  return env_var_args
+
+
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
   # TODO(ochang): We may need unique names to support parallel fuzzing.
@@ -65,10 +74,12 @@ def get_base_docker_run_args(workspace,
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
-  docker_args += [
-      '-e', f'SANITIZER={sanitizer}', '-e', f'FUZZING_LANGUAGE={language}',
-      '-e', 'OUT=' + workspace.out
-  ]
+  env_mapping = {
+      'SANITIZER': sanitizer,
+      'FUZZING_LANGUAGE': language,
+      'OUT': workspace.out
+  }
+  docker_args += get_docker_env_vars(env_mapping)
   docker_container = utils.get_container_name()
   logging.info('Docker container: %s.', docker_container)
   if docker_container:
