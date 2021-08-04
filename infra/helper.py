@@ -114,7 +114,6 @@ class Project:
   @property
   def out(self):
     """Returns the out dir for the project. Creates it if needed."""
-
     return _get_out_dir(self.name)
 
   @property
@@ -188,12 +187,17 @@ def parse_args(parser, args=None):
   # Use default argument None for args so that in production, argparse does its
   # normal behavior, but unittesting is easier.
   parsed_args = parser.parse_args(args)
-  project = getattr(parsed_args.project)
+  project = getattr(parsed_args, 'project', None)
   if not project:
     return parsed_args
-  parsed_args.project = Project(parsed_args.project, args.is_external,
-                                args.build_integration_path)
 
+  # Use hacky method for extracting attributes so that ShellTest works.
+  # TODO(metzman): Fix this.
+  is_external = getattr(parsed_args, 'is_external', False)
+  build_integration_path = getattr(parsed_args, 'build_integration_path', False)
+
+  parsed_args.project = Project(parsed_args.project, is_external,
+                              build_integration_path)
   return parsed_args
 
 
