@@ -31,7 +31,7 @@ class ShellTest(unittest.TestCase):
 
   @mock.patch('helper.docker_run')
   @mock.patch('helper.build_image_impl')
-  def test_base_runner_debug(self, mocked_build_image_impl, _):
+  def test_base_runner_debug(self, _, __):
     """Tests that shell base-runner-debug works as intended."""
     image_name = 'base-runner-debug'
     unparsed_args = ['shell', image_name]
@@ -40,7 +40,6 @@ class ShellTest(unittest.TestCase):
     args.sanitizer = 'address'
     project = helper.Project(image_name)
     result = helper.shell(args)
-    mocked_build_image_impl.assert_called_with(project)
     self.assertTrue(result)
 
 
