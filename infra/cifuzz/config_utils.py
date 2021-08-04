@@ -196,7 +196,7 @@ class BaseConfig:
 
     self.sanitizer = _get_sanitizer()
 
-    self.build_integration_path = helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH
+    self.build_integration_path = helper.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
