@@ -99,12 +99,12 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name)
-    command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
+    command += docker.get_docker_env_vars({
+        'CORPUS_DIR': self.latest_corpus_path,
+        'RUN_FUZZER_MODE': 'interactive'
+    })
 
-    command += [
-        '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',
-        '-c'
-    ]
+    command += [docker.BASE_RUNNER_TAG, 'bash', '-c']
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
@@ -195,7 +195,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     command, container = docker.get_base_docker_run_command(
         self.workspace, self.config.sanitizer, self.config.language)
     if container:
-      command += ['-e', f'TESTCASE={testcase}']
+      command += docker.get_docker_env_vars({'TESTCASE': testcase})
     else:
       command += ['-v', f'{testcase}:/testcase']
 
