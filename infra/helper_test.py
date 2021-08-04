@@ -39,7 +39,7 @@ class ShellTest(unittest.TestCase):
     args = helper.parse_args(parser, unparsed_args)
     args.sanitizer = 'address'
     project = helper.Project(image_name)
-    result = helper.shell(project, args)
+    result = helper.shell(args)
     mocked_build_image_impl.assert_called_with(project)
     self.assertTrue(result)
 
