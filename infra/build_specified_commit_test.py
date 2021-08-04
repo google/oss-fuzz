@@ -61,7 +61,8 @@ class BuildImageIntegrationTest(unittest.TestCase):
       build_specified_commit.build_fuzzers_from_commit(test_repo.old_commit,
                                                        test_repo_manager,
                                                        host_src_dir, build_data)
-      old_result = helper.reproduce_impl(project_name=test_repo.project_name,
+      project = helper.Project(test_repo.project_name)
+      old_result = helper.reproduce_impl(project=project,
                                          fuzzer_name=test_repo.fuzz_target,
                                          valgrind=False,
                                          env_to_add=[],
@@ -70,9 +71,12 @@ class BuildImageIntegrationTest(unittest.TestCase):
       build_specified_commit.build_fuzzers_from_commit(test_repo.project_name,
                                                        test_repo_manager,
                                                        host_src_dir, build_data)
-      new_result = helper.reproduce_impl(test_repo.project_name,
-                                         test_repo.fuzz_target, False, [], [],
-                                         test_repo.testcase_path)
+      new_result = helper.reproduce_impl(project=project,
+                                         fuzzer_name=test_repo.fuzz_target,
+                                         valgrind=False,
+                                         env_to_add=[],
+                                         fuzzer_args=[],
+                                         testcase_path=test_repo.testcase_path)
       self.assertNotEqual(new_result, old_result)
 
   def test_detect_main_repo_from_commit(self):

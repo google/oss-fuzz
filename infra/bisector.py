@@ -105,7 +105,7 @@ def main():
                                                 architecture=args.architecture)
 
   result = bisect(args.type, args.old_commit, args.new_commit,
-                  args.testcase_path, args.fuzz_target, build_data)
+                  args.test_case_path, args.fuzz_target, build_data)
   if not result.commit:
     logging.error('No error was found in commit range %s:%s', args.old_commit,
                   args.new_commit)
@@ -142,12 +142,15 @@ def _check_for_crash(project_name, fuzz_target, testcase_path):
     return utils.execute(command + args)
 
   logging.info('Checking for crash')
-  out, err, return_code = helper.reproduce_impl(project_name,
-                                                fuzz_target,
-                                                False, [], [],
-                                                testcase_path,
-                                                run_function=docker_run,
-                                                err_result=(None, None, None))
+  out, err, return_code = helper.reproduce_impl(
+      project=helper.Project(project_name),
+      fuzzer_name=fuzz_target,
+      valgrind=False,
+      env_to_add=[],
+      fuzzer_args=[],
+      testcase_path=testcase_path,
+      run_function=docker_run,
+      err_result=(None, None, None))
   if return_code is None:
     return None
 
