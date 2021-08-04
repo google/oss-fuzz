@@ -105,7 +105,7 @@ def main():
                                                 architecture=args.architecture)
 
   result = bisect(args.type, args.old_commit, args.new_commit,
-                  args.test_case_path, args.fuzz_target, build_data)
+                  args.testcase_path, args.fuzz_target, build_data)
   if not result.commit:
     logging.error('No error was found in commit range %s:%s', args.old_commit,
                   args.new_commit)
@@ -131,7 +131,7 @@ def _get_dedup_token(output):
   return None
 
 
-def _check_for_crash(project_name, fuzz_target, test_case_path):
+def _check_for_crash(project_name, fuzz_target, testcase_path):
   """Check for crash."""
 
   def docker_run(args):
@@ -145,7 +145,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
   out, err, return_code = helper.reproduce_impl(project_name,
                                                 fuzz_target,
                                                 False, [], [],
-                                                test_case_path,
+                                                testcase_path,
                                                 run_function=docker_run,
                                                 err_result=(None, None, None))
   if return_code is None:
@@ -167,7 +167,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-statements
-def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
+def _bisect(bisect_type, old_commit, new_commit, testcase_path, fuzz_target,
             build_data):
   """Perform the bisect."""
   # pylint: disable=too-many-branches
@@ -212,7 +212,7 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
       raise BisectError('Invalid bisect type ' + bisect_type, repo_url)
 
     expected_error = _check_for_crash(build_data.project_name, fuzz_target,
-                                      test_case_path)
+                                      testcase_path)
     logging.info('new_commit result = %s', expected_error)
 
     if not should_crash and expected_error:
@@ -231,7 +231,7 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
         raise BisectError('Failed to build old_commit', repo_url)
 
       if _check_for_crash(build_data.project_name, fuzz_target,
-                          test_case_path) == expected_error:
+                          testcase_path) == expected_error:
         logging.warning('old_commit %s had same result as new_commit %s',
                         old_commit, new_commit)
         # Try again on an slightly older commit.
@@ -266,7 +266,7 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
         continue
 
       current_error = _check_for_crash(build_data.project_name, fuzz_target,
-                                       test_case_path)
+                                       testcase_path)
       logging.info('Current result = %s', current_error)
       if expected_error == current_error:
         new_idx = curr_idx
@@ -277,16 +277,16 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
 
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
-def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
+def bisect(bisect_type, old_commit, new_commit, testcase_path, fuzz_target,
            build_data):
   """From a commit range, this function caluclates which introduced a
-  specific error from a fuzz test_case_path.
+  specific error from a fuzz testcase_path.
 
   Args:
     bisect_type: The type of the bisect ('regressed' or 'fixed').
     old_commit: The oldest commit in the error regression range.
     new_commit: The newest commit in the error regression range.
-    test_case_path: The file path of the test case that triggers the error
+    testcase_path: The file path of the test case that triggers the error
     fuzz_target: The name of the fuzzer to be tested.
     build_data: a class holding all of the input parameters for bisection.
 
@@ -297,7 +297,7 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
     ValueError: when a repo url can't be determine from the project.
   """
   try:
-    return _bisect(bisect_type, old_commit, new_commit, test_case_path,
+    return _bisect(bisect_type, old_commit, new_commit, testcase_path,
                    fuzz_target, build_data)
   finally:
     # Clean up projects/ as _bisect may have modified it.

@@ -27,7 +27,7 @@ import helper
 import repo_manager
 import test_repos
 
-# Necessary because __file__ changes with os.chdir
+# necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -45,31 +45,34 @@ class BuildImageIntegrationTest(unittest.TestCase):
     should not.
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
-      test_case = test_repos.TEST_REPOS[1]
-      self.assertTrue(helper.build_image_impl(test_case.project_name))
+      test_repo = test_repos.TEST_REPOS[1]
+      self.assertTrue(helper.build_image_impl(test_repo.project_name))
       host_src_dir = build_specified_commit.copy_src_from_docker(
-          test_case.project_name, tmp_dir)
+          test_repo.project_name, tmp_dir)
 
       test_repo_manager = repo_manager.clone_repo_and_get_manager(
-          test_case.git_url, host_src_dir, test_case.oss_repo_name)
+          test_repo.git_url, host_src_dir, test_repo.oss_repo_name)
       build_data = build_specified_commit.BuildData(
           sanitizer='address',
           architecture='x86_64',
           engine='libfuzzer',
-          project_name=test_case.project_name)
+          project_name=test_repo.project_name)
 
-      build_specified_commit.build_fuzzers_from_commit(test_case.old_commit,
+      build_specified_commit.build_fuzzers_from_commit(test_repo.old_commit,
                                                        test_repo_manager,
                                                        host_src_dir, build_data)
-      old_result = helper.reproduce_impl(test_case.project_name,
-                                         test_case.fuzz_target, False, [], [],
-                                         test_case.test_case_path)
-      build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
+      old_result = helper.reproduce_impl(project_name=test_repo.project_name,
+                                         fuzzer_name=test_repo.fuzz_target,
+                                         valgrind=False,
+                                         env_to_add=[],
+                                         fuzzer_args=[],
+                                         testcase_path=test_repo.testcase_path)
+      build_specified_commit.build_fuzzers_from_commit(test_repo.project_name,
                                                        test_repo_manager,
                                                        host_src_dir, build_data)
-      new_result = helper.reproduce_impl(test_case.project_name,
-                                         test_case.fuzz_target, False, [], [],
-                                         test_case.test_case_path)
+      new_result = helper.reproduce_impl(test_repo.project_name,
+                                         test_repo.fuzz_target, False, [], [],
+                                         test_repo.testcase_path)
       self.assertNotEqual(new_result, old_result)
 
   def test_detect_main_repo_from_commit(self):
