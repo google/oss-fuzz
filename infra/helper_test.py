@@ -209,6 +209,10 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
 
   def test_language_internal_project(self):
     """Tests that language works as intended for an internal project."""
+    project_yaml_path = os.path.join(self.internal_project.path, 'project.yaml')
+    self.fs.create_file(project_yaml_path, contents='language: python')
+    self.assertEqual(self.internal_project.language, 'python')
 
   def test_language_external_project(self):
     """Tests that language works as intended for an external project."""
+    self.assertEqual(self.external_project.language, 'c++')
