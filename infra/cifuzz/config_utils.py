@@ -20,6 +20,20 @@ import json
 
 import environment
 
+RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
+
+# TODO(metzman): Make one source of truth for these in helper.py
+SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
+LANGUAGES = [
+    'c',
+    'c++',
+    'go',
+    'jvm',
+    'python',
+    'rust',
+    'swift',
+]
+
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
 DEFAULT_LANGUAGE = 'c++'
@@ -31,18 +45,6 @@ DEFAULT_SANITIZER = 'address'
 # that should be interpreted as strings to be returned as other types (bools or
 # ints for example). The environment.py helpers should not be used for values
 # that are supposed to be strings.
-
-
-def _get_project_repo_owner_and_name():
-  """Returns a tuple containing the project repo owner and the name of the
-  repo."""
-  # On GitHub this includes owner and repo name.
-  repository = os.getenv('GITHUB_REPOSITORY', '')
-  # Use os.path.split. When GITHUB_REPOSITORY just contains the name of the
-  # repo, this will return a tuple containing an empty string and the repo name.
-  # When GITHUB_REPOSITORY contains the repo owner followed by a slash and then
-  # the repo name, it will return a tuple containing the owner and repo name.
-  return os.path.split(repository)
 
 
 def _get_pr_ref(event):
@@ -60,23 +62,6 @@ def _is_dry_run():
   return environment.get_bool('DRY_RUN', False)
 
 
-def get_project_src_path(workspace, is_github):
-  """Returns the manually checked out path of the project's source if specified
-  or None. Returns the path relative to |workspace| if |is_github| since on
-  github the checkout will be relative to there."""
-  path = os.getenv('PROJECT_SRC_PATH')
-  if not path:
-    logging.debug('No PROJECT_SRC_PATH.')
-    return path
-
-  logging.debug('PROJECT_SRC_PATH set: %s.', path)
-  if is_github:
-    # On GitHub, they don't know the absolute path, it is relative to
-    # |workspace|.
-    return os.path.join(workspace, path)
-  return path
-
-
 def _get_language():
   """Returns the project language."""
   # Get language from environment. We took this approach because the convenience
@@ -90,7 +75,105 @@ def _get_language():
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 
 
-class ConfigurationError(Exception):
+class BaseCiEnvironment:
+  """Base class for CiEnvironment subclasses."""
+
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    raise NotImplementedError('Child class must implment method.')
+
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    raise NotImplementedError('Child class must implment method.')
+
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    raise NotImplementedError('Child class must implment method.')
+
+  @property
+  def project_src_path(self):
+    """Returns the manually checked out path of the project's source if
+    specified or None."""
+
+    path = os.getenv('PROJECT_SRC_PATH')
+    if not path:
+      logging.debug('No PROJECT_SRC_PATH.')
+      return path
+
+    logging.debug('PROJECT_SRC_PATH set: %s.', path)
+    return path
+
+
+class GenericCiEnvironment(BaseCiEnvironment):
+  """CI Environment for generic CI systems."""
+
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    return os.getenv('WORKSPACE')
+
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    return os.getenv('GIT_SHA')
+
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    return os.getenv('TOKEN')
+
+  @property
+  def project_repo_owner_and_name(self):
+    """Returns a tuple containing the project repo owner and None."""
+    repository = os.getenv('REPOSITORY')
+    # Repo owner is a githubism.
+    return None, repository
+
+
+class GithubEnvironment(BaseCiEnvironment):
+  """CI environment for GitHub."""
+
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    return os.getenv('GITHUB_WORKSPACE')
+
+  @property
+  def git_sha(self):
+    """Returns the Git SHA to diff against."""
+    return os.getenv('GITHUB_SHA')
+
+  @property
+  def token(self):
+    """Returns the CI API token."""
+    return os.getenv('GITHUB_TOKEN')
+
+  @property
+  def project_src_path(self):
+    """Returns the manually checked out path of the project's source if
+    specified or None. The path returned is relative to |self.workspace| since
+    on github the checkout will be relative to there."""
+    # On GitHub, they don't know the absolute path, it is relative to
+    # |workspace|.
+    project_src_path = super().project_src_path
+    if project_src_path is None:
+      return project_src_path
+    return os.path.join(self.workspace, project_src_path)
+
+  @property
+  def project_repo_owner_and_name(self):
+    """Returns a tuple containing the project repo owner and the name of the
+    repo."""
+    # On GitHub this includes owner and repo name.
+    repository = os.getenv('GITHUB_REPOSITORY')
+    # Use os.path.split to split owner from repo.
+    return os.path.split(repository)
+
+
+class ConfigError(Exception):
   """Error for invalid configuration."""
 
 
@@ -105,10 +188,17 @@ class BaseConfig:
     EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
   def __init__(self):
-    self.workspace = os.getenv('GITHUB_WORKSPACE')
+    # Need to set these before calling self.platform.
+    self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
+    self.is_github = bool(self._github_event_path)
+    logging.debug('Is github: %s.', self.is_github)
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
+
+    self._ci_env = _get_ci_environment(self.platform)
+    self.workspace = self._ci_env.workspace
+
     self.project_repo_owner, self.project_repo_name = (
-        _get_project_repo_owner_and_name())
+        self._ci_env.project_repo_owner_and_name)
 
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
@@ -117,12 +207,9 @@ class BaseConfig:
 
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.language = _get_language()
-    event_path = os.getenv('GITHUB_EVENT_PATH')
-    self.is_github = bool(event_path)
-    logging.debug('Is github: %s.', self.is_github)
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
-    self.github_token = os.environ.get('GITHUB_TOKEN')
+    self.token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
@@ -130,8 +217,8 @@ class BaseConfig:
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
-    if not self.validate() and not os.getenv('CIFUZZ_TEST'):
-      raise ConfigurationError('Invalid Configuration.')
+    if not os.getenv('CIFUZZ_TEST') and not self.validate():
+      raise ConfigError('Invalid Configuration.')
 
   def validate(self):
     """Returns False if the configuration is invalid."""
@@ -145,7 +232,17 @@ class BaseConfig:
       return False
 
     if not self.workspace:
-      logging.error('Must set GITHUB_WORKSPACE.')
+      logging.error('Must set WORKSPACE.')
+      return False
+
+    if self.sanitizer not in SANITIZERS:
+      logging.error('Invalid SANITIZER: %s. Must be one of: %s.',
+                    self.sanitizer, SANITIZERS)
+      return False
+
+    if self.language not in LANGUAGES:
+      logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
+                    LANGUAGES)
       return False
 
     return True
@@ -174,10 +271,21 @@ class BaseConfig:
     return self.sanitizer == 'coverage'
 
 
+_CI_ENVIRONMENT_MAPPING = {
+    BaseConfig.Platform.EXTERNAL_GITHUB: GithubEnvironment,
+    BaseConfig.Platform.INTERNAL_GITHUB: GithubEnvironment,
+    BaseConfig.Platform.INTERNAL_GENERIC_CI: GenericCiEnvironment,
+    BaseConfig.Platform.EXTERNAL_GENERIC_CI: GenericCiEnvironment,
+}
+
+
+def _get_ci_environment(platform):
+  """Returns the CI environment object for |platform|."""
+  return _CI_ENVIRONMENT_MAPPING[platform]()
+
+
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
-
-  RUN_FUZZERS_MODES = {'batch', 'ci', 'coverage'}
 
   def __init__(self):
     super().__init__()
@@ -186,23 +294,33 @@ class RunFuzzersConfig(BaseConfig):
     if self.is_coverage:
       self.run_fuzzers_mode = 'coverage'
 
-    if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
-      raise Exception(
-          ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
-           (self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)))
-
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
+
+    # TODO(metzman): Fix tests to create valid configurations and get rid of
+    # CIFUZZ_TEST here and in presubmit.py.
+    if not os.getenv('CIFUZZ_TEST') and not self._run_config_validate():
+      raise ConfigError('Invalid Run Configuration.')
+
+  def _run_config_validate(self):
+    """Do extra validation on RunFuzzersConfig.__init__(). Do not name this
+    validate or else it will be called when using the parent's __init__ and will
+    fail. Returns True if valid."""
+    if self.run_fuzzers_mode not in RUN_FUZZERS_MODES:
+      logging.error('Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.',
+                    self.run_fuzzers_mode, RUN_FUZZERS_MODES)
+      return False
+
+    return True
 
 
 class BuildFuzzersConfig(BaseConfig):
   """Class containing constant configuration for building fuzzers in CIFuzz."""
 
   def _get_config_from_event_path(self, event):
-    event_path = os.getenv('GITHUB_EVENT_PATH')
-    if not event_path:
+    if not self._github_event_path:
       return
-    with open(event_path, encoding='utf-8') as file_handle:
+    with open(self._github_event_path, encoding='utf-8') as file_handle:
       event_data = json.load(file_handle)
     if event == 'push':
       self.base_commit = event_data['before']
@@ -216,10 +334,8 @@ class BuildFuzzersConfig(BaseConfig):
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
-    # TODO(metzman): Some of this config is very CI-specific. Move it into the
-    # CI class.
     super().__init__()
-    self.commit_sha = os.getenv('GITHUB_SHA')
+    self.commit_sha = self._ci_env.git_sha
     event = os.getenv('GITHUB_EVENT_NAME')
 
     self.pr_ref = None
@@ -228,7 +344,7 @@ class BuildFuzzersConfig(BaseConfig):
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.project_src_path = get_project_src_path(self.workspace, self.is_github)
+    self.project_src_path = self._ci_env.project_src_path
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
