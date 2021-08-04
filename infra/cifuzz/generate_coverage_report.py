@@ -22,12 +22,16 @@ def run_coverage_command(workspace, config):
   """Runs the coverage command in base-runner to generate a coverage report."""
   docker_args, _ = docker.get_base_docker_run_args(workspace, config.sanitizer,
                                                    config.language)
-  docker_args += [
-      '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-e',
-      f'CORPUS_DIR={workspace.corpora}', '-e',
-      f'COVERAGE_OUTPUT_DIR={workspace.coverage_report}', '-t',
-      docker.BASE_RUNNER_TAG, 'coverage'
-  ]
+  env_mapping = {
+      'COVERAGE_EXTRA_ARGS': '',
+      'HTTP_PORT': '',
+      'CORPUS_DIR': workspace.corpora,
+      'COVERAGE_OUTPUT_DIR': workspace.coverage_report
+  }
+  docker_args += docker.get_docker_env_vars(env_mapping)
+
+  docker_args += ['-t', docker.BASE_RUNNER_TAG, 'coverage']
+
   return helper.docker_run(docker_args)
 
 
