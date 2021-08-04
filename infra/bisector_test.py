@@ -45,7 +45,7 @@ class BisectIntegrationTests(unittest.TestCase):
         architecture='x86_64')
     with self.assertRaises(ValueError):
       bisector.bisect(self.BISECT_TYPE, test_repo.old_commit,
-                      test_repo.new_commit, test_repo.test_case_path,
+                      test_repo.new_commit, test_repo.testcase_path,
                       test_repo.fuzz_target, build_data)
 
   def test_bisect(self):
@@ -58,7 +58,7 @@ class BisectIntegrationTests(unittest.TestCase):
             sanitizer='address',
             architecture='x86_64')
         result = bisector.bisect(self.BISECT_TYPE, test_repo.old_commit,
-                                 test_repo.new_commit, test_repo.test_case_path,
+                                 test_repo.new_commit, test_repo.testcase_path,
                                  test_repo.fuzz_target, build_data)
         self.assertEqual(result.commit, test_repo.intro_commit)
 

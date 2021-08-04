@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 
+import config_utils
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -26,12 +27,10 @@ BASE_RUNNER_TAG = 'gcr.io/oss-fuzz-base/base-runner'
 MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
-# Default fuzz configuration.
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-    'ARCHITECTURE=' + DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+    '--cap-add', 'SYS_PTRACE', '-e',
+    'FUZZING_ENGINE=' + config_utils.DEFAULT_ENGINE, '-e',
+    'ARCHITECTURE=' + config_utils.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 
 EXTERNAL_PROJECT_IMAGE = 'external-project'
@@ -60,7 +59,9 @@ def delete_images(images):
   utils.execute(['docker', 'builder', 'prune', '-f'])
 
 
-def get_base_docker_run_args(workspace, sanitizer='address', language='c++'):
+def get_base_docker_run_args(workspace,
+                             sanitizer=config_utils.DEFAULT_SANITIZER,
+                             language=config_utils.DEFAULT_LANGUAGE):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
@@ -79,7 +80,9 @@ def get_base_docker_run_args(workspace, sanitizer='address', language='c++'):
   return docker_args, docker_container
 
 
-def get_base_docker_run_command(workspace, sanitizer='address', language='c++'):
+def get_base_docker_run_command(workspace,
+                                sanitizer=config_utils.DEFAULT_SANITIZER,
+                                language=config_utils.DEFAULT_LANGUAGE):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
