@@ -5,7 +5,8 @@ Use the following instructions to make documentation changes locally.
 ## Prerequisites
 ```bash
 $ sudo apt install ruby bundler
-$ bundle install --path vendor/bundle
+$ bundle config set path 'vendor/bundle'
+$ bundle install
 ```
 
 ## Serving locally
