@@ -30,6 +30,8 @@ import subprocess
 import sys
 import templates
 
+import constants
+
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
@@ -46,9 +48,6 @@ BASE_IMAGES = [
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
 
-if sys.version_info[0] >= 3:
-  raw_input = input  # pylint: disable=invalid-name
-
 CORPUS_URL_FORMAT = (
     'gs://{project_name}-corpus.clusterfuzz-external.appspot.com/libFuzzer/'
     '{fuzz_target}/')
@@ -58,12 +57,10 @@ CORPUS_BACKUP_URL_FORMAT = (
 
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
-# Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
-
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
-DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH = '.clusterfuzzlite'
+if sys.version_info[0] >= 3:
+  raw_input = input  # pylint: disable=invalid-name
 
 # pylint: disable=too-many-lines
 
@@ -72,10 +69,11 @@ class Project:
   """Class representing a project that is in OSS-Fuzz or an external project
   (ClusterFuzzLite user)."""
 
-  def __init__(self,
-               project_name_or_path,
-               is_external=False,
-               build_integration_path=DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH):
+  def __init__(
+      self,
+      project_name_or_path,
+      is_external=False,
+      build_integration_path=constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH):
     self.is_external = is_external
     if self.is_external:
       self.name = os.path.basename(os.path.abspath(project_name_or_path))
@@ -97,7 +95,7 @@ class Project:
     """Returns project language."""
     if self.is_external:
       # TODO(metzman): Handle this properly.
-      return 'c++'
+      return constants.DEFAULT_LANGUAGE
 
     project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
@@ -144,7 +142,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     if args.engine == 'dataflow':
       args.sanitizer = 'dataflow'
     else:
-      args.sanitizer = 'address'
+      args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -260,12 +258,8 @@ def get_parser():  # pylint: disable=too-many-statements
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
-  _add_engine_args(
-      check_build_parser,
-      choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
-  _add_sanitizer_args(
-      check_build_parser,
-      choices=['address', 'memory', 'undefined', 'dataflow', 'thread'])
+  _add_engine_args(check_build_parser, choices=constants.ENGINES)
+  _add_sanitizer_args(check_build_parser, choices=constants.SANITIZERS)
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project',
                                   help='name of the project or path (external)')
@@ -412,22 +406,28 @@ def _get_out_dir(project=''):
   return _get_project_build_subdir(project, 'out')
 
 
-def _add_architecture_args(parser, choices=('x86_64', 'i386')):
+def _add_architecture_args(parser, choices=None):
   """Adds common architecture args."""
-  parser.add_argument('--architecture', default='x86_64', choices=choices)
+  if choices is None:
+    choices = constants.ARCHITECTURES
+  parser.add_argument('--architecture',
+                      default=constants.DEFAULT_ARCHITECTURE,
+                      choices=choices)
 
 
-def _add_engine_args(parser,
-                     choices=('libfuzzer', 'afl', 'honggfuzz', 'dataflow',
-                              'none')):
+def _add_engine_args(parser, choices=None):
   """Adds common engine args."""
-  parser.add_argument('--engine', default='libfuzzer', choices=choices)
+  if choices is None:
+    choices = constants.ENGINES
+  parser.add_argument('--engine',
+                      default=constants.DEFAULT_ENGINE,
+                      choices=choices)
 
 
-def _add_sanitizer_args(parser,
-                        choices=('address', 'memory', 'undefined', 'coverage',
-                                 'dataflow', 'thread')):
+def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
+  if choices is None:
+    choices = constants.SANITIZERS
   parser.add_argument(
       '--sanitizer',
       default=None,
@@ -706,9 +706,9 @@ def check_build(args):
 
   fuzzing_language = args.project.language
   if not fuzzing_language:
-    logging.warning(
-        'Language not specified in project.yaml. Defaulting to C++.')
-    fuzzing_language = 'c++'
+    fuzzing_language = constants.DEFAULT_LANGUAGE
+    logging.warning('Language not specified in project.yaml. Defaulting to %s.',
+                    fuzzing_language)
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
@@ -845,7 +845,7 @@ def coverage(args):
   if not check_project_exists(args.project):
     return False
 
-  if args.project.language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+  if args.project.language not in constants.LANGUAGES_WITH_COVERAGE_SUPPORT:
     logging.error(
         'Project is written in %s, coverage for it is not supported yet.',
         args.project.language)

@@ -17,6 +17,7 @@ import unittest
 from unittest import mock
 
 import config_utils
+import constants
 import test_helpers
 
 # pylint: disable=no-self-use,protected-access
@@ -72,8 +73,7 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertFalse(config.validate())
     mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
-                                    os.environ['LANGUAGE'],
-                                    config_utils.LANGUAGES)
+                                    os.environ['LANGUAGE'], constants.LANGUAGES)
 
   @mock.patch('logging.error')
   def test_validate_invalid_sanitizer(self, mocked_error):

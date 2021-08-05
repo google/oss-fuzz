@@ -21,6 +21,7 @@ from unittest import mock
 
 from pyfakefs import fake_filesystem_unittest
 
+import constants
 import helper
 import templates
 
@@ -159,7 +160,7 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(
         self.external_project.build_integration_path,
         os.path.join(self.external_project_path,
-                     helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH))
+                     constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH))
 
   def test_init_internal_project(self):
     """Tests __init__ method for internal projects."""
@@ -180,7 +181,7 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(
         self.external_project.dockerfile_path,
         os.path.join(self.external_project_path,
-                     helper.DEFAULT_RELATIVE_BUILD_INTEGRATION_PATH,
+                     constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH,
                      'Dockerfile'))
 
   def test_out(self):
