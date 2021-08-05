@@ -13,7 +13,6 @@
 # limitations under the License.
 """End-to-End tests for CIFuzz."""
 import os
-import tempfile
 import unittest
 
 import run_cifuzz
