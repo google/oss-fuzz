@@ -31,6 +31,8 @@ LANGUAGES = [
     'swift',
 ]
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
-SANITIZERS = ['address', 'none', 'memory', 'undefined', 'dataflow', 'thread']
+SANITIZERS = [
+    'address', 'none', 'memory', 'undefined', 'dataflow', 'thread', 'coverage'
+]
 ARCHITECTURES = ['i386', 'x86_64']
 ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none']
