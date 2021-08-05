@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone \
 	--depth 1 \
-	--branch master \
+	--branch main \
 	https://github.com/mozilla/bleach.git
 
 WORKDIR bleach
