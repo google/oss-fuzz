@@ -14,7 +14,6 @@
 """Contains convenient helpers for writing tests."""
 
 import contextlib
-import docker
 import os
 import sys
 import shutil
@@ -22,13 +21,14 @@ import tempfile
 from unittest import mock
 
 import config_utils
+import docker
 import workspace_utils
 
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import helper
-
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(INFRA_DIR)
+
+import helper
 
 
 @mock.patch('config_utils._is_dry_run', return_value=True)
@@ -100,6 +100,7 @@ def temp_dir_copy(directory):
     temp_copy_path = os.path.join(temp_dir, os.path.basename(directory))
     shutil.copytree(directory, temp_copy_path)
     yield temp_copy_path
+
 
 @contextlib.contextmanager
 def docker_temp_dir():

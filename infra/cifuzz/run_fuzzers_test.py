@@ -23,7 +23,6 @@ from unittest import mock
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
-import docker
 import build_fuzzers
 import fuzz_target
 import run_fuzzers
@@ -404,7 +403,6 @@ class CoverageReportIntegrationTest(unittest.TestCase):
       with open(actual_summary_path) as file_handle:
         actual_summary = json.loads(file_handle.read())
       self.assertEqual(expected_summary, actual_summary)
-
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
