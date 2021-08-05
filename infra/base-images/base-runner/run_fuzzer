@@ -76,7 +76,7 @@ SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 
 if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   echo "Using seed corpus: $SEED_CORPUS"
-  unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
+  unzip -o -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
 fi
 
 OPTIONS_FILE="${FUZZER}.options"
