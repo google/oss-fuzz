@@ -14,13 +14,19 @@
 """Contains convenient helpers for writing tests."""
 
 import contextlib
+import docker
 import os
+import sys
 import shutil
 import tempfile
 from unittest import mock
 
 import config_utils
 import workspace_utils
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import helper
 
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -94,3 +100,16 @@ def temp_dir_copy(directory):
     temp_copy_path = os.path.join(temp_dir, os.path.basename(directory))
     shutil.copytree(directory, temp_copy_path)
     yield temp_copy_path
+
+@contextlib.contextmanager
+def docker_temp_dir():
+  """Returns a temporary a directory that is useful for use with docker. On
+  cleanup this contextmanager uses docker to delete the directory's contents so
+  that if anything is owned by root it can be deleted (which
+  tempfile.TemporaryDirectory() cannot do) by non-root users."""
+  with tempfile.TemporaryDirectory() as temp_dir:
+    yield temp_dir
+    helper.docker_run([
+        '-v', f'{temp_dir}:/temp_dir', '-t', docker.BASE_BUILDER_TAG,
+        '/bin/bash', '-c', 'rm -rf /temp_dir/*'
+    ])
