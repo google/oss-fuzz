@@ -4,6 +4,8 @@ title: ClusterFuzzLite
 has_children: true
 nav_order: 8
 permalink: /clusterfuzzlite/
+<!-- Hide for now by setting "published: false" -->
+published: false
 ---
 
 # ClusterFuzzLite
