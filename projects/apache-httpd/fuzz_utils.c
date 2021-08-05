@@ -64,7 +64,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (ns10 != NULL && ns11 != NULL) {
       ap_escape_path_segment_buffer(ns10, ns11);
     }
-    free(ns10)
+    free(ns10);
 
     // Pool initialisation
     if (apr_pool_initialize() == APR_SUCCESS) {
