@@ -266,44 +266,45 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   def setUp(self):
     self.temp_dir_obj = tempfile.TemporaryDirectory()
     workspace_path = os.path.join(self.temp_dir_obj.name, 'workspace')
+    self.config = test_helpers.create_build_config(
+        oss_fuzz_project_name=EXAMPLE_PROJECT,
+        sanitizer=self.SANITIZER,
+        language=self.LANGUAGE,
+        workspace=workspace_path,
+        pr_ref='refs/pull/1757/merge')
     self.workspace = test_helpers.create_workspace(workspace_path)
     shutil.copytree(TEST_DATA_PATH, workspace_path)
+    test_helpers.patch_environ(self, runner=True)
 
   def tearDown(self):
     self.temp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-    self.assertTrue(
-        build_fuzzers.check_fuzzer_build(self.workspace, self.SANITIZER,
-                                         self.LANGUAGE))
+    self.assertTrue(build_fuzzers.check_fuzzer_build(self.config))
 
   def test_not_a_valid_path(self):
     """Tests that False is returned when a nonexistent path is given."""
-    workspace = test_helpers.create_workspace('not/a/valid/path')
-    self.assertFalse(
-        build_fuzzers.check_fuzzer_build(workspace, self.SANITIZER,
-                                         self.LANGUAGE))
+    self.config.workspace = 'not/a/valid/path'
+    self.assertFalse(build_fuzzers.check_fuzzer_build(self.config))
 
   def test_no_valid_fuzzers(self):
     """Tests that False is returned when an empty directory is given."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      workspace = test_helpers.create_workspace(tmp_dir)
-    self.assertFalse(
-        build_fuzzers.check_fuzzer_build(workspace, self.SANITIZER,
-                                         self.LANGUAGE))
+      self.config.workspace = tmp_dir
+      os.mkdir(os.path.join(self.config.workspace, 'build-out'))
+      self.assertFalse(build_fuzzers.check_fuzzer_build(self.config))
 
-  @mock.patch('helper.docker_run')
-  def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
+  @mock.patch('utils.execute', return_value=(None, None, 0))
+  def test_allow_broken_fuzz_targets_percentage(self, mocked_execute):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
     docker if passed to check_fuzzer_build."""
-    mocked_docker_run.return_value = 0
-    build_fuzzers.check_fuzzer_build(self.workspace,
-                                     self.SANITIZER,
-                                     self.LANGUAGE,
-                                     allowed_broken_targets_percentage='0')
-    self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
-                  ' '.join(mocked_docker_run.call_args[0][0]))
+    percentage = '0'
+    self.config.allowed_broken_targets_percentage = percentage
+    build_fuzzers.check_fuzzer_build(self.config)
+    self.assertEqual(
+        mocked_execute.call_args[1]['env']['ALLOWED_BROKEN_TARGETS_PERCENTAGE'],
+        percentage)
 
 
 @unittest.skip('Test is too long to be run with presubmit.')

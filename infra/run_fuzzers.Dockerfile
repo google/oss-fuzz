@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-# Docker image to run the CIFuzz action run_fuzzers in.
+# Docker image for running fuzzers on CIFuzz (the run_fuzzers action on GitHub
+# actions).
 
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 

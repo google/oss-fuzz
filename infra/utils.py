@@ -38,16 +38,17 @@ def chdir_to_root():
     os.chdir(helper.OSS_FUZZ_DIR)
 
 
-def execute(command, location=None, check_result=False):
-  """ Runs a shell command in the specified directory location.
+def execute(command, env=None, location=None, check_result=False):
+  """Runs a shell command in the specified directory location.
 
   Args:
     command: The command as a list to be run.
+    env: (optional) an environment to pass to Popen to run the command in.
     location: The directory the command is run in.
     check_result: Should an exception be thrown on failed command.
 
   Returns:
-    stdout, stderr, error code.
+    stdout, stderr, return code.
 
   Raises:
     RuntimeError: running a command resulted in an error.
@@ -58,7 +59,8 @@ def execute(command, location=None, check_result=False):
   process = subprocess.Popen(command,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             cwd=location)
+                             cwd=location,
+                             env=env)
   out, err = process.communicate()
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')

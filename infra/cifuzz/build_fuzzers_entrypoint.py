@@ -17,7 +17,6 @@ import sys
 
 import build_fuzzers
 import config_utils
-import workspace_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -47,14 +46,7 @@ def build_fuzzers_entrypoint():
     # If we've gotten to this point and we don't need to do bad_build_check,
     # then the build has succeeded.
     returncode = 0
-  # yapf: disable
-  elif build_fuzzers.check_fuzzer_build(
-      workspace_utils.Workspace(config),
-      config.sanitizer,
-      config.language,
-      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
-  ):
-    # yapf: enable
+  elif build_fuzzers.check_fuzzer_build(config):
     returncode = 0
 
   return returncode

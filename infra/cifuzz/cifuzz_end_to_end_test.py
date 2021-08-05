@@ -13,7 +13,6 @@
 # limitations under the License.
 """End-to-End tests for CIFuzz."""
 import os
-import tempfile
 import unittest
 
 import run_cifuzz
@@ -34,13 +33,14 @@ class EndToEndTest(unittest.TestCase):
   """End-to-End tests for CIFuzz."""
 
   def setUp(self):
-    test_helpers.patch_environ(self)
+    test_helpers.patch_environ(self, runner=True)
 
   def test_simple(self):
     """Simple end-to-end test using run_cifuzz.main()."""
     os.environ['REPOSITORY'] = 'external-project'
     os.environ['PROJECT_SRC_PATH'] = EXTERNAL_PROJECT_PATH
-    with tempfile.TemporaryDirectory() as temp_dir:
+
+    with test_helpers.docker_temp_dir() as temp_dir:
       os.environ['WORKSPACE'] = temp_dir
-      # TODO(metzman): Verify the crash, affected fuzzers and other things.
+      # TODO(metzman): Verify the crash, affected fuzzers, and other things.
       self.assertEqual(run_cifuzz.main(), 1)

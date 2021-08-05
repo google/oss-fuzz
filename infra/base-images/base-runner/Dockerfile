@@ -50,7 +50,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     zip --no-install-recommends
 
-RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
+ENV CODE_COVERAGE_SRC=/opt/code_coverage
+RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage $CODE_COVERAGE_SRC && \
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \

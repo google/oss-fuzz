@@ -14,25 +14,19 @@
 """Module for generating coverage reports."""
 import os
 
-import helper
-import docker
+import base_runner_utils
+import utils
 
 
-def run_coverage_command(workspace, config):
+def run_coverage_command(config, workspace):
   """Runs the coverage command in base-runner to generate a coverage report."""
-  docker_args, _ = docker.get_base_docker_run_args(workspace, config.sanitizer,
-                                                   config.language)
-  env_mapping = {
-      'COVERAGE_EXTRA_ARGS': '',
-      'HTTP_PORT': '',
-      'CORPUS_DIR': workspace.corpora,
-      'COVERAGE_OUTPUT_DIR': workspace.coverage_report
-  }
-  docker_args += docker.get_docker_env_vars(env_mapping)
-
-  docker_args += ['-t', docker.BASE_RUNNER_TAG, 'coverage']
-
-  return helper.docker_run(docker_args)
+  env = base_runner_utils.get_env(config, workspace)
+  env['HTTP_PORT'] = ''
+  env['COVERAGE_EXTRA_ARGS'] = ''
+  env['CORPUS_DIR'] = workspace.corpora
+  env['COVERAGE_OUTPUT_DIR'] = workspace.coverage_report
+  command = 'coverage'
+  return utils.execute(command, env=env)
 
 
 def download_corpora(fuzz_target_paths, clusterfuzz_deployment):
@@ -47,5 +41,5 @@ def generate_coverage_report(fuzz_target_paths, workspace,
                              clusterfuzz_deployment, config):
   """Generates a coverage report using Clang's source based coverage."""
   download_corpora(fuzz_target_paths, clusterfuzz_deployment)
-  run_coverage_command(workspace, config)
+  run_coverage_command(config, workspace)
   clusterfuzz_deployment.upload_coverage()

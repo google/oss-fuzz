@@ -23,10 +23,10 @@ import constants
 import utils
 
 BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
-BASE_RUNNER_TAG = 'gcr.io/oss-fuzz-base/base-runner'
 MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
+# Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
     '--cap-add', 'SYS_PTRACE', '-e',
     'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',

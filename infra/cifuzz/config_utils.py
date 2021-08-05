@@ -29,6 +29,10 @@ import constants
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
+# TODO(metzman): Set these on config objects so there's one source of truth.
+DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_ARCHITECTURE = 'x86_64'
+
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
 # the environment.py helpers for getting env vars, since it can cause values
