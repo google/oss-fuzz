@@ -191,7 +191,7 @@ def check_fuzzer_build(config):
   Returns:
     True if fuzzers pass OSS-Fuzz's build check.
   """
-  workspace = config_utils.Workspace(config)
+  workspace = workspace_utils.Workspace(config)
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)
     return False

@@ -17,7 +17,6 @@ import sys
 
 import build_fuzzers
 import config_utils
-import workspace_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
