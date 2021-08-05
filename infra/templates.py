@@ -49,9 +49,9 @@ COPY build.sh $SRC/
 EXTERNAL_DOCKER_TEMPLATE = """\
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
+RUN COPY . $SRC/%(project_name)s
 WORKDIR %(project_name)s
-COPY build.sh $SRC/
+COPY .clusterfuzzlite/build.sh $SRC/
 """
 
 BUILD_TEMPLATE = """\
