@@ -92,12 +92,14 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     """
     logging.info('Running fuzzer: %s.', self.target_name)
     env = base_runner_utils.get_env(self.config, self.workspace)
+    # TODO(metzman): Is this needed?
     env['RUN_FUZZER_MODE'] = 'interactive'
 
     # If corpus can be downloaded, use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name)
     env['CORPUS_DIR'] = self.latest_corpus_path
+    command += [docker.BASE_RUNNER_TAG, 'bash', '-c']
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',

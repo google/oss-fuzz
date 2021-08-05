@@ -20,10 +20,10 @@ import sys
 import time
 
 import clusterfuzz_deployment
-import config_utils
 import fuzz_target
 import generate_coverage_report
 import stack_parser
+import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,7 +43,7 @@ class BaseFuzzTargetRunner:
 
   def __init__(self, config):
     self.config = config
-    self.workspace = config_utils.Workspace(config)
+    self.workspace = workspace_utils.Workspace(config)
     self.clusterfuzz_deployment = (
         clusterfuzz_deployment.get_clusterfuzz_deployment(
             self.config, self.workspace))

@@ -16,9 +16,6 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: true
   run-fuzzers-mode:
     description: |
       The mode to run the fuzzers with ("ci" or "batch").
@@ -62,7 +59,6 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
     RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
-    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     GIT_STORE_REPO: ${{ inputs.storage-repo }}

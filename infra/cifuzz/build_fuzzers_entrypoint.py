@@ -17,6 +17,7 @@ import sys
 
 import build_fuzzers
 import config_utils
+import workspace_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -37,10 +38,6 @@ def build_fuzzers_entrypoint():
     # The default return code when an error occurs.
     returncode = 1
 
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
   if not build_fuzzers.build_fuzzers(config):
     logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
                   config.commit_sha, config.pr_ref)
@@ -50,9 +47,7 @@ def build_fuzzers_entrypoint():
     # If we've gotten to this point and we don't need to do bad_build_check,
     # then the build has succeeded.
     returncode = 0
-  # yapf: disable
   elif build_fuzzers.check_fuzzer_build(config):
-    # yapf: enable
     returncode = 0
 
   return returncode

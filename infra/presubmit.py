@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2020 Google LLC.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import subprocess
 import sys
 import unittest
 import yaml
+
+import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -73,9 +75,9 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-      'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
-      'architectures': {'i386', 'x86_64'},
-      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow', 'none'},
+      'sanitizers': constants.SANITIZERS,
+      'architectures': constants.ARCHITECTURES,
+      'fuzzing_engines': constants.ENGINES,
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -98,16 +100,6 @@ class ProjectYamlChecker:
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
-  ]
-
-  LANGUAGES_SUPPORTED = [
-      'c',
-      'c++',
-      'go',
-      'jvm',
-      'python',
-      'rust',
-      'swift',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
@@ -226,10 +218,10 @@ class ProjectYamlChecker:
     language = self.data.get('language')
     if not language:
       self.error('Missing "language" attribute in project.yaml.')
-    elif language not in self.LANGUAGES_SUPPORTED:
+    elif language not in constants.LANGUAGES:
       self.error(
           '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=self.LANGUAGES_SUPPORTED))
+              language=language, supported=constants.LANGUAGES))
 
 
 def _check_one_project_yaml(project_yaml_filename):
@@ -403,7 +395,12 @@ def run_nonbuild_tests(parallel):
     command.extend(['-n', 'auto'])
   command += list(relevant_dirs)
   print('Running non-build tests.')
-  return subprocess.run(command, check=False).returncode == 0
+
+  # TODO(metzman): Get rid of this once config_utils stops using it.
+  env = os.environ.copy()
+  env['CIFUZZ_TEST'] = '1'
+
+  return subprocess.run(command, check=False, env=env).returncode == 0
 
 
 def run_tests(_=None, parallel=False, skip_build_tests=False):

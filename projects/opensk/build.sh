@@ -14,19 +14,27 @@
 # limitations under the License.
 #
 ################################################################################
-if [ "$SANITIZER" = "coverage" ]
-then
-    exit 0 
-fi
+
+FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+
+build_and_copy() {
+  pushd "$1"
+  cargo +nightly fuzz build --release --debug-assertions
+  for f in fuzz/fuzz_targets/*.rs
+  do
+    cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
+  done
+  popd
+}
 
 cd OpenSK
-cargo fuzz build
 
-# Copy fuzzers to out
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap1 $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap2_client_pin $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap2_get_assertion $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap2_make_credential $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap_command $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_split_assemble $OUT/
-cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_process_ctap1 $OUT/
+# Main OpenSK fuzzing targets
+build_and_copy "."
+
+# persistent storage library
+build_and_copy libraries/persistent_store
+
+# CBOR crate
+build_and_copy libraries/cbor
+

@@ -23,9 +23,9 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
-import config_utils
 import fuzz_target
 import test_helpers
+import workspace_utils
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -59,7 +59,7 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  workspace = config_utils.Workspace(config)
+  workspace = workspace_utils.Workspace(config)
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 

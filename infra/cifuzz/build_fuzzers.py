@@ -21,9 +21,9 @@ import sys
 import affected_fuzz_targets
 import base_runner_utils
 import clusterfuzz_deployment
-import config_utils
 import continuous_integration
 import docker
+import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -54,7 +54,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.workspace = config_utils.Workspace(config)
+    self.workspace = workspace_utils.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
     self.clusterfuzz_deployment = (
@@ -66,8 +66,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
   def build_image_and_checkout_src(self):
     """Builds the project builder image and checkout source code for the patch
-    we want to fuzz (if necessary). Returns True on success.
-    Must be implemented by child classes."""
+    we want to fuzz (if necessary). Returns True on success."""
     result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False
