@@ -16,28 +16,18 @@
 import logging
 import enum
 import os
+import sys
 import json
 
 import environment
 
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import constants
+
 RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
-
-# TODO(metzman): Make one source of truth for these in helper.py
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
-LANGUAGES = [
-    'c',
-    'c++',
-    'go',
-    'jvm',
-    'python',
-    'rust',
-    'swift',
-]
-
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
-DEFAULT_LANGUAGE = 'c++'
-DEFAULT_SANITIZER = 'address'
 
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
@@ -54,7 +44,7 @@ def _get_pr_ref(event):
 
 
 def _get_sanitizer():
-  return os.getenv('SANITIZER', DEFAULT_SANITIZER).lower()
+  return os.getenv('SANITIZER', constants.DEFAULT_SANITIZER).lower()
 
 
 def _is_dry_run():
@@ -69,7 +59,7 @@ def _get_language():
   # getting it from the project.yaml) is outweighed by the complexity in
   # implementing this. A lot of the complexity comes from our unittests not
   # setting a proper projet at this point.
-  return os.getenv('LANGUAGE', DEFAULT_LANGUAGE)
+  return os.getenv('LANGUAGE', constants.DEFAULT_LANGUAGE)
 
 
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
@@ -205,7 +195,8 @@ class BaseConfig:
 
     self.sanitizer = _get_sanitizer()
 
-    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+    self.build_integration_path = (
+        constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
@@ -224,13 +215,6 @@ class BaseConfig:
     """Returns False if the configuration is invalid."""
     # Do validation here so that unittests don't need to make a fully-valid
     # config.
-    if (self.build_integration_path is None and
-        self.oss_fuzz_project_name is None):
-      logging.error('Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
-                    'Otherwise must set BUILD_INTEGRATION_PATH. '
-                    'Neither is set.')
-      return False
-
     if not self.workspace:
       logging.error('Must set WORKSPACE.')
       return False
@@ -240,9 +224,9 @@ class BaseConfig:
                     self.sanitizer, SANITIZERS)
       return False
 
-    if self.language not in LANGUAGES:
+    if self.language not in constants.LANGUAGES:
       logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
-                    LANGUAGES)
+                    constants.LANGUAGES)
       return False
 
     return True

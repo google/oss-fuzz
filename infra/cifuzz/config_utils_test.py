@@ -17,6 +17,7 @@ import unittest
 from unittest import mock
 
 import config_utils
+import constants
 import test_helpers
 
 # pylint: disable=no-self-use,protected-access
@@ -33,13 +34,11 @@ class BaseConfigTest(unittest.TestCase):
 
   def test_language_default(self):
     """Tests that the correct default language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
     config = self._create_config()
     self.assertEqual(config.language, 'c++')
 
   def test_language(self):
     """Tests that the correct language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
     language = 'python'
     os.environ['LANGUAGE'] = language
     config = self._create_config()
@@ -58,19 +57,6 @@ class BaseConfigTest(unittest.TestCase):
     self.assertFalse(config.is_coverage)
 
   @mock.patch('logging.error')
-  def test_validate_oss_fuzz_project_name_or_build_integration_path(
-      self, mocked_error):
-    """Tests that validate returns False if neither OSS_FUZZ_PROJECT_NAME or
-    BUILD_INTEGRATION_PATH is set."""
-    os.environ['WORKSPACE'] = '/workspace'
-    config = self._create_config()
-    self.assertFalse(config.validate())
-    mocked_error.assert_called_with(
-        'Must set OSS_FUZZ_PROJECT_NAME if OSS-Fuzz user. '
-        'Otherwise must set BUILD_INTEGRATION_PATH. '
-        'Neither is set.')
-
-  @mock.patch('logging.error')
   def test_validate_no_workspace(self, mocked_error):
     """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
@@ -87,8 +73,7 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertFalse(config.validate())
     mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
-                                    os.environ['LANGUAGE'],
-                                    config_utils.LANGUAGES)
+                                    os.environ['LANGUAGE'], constants.LANGUAGES)
 
   @mock.patch('logging.error')
   def test_validate_invalid_sanitizer(self, mocked_error):

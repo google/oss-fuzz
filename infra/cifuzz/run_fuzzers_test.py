@@ -284,7 +284,6 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.testcase2)
     self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                                  workspace=self.WORKSPACE,
-                                                 build_integration_path='/',
                                                  is_github=True)
 
   @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
@@ -365,14 +364,11 @@ class CoverageReportIntegrationTest(unittest.TestCase):
         self.assertTrue(build_fuzzers.build_fuzzers(build_config))
 
         # Generate report.
-        run_config = test_helpers.create_run_config(
-            fuzz_seconds=FUZZ_SECONDS,
-            workspace=workspace,
-            sanitizer=self.SANITIZER,
-            run_fuzzers_mode='coverage',
-            is_github=True,
-            # Set build integration path so it's not internal.
-            build_integration_path='/')
+        run_config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                    workspace=workspace,
+                                                    sanitizer=self.SANITIZER,
+                                                    run_fuzzers_mode='coverage',
+                                                    is_github=True)
         result = run_fuzzers.run_fuzzers(run_config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
         expected_summary_path = os.path.join(
