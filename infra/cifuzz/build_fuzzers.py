@@ -204,8 +204,13 @@ def check_fuzzer_build(config):
     env['ALLOWED_BROKEN_TARGETS_PERCENTAGE'] = (
         config.allowed_broken_targets_percentage)
 
-  _, _, retcode = utils.execute('test_all.py', env=env)
-  return retcode == 0
+  stdout, stderr, retcode = utils.execute('test_all.py', env=env)
+  print(f'Build check: stdout: {stdout}\nstderr: {stderr}')
+  if retcode == 0:
+    logging.info('Build check passed.')
+    return True
+  logging.info('Build check failed.')
+  return False
 
 
 def _get_docker_build_fuzzers_args_not_container(host_repo_path):
