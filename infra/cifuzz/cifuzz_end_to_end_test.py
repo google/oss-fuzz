@@ -43,5 +43,5 @@ class EndToEndTest(unittest.TestCase):
 
     with test_helpers.docker_temp_dir() as temp_dir:
       os.environ['WORKSPACE'] = temp_dir
-      # TODO(metzman): Verify the crash, affected fuzzers and other things.
+      # TODO(metzman): Verify the crash, affected fuzzers, and other things.
       self.assertEqual(run_cifuzz.main(), 1)

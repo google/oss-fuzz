@@ -354,7 +354,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
     """Tests generation of coverage reports end-to-end, from building to
     generation."""
 
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with test_helpers.docker_temp_dir() as temp_dir:
       shared = os.path.join(temp_dir, 'shared')
       os.mkdir(shared)
       copy_command = ('cp -r /opt/code_coverage /shared && '
@@ -367,53 +367,44 @@ class CoverageReportIntegrationTest(unittest.TestCase):
 
       os.environ['CODE_COVERAGE_SRC'] = os.path.join(shared, 'code_coverage')
       os.environ['PATH'] += os.pathsep + shared
-      try:
-        # Do coverage build.
-        build_config = test_helpers.create_build_config(
-            oss_fuzz_project_name=EXAMPLE_PROJECT,
-            project_repo_name='oss-fuzz',
-            workspace=temp_dir,
-            commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
-            base_commit='da0746452433dc18bae699e355a9821285d863c8',
-            sanitizer=self.SANITIZER,
-            is_github=True)
-        self.assertTrue(build_fuzzers.build_fuzzers(build_config))
+      # Do coverage build.
+      build_config = test_helpers.create_build_config(
+          oss_fuzz_project_name=EXAMPLE_PROJECT,
+          project_repo_name='oss-fuzz',
+          workspace=temp_dir,
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+          base_commit='da0746452433dc18bae699e355a9821285d863c8',
+          sanitizer=self.SANITIZER,
+          is_github=True)
+      self.assertTrue(build_fuzzers.build_fuzzers(build_config))
 
-        # TODO(metzman): Get rid of this here and make 'compile' do this.
-        chmod_command = ('chmod -R +r /out && '
-                         'find /out -type d -exec chmod +x {} +')
+      # TODO(metzman): Get rid of this here and make 'compile' do this.
+      chmod_command = ('chmod -R +r /out && '
+                       'find /out -type d -exec chmod +x {} +')
 
-        assert helper.docker_run([
-            '-v', f'{os.path.join(temp_dir, "build-out")}:/out',
-            'gcr.io/oss-fuzz-base/base-builder', 'bash', '-c', chmod_command
-        ])
+      assert helper.docker_run([
+          '-v', f'{os.path.join(temp_dir, "build-out")}:/out',
+          'gcr.io/oss-fuzz-base/base-builder', 'bash', '-c', chmod_command
+      ])
 
-        # Generate report.
-        run_config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                                    workspace=temp_dir,
-                                                    sanitizer=self.SANITIZER,
-                                                    run_fuzzers_mode='coverage',
-                                                    is_github=True)
-        result = run_fuzzers.run_fuzzers(run_config)
-        self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
-        expected_summary_path = os.path.join(
-            TEST_DATA_PATH, 'example_coverage_report_summary.json')
-        with open(expected_summary_path) as file_handle:
-          expected_summary = json.loads(file_handle.read())
+      # Generate report.
+      run_config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                  workspace=temp_dir,
+                                                  sanitizer=self.SANITIZER,
+                                                  run_fuzzers_mode='coverage',
+                                                  is_github=True)
+      result = run_fuzzers.run_fuzzers(run_config)
+      self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
+      expected_summary_path = os.path.join(
+          TEST_DATA_PATH, 'example_coverage_report_summary.json')
+      with open(expected_summary_path) as file_handle:
+        expected_summary = json.loads(file_handle.read())
         actual_summary_path = os.path.join(temp_dir, 'cifuzz-coverage',
                                            'report', 'linux', 'summary.json')
-        with open(actual_summary_path) as file_handle:
-          actual_summary = json.loads(file_handle.read())
-        self.assertEqual(expected_summary, actual_summary)
-      finally:
-        # If we don't do this, there will be an exception when the temporary
-        # directory is deleted because there are files there that are only
-        # writeable by root.
-        if os.listdir(temp_dir):
-          helper.docker_run([
-              '-v', f'{temp_dir}:/workspace', '-t', docker.BASE_BUILDER_TAG,
-              '/bin/bash', '-c', 'rm -rf /workspace/*'
-          ])
+      with open(actual_summary_path) as file_handle:
+        actual_summary = json.loads(file_handle.read())
+      self.assertEqual(expected_summary, actual_summary)
+
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
