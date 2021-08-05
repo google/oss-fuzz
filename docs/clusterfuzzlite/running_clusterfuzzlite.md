@@ -14,6 +14,7 @@ permalink: /clusterfuzzlite/running-clusterfuzzlite/
 ---
 
 ## Overview
+TODO: add a diagram.
 
 Once your project's fuzzers can be built and run by the helper script, it is
 ready to be fuzzed by ClusterFuzzLite.

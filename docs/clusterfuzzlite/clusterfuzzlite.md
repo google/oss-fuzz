@@ -7,7 +7,7 @@ permalink: /clusterfuzzlite/
 ---
 
 # ClusterFuzzLite
-ClusterFuzzLite is lightweight, easy-to-use, fuzzing infrastructure that is
+ClusterFuzzLite is a lightweight, easy-to-use, fuzzing infrastructure that is
 based off [ClusterFuzz]. ClusterFuzzLite is designed to run on [continuous integration] (CI)
 systems, which means it is easy to set up and provides a familiar interface for
 users.
