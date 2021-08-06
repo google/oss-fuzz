@@ -104,7 +104,7 @@ def _get_targets_list(project_name):
 def get_signed_url(path, method='PUT', content_type=''):
   """Returns signed url."""
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
+  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
 
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
@@ -119,7 +119,7 @@ def get_signed_url(path, method='PUT', content_type=''):
                                           credentials=credentials,
                                           cache_discovery=False)
     client_id = project + '@appspot.gserviceaccount.com'
-    service_account = 'projects/-/serviceAccounts/{0}'.format(client_id)
+    service_account = f'projects/-/serviceAccounts/{client_id}'
     response = iam.projects().serviceAccounts().signBlob(
         name=service_account,
         body={
@@ -133,8 +133,7 @@ def get_signed_url(path, method='PUT', content_type=''):
       'Expires': timestamp,
       'Signature': signature,
   }
-  return ('https://storage.googleapis.com{0}?'.format(path) +
-          urlparse.urlencode(values))
+  return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
 def download_corpora_steps(project_name):

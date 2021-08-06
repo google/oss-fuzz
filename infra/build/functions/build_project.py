@@ -72,8 +72,7 @@ def set_yaml_defaults(project_name, project_yaml, image_project):
   """Set project.yaml's default parameters."""
   project_yaml.setdefault('disabled', False)
   project_yaml.setdefault('name', project_name)
-  project_yaml.setdefault('image',
-                          'gcr.io/{0}/{1}'.format(image_project, project_name))
+  project_yaml.setdefault('image', f'gcr.io/{image_project}/{project_name}')
   project_yaml.setdefault('architectures', DEFAULT_ARCHITECTURES)
   project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
   project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
@@ -147,7 +146,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
   build_steps = build_lib.project_image_steps(name, image, language)
   # Copy over MSan instrumented libraries.
   build_steps.append({
-      'name': 'gcr.io/{0}/msan-libs-builder'.format(base_images_project),
+      'name': f'gcr.io/{base_images_project}/msan-libs-builder',
       'args': [
           'bash',
           '-c',
@@ -204,14 +203,10 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
           workdir = '/src'
 
         failure_msg = ('*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
-                       'python infra/helper.py build_image {name}\n'
+                       f'python infra/helper.py build_image {name}\n'
                        'python infra/helper.py build_fuzzers --sanitizer '
-                       '{sanitizer} --engine {engine} --architecture '
-                       '{architecture} {name}\n' + '*' * 80).format(
-                           name=name,
-                           sanitizer=sanitizer,
-                           engine=fuzzing_engine,
-                           architecture=architecture)
+                       f'{sanitizer} --engine {fuzzing_engine} --architecture '
+                       f'{architecture} {name}\n' + '*' * 80)
 
         build_steps.append(
             # compile
@@ -228,11 +223,9 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    ('rm -r /out && cd /src && cd {workdir} '
-                     '&& mkdir -p {out} && compile || (echo "{failure_msg}" '
-                     '&& false)').format(workdir=workdir,
-                                         out=out,
-                                         failure_msg=failure_msg),
+                    (f'rm -r /out && cd /src && cd {workdir} '
+                     f'&& mkdir -p {out} && compile || (echo "{failure_msg}" '
+                     '&& false)'),
                 ],
             })
 
@@ -240,41 +233,37 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
           # Patch dynamic libraries to use instrumented ones.
           build_steps.append({
               'name':
-                  'gcr.io/{0}/msan-libs-builder'.format(base_images_project),
+                  f'gcr.io/{base_images_project}/msan-libs-builder',
               'args': [
                   'bash',
                   '-c',
                   # TODO(ochang): Replace with just patch_build.py once
                   # permission in image is fixed.
-                  'python /usr/local/bin/patch_build.py {0}'.format(out),
+                  f'python /usr/local/bin/patch_build.py {out}'
               ],
           })
 
         if run_tests:
           failure_msg = ('*' * 80 + '\nBuild checks failed.\n'
                          'To reproduce, run:\n'
-                         'python infra/helper.py build_image {name}\n'
+                         f'python infra/helper.py build_image {name}\n'
                          'python infra/helper.py build_fuzzers --sanitizer '
-                         '{sanitizer} --engine {engine} --architecture '
-                         '{architecture} {name}\n'
+                         f'{sanitizer} --engine {fuzzing_engine} '
+                         f'--architecture {architecture} {name}\n'
                          'python infra/helper.py check_build --sanitizer '
-                         '{sanitizer} --engine {engine} --architecture '
-                         '{architecture} {name}\n' + '*' * 80).format(
-                             name=name,
-                             sanitizer=sanitizer,
-                             engine=fuzzing_engine,
-                             architecture=architecture)
+                         f'{sanitizer} --engine {fuzzing_engine} '
+                         f'--architecture {architecture} {name}\n' + '*' * 80)
 
           build_steps.append(
               # test binaries
               {
                   'name':
-                      'gcr.io/{0}/base-runner'.format(base_images_project),
+                      f'gcr.io/{base_images_project}/base-runner',
                   'env':
                       env,
                   'args': [
                       'bash', '-c',
-                      'test_all.py || (echo "{0}" && false)'.format(failure_msg)
+                      f'test_all.py || (echo "{failure_msg}" && false)'
                   ],
               })
 
@@ -304,29 +293,22 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
             # generate targets list
             {
                 'name':
-                    'gcr.io/{0}/base-runner'.format(base_images_project),
+                    f'gcr.io/{base_images_project}/base-runner',
                 'env':
                     env,
                 'args': [
-                    'bash',
-                    '-c',
-                    'targets_list > /workspace/{0}'.format(
-                        targets_list_filename),
+                    'bash', '-c',
+                    f'targets_list > /workspace/{targets_list_filename}'
                 ],
             },
             # zip binaries
             {
-                'name':
-                    image,
-                'args': [
-                    'bash', '-c',
-                    'cd {out} && zip -r {zip_file} *'.format(out=out,
-                                                             zip_file=zip_file)
-                ],
+                'name': image,
+                'args': ['bash', '-c', f'cd {out} && zip -r {zip_file} *'],
             },
             # upload srcmap
             {
-                'name': 'gcr.io/{0}/uploader'.format(base_images_project),
+                'name': f'gcr.io/{base_images_project}/uploader',
                 'args': [
                     '/workspace/srcmap.json',
                     srcmap_url,
@@ -334,7 +316,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
             },
             # upload binaries
             {
-                'name': 'gcr.io/{0}/uploader'.format(base_images_project),
+                'name': f'gcr.io/{base_images_project}/uploader',
                 'args': [
                     os.path.join(out, zip_file),
                     upload_url,
@@ -343,9 +325,9 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
             # upload targets list
             {
                 'name':
-                    'gcr.io/{0}/uploader'.format(base_images_project),
+                    f'gcr.io/{base_images_project}/uploader',
                 'args': [
-                    '/workspace/{0}'.format(targets_list_filename),
+                    f'/workspace/{targets_list_filename}',
                     targets_list_url,
                 ],
             },
@@ -374,7 +356,7 @@ def dataflow_post_build_steps(project_name, env, base_images_project):
 
   steps.append({
       'name':
-          'gcr.io/{0}/base-runner'.format(base_images_project),
+          f'gcr.io/{base_images_project}/base-runner',
       'env':
           env + [
               'COLLECT_DFT_TIMEOUT=2h',

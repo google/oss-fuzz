@@ -71,7 +71,7 @@ class CloudSchedulerClient:
   # pylint: disable=no-self-use
   def location_path(self, project_id, location_id):
     """Return project path."""
-    return 'projects/{}/location/{}'.format(project_id, location_id)
+    return f'projects/{project_id}/location/{location_id}'
 
   def create_job(self, parent, job):
     """Simulate create job."""
@@ -81,8 +81,7 @@ class CloudSchedulerClient:
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
     """Return job path."""
-    return 'projects/{}/location/{}/jobs/{}'.format(project_id, location_id,
-                                                    name)
+    return f'projects/{project_id}/location/{location_id}/jobs/{name}'
 
   def delete_job(self, name):
     """Simulate delete jobs."""
