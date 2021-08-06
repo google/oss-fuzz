@@ -23,6 +23,7 @@ from pyfakefs import fake_filesystem_unittest
 import clusterfuzz_deployment
 import config_utils
 import test_helpers
+import workspace_utils
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -53,7 +54,7 @@ def _create_config(**kwargs):
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
-  workspace = config_utils.Workspace(config)
+  workspace = workspace_utils.Workspace(config)
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config, workspace)
 
 
@@ -130,7 +131,6 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.deployment = _create_deployment(run_fuzzers_mode='batch',
-                                         build_integration_path='/',
                                          oss_fuzz_project_name='',
                                          is_github=True)
 
@@ -186,10 +186,9 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    config = test_helpers.create_run_config(build_integration_path='/',
-                                            workspace=WORKSPACE,
+    config = test_helpers.create_run_config(workspace=WORKSPACE,
                                             is_github=False)
-    workspace = config_utils.Workspace(config)
+    workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
 
@@ -224,6 +223,10 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
 class GetClusterFuzzDeploymentTest(unittest.TestCase):
   """Tests for get_clusterfuzz_deployment."""
 
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    os.environ['GITHUB_REPOSITORY'] = 'owner/myproject'
+
   @parameterized.parameterized.expand([
       (config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI,
        clusterfuzz_deployment.OSSFuzz),
@@ -241,7 +244,7 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
                     new_callable=mock.PropertyMock):
       with mock.patch('filestore_utils.get_filestore', return_value=None):
         config = _create_config()
-        workspace = config_utils.Workspace(config)
+        workspace = workspace_utils.Workspace(config)
 
         self.assertIsInstance(
             clusterfuzz_deployment.get_clusterfuzz_deployment(

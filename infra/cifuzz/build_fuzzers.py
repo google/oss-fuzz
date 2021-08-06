@@ -19,14 +19,16 @@ import os
 import sys
 
 import affected_fuzz_targets
+import base_runner_utils
 import clusterfuzz_deployment
-import config_utils
 import continuous_integration
 import docker
+import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
+import utils
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -52,7 +54,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.workspace = config_utils.Workspace(config)
+    self.workspace = workspace_utils.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
     self.clusterfuzz_deployment = (
@@ -64,8 +66,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
   def build_image_and_checkout_src(self):
     """Builds the project builder image and checkout source code for the patch
-    we want to fuzz (if necessary). Returns True on success.
-    Must be implemented by child classes."""
+    we want to fuzz (if necessary). Returns True on success."""
     result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False
@@ -181,22 +182,16 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def check_fuzzer_build(workspace,
-                       sanitizer,
-                       language,
-                       allowed_broken_targets_percentage=None):
+def check_fuzzer_build(config):
   """Checks the integrity of the built fuzzers.
 
   Args:
-    workspace: The workspace used by CIFuzz.
-    sanitizer: The sanitizer the fuzzers are built with.
-    language: The programming language the fuzzers are written in.
-    allowed_broken_targets_percentage (optional): A custom percentage of broken
-        targets to allow.
+    config: The config object.
 
   Returns:
     True if fuzzers pass OSS-Fuzz's build check.
   """
+  workspace = workspace_utils.Workspace(config)
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)
     return False
@@ -204,21 +199,18 @@ def check_fuzzer_build(workspace,
     logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  docker_args, _ = docker.get_base_docker_run_args(workspace, sanitizer,
-                                                   language)
-  if allowed_broken_targets_percentage is not None:
-    docker_args += [
-        '-e',
-        ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
-         allowed_broken_targets_percentage)
-    ]
+  env = base_runner_utils.get_env(config, workspace)
+  if config.allowed_broken_targets_percentage is not None:
+    env['ALLOWED_BROKEN_TARGETS_PERCENTAGE'] = (
+        config.allowed_broken_targets_percentage)
 
-  docker_args.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  result = helper.docker_run(docker_args)
-  if not result:
-    logging.error('Check fuzzer build failed.')
-    return False
-  return True
+  stdout, stderr, retcode = utils.execute('test_all.py', env=env)
+  print(f'Build check: stdout: {stdout}\nstderr: {stderr}')
+  if retcode == 0:
+    logging.info('Build check passed.')
+    return True
+  logging.error('Build check failed.')
+  return False
 
 
 def _get_docker_build_fuzzers_args_not_container(host_repo_path):

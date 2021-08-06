@@ -27,26 +27,31 @@ SANITIZER = 'coverage'
 class TestRunCoverageCommand(unittest.TestCase):
   """Tests run_coverage_command"""
 
-  @mock.patch('helper.docker_run')
-  def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
+  def setUp(self):
+    test_helpers.patch_environ(self, empty=True)
+
+  @mock.patch('utils.execute')
+  def test_run_coverage_command(self, mocked_execute):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
     config = test_helpers.create_run_config(oss_fuzz_project_name=PROJECT,
                                             sanitizer=SANITIZER)
     workspace = test_helpers.create_workspace()
-    expected_docker_args = [
-        '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
-        'OUT=/workspace/build-out', '-v',
-        f'{workspace.workspace}:{workspace.workspace}', '-e',
-        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-e',
-        f'CORPUS_DIR={workspace.corpora}', '-e',
-        f'COVERAGE_OUTPUT_DIR={workspace.coverage_report}', '-t',
-        'gcr.io/oss-fuzz-base/base-runner', 'coverage'
-    ]
-
-    generate_coverage_report.run_coverage_command(workspace, config)
-    mocked_docker_run.assert_called_with(expected_docker_args)
+    generate_coverage_report.run_coverage_command(config, workspace)
+    expected_command = 'coverage'
+    expected_env = {
+        'SANITIZER': config.sanitizer,
+        'FUZZING_LANGUAGE': config.language,
+        'OUT': workspace.out,
+        'CIFUZZ': 'True',
+        'FUZZING_ENGINE': 'libfuzzer',
+        'ARCHITECTURE': 'x86_64',
+        'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25',
+        'HTTP_PORT': '',
+        'COVERAGE_EXTRA_ARGS': '',
+        'CORPUS_DIR': workspace.corpora,
+        'COVERAGE_OUTPUT_DIR': workspace.coverage_report
+    }
+    mocked_execute.assert_called_with(expected_command, env=expected_env)
 
 
 class DownloadCorporaTest(unittest.TestCase):

@@ -37,7 +37,7 @@ _GET_BACKOFF = 1
 
 def get_http_auth_headers(config):
   """Returns HTTP headers for authentication to the API."""
-  authorization = f'token {config.github_token}'
+  authorization = f'token {config.token}'
   return {
       'Authorization': authorization,
       'Accept': 'application/vnd.github.v3+json'
@@ -102,7 +102,7 @@ def find_artifact(artifact_name, artifacts):
 
 
 def list_artifacts(owner, repo, headers):
-  """Returns a generator of all the artifacts for |owner/repo|."""
+  """Returns a generator of all the artifacts for |owner|/|repo|."""
   url = _get_artifacts_list_api_url(owner, repo)
   logging.debug('Getting artifacts from: %s', url)
   return _get_items(url, headers)
