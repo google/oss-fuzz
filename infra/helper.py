@@ -1014,6 +1014,7 @@ def _validate_project_name(project_name):
 
   return True
 
+
 def _validate_language(language):
   if not LANGUAGE_REGEX.match(language):
     logging.error('Invalid project language %s.', language)
@@ -1021,7 +1022,6 @@ def _validate_language(language):
 
   return True
 
-  directory = os.path.join('projects', args.project_name)
 
 def _create_build_integration_directory(directory):
   """Returns True on successful creation of a build integration directory.

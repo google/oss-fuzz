@@ -109,13 +109,18 @@ class BuildImageImplTest(unittest.TestCase):
 class GenerateImplTest(fake_filesystem_unittest.TestCase):
   """Tests for _generate_impl."""
   PROJECT_NAME = 'newfakeproject'
+  PROJECT_LANGUAGE = 'python'
 
   def setUp(self):
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
 
-  def _verify_templated_files(self, template_dict, directory):
-    template_args = {'project_name': self.PROJECT_NAME, 'year': 2021}
+  def _verify_templated_files(self, template_dict, directory, lang=""):
+    template_args = {
+        'project_name': self.PROJECT_NAME,
+        'year': 2021,
+        'lang': lang
+    }
     for filename, template in template_dict.items():
       file_path = os.path.join(directory, filename)
       with open(file_path, 'r') as file_handle:
@@ -126,7 +131,8 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
               return_value=datetime.datetime(year=2021, month=1, day=1))
   def test_generate_oss_fuzz_project(self, _):
     """Tests that the correct files are generated for an OSS-Fuzz project."""
-    helper._generate_impl(helper.Project(self.PROJECT_NAME))
+    helper._generate_impl(helper.Project(self.PROJECT_NAME),
+                          self.PROJECT_LANGUAGE)
     self._verify_templated_files(
         templates.TEMPLATES,
         os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME))
@@ -137,9 +143,18 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     helper._generate_impl(
         helper.Project('/newfakeproject/',
                        is_external=True,
-                       build_integration_path=build_integration_path))
+                       build_integration_path=build_integration_path),
+        self.PROJECT_LANGUAGE)
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
                                  build_integration_path)
+
+  def test_generate_swift_project(self):
+    """Tests that the swift project uses the correct base image."""
+    swift = "swift"
+    helper._generate_impl(helper.Project(self.PROJECT_NAME), swift)
+    self._verify_templated_files(
+        templates.TEMPLATES,
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME), swift)
 
 
 class ProjectTest(fake_filesystem_unittest.TestCase):
