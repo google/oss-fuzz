@@ -15,17 +15,19 @@
 #
 ################################################################################
 
+git checkout move-fuzzer-dir
+
 # build project
 ./configure --with-openssl=/usr --with-defaults --with-logfile="/dev/null" --with-persistent-directory="/dev/null"
 # net-snmp build is not parallel-make safe; do not add -j
 make
 
 # build fuzzers and link statically
-fuzzers=$(find ./fuzzing -name "*_fuzzer.c")
+fuzzers=$(find ./testing/fuzzing -name "*_fuzzer.c")
 suffix="_fuzzer\.c"
 for fuzzer in ${fuzzers}; do
   fuzzname=$(basename -- ${fuzzer%$suffix})
-  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx ./fuzzing/${fuzzname}_fuzzer.c -o $WORK/${fuzzname}_fuzzer.o
+  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx ./testing/fuzzing/${fuzzname}_fuzzer.c -o $WORK/${fuzzname}_fuzzer.o
   $CXX $CXXFLAGS $WORK/${fuzzname}_fuzzer.o \
         $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
         agent/.libs/libnetsnmpagent.a \
