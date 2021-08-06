@@ -1012,16 +1012,16 @@ def _validate_project_name(project_name):
     logging.info('Invalid project name: %s.', project_name)
     return False
 
-<<<<<<< HEAD
-  if not LANGUAGE_REGEX.match(args.language):
-    logging.error('Invalid project language %s.', args.language)
-    return False
-
-  directory = os.path.join('projects', args.project_name)
-=======
   return True
 
->>>>>>> upstream/master
+def _validate_language(language):
+  if not LANGUAGE_REGEX.match(language):
+    logging.error('Invalid project language %s.', language)
+    return False
+
+  return True
+
+  directory = os.path.join('projects', args.project_name)
 
 def _create_build_integration_directory(directory):
   """Returns True on successful creation of a build integration directory.
@@ -1036,20 +1036,6 @@ def _create_build_integration_directory(directory):
   return True
 
 
-<<<<<<< HEAD
-  image_lang = "-" + args.language
-  # Only swift supports language specific image.
-  if args.language != 'swift':
-    image_lang = ""
-
-  template_args = {
-      'project_name': args.project_name,
-      'year': datetime.datetime.now().year,
-      'lang': image_lang
-  }
-  with open(os.path.join(directory, 'project.yaml'), 'w') as file_handle:
-    file_handle.write(templates.PROJECT_YAML_TEMPLATE % template_args)
-=======
 def _template_project_file(filename, template, template_args, directory):
   """Templates |template| using |template_args| and writes the result to
   |directory|/|filename|. Sets the file to executable if |filename| is
@@ -1064,8 +1050,7 @@ def _template_project_file(filename, template, template_args, directory):
 
 def generate(args):
   """Generates empty project files."""
-  return _generate_impl(args.project)
->>>>>>> upstream/master
+  return _generate_impl(args.project, args.language)
 
 
 def _get_current_datetime():
@@ -1073,7 +1058,7 @@ def _get_current_datetime():
   return datetime.datetime.now()
 
 
-def _generate_impl(project):
+def _generate_impl(project, language):
   """Implementation of generate(). Useful for testing."""
   if project.is_external:
     # External project.
@@ -1084,14 +1069,23 @@ def _generate_impl(project):
       return False
     project_templates = templates.TEMPLATES
 
+  if not _validate_language(language):
+    return False
+
   directory = project.build_integration_path
   if not _create_build_integration_directory(directory):
     return False
 
   logging.info('Writing new files to: %s.', directory)
 
+  image_lang = "-" + language
+  # Only swift supports language specific image.
+  if language != 'swift':
+    image_lang = ""
+
   template_args = {
       'project_name': project.name,
+      'lang': image_lang,
       'year': _get_current_datetime().year
   }
   for filename, template in project_templates.items():
