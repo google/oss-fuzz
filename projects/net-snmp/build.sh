@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-git checkout move-fuzzer-dir
-
 # build project
 ./configure --with-openssl=/usr --with-defaults --with-logfile="/dev/null" --with-persistent-directory="/dev/null"
 # net-snmp build is not parallel-make safe; do not add -j
