@@ -39,7 +39,7 @@ DOCKER_TEMPLATE = """\
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder     # or base-builder-swift for swift
+FROM gcr.io/oss-fuzz-base/base-builder%(lang)s
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
 WORKDIR %(project_name)s

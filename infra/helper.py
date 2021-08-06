@@ -58,6 +58,7 @@ CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
     'libFuzzer/{fuzz_target}/')
 
+LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 # Languages from project.yaml that have code coverage support.
@@ -137,6 +138,7 @@ def get_parser():  # pylint: disable=too-many-statements
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project_name')
+  generate_parser.add_argument('language')
 
   build_image_parser = subparsers.add_parser('build_image',
                                              help='Build an image.')
@@ -961,6 +963,10 @@ def generate(args):
     logging.error('Invalid project name.')
     return False
 
+  if not LANGUAGE_REGEX.match(args.language):
+    logging.error('Invalid project language %s.', args.language)
+    return False
+
   directory = os.path.join('projects', args.project_name)
 
   try:
@@ -973,9 +979,15 @@ def generate(args):
 
   logging.info('Writing new files to %s.', directory)
 
+  image_lang = "-" + args.language
+  # Only swift supports language specific image.
+  if args.language != 'swift':
+    image_lang = ""
+
   template_args = {
       'project_name': args.project_name,
-      'year': datetime.datetime.now().year
+      'year': datetime.datetime.now().year,
+      'lang': image_lang
   }
   with open(os.path.join(directory, 'project.yaml'), 'w') as file_handle:
     file_handle.write(templates.PROJECT_YAML_TEMPLATE % template_args)
