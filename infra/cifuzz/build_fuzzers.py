@@ -209,7 +209,7 @@ def check_fuzzer_build(config):
   if retcode == 0:
     logging.info('Build check passed.')
     return True
-  logging.info('Build check failed.')
+  logging.error('Build check failed.')
   return False
 
 
