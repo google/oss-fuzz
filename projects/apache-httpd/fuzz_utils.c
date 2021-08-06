@@ -59,10 +59,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (ns3 != NULL) {
       ap_no2slash(ns3);
     }
-    char *ns10 = af_gb_get_null_terminated(&data2, &size2);
+
     char *ns11 = af_gb_get_null_terminated(&data2, &size2);
-    if (ns10 != NULL && ns11 != NULL) {
+    if (ns11) {
+      char *ns10 = malloc(strlen(ns11)*3+1); // big enough for worst-case URL-escaped input.
       ap_escape_path_segment_buffer(ns10, ns11);
+      free(ns10);
     }
 
     // Pool initialisation
