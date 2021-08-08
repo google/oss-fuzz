@@ -25,28 +25,9 @@ RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install gperf
 
 #cache build dependencies
-ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosextrafonts-carlito-20130920.tar.gz \
-    https://dev-www.libreoffice.org/src/e7a384790b13c29113e22e596ade9687-LinLibertineG-20120116.zip \
-    https://dev-www.libreoffice.org/src/Amiri-0.111.zip \
-    https://dev-www.libreoffice.org/src/ReemKufi-0.7.zip \
-    https://dev-www.libreoffice.org/src/edc4d741888bc0d38e32dbaa17149596-source-sans-pro-2.010R-ro-1.065R-it.tar.gz \
-    https://dev-www.libreoffice.org/src/907d6e99f241876695c19ff3db0b8923-source-code-pro-2.030R-ro-1.050R-it.tar.gz \
-    https://dev-www.libreoffice.org/src/source-serif-pro-3.000R.tar.gz \
-    https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.gz \
-    https://dev-www.libreoffice.org/src/1725634df4bb3dcb1b2c91a6175f8789-GentiumBasic_1102.zip \
-    https://dev-www.libreoffice.org/src/33e1e61fab06a547851ed308b4ffef42-dejavu-fonts-ttf-2.37.zip \
-    https://dev-www.libreoffice.org/src/368f114c078f94214a308a74c7e991bc-crosextrafonts-20130214.tar.gz \
+ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.gz \
     https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/extern/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf \
-    https://dev-www.libreoffice.org/src/noto-fonts-20171024.tar.gz \
-    https://dev-www.libreoffice.org/src/amiri-0.109.zip \
-    https://dev-www.libreoffice.org/src/ttf-kacst_2.01+mry.tar.gz \
-    https://dev-www.libreoffice.org/src/ReemKufi-0.6.tar.gz \
-    https://dev-www.libreoffice.org/src/Scheherazade-2.100.zip \
-    https://dev-www.libreoffice.org/src/EmojiOneColor-SVGinOT-1.3.tar.gz \
-    https://dev-www.libreoffice.org/src/culmus-0.133.tar.gz \
-    https://dev-www.libreoffice.org/src/libre-hebrew-1.0.tar.gz \
-    https://dev-www.libreoffice.org/src/alef-1.001.tar.gz \
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
@@ -62,8 +43,6 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
     https://dev-www.libreoffice.org/src/e5be03eda13ef68aabab6e42aa67715e-redland-1.0.17.tar.gz \
     https://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz \
-    https://dev-www.libreoffice.org/src/openldap-2.4.45.tgz \
-    https://dev-www.libreoffice.org/src/neon-0.31.2.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.78.0.tar.xz \
@@ -89,8 +68,6 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/libwps-0.4.12.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
-    https://dev-www.libreoffice.org/src/poppler-21.01.0.tar.xz \
-    https://dev-www.libreoffice.org/src/poppler-data-0.4.10.tar.gz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.1.1i.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
@@ -102,14 +79,12 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/libxml2-2.9.12.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.34.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.7.0.tar.gz \
-    https://dev-www.libreoffice.org/src/lxml-4.1.1.tgz \
     https://dev-www.libreoffice.org/src/freetype-2.9.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/fontconfig-2.13.91.tar.gz \
     https://dev-www.libreoffice.org/src/libepoxy-1.5.3.tar.xz \
     https://dev-www.libreoffice.org/src/libepubgen-0.1.1.tar.xz \
     https://dev-www.libreoffice.org/src/libnumbertext-1.0.7.tar.xz \
-    https://dev-www.libreoffice.org/src/libqxp-0.0.2.tar.xz \
-    https://dev-www.libreoffice.org/src/mariadb-connector-c-3.1.8-src.tar.gz $SRC/
+    https://dev-www.libreoffice.org/src/libqxp-0.0.2.tar.xz $SRC/
 #fuzzing dictionaries
 ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/gif.dict \
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/jpeg.dict \
