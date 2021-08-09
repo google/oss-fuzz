@@ -28,7 +28,7 @@ RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-mussels-cookbook.g
 
 RUN mkdir /mussels
 RUN cd ${SRC}/clamav-mussels-cookbook && \
-    msl build clamav_deps -t host-static -w /mussels/work -i /mussels/install
+    msl build libclamav_deps -t host-static -w /mussels/work -i /mussels/install
 
 # Collect clamav source & fuzz corpus
 RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-devel.git
