@@ -83,28 +83,47 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
     self.latest_corpus_path = None
+    self.pruned_corpus_path = None
 
-  def fuzz(self):
+  def prune(self):
+    """Prunes the corpus and returns the result."""
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name)
+    self.pruned_corpus_path = (
+        self.clusterfuzz_deployment.get_target_pruned_corpus_dir(
+            self.target_name))
+    os.makedirs(self.pruned_corpus_path)
+    prune_options = [
+        '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
+    ]
+    result = self.fuzz(use_corpus=False, extra_libfuzzer_options=prune_options)
+    return FuzzResult(result.testcase, result.stacktrace,
+                      self.pruned_corpus_path)
+
+  def fuzz(self, use_corpus=True, extra_libfuzzer_options=None):
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
+    if extra_libfuzzer_options is None:
+      extra_libfuzzer_options = []
     env = base_runner_utils.get_env(self.config, self.workspace)
     # TODO(metzman): Is this needed?
     env['RUN_FUZZER_MODE'] = 'interactive'
 
-    # If corpus can be downloaded, use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name)
-    env['CORPUS_DIR'] = self.latest_corpus_path
+    if use_corpus:
+      # If corpus can be downloaded, use it for fuzzing.
+      self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+          self.target_name)
+      env['CORPUS_DIR'] = self.latest_corpus_path
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
         # Make sure libFuzzer artifact files don't pollute $OUT.
         f'-artifact_prefix={self.workspace.artifacts}/'
-    ]
+    ] + extra_libfuzzer_options
     command = ['run_fuzzer', self.target_name] + options
 
     logging.info('Running command: %s', command)
@@ -151,10 +170,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
-    if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
-      # Use ignore_errors=True to fix
-      # https://github.com/google/oss-fuzz/issues/5383.
-      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
+    for corpus_path in [self.latest_corpus_path, self.pruned_corpus_path]:
+      if corpus_path and os.path.exists(corpus_path):
+        # Use ignore_errors=True to fix
+        # https://github.com/google/oss-fuzz/issues/5383.
+        shutil.rmtree(corpus_path, ignore_errors=True)
 
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):

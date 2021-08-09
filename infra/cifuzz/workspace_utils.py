@@ -63,3 +63,8 @@ class Workspace:
   def corpora(self):
     """The directory where corpora from ClusterFuzz are stored."""
     return os.path.join(self.workspace, 'cifuzz-corpus')
+
+  @property
+  def pruned_corpora(self):
+    """The directory where pruned corpora are stored."""
+    return os.path.join(self.workspace, 'cifuzz-pruned-corpus')

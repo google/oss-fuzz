@@ -66,7 +66,11 @@ class BaseClusterFuzzDeployment:
     """Returns the path to the corpus dir for |target_name|."""
     return os.path.join(self.workspace.corpora, target_name)
 
-  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
+  def get_target_pruned_corpus_dir(self, target_name):
+    """Returns the path to the pruned corpus dir for |target_name|."""
+    return os.path.join(self.workspace.pruned_corpora, target_name)
+
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Uploads the corpus for |target_name| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
@@ -142,9 +146,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the name of the crashes artifact."""
     return 'current'
 
-  def upload_corpus(self, target_name):
+  def upload_corpus(self, target_name, corpus_dir):
     """Upload the corpus produced by |target_name|."""
-    corpus_dir = self.get_target_corpus_dir(target_name)
     logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
     name = self._get_corpus_name(target_name)
     try:
@@ -263,7 +266,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_latest_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
-  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
 
@@ -314,7 +317,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
 
-  def upload_corpus(self, target_name):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
 
