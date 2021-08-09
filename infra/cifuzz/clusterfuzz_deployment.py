@@ -18,6 +18,7 @@ import sys
 import urllib.error
 import urllib.request
 
+import config_utils
 import filestore
 import filestore_utils
 import http_utils
@@ -346,14 +347,21 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
         'Not getting project coverage because no ClusterFuzz deployment.')
 
 
+_PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING = {
+    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI:
+        OSSFuzz,
+    config_utils.BaseConfig.Platform.INTERNAL_GITHUB:
+        OSSFuzz,
+    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI:
+        NoClusterFuzzDeployment,
+    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB:
+        ClusterFuzzLite,
+}
+
+
 def get_clusterfuzz_deployment(config, workspace):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
-  if (config.platform == config.Platform.INTERNAL_GENERIC_CI or
-      config.platform == config.Platform.INTERNAL_GITHUB):
-    logging.info('Using OSS-Fuzz as ClusterFuzz deployment.')
-    return OSSFuzz(config, workspace)
-  if config.platform == config.Platform.EXTERNAL_GENERIC_CI:
-    logging.info('Not using a ClusterFuzz deployment.')
-    return NoClusterFuzzDeployment(config, workspace)
-  logging.info('Using ClusterFuzzLite as ClusterFuzz deployment.')
-  return ClusterFuzzLite(config, workspace)
+  deployment_cls = _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING[config.platform]
+  result = deployment_cls(config, workspace)
+  logging.info('ClusterFuzzDeployment: %s.', result)
+  return result

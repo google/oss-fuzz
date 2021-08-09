@@ -276,17 +276,21 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     return result
 
 
+_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
+    'batch': BatchFuzzTargetRunner,
+    'coverage': CoverageTargetRunner,
+    'prune': PruneTargetRunner,
+    'ci': CiFuzzTargetRunner,
+}
+
+
 def get_fuzz_target_runner(config):
   """Returns a fuzz target runner object based on the run_fuzzers_mode of
   |config|."""
-  logging.info('RUN_FUZZERS_MODE is: %s', config.run_fuzzers_mode)
-  if config.run_fuzzers_mode == 'batch':
-    return BatchFuzzTargetRunner(config)
-  if config.run_fuzzers_mode == 'coverage':
-    return CoverageTargetRunner(config)
-  if config.run_fuzzers_mode == 'prune':
-    return PruneTargetRunner(config)
-  return CiFuzzTargetRunner(config)
+  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
+  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
+               runner)
+  return runner
 
 
 def run_fuzzers(config):  # pylint: disable=too-many-locals
