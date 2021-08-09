@@ -18,6 +18,8 @@ vendor_ccs:
   - warrenwright@google.com
   - ailport@google.com
   - kimtony@google.com
+  - faerber@google.com
+  - greendonald@google.com
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
