@@ -96,7 +96,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   @parameterized.parameterized.expand([
       ('upload_latest_build', tuple(),
        'Not uploading latest build because on OSS-Fuzz.'),
-      ('upload_corpus', ('target',),
+      ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because on OSS-Fuzz.'),
       ('upload_crashes', tuple(), 'Not uploading crashes because on OSS-Fuzz.'),
   ])
@@ -205,7 +205,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   @parameterized.parameterized.expand([
       ('upload_latest_build', tuple(),
        'Not uploading latest build because no ClusterFuzz deployment.'),
-      ('upload_corpus', ('target',),
+      ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because no ClusterFuzz deployment.'),
       ('upload_crashes', tuple(),
        'Not uploading crashes because no ClusterFuzz deployment.'),
