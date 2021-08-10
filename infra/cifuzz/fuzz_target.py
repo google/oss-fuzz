@@ -110,6 +110,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
   def prune(self):
     """Prunes the corpus and returns the result."""
+    self._download_corpus()
     prune_options = [
         '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
     ]
