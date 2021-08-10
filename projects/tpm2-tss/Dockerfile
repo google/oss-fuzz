@@ -68,10 +68,10 @@ RUN wget --quiet --show-progress --progress=dot:giga "http://mirror.kumi.systems
         && make -j $(nproc) && make install
 RUN rm -fr $autoconf_archive.tar.xz
 
-ARG ibmtpm_name=ibmtpm1119
+ARG ibmtpm_name=ibmtpm1661
 WORKDIR /tmp
 RUN wget --quiet --show-progress --progress=dot:giga "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz" \
-	&& sha256sum $ibmtpm_name.tar.gz | grep ^b9eef79904e276aeaed2a6b9e4021442ef4d7dfae4adde2473bef1a6a4cd10fb \
+	&& sha256sum $ibmtpm_name.tar.gz | grep ^55145928ad2b24f34be6a0eacf9fb492e10e0ea919b8428c721fa970e85d6147 \
 	&& mkdir -p $ibmtpm_name \
 	&& tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name \
 	&& rm $ibmtpm_name.tar.gz
