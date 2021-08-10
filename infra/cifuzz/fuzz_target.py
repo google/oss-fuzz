@@ -95,8 +95,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.config = config
     self.latest_corpus_path = get_fuzz_target_corpus_dir(
         self.workspace, self.target_name)
+    os.makedirs(self.latest_corpus_path, exist_ok=True)
     self.pruned_corpus_path = get_fuzz_target_pruned_corpus_dir(
         self.workspace, self.target_name)
+    os.makedirs(self.pruned_corpus_path, exist_ok=True)
 
   def _download_corpus(self):
     """Downloads the corpus for the target from ClusterFuzz and returns the path
