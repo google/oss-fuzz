@@ -91,9 +91,9 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
     workdir = '/src'
 
   failure_msg = ('*' * 80 + '\nCoverage build failed.\nTo reproduce, run:\n'
-                 'python infra/helper.py build_image {name}\n'
+                 f'python infra/helper.py build_image {name}\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage '
-                 '{name}\n' + '*' * 80).format(name=name)
+                 f'{name}\n' + '*' * 80)
 
   # Compilation step.
   build_steps.append({
@@ -108,9 +108,8 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
-           'compile || (echo "{failure_msg}" && false)'
-          ).format(workdir=workdir, out=out, failure_msg=failure_msg),
+          (f'rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
+           f'compile || (echo "{failure_msg}" && false)'),
       ],
   })
 
@@ -123,11 +122,10 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
-                 'python infra/helper.py build_image {name}\n'
+                 f'python infra/helper.py build_image {name}\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage '
-                 '{name}\n'
-                 'python infra/helper.py coverage {name}\n' +
-                 '*' * 80).format(name=name)
+                 f'{name}\n'
+                 f'python infra/helper.py coverage {name}\n' + '*' * 80)
 
   # Unpack the corpus and run coverage script.
   coverage_env = env + [
@@ -138,7 +136,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
-      'name': 'gcr.io/{0}/base-runner'.format(base_images_project),
+      'name': f'gcr.io/{base_images_project}/base-runner',
       'env': coverage_env,
       'args': [
           'bash', '-c',
