@@ -403,8 +403,7 @@ def run_nonbuild_tests(parallel):
   return subprocess.run(command, check=False, env=env).returncode == 0
 
 
-def run_tests(_=None, parallel=False, build_tests=True,
-              nonbuild_tests=True):
+def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
   """Runs all unit tests."""
   build_success = True
   nonbuild_success = True
