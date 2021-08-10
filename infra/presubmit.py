@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Check code for common issues before submitting."""
+"""Checks code for common issues before submitting."""
 
 import argparse
 import os
@@ -64,8 +64,8 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
 
 
 def check_lib_fuzzing_engine(paths):
-  """Call _check_one_lib_fuzzing_engine on each path in |paths|. Return True if
-  the result of every call is True."""
+  """Calls _check_one_lib_fuzzing_engine on each path in |paths|. Returns True
+  if the result of every call is True."""
   return all([_check_one_lib_fuzzing_engine(path) for path in paths])
 
 
@@ -114,7 +114,7 @@ class ProjectYamlChecker:
     self.success = True
 
   def do_checks(self):
-    """Do all project.yaml checks. Return True if they pass."""
+    """Does all project.yaml checks. Returns True if they pass."""
     if self.is_disabled():
       return True
 
@@ -131,11 +131,11 @@ class ProjectYamlChecker:
     return self.success
 
   def is_disabled(self):
-    """Is this project disabled."""
+    """Returns True if this project is disabled."""
     return self.data.get('disabled', False)
 
   def error(self, message):
-    """Print an error message and set self.success to False."""
+    """Prints an error message and sets self.success to False."""
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
@@ -143,7 +143,7 @@ class ProjectYamlChecker:
   def check_dataflow(self):
     """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
     specified in "sanitizers", and that if specified in "sanitizers", it is also
-    specified in "fuzzing_engines"."""
+    specified in "fuzzing_engines". Returns True if this condition is met."""
     engines = self.data.get('fuzzing_engines', [])
     dfsan_engines = 'dataflow' in engines
     sanitizers = self.data.get('sanitizers', [])
@@ -160,7 +160,7 @@ class ProjectYamlChecker:
       return
 
   def check_project_yaml_constants(self):
-    """Check that certain sections only have certain constant values."""
+    """Returns True if certain sections only have certain constant values."""
     for section, allowed_constants in self.SECTIONS_AND_CONSTANTS.items():
       if section not in self.data:
         continue
@@ -185,20 +185,20 @@ class ProjectYamlChecker:
           self.error('Not allowed value in the project.yaml: ' + str(constant))
 
   def check_valid_section_names(self):
-    """Check that only valid sections are included."""
+    """Returns True if all section names are valid."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
         self.error('{name} is not a valid section name ({valid_names})'.format(
             name=name, valid_names=self.VALID_SECTION_NAMES))
 
   def check_required_sections(self):
-    """Check that all required sections are present."""
+    """Returns True if all required sections are in |self.data|."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
         self.error(section + ' section is missing.')
 
   def check_valid_emails(self):
-    """Check that emails are valid looking."""
+    """Returns True if emails are valid looking.."""
     # Get email addresses.
     email_addresses = []
     primary_contact = self.data.get('primary_contact')
@@ -214,7 +214,7 @@ class ProjectYamlChecker:
         self.error(email_address + ' is an invalid email address.')
 
   def check_valid_language(self):
-    """Check that the language is specified and valid."""
+    """Returns True if the language is specified and valid."""
     language = self.data.get('language')
     if not language:
       self.error('Missing "language" attribute in project.yaml.')
@@ -225,7 +225,7 @@ class ProjectYamlChecker:
 
 
 def _check_one_project_yaml(project_yaml_filename):
-  """Do checks on the project.yaml file."""
+  """Does checks on the project.yaml file. Returns True on success."""
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 
@@ -234,13 +234,13 @@ def _check_one_project_yaml(project_yaml_filename):
 
 
 def check_project_yaml(paths):
-  """Call _check_one_project_yaml on each path in |paths|. Return True if
-  the result of every call is True."""
+  """Calls _check_one_project_yaml on each path in |paths|. Returns True if the
+  result of every call is True."""
   return all([_check_one_project_yaml(path) for path in paths])
 
 
 def do_checks(changed_files):
-  """Run all presubmit checks return False if any fails."""
+  """Runs all presubmit checks. Returns False if any fails."""
   checks = [
       check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
   ]
@@ -273,7 +273,7 @@ _LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
 
 
 def check_license(paths):
-  """Validate license header."""
+  """Validates license header."""
   if not paths:
     return True
 
@@ -297,7 +297,7 @@ def check_license(paths):
 
 
 def bool_to_returncode(success):
-  """Return 0 if |success|. Otherwise return 1."""
+  """Returns 0 if |success|. Otherwise returns 1."""
   if success:
     print('Success.')
     return 0
@@ -312,7 +312,7 @@ def is_nonfuzzer_python(path):
 
 
 def lint(_=None):
-  """Run python's linter on infra. Return False if it fails linting."""
+  """Runs python's linter on infra. Returns False if it fails linting."""
 
   command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
@@ -320,9 +320,9 @@ def lint(_=None):
 
 
 def yapf(paths, validate=True):
-  """Do yapf on |path| if it is Python file. Only validates format if
-  |validate| otherwise, formats the file. Returns False if validation
-  or formatting fails."""
+  """Does yapf on |path| if it is Python file. Only validates format if
+  |validate|. Otherwise, formats the file. Returns False if validation or
+  formatting fails."""
   paths = [path for path in paths if is_nonfuzzer_python(path)]
   if not paths:
     return True
@@ -336,7 +336,7 @@ def yapf(paths, validate=True):
 
 
 def get_changed_files():
-  """Return a list of absolute paths of files changed in this git branch."""
+  """Returns a list of absolute paths of files changed in this git branch."""
   branch_commit_hash = subprocess.check_output(
       ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode()
 
@@ -372,9 +372,9 @@ def run_build_tests():
 
 
 def run_nonbuild_tests(parallel):
-  """Run all tests but build tests. Do it in parallel if |parallel|. The reason
-  why we exclude build tests is because they use an emulator that prevents them
-  from being used in parallel."""
+  """Runs all tests but build tests. Does them in parallel if |parallel|. The
+  reason why we exclude build tests is because they use an emulator that
+  prevents them from being used in parallel."""
   # We look for all project directories because otherwise pytest won't run tests
   # that are not in valid modules (e.g. "base-images").
   relevant_dirs = set()
