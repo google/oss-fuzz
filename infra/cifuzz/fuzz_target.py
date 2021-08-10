@@ -53,6 +53,17 @@ class ReproduceError(Exception):
   """Error for when we can't attempt to reproduce a crash."""
 
 
+def get_fuzz_target_corpus_dir(workspace, target_name):
+  """Returns the directory for storing |target_name|'s corpus in |workspace|."""
+  return os.path.join(workspace.corpora, target_name)
+
+
+def get_fuzz_target_pruned_corpus_dir(workspace, target_name):
+  """Returns the directory for storing |target_name|'s puned corpus in
+  |workspace|."""
+  return os.path.join(workspace.pruned_corpora, target_name)
+
+
 class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   """A class to manage a single fuzz target.
 
@@ -82,12 +93,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.workspace = workspace
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
-    self.latest_corpus_path = os.path.join(self.workspace.corpora,
-                                           self.target_name)
-    os.makedirs(self.latest_corpus_path, exist_ok=True)
-    self.pruned_corpus_path = os.path.join(self.workspace.pruned_corpora,
-                                           self.target_name)
-    os.makedirs(self.pruned_corpus_path, exist_ok=True)
+    self.latest_corpus_path = get_fuzz_target_corpus_dir(
+        self.workspace, self.target_name)
+    self.pruned_corpus_path = get_fuzz_target_pruned_corpus_dir(
+        self.workspace, self.target_name)
 
   def _download_corpus(self):
     """Downloads the corpus for the target from ClusterFuzz and returns the path
