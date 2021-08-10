@@ -60,8 +60,12 @@ class DownloadCorporaTest(unittest.TestCase):
   def test_download_corpora(self):  # pylint: disable=no-self-use
     """Tests that download_corpora works as intended."""
     clusterfuzz_deployment = mock.Mock()
+    clusterfuzz_deployment.workspace = test_helpers.create_workspace()
     fuzz_target_paths = ['/path/to/fuzzer1', '/path/to/fuzzer2']
-    expected_calls = [mock.call('fuzzer1'), mock.call('fuzzer2')]
+    expected_calls = [
+        mock.call('fuzzer1', '/workspace/cifuzz-corpus/fuzzer1'),
+        mock.call('fuzzer2', '/workspace/cifuzz-corpus/fuzzer2')
+    ]
     generate_coverage_report.download_corpora(fuzz_target_paths,
                                               clusterfuzz_deployment)
     clusterfuzz_deployment.download_corpus.assert_has_calls(expected_calls)

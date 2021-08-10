@@ -26,7 +26,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 
-RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
+RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage', 'prune']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
@@ -277,6 +277,7 @@ class RunFuzzersConfig(BaseConfig):
 
   def __init__(self):
     super().__init__()
+    # TODO(metzman): Pick a better default for pruning.
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
     if self.is_coverage:

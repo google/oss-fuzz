@@ -75,7 +75,11 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     self.workspace = deployment.workspace
     self.fuzz_target_path = os.path.join(self.workspace.out,
                                          self.fuzz_target_name)
+    self.setUpPyfakefs()
+    self.fs.create_file(self.fuzz_target_path)
     self.testcase_path = '/testcase'
+    self.fs.create_file(self.testcase_path)
+
     self.target = fuzz_target.FuzzTarget(self.fuzz_target_path,
                                          fuzz_target.REPRODUCE_ATTEMPTS,
                                          self.workspace, deployment,
@@ -86,7 +90,6 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
-    self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     with mock.patch('utils.execute', side_effect=all_repro) as mocked_execute:
       result = self.target.is_reproducible(self.testcase_path,
@@ -106,17 +109,9 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
       self.assertTrue(result)
       self.assertEqual(1, mocked_execute.call_count)
 
-  def _set_up_fakefs(self):
-    """Helper to setup pyfakefs and add important files to the fake
-    filesystem."""
-    self.setUpPyfakefs()
-    self.fs.create_file(self.fuzz_target_path)
-    self.fs.create_file(self.testcase_path)
-
   def test_flaky(self, _):
     """Tests that is_reproducible returns True if crash is detected on the last
     attempt."""
-    self._set_up_fakefs()
     last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with mock.patch('utils.execute',
                     side_effect=last_time_repro) as mocked_execute:
@@ -136,7 +131,6 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible returns False for a crash that did not
     reproduce."""
     all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
-    self._set_up_fakefs()
     with mock.patch('utils.execute', side_effect=all_unrepro):
       result = self.target.is_reproducible(self.testcase_path,
                                            self.fuzz_target_path)
@@ -172,13 +166,13 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     """Sets up example fuzz target to test is_crash_reportable method."""
+    self.setUpPyfakefs()
     self.fuzz_target_path = '/example/do_stuff_fuzzer'
     deployment = _create_deployment()
     self.target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
-                                         '/example/outdir', deployment,
+                                         deployment.workspace, deployment,
                                          deployment.config)
     self.oss_fuzz_build_path = '/oss-fuzz-build'
-    self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_path)
     self.oss_fuzz_target_path = os.path.join(
         self.oss_fuzz_build_path, os.path.basename(self.fuzz_target_path))

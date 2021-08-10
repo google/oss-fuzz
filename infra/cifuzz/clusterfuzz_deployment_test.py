@@ -64,28 +64,26 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     self.deployment = _create_deployment()
+    self.corpus_dir = os.path.join(self.deployment.workspace.corpora,
+                                   EXAMPLE_FUZZER)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
-    result = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    self.assertIsNotNone(result)
-    expected_corpus_dir = os.path.join(self.deployment.workspace.corpora,
-                                       EXAMPLE_FUZZER)
+    self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
     expected_url = ('https://storage.googleapis.com/example-backup.'
                     'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
                     'example_crash_fuzzer/public.zip')
     call_args, _ = mocked_download_and_unpack_zip.call_args
-    self.assertEqual(call_args, (expected_url, expected_corpus_dir))
+    self.assertEqual(call_args, (expected_url, self.corpus_dir))
+    self.assertTrue(os.path.exists(self.corpus_dir))
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_corpus_fail(self, _):
     """Tests that when downloading fails, an empty corpus directory is still
     returned."""
-    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    self.assertEqual(corpus_path,
-                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
-    self.assertEqual(os.listdir(corpus_path), [])
+    self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
+    self.assertEqual(os.listdir(self.corpus_dir), [])
 
   def test_get_latest_build_name(self):
     """Tests that the latest build name can be retrieved from GCS."""
@@ -96,7 +94,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   @parameterized.parameterized.expand([
       ('upload_latest_build', tuple(),
        'Not uploading latest build because on OSS-Fuzz.'),
-      ('upload_corpus', ('target',),
+      ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because on OSS-Fuzz.'),
       ('upload_crashes', tuple(), 'Not uploading crashes because on OSS-Fuzz.'),
   ])
@@ -133,27 +131,25 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     self.deployment = _create_deployment(run_fuzzers_mode='batch',
                                          oss_fuzz_project_name='',
                                          is_github=True)
+    self.corpus_dir = os.path.join(self.deployment.workspace.corpora,
+                                   EXAMPLE_FUZZER)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
               return_value=True)
   def test_download_corpus(self, mocked_download_corpus):
     """Tests that download_corpus works for a valid project."""
-    result = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    expected_corpus_dir = os.path.join(WORKSPACE, 'cifuzz-corpus',
-                                       EXAMPLE_FUZZER)
-    self.assertEqual(result, expected_corpus_dir)
+    self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
     mocked_download_corpus.assert_called_with('example_crash_fuzzer',
-                                              expected_corpus_dir)
+                                              self.corpus_dir)
+    self.assertTrue(os.path.exists(self.corpus_dir))
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
               side_effect=Exception)
   def test_download_corpus_fail(self, _):
     """Tests that when downloading fails, an empty corpus directory is still
     returned."""
-    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    self.assertEqual(corpus_path,
-                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
-    self.assertEqual(os.listdir(corpus_path), [])
+    self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
+    self.assertEqual(os.listdir(self.corpus_dir), [])
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
               return_value=True)
@@ -191,21 +187,21 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
+    self.corpus_dir = os.path.join(workspace.corpora, EXAMPLE_FUZZER)
 
   @mock.patch('logging.info')
   def test_download_corpus(self, mocked_info):
     """Tests that download corpus returns the path to the empty corpus
     directory."""
-    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER)
-    self.assertEqual(corpus_path,
-                     '/workspace/cifuzz-corpus/example_crash_fuzzer')
+    self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
     mocked_info.assert_called_with(
         'Not downloading corpus because no ClusterFuzz deployment.')
+    self.assertTrue(os.path.exists(self.corpus_dir))
 
   @parameterized.parameterized.expand([
       ('upload_latest_build', tuple(),
        'Not uploading latest build because no ClusterFuzz deployment.'),
-      ('upload_corpus', ('target',),
+      ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because no ClusterFuzz deployment.'),
       ('upload_crashes', tuple(),
        'Not uploading crashes because no ClusterFuzz deployment.'),
