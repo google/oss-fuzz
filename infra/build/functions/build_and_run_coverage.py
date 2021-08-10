@@ -91,7 +91,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
     workdir = '/src'
 
   failure_msg = ('*' * 80 + '\nCoverage build failed.\nTo reproduce, run:\n'
-                 'python infra/helper.py build_image {name}\n'
+                 f'python infra/helper.py build_image {name}\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage '
                  f'{name}\n' + '*' * 80)
 
