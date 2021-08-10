@@ -21,6 +21,8 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 from google.cloud import ndb
+from pyfakefs import fake_filesystem_unittest
+import yaml
 
 sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
@@ -212,6 +214,45 @@ class TestUpdateLastSuccessfulBuild(unittest.TestCase):
     test_utils.cleanup_emulator(cls.ds_emulator)
 
 
+class TestProjectShouldBuild(fake_filesystem_unittest.TestCase):
+  """Unit tests for project_should_build."""
+  PROJECT_NAME = 'test-example-project'
+
+  def setUp(self):
+    self.setUpPyfakefs()
+    self.project_dir = os.path.join(update_build_status.PROJECTS_DIR,
+                                    self.PROJECT_NAME)
+    self.docker_file = os.path.join(self.project_dir, 'Dockerfile')
+    self.project_yaml = os.path.join(self.project_dir, 'project.yaml')
+
+  def test_buildable_project(self):
+    """Tests that True is returned for a project that should be built."""
+    self.fs.create_file(self.docker_file)
+    self.fs.create_file(self.project_yaml,
+                        contents=yaml.dump({'homepage': 'example.com'}))
+    self.assertTrue(update_build_status.project_should_build(self.PROJECT_NAME))
+
+  def test_no_dockerfile(self):
+    """Tests that False is returned for a project without a dockerfile."""
+    self.fs.create_file(self.project_yaml)
+    self.assertFalse(update_build_status.project_should_build(
+        self.PROJECT_NAME))
+
+  def test_no_project_yaml(self):
+    """Tests that False is returned for a project without a project.yaml."""
+    self.fs.create_file(self.docker_file)
+    self.assertFalse(update_build_status.project_should_build(
+        self.PROJECT_NAME))
+
+  def test_disabled(self):
+    """Tests that False is returned for a disabled project."""
+    self.fs.create_file(self.docker_file)
+    project_yaml_contents = yaml.dump({'disabled': True})
+    self.fs.create_file(self.project_yaml, contents=project_yaml_contents)
+    self.assertFalse(update_build_status.project_should_build(
+        self.PROJECT_NAME))
+
+
 class TestUpdateBuildStatus(unittest.TestCase):
   """Unit test for update build status."""
 
@@ -226,11 +267,12 @@ class TestUpdateBuildStatus(unittest.TestCase):
     test_utils.reset_ds_emulator()
 
   # pylint: disable=no-self-use
+  @mock.patch('update_build_status.project_should_build', return_value=True)
   @mock.patch('google.auth.default', return_value=['temp', 'temp'])
   @mock.patch('update_build_status.build', return_value='cloudbuild')
   @mock.patch('update_build_status.upload_log')
   def test_update_build_status(self, mocked_upload_log, mocked_cloud_build,
-                               mocked_google_auth):
+                               mocked_google_auth, _):
     """Testing update build status as a whole."""
     del self, mocked_cloud_build, mocked_google_auth
     update_build_status.upload_status = MagicMock()
