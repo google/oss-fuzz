@@ -172,13 +172,13 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     """Sets up example fuzz target to test is_crash_reportable method."""
+    self.setUpPyfakefs()
     self.fuzz_target_path = '/example/do_stuff_fuzzer'
     deployment = _create_deployment()
     self.target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
-                                         '/example/outdir', deployment,
+                                         deployment.workspace, deployment,
                                          deployment.config)
     self.oss_fuzz_build_path = '/oss-fuzz-build'
-    self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_path)
     self.oss_fuzz_target_path = os.path.join(
         self.oss_fuzz_build_path, os.path.basename(self.fuzz_target_path))

@@ -82,17 +82,23 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.workspace = workspace
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
-    self.latest_corpus_path = None
-    self.pruned_corpus_path = None
+    self.latest_corpus_path = os.path.join(self.workspace.corpora,
+                                           self.target_name)
+    os.makedirs(self.latest_corpus_path, exist_ok=True)
+    self.pruned_corpus_path = os.path.join(self.workspace.pruned_corpora,
+                                           self.target_name)
+    os.makedirs(self.pruned_corpus_path, exist_ok=True)
+
+  def _download_corpus(self):
+    """Downloads the corpus for the target from ClusterFuzz and returns the path
+    to the corpus. An empty directory is provided if the corpus can't be
+    downloaded or is empty."""
+    self.clusterfuzz_deployment.download_corpus(self.target_name,
+                                                self.latest_corpus_path)
+    return self.latest_corpus_path
 
   def prune(self):
     """Prunes the corpus and returns the result."""
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name)
-    self.pruned_corpus_path = (
-        self.clusterfuzz_deployment.get_target_pruned_corpus_dir(
-            self.target_name))
-    os.makedirs(self.pruned_corpus_path)
     prune_options = [
         '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
     ]
@@ -115,8 +121,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     if use_corpus:
       # If corpus can be downloaded, use it for fuzzing.
-      self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-          self.target_name)
+      self._download_corpus()
       env['CORPUS_DIR'] = self.latest_corpus_path
 
     options = LIBFUZZER_OPTIONS.copy() + [
@@ -171,10 +176,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     # Delete the seed corpus, corpus, and fuzz target.
     for corpus_path in [self.latest_corpus_path, self.pruned_corpus_path]:
-      if corpus_path and os.path.exists(corpus_path):
-        # Use ignore_errors=True to fix
-        # https://github.com/google/oss-fuzz/issues/5383.
-        shutil.rmtree(corpus_path, ignore_errors=True)
+      # Use ignore_errors=True to fix
+      # https://github.com/google/oss-fuzz/issues/5383.
+      shutil.rmtree(corpus_path, ignore_errors=True)
 
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):

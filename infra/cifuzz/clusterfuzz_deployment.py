@@ -51,8 +51,8 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def download_corpus(self, target_name):
-    """Downloads the corpus for |target_name| from ClusterFuzz.
+  def download_corpus(self, target_name, corpus_dir):
+    """Downloads the corpus for |target_name| from ClusterFuzz to |corpus_dir|.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
@@ -62,14 +62,6 @@ class BaseClusterFuzzDeployment:
   def upload_crashes(self):
     """Uploads crashes in |crashes_dir| to filestore."""
     raise NotImplementedError('Child class must implement method.')
-
-  def get_target_corpus_dir(self, target_name):
-    """Returns the path to the corpus dir for |target_name|."""
-    return os.path.join(self.workspace.corpora, target_name)
-
-  def get_target_pruned_corpus_dir(self, target_name):
-    """Returns the path to the pruned corpus dir for |target_name|."""
-    return os.path.join(self.workspace.pruned_corpora, target_name)
 
   def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Uploads the corpus for |target_name| to filestore."""
@@ -83,12 +75,10 @@ class BaseClusterFuzzDeployment:
     """Returns the project coverage object for the project."""
     raise NotImplementedError('Child class must implement method.')
 
-  def make_empty_corpus_dir(self, target_name):
-    """Makes an empty corpus directory for |target_name| in |parent_dir| and
-    returns the path to the directory."""
-    corpus_dir = self.get_target_corpus_dir(target_name)
-    os.makedirs(corpus_dir, exist_ok=True)
-    return corpus_dir
+
+def _make_empty_dir_if_nonexistent(path):
+  """Makes an empty directory at |path| if it does not exist."""
+  os.makedirs(path, exist_ok=True)
 
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
@@ -109,7 +99,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       # called if multiple bugs are found.
       return self.workspace.clusterfuzz_build
 
-    os.makedirs(self.workspace.clusterfuzz_build, exist_ok=True)
+    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
     build_name = self._get_build_name()
 
     try:
@@ -123,8 +113,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     return None
 
-  def download_corpus(self, target_name):
-    corpus_dir = self.make_empty_corpus_dir(target_name)
+  def download_corpus(self, target_name, corpus_dir):
+    _make_empty_dir_if_nonexistent(corpus_dir)
     logging.info('Downloading corpus for %s to %s.', target_name, corpus_dir)
     corpus_name = self._get_corpus_name(target_name)
     try:
@@ -245,7 +235,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       # again.
       return self.workspace.clusterfuzz_build
 
-    os.makedirs(self.workspace.clusterfuzz_build, exist_ok=True)
+    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
 
     latest_build_name = self.get_latest_build_name()
     if not latest_build_name:
@@ -275,13 +265,13 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_crashes."""
     logging.info('Not uploading crashes because on OSS-Fuzz.')
 
-  def download_corpus(self, target_name):
+  def download_corpus(self, target_name, corpus_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
 
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = self.make_empty_corpus_dir(target_name)
+    _make_empty_dir_if_nonexistent(corpus_dir)
     project_qualified_fuzz_target_name = target_name
     qualified_name_prefix = self.config.oss_fuzz_project_name + '_'
     if not target_name.startswith(qualified_name_prefix):
@@ -326,10 +316,10 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_crashes."""
     logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
-  def download_corpus(self, target_name):
+  def download_corpus(self, target_name, corpus_dir):
     """Noop Implementation of download_corpus."""
     logging.info('Not downloading corpus because no ClusterFuzz deployment.')
-    return self.make_empty_corpus_dir(target_name)
+    return _make_empty_dir_if_nonexistent(corpus_dir)
 
   def download_latest_build(self):  # pylint: disable=no-self-use
     """Noop Implementation of download_latest_build."""
