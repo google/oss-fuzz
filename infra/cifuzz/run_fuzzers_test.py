@@ -290,7 +290,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
                                                  is_github=True)
 
   @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
               return_value=True)
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')

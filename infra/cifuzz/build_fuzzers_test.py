@@ -108,7 +108,9 @@ class InternalGithubBuildTest(unittest.TestCase):
         pr_ref=self.PR_REF,
         is_github=True)
     ci_system = continuous_integration.get_ci(config)
-    return build_fuzzers.Builder(config, ci_system)
+    builder = build_fuzzers.Builder(config, ci_system)
+    builder.repo_manager = repo_manager.RepoManager('/fake')
+    return builder
 
   @mock.patch('repo_manager._clone', side_effect=None)
   @mock.patch('continuous_integration.checkout_specified_commit',
@@ -128,7 +130,7 @@ class InternalGithubBuildTest(unittest.TestCase):
     self.assertEqual(os.path.basename(builder.host_repo_path),
                      os.path.basename(image_repo_path))
 
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
               return_value=True)
   def test_upload_build_disabled(self, mock_upload_build):
     """Test upload build (disabled)."""
@@ -138,13 +140,15 @@ class InternalGithubBuildTest(unittest.TestCase):
 
     mock_upload_build.assert_not_called()
 
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
               return_value=True)
-  def test_upload_build(self, mock_upload_build):
+  @mock.patch('repo_manager.RepoManager.get_current_commit',
+              return_value='commit')
+  def test_upload_build(self, mock_upload_build, mock_get_current_commit):
     """Test upload build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       builder = self._create_builder(tmp_dir, oss_fuzz_project_name='')
-      builder.config.builds_storage = 'GITHUB_ARTIFACT'
+      builder.config.upload_build = True
       builder.config.oss_fuzz_project_name = ''
       builder.upload_build()
 
