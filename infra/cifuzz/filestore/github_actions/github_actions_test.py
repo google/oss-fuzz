@@ -99,10 +99,10 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     """Test uploading corpus."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mocked_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_corpus('target', self.local_dir)
@@ -127,10 +127,10 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     """Test uploading build."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mocked_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_build('sanitizer', self.local_dir)
@@ -144,10 +144,10 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     """Test uploading coverage."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mocked_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_coverage('latest', self.local_dir)

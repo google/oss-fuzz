@@ -302,7 +302,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
     call_count = 0
 
-    def mock_run_fuzz_target(_):
+    def mock_run_fuzz_target_impl(_):
       nonlocal call_count
       if call_count == 0:
         testcase = self.testcase1
@@ -314,7 +314,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
         self.fs.create_dir(self.CORPUS_DIR)
       return fuzz_target.FuzzResult(testcase, self.STACKTRACE, self.CORPUS_DIR)
 
-    mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
+    mocked_run_fuzz_target.side_effect = mock_run_fuzz_target_impl
     magic_mock = mock.MagicMock()
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
