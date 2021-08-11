@@ -73,7 +73,7 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertFalse(config.validate())
     mock_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
-                                    os.environ['LANGUAGE'], constants.LANGUAGES)
+                                  os.environ['LANGUAGE'], constants.LANGUAGES)
 
   @mock.patch('logging.error')
   def test_validate_invalid_sanitizer(self, mock_error):
@@ -83,9 +83,9 @@ class BaseConfigTest(unittest.TestCase):
     os.environ['SANITIZER'] = 'invalid-sanitizer'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mock_error.assert_called_with(
-        'Invalid SANITIZER: %s. Must be one of: %s.', os.environ['SANITIZER'],
-        config_utils.SANITIZERS)
+    mock_error.assert_called_with('Invalid SANITIZER: %s. Must be one of: %s.',
+                                  os.environ['SANITIZER'],
+                                  config_utils.SANITIZERS)
 
   def test_validate(self):
     """Tests that validate returns True if config is valid."""

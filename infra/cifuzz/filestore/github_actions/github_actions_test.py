@@ -60,7 +60,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore._list_artifacts()
     mock_list_artifacts.assert_called_with(self.owner, self.repo,
-                                             self._get_expected_http_headers())
+                                           self._get_expected_http_headers())
 
   @mock.patch('logging.warning')
   @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
@@ -75,7 +75,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     build_dir = 'build-dir'
     self.assertFalse(filestore.download_build(name, build_dir))
     mock_warning.assert_called_with('Could not download artifact: %s.',
-                                      'cifuzz-build-' + name)
+                                    'cifuzz-build-' + name)
 
   @mock.patch('logging.warning')
   @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
@@ -90,7 +90,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     dst_dir = 'local-dir'
     self.assertFalse(filestore.download_corpus(name, dst_dir))
     mock_warning.assert_called_with('Could not download artifact: %s.',
-                                      'cifuzz-corpus-' + name)
+                                    'cifuzz-corpus-' + name)
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
@@ -160,8 +160,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     artifact_client.upload_artifact properly."""
     # Don't assert what second argument will be since it's a temporary
     # directory.
-    self.assertEqual(mock_tar_directory.call_args_list[0][0][0],
-                     self.local_dir)
+    self.assertEqual(mock_tar_directory.call_args_list[0][0][0], self.local_dir)
 
     # Don't assert what second and third arguments will be since they are
     # temporary directories.
@@ -203,8 +202,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
       artifact_download_dst_dir = os.path.join(temp_dir, 'dst')
       os.mkdir(artifact_download_dst_dir)
 
-      def mock_download_and_unpack_zip(url, download_artifact_temp_dir,
-                                       headers):
+      def mock_download_and_unpack_zip_impl(url, download_artifact_temp_dir,
+                                            headers):
         self.assertEqual(url, artifact_download_url)
         self.assertEqual(headers, self._get_expected_http_headers())
         shutil.copy(
@@ -213,7 +212,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                          os.path.basename(archive_path)))
         return True
 
-      mock_download_and_unpack_zip.side_effect = mock_download_and_unpack_zip
+      mock_download_and_unpack_zip.side_effect = (
+          mock_download_and_unpack_zip_impl)
       filestore = github_actions.GithubActionsFilestore(self.config)
       self.assertTrue(
           filestore._download_artifact('corpus', artifact_download_dst_dir))
@@ -256,7 +256,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     # with the correct name.
     self.assertEqual(filestore._find_artifact('artifact'), artifact_listing_2)
     mock_list_artifacts.assert_called_with(self.owner, self.repo,
-                                             self._get_expected_http_headers())
+                                           self._get_expected_http_headers())
 
 
 class TarDirectoryTest(unittest.TestCase):

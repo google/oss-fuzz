@@ -80,8 +80,7 @@ class TestGetBuildHistory(unittest.TestCase):
                          expected_projects)
 
   def test_get_build_history_missing_log(self, mock_upload_log,
-                                         mock_cloud_build,
-                                         mock_google_auth):
+                                         mock_cloud_build, mock_google_auth):
     """Test for missing build log file."""
     del mock_cloud_build, mock_google_auth
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]

@@ -113,8 +113,8 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
                      EXPECTED_LATEST_BUILD_PATH)
     expected_url = ('https://storage.googleapis.com/clusterfuzz-builds/example/'
                     'example-address-202008030600.zip')
-    mock_download_and_unpack_zip.assert_called_with(
-        expected_url, EXPECTED_LATEST_BUILD_PATH)
+    mock_download_and_unpack_zip.assert_called_with(expected_url,
+                                                    EXPECTED_LATEST_BUILD_PATH)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_latest_build_fail(self, _):
@@ -140,7 +140,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     """Tests that download_corpus works for a valid project."""
     self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
     mock_download_corpus.assert_called_with('example_crash_fuzzer',
-                                              self.corpus_dir)
+                                            self.corpus_dir)
     self.assertTrue(os.path.exists(self.corpus_dir))
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
@@ -160,7 +160,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
                      EXPECTED_LATEST_BUILD_PATH)
     expected_artifact_name = 'address-latest'
     mock_download_build.assert_called_with(expected_artifact_name,
-                                             EXPECTED_LATEST_BUILD_PATH)
+                                           EXPECTED_LATEST_BUILD_PATH)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
               side_effect=Exception)
@@ -174,7 +174,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     """Tests that upload_latest_build works as intended."""
     self.deployment.upload_latest_build()
     mock_upload_build.assert_called_with('address-latest',
-                                           '/workspace/build-out')
+                                         '/workspace/build-out')
 
 
 class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):

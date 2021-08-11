@@ -191,8 +191,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
 
   @mock.patch('utils.get_fuzz_targets')
   @mock.patch('logging.error')
-  def test_initialize_no_artifacts(self, mock_log_error,
-                                   mock_get_fuzz_targets):
+  def test_initialize_no_artifacts(self, mock_log_error, mock_get_fuzz_targets):
     """Tests initialize with no artifacts dir (the expected setting)."""
     mock_get_fuzz_targets.return_value = ['fuzz-target']
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -241,8 +240,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mock_create_fuzz_target_obj,
-                                  mock_run_fuzz_target,
-                                  mock_get_fuzz_targets):
+                                  mock_run_fuzz_target, mock_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'build-out')
@@ -325,8 +323,9 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
               return_value=False)
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build')
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
-  def test_run_fuzz_targets_upload_crashes_and_builds(
-      self, mock_upload_crashes, mock_upload_latest_build, _):
+  def test_run_fuzz_targets_upload_crashes_and_builds(self, mock_upload_crashes,
+                                                      mock_upload_latest_build,
+                                                      _):
     """Tests that run_fuzz_targets uploads crashes and builds correctly."""
     runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
     # TODO(metzman): Don't rely on this failing gracefully.

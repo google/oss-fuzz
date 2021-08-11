@@ -118,8 +118,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
       self.assertTrue(
           self.target.is_reproducible(self.testcase_path,
                                       self.fuzz_target_path))
-      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS,
-                       mock_execute.call_count)
+      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS, mock_execute.call_count)
 
   def test_nonexistent_fuzzer(self, _):
     """Tests that is_reproducible raises an error if it could not attempt
@@ -236,7 +235,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
                       return_value=self.oss_fuzz_build_path):
         self.assertTrue(self.target.is_crash_reportable(self.testcase_path))
     mock_is_reproducible.assert_any_call(self.testcase_path,
-                                           self.oss_fuzz_target_path)
+                                         self.oss_fuzz_target_path)
     mock_info.assert_called_with(
         'Could not run previous build of target to determine if this code '
         'change (pr/commit) introduced crash. Assuming crash was newly '
