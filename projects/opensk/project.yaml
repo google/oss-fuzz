@@ -7,4 +7,7 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 auto_ccs:
+  - "jmichel@google.com"
+  - "kaczmarczyck@google.com"
+  - "cretin@google.com"
   - "david@adalogics.com"
