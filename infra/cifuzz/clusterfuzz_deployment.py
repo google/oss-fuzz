@@ -118,8 +118,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                                          self.workspace.clusterfuzz_build):
           logging.info('Done downloading previus build.')
           return self.workspace.clusterfuzz_build
-        else:
-          logging.info('Build for %s does not exist.', old_commit)
+
+        logging.info('Build for %s does not exist.', old_commit)
       except Exception as err:  # pylint: disable=broad-except
         logging.error('Could not download build for %s because of: %s',
                       old_commit, err)

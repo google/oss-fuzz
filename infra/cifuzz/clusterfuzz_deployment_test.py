@@ -35,6 +35,8 @@ EXAMPLE_FUZZER = 'example_crash_fuzzer'
 WORKSPACE = '/workspace'
 EXPECTED_LATEST_BUILD_PATH = os.path.join(WORKSPACE, 'cifuzz-prev-build')
 
+# pylint: disable=unused-argument
+
 
 def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in

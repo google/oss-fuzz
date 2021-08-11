@@ -53,7 +53,7 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
-# pylint: disable=no-self-use,protected-access,too-few-public-methods
+# pylint: disable=no-self-use,protected-access,too-few-public-methods,unused-argument
 
 
 class BuildFuzzersTest(unittest.TestCase):
