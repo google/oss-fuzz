@@ -15,7 +15,6 @@ auto_ccs:
   - "guidovranken@gmail.com"
 fuzzing_engines:
   - libfuzzer
-  - afl
   - honggfuzz
   - dataflow
 sanitizers:
