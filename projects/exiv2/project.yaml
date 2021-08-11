@@ -3,9 +3,7 @@ language: c++
 primary_contact: "kevinbackhouse@github.com"
 sanitizers:
   - address
-  - memory
   - undefined
 architectures:
   - x86_64
-  - i386
 main_repo: 'https://github.com/Exiv2/exiv2'
