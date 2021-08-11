@@ -149,7 +149,6 @@ class InternalGithubBuildTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       builder = self._create_builder(tmp_dir, oss_fuzz_project_name='')
       builder.config.upload_build = True
-      builder.config.oss_fuzz_project_name = ''
       builder.upload_build()
 
     mock_upload_build.assert_called_once()
