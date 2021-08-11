@@ -22,7 +22,7 @@ with atheris.instrument_imports():
   import pygments.lexers
 
 
-@atheris.instrument_imports
+@atheris.instrument_func
 def TestOneInput(input_bytes):
   fdp = atheris.FuzzedDataProvider(input_bytes)
   data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
