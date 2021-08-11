@@ -64,7 +64,7 @@ class BuildFuzzersTest(unittest.TestCase):
   @mock.patch('repo_manager._clone', return_value=None)
   @mock.patch('continuous_integration.checkout_specified_commit')
   @mock.patch('helper.docker_run', return_value=False)  # We want to quit early.
-  def test_cifuzz_env_var(self, mocked_docker_run, _, __, ___):
+  def test_cifuzz_env_var(self, mock_docker_run, _, __, ___):
     """Tests that the CIFUZZ env var is set."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -75,7 +75,7 @@ class BuildFuzzersTest(unittest.TestCase):
               workspace=tmp_dir,
               pr_ref='refs/pull/1757/merge'))
 
-      docker_run_command = mocked_docker_run.call_args_list[0][0][0]
+      docker_run_command = mock_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
       for idx, element in enumerate(command):
@@ -296,14 +296,14 @@ class CheckFuzzerBuildTest(unittest.TestCase):
       self.assertFalse(build_fuzzers.check_fuzzer_build(self.config))
 
   @mock.patch('utils.execute', return_value=(None, None, 0))
-  def test_allow_broken_fuzz_targets_percentage(self, mocked_execute):
+  def test_allow_broken_fuzz_targets_percentage(self, mock_execute):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
     docker if passed to check_fuzzer_build."""
     percentage = '0'
     self.config.allowed_broken_targets_percentage = percentage
     build_fuzzers.check_fuzzer_build(self.config)
     self.assertEqual(
-        mocked_execute.call_args[1]['env']['ALLOWED_BROKEN_TARGETS_PERCENTAGE'],
+        mock_execute.call_args[1]['env']['ALLOWED_BROKEN_TARGETS_PERCENTAGE'],
         percentage)
 
 

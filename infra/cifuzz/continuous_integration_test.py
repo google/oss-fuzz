@@ -31,7 +31,7 @@ class FixGitRepoForDiffTest(unittest.TestCase):
   """Tests for fix_git_repo_for_diff."""
 
   @mock.patch('utils.execute')
-  def test_fix_git_repo_for_diff(self, mocked_execute):
+  def test_fix_git_repo_for_diff(self, mock_execute):
     """Tests that fix_git_repo_for_diff works as intended."""
     repo_dir = '/dir'
     repo_manager_obj = repo_manager.RepoManager(repo_dir)
@@ -41,7 +41,7 @@ class FixGitRepoForDiffTest(unittest.TestCase):
         'refs/remotes/origin/master'
     ]
 
-    mocked_execute.assert_called_with(expected_command, location=repo_dir)
+    mock_execute.assert_called_with(expected_command, location=repo_dir)
 
 
 class GetBuildCommand(unittest.TestCase):
@@ -71,14 +71,14 @@ class BuildExternalProjetDockerImage(unittest.TestCase):
   """Tests for build_external_project_docker_image."""
 
   @mock.patch('helper.docker_build')
-  def test_build_external_project_docker_image(self, mocked_docker_build):
+  def test_build_external_project_docker_image(self, mock_docker_build):
     """Tests that build_external_project_docker_image works as intended."""
     build_integration_path = '.clusterfuzzlite'
     project_src = '/path/to/project/src'
     continuous_integration.build_external_project_docker_image(
         project_src, build_integration_path)
 
-    mocked_docker_build.assert_called_with([
+    mock_docker_build.assert_called_with([
         '-t', 'external-project', '-f',
         os.path.join('.clusterfuzzlite', 'Dockerfile'), project_src
     ])

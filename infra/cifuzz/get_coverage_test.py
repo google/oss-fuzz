@@ -47,14 +47,14 @@ class GetOssFuzzFuzzerStatsDirUrlTest(unittest.TestCase):
                   'fuzzer_stats_dir':
                       'gs://oss-fuzz-coverage/systemd/fuzzer_stats/20210303'
               })
-  def test_get_valid_project(self, mocked_get_json_from_url):
+  def test_get_valid_project(self, mock_get_json_from_url):
     """Tests that a project's coverage report can be downloaded and parsed.
 
     NOTE: This test relies on the PROJECT_NAME repo's coverage report.
     The "example" project was not used because it has no coverage reports.
     """
     result = get_coverage._get_oss_fuzz_fuzzer_stats_dir_url(PROJECT_NAME)
-    (url,), _ = mocked_get_json_from_url.call_args
+    (url,), _ = mock_get_json_from_url.call_args
     self.assertEqual(
         'https://storage.googleapis.com/oss-fuzz-coverage/'
         'latest_report_info/curl.json', url)
@@ -80,10 +80,10 @@ class OSSFuzzCoverageGetTargetCoverageTest(unittest.TestCase):
           REPO_PATH, PROJECT_NAME)
 
   @mock.patch('http_utils.get_json_from_url', return_value={})
-  def test_valid_target(self, mocked_get_json_from_url):
+  def test_valid_target(self, mock_get_json_from_url):
     """Tests that a target's coverage report can be downloaded and parsed."""
     self.oss_fuzz_coverage.get_target_coverage(FUZZ_TARGET)
-    (url,), _ = mocked_get_json_from_url.call_args
+    (url,), _ = mock_get_json_from_url.call_args
     self.assertEqual(
         'https://storage.googleapis.com/oss-fuzz-coverage/'
         'curl/fuzzer_stats/20200226/curl_fuzzer.json', url)
@@ -215,22 +215,22 @@ class GetOssFuzzLatestCovReportInfo(unittest.TestCase):
 
   @mock.patch('logging.error')
   @mock.patch('http_utils.get_json_from_url', return_value={'coverage': 1})
-  def test_get_oss_fuzz_latest_cov_report_info(self, mocked_get_json_from_url,
-                                               mocked_error):
+  def test_get_oss_fuzz_latest_cov_report_info(self, mock_get_json_from_url,
+                                               mock_error):
     """Tests that _get_oss_fuzz_latest_cov_report_info works as intended."""
     result = get_coverage._get_oss_fuzz_latest_cov_report_info(self.PROJECT)
     self.assertEqual(result, {'coverage': 1})
-    mocked_error.assert_not_called()
-    mocked_get_json_from_url.assert_called_with(self.LATEST_REPORT_INFO_URL)
+    mock_error.assert_not_called()
+    mock_get_json_from_url.assert_called_with(self.LATEST_REPORT_INFO_URL)
 
   @mock.patch('logging.error')
   @mock.patch('http_utils.get_json_from_url', return_value=None)
-  def test_get_oss_fuzz_latest_cov_report_info_fail(self, _, mocked_error):
+  def test_get_oss_fuzz_latest_cov_report_info_fail(self, _, mock_error):
     """Tests that _get_oss_fuzz_latest_cov_report_info works as intended when we
     can't get latest report info."""
     result = get_coverage._get_oss_fuzz_latest_cov_report_info('project')
     self.assertIsNone(result)
-    mocked_error.assert_called_with(
+    mock_error.assert_called_with(
         'Could not get the coverage report json from url: %s.',
         self.LATEST_REPORT_INFO_URL)
 
