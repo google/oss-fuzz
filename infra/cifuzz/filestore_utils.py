@@ -13,6 +13,7 @@
 # limitations under the License.
 """External filestore interface. Cannot be depended on by filestore code."""
 import filestore
+import filestore.git
 import filestore.github_actions
 
 
@@ -21,5 +22,10 @@ def get_filestore(config):
   Raises an exception if there is no correct filestore for the platform."""
   # TODO(metzman): Force specifying of filestore.
   if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return filestore.github_actions.GithubActionsFilestore(config)
+    ci_filestore = filestore.github_actions.GithubActionsFilestore(config)
+    if not config.git_store_repo:
+      return ci_filestore
+
+    return filestore.git.GitFilestore(config, ci_filestore)
+
   raise filestore.FilestoreError('Filestore doesn\'t support platform.')

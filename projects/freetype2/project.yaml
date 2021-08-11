@@ -2,7 +2,6 @@ homepage: "https://www.freetype.org/"
 language: c++
 primary_contact: "lemzwerg@gmail.com"
 auto_ccs:
-  - "darnold@adobe.com"
   - "lemzwerg@googlemail.com"
   - "HinTak.Leung@gmail.com"
   - "ewaldhew@gmail.com"

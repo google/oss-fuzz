@@ -21,6 +21,7 @@ import logging
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
+import docker
 import helper
 import repo_manager
 import retry
@@ -30,6 +31,9 @@ import utils
 
 BuildPreparationResult = collections.namedtuple(
     'BuildPreparationResult', ['success', 'image_repo_path', 'repo_manager'])
+
+_IMAGE_BUILD_TRIES = 3
+_IMAGE_BUILD_BACKOFF = 2
 
 
 def fix_git_repo_for_diff(repo_manager_obj):
@@ -51,12 +55,12 @@ class BaseCi:
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image and gets the source code we need to
     fuzz."""
-    raise NotImplementedError('Children must implement this method.')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""
-    raise NotImplementedError('Children must implement this method.')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
@@ -64,6 +68,29 @@ class BaseCi:
     fix_git_repo_for_diff(repo_manager_obj)
     logging.info('Diffing against %s.', base)
     return repo_manager_obj.get_git_diff(base)
+
+  def get_build_command(self, host_repo_path, image_repo_path):
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    raise NotImplementedError('Child class must implement method.')
+
+
+def get_build_command():
+  """Returns the command to build the project inside the project builder
+  container."""
+  return 'compile'
+
+
+def get_replace_repo_and_build_command(host_repo_path, image_repo_path):
+  """Returns the command to replace the repo located at |image_repo_path| with
+  |host_repo_path| and build the project inside the project builder
+  container."""
+  rm_path = os.path.join(image_repo_path, '*')
+  image_src_path = os.path.dirname(image_repo_path)
+  build_command = get_build_command()
+  command = (f'cd / && rm -rf {rm_path} && cp -r {host_repo_path} '
+             f'{image_src_path} && cd - && {build_command}')
+  return command
 
 
 def get_ci(config):
@@ -132,11 +159,11 @@ class InternalGithub(GithubCiMixin, BaseCi):
     assert self.config.pr_ref or self.config.commit_sha
     # detect_main_repo builds the image as a side effect.
     inferred_url, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.project_name, repo_name=self.config.project_repo_name))
+        self.config.oss_fuzz_project_name,
+        repo_name=self.config.project_repo_name))
 
     if not inferred_url or not image_repo_path:
-      logging.error('Could not detect repo from project %s.',
-                    self.config.project_name)
+      logging.error('Could not detect repo.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -158,6 +185,12 @@ class InternalGithub(GithubCiMixin, BaseCi):
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container. Command also replaces |image_repo_path| with
+    |host_repo_path|."""
+    return get_replace_repo_and_build_command(host_repo_path, image_repo_path)
+
 
 class InternalGeneric(BaseCi):
   """Class representing CI for an OSS-Fuzz project on a CI other than Github
@@ -171,11 +204,11 @@ class InternalGeneric(BaseCi):
     logging.info('Building OSS-Fuzz project.')
     # detect_main_repo builds the image as a side effect.
     _, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.project_name, repo_name=self.config.project_repo_name))
+        self.config.oss_fuzz_project_name,
+        repo_name=self.config.project_repo_name))
 
     if not image_repo_path:
-      logging.error('Could not detect repo from project %s.',
-                    self.config.project_name)
+      logging.error('Could not detect repo.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -188,19 +221,21 @@ class InternalGeneric(BaseCi):
   def get_diff_base(self):
     return 'origin...'
 
-
-_IMAGE_BUILD_TRIES = 3
-_IMAGE_BUILD_BACKOFF = 2
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container. Command also replaces |image_repo_path| with
+    |host_repo_path|."""
+    return get_replace_repo_and_build_command(host_repo_path, image_repo_path)
 
 
 @retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF)
-def build_external_project_docker_image(project_name, project_src,
-                                        build_integration_path):
+def build_external_project_docker_image(project_src, build_integration_path):
   """Builds the project builder image for an external (non-OSS-Fuzz) project.
   Returns True on success."""
   dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
-  tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
-  command = ['-t', tag, '-f', dockerfile_path, project_src]
+  command = [
+      '-t', docker.EXTERNAL_PROJECT_IMAGE, '-f', dockerfile_path, project_src
+  ]
   return helper.docker_build(command)
 
 
@@ -215,10 +250,10 @@ class ExternalGeneric(BaseCi):
     manager = repo_manager.RepoManager(self.config.project_src_path)
     build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, build_integration_abs_path):
+    if not build_external_project_docker_image(manager.repo_dir,
+                                               build_integration_abs_path):
       logging.error('Failed to build external project: %s.',
-                    self.config.project_name)
+                    self.config.oss_fuzz_project_name)
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
                                     repo_manager=None)
@@ -227,6 +262,11 @@ class ExternalGeneric(BaseCi):
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
+
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    return get_build_command()
 
 
 class ExternalGithub(GithubCiMixin, BaseCi):
@@ -252,8 +292,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
 
     build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, build_integration_abs_path):
+    if not build_external_project_docker_image(manager.repo_dir,
+                                               build_integration_abs_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(success=False,
                                     image_repo_path=None,
@@ -263,3 +303,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
+
+  def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
+    """Returns the command for building the project that is run inside the
+    project builder container."""
+    return get_build_command()

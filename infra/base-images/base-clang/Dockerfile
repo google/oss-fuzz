@@ -19,7 +19,7 @@
 FROM gcr.io/oss-fuzz-base/base-image
 
 # Install newer cmake.
-ENV CMAKE_VERSION 3.19.2
+ENV CMAKE_VERSION 3.21.1
 RUN apt-get update && apt-get install -y wget sudo && \
     wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
     chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \

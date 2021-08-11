@@ -62,9 +62,8 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
 
 def get_logs_url(build_id, project_id='oss-fuzz-base'):
   """Returns url that displays the build logs."""
-  url_format = ('https://console.developers.google.com/logs/viewer?'
-                'resource=build%2Fbuild_id%2F{0}&project={1}')
-  return url_format.format(build_id, project_id)
+  return ('https://console.developers.google.com/logs/viewer?'
+          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
 
 
 # pylint: disable=no-member

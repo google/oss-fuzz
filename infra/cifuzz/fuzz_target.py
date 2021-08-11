@@ -21,8 +21,7 @@ import stat
 import subprocess
 import sys
 
-import docker
-
+import base_runner_utils
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
@@ -54,6 +53,17 @@ class ReproduceError(Exception):
   """Error for when we can't attempt to reproduce a crash."""
 
 
+def get_fuzz_target_corpus_dir(workspace, target_name):
+  """Returns the directory for storing |target_name|'s corpus in |workspace|."""
+  return os.path.join(workspace.corpora, target_name)
+
+
+def get_fuzz_target_pruned_corpus_dir(workspace, target_name):
+  """Returns the directory for storing |target_name|'s puned corpus in
+  |workspace|."""
+  return os.path.join(workspace.pruned_corpora, target_name)
+
+
 class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   """A class to manage a single fuzz target.
 
@@ -83,40 +93,59 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self.workspace = workspace
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
-    self.latest_corpus_path = None
+    self.latest_corpus_path = get_fuzz_target_corpus_dir(
+        self.workspace, self.target_name)
+    os.makedirs(self.latest_corpus_path, exist_ok=True)
+    self.pruned_corpus_path = get_fuzz_target_pruned_corpus_dir(
+        self.workspace, self.target_name)
+    os.makedirs(self.pruned_corpus_path, exist_ok=True)
 
-  def fuzz(self):
+  def _download_corpus(self):
+    """Downloads the corpus for the target from ClusterFuzz and returns the path
+    to the corpus. An empty directory is provided if the corpus can't be
+    downloaded or is empty."""
+    self.clusterfuzz_deployment.download_corpus(self.target_name,
+                                                self.latest_corpus_path)
+    return self.latest_corpus_path
+
+  def prune(self):
+    """Prunes the corpus and returns the result."""
+    self._download_corpus()
+    prune_options = [
+        '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
+    ]
+    result = self.fuzz(use_corpus=False, extra_libfuzzer_options=prune_options)
+    return FuzzResult(result.testcase, result.stacktrace,
+                      self.pruned_corpus_path)
+
+  def fuzz(self, use_corpus=True, extra_libfuzzer_options=None):
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    command, _ = docker.get_base_docker_run_command(self.workspace,
-                                                    self.config.sanitizer,
-                                                    self.config.language)
+    if extra_libfuzzer_options is None:
+      extra_libfuzzer_options = []
+    env = base_runner_utils.get_env(self.config, self.workspace)
+    # TODO(metzman): Is this needed?
+    env['RUN_FUZZER_MODE'] = 'interactive'
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name)
-    command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
-
-    command += [
-        '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',
-        '-c'
-    ]
+    if use_corpus:
+      # If corpus can be downloaded, use it for fuzzing.
+      self._download_corpus()
+      env['CORPUS_DIR'] = self.latest_corpus_path
 
     options = LIBFUZZER_OPTIONS.copy() + [
         f'-max_total_time={self.duration}',
         # Make sure libFuzzer artifact files don't pollute $OUT.
         f'-artifact_prefix={self.workspace.artifacts}/'
-    ]
-    options = ' '.join(options)
-    run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
-    command.append(run_fuzzer_command)
+    ] + extra_libfuzzer_options
+    command = ['run_fuzzer', self.target_name] + options
 
-    logging.info('Running command: %s', ' '.join(command))
+    logging.info('Running command: %s', command)
     process = subprocess.Popen(command,
+                               env=env,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
 
@@ -158,10 +187,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
-    if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
+    for corpus_path in [self.latest_corpus_path, self.pruned_corpus_path]:
       # Use ignore_errors=True to fix
       # https://github.com/google/oss-fuzz/issues/5383.
-      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
+      shutil.rmtree(corpus_path, ignore_errors=True)
 
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):
@@ -187,24 +216,19 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         ReproduceError if we can't attempt to reproduce the crash.
     """
     if not os.path.exists(target_path):
+      logging.info('Target: %s does not exist.', target_path)
       raise ReproduceError(f'Target {target_path} not found.')
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    command, container = docker.get_base_docker_run_command(
-        self.workspace, self.config.sanitizer, self.config.language)
-    if container:
-      command += ['-e', f'TESTCASE={testcase}']
-    else:
-      command += ['-v', f'{testcase}:/testcase']
-
-    command += [
-        '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'
-    ]
+    env = base_runner_utils.get_env(self.config, self.workspace)
+    env['TESTCASE'] = testcase
+    command = ['reproduce', self.target_name, '-runs=100']
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, returncode = utils.execute(command)
+      _, _, returncode = utils.execute(command, env=env)
+
       if returncode != 0:
         logging.info('Reproduce command returned: %s. Reproducible on %s.',
                      returncode, target_path)
@@ -242,10 +266,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       raise error
 
     if not reproducible_on_code_change:
-      # TODO(metzman): Allow users to specify if unreproducible crashes should
-      # be reported.
       logging.info('Crash is not reproducible.')
-      return False
+      return self.config.report_unreproducible_crashes
 
     logging.info('Crash is reproducible.')
     return self.is_crash_novel(testcase)
@@ -278,7 +300,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       logging.info('The crash is reproducible on previous build. '
                    'Code change (pr/commit) did not introduce crash.')
       return False
-    logging.info('The crash doesn\'t reproduce on previous build. '
+    logging.info('The crash is not reproducible on previous build. '
                  'Code change (pr/commit) introduced crash.')
     return True
 

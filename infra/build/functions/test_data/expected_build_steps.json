@@ -44,12 +44,13 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
       "-c",
-      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -60,7 +61,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -76,7 +78,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -141,12 +144,13 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
       "-c",
-      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -157,7 +161,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -173,7 +178,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -238,12 +244,13 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
       "-c",
-      "export HOME=/root; rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/address && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -254,7 +261,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",
@@ -270,7 +278,8 @@
       "OUT=/workspace/out/address",
       "MSAN_LIBS_PATH=/workspace/msan",
       "ARCHITECTURE=x86_64",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root"
     ],
     "args": [
       "bash",

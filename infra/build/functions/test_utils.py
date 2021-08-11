@@ -76,15 +76,13 @@ def wait_for_emulator_ready(proc,
   thread.daemon = True
   thread.start()
   if not ready_event.wait(timeout):
-    raise RuntimeError(
-        '{} emulator did not get ready in time.'.format(emulator))
+    raise RuntimeError(f'{emulator} emulator did not get ready in time.')
   return thread
 
 
 def reset_ds_emulator():
   """Reset ds emulator/clean all entities."""
-  req = requests.post(
-      'http://localhost:{}/reset'.format(DATASTORE_EMULATOR_PORT))
+  req = requests.post(f'http://localhost:{DATASTORE_EMULATOR_PORT}/reset')
   req.raise_for_status()
 
 
@@ -102,3 +100,8 @@ def set_gcp_environment():
   os.environ['DATASTORE_DATASET'] = TEST_PROJECT_ID
   os.environ['GCP_PROJECT'] = TEST_PROJECT_ID
   os.environ['FUNCTION_REGION'] = 'us-central1'
+
+
+def get_test_data_file_path(filename):
+  """Returns the path to a test data file with name |filename|."""
+  return os.path.join(os.path.dirname(__file__), 'test_data', filename)
