@@ -31,7 +31,6 @@ RUN apt-get update && \
     libtool \
     automake \
     libgcrypt20-dev \
-    libssl-dev \
     autoconf \
     gnulib \
     wget \
@@ -59,7 +58,7 @@ RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-6.0 100
 RUN update-alternatives --install /usr/bin/scan-build scan-build /usr/bin/scan-build-6.0 100
 
 ARG autoconf_archive=autoconf-archive-2018.03.13
-WORKDIR /tmp 
+WORKDIR /tmp
 RUN wget --quiet --show-progress --progress=dot:giga "http://mirror.kumi.systems/gnu/autoconf-archive/$autoconf_archive.tar.xz" \
 		&& tar -xf $autoconf_archive.tar.xz \
         && rm $autoconf_archive.tar.xz \
@@ -67,6 +66,17 @@ RUN wget --quiet --show-progress --progress=dot:giga "http://mirror.kumi.systems
         && ./configure --prefix=/usr \
         && make -j $(nproc) && make install
 RUN rm -fr $autoconf_archive.tar.xz
+
+ARG OPENSSL_VERSION=1.1.1g
+WORKDIR /tmp
+RUN wget --quiet --show-progress --progress=dot:giga https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+	&& sha256sum openssl-${OPENSSL_VERSION}.tar.gz | grep ^ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46 \
+	&& tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
+	&& cd openssl-${OPENSSL_VERSION} \
+	&& ./Configure --prefix=/usr linux-x86_64 "$CFLAGS" \
+	&& make -j $(nproc) && make install
+ENV OPENSSL_ROOT_DIR=/usr/openssl
+RUN rm -rf openssl-${OPENSSL_VERSION}.tar.gz openssl-${OPENSSL_VERSION}
 
 ARG ibmtpm_name=ibmtpm1661
 WORKDIR /tmp
@@ -76,8 +86,7 @@ RUN wget --quiet --show-progress --progress=dot:giga "https://downloads.sourcefo
 	&& tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name \
 	&& rm $ibmtpm_name.tar.gz
 WORKDIR $ibmtpm_name/src
-RUN CFLAGS="-I/usr/local/openssl/include" make -j$(nproc) \
-&& cp tpm_server /usr/local/bin
+RUN make -j$(nproc) && cp tpm_server /usr/local/bin
 RUN rm -fr $ibmtpm_name/src $ibmtpm_name.tar.gz
 
 ARG uthash="2.1.0"
