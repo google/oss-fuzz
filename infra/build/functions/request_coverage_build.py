@@ -35,9 +35,8 @@ def get_build_steps(project_name, image_project, base_images_project):
                                                 base_images_project)
 
 
-def request_coverage_build(event, context):
+def request_coverage_build(event, _):
   """Entry point for coverage build cloud function."""
-  del context  #unused
   if 'data' in event:
     project_name = base64.b64decode(event['data']).decode('utf-8')
   else:

@@ -73,9 +73,8 @@ class CloudSchedulerClient:
     """Return project path."""
     return f'projects/{project_id}/location/{location_id}'
 
-  def create_job(self, parent, job):
+  def create_job(self, _, job):
     """Simulate create job."""
-    del parent
     self.schedulers.append(job)
 
   # pylint: disable=no-self-use

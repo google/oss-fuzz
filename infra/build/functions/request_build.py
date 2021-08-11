@@ -98,9 +98,8 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
 
 
 # pylint: disable=no-member
-def request_build(event, context):
+def request_build(event, _):
   """Entry point for cloud function to request builds."""
-  del context  #unused
   if 'data' in event:
     project_name = base64.b64decode(event['data']).decode('utf-8')
   else:

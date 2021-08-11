@@ -53,10 +53,8 @@ class TestRequestCoverageBuilds(unittest.TestCase):
                   'url': 'test_download'
               }])
   @mock.patch('datetime.datetime')
-  def test_get_coverage_build_steps(self, mocked_url, mocked_corpora_steps,
-                                    mocked_time):
+  def test_get_coverage_build_steps(self, _, __, ___):
     """Test for get_build_steps."""
-    del mocked_url, mocked_corpora_steps, mocked_time
     datetime.datetime = test_utils.SpoofedDatetime
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'

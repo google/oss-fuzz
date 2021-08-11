@@ -240,10 +240,8 @@ def upload_log(build_id):
 
 
 # pylint: disable=no-member
-def update_status(event, context):
+def update_status(event, _):
   """Entry point for cloud function to update build statuses and badges."""
-  del context
-
   if 'data' in event:
     status_type = base64.b64decode(event['data']).decode()
   else:

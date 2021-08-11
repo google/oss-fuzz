@@ -89,9 +89,8 @@ def run_build(steps, images):
   logging.info('Logs: %s', get_logs_url(build_id, BASE_PROJECT))
 
 
-def base_builder(event, context):
+def base_builder(_, __):
   """Cloud function to build base images."""
-  del event, context
 
   tag_prefix = f'gcr.io/{BASE_PROJECT}/'
   steps = _get_base_image_steps(BASE_IMAGES, tag_prefix)
@@ -128,9 +127,8 @@ def _get_msan_steps(image):
   return steps
 
 
-def base_msan_builder(event, context):
+def base_msan_builder(_, __):
   """Cloud function to build base images."""
-  del event, context
   steps = _get_msan_steps(MSAN_LIBS_IMAGE)
   images = [
       BASE_SANITIZER_LIBS_IMAGE,

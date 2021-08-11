@@ -230,9 +230,8 @@ def get_github_creds():
   return git_creds
 
 
-def sync(event, context):
+def sync(_, __):
   """Sync projects with cloud datastore."""
-  del event, context  # Unused.
 
   with ndb.Client().context():
     git_creds = get_github_creds()

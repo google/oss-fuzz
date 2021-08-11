@@ -40,9 +40,8 @@ class MockGetBuild:
   def __init__(self, builds):
     self.builds = builds
 
-  def get_build(self, cloudbuild, image_project, build_id):
+  def get_build(self, _, __, build_id):
     """Mimic build object retrieval."""
-    del cloudbuild, image_project
     for build in self.builds:
       if build['build_id'] == build_id:
         return build
@@ -56,10 +55,8 @@ class MockGetBuild:
 class TestGetBuildHistory(unittest.TestCase):
   """Unit tests for get_build_history."""
 
-  def test_get_build_history(self, mocked_upload_log, mocked_cloud_build,
-                             mocked_google_auth):
+  def test_get_build_history(self, mocked_upload_log, _, __):
     """Test for get_build_steps."""
-    del mocked_cloud_build, mocked_google_auth
     mocked_upload_log.return_value = True
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     mocked_get_build = MockGetBuild(builds)
@@ -79,11 +76,8 @@ class TestGetBuildHistory(unittest.TestCase):
     self.assertDictEqual(update_build_status.get_build_history(['1']),
                          expected_projects)
 
-  def test_get_build_history_missing_log(self, mocked_upload_log,
-                                         mocked_cloud_build,
-                                         mocked_google_auth):
+  def test_get_build_history_missing_log(self, mocked_upload_log, _, __):
     """Test for missing build log file."""
-    del mocked_cloud_build, mocked_google_auth
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     mocked_get_build = MockGetBuild(builds)
     update_build_status.get_build = mocked_get_build.get_build
@@ -91,11 +85,8 @@ class TestGetBuildHistory(unittest.TestCase):
     self.assertRaises(update_build_status.MissingBuildLogError,
                       update_build_status.get_build_history, ['1'])
 
-  def test_get_build_history_no_last_success(self, mocked_upload_log,
-                                             mocked_cloud_build,
-                                             mocked_google_auth):
+  def test_get_build_history_no_last_success(self, mocked_upload_log, _, __):
     """Test when there is no last successful build."""
-    del mocked_cloud_build, mocked_google_auth
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'FAILURE'}]
     mocked_get_build = MockGetBuild(builds)
     update_build_status.get_build = mocked_get_build.get_build
@@ -229,10 +220,8 @@ class TestUpdateBuildStatus(unittest.TestCase):
   @mock.patch('google.auth.default', return_value=['temp', 'temp'])
   @mock.patch('update_build_status.build', return_value='cloudbuild')
   @mock.patch('update_build_status.upload_log')
-  def test_update_build_status(self, mocked_upload_log, mocked_cloud_build,
-                               mocked_google_auth):
+  def test_update_build_status(self, mocked_upload_log, _, __):
     """Testing update build status as a whole."""
-    del self, mocked_cloud_build, mocked_google_auth
     update_build_status.upload_status = MagicMock()
     mocked_upload_log.return_value = True
     status_filename = 'status.json'
