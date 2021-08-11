@@ -21,8 +21,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl cma
 RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh -o install.sh && \
   echo | sh install.sh && \
   opam init --disable-sandboxing --yes && \
-  opam install ocamlbuild --yes && \
-  eval $(opam env)
+  opam install ocamlbuild --yes
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-tools wasm-tools
 
