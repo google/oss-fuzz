@@ -102,13 +102,15 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     repo_dir = self.ci_system.repo_dir()
     if not repo_dir:
-      raise RuntimeError('repo checkout does not exist.')
+      raise RuntimeError('Repo checkout does not exist.')
 
     _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
     repo = repo_manager.RepoManager(repo_dir)
 
     # Builds are stored by commit, so try the latest |LATEST_BUILD_WINDOW|
     # commits before the current.
+    # TODO(ochang): If API usage becomes an issue, this can be optimized by the
+    # filestore accepting a list of filenames to try.
     for old_commit in repo.get_commit_list('HEAD^',
                                            limit=self.LATEST_BUILD_WINDOW):
       logging.info('Trying to downloading previous build %s.', old_commit)
