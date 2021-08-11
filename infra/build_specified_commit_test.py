@@ -16,7 +16,6 @@ The will consist of the following functional tests:
   1. The inference of the main repo for a specific project.
   2. The building of a projects fuzzers from a specific commit.
 
-IMPORTANT: This test needs to be run with root privileges.
 """
 import os
 import tempfile

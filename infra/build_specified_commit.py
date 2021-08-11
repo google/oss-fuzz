@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module to build a image from a specific commit, branch or pull request
+"""Module to build a image from a specific commit, branch or pull request.
 
 This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
@@ -298,10 +298,9 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
     project_name: The name of the oss-fuzz project.
     repo_name: The name of the main repo in an OSS-Fuzz project.
     commit: A commit SHA that is associated with the main repo.
-    src_dir: The location of the projects source on the docker image.
 
   Returns:
-    The repo's origin, the repo's path.
+    A tuple containing (the repo's origin, the repo's path).
   """
 
   if not repo_name and not commit:
