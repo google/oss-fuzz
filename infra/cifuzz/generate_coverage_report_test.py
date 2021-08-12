@@ -31,7 +31,7 @@ class TestRunCoverageCommand(unittest.TestCase):
     test_helpers.patch_environ(self, empty=True)
 
   @mock.patch('utils.execute')
-  def test_run_coverage_command(self, mocked_execute):  # pylint: disable=no-self-use
+  def test_run_coverage_command(self, mock_execute):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
     config = test_helpers.create_run_config(oss_fuzz_project_name=PROJECT,
                                             sanitizer=SANITIZER)
@@ -51,7 +51,7 @@ class TestRunCoverageCommand(unittest.TestCase):
         'CORPUS_DIR': workspace.corpora,
         'COVERAGE_OUTPUT_DIR': workspace.coverage_report
     }
-    mocked_execute.assert_called_with(expected_command, env=expected_env)
+    mock_execute.assert_called_with(expected_command, env=expected_env)
 
 
 class DownloadCorporaTest(unittest.TestCase):

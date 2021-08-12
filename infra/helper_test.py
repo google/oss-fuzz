@@ -48,47 +48,47 @@ class BuildImageImplTest(unittest.TestCase):
   """Tests for build_image_impl."""
 
   @mock.patch('helper.docker_build')
-  def test_no_cache(self, mocked_docker_build):
+  def test_no_cache(self, mock_docker_build):
     """Tests that cache=False is handled properly."""
     image_name = 'base-image'
     helper.build_image_impl(helper.Project(image_name), cache=False)
-    self.assertIn('--no-cache', mocked_docker_build.call_args_list[0][0][0])
+    self.assertIn('--no-cache', mock_docker_build.call_args_list[0][0][0])
 
   @mock.patch('helper.docker_build')
   @mock.patch('helper.pull_images')
-  def test_pull(self, mocked_pull_images, _):
+  def test_pull(self, mock_pull_images, _):
     """Tests that pull=True is handled properly."""
     image_name = 'base-image'
     self.assertTrue(
         helper.build_image_impl(helper.Project(image_name), pull=True))
-    mocked_pull_images.assert_called_with()
+    mock_pull_images.assert_called_with()
 
   @mock.patch('helper.docker_build')
-  def test_base_image(self, mocked_docker_build):
+  def test_base_image(self, mock_docker_build):
     """Tests that build_image_impl works as intended with a base-image."""
     image_name = 'base-image'
     self.assertTrue(helper.build_image_impl(helper.Project(image_name)))
     build_dir = os.path.join(helper.OSS_FUZZ_DIR,
                              'infra/base-images/base-image')
-    mocked_docker_build.assert_called_with([
+    mock_docker_build.assert_called_with([
         '-t', 'gcr.io/oss-fuzz-base/base-image', '--file',
         os.path.join(build_dir, 'Dockerfile'), build_dir
     ])
 
   @mock.patch('helper.docker_build')
-  def test_oss_fuzz_project(self, mocked_docker_build):
+  def test_oss_fuzz_project(self, mock_docker_build):
     """Tests that build_image_impl works as intended with an OSS-Fuzz
     project."""
     project_name = 'example'
     self.assertTrue(helper.build_image_impl(helper.Project(project_name)))
     build_dir = os.path.join(helper.OSS_FUZZ_DIR, 'projects', project_name)
-    mocked_docker_build.assert_called_with([
+    mock_docker_build.assert_called_with([
         '-t', 'gcr.io/oss-fuzz/example', '--file',
         os.path.join(build_dir, 'Dockerfile'), build_dir
     ])
 
   @mock.patch('helper.docker_build')
-  def test_external_project(self, mocked_docker_build):
+  def test_external_project(self, mock_docker_build):
     """Tests that build_image_impl works as intended with a non-OSS-Fuzz
     project."""
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -99,7 +99,7 @@ class BuildImageImplTest(unittest.TestCase):
                                is_external=True,
                                build_integration_path=build_integration_path)
       self.assertTrue(helper.build_image_impl(project))
-      mocked_docker_build.assert_called_with([
+      mock_docker_build.assert_called_with([
           '-t', 'gcr.io/oss-fuzz/example', '--file',
           os.path.join(project_src_path, build_integration_path, 'Dockerfile'),
           project_src_path

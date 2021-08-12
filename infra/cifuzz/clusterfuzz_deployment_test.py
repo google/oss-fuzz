@@ -68,13 +68,13 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
                                    EXAMPLE_FUZZER)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
-  def test_download_corpus(self, mocked_download_and_unpack_zip):
+  def test_download_corpus(self, mock_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
     self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
     expected_url = ('https://storage.googleapis.com/example-backup.'
                     'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
                     'example_crash_fuzzer/public.zip')
-    call_args, _ = mocked_download_and_unpack_zip.call_args
+    call_args, _ = mock_download_and_unpack_zip.call_args
     self.assertEqual(call_args, (expected_url, self.corpus_dir))
     self.assertTrue(os.path.exists(self.corpus_dir))
 
@@ -100,21 +100,21 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   ])
   def test_noop_methods(self, method, method_args, expected_message):
     """Tests that certain methods are noops for OSS-Fuzz."""
-    with mock.patch('logging.info') as mocked_info:
+    with mock.patch('logging.info') as mock_info:
       method = getattr(self.deployment, method)
       self.assertIsNone(method(*method_args))
-      mocked_info.assert_called_with(expected_message)
+      mock_info.assert_called_with(expected_message)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
-  def test_download_latest_build(self, mocked_download_and_unpack_zip):
+  def test_download_latest_build(self, mock_download_and_unpack_zip):
     """Tests that downloading the latest build works as intended under normal
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
     expected_url = ('https://storage.googleapis.com/clusterfuzz-builds/example/'
                     'example-address-202008030600.zip')
-    mocked_download_and_unpack_zip.assert_called_with(
-        expected_url, EXPECTED_LATEST_BUILD_PATH)
+    mock_download_and_unpack_zip.assert_called_with(expected_url,
+                                                    EXPECTED_LATEST_BUILD_PATH)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_latest_build_fail(self, _):
@@ -136,11 +136,11 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
               return_value=True)
-  def test_download_corpus(self, mocked_download_corpus):
+  def test_download_corpus(self, mock_download_corpus):
     """Tests that download_corpus works for a valid project."""
     self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
-    mocked_download_corpus.assert_called_with('example_crash_fuzzer',
-                                              self.corpus_dir)
+    mock_download_corpus.assert_called_with('example_crash_fuzzer',
+                                            self.corpus_dir)
     self.assertTrue(os.path.exists(self.corpus_dir))
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_corpus',
@@ -153,14 +153,14 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
               return_value=True)
-  def test_download_latest_build(self, mocked_download_build):
+  def test_download_latest_build(self, mock_download_build):
     """Tests that downloading the latest build works as intended under normal
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
     expected_artifact_name = 'address-latest'
-    mocked_download_build.assert_called_with(expected_artifact_name,
-                                             EXPECTED_LATEST_BUILD_PATH)
+    mock_download_build.assert_called_with(expected_artifact_name,
+                                           EXPECTED_LATEST_BUILD_PATH)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
               side_effect=Exception)
@@ -170,11 +170,11 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     self.assertIsNone(self.deployment.download_latest_build())
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.' 'upload_build')
-  def test_upload_latest_build(self, mocked_upload_build):
+  def test_upload_latest_build(self, mock_upload_build):
     """Tests that upload_latest_build works as intended."""
     self.deployment.upload_latest_build()
-    mocked_upload_build.assert_called_with('address-latest',
-                                           '/workspace/build-out')
+    mock_upload_build.assert_called_with('address-latest',
+                                         '/workspace/build-out')
 
 
 class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
@@ -190,11 +190,11 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     self.corpus_dir = os.path.join(workspace.corpora, EXAMPLE_FUZZER)
 
   @mock.patch('logging.info')
-  def test_download_corpus(self, mocked_info):
+  def test_download_corpus(self, mock_info):
     """Tests that download corpus returns the path to the empty corpus
     directory."""
     self.deployment.download_corpus(EXAMPLE_FUZZER, self.corpus_dir)
-    mocked_info.assert_called_with(
+    mock_info.assert_called_with(
         'Not downloading corpus because no ClusterFuzz deployment.')
     self.assertTrue(os.path.exists(self.corpus_dir))
 
@@ -210,10 +210,10 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   ])
   def test_noop_methods(self, method, method_args, expected_message):
     """Tests that certain methods are noops for NoClusterFuzzDeployment."""
-    with mock.patch('logging.info') as mocked_info:
+    with mock.patch('logging.info') as mock_info:
       method = getattr(self.deployment, method)
       self.assertIsNone(method(*method_args))
-      mocked_info.assert_called_with(expected_message)
+      mock_info.assert_called_with(expected_message)
 
 
 class GetClusterFuzzDeploymentTest(unittest.TestCase):

@@ -57,35 +57,35 @@ class BaseConfigTest(unittest.TestCase):
     self.assertFalse(config.is_coverage)
 
   @mock.patch('logging.error')
-  def test_validate_no_workspace(self, mocked_error):
+  def test_validate_no_workspace(self, mock_error):
     """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with('Must set WORKSPACE.')
+    mock_error.assert_called_with('Must set WORKSPACE.')
 
   @mock.patch('logging.error')
-  def test_validate_invalid_language(self, mocked_error):
+  def test_validate_invalid_language(self, mock_error):
     """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
     os.environ['WORKSPACE'] = '/workspace'
     os.environ['LANGUAGE'] = 'invalid-language'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
-                                    os.environ['LANGUAGE'], constants.LANGUAGES)
+    mock_error.assert_called_with('Invalid LANGUAGE: %s. Must be one of: %s.',
+                                  os.environ['LANGUAGE'], constants.LANGUAGES)
 
   @mock.patch('logging.error')
-  def test_validate_invalid_sanitizer(self, mocked_error):
+  def test_validate_invalid_sanitizer(self, mock_error):
     """Tests that validate returns False if GITHUB_WORKSPACE isn't set."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
     os.environ['WORKSPACE'] = '/workspace'
     os.environ['SANITIZER'] = 'invalid-sanitizer'
     config = self._create_config()
     self.assertFalse(config.validate())
-    mocked_error.assert_called_with(
-        'Invalid SANITIZER: %s. Must be one of: %s.', os.environ['SANITIZER'],
-        config_utils.SANITIZERS)
+    mock_error.assert_called_with('Invalid SANITIZER: %s. Must be one of: %s.',
+                                  os.environ['SANITIZER'],
+                                  config_utils.SANITIZERS)
 
   def test_validate(self):
     """Tests that validate returns True if config is valid."""
@@ -154,13 +154,13 @@ class RunFuzzersConfigTest(unittest.TestCase):
     self.assertTrue(self._create_config()._run_config_validate())
 
   @mock.patch('logging.error')
-  def test_run_config_invalid_mode(self, mocked_error):
+  def test_run_config_invalid_mode(self, mock_error):
     """Tests that _run_config_validate returns False when run_fuzzers_mode is
     invalid."""
     fake_mode = 'fake-mode'
     os.environ['RUN_FUZZERS_MODE'] = fake_mode
     self.assertFalse(self._create_config()._run_config_validate())
-    mocked_error.assert_called_with(
+    mock_error.assert_called_with(
         'Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.', fake_mode,
         config_utils.RUN_FUZZERS_MODES)
 

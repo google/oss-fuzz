@@ -55,122 +55,121 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     }
 
   @mock.patch('filestore.github_actions.github_api.list_artifacts')
-  def test_list_artifacts(self, mocked_list_artifacts):
+  def test_list_artifacts(self, mock_list_artifacts):
     """Tests that _list_artifacts works as intended."""
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore._list_artifacts()
-    mocked_list_artifacts.assert_called_with(self.owner, self.repo,
-                                             self._get_expected_http_headers())
+    mock_list_artifacts.assert_called_with(self.owner, self.repo,
+                                           self._get_expected_http_headers())
 
   @mock.patch('logging.warning')
   @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
               return_value=None)
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
-  def test_download_build_no_artifact(self, _, __, mocked_warning):
+  def test_download_build_no_artifact(self, _, __, mock_warning):
     """Tests that download_build returns None and doesn't exception when
     find_artifact can't find an artifact."""
     filestore = github_actions.GithubActionsFilestore(self.config)
     name = 'name'
     build_dir = 'build-dir'
     self.assertFalse(filestore.download_build(name, build_dir))
-    mocked_warning.assert_called_with('Could not download artifact: %s.',
-                                      'cifuzz-build-' + name)
+    mock_warning.assert_called_with('Could not download artifact: %s.',
+                                    'cifuzz-build-' + name)
 
   @mock.patch('logging.warning')
   @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
               return_value=None)
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
-  def test_download_corpus_no_artifact(self, _, __, mocked_warning):
+  def test_download_corpus_no_artifact(self, _, __, mock_warning):
     """Tests that download_corpus_build returns None and doesn't exception when
     find_artifact can't find an artifact."""
     filestore = github_actions.GithubActionsFilestore(self.config)
     name = 'name'
     dst_dir = 'local-dir'
     self.assertFalse(filestore.download_corpus(name, dst_dir))
-    mocked_warning.assert_called_with('Could not download artifact: %s.',
-                                      'cifuzz-corpus-' + name)
+    mock_warning.assert_called_with('Could not download artifact: %s.',
+                                    'cifuzz-corpus-' + name)
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
               '.upload_artifact')
-  def test_upload_corpus(self, mocked_upload_artifact, mocked_tar_directory):
+  def test_upload_corpus(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading corpus."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mock_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_corpus('target', self.local_dir)
-    self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
+    self.assert_upload(mock_upload_artifact, mock_tar_directory,
                        'corpus-target')
 
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
               '.upload_artifact')
-  def test_upload_crashes(self, mocked_upload_artifact):
+  def test_upload_crashes(self, mock_upload_artifact):
     """Test uploading crashes."""
     self._create_local_dir()
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_crashes('current', self.local_dir)
-    mocked_upload_artifact.assert_has_calls(
+    mock_upload_artifact.assert_has_calls(
         [mock.call('crashes-current', ['/local-dir/testcase'], '/local-dir')])
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
               '.upload_artifact')
-  def test_upload_build(self, mocked_upload_artifact, mocked_tar_directory):
+  def test_upload_build(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading build."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mock_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_build('sanitizer', self.local_dir)
-    self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
+    self.assert_upload(mock_upload_artifact, mock_tar_directory,
                        'build-sanitizer')
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
               '.upload_artifact')
-  def test_upload_coverage(self, mocked_upload_artifact, mocked_tar_directory):
+  def test_upload_coverage(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading coverage."""
     self._create_local_dir()
 
-    def mock_tar_directory(_, archive_path):
+    def mock_tar_directory_impl(_, archive_path):
       self.fs.create_file(archive_path)
 
-    mocked_tar_directory.side_effect = mock_tar_directory
+    mock_tar_directory.side_effect = mock_tar_directory_impl
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_coverage('latest', self.local_dir)
-    self.assert_upload(mocked_upload_artifact, mocked_tar_directory,
+    self.assert_upload(mock_upload_artifact, mock_tar_directory,
                        'coverage-latest')
 
-  def assert_upload(self, mocked_upload_artifact, mocked_tar_directory,
+  def assert_upload(self, mock_upload_artifact, mock_tar_directory,
                     expected_artifact_name):
     """Tests that upload_directory invokes tar_directory and
     artifact_client.upload_artifact properly."""
     # Don't assert what second argument will be since it's a temporary
     # directory.
-    self.assertEqual(mocked_tar_directory.call_args_list[0][0][0],
-                     self.local_dir)
+    self.assertEqual(mock_tar_directory.call_args_list[0][0][0], self.local_dir)
 
     # Don't assert what second and third arguments will be since they are
     # temporary directories.
     expected_artifact_name = 'cifuzz-' + expected_artifact_name
-    self.assertEqual(mocked_upload_artifact.call_args_list[0][0][0],
+    self.assertEqual(mock_upload_artifact.call_args_list[0][0][0],
                      expected_artifact_name)
 
     # Assert artifacts list contains one tarfile.
-    artifacts_list = mocked_upload_artifact.call_args_list[0][0][1]
+    artifacts_list = mock_upload_artifact.call_args_list[0][0][1]
     self.assertEqual(len(artifacts_list), 1)
     self.assertEqual(os.path.basename(artifacts_list[0]),
                      expected_artifact_name + '.tar')
@@ -183,8 +182,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
   @mock.patch('http_utils.download_and_unpack_zip')
-  def test_download_artifact(self, mocked_download_and_unpack_zip,
-                             mocked_find_artifact):
+  def test_download_artifact(self, mock_download_and_unpack_zip,
+                             mock_find_artifact):
     """Tests that _download_artifact works as intended."""
     artifact_download_url = 'http://example.com/download'
     artifact_listing = {
@@ -192,7 +191,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
         'name': 'corpus',
         'archive_download_url': artifact_download_url
     }
-    mocked_find_artifact.return_value = artifact_listing
+    mock_find_artifact.return_value = artifact_listing
 
     self._create_local_dir()
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -203,8 +202,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
       artifact_download_dst_dir = os.path.join(temp_dir, 'dst')
       os.mkdir(artifact_download_dst_dir)
 
-      def mock_download_and_unpack_zip(url, download_artifact_temp_dir,
-                                       headers):
+      def mock_download_and_unpack_zip_impl(url, download_artifact_temp_dir,
+                                            headers):
         self.assertEqual(url, artifact_download_url)
         self.assertEqual(headers, self._get_expected_http_headers())
         shutil.copy(
@@ -213,18 +212,19 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                          os.path.basename(archive_path)))
         return True
 
-      mocked_download_and_unpack_zip.side_effect = mock_download_and_unpack_zip
+      mock_download_and_unpack_zip.side_effect = (
+          mock_download_and_unpack_zip_impl)
       filestore = github_actions.GithubActionsFilestore(self.config)
       self.assertTrue(
           filestore._download_artifact('corpus', artifact_download_dst_dir))
-      mocked_find_artifact.assert_called_with('cifuzz-corpus')
+      mock_find_artifact.assert_called_with('cifuzz-corpus')
       self.assertTrue(
           os.path.exists(
               os.path.join(artifact_download_dst_dir,
                            os.path.basename(self.testcase))))
 
   @mock.patch('filestore.github_actions.github_api.list_artifacts')
-  def test_find_artifact(self, mocked_list_artifacts):
+  def test_find_artifact(self, mock_list_artifacts):
     """Tests that _find_artifact works as intended."""
     artifact_listing_1 = {
         'expired': False,
@@ -250,13 +250,13 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
         artifact_listing_1, artifact_listing_2, artifact_listing_3,
         artifact_listing_4
     ]
-    mocked_list_artifacts.return_value = artifacts
+    mock_list_artifacts.return_value = artifacts
     filestore = github_actions.GithubActionsFilestore(self.config)
     # Test that find_artifact will return the most recent unexpired artifact
     # with the correct name.
     self.assertEqual(filestore._find_artifact('artifact'), artifact_listing_2)
-    mocked_list_artifacts.assert_called_with(self.owner, self.repo,
-                                             self._get_expected_http_headers())
+    mock_list_artifacts.assert_called_with(self.owner, self.repo,
+                                           self._get_expected_http_headers())
 
 
 class TarDirectoryTest(unittest.TestCase):

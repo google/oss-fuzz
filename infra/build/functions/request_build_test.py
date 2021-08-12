@@ -52,9 +52,9 @@ class TestRequestBuilds(unittest.TestCase):
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('datetime.datetime')
-  def test_get_build_steps(self, mocked_url, mocked_time):
+  def test_get_build_steps(self, mock_url, mock_time):
     """Test for get_build_steps."""
-    del mocked_url, mocked_time
+    del mock_url, mock_time
     datetime.datetime = test_utils.SpoofedDatetime
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'
