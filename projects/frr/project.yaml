@@ -2,7 +2,7 @@ homepage: "https://frrouting.org"
 language: c++
 primary_contact: "security@lists.frrouting.org"
 auto_ccs:
-- "ossfuzz@qlyoung.net"
+- "qlyoung@qlyoung.net"
 - "equinox-ossfuzz@diac24.net"
 - "menotdonald@gmail.com"
 - "mjs.ietf@gmail.com"
