@@ -15,7 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang ocaml-nox
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
+
+# Install a newer version of OCaml than provided by Ubuntu 16.04 (base version for this image)
+RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh -o install.sh && \
+  echo | sh install.sh && \
+  opam init --disable-sandboxing --yes && \
+  opam install ocamlbuild --yes
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-tools wasm-tools
 

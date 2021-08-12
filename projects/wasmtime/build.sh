@@ -56,6 +56,9 @@ build() {
   done
 }
 
+# Ensure OCaml environment is set up prior to Wasmtime build.
+eval $(opam env)
+
 # Build with peepmatic in order to enable the related fuzz targets.
 build wasmtime "" "" --features "peepmatic-fuzzing experimental_x64"
 
