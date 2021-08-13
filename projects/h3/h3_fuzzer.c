@@ -68,6 +68,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     H3Error errNeighbor = h3NeighborRotations(h3, DIGITS[i], &rotations, &neighbor);
   }
   free(compacted);
-  free(new_str);
   return 0;
 }
