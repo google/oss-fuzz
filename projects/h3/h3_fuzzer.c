@@ -33,7 +33,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
   H3Index h3;
-  memcpy(h3, data, sizeof(H3Index));
+  memcpy(&h3, data, sizeof(H3Index));
 
   H3Index input[] = {h3, h3};
   int inputSize = sizeof(input) / sizeof(H3Index);
