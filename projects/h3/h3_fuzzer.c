@@ -29,15 +29,11 @@ static const Direction DIGITS[7] = {CENTER_DIGIT,  K_AXES_DIGIT, J_AXES_DIGIT,
                                     IJ_AXES_DIGIT};
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char *new_str = (char *)malloc(size + 1);
-  if (new_str == NULL) {
+  if (size < sizeof(H3Index)) {
     return 0;
   }
-  memcpy(new_str, data, size);
-  new_str[size] = '\0';
-
   H3Index h3;
-  H3Error errStrToH3 = H3_EXPORT(stringToH3)(new_str, &h3);
+  memcpy(h3, data, sizeof(H3Index));
 
   H3Index input[] = {h3, h3};
   int inputSize = sizeof(input) / sizeof(H3Index);
