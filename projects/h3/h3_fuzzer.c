@@ -37,14 +37,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   new_str[size] = '\0';
 
   H3Index h3;
-  h3 = H3_EXPORT(stringToH3)(new_str);
+  H3Error errStrToH3 = H3_EXPORT(stringToH3)(new_str, &h3);
 
   H3Index input[] = {h3, h3};
   int inputSize = sizeof(input) / sizeof(H3Index);
 
   // fuzz compactCells
   H3Index *compacted = calloc(inputSize, sizeof(H3Index));
-  int err = compactCells(input, compacted, inputSize);
+  H3Error errCompact = compactCells(input, compacted, inputSize);
 
   // fuzz uncompactCells
   int compactedCount = 0;
@@ -60,15 +60,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         uncompactCellsSize(compacted, inputSize, uncompactRes, &uncompactedSize);
 
     H3Index *uncompacted = calloc(uncompactedSize, sizeof(H3Index));
-    int err3 = uncompactCells(compacted, compactedCount, uncompacted,
-                              uncompactedSize, uncompactRes);
+    H3Error err3 = uncompactCells(compacted, compactedCount, uncompacted,
+                                  uncompactedSize, uncompactRes);
     free(uncompacted);
   }
 
   // fuzz h3NeighborRotations
   int rotations = 0;
   for (int i = 0; i < 7; i++) {
-    h3NeighborRotations(h3, DIGITS[i], &rotations);
+    H3Index neighbor;
+    H3Error errNeighbor = h3NeighborRotations(h3, DIGITS[i], &rotations, &neighbor);
   }
   free(compacted);
   free(new_str);
