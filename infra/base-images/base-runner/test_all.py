@@ -170,6 +170,16 @@ def test_all_outside_out(allowed_broken_targets_percentage):
     return test_all(out, allowed_broken_targets_percentage)
 
 
+def do_parallel_bad_build_check(fuzz_targets, pool_size):
+  """Does |pool_size| number of parallel bad build checks on |fuzz_targets|.
+  Returns a list of tuples containing broken targets and the results of the
+  checks on each broken target."""
+  pool = multiprocessing.Pool(pool_size)
+  bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
+  broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
+  return broken_targets
+
+
 def test_all(out, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
@@ -178,33 +188,26 @@ def test_all(out, allowed_broken_targets_percentage):
     print('ERROR: No fuzz targets found.')
     return False
 
-  pool = multiprocessing.Pool()
-  bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
-  pool.close()
-  pool.join()
-  broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
-  broken_targets_count = len(broken_targets)
-  if not broken_targets_count:
+  broken_targets = do_parallel_bad_build_check(fuzz_targets, pool_size=None)
+  if not broken_targets:
     return True
+  broken_targets_count = len(broken_targets)
 
-  print('Retrying failed fuzz targets sequentially', broken_targets_count)
-  pool = multiprocessing.Pool(1)
+  print('Retrying {count} failed fuzz targets sequentially'.format(
+      count=broken_targets_count))
   retry_targets = []
-  for broken_target, result in broken_targets:
+  for broken_target, _ in broken_targets:
     retry_targets.append(broken_target)
-  bad_build_results = pool.map(do_bad_build_check, retry_targets)
-  pool.close()
-  pool.join()
-  broken_targets = get_broken_fuzz_targets(bad_build_results, broken_targets)
-  broken_targets_count = len(broken_targets)
-  if not broken_targets_count:
+  broken_targets = do_parallel_bad_build_check(retry_targets, pool_size=1)
+  if not broken_targets:
     return True
+  broken_targets_count = len(broken_targets)
 
-  print('Broken fuzz targets', broken_targets_count)
+  print('Num broken fuzz targets: ', broken_targets_count)
   total_targets_count = len(fuzz_targets)
   broken_targets_percentage = 100 * broken_targets_count / total_targets_count
   for broken_target, result in broken_targets:
-    print(broken_target)
+    print('Broken target:', broken_target)
     # Use write because we can't print binary strings.
     sys.stdout.buffer.write(result.stdout + result.stderr + b'\n')
 
