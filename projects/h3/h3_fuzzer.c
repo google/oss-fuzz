@@ -64,7 +64,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // fuzz h3NeighborRotations
   int rotations = 0;
   for (int i = 0; i < 7; i++) {
-    H3Error errNeighbor = h3NeighborRotations(h3, DIGITS[i], &rotations);
+    h3NeighborRotations(h3, DIGITS[i], &rotations);
   }
   free(compacted);
   return 0;
