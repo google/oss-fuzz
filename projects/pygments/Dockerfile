@@ -58,4 +58,4 @@ RUN cat fuzzing/dictionaries/aff.dict \
         fuzzing/dictionaries/yara.dict \
       > $OUT/pygments_fuzzer.dict
 
-COPY build.sh pygments_fuzzer.py $SRC/
+COPY build.sh fuzz_guesser.py fuzz_lexers.py $SRC/
