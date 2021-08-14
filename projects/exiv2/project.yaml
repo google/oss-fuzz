@@ -4,6 +4,8 @@ primary_contact: "kevinbackhouse@github.com"
 sanitizers:
   - address
   - undefined
+fuzzing_engines:
+  - libfuzzer
 architectures:
   - x86_64
 main_repo: 'https://github.com/Exiv2/exiv2'
