@@ -113,7 +113,7 @@ export BLST_INCLUDE_PATH=$(realpath bindings/)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
 
 # Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *undefined && $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Build and install libsodium
     cd $SRC/
@@ -203,7 +203,7 @@ make -B
 cd $SRC/cryptofuzz/modules/blst/
 make -B
 
-if [[ "$SANITIZER" != "memory" ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/chia_bls/
     make -B
