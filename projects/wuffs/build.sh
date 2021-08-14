@@ -19,14 +19,34 @@
 # Wuffs' generated C files are "drop-in libraries" a la
 # http://gpfault.net/posts/drop-in-libraries.txt.html
 
-for f in fuzz/c/std/*_fuzzer.c; do
-  # Extract the format name, such as "gzip", from the C file name,
-  # "fuzz/c/std/gzip_fuzzer.c".
-  b=$(basename $f _fuzzer.c)
+for f in fuzz/c/std/*_fuzzer.c*; do
+  # Extract the format name (such as "gzip", from the C or C++ file name,
+  # "fuzz/c/std/gzip_fuzzer.c") and make the "gzip_fuzzer" binary. First
+  # compile the (C or C++) Wuffs code...
+  extension="${f##*.}"
+  if [   "$extension" = "c" ]; then
+    echo "Building (C)   $f"
+    b=$(basename $f _fuzzer.c)
+    $CC  $CFLAGS   -c $f -o $WORK/${b}_fuzzer.o
+  elif [ "$extension" = "cc" ]; then
+    if [[ $LIB_FUZZING_ENGINE == *"DataFlow"* ]]; then
+      # Linking (below) with "--engine dataflow" works with the C fuzzers but
+      # not the C++ ones. With C++, we get errors like `undefined reference to
+      # `dfs$_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEED2Ev'`
+      #
+      # This is possibly "DFsan instrumented dependencies"
+      # https://github.com/google/oss-fuzz/issues/3388
+      echo "Skipping (C++) $f"
+      continue
+    fi
+    echo "Building (C++) $f"
+    b=$(basename $f _fuzzer.cc)
+    $CXX $CXXFLAGS -c $f -o $WORK/${b}_fuzzer.o
+  else
+    continue
+  fi
 
-  # Make the "gzip_fuzzer" binary. First compile the (C) Wuffs code, then link
-  # the (C++) fuzzing library.
-  $CC $CFLAGS -c $f -o $WORK/${b}_fuzzer.o
+  # ...then link the (C++) fuzzing library.
   $CXX $CXXFLAGS $WORK/${b}_fuzzer.o -o $OUT/${b}_fuzzer $LIB_FUZZING_ENGINE
 
   # Make the optional "gzip_fuzzer_seed_corpus.zip" archive. This means
