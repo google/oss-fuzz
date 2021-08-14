@@ -27,7 +27,7 @@ cp ../fuzz/exiv2.dict $OUT/fuzz-read-print-write.dict
 
 # Initialize the corpus, using the files in test/data
 mkdir corpus
-for f in $(find ../test/data -type f); do
+for f in $(find ../test/data -type f -size -20k); do
     s=$(sha1sum "$f" | awk '{print $1}')
     cp $f corpus/$s
 done
