@@ -61,6 +61,8 @@ echo -n "BLS_G2_Add," >>extra_options.h
 echo -n "BLS_G2_Mul," >>extra_options.h
 echo -n "BLS_G2_IsEq," >>extra_options.h
 echo -n "BLS_G2_Neg," >>extra_options.h
+echo -n "BLS_Aggregate_G1", >>extra_options.h
+echo -n "BLS_Aggregate_G2", >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
@@ -111,8 +113,20 @@ export BLST_INCLUDE_PATH=$(realpath bindings/)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
 
 # Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *undefined ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
+    # Build and install libsodium
+    cd $SRC/
+    mkdir $SRC/libsodium-install
+    tar zxf libsodium-1.0.18-stable.tar.gz
+    cd $SRC/libsodium-stable/
+    autoreconf -ivf
+    ./configure --prefix="$SRC/libsodium-install/"
+    make -j$(nproc)
+    make install
+    export CXXFLAGS="$CXXFLAGS -I $SRC/libsodium-install/include/"
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libsodium-install/lib/libsodium.a"
+
     cd $SRC/bls-signatures/
     mkdir build/
     cd build/
@@ -189,7 +203,7 @@ make -B
 cd $SRC/cryptofuzz/modules/blst/
 make -B
 
-if [[ "$SANITIZER" != "memory" ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/chia_bls/
     make -B
