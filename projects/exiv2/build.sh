@@ -27,5 +27,9 @@ cp ../fuzz/exiv2.dict $OUT/fuzz-read-print-write.dict
 
 # Initialize the corpus, using the files in test/data
 mkdir corpus
-LSAN_OPTIONS=suppressions=../fuzz/knownleaks.txt ./bin/fuzz-read-print-write -merge=1 corpus ../test/data/
+for f in $(find ../test/data -type f); do
+    s=$(sha1sum "$f" | awk '{print $1}')
+    cp $f corpus/$s
+done
+
 zip -j $OUT/fuzz-read-print-write.zip corpus/*
