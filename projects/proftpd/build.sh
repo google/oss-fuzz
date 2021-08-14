@@ -34,9 +34,10 @@ find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
 $NEW_CC_FLAG -c $SRC/fuzzer.c -o fuzzer.o
 $CC $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.o -o $OUT/fuzzer \
 	src/scoreboard.o \
+	lib/prbase.a \
 	fuzz_lib.a \
 	-L/src/proftpd/lib \
-	-lsupp -lcrypt -pthread
+	-lcrypt -pthread
 
 # Build seed corpus
 cd $SRC
