@@ -25,8 +25,7 @@ RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install gperf
 
 #cache build dependencies
-ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.gz \
-    https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
+ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/extern/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf \
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
@@ -34,7 +33,6 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/boost_1_76_0.tar.xz \
     https://dev-www.libreoffice.org/src/box2d-2.3.1.tar.gz \
     https://dev-www.libreoffice.org/src/dtoa-20180411.tgz \
-    https://dev-www.libreoffice.org/src/expat-2.4.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.3.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.11.tar.gz \
     https://dev-www.libreoffice.org/src/libexttextcat-3.4.5.tar.xz \
@@ -44,9 +42,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.78.0.tar.xz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.32.tar.gz \
-    https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.3.tar.xz \
     https://dev-www.libreoffice.org/src/libcdr-0.1.7.tar.xz \
     https://dev-www.libreoffice.org/src/libcmis-0.5.2.tar.xz \
@@ -66,10 +62,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/libwpg-0.3.3.tar.xz \
     https://dev-www.libreoffice.org/src/libwps-0.4.12.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
-    https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/openssl-1.1.1i.tar.gz \
-    https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.14.tgz \
     https://dev-www.libreoffice.org/src/harfbuzz-2.8.2.tar.xz \
     https://dev-www.libreoffice.org/src/glm-0.9.9.7.zip \
@@ -78,9 +71,6 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/libxml2-2.9.12.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.34.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.7.0.tar.gz \
-    https://dev-www.libreoffice.org/src/freetype-2.9.1.tar.bz2 \
-    https://dev-www.libreoffice.org/src/fontconfig-2.13.91.tar.gz \
-    https://dev-www.libreoffice.org/src/libepoxy-1.5.3.tar.xz \
     https://dev-www.libreoffice.org/src/libepubgen-0.1.1.tar.xz \
     https://dev-www.libreoffice.org/src/libnumbertext-1.0.7.tar.xz \
     https://dev-www.libreoffice.org/src/libqxp-0.0.2.tar.xz $SRC/
@@ -145,6 +135,6 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/mtpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/htmlfuzzer_seed_corpus.zip $SRC/
 #clone source
-RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
+RUN git clone --depth 1 https://git.libreoffice.org/core libreoffice
 WORKDIR libreoffice
 COPY build.sh $SRC/
