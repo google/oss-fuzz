@@ -23,6 +23,6 @@ echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$C
 
 for i in libs/json/fuzzing/*.cpp; do
    fuzzer=$(basename $i .cpp)
-   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I /out/include/ $OUT/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
+   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $OUT/include/ $OUT/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
 done
 
