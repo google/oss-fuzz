@@ -65,7 +65,7 @@ RUN export PYTHON_DEPS="\
 # six for Bazel rules.
 RUN echo ATHERIS INSTALL
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    atheris>=2.0.5 pyinstaller==4.1 six==1.15.0 && \
+    atheris>=2.0.6 pyinstaller==4.1 six==1.15.0 && \
     rm -rf /tmp/*
 
 # Download and install the latest stable Go.
