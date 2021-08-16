@@ -41,9 +41,9 @@ mv $build/test/fuzzing/hb-{shape,draw,subset,set}-fuzzer $OUT/
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
 for d in \
-	test/shaping/data/in-house/fonts \
-	test/shaping/data/aots/fonts \
-	test/shaping/data/text-rendering-tests/fonts \
+	test/shape/data/in-house/fonts \
+	test/shape/data/aots/fonts \
+	test/shape/data/text-rendering-tests/fonts \
 	test/api/fonts \
 	test/fuzzing/fonts \
 	perf/fonts \
