@@ -42,7 +42,7 @@ class GetDeleteImagesTest(unittest.TestCase):
   """Tests for delete_images."""
 
   @mock.patch('utils.execute')
-  def test_delete_images(self, mocked_execute):  # pylint: disable=no-self-use
+  def test_delete_images(self, mock_execute):  # pylint: disable=no-self-use
     """Tests that get_project_image_name works as intended."""
     images = ['image']
     docker.delete_images(images)
@@ -51,7 +51,7 @@ class GetDeleteImagesTest(unittest.TestCase):
         mock.call(['docker', 'builder', 'prune', '-f'])
     ]
 
-    mocked_execute.assert_has_calls(expected_calls)
+    mock_execute.assert_has_calls(expected_calls)
 
 
 class GetBaseDockerRunArgsTest(unittest.TestCase):

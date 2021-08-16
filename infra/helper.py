@@ -569,9 +569,9 @@ def build_image(args):
     pull = y_or_n.lower() == 'y'
 
   if pull:
-    logging.error('Pulling latest base images...')
+    logging.info('Pulling latest base images...')
   else:
-    logging.error('Using cached base images...')
+    logging.info('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
   if build_image_impl(args.project, cache=args.cache, pull=pull):

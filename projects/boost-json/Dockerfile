@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,35 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/madler/zlib
-RUN git clone --depth 1 git://git.code.sf.net/p/matio/matio matio
-ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz hdf5-1.12.1.tar.gz
-WORKDIR matio
+#RUN apt-get update && apt-get install -y g++
+
+RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
+RUN pwd
+RUN ls
+RUN git -C boost submodule update --init libs/json
+RUN git -C boost/libs/json checkout develop
+RUN git -C boost submodule update --init --depth 1 \
+libs/align/ \
+libs/assert \
+libs/config/ \
+libs/container \
+libs/container_hash/ \
+libs/core \
+libs/exception/ \
+libs/headers/ \
+libs/intrusive/ \
+libs/io \
+libs/move/ \
+libs/mp11/ \
+libs/smart_ptr/ \
+libs/static_assert \
+libs/system/ \
+libs/throw_exception/ \
+libs/type_traits/ \
+libs/utility/ \
+tools/boost_install \
+tools/build
+
+WORKDIR boost
 COPY build.sh $SRC/
+

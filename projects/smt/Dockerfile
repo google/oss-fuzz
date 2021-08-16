@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/madler/zlib
-RUN git clone --depth 1 git://git.code.sf.net/p/matio/matio matio
-ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz hdf5-1.12.1.tar.gz
-WORKDIR matio
-COPY build.sh $SRC/
+RUN git clone https://github.com/celestiaorg/smt
+
+COPY build.sh $SRC
+WORKDIR $SRC/smt

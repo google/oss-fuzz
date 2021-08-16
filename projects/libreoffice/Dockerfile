@@ -25,19 +25,16 @@ RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install gperf
 
 #cache build dependencies
-ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.gz \
-    https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
+ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/extern/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf \
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
-    https://dev-www.libreoffice.org/src/boost_1_75_0.tar.xz \
+    https://dev-www.libreoffice.org/src/boost_1_76_0.tar.xz \
     https://dev-www.libreoffice.org/src/box2d-2.3.1.tar.gz \
     https://dev-www.libreoffice.org/src/dtoa-20180411.tgz \
-    https://dev-www.libreoffice.org/src/expat-2.4.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.3.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.11.tar.gz \
-    https://dev-www.libreoffice.org/src/0168229624cfac409e766913506961a8-ucpp-1.3.2.tar.gz \
     https://dev-www.libreoffice.org/src/libexttextcat-3.4.5.tar.xz \
     https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
     https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
@@ -45,9 +42,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.78.0.tar.xz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.32.tar.gz \
-    https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.3.tar.xz \
     https://dev-www.libreoffice.org/src/libcdr-0.1.7.tar.xz \
     https://dev-www.libreoffice.org/src/libcmis-0.5.2.tar.xz \
@@ -67,10 +62,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/libwpg-0.3.3.tar.xz \
     https://dev-www.libreoffice.org/src/libwps-0.4.12.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
-    https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/openssl-1.1.1i.tar.gz \
-    https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.14.tgz \
     https://dev-www.libreoffice.org/src/harfbuzz-2.8.2.tar.xz \
     https://dev-www.libreoffice.org/src/glm-0.9.9.7.zip \
@@ -79,9 +71,6 @@ ADD https://dev-www.libreoffice.org/src/liberation-narrow-fonts-ttf-1.07.6.tar.g
     https://dev-www.libreoffice.org/src/libxml2-2.9.12.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.34.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.7.0.tar.gz \
-    https://dev-www.libreoffice.org/src/freetype-2.9.1.tar.bz2 \
-    https://dev-www.libreoffice.org/src/fontconfig-2.13.91.tar.gz \
-    https://dev-www.libreoffice.org/src/libepoxy-1.5.3.tar.xz \
     https://dev-www.libreoffice.org/src/libepubgen-0.1.1.tar.xz \
     https://dev-www.libreoffice.org/src/libnumbertext-1.0.7.tar.xz \
     https://dev-www.libreoffice.org/src/libqxp-0.0.2.tar.xz $SRC/
@@ -101,7 +90,7 @@ RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz &&
     zip -q $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
 RUN svn export https://github.com/khaledhosny/ots/trunk/tests/fonts $SRC/sample-sft-fonts/ots
 RUN svn export https://github.com/unicode-org/text-rendering-tests/trunk/fonts/ $SRC/sample-sft-fonts/unicode-org
-RUN svn export https://github.com/harfbuzz/harfbuzz/trunk/test/shaping/data/in-house/fonts $SRC/sample-sft-fonts/harfbuzz
+RUN svn export https://github.com/harfbuzz/harfbuzz/trunk/test/shape/data/in-house/fonts $SRC/sample-sft-fonts/harfbuzz
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/sample-sft-fonts/adobe
 RUN zip -qr $SRC/sftfuzzer_seed_corpus.zip $SRC/sample-sft-fonts
 ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
@@ -146,6 +135,6 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/mtpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/htmlfuzzer_seed_corpus.zip $SRC/
 #clone source
-RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
+RUN git clone --depth 1 https://git.libreoffice.org/core libreoffice
 WORKDIR libreoffice
 COPY build.sh $SRC/

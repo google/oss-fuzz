@@ -118,17 +118,17 @@ class BinaryPrintTest(unittest.TestCase):
   def test_string(self):  # pylint: disable=no-self-use
     """Tests that utils.binary_print can print a regular string."""
     # Should execute without raising any exceptions.
-    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+    with mock.patch('sys.stdout.buffer.write') as mock_write:
       utils.binary_print('hello')
-      mocked_write.assert_called_with('hello\n')
+      mock_write.assert_called_with('hello\n')
 
   @unittest.skip('Causes spurious failures because of side-effects.')
   def test_binary_string(self):  # pylint: disable=no-self-use
     """Tests that utils.binary_print can print a bianry string."""
     # Should execute without raising any exceptions.
-    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+    with mock.patch('sys.stdout.buffer.write') as mock_write:
       utils.binary_print(b'hello')
-      mocked_write.assert_called_with(b'hello\n')
+      mock_write.assert_called_with(b'hello\n')
 
 
 if __name__ == '__main__':

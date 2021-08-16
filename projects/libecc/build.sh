@@ -55,8 +55,8 @@ rm extra_options.h
 echo -n '"' >>extra_options.h
 echo -n '--force-module=libecc ' >>extra_options.h
 echo -n '--operations=Digest,ECC_PrivateToPublic,ECDSA_Sign,ECDSA_Verify,ECGDSA_Sign,ECGDSA_Verify,ECRDSA_Sign,ECRDSA_Verify,ECC_Point_Add,ECC_Point_Mul,BignumCalc ' >>extra_options.h
-echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1 ' >>extra_options.h
-echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256 ' >>extra_options.h
+echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1,secp256k1 ' >>extra_options.h
+echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256,SM3,SHAKE256,STREEBOG-256,STREEBOG-512 ' >>extra_options.h
 echo -n '--calcops=Add,AddMod,And,Bit,GCD,InvMod,IsOdd,IsOne,IsZero,LShift1,Mod,Mul,MulMod,NumBits,Or,RShift,Sqr,Sub,SubMod,Xor ' >>extra_options.h
 echo -n '"' >>extra_options.h
 cd modules/libecc/

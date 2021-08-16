@@ -148,11 +148,8 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   fi
 
   # Disable leak checking since the JVM triggers too many false positives.
-  # function and vptr are also disabled for now as Bazel uses clang instead of
-  # clang++ when linking the driver, which does not support these C++ UBSan
-  # features.
-  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
-  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
+  export CFLAGS="$CFLAGS -fno-sanitize=leak"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
 fi
 
 echo "---------------------------------------------------------------"
