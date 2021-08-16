@@ -63,8 +63,9 @@ RUN export PYTHON_DEPS="\
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
+RUN echo ATHERIS INSTALL
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    atheris==1.0.11 pyinstaller==4.1 six==1.15.0 && \
+    atheris>=2.0.6 pyinstaller==4.1 six==1.15.0 && \
     rm -rf /tmp/*
 
 # Download and install the latest stable Go.

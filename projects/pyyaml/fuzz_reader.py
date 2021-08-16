@@ -15,8 +15,10 @@
 # limitations under the License.
 import sys
 import atheris
-import yaml.reader
+with atheris.instrument_imports():
+  import yaml.reader
 
+@atheris.instrument_func
 def TestOneInput(data):
     if len(data) < 1:
         return 
@@ -30,7 +32,7 @@ def TestOneInput(data):
     return 
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 
 if __name__ == "__main__":
