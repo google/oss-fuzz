@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-# build project
-./configure --with-openssl=/usr --with-defaults --with-logfile="/dev/null" --with-persistent-directory="/dev/null"
+sed -i 's/#define NETSNMP_SELECT_TIMEVAL ${arg_type}/#define NETSNMP_SELECT_TIMEVAL struct timeval/g' ./configure
+rm testing/fuzzing/build.sh && echo "echo 0" >> testing/fuzzing/build.sh && chmod +x ./testing/fuzzing/build.sh
+
+./configure --with-nl --with-openssl=/usr --with-defaults --disable-mibs --with-logfile="/dev/null" --with-persistent-directory="/dev/null" --with-out-mib-modules="mibII,if-mib"
 # net-snmp build is not parallel-make safe; do not add -j
 make
 
