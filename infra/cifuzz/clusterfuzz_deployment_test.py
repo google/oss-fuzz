@@ -186,7 +186,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     """Tests that upload_build works as intended."""
     self.deployment.upload_build('commit')
     mock_upload_build.assert_called_with('address-commit',
-                                           '/workspace/build-out')
+                                         '/workspace/build-out')
 
 
 class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
