@@ -258,21 +258,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
-
     self.clusterfuzz_deployment.upload_crashes()
-
-    # We want to upload the build to the filestore after we do batch fuzzing.
-    # There are some is a problem with this. We don't want to upload the build
-    # before fuzzing, because if we download the latest build, we will consider
-    # the build we just uploaded to be the latest even though it shouldn't be
-    # (we really intend to download the build before the curent one.
-    # TODO(metzman): We should really be uploading latest build in build_fuzzers
-    # before we remove unaffected fuzzers. Otherwise, we can lose fuzzers. This
-    # is probably more of a theoretical concern since in batch fuzzing, there is
-    # no code change and thus no fuzzers that are removed, but it's inelegant to
-    # put this here.
-
-    self.clusterfuzz_deployment.upload_latest_build()
     return result
 
 

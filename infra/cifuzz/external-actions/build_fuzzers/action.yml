@@ -35,6 +35,10 @@ inputs:
     description: |
       The branch of the git repo to use for storing coverage reports.
     required: false
+  upload-build:
+    description: |
+      If set, will upload the build.
+    default: false
   github-token:
     description: |
       Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
@@ -56,3 +60,4 @@ runs:
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
+    UPLOAD_BUILD: ${{ inputs.upload-build }}

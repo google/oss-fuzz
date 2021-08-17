@@ -35,6 +35,8 @@ EXAMPLE_FUZZER = 'example_crash_fuzzer'
 WORKSPACE = '/workspace'
 EXPECTED_LATEST_BUILD_PATH = os.path.join(WORKSPACE, 'cifuzz-prev-build')
 
+# pylint: disable=unused-argument
+
 
 def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
@@ -92,7 +94,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     self.assertTrue('address' in latest_build_name)
 
   @parameterized.parameterized.expand([
-      ('upload_latest_build', tuple(),
+      ('upload_build', ('commit',),
        'Not uploading latest build because on OSS-Fuzz.'),
       ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because on OSS-Fuzz.'),
@@ -152,28 +154,38 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(os.listdir(self.corpus_dir), [])
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
-              return_value=True)
-  def test_download_latest_build(self, mock_download_build):
+              side_effect=[False, True])
+  @mock.patch('repo_manager.RepoManager.get_commit_list',
+              return_value=['commit1', 'commit2'])
+  @mock.patch('continuous_integration.BaseCi.repo_dir',
+              return_value='/path/to/repo')
+  def test_download_latest_build(self, mock_repo_dir, mock_get_commit_list,
+                                 mock_download_build):
     """Tests that downloading the latest build works as intended under normal
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
-    expected_artifact_name = 'address-latest'
+    expected_artifact_name = 'address-commit2'
     mock_download_build.assert_called_with(expected_artifact_name,
                                            EXPECTED_LATEST_BUILD_PATH)
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore.download_build',
               side_effect=Exception)
-  def test_download_latest_build_fail(self, _):
+  @mock.patch('repo_manager.RepoManager.get_commit_list',
+              return_value=['commit1', 'commit2'])
+  @mock.patch('continuous_integration.BaseCi.repo_dir',
+              return_value='/path/to/repo')
+  def test_download_latest_build_fail(self, mock_repo_dir, mock_get_commit_list,
+                                      _):
     """Tests that download_latest_build returns None when it fails to download a
     build."""
     self.assertIsNone(self.deployment.download_latest_build())
 
-  @mock.patch('filestore.github_actions.GithubActionsFilestore.' 'upload_build')
-  def test_upload_latest_build(self, mock_upload_build):
-    """Tests that upload_latest_build works as intended."""
-    self.deployment.upload_latest_build()
-    mock_upload_build.assert_called_with('address-latest',
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.upload_build')
+  def test_upload_build(self, mock_upload_build):
+    """Tests that upload_build works as intended."""
+    self.deployment.upload_build('commit')
+    mock_upload_build.assert_called_with('address-commit',
                                          '/workspace/build-out')
 
 
@@ -199,7 +211,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(os.path.exists(self.corpus_dir))
 
   @parameterized.parameterized.expand([
-      ('upload_latest_build', tuple(),
+      ('upload_build', ('commit',),
        'Not uploading latest build because no ClusterFuzz deployment.'),
       ('upload_corpus', ('target', 'corpus-dir'),
        'Not uploading corpus because no ClusterFuzz deployment.'),

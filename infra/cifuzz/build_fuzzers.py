@@ -111,6 +111,14 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       self.handle_msan_postbuild(docker_container)
     return True
 
+  def upload_build(self):
+    """Upload build."""
+    if self.config.upload_build:
+      self.clusterfuzz_deployment.upload_build(
+          self.repo_manager.get_current_commit())
+
+    return True
+
   def handle_msan_postbuild(self, container):
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
@@ -133,7 +141,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     and then removes the unaffectted fuzzers. Returns True on success."""
     methods = [
         self.build_image_and_checkout_src, self.build_fuzzers,
-        self.remove_unaffected_fuzz_targets
+        self.upload_build, self.remove_unaffected_fuzz_targets
     ]
     for method in methods:
       if not method():

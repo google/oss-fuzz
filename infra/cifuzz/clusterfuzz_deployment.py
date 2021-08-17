@@ -19,10 +19,12 @@ import urllib.error
 import urllib.request
 
 import config_utils
+import continuous_integration
 import filestore
 import filestore_utils
 import http_utils
 import get_coverage
+import repo_manager
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,6 +37,7 @@ class BaseClusterFuzzDeployment:
   def __init__(self, config, workspace):
     self.config = config
     self.workspace = workspace
+    self.ci_system = continuous_integration.get_ci(config)
 
   def download_latest_build(self):
     """Downloads the latest build from ClusterFuzz.
@@ -44,11 +47,8 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_latest_build(self):
-    """Uploads the latest build to the filestore.
-    Returns:
-      True on success.
-    """
+  def upload_build(self, commit):
+    """Uploads the build with the given commit sha to the filestore."""
     raise NotImplementedError('Child class must implement method.')
 
   def download_corpus(self, target_name, corpus_dir):
@@ -85,6 +85,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
   COVERAGE_NAME = 'latest'
+  LATEST_BUILD_WINDOW = 3
 
   def __init__(self, config, workspace):
     super().__init__(config, workspace)
@@ -99,17 +100,31 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       # called if multiple bugs are found.
       return self.workspace.clusterfuzz_build
 
-    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
-    build_name = self._get_build_name()
+    repo_dir = self.ci_system.repo_dir()
+    if not repo_dir:
+      raise RuntimeError('Repo checkout does not exist.')
 
-    try:
-      logging.info('Downloading latest build.')
-      if self.filestore.download_build(build_name,
-                                       self.workspace.clusterfuzz_build):
-        logging.info('Done downloading latest build.')
-        return self.workspace.clusterfuzz_build
-    except Exception as err:  # pylint: disable=broad-except
-      logging.error('Could not download latest build because of: %s', err)
+    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
+    repo = repo_manager.RepoManager(repo_dir)
+
+    # Builds are stored by commit, so try the latest |LATEST_BUILD_WINDOW|
+    # commits before the current.
+    # TODO(ochang): If API usage becomes an issue, this can be optimized by the
+    # filestore accepting a list of filenames to try.
+    for old_commit in repo.get_commit_list('HEAD^',
+                                           limit=self.LATEST_BUILD_WINDOW):
+      logging.info('Trying to downloading previous build %s.', old_commit)
+      build_name = self._get_build_name(old_commit)
+      try:
+        if self.filestore.download_build(build_name,
+                                         self.workspace.clusterfuzz_build):
+          logging.info('Done downloading previus build.')
+          return self.workspace.clusterfuzz_build
+
+        logging.info('Build for %s does not exist.', old_commit)
+      except Exception as err:  # pylint: disable=broad-except
+        logging.error('Could not download build for %s because of: %s',
+                      old_commit, err)
 
     return None
 
@@ -126,8 +141,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                     target_name, str(err))
     return corpus_dir
 
-  def _get_build_name(self):
-    return self.config.sanitizer + '-latest'
+  def _get_build_name(self, name):
+    return f'{self.config.sanitizer}-{name}'
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
@@ -148,10 +163,10 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
                     target_name, error)
 
-  def upload_latest_build(self):
+  def upload_build(self, commit):
     """Upload the build produced by CIFuzz as the latest build."""
     logging.info('Uploading latest build in %s.', self.workspace.out)
-    build_name = self._get_build_name()
+    build_name = self._get_build_name(commit)
     try:
       result = self.filestore.upload_build(build_name, self.workspace.out)
       logging.info('Done uploading latest build.')
@@ -253,8 +268,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
     return None
 
-  def upload_latest_build(self):  # pylint: disable=no-self-use
-    """Noop Implementation of upload_latest_build."""
+  def upload_build(self, commit):  # pylint: disable=no-self-use
+    """Noop Implementation of upload_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
   def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
@@ -303,8 +318,8 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
   ClusterFuzz to use."""
 
-  def upload_latest_build(self):  # pylint: disable=no-self-use
-    """Noop Implementation of upload_latest_build."""
+  def upload_build(self, commit):  # pylint: disable=no-self-use
+    """Noop Implementation of upload_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
 
