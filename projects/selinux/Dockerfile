@@ -30,4 +30,4 @@ RUN apt-get update && \
 	xmlto
 RUN git clone --depth 1 https://github.com/SELinuxProject/selinux
 WORKDIR selinux
-COPY build.sh *.c $SRC/
+COPY build.sh $SRC/
