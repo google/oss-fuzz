@@ -151,10 +151,11 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   def test_generate_swift_project(self):
     """Tests that the swift project uses the correct base image."""
     swift = "-swift"
-    helper._generate_impl(helper.Project(self.PROJECT_NAME), swift)
+    helper._generate_impl(helper.Project(self.PROJECT_NAME + "swift"), swift)
     self._verify_templated_files(
         templates.TEMPLATES,
-        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME), swift)
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects',
+                     self.PROJECT_NAME + "swift"), swift)
 
 
 class ProjectTest(fake_filesystem_unittest.TestCase):
