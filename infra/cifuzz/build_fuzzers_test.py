@@ -91,13 +91,12 @@ class BuildFuzzersTest(unittest.TestCase):
 
 class InternalGithubBuildTest(unittest.TestCase):
   """Tests for building OSS-Fuzz projects on GitHub actions."""
-  PROJECT_NAME = 'myproject'
   PROJECT_REPO_NAME = 'myproject'
   SANITIZER = 'address'
   COMMIT_SHA = 'fake'
   PR_REF = 'fake'
 
-  def _create_builder(self, tmp_dir, oss_fuzz_project_name=PROJECT_NAME):
+  def _create_builder(self, tmp_dir, oss_fuzz_project_name='myproject'):
     """Creates an InternalGithubBuilder and returns it."""
     config = test_helpers.create_build_config(
         oss_fuzz_project_name=oss_fuzz_project_name,
@@ -151,7 +150,7 @@ class InternalGithubBuildTest(unittest.TestCase):
       builder.config.upload_build = True
       builder.upload_build()
 
-    mock_upload_build.assert_called_once()
+    mock_upload_build.assert_called_with('commit')
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),

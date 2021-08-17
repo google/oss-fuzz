@@ -28,7 +28,7 @@ class Workspace:
 
   @property
   def repo_storage(self):
-    """The local directory for repo storage."""
+    """The parent directory for repo storage."""
     return os.path.join(self.workspace, 'storage')
 
   @property
