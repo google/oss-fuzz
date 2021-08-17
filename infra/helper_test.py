@@ -119,7 +119,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     template_args = {
         'project_name': self.PROJECT_NAME,
         'year': 2021,
-        'lang': "-" + lang
+        'lang': "-" + lang if lang != "" else ""
     }
     for filename, template in template_dict.items():
       file_path = os.path.join(directory, filename)
@@ -153,7 +153,8 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     helper._generate_impl(helper.Project(self.PROJECT_NAME), 'swift')
     self._verify_templated_files(
         templates.TEMPLATES,
-        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME), 'swift')
+        os.path.join(helper.OSS_FUZZ_DIR, 'projects', self.PROJECT_NAME),
+        'swift')
 
 
 class ProjectTest(fake_filesystem_unittest.TestCase):
