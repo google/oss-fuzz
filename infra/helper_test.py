@@ -119,7 +119,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     template_args = {
         'project_name': self.PROJECT_NAME,
         'year': 2021,
-        'lang': lang
+        'lang': "-" + lang
     }
     for filename, template in template_dict.items():
       file_path = os.path.join(directory, filename)
@@ -150,7 +150,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
 
   def test_generate_swift_project(self):
     """Tests that the swift project uses the correct base image."""
-    swift = "-swift"
+    swift = "swift"
     helper._generate_impl(helper.Project(self.PROJECT_NAME + "swift"), swift)
     self._verify_templated_files(
         templates.TEMPLATES,
