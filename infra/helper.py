@@ -1078,10 +1078,10 @@ def _generate_impl(project, language):
 
   logging.info('Writing new files to: %s.', directory)
 
-  image_lang = "-" + language
+  image_lang = '-' + language
   # Only swift supports language specific image.
   if language != 'swift':
-    image_lang = ""
+    image_lang = ''
 
   template_args = {
       'project_name': project.name,
