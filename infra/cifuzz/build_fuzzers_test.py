@@ -139,10 +139,10 @@ class InternalGithubBuildTest(unittest.TestCase):
 
     mock_upload_build.assert_not_called()
 
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
-              return_value=True)
   @mock.patch('repo_manager.RepoManager.get_current_commit',
               return_value='commit')
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
+              return_value=True)
   def test_upload_build(self, mock_upload_build, mock_get_current_commit):
     """Test upload build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
