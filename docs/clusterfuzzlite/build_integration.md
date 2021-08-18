@@ -14,13 +14,20 @@ permalink: /clusterfuzzlite/build-integration/
 ---
 
 ## Prerequisites
-ClusterFuzzLite supports statically linked [libFuzzer targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) on Linux.
+ClusterFuzzLite supports statically linked
+[libFuzzer targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) on
+Linux.
+
+We re-use the [OSS-Fuzz](https://github.com/google/oss-fuzz) toolchain to make
+building easier. If you are familiar with this, most of the concepts here are
+exactly the same, with one key difference. Rather than checking out the source
+code in the [`Dockerfile`](#dockerfile) using `git clone`, the `Dockerfile`
+copies in the source code directly during `docker build`.
 
 Before you can start setting up your new project for fuzzing, you must do the following:
 - [Integrate]({{ site.baseurl }}/advanced-topics/ideal-integration/) one or more [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
   with the project you want to fuzz. For examples, see TODO.
 - [Install Docker](https://docs.docker.com/engine/installation)
-  (Googlers can visit [go/installdocker](https://goto.google.com/installdocker)).
   [Why Docker?]({{ site.baseurl }}/faq/#why-do-you-use-docker)
 
   If you want to run `docker` without `sudo`, you can
@@ -33,10 +40,17 @@ Before you can start setting up your new project for fuzzing, you must do the fo
 - Clone the OSS-Fuzz repo: `git clone https://github.com/google/oss-fuzz.git`
 
 ## Generating an empty build integration
-Build integrations consist of two files, a `Dockerfile` that can install
-dependencies for your project, and a `build.sh` file that actually builds your
-project. These must live in the `.clusterfuzzlite` directory in the root of your
+
+Build integrations consist of three configuration files:
+* [./clusterfuzzlite/project.yaml](#projectyaml) - provides metadata about the project.
+* [./clusterfuzzlite/Dockerfile](#dockerfile) - defines the container environment with information
+on dependencies needed to build the project and its [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
+* [./clusterfuzzlite/build.sh](#buildsh) - defines the build script that executes inside the Docker container and
+generates the project build.
+
+These must live in the `.clusterfuzzlite` directory in the root of your
 project's source code checkout.
+
 You can generate empty versions of these files with the following command:
 
 ```bash
@@ -47,6 +61,24 @@ $ python infra/helper.py generate $PATH_TO_PROJECT --external
 
 Once the configuration files are generated, you should modify them to fit your
 project.
+
+## project.yaml {#projectyaml}
+
+This configuration file stores project metadata. The following attributes are
+supported:
+
+- [language](#language)
+
+### language
+
+Programming language the project is written in. Values you can specify include:
+
+* `c`
+* `c++`
+* [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
+* [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
+* [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
+* [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 
 ## Dockerfile {#dockerfile}
 
@@ -67,13 +99,11 @@ TODO: Provide examples.
 
 This file defines how to build binaries for [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your project.
 The script is executed within the image built from your [Dockerfile](#Dockerfile).
-If you are familiar with `build.sh` files from OSS-Fuzz, they work exactly the
-same in ClusterFuzzLite.
 
 In general, this script should do the following:
 
-- Build the project using your build system with the ClusterFuzzLite's compiler.
-- Provide ClusterFuzzLite's compiler flags (defined as [environment variables](#Requirements)) to the build system.
+- Build the project using your build system with OSS-Fuzz's compiler.
+- Provide OSS-Fuzz's compiler flags (defined as [environment variables](#Requirements)) to the build system.
 - Build your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
   and link your project's build with `$LIB_FUZZING_ENGINE` (libFuzzer).
 
@@ -233,54 +263,7 @@ If you run into problems, the [Debugging page]({{ site.baseurl }}/advanced-topic
 
 ## Efficient fuzzing
 
-To improve your fuzz target ability to find bugs faster, you should consider the
-following ways:
-
-### Seed Corpus
-
-OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
-
-To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
-to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` command) of its contents. You can store the corpus
-next to source files, generate during build or fetch it using curl or any other
-tool of your choice.
-(example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).
-
-Seed corpus files will be used for cross-mutations and portions of them might appear
-in bug reports or be used for further security research.
-
-### Dictionaries
-
-Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
-sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
-
-Put your dict file in `$OUT`. If the dict filename is the same as your target
-binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the
-name is different (e.g. because it is shared by several targets), specify this
-in .options file:
-
-```
-[libfuzzer]
-dict = dictionary_name.dict
-```
-
-It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
-to reuse the same dictionary if they are fuzzing very similar inputs.
-(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
-
-### Input Size
-
-By default, the fuzzing engine will generate input of any arbitrary length.
-This might be useful to try corner cases that could lead to a
-security vulnerability. However, if large inputs are not necessary to
-increase the coverage of your target API, it is important to add a limit
-here to significantly improve performance.
-
-```cpp
-if (size < kMinInputLength || size > kMaxInputLength)
-  return 0;
-```
+To improve your fuzz target ability to find bugs faster, please read [this section](
+{{ site.baseurl }}/getting-started/new-project-guide/#efficient-fuzzing).
 
 TODO(metzman): We probably want a TOC for lang-specific guides (which we still need to add).
