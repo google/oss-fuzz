@@ -215,7 +215,11 @@ def get_parser():  # pylint: disable=too-many-statements
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
-  generate_parser.add_argument('language')
+  generate_parser.add_argument(
+      '--language',
+      default=constants.DEFAULT_LANGUAGE,
+      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python'],
+      help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
@@ -1058,6 +1062,11 @@ def _get_current_datetime():
   return datetime.datetime.now()
 
 
+def _base_builder_from_language(language):
+  """Returns the base builder for the specified language."""
+  return 'base-builder' if language != 'swift' else 'base-builder-swift'
+
+
 def _generate_impl(project, language):
   """Implementation of generate(). Useful for testing."""
   if project.is_external:
@@ -1078,14 +1087,10 @@ def _generate_impl(project, language):
 
   logging.info('Writing new files to: %s.', directory)
 
-  image_lang = '-' + language
-  # Only swift supports language specific image.
-  if language != 'swift':
-    image_lang = ''
-
   template_args = {
       'project_name': project.name,
-      'lang': image_lang,
+      'base_builder': _base_builder_from_language(language),
+      'language': language,
       'year': _get_current_datetime().year
   }
   for filename, template in project_templates.items():
