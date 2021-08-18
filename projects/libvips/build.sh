@@ -182,7 +182,25 @@ sed -i'.bak' "s/-lbrotlidec/&-static/" $WORK/lib/pkgconfig/libbrotlidec.pc
 sed -i'.bak' "s/-lbrotlicommon/&-static/" $WORK/lib/pkgconfig/libbrotlicommon.pc
 popd
 
+# libimagequant
+pushd $SRC/libimagequant
+meson setup --prefix=$WORK --libdir=lib --default-library=static build
+cd build
+ninja -j$(nproc)
+ninja install
+popd
+
+# cgif
+pushd $SRC/cgif
+meson setup --prefix=$WORK --libdir=lib --default-library=static build
+cd build
+ninja -j$(nproc)
+ninja install
+popd
+
 # libvips
+sed -i'.bak' "/test/d" Makefile.am
+sed -i'.bak' "/tools/d" Makefile.am
 PKG_CONFIG="pkg-config --static" ./autogen.sh \
   --disable-shared \
   --disable-modules \
@@ -229,6 +247,8 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libbrotlienc-static.a \
     $WORK/lib/libbrotlidec-static.a \
     $WORK/lib/libbrotlicommon-static.a \
+    $WORK/lib/libimagequant.a \
+    $WORK/lib/libcgif.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
