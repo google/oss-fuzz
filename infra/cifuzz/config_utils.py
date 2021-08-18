@@ -26,7 +26,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 
-RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage']
+RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage', 'prune']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
@@ -209,6 +209,7 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+    self.upload_build = environment.get_bool('UPLOAD_BUILD', False)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
@@ -277,6 +278,7 @@ class RunFuzzersConfig(BaseConfig):
 
   def __init__(self):
     super().__init__()
+    # TODO(metzman): Pick a better default for pruning.
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
     if self.is_coverage:

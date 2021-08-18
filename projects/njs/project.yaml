@@ -4,7 +4,6 @@ primary_contact: "xeioexception@gmail.com"
 auto_ccs:
  - "lex.borisov@gmail.com"
  - "devrep@nginx.com"
- - "mmoroz@google.com"
 sanitizers:
   - address
   - memory

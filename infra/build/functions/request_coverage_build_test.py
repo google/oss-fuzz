@@ -45,6 +45,7 @@ class TestRequestCoverageBuilds(unittest.TestCase):
 
   def setUp(self):
     test_utils.reset_ds_emulator()
+    self.maxDiff = None  # pylint: disable=invalid-name
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_lib.download_corpora_steps',
@@ -52,10 +53,10 @@ class TestRequestCoverageBuilds(unittest.TestCase):
                   'url': 'test_download'
               }])
   @mock.patch('datetime.datetime')
-  def test_get_coverage_build_steps(self, mocked_url, mocked_corpora_steps,
-                                    mocked_time):
+  def test_get_coverage_build_steps(self, mock_url, mock_corpora_steps,
+                                    mock_time):
     """Test for get_build_steps."""
-    del mocked_url, mocked_corpora_steps, mocked_time
+    del mock_url, mock_corpora_steps, mock_time
     datetime.datetime = test_utils.SpoofedDatetime
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'

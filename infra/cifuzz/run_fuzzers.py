@@ -166,6 +166,26 @@ class BaseFuzzTargetRunner:
     return bug_found
 
 
+class PruneTargetRunner(BaseFuzzTargetRunner):
+  """Runner that prunes corpora."""
+
+  @property
+  def quit_on_bug_found(self):
+    return False
+
+  def run_fuzz_target(self, fuzz_target_obj):
+    """Prunes with |fuzz_target_obj| and returns the result."""
+    result = fuzz_target_obj.prune()
+    logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.corpus_path)
+    return result
+
+  def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    """Cleans up after pruning with |fuzz_target_obj|."""
+    fuzz_target_obj.free_disk_if_needed()
+
+
 class CoverageTargetRunner(BaseFuzzTargetRunner):
   """Runner that runs the 'coverage' command."""
 
@@ -224,8 +244,9 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   def run_fuzz_target(self, fuzz_target_obj):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.fuzz()
-    logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
-    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name)
+    logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.corpus_path)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
@@ -237,33 +258,25 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
-
     self.clusterfuzz_deployment.upload_crashes()
-
-    # We want to upload the build to the filestore after we do batch fuzzing.
-    # There are some is a problem with this. We don't want to upload the build
-    # before fuzzing, because if we download the latest build, we will consider
-    # the build we just uploaded to be the latest even though it shouldn't be
-    # (we really intend to download the build before the curent one.
-    # TODO(metzman): We should really be uploading latest build in build_fuzzers
-    # before we remove unaffected fuzzers. Otherwise, we can lose fuzzers. This
-    # is probably more of a theoretical concern since in batch fuzzing, there is
-    # no code change and thus no fuzzers that are removed, but it's inelegant to
-    # put this here.
-
-    self.clusterfuzz_deployment.upload_latest_build()
     return result
+
+
+_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
+    'batch': BatchFuzzTargetRunner,
+    'coverage': CoverageTargetRunner,
+    'prune': PruneTargetRunner,
+    'ci': CiFuzzTargetRunner,
+}
 
 
 def get_fuzz_target_runner(config):
   """Returns a fuzz target runner object based on the run_fuzzers_mode of
   |config|."""
-  logging.info('RUN_FUZZERS_MODE is: %s', config.run_fuzzers_mode)
-  if config.run_fuzzers_mode == 'batch':
-    return BatchFuzzTargetRunner(config)
-  if config.run_fuzzers_mode == 'coverage':
-    return CoverageTargetRunner(config)
-  return CiFuzzTargetRunner(config)
+  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
+  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
+               runner)
+  return runner
 
 
 def run_fuzzers(config):  # pylint: disable=too-many-locals

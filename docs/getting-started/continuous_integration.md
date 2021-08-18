@@ -21,11 +21,11 @@ If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
 input available for download and the CI test fails (red X).
 
 If CIFuzz doesn't find a crash during the allotted time, the CI test passes
-(green check). If CIFuzz finds a crash, it reports the crash only:
-* If the crash is reproducible (on the PR/commit build).
-* If the crash does not occur on older OSS-Fuzz builds. Because if it does occur
-  on older builds that means the crash was not introduced by the PR/commit
-  CIFuzz is testing.
+(green check). If CIFuzz finds a crash, it reports the crash only if both of following are true:
+* The crash is reproducible (on the PR/commit build).
+* The crash does not occur on older OSS-Fuzz builds. (If the crash does occur
+  on older builds, then it was not introduced by the PR/commit
+  being tested.)
 
 If your project supports [OSS-Fuzz's code coverage]({{ site.baseurl }}/advanced-topics/code-coverage),
 CIFuzz only runs the fuzzers affected by a pull request/commit.

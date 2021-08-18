@@ -15,7 +15,8 @@
 
 import sys
 import atheris
-import lz4.frame
+with atheris.instrument_imports():
+  import lz4.frame
 
 def TestOneInput(data):
     c =lz4.frame.compress(data)

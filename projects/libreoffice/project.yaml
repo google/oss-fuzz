@@ -1,6 +1,11 @@
 homepage: "https://www.libreoffice.org/"
 language: c++
 primary_contact: "caolanm@redhat.com"
+fuzzing_engines:
+  # see https://github.com/google/oss-fuzz/issues/6233 for missing afl
+  - libfuzzer
+  - honggfuzz
+builds_per_day: 2
 auto_ccs:
   - "officesecurity@lists.freedesktop.org"
   - "damjan.jov@gmail.com"

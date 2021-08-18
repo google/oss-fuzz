@@ -27,6 +27,11 @@ class Workspace:
     os.makedirs(directory, exist_ok=True)
 
   @property
+  def repo_storage(self):
+    """The parent directory for repo storage."""
+    return os.path.join(self.workspace, 'storage')
+
+  @property
   def out(self):
     """The out directory used for storing the fuzzer build built by
     build_fuzzers."""
@@ -63,3 +68,8 @@ class Workspace:
   def corpora(self):
     """The directory where corpora from ClusterFuzz are stored."""
     return os.path.join(self.workspace, 'cifuzz-corpus')
+
+  @property
+  def pruned_corpora(self):
+    """The directory where pruned corpora are stored."""
+    return os.path.join(self.workspace, 'cifuzz-pruned-corpus')

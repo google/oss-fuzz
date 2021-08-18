@@ -16,6 +16,8 @@ vendor_ccs:
   - warrenwright@google.com
   - ailport@google.com
   - kimtony@google.com
+  - faerber@google.com
+  - greendonald@google.com
 architectures:
   - x86_64
   - i386

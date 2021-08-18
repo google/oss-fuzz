@@ -22,11 +22,13 @@ RUN apt-get update && apt-get install -y \
   nasm \
   gtk-doc-tools \
   gobject-introspection \
+  python3-pip \
   libfftw3-dev \
   libexpat1-dev \
   libffi-dev \
   libselinux1-dev \
   glib2.0-dev
+RUN pip3 install meson ninja
 RUN mkdir afl-testcases
 RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases
 RUN git clone --depth 1 https://github.com/libvips/libvips
@@ -41,6 +43,8 @@ RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 https://github.com/strukturag/libheif
 RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl.git
+RUN git clone --depth 1 https://github.com/lovell/libimagequant.git
+RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 
 WORKDIR libvips
 COPY build.sh $SRC/

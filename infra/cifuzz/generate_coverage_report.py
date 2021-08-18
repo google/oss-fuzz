@@ -15,6 +15,7 @@
 import os
 
 import base_runner_utils
+import fuzz_target
 import utils
 
 
@@ -33,8 +34,10 @@ def download_corpora(fuzz_target_paths, clusterfuzz_deployment):
   """Downloads corpora for fuzz targets in |fuzz_target_paths| using
   |clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz."""
   for target_path in fuzz_target_paths:
-    target = os.path.basename(target_path)
-    clusterfuzz_deployment.download_corpus(target)
+    target_name = os.path.basename(target_path)
+    corpus_dir = fuzz_target.get_fuzz_target_corpus_dir(
+        clusterfuzz_deployment.workspace, target_name)
+    clusterfuzz_deployment.download_corpus(target_name, corpus_dir)
 
 
 def generate_coverage_report(fuzz_target_paths, workspace,

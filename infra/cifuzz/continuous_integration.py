@@ -26,6 +26,7 @@ import helper
 import repo_manager
 import retry
 import utils
+import workspace_utils
 
 # pylint: disable=too-few-public-methods
 
@@ -51,6 +52,24 @@ class BaseCi:
 
   def __init__(self, config):
     self.config = config
+    self.workspace = workspace_utils.Workspace(config)
+
+  def repo_dir(self):
+    """Returns the source repo path, if it has been checked out. None is
+    returned otherwise."""
+    if not os.path.exists(self.workspace.repo_storage):
+      return None
+
+    # Note: this assumes there is only one repo checked out here.
+    listing = os.listdir(self.workspace.repo_storage)
+    if len(listing) != 1:
+      raise RuntimeError('Invalid repo storage.')
+
+    repo_path = os.path.join(self.workspace.repo_storage, listing[0])
+    if not os.path.isdir(repo_path):
+      raise RuntimeError('Repo is not a directory.')
+
+    return repo_path
 
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image and gets the source code we need to
@@ -168,16 +187,14 @@ class InternalGithub(GithubCiMixin, BaseCi):
                                     image_repo_path=None,
                                     repo_manager=None)
 
-    git_workspace = os.path.join(self.config.workspace, 'storage')
-    os.makedirs(git_workspace, exist_ok=True)
+    os.makedirs(self.workspace.repo_storage, exist_ok=True)
 
     # Use the same name used in the docker image so we can overwrite it.
     image_repo_name = os.path.basename(image_repo_path)
 
     # Checkout project's repo in the shared volume.
-    manager = repo_manager.clone_repo_and_get_manager(inferred_url,
-                                                      git_workspace,
-                                                      repo_name=image_repo_name)
+    manager = repo_manager.clone_repo_and_get_manager(
+        inferred_url, self.workspace.repo_storage, repo_name=image_repo_name)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
@@ -278,14 +295,13 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     projects are expected to bring their own source code to CIFuzz. Returns True
     on success."""
     logging.info('Building external project.')
-    git_workspace = os.path.join(self.config.workspace, 'storage')
-    os.makedirs(git_workspace, exist_ok=True)
+    os.makedirs(self.workspace.repo_storage, exist_ok=True)
     # Checkout before building, so we don't need to rely on copying the source
     # into the image.
     # TODO(metzman): Figure out if we want second copy at all.
     manager = repo_manager.clone_repo_and_get_manager(
         self.config.git_url,
-        git_workspace,
+        self.workspace.repo_storage,
         repo_name=self.config.project_repo_name)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)

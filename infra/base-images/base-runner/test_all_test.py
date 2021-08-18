@@ -25,13 +25,13 @@ class TestTestAll(unittest.TestCase):
 
   @mock.patch('test_all.find_fuzz_targets', return_value=[])
   @mock.patch('builtins.print')
-  def test_test_all_no_fuzz_targets(self, mocked_print, _):
+  def test_test_all_no_fuzz_targets(self, mock_print, _):
     """Tests that test_all returns False when there are no fuzz targets."""
     outdir = '/out'
     allowed_broken_targets_percentage = 0
     self.assertFalse(
         test_all.test_all(outdir, allowed_broken_targets_percentage))
-    mocked_print.assert_called_with('ERROR: No fuzz targets found.')
+    mock_print.assert_called_with('ERROR: No fuzz targets found.')
 
 
 if __name__ == '__main__':

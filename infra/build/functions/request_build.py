@@ -55,7 +55,7 @@ def get_project_data(project_name):
   project = query.get()
   if not project:
     raise RuntimeError(
-        'Project {0} not available in cloud datastore'.format(project_name))
+        f'Project {project_name} not available in cloud datastore')
   project_yaml_contents = project.project_yaml_contents
   dockerfile_lines = project.dockerfile_contents.split('\n')
 

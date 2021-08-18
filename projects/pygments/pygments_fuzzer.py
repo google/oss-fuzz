@@ -16,11 +16,13 @@
 
 import sys
 import atheris
-import pygments
-import pygments.formatters
-import pygments.lexers
+with atheris.instrument_imports():
+  import pygments
+  import pygments.formatters
+  import pygments.lexers
 
 
+@atheris.instrument_func
 def TestOneInput(input_bytes):
   fdp = atheris.FuzzedDataProvider(input_bytes)
   data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)

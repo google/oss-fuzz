@@ -10,10 +10,11 @@ auto_ccs:
   - "levi@wolfssl.com"
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
+  - "jeffelms.wolfssl@gmail.com"
+  - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
 fuzzing_engines:
   - libfuzzer
-  - afl
   - honggfuzz
   - dataflow
 sanitizers:

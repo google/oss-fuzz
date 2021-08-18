@@ -145,8 +145,8 @@ def get_build_history(build_ids):
       }
 
     if not upload_log(build_id):
-      log_name = 'log-{0}'.format(build_id)
-      raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
+      log_name = f'log-{build_id}'
+      raise MissingBuildLogError(f'Missing build log file {log_name}')
 
     history.append({
         'build_id': build_id,
@@ -203,19 +203,15 @@ def update_build_badges(project, last_build_successful,
   if not last_build_successful:
     badge = 'failing'
 
-  print("[badge] {}: {}".format(project, badge))
+  print(f'[badge] {project}: {badge}')
 
   for extension in BADGE_IMAGE_TYPES:
-    badge_name = '{badge}.{extension}'.format(badge=badge, extension=extension)
+    badge_name = f'{badge}.{extension}'
 
     # Copy blob from badge_images/badge_name to badges/project/
-    blob_name = '{badge_dir}/{badge_name}'.format(badge_dir=BADGE_DIR,
-                                                  badge_name=badge_name)
+    blob_name = f'{BADGE_DIR}/{badge_name}'
 
-    destination_blob_name = '{badge_dir}/{project_name}.{extension}'.format(
-        badge_dir=DESTINATION_BADGE_DIR,
-        project_name=project,
-        extension=extension)
+    destination_blob_name = f'{DESTINATION_BADGE_DIR}/{project}.{extension}'
 
     status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
     badge_blob = status_bucket.blob(blob_name)
@@ -228,12 +224,12 @@ def upload_log(build_id):
   """Upload log file to GCS."""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
   gcb_bucket = get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
-  log_name = 'log-{0}.txt'.format(build_id)
+  log_name = f'log-{build_id}.txt'
   log = gcb_bucket.blob(log_name)
   dest_log = status_bucket.blob(log_name)
 
   if not log.exists():
-    print('Failed to find build log {0}'.format(log_name), file=sys.stderr)
+    print('Failed to find build log', log_name, file=sys.stderr)
     return False
 
   if dest_log.exists():

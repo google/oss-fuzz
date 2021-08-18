@@ -1,8 +1,6 @@
 homepage: "https://github.com/gabime/spdlog"
 language: c++
 primary_contact: "gmelman1@gmail.com"
-auto_ccs:
-  - "ouyangyunshu@google.com"
 sanitizers:
   - address
   - memory
