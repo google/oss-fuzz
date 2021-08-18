@@ -148,8 +148,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
                        build_integration_path=build_integration_path),
         self.PROJECT_LANGUAGE)
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
-                                 build_integration_path,
-                                 self.PROJECT_LANGUAGE)
+                                 build_integration_path, self.PROJECT_LANGUAGE)
 
   def test_generate_swift_project(self):
     """Tests that the swift project uses the correct base image."""
