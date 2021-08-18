@@ -18,6 +18,8 @@ This will consist of the following functional test:
   2. Determine if an OSS-Fuzz project main repo can be detected from a
   repo name.
 """
+# TODO(asraa): When base-builder-new is renamed to base-builder, rename this test
+# back to detect_repo_test.py
 import os
 import re
 import sys
@@ -30,9 +32,8 @@ import detect_repo
 # Appending to path for access to repo_manager module.
 # pylint: disable=wrong-import-position
 sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))))
 import repo_manager
 import test_repos
 # pylint: enable=wrong-import-position
@@ -106,9 +107,9 @@ class DetectRepoIntegrationTest(unittest.TestCase):
     else:
       command += ['--repo_name', repo_name]
 
-    out, _ = detect_repo.execute(
-        command,
-        location=os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    out, _ = detect_repo.execute(command,
+                                 location=os.path.dirname(
+                                     os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
