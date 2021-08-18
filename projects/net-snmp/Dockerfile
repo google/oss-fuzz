@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pkg-config make autoconf libtool libssl-dev libnl-genl-3-dev libnl-3-dev libnl-route-3-dev
+RUN apt-get update && apt-get install -y pkg-config make autoconf libtool libssl-dev libnl-genl-3-dev libnl-3-dev libnl-route-3-dev pkg-config
 RUN git clone https://github.com/net-snmp/net-snmp net-snmp
 WORKDIR net-snmp
 COPY build.sh $SRC/
