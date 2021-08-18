@@ -230,6 +230,9 @@ extern "C" int InitializeNginx(void) {
   ngx_event_actions.init = init_event;
   ngx_io.send_chain = send_chain;
   ngx_event_flags = 1;
+  ngx_queue_init(&ngx_posted_accept_events);
+  ngx_queue_init(&ngx_posted_next_events);
+  ngx_queue_init(&ngx_posted_events);
   ngx_event_timer_init(cycle->log);
   return 0;
 }
