@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kyprizel@gmail.com
 
 RUN apt-get update -y \
     && env DEBIAN_FRONTEND=noninteractive \
@@ -24,7 +23,7 @@ RUN apt-get update -y \
             wget \
             curl \
             ccache \
-	    expect \
+	        expect \
             ninja-build \
             perl \
             pkg-config \
@@ -36,14 +35,11 @@ RUN apt-get update -y \
             tzdata
 
 
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.sh; \
-    chmod +x cmake-3.17.2-Linux-x86_64.sh; \
-    ./cmake-3.17.2-Linux-x86_64.sh --skip-license --prefix="/usr"
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.21.1/cmake-3.21.1-Linux-x86_64.sh; \
+    chmod +x cmake-3.21.1-Linux-x86_64.sh; \
+    ./cmake-3.21.1-Linux-x86_64.sh --skip-license --prefix="/usr"
 
-RUN git clone --recursive https://github.com/ClickHouse/ClickHouse ClickHouse
-WORKDIR ClickHouse
-
-RUN sed -i s/'else ()'/'elseif (SANITIZE STREQUAL "coverage")\n    else ()'/ cmake/sanitize.cmake
-RUN sed -i -e 's/add_warning(/no_warning(/g' src/CMakeLists.txt
+RUN git clone --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
+WORKDIR $SRC/ClickHouse
 
 COPY build.sh $SRC/

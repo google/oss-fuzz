@@ -18,12 +18,59 @@
 mkdir $SRC/ClickHouse/build
 cd $SRC/ClickHouse/build
 
-cmake -GNinja $SRC/ClickHouse -DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DENABLE_TESTS=1 -DENABLE_UTILS=0 \
-        -DENABLE_RAPIDJSON=0 -DENABLE_JEMALLOC=0 -DSANITIZE=$SANITIZER -DENABLE_FUZZING=1 \
-        -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" -DLINKER_NAME=lld-12 -DENABLE_EMBEDDED_COMPILER=0 \
-        -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DENABLE_CLICKHOUSE_ALL=0 -DWITH_COVERAGE=1
+sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 
-NUM_JOBS=$(( ($(nproc || grep -c ^processor /proc/cpuinfo) + 1) / 2 ))
+# It will be hard to maintain any compilation fails (if any) in two repositories.
+# Also ClickHouse won't compile without this.
+# It is very strange, because we have as many warnings as you could imagine.
+sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
+
+# This files contain some errors.
+# It wasn't build in our CI. So, it will be removed soon from upstream.
+# P.S. Sorry for my Bash skills.
+sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
+rm -rf $SRC/ClickHouse/src/Common/examples/YAML_fuzzer.cpp
+
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+
+rm -rf $SRC/ClickHouse/src/Parsers/examples/lexer_fuzzer.cpp
+rm -rf $SRC/ClickHouse/src/Parsers/examples/create_parser_fuzzer.cpp
+rm -rf $SRC/ClickHouse/src/Parsers/examples/select_parser_fuzzer.cpp
+
+
+# Turn off all libraries, but turn on only necessary
+cmake -G Ninja $SRC/ClickHouse \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache \
+        -DCMAKE_C_COMPILER=$CC \
+        -DCMAKE_CXX_COMPILER=$CXX \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DSANITIZE=$SANITIZER \
+        -DENABLE_THINLTO=0  \
+        -DENABLE_TESTS=0 \
+        -DENABLE_EXAMPLES=1 \
+        -DENABLE_UTILS=0 \
+        -DENABLE_JEMALLOC=0 \
+        -DENABLE_FUZZING=1 \
+        -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
+        -DENABLE_EMBEDDED_COMPILER=0 \
+        -DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF \
+        -DENABLE_LIBRARIES=0 \
+        -DUSE_YAML_CPP=1
+
+NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
 
 ninja -j $NUM_JOBS
 
