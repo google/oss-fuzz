@@ -39,6 +39,8 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-image',
     'gcr.io/oss-fuzz-base/base-clang',
     'gcr.io/oss-fuzz-base/base-builder',
+    'gcr.io/oss-fuzz-base/base-builder-new',
+    'gcr.io/oss-fuzz-base/base-builder-swift',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
     'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
@@ -55,6 +57,7 @@ CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
     'libFuzzer/{fuzz_target}/')
 
+LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
@@ -212,6 +215,11 @@ def get_parser():  # pylint: disable=too-many-statements
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
+  generate_parser.add_argument(
+      '--language',
+      default=constants.DEFAULT_LANGUAGE,
+      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python'],
+      help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
@@ -1011,6 +1019,14 @@ def _validate_project_name(project_name):
   return True
 
 
+def _validate_language(language):
+  if not LANGUAGE_REGEX.match(language):
+    logging.error('Invalid project language %s.', language)
+    return False
+
+  return True
+
+
 def _create_build_integration_directory(directory):
   """Returns True on successful creation of a build integration directory.
   Suitable for OSS-Fuzz and external projects."""
@@ -1038,7 +1054,7 @@ def _template_project_file(filename, template, template_args, directory):
 
 def generate(args):
   """Generates empty project files."""
-  return _generate_impl(args.project)
+  return _generate_impl(args.project, args.language)
 
 
 def _get_current_datetime():
@@ -1046,7 +1062,12 @@ def _get_current_datetime():
   return datetime.datetime.now()
 
 
-def _generate_impl(project):
+def _base_builder_from_language(language):
+  """Returns the base builder for the specified language."""
+  return 'base-builder' if language != 'swift' else 'base-builder-swift'
+
+
+def _generate_impl(project, language):
   """Implementation of generate(). Useful for testing."""
   if project.is_external:
     # External project.
@@ -1057,6 +1078,9 @@ def _generate_impl(project):
       return False
     project_templates = templates.TEMPLATES
 
+  if not _validate_language(language):
+    return False
+
   directory = project.build_integration_path
   if not _create_build_integration_directory(directory):
     return False
@@ -1065,6 +1089,8 @@ def _generate_impl(project):
 
   template_args = {
       'project_name': project.name,
+      'base_builder': _base_builder_from_language(language),
+      'language': language,
       'year': _get_current_datetime().year
   }
   for filename, template in project_templates.items():

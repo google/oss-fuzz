@@ -215,6 +215,7 @@ def build_base_images():
   images = [
       'base-image',
       'base-builder',
+      'base-builder-new',
       'base-runner',
   ]
   for image in images:

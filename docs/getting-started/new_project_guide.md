@@ -63,7 +63,8 @@ by running the following commands:
 ```bash
 $ cd /path/to/oss-fuzz
 $ export PROJECT_NAME=<project_name>
-$ python infra/helper.py generate $PROJECT_NAME
+$ export LANGUAGE=<project_language>
+$ python infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
 ```
 
 Once the template configuration files are created, you can modify them to fit your project.

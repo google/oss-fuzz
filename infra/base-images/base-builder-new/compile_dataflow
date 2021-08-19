@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+export LIB_FUZZING_ENGINE="/usr/lib/DataFlow*.o"
+echo -n "Compiling DataFlow to $LIB_FUZZING_ENGINE... "
+mkdir -p $WORK/libfuzzer
+pushd $WORK/libfuzzer > /dev/null
 
-# specific swift-nio
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN git clone --depth 1 https://github.com/apple/swift-nio.git
-COPY build.sh $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/swift-nio
+$CXX $CXXFLAGS -fno-sanitize=all $SANITIZER_FLAGS -std=c++11 -O2 -c \
+    $SRC/libfuzzer/dataflow/DataFlow.cpp
+$CXX $CXXFLAGS -fno-sanitize=all -fPIC -std=c++11 -O2 -c \
+    $SRC/libfuzzer/dataflow/DataFlowCallbacks.cpp
+
+cp $WORK/libfuzzer/DataFlow*.o /usr/lib/
+
+popd > /dev/null
+rm -rf $WORK/libfuzzer
+echo " done."

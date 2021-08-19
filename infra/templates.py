@@ -17,7 +17,7 @@
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
-language: <programming_language>  # Example values: c, c++, go, rust.
+language: %(language)s"
 primary_contact: "<primary_contact_email>"
 main_repo: "https://path/to/main/repo.git"
 """
@@ -39,7 +39,7 @@ DOCKER_TEMPLATE = """\
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/%(base_builder)s
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
 WORKDIR %(project_name)s
@@ -47,7 +47,7 @@ COPY build.sh $SRC/
 """
 
 EXTERNAL_DOCKER_TEMPLATE = """\
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/%(base_builder)s
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN COPY . $SRC/%(project_name)s
 WORKDIR %(project_name)s

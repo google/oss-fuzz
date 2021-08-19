@@ -1,0 +1,184 @@
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+echo "---------------------------------------------------------------"
+
+if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
+  echo "ERROR: 'dataflow' sanitizer can be used with 'dataflow' engine only."
+  exit 1
+fi
+
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: JVM projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: Python projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
+if [ -z "${SANITIZER_FLAGS-}" ]; then
+  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
+  export SANITIZER_FLAGS=${!FLAGS_VAR-}
+fi
+
+if [[ $ARCHITECTURE == "i386" ]]; then
+    export CFLAGS="-m32 $CFLAGS"
+    cp -R /usr/i386/lib/* /usr/lib
+fi
+# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
+  # compile script might override environment, use . to call it.
+  . compile_${FUZZING_ENGINE}
+fi
+
+if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
+then
+  # Take all libraries from lib/msan and MSAN_LIBS_PATH
+  # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
+  cp -R /usr/msan/lib/* /usr/lib/
+
+  if [[ -z "${MSAN_LIBS_PATH-}" ]]; then
+    echo 'WARNING: Building without MSan instrumented libraries.'
+  else
+    # Copy all static libraries only. Don't include .so files because they can
+    # break non MSan compiled programs.
+    (cd "$MSAN_LIBS_PATH" && find . -name '*.a' -exec cp --parents '{}' / ';')
+  fi
+fi
+
+# Coverage flag overrides.
+COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_${SANITIZER}"
+if [[ -n ${!COVERAGE_FLAGS_VAR+x} ]]
+then
+  export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
+fi
+
+ # Don't need coverage instrumentation for engine-less, afl++ builds.
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ]; then
+  export COVERAGE_FLAGS=
+fi
+
+# Rust does not support sanitizers and coverage flags via CFLAGS/CXXFLAGS, so
+# use RUSTFLAGS.
+# FIXME: Support code coverage once support is in.
+# See https://github.com/rust-lang/rust/issues/34701.
+if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCHITECTURE" != 'i386' ]; then
+  export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
+else
+  export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
+fi
+if [ "$SANITIZER" = "coverage" ]
+then
+    # link to C++ from comment in f5098035eb1a14aa966c8651d88ea3d64323823d
+    export RUSTFLAGS="$RUSTFLAGS -Zinstrument-coverage -C link-arg=-lc++"
+fi
+
+# Add Rust libfuzzer flags.
+# See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
+export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
+export CUSTOM_LIBFUZZER_STD_CXX=c++
+
+export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  sanitizer_with_fuzzer_lib_dir=`python3 -c "import atheris; import os; print(os.path.dirname(atheris.path()))"`
+  sanitizer_with_fuzzer_output_lib=$OUT/sanitizer_with_fuzzer.so
+  if [ "$SANITIZER" = "address" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/asan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/ubsan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  fi
+
+  # Disable leak checking as it is unsupported.
+  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
+fi
+
+# Copy latest llvm-symbolizer in $OUT for stack symbolization.
+cp $(which llvm-symbolizer) $OUT/
+
+# Copy Jazzer to $OUT if needed.
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
+  jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
+  if [ "$SANITIZER" = "address" ]; then
+    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
+  elif [ "$SANITIZER" = "coverage" ]; then
+    # Coverage builds require no instrumentation.
+    cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
+  fi
+fi
+
+echo "---------------------------------------------------------------"
+echo "CC=$CC"
+echo "CXX=$CXX"
+echo "CFLAGS=$CFLAGS"
+echo "CXXFLAGS=$CXXFLAGS"
+echo "RUSTFLAGS=$RUSTFLAGS"
+echo "---------------------------------------------------------------"
+
+BUILD_CMD="bash -eux $SRC/build.sh"
+
+# We need to preserve source code files for generating a code coverage report.
+# We need exact files that were compiled, so copy both $SRC and $WORK dirs.
+COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $OUT"
+
+if [ "${BUILD_UID-0}" -ne "0" ]; then
+  adduser -u $BUILD_UID --disabled-password --gecos '' builder
+  chown -R builder $SRC $OUT $WORK
+  su -c "$BUILD_CMD" builder
+  if [ "$SANITIZER" = "coverage" ]; then
+    # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
+    su -c "$COPY_SOURCES_CMD" builder 2>/dev/null || true
+  fi
+else
+  $BUILD_CMD
+  if [ "$SANITIZER" = "coverage" ]; then
+    # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
+    $COPY_SOURCES_CMD 2>/dev/null || true
+  fi
+fi
+
+if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
+  # Remove seed corpus as it can be huge but is not needed for a dataflow build.
+  rm -f $OUT/*.zip
+fi

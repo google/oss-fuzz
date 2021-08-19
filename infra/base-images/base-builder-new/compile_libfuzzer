@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
-
-# specific swift-nio
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN git clone --depth 1 https://github.com/apple/swift-nio.git
-COPY build.sh $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/swift-nio
+echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
+export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
+cp /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-$ARCHITECTURE.a \
+  $LIB_FUZZING_ENGINE_DEPRECATED
+echo " done."
