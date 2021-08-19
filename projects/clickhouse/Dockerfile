@@ -23,7 +23,8 @@ RUN apt-get update -y \
             bash \
             wget \
             curl \
-            expect \
+            ccache \
+	    expect \
             ninja-build \
             perl \
             pkg-config \
