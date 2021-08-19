@@ -1,8 +1,8 @@
 homepage: "https://www.tensorflow.org"
 language: python
-primary_contact: "amitpatankar@google.com"
+primary_contact: "mihaimaruseacgoogle.com"
 auto_ccs:
- - "mihaimaruseac@google.com"
+ - "lpak@google.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
