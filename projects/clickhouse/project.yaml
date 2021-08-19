@@ -7,8 +7,8 @@ auto_ccs:
  - "jakalletti@yandex-team.com"
  - "jakalletti@gmail.com"
 sanitizers:
-  - address
-  - memory
+ - address
+ - memory:
     experimental: True
-  - undefined
+ - undefined
 main_repo: 'https://github.com/ClickHouse/ClickHouse.git'
