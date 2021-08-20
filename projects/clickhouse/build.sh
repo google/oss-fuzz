@@ -54,24 +54,30 @@ unset CFLAGS
 unset CXXFLAGS_EXTRA
 unset CXXFLAGS
 
-# Turn off all libraries, but turn on only necessary
-cmake -G Ninja $SRC/ClickHouse \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache \
-        -DCMAKE_C_COMPILER=$CC \
-        -DCMAKE_CXX_COMPILER=$CXX \
-        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-        -DSANITIZE=$SANITIZER \
-        -DENABLE_THINLTO=0  \
-        -DENABLE_TESTS=0 \
-        -DENABLE_EXAMPLES=1 \
-        -DENABLE_UTILS=0 \
-        -DENABLE_JEMALLOC=0 \
-        -DENABLE_FUZZING=1 \
-        -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
-        -DENABLE_EMBEDDED_COMPILER=0 \
-        -DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF \
-        -DENABLE_LIBRARIES=0 \
-        -DUSE_YAML_CPP=1
+CLICKHOUSE_CMAKE_FLAGS=(
+    "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
+    "-DCMAKE_C_COMPILER=$CC"
+    "-DCMAKE_CXX_COMPILER=$CXX"
+    "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+    "-DENABLE_EMBEDDED_COMPILER=0"
+    "-DENABLE_THINLTO=0"
+    "-DENABLE_TESTS=0"
+    "-DENABLE_EXAMPLES=1"
+    "-DENABLE_UTILS=0"
+    "-DENABLE_JEMALLOC=0"
+    "-DENABLE_FUZZING=1"
+    "-DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF"
+    "-DENABLE_LIBRARIES=1"
+    "-DENABLE_SSL=1"
+    "-DUSE_INTERNAL_SSL_LIBRARY=1"
+    "-DUSE_UNWIND=ON"
+)
+
+if [ "$SANITIZER" = "coverage" ]; then
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
+else
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
+fi
 
 NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
 
