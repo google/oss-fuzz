@@ -29,8 +29,10 @@ $CC $CFLAGS -Wno-unused-function -U__STRICT_ANSI__  \
 	-I./deps/asprintf
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
-	-o $OUT/fuzz_manifest src/common/clib-package.c \
+	-o $OUT/fuzz_manifest src/common/clib-settings.c src/common/clib-package.c \
 	src/common/clib-cache.c src/clib-configure.c \
 	-I./deps/asprintf -I./deps -I./asprintf \
 	fuzz_lib.a -L/usr/lib/x86_64-linux-gnu -lcurl
 
+echo "[libfuzzer]" > $OUT/fuzz_manifest.options
+echo "detect_leaks=0" >> $OUT/fuzz_manifest.options
