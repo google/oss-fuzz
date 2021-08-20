@@ -29,6 +29,7 @@ export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 cd $SRC
 bzip2 -f -d alsa-lib-*
 tar xf alsa-lib-*
+rm alsa-lib-*.tar
 cd alsa-lib-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
 make clean
