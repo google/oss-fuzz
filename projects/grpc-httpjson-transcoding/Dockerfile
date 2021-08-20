@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER nareddyt@google.com
 
+RUN apt-get update && apt-get install python -y
 RUN git clone https://github.com/grpc-ecosystem/grpc-httpjson-transcoding.git
 WORKDIR $SRC/grpc-httpjson-transcoding/
 COPY build.sh $SRC/

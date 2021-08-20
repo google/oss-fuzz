@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install python -y
 RUN git clone --depth 1 https://github.com/protocolbuffers/upb.git upb
 WORKDIR upb
 COPY build.sh $SRC/
