@@ -767,16 +767,16 @@ def _get_fuzz_targets(project):
   return fuzz_targets
 
 
-def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
+def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   """Downloads the latest corpus for the given fuzz target."""
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
-  if not fuzz_target.startswith(project_name + '_'):
-    fuzz_target = '%s_%s' % (project_name, fuzz_target)
+  if not fuzz_target.startswith(project.name + '_'):
+    fuzz_target = '%s_%s' % (project.name, fuzz_target)
 
-  corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project_name,
+  corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project.name,
                                                       fuzz_target=fuzz_target)
   command = ['gsutil', 'ls', corpus_backup_url]
 
@@ -801,7 +801,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     os.remove(archive_path)
   else:
     # Sync the working corpus copy if a minimized backup is not available.
-    corpus_url = CORPUS_URL_FORMAT.format(project_name=project_name,
+    corpus_url = CORPUS_URL_FORMAT.format(project_name=project.name,
                                           fuzz_target=fuzz_target)
     command = ['gsutil', '-m', '-q', 'rsync', '-R', corpus_url, corpus_dir]
     subprocess.check_call(command)
