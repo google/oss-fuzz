@@ -24,3 +24,8 @@ cargo fuzz build -O
 cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_client $OUT/
 cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_e2e $OUT/
 cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_hpack $OUT/
+
+for fuzz_name in fuzz_e2e fuzz_client; do
+	echo "[libfuzzer]" > $OUT/${fuzz_name}.options
+	echo "detect_leaks=0" >> $OUT/${fuzz_name}.options
+done
