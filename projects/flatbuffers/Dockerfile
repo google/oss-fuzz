@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake ninja
+RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/google/flatbuffers
 
 WORKDIR $SRC/
