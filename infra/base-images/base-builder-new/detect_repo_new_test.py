@@ -18,8 +18,8 @@ This will consist of the following functional test:
   2. Determine if an OSS-Fuzz project main repo can be detected from a
   repo name.
 """
-# TODO(asraa): When base-builder-new is renamed to base-builder, rename this test
-# back to detect_repo_test.py
+# TODO(asraa): When base-builder-new is renamed to base-builder, rename this
+# test back to detect_repo_test.py
 import os
 import re
 import sys

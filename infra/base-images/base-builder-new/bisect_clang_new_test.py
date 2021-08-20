@@ -14,8 +14,8 @@
 #
 ################################################################################
 """Tests for bisect_clang.py"""
-# TODO(asraa): When base-builder-new is renamed to base-builder, rename this test
-# back to bisect_clang_test.py
+# TODO(asraa): When base-builder-new is renamed to base-builder, rename this
+# test back to bisect_clang_test.py
 import os
 from unittest import mock
 import unittest
