@@ -67,7 +67,7 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DENABLE_JEMALLOC=0"
     "-DENABLE_FUZZING=1"
     "-DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF"
-    "-DENABLE_LIBRARIES=1"
+    "-DENABLE_LIBRARIES=0"
     "-DENABLE_SSL=1"
     "-DUSE_INTERNAL_SSL_LIBRARY=1"
     "-DUSE_UNWIND=ON"
@@ -81,7 +81,9 @@ fi
 
 NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
 
-ninja -j $NUM_JOBS
+TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
+
+ninja -j $NUM_JOBS $TARGETS
 
 # copy out fuzzer binaries
 find $SRC/ClickHouse/build -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
