@@ -122,9 +122,11 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 
 [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) ("memory") is also supported
 and recommended, but is not enabled by default due to the likelihood of false positives from
-un-instrumented system dependencies. If you want to use "memory," first make sure your project's
-runtime dependencies are listed in the OSS-Fuzz
-[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+un-instrumented system dependencies.
+If you want to use "memory," please build all libraries your project needs using
+MemorySanitizer.
+This can be done by building them with the compiler flags provided during
+MemorySanitizer builds.
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -369,9 +371,8 @@ information on code coverage generation.
 
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
-configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
-that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+configurations by default.
+MemorySanitizer is recommended, but needs to be enabled manually since you must build all runtime dependencies with MemorySanitizer.
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
