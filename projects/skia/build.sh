@@ -91,8 +91,8 @@ SKIA_ARGS="skia_build_fuzzers=true
 $SRC/skia/bin/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      '$LIMITED_LINK_POOL'
-      '$SKIA_ARGS'
+      '"$LIMITED_LINK_POOL"'
+      '"${SKIA_ARGS[*]}"'
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
@@ -104,11 +104,11 @@ $SRC/skia/bin/gn gen out/Fuzz\
 $SRC/skia/bin/gn gen out/FuzzDebug\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      '$LIMITED_LINK_POOL'
-      '$SKIA_ARGS'
+      '"$LIMITED_LINK_POOL"'
+      '"${SKIA_ARGS[*]}"'
       is_debug=false
-      extra_cflags_c=["-DSK_DEBUG,'"$CFLAGS_ARR"'"]
-      extra_cflags_cc=["-DSK_DEBUG,'"$CXXFLAGS_ARR"'"]
+      extra_cflags_c=["-DSK_DEBUG","'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/depot_tools/ninja -C out/Fuzz \
