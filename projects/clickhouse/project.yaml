@@ -12,3 +12,4 @@ sanitizers:
     experimental: True
  - undefined
 main_repo: 'https://github.com/ClickHouse/ClickHouse.git'
+disabled: True
