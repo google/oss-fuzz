@@ -371,7 +371,7 @@ information on code coverage generation.
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations by default.
-MemorySanitizer is recommended, but needs to be enabled manually since you must build all libraries with MemorySanitizer.
+MemorySanitizer is recommended, but needs to be enabled manually since you must build all runtime dependencies with MemorySanitizer.
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
