@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
 # * https://github.com/bitcoin/bitcoin/blob/master/depends/README.md#for-linux-including-i386-arm-cross-compilation
 RUN apt-get update && apt-get install -y \
-  build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 \
+  build-essential libtool autotools-dev automake pkg-config bsdmainutils python python3 \
   make automake cmake curl g++-multilib libtool binutils-gold bsdmainutils pkg-config patch bison \
   wget zip
 

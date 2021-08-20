@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER nareddyt@google.com
 
+RUN apt-get update && apt-get install python -y
 RUN git clone https://github.com/google/http_pattern_matcher.git
 WORKDIR $SRC/http_pattern_matcher/
 COPY build.sh $SRC/
