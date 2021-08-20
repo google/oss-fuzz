@@ -50,6 +50,9 @@ rm -rf $SRC/ClickHouse/src/Parsers/examples/lexer_fuzzer.cpp
 rm -rf $SRC/ClickHouse/src/Parsers/examples/create_parser_fuzzer.cpp
 rm -rf $SRC/ClickHouse/src/Parsers/examples/select_parser_fuzzer.cpp
 
+unset CFLAGS
+unset CXXFLAGS_EXTRA
+unset CXXFLAGS
 
 # Turn off all libraries, but turn on only necessary
 cmake -G Ninja $SRC/ClickHouse \
