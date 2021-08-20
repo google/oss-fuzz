@@ -15,13 +15,18 @@
 #
 ################################################################################
 
+ln -snf /usr/lib/libcrypto.a  /usr/lib/x86_64-linux-gnu/libcrypto.a
+ln -snf /usr/lib/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto.so
+
 BUILD=$WORK/build
 mkdir -p $BUILD
 pushd $BUILD
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DBUILD_SHARED_LIBS=OFF -DWITH_INSECURE_NONE=ON $SRC/libssh
+echo "once"
 make "-j$(nproc)"
+echo "dos"
 
 fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.cpp")
 for f in $fuzzers; do
