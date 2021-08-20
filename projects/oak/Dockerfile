@@ -20,6 +20,7 @@ RUN apt-get --yes update \
    && apt-get install --no-install-recommends --yes \
    libssl-dev \
    pkg-config \
+   python \
    && apt-get clean \
    && rm --recursive --force /var/lib/apt/lists/*
 
