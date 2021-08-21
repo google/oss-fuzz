@@ -50,15 +50,16 @@ rm -rf $SRC/ClickHouse/src/Parsers/examples/lexer_fuzzer.cpp
 rm -rf $SRC/ClickHouse/src/Parsers/examples/create_parser_fuzzer.cpp
 rm -rf $SRC/ClickHouse/src/Parsers/examples/select_parser_fuzzer.cpp
 
-unset CFLAGS
-unset CXXFLAGS_EXTRA
-unset CXXFLAGS
+# ClickHouse uses libcxx from contrib.
+# Enabling this manually will cause duplicate symbols at linker stage.
+CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
 
 CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
     "-DCMAKE_C_COMPILER=$CC"
     "-DCMAKE_CXX_COMPILER=$CXX"
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+    "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
     "-DENABLE_EMBEDDED_COMPILER=0"
     "-DENABLE_THINLTO=0"
     "-DENABLE_TESTS=0"
@@ -74,14 +75,17 @@ CLICKHOUSE_CMAKE_FLAGS=(
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DWITH_COVERAGE=1
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DSANITIZE=$SANITIZER
 fi
 
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
+NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) + 2))
 
 TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
+
+# Disabling one of the fuzzer, because each resulting binary is overbig
+TARGETS=${TARGETS//mergetree_checksum_fuzzer/}
 
 ninja -j $NUM_JOBS $TARGETS
 
@@ -118,5 +122,4 @@ if [ "$SANITIZER" = "coverage" ]; then
     cp -rL --parents $SRC/ClickHouse/src $OUT
     cp -rL --parents $SRC/ClickHouse/base $OUT
     cp -rL --parents $SRC/ClickHouse/programs $OUT
-    cp -rL --parents $SRC/ClickHouse/contrib $OUT
 fi
