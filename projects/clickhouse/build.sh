@@ -25,31 +25,6 @@ sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 # It is very strange, because we have as many warnings as you could imagine.
 sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 
-# This files contain some errors.
-# It wasn't build in our CI. So, it will be removed soon from upstream.
-# P.S. Sorry for my Bash skills.
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-rm -rf $SRC/ClickHouse/src/Common/examples/YAML_fuzzer.cpp
-
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-
-rm -rf $SRC/ClickHouse/src/Parsers/examples/lexer_fuzzer.cpp
-rm -rf $SRC/ClickHouse/src/Parsers/examples/create_parser_fuzzer.cpp
-rm -rf $SRC/ClickHouse/src/Parsers/examples/select_parser_fuzzer.cpp
-
 # ClickHouse uses libcxx from contrib.
 # Enabling this manually will cause duplicate symbols at linker stage.
 CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
@@ -63,7 +38,7 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DENABLE_EMBEDDED_COMPILER=0"
     "-DENABLE_THINLTO=0"
     "-DENABLE_TESTS=0"
-    "-DENABLE_EXAMPLES=1"
+    "-DENABLE_EXAMPLES=0"
     "-DENABLE_UTILS=0"
     "-DENABLE_JEMALLOC=0"
     "-DENABLE_FUZZING=1"
@@ -80,14 +55,17 @@ else
     cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DSANITIZE=$SANITIZER
 fi
 
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) + 2))
+NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
 
 TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
 
-# Disabling one of the fuzzer, because each resulting binary is overbig
-TARGETS=${TARGETS//mergetree_checksum_fuzzer/}
-
-ninja -j $NUM_JOBS $TARGETS
+for FUZZER_TARGET in $TARGETS
+do
+    ninja -j $NUM_JOBS $FUZZER_TARGET
+    # Find this binary in build directory and strip it
+    TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
+    find $SRC/ClickHouse/build -name $FUZZER_TARGET -exec strip --strip-unneeded  '{}' ';'
+done
 
 # copy out fuzzer binaries
 find $SRC/ClickHouse/build -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
