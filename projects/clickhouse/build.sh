@@ -64,7 +64,7 @@ do
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
-    find $SRC/ClickHouse/build -name $FUZZER_TARGET -exec strip --strip-unneeded  '{}' ';'
+    strip --strip-unneeded $TEMP
 done
 
 # copy out fuzzer binaries
