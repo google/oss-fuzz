@@ -101,3 +101,6 @@ if [ "$SANITIZER" = "coverage" ]; then
     cp -rL --parents $SRC/ClickHouse/base $OUT
     cp -rL --parents $SRC/ClickHouse/programs $OUT
 fi
+
+# Just check binaries size
+BINARIES_SIZE=$(find $SRC/ClickHouse/build -name '*_fuzzer' -exec du -sh '{}' ';')
