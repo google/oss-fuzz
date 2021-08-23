@@ -39,7 +39,7 @@ DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD=0
 MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD=1000
 # Some engines (e.g. honggfuzz) may make a very small number of calls to msan
 # for memory poisoning.
-MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=2
+MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=3
 
 # Usually, a non UBSan build (e.g. ASan) has 165 calls to UBSan runtime. The
 # majority of targets built with UBSan have 200+ UBSan calls, but there are
