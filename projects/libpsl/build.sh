@@ -33,6 +33,10 @@ CPPFLAGS="$CPPFLAGS -fno-sanitize=vptr" \
   --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
 # ugly hack to avoid build error
 echo '#include <locale.h>' >>i18n/digitlst.h
+
+# Hack so that upgrade to Ubuntu 20.04 works.
+ln -s /usr/include/locale.h /usr/include/xlocale.h
+
 make -j
 make install
 
