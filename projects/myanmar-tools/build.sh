@@ -33,7 +33,7 @@ cp libmyanmartools.so $OUT/lib
 # Copy libunwind since it isn't on the ClusterFuzz bot images.
 cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
 $CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
-    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools \
+    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools -lunwind \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
     $LIB_FUZZING_ENGINE
