@@ -15,7 +15,6 @@
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
 
-import datetime
 import logging
 
 import google.auth
@@ -34,7 +33,6 @@ BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 
 BASE_SANITIZER_LIBS_IMAGE = TAG_PREFIX + 'base-sanitizer-libs-builder'
-MSAN_LIBS_IMAGE = TAG_PREFIX + 'msan-libs-builder'
 
 
 def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
@@ -98,45 +96,5 @@ def base_builder(event, context):
   tag_prefix = f'gcr.io/{BASE_PROJECT}/'
   steps = _get_base_image_steps(BASE_IMAGES, tag_prefix)
   images = [tag_prefix + base_image for base_image in BASE_IMAGES]
-
-  run_build(steps, images)
-
-
-def _get_msan_steps(image):
-  """Get build steps for msan-libs-builder."""
-  timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
-  upload_name = 'msan-libs-' + timestamp + '.zip'
-
-  steps = _get_base_image_steps([
-      'base-sanitizer-libs-builder',
-      'msan-libs-builder',
-  ])
-  steps.extend([{
-      'name': image,
-      'args': [
-          'bash',
-          '-c',
-          'cd /msan && zip -r /workspace/libs.zip .',
-      ],
-  }, {
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          'cp',
-          '/workspace/libs.zip',
-          'gs://oss-fuzz-msan-libs/' + upload_name,
-      ],
-  }])
-  return steps
-
-
-def base_msan_builder(event, context):
-  """Cloud function to build base images."""
-  del event, context
-  steps = _get_msan_steps(MSAN_LIBS_IMAGE)
-  images = [
-      BASE_SANITIZER_LIBS_IMAGE,
-      MSAN_LIBS_IMAGE,
-  ]
 
   run_build(steps, images)
