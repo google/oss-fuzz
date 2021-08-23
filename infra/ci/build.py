@@ -216,6 +216,7 @@ def build_base_images():
       'base-image',
       'base-builder',
       'base-builder-new',
+      'base-builder-swift',
       'base-runner',
   ]
   for image in images:
