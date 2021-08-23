@@ -19,7 +19,7 @@ autoreconf -i
 ./configure --enable-static
 make V=1 all
 
-$CXX $CXXFLAGS -std=c++11 -Isrc/ \
+$CXX $CXXFLAGS -std=c++11 -llzma -lz -Isrc/ \
      $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
      $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a
 
