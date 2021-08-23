@@ -14,7 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev
+RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool
 RUN pip3 install -U meson==0.55.3 ninja
 
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
