@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+FROM gcr.io/oss-fuzz-base/base-builder-swift@sha256:3bef65cbf0f8b17c27a7bfc55c613b4409c5a452d2770690c234ab807b0d05d7
 
 RUN git clone --depth 1 https://github.com/apple/swift-protobuf.git
 COPY build.sh $SRC
