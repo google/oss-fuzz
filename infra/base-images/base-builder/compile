@@ -67,21 +67,6 @@ if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
   . compile_${FUZZING_ENGINE}
 fi
 
-if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
-then
-  # Take all libraries from lib/msan and MSAN_LIBS_PATH
-  # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
-  cp -R /usr/msan/lib/* /usr/lib/
-
-  if [[ -z "${MSAN_LIBS_PATH-}" ]]; then
-    echo 'WARNING: Building without MSan instrumented libraries.'
-  else
-    # Copy all static libraries only. Don't include .so files because they can
-    # break non MSan compiled programs.
-    (cd "$MSAN_LIBS_PATH" && find . -name '*.a' -exec cp --parents '{}' / ';')
-  fi
-fi
-
 # Coverage flag overrides.
 COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_${SANITIZER}"
 if [[ -n ${!COVERAGE_FLAGS_VAR+x} ]]
