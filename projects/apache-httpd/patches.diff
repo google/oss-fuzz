@@ -1,0 +1,30 @@
+diff --git a/server/apreq_parser_header.c b/server/apreq_parser_header.c
+index 19588befd8..d359d7f4ea 100644
+--- a/server/apreq_parser_header.c
++++ b/server/apreq_parser_header.c
+@@ -89,6 +89,8 @@ static apr_status_t split_header_line(apreq_param_t **p,
+         if (s != APR_SUCCESS)
+             return s;
+ 
++	if (!(nlen >= len))
++		return APR_EBADARG;
+         assert(nlen >= len);
+         end->iov_len = len;
+         nlen -= len;
+@@ -103,6 +105,8 @@ static apr_status_t split_header_line(apreq_param_t **p,
+         if (s != APR_SUCCESS)
+             return s;
+ 
++	if (!(glen >= dlen))
++		return APR_EBADARG;
+         assert(glen >= dlen);
+         glen -= dlen;
+         e = APR_BUCKET_NEXT(e);
+@@ -119,6 +123,7 @@ static apr_status_t split_header_line(apreq_param_t **p,
+ 
+         memcpy(dest, data, dlen);
+         dest += dlen;
++	if (!(vlen >= dlen)) return APR_EBADARG;
+         assert(vlen >= dlen);
+         vlen -= dlen;
+         e = APR_BUCKET_NEXT(e);

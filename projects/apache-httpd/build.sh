@@ -18,6 +18,8 @@
 unset CPP
 unset CXX
 
+git apply  --ignore-space-change --ignore-whitespace $SRC/patches.diff
+
 # Download apr and place in httpd srclib folder. Apr-2.0 includes apr-utils
 svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 
@@ -27,7 +29,7 @@ svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 make
 
 # Build the fuzzers
-for fuzzname in utils parse tokenize addr_parse uri request; do
+for fuzzname in utils parse tokenize addr_parse uri request preq; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE \
     -I$SRC/fuzz-headers/lang/c -I./include -I./os/unix \
     -I./srclib/apr/include -I./srclib/apr-util/include/ \
@@ -39,5 +41,5 @@ for fuzzname in utils parse tokenize addr_parse uri request; do
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
                       ./srclib/apr/.libs/libapr-2.a \
-    -Wl,--end-group -luuid -lpcre -lcrypt
+    -Wl,--end-group -luuid -lpcre -lcrypt -lexpat
 done
