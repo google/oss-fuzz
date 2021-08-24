@@ -9,6 +9,6 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6180
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*

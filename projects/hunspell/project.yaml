@@ -8,7 +8,7 @@ vendor_ccs:
   - "twsmith@mozilla.com"
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6180
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
   - undefined
 architectures:

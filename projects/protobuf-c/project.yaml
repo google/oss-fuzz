@@ -5,7 +5,7 @@ auto_ccs:
   - "ilya.lipnitskiy@gmail.com"
 sanitizers:
  - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6180
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 architectures:
  - x86_64

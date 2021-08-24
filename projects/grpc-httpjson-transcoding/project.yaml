@@ -16,5 +16,5 @@ fuzzing_engines:
 sanitizers:
 - address
 - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6180
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
