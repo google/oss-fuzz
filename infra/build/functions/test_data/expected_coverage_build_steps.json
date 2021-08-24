@@ -28,7 +28,8 @@
     "env": [
       "OSSFUZZ_REVISION=$REVISION_ID",
       "FUZZING_LANGUAGE=c++"
-    ]
+    ],
+    "id": "srcmap"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
@@ -44,7 +45,8 @@
       "bash",
       "-c",
       "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-coverage-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
-    ]
+    ],
+    "id": "compile-libfuzzer-coverage-x86_64"
   },
   {
     "url": "test_download"

@@ -57,7 +57,7 @@ def get_project_data(project_name):
 
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
-  # !!!
+  # TODO(metzman): Figure out if we need this.
   get_project_data(project_name)
   build_config = build_project.Config(False, False, False, False)
   return build_project.get_build_steps(project_name, image_project,

@@ -222,6 +222,8 @@ def get_compile_step(project, build, env, parallel):
 
 
 def maybe_add_parallel(step, wait_for_id, parallel):
+  """Makes |step| run immediately after |wait_for_id| if |parallel|. Mutates
+  |step|."""
   if not parallel:
     return
   step['waitFor'] = wait_for_id
@@ -240,7 +242,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
 
   try:
     project = Project(project_name, image_project)
-    # !!! what is right way to do this?
   except FileNotFoundError:
     return []
 
@@ -284,8 +285,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Test fuzz targets.
           test_step = {
               'name':
-                  get_runner_image_name(base_images_project,
-                                        config.testing),  # !!!
+                  get_runner_image_name(base_images_project, config.testing),
               'env':
                   env,
               'args': [

@@ -28,6 +28,7 @@ sys.path.append(FUNCTIONS_DIR)
 # pylint: disable=wrong-import-position
 
 import build_and_run_coverage
+import build_project
 import test_utils
 
 # pylint: disable=no-member
@@ -75,8 +76,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_coverage_build_steps = json.load(expected_build_steps_file)
 
+    config = build_project.Config(False, False, None, False)
     build_steps = build_and_run_coverage.get_build_steps(
-        project, image_project, base_images_project)
+        project, image_project, base_images_project, config)
     self.assertEqual(build_steps, expected_coverage_build_steps)
 
 

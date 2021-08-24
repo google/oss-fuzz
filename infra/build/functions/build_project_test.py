@@ -74,8 +74,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_build_steps = json.load(expected_build_steps_file)
 
+    config = build_project.Config(False, False, None, False)
     build_steps = build_project.get_build_steps(project, image_project,
-                                                base_images_project)
+                                                base_images_project, config)
     self.assertEqual(build_steps, expected_build_steps)
 
 
