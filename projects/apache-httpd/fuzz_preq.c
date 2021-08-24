@@ -33,11 +33,12 @@ limitations under the License.
 #include "ap_provider.h"
 #include "ap_regex.h"
 
-#include "apreq_parser.h"
 #include "ada_fuzz_header.h"
+#include "apreq_parser.h"
 
-apr_status_t hookfunc(apreq_hook_t *hook, apreq_param_t *param, apr_bucket_brigade *bb) {
-	return 0;
+apr_status_t hookfunc(apreq_hook_t *hook, apreq_param_t *param,
+                      apr_bucket_brigade *bb) {
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -51,35 +52,33 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *new_str2 = af_gb_get_null_terminated(&data2, &size2);
 
   if (new_str != NULL && new_str2 != NULL) {
-	  apr_pool_initialize();
-	  apr_pool_t *v = NULL;
-	  apr_pool_create(&v, NULL);
+    apr_pool_initialize();
+    apr_pool_t *v = NULL;
+    apr_pool_create(&v, NULL);
 
+    apr_bucket_alloc_t *bucket = apr_bucket_alloc_create(v);
+    apr_bucket_brigade *brigade = apr_brigade_create(v, bucket);
+    apr_brigade_write(brigade, NULL, NULL, new_str, strlen(new_str));
 
-	  apr_bucket_alloc_t *bucket = apr_bucket_alloc_create(v);
-	  apr_bucket_brigade *brigade = apr_brigade_create(v, bucket);
-	  apr_brigade_write(brigade, NULL, NULL, new_str, strlen(new_str));
+    apreq_parser_t parser;
+    parser.content_type = new_str2;
+    parser.temp_dir = "/tmp/";
+    parser.brigade_limit = 10;
+    parser.pool = v;
+    parser.ctx = NULL;
+    parser.bucket_alloc = bucket;
 
-		apreq_parser_t parser;
-		parser.content_type = new_str2;
-		parser.temp_dir = "/tmp/";
-		parser.brigade_limit = 10;
-		parser.pool = v;
-		parser.ctx = NULL;
-		parser.bucket_alloc = bucket;
+    parser.hook = apreq_hook_make(parser.pool, hookfunc, NULL, parser.ctx);
 
-		parser.hook = apreq_hook_make(parser.pool, hookfunc, NULL, parser.ctx);
-
-		apr_table_t *table = apr_table_make(parser.pool, 10);
+    apr_table_t *table = apr_table_make(parser.pool, 10);
     if (af_get_short(&data2, &size2) % 2 == 0) {
-		  apreq_parse_multipart(&parser, table, brigade);
-    } 
-    else {
-		  apreq_parse_urlencoded(&parser, table, brigade);
+      apreq_parse_multipart(&parser, table, brigade);
+    } else {
+      apreq_parse_urlencoded(&parser, table, brigade);
     }
 
-	  apr_pool_terminate();
+    apr_pool_terminate();
   }
-	af_gb_cleanup();
+  af_gb_cleanup();
   return 0;
 }
