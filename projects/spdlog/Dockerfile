@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install --yes cmake
 RUN git clone --depth 1 https://github.com/gabime/spdlog.git
 RUN zip spdlog_fuzzer_seed_corpus.zip spdlog/example/*
 WORKDIR spdlog
