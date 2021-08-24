@@ -14,7 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
+# See https://github.com/google/oss-fuzz/issues/6291 for more details.
+FROM gcr.io/oss-fuzz-base/base-builder:xenial
+# Delete line above and uncomment line below to upgrade to 20.04.
+# FROM gcr.io/oss-fuzz-base/base-builder
 
 # Installing optional libraries can utilize more code path and/or improve
 # performance (avoid calling external programs).
