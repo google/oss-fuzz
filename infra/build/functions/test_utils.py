@@ -26,6 +26,9 @@ DATASTORE_EMULATOR_PORT = 8432
 EMULATOR_TIMEOUT = 20
 TEST_PROJECT_ID = 'test-project'
 
+FUNCTIONS_DIR = os.path.dirname(__file__)
+OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.dirname(FUNCTIONS_DIR)))
+
 
 # pylint: disable=arguments-differ
 class SpoofedDatetime(datetime.datetime):

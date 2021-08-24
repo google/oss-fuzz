@@ -254,10 +254,10 @@ def update_status(event, context):
     return
 
   if status_type == 'fuzzing':
-    tag = build_project.FUZZING_BUILD_TAG
+    tag = build_project.FUZZING_BUILD_TYPE
     status_filename = FUZZING_STATUS_FILENAME
   elif status_type == 'coverage':
-    tag = build_and_run_coverage.COVERAGE_BUILD_TAG
+    tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
     status_filename = COVERAGE_STATUS_FILENAME
   else:
     raise RuntimeError('Invalid build status type ' + status_type)

@@ -14,23 +14,17 @@
 #
 ################################################################################
 """Unit tests for Cloud Function request builds which builds projects."""
-import json
-import datetime
 import os
 import sys
 import unittest
-from unittest import mock
 
 from google.cloud import ndb
 
 sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
-from datastore_entities import BuildsHistory
-from datastore_entities import Project
-from request_build import get_build_steps
-from request_build import get_project_data
-from request_build import update_build_history
+import datastore_entities
+import request_build
 import test_utils
 
 # pylint: disable=no-member
@@ -50,65 +44,40 @@ class TestRequestBuilds(unittest.TestCase):
     test_utils.reset_ds_emulator()
     self.maxDiff = None  # pylint: disable=invalid-name
 
-  @mock.patch('build_lib.get_signed_url', return_value='test_url')
-  @mock.patch('datetime.datetime')
-  def test_get_build_steps(self, mock_url, mock_time):
-    """Test for get_build_steps."""
-    del mock_url, mock_time
-    datetime.datetime = test_utils.SpoofedDatetime
-    project_yaml_contents = ('language: c++\n'
-                             'sanitizers:\n'
-                             '  - address\n'
-                             'architectures:\n'
-                             '  - x86_64\n')
-    image_project = 'oss-fuzz'
-    base_images_project = 'oss-fuzz-base'
-    expected_build_steps_file_path = test_utils.get_test_data_file_path(
-        'expected_build_steps.json')
-
-    with open(expected_build_steps_file_path) as expected_build_steps_file:
-      expected_build_steps = json.load(expected_build_steps_file)
-
-    with ndb.Client().context():
-      Project(name='test-project',
-              project_yaml_contents=project_yaml_contents,
-              dockerfile_contents='test line').put()
-      build_steps = get_build_steps('test-project', image_project,
-                                    base_images_project)
-    self.assertEqual(build_steps, expected_build_steps)
-
   def test_get_build_steps_no_project(self):
     """Test for when project isn't available in datastore."""
     with ndb.Client().context():
-      self.assertRaises(RuntimeError, get_build_steps, 'test-project',
-                        'oss-fuzz', 'oss-fuzz-base')
+      self.assertRaises(RuntimeError, request_build.get_build_steps,
+                        'test-project', 'oss-fuzz', 'oss-fuzz-base')
 
   def test_build_history(self):
     """Testing build history."""
     with ndb.Client().context():
-      BuildsHistory(id='test-project-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project',
-                    build_ids=[str(i) for i in range(1, 65)]).put()
-      update_build_history('test-project', '65', 'fuzzing')
+      datastore_entities.BuildsHistory(id='test-project-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project',
+                                       build_ids=[str(i) for i in range(1, 65)
+                                                 ]).put()
+      request_build.update_build_history('test-project', '65', 'fuzzing')
       expected_build_ids = [str(i) for i in range(2, 66)]
 
-      self.assertEqual(BuildsHistory.query().get().build_ids,
+      self.assertEqual(datastore_entities.BuildsHistory.query().get().build_ids,
                        expected_build_ids)
 
   def test_build_history_no_existing_project(self):
     """Testing build history when build history object is missing."""
     with ndb.Client().context():
-      update_build_history('test-project', '1', 'fuzzing')
+      request_build.update_build_history('test-project', '1', 'fuzzing')
       expected_build_ids = ['1']
 
-      self.assertEqual(BuildsHistory.query().get().build_ids,
+      self.assertEqual(datastore_entities.BuildsHistory.query().get().build_ids,
                        expected_build_ids)
 
   def test_get_project_data(self):
     """Testing get project data."""
     with ndb.Client().context():
-      self.assertRaises(RuntimeError, get_project_data, 'test-project')
+      self.assertRaises(RuntimeError, request_build.get_project_data,
+                        'test-project')
 
   @classmethod
   def tearDownClass(cls):

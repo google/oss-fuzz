@@ -94,8 +94,8 @@ def update_scheduler(cloud_scheduler_client, project, schedule, tag):
 def delete_project(cloud_scheduler_client, project):
   """Delete the given project."""
   logging.info('Deleting project %s', project.name)
-  for tag in (build_project.FUZZING_BUILD_TAG,
-              build_and_run_coverage.COVERAGE_BUILD_TAG):
+  for tag in (build_project.FUZZING_BUILD_TYPE,
+              build_and_run_coverage.COVERAGE_BUILD_TYPE):
     try:
       delete_scheduler(cloud_scheduler_client, project.name, tag)
     except exceptions.NotFound:
@@ -124,9 +124,9 @@ def sync_projects(cloud_scheduler_client, projects):
     try:
       create_scheduler(cloud_scheduler_client, project_name,
                        projects[project_name].schedule,
-                       build_project.FUZZING_BUILD_TAG, FUZZING_BUILD_TOPIC)
+                       build_project.FUZZING_BUILD_TYPE, FUZZING_BUILD_TOPIC)
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
-                       build_and_run_coverage.COVERAGE_BUILD_TAG,
+                       build_and_run_coverage.COVERAGE_BUILD_TYPE,
                        COVERAGE_BUILD_TOPIC)
       project_metadata = projects[project_name]
       Project(name=project_name,
@@ -149,7 +149,7 @@ def sync_projects(cloud_scheduler_client, projects):
         logging.info('Schedule changed.')
         update_scheduler(cloud_scheduler_client, project,
                          projects[project.name].schedule,
-                         build_project.FUZZING_BUILD_TAG)
+                         build_project.FUZZING_BUILD_TYPE)
         project.schedule = project_metadata.schedule
         project_changed = True
       except exceptions.GoogleAPICallError as error:
