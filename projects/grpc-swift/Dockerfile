@@ -16,7 +16,7 @@
 
 # Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
 # See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder-swift:xenial
+# FROM gcr.io/oss-fuzz-base/base-builder-swift:xenial
 # Delete line above and uncomment line below to upgrade to 20.04.
 FROM gcr.io/oss-fuzz-base/base-builder-swift
 
