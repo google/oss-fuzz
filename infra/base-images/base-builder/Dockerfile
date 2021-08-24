@@ -90,10 +90,15 @@ RUN go get -u github.com/mdempsky/go114-fuzz-build && \
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
+# TODO: the nightly Rust toolchain is now using LLVM 13 as-of
+# rust-lang/rust#87570, but LLVM 13 is incompatible with the tools used in the
+# fuzzing images at this time. For now pin the nightly toolchain to a nightly
+# just before the LLVM 13 nightly, and when fuzzing tooling is otherwise
+# LLVM-13-compatible this should switch back to the nightly channel.
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly-2021-08-20 --profile=minimal
 RUN cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
-RUN rustup component add rust-src --toolchain nightly
+RUN rustup component add rust-src --toolchain nightly-2021-08-20
 # Set up custom environment variable for source code copy for coverage reports
 ENV OSSFUZZ_RUSTPATH /rust
 
