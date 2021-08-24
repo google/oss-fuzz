@@ -26,7 +26,9 @@ RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.
     ./configure && \
     make && \
     make install
-RUN svn checkout https://svn.apache.org/repos/asf/httpd/httpd/trunk/ httpd
+
+RUN git clone --depth=1 https://github.com/apache/httpd
 WORKDIR httpd
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
+COPY patches.diff $SRC/
