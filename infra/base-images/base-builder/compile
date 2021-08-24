@@ -169,7 +169,7 @@ COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $G
 # Copy rust std lib to its path with a hash
 export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
 mkdir -p /rustc/$rustch/
-cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
+cp -r `rustc --print sysroot`/lib/rustlib/src/rust/library/ /rustc/$rustch/
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
