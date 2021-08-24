@@ -25,54 +25,47 @@ sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 # It is very strange, because we have as many warnings as you could imagine.
 sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 
-# This files contain some errors.
-# It wasn't build in our CI. So, it will be removed soon from upstream.
-# P.S. Sorry for my Bash skills.
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Common/examples/CMakeLists.txt
-rm -rf $SRC/ClickHouse/src/Common/examples/YAML_fuzzer.cpp
+# ClickHouse uses libcxx from contrib.
+# Enabling this manually will cause duplicate symbols at linker stage.
+CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
 
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
-sed -i -e '$d' $SRC/ClickHouse/src/Parsers/examples/CMakeLists.txt
+CLICKHOUSE_CMAKE_FLAGS=(
+    "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
+    "-DCMAKE_C_COMPILER=$CC"
+    "-DCMAKE_CXX_COMPILER=$CXX"
+    "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+    "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
+    "-DENABLE_EMBEDDED_COMPILER=0"
+    "-DENABLE_THINLTO=0"
+    "-DENABLE_TESTS=0"
+    "-DENABLE_EXAMPLES=0"
+    "-DENABLE_UTILS=0"
+    "-DENABLE_JEMALLOC=0"
+    "-DENABLE_FUZZING=1"
+    "-DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF"
+    "-DENABLE_LIBRARIES=0"
+    "-DENABLE_SSL=1"
+    "-DUSE_INTERNAL_SSL_LIBRARY=1"
+    "-DUSE_UNWIND=ON"
+)
 
-rm -rf $SRC/ClickHouse/src/Parsers/examples/lexer_fuzzer.cpp
-rm -rf $SRC/ClickHouse/src/Parsers/examples/create_parser_fuzzer.cpp
-rm -rf $SRC/ClickHouse/src/Parsers/examples/select_parser_fuzzer.cpp
-
-
-# Turn off all libraries, but turn on only necessary
-cmake -G Ninja $SRC/ClickHouse \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache \
-        -DCMAKE_C_COMPILER=$CC \
-        -DCMAKE_CXX_COMPILER=$CXX \
-        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-        -DSANITIZE=$SANITIZER \
-        -DENABLE_THINLTO=0  \
-        -DENABLE_TESTS=0 \
-        -DENABLE_EXAMPLES=1 \
-        -DENABLE_UTILS=0 \
-        -DENABLE_JEMALLOC=0 \
-        -DENABLE_FUZZING=1 \
-        -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
-        -DENABLE_EMBEDDED_COMPILER=0 \
-        -DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF \
-        -DENABLE_LIBRARIES=0 \
-        -DUSE_YAML_CPP=1
+if [ "$SANITIZER" = "coverage" ]; then
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DWITH_COVERAGE=1
+else
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DSANITIZE=$SANITIZER
+fi
 
 NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo)))
 
-ninja -j $NUM_JOBS
+TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
+
+for FUZZER_TARGET in $TARGETS
+do
+    ninja -j $NUM_JOBS $FUZZER_TARGET
+    # Find this binary in build directory and strip it
+    TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
+    strip --strip-unneeded $TEMP
+done
 
 # copy out fuzzer binaries
 find $SRC/ClickHouse/build -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
@@ -107,5 +100,7 @@ if [ "$SANITIZER" = "coverage" ]; then
     cp -rL --parents $SRC/ClickHouse/src $OUT
     cp -rL --parents $SRC/ClickHouse/base $OUT
     cp -rL --parents $SRC/ClickHouse/programs $OUT
-    cp -rL --parents $SRC/ClickHouse/contrib $OUT
 fi
+
+# Just check binaries size
+BINARIES_SIZE=$(find $SRC/ClickHouse/build -name '*_fuzzer' -exec du -sh '{}' ';')
