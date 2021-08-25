@@ -32,8 +32,6 @@ BASE_IMAGES = [
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 
-BASE_SANITIZER_LIBS_IMAGE = TAG_PREFIX + 'base-sanitizer-libs-builder'
-
 
 def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images."""

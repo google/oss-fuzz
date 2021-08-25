@@ -2,7 +2,9 @@
   {
     "args": [
       "clone",
-      "https://github.com/google/oss-fuzz.git"
+      "https://github.com/google/oss-fuzz.git",
+      "--depth",
+      "1"
     ],
     "name": "gcr.io/cloud-builders/git"
   },
@@ -26,21 +28,25 @@
     "env": [
       "OSSFUZZ_REVISION=$REVISION_ID",
       "FUZZING_LANGUAGE=c++"
-    ]
+    ],
+    "id": "srcmap"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
     "env": [
+      "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
-      "SANITIZER=coverage",
-      "OUT=/workspace/out/coverage",
-      "FUZZING_LANGUAGE=c++"
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-coverage-x86_64",
+      "SANITIZER=coverage"
     ],
     "args": [
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/coverage && compile || (echo \"********************************************************************************\nCoverage build failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage test-project\n********************************************************************************\" && false)"
-    ]
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-coverage-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-libfuzzer-coverage-x86_64"
   },
   {
     "url": "test_download"
@@ -48,10 +54,12 @@
   {
     "name": "gcr.io/oss-fuzz-base/base-runner",
     "env": [
+      "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
-      "SANITIZER=coverage",
-      "OUT=/workspace/out/coverage",
       "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-coverage-x86_64",
+      "SANITIZER=coverage",
       "HTTP_PORT=",
       "COVERAGE_EXTRA_ARGS="
     ],
@@ -81,7 +89,7 @@
       "-m",
       "cp",
       "-r",
-      "/workspace/out/coverage/report",
+      "/workspace/out/libfuzzer-coverage-x86_64/report",
       "gs://oss-fuzz-coverage/test-project/reports/20200101"
     ]
   },
@@ -99,7 +107,7 @@
       "-m",
       "cp",
       "-r",
-      "/workspace/out/coverage/fuzzer_stats",
+      "/workspace/out/libfuzzer-coverage-x86_64/fuzzer_stats",
       "gs://oss-fuzz-coverage/test-project/fuzzer_stats/20200101"
     ]
   },
@@ -117,7 +125,7 @@
       "-m",
       "cp",
       "-r",
-      "/workspace/out/coverage/logs",
+      "/workspace/out/libfuzzer-coverage-x86_64/logs",
       "gs://oss-fuzz-coverage/test-project/logs/20200101"
     ]
   },

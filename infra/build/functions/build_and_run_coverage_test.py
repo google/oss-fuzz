@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,79 +13,65 @@
 # limitations under the License.
 #
 ################################################################################
-"""Unit tests for Cloud Function that builds coverage reports."""
+"""Unit tests for build_and_run_coverage."""
 import json
-import datetime
 import os
 import sys
 import unittest
 from unittest import mock
 
-from google.cloud import ndb
+from pyfakefs import fake_filesystem_unittest
 
-sys.path.append(os.path.dirname(__file__))
+FUNCTIONS_DIR = os.path.dirname(__file__)
+sys.path.append(FUNCTIONS_DIR)
 # pylint: disable=wrong-import-position
 
-from datastore_entities import Project
-from build_and_run_coverage import get_build_steps
+import build_and_run_coverage
+import build_project
 import test_utils
 
 # pylint: disable=no-member
 
 
-class TestRequestCoverageBuilds(unittest.TestCase):
+class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   """Unit tests for sync."""
 
-  @classmethod
-  def setUpClass(cls):
-    cls.ds_emulator = test_utils.start_datastore_emulator()
-    test_utils.wait_for_emulator_ready(cls.ds_emulator, 'datastore',
-                                       test_utils.DATASTORE_READY_INDICATOR)
-    test_utils.set_gcp_environment()
-
   def setUp(self):
-    test_utils.reset_ds_emulator()
     self.maxDiff = None  # pylint: disable=invalid-name
+    self.setUpPyfakefs()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_lib.download_corpora_steps',
               return_value=[{
                   'url': 'test_download'
               }])
-  @mock.patch('datetime.datetime')
+  @mock.patch('build_project.get_datetime_now',
+              return_value=test_utils.FAKE_DATETIME)
   def test_get_coverage_build_steps(self, mock_url, mock_corpora_steps,
-                                    mock_time):
+                                    mock_get_datetime_now):
     """Test for get_build_steps."""
-    del mock_url, mock_corpora_steps, mock_time
-    datetime.datetime = test_utils.SpoofedDatetime
+    del mock_url, mock_corpora_steps, mock_get_datetime_now
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'
                              '  - address\n'
                              'architectures:\n'
                              '  - x86_64\n')
-    dockerfile_contents = 'test line'
-    image_project = 'oss-fuzz'
-    base_images_project = 'oss-fuzz-base'
+    self.fs.create_dir(test_utils.PROJECT_DIR)
+    test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
 
     expected_build_steps_file_path = test_utils.get_test_data_file_path(
         'expected_coverage_build_steps.json')
+    self.fs.add_real_file(expected_build_steps_file_path)
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_coverage_build_steps = json.load(expected_build_steps_file)
 
-    with ndb.Client().context():
-      Project(name='test-project',
-              project_yaml_contents=project_yaml_contents,
-              dockerfile_contents=dockerfile_contents).put()
-
-    dockerfile_lines = dockerfile_contents.split('\n')
-    build_steps = get_build_steps('test-project', project_yaml_contents,
-                                  dockerfile_lines, image_project,
-                                  base_images_project)
+    config = build_project.Config(False, False, None, False)
+    project_yaml, dockerfile = build_project.get_project_data(
+        test_utils.PROJECT)
+    build_steps = build_and_run_coverage.get_build_steps(
+        test_utils.PROJECT, project_yaml, dockerfile, test_utils.IMAGE_PROJECT,
+        test_utils.BASE_IMAGES_PROJECT, config)
     self.assertEqual(build_steps, expected_coverage_build_steps)
-
-  @classmethod
-  def tearDownClass(cls):
-    test_utils.cleanup_emulator(cls.ds_emulator)
 
 
 if __name__ == '__main__':

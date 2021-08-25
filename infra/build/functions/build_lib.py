@@ -83,11 +83,22 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def _get_targets_list(project_name):
+def get_upload_bucket(engine, testing=False, architecture='x86_64'):
+  """Returns the upload bucket for |engine|. Returns the testing bucket if
+  |testing|."""
+  bucket = ENGINE_INFO[engine].upload_bucket
+  if architecture != 'x86_64':
+    bucket += '-' + architecture
+  if testing:
+    bucket += '-testing'
+  return bucket
+
+
+def _get_targets_list(project_name, testing):
   """Returns target list."""
   # libFuzzer ASan is the default configuration, get list of targets from it.
-  url = get_targets_list_url(ENGINE_INFO['libfuzzer'].upload_bucket,
-                             project_name, 'address')
+  bucket = get_upload_bucket('libfuzzer', testing)
+  url = get_targets_list_url(bucket, project_name, 'address')
 
   url = urlparse.urljoin(GCS_URL_BASENAME, url)
   response = requests.get(url)
@@ -136,10 +147,10 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
-def download_corpora_steps(project_name):
+def download_corpora_steps(project_name, testing):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
-  fuzz_targets = _get_targets_list(project_name)
+  fuzz_targets = _get_targets_list(project_name, testing)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None
@@ -205,15 +216,61 @@ def gsutil_rm_rf_step(url):
   return step
 
 
-def project_image_steps(name, image, language):
+def get_pull_test_image_steps():
+  """Returns steps to pull testing versions of base-images and tag them so that
+  they are used in builds."""
+  images = ['gcr.io/oss-fuzz-base/base-builder']
+  steps = []
+  for image in images:
+    test_image = image + '-testing'
+    steps.append({
+        'name': 'gcr.io/cloud-builders/docker',
+        'args': [
+            'pull',
+            test_image,
+        ],
+        'waitFor': '-'  # Start this immediately, don't wait for previous step.
+    })
+
+    # This step is hacky but gives us great flexibility. OSS-Fuzz has hardcoded
+    # references to gcr.io/oss-fuzz-base/base-builder (in dockerfiles, for
+    # example) and gcr.io/oss-fuzz-base-runner (in this build code). But the
+    # testing versions of those images are called
+    # gcr.io/oss-fuzz-base/base-builder-testing and
+    # gcr.io/oss-fuzz-base/base-runner-testing. How can we get the build to use
+    # the testing images instead of the real ones? By doing this step: tagging
+    # the test image with the non-test version, so that the test version is used
+    # instead of pulling the real one.
+    steps.append({
+        'name': 'gcr.io/cloud-builders/docker',
+        'args': ['tag', test_image, image],
+    })
+  return steps
+
+
+def get_srcmap_step_id():
+  """Returns the id for the srcmap step."""
+  return 'srcmap'
+
+
+def project_image_steps(name, image, language, branch=None, test_images=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
-  steps = [{
+  clone_step = {
       'args': [
-          'clone',
-          'https://github.com/google/oss-fuzz.git',
+          'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
       ],
       'name': 'gcr.io/cloud-builders/git',
-  }, {
+  }
+  if branch:
+    # Do this to support testing other branches.
+    clone_step['args'].extend(['--branch', branch])
+
+  steps = [clone_step]
+  if test_images:
+    steps.extend(get_pull_test_image_steps())
+
+  srcmap_step_id = get_srcmap_step_id()
+  steps += [{
       'name': 'gcr.io/cloud-builders/docker',
       'args': [
           'build',
@@ -223,8 +280,7 @@ def project_image_steps(name, image, language):
       ],
       'dir': 'oss-fuzz/projects/' + name,
   }, {
-      'name':
-          image,
+      'name': image,
       'args': [
           'bash', '-c',
           'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
@@ -233,6 +289,7 @@ def project_image_steps(name, image, language):
           'OSSFUZZ_REVISION=$REVISION_ID',
           'FUZZING_LANGUAGE=%s' % language,
       ],
+      'id': srcmap_step_id
   }]
 
   return steps
