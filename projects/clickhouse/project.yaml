@@ -7,6 +7,8 @@ auto_ccs:
  - "jakalletti@gmail.com"
 sanitizers:
  - address
+ - memory
+ - undefined
 fuzzing_engines:
  - libfuzzer
 main_repo: 'https://github.com/ClickHouse/ClickHouse.git'
