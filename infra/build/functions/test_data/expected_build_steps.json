@@ -29,14 +29,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/msan-libs-builder",
-    "args": [
-      "bash",
-      "-c",
-      "cp -r /msan /workspace"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "env": [
       "FUZZING_ENGINE=afl",

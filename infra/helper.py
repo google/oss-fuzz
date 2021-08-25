@@ -44,7 +44,6 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
     'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-    'gcr.io/oss-fuzz-base/msan-libs-builder',
 ]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
@@ -633,15 +632,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if env_to_add:
     env += env_to_add
 
-  # Copy instrumented libraries.
-  if sanitizer == 'memory':
-    docker_run([
-        '-v',
-        '%s:/work' % project.work, 'gcr.io/oss-fuzz-base/msan-libs-builder',
-        'bash', '-c', 'cp -r /msan /work'
-    ])
-    env.append('MSAN_LIBS_PATH=' + '/work/msan')
-
   command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project)
@@ -671,15 +661,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if not result:
     logging.error('Building fuzzers failed.')
     return False
-
-  # Patch MSan builds to use instrumented shared libraries.
-  if sanitizer == 'memory':
-    docker_run(
-        ['-v', '%s:/out' % project.out, '-v',
-         '%s:/work' % project.work] + _env_to_docker_args(env) + [
-             'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-             'patch_build.py', '/out'
-         ])
 
   return True
 

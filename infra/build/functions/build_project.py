@@ -144,15 +144,6 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
   time_stamp = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
   build_steps = build_lib.project_image_steps(name, image, language)
-  # Copy over MSan instrumented libraries.
-  build_steps.append({
-      'name': f'gcr.io/{base_images_project}/msan-libs-builder',
-      'args': [
-          'bash',
-          '-c',
-          'cp -r /msan /workspace',
-      ],
-  })
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
