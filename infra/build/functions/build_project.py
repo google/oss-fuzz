@@ -541,8 +541,9 @@ def get_args(description):
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
   parser.add_argument('--parallel',
+                      action='store_true',
                       required=False,
-                      default=None,
+                      default=False,
                       help='Do builds in parallel.')
   return parser.parse_args()
 
