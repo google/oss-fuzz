@@ -15,7 +15,6 @@
 ################################################################################
 """Unit tests for build_project."""
 import json
-import datetime
 import os
 import sys
 import unittest
@@ -32,8 +31,6 @@ import test_utils
 
 # pylint: disable=no-member
 
-PROJECTS_DIR = os.path.join(test_utils.OSS_FUZZ_DIR, 'projects')
-
 
 class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   """Unit tests for sync."""
@@ -43,11 +40,11 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
-  @mock.patch('datetime.datetime')
-  def test_get_build_steps(self, mock_url, mock_time):
+  @mock.patch('build_project.get_datetime_now',
+              return_value=test_utils.FAKE_DATETIME)
+  def test_get_build_steps(self, mock_url, mock_get_datetime_now):
     """Test for get_build_steps."""
-    del mock_url, mock_time
-    datetime.datetime = test_utils.SpoofedDatetime
+    del mock_url, mock_get_datetime_now
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'
                              '  - address\n'
@@ -56,27 +53,23 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                              'architectures:\n'
                              '  - x86_64\n'
                              '  - i386\n')
-    project = 'test-project'
-    project_dir = os.path.join(PROJECTS_DIR, project)
-    self.fs.create_file(os.path.join(project_dir, 'project.yaml'),
-                        contents=project_yaml_contents)
-    dockerfile_contents = 'test line'
-    self.fs.create_file(os.path.join(project_dir, 'Dockerfile'),
-                        contents=dockerfile_contents)
-
-    image_project = 'oss-fuzz'
-    base_images_project = 'oss-fuzz-base'
+    self.fs.create_dir(test_utils.PROJECT_DIR)
+    test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
 
     expected_build_steps_file_path = test_utils.get_test_data_file_path(
         'expected_build_steps.json')
-
     self.fs.add_real_file(expected_build_steps_file_path)
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_build_steps = json.load(expected_build_steps_file)
 
     config = build_project.Config(False, False, None, False)
-    build_steps = build_project.get_build_steps(project, image_project,
-                                                base_images_project, config)
+    project_yaml, dockerfile = build_project.get_project_data(
+        test_utils.PROJECT)
+    build_steps = build_project.get_build_steps(test_utils.PROJECT,
+                                                project_yaml, dockerfile,
+                                                test_utils.IMAGE_PROJECT,
+                                                test_utils.BASE_IMAGES_PROJECT,
+                                                config)
     self.assertEqual(build_steps, expected_build_steps)
 
 

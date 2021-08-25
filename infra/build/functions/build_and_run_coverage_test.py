@@ -15,7 +15,6 @@
 ################################################################################
 """Unit tests for build_and_run_coverage."""
 import json
-import datetime
 import os
 import sys
 import unittest
@@ -33,8 +32,6 @@ import test_utils
 
 # pylint: disable=no-member
 
-PROJECTS_DIR = os.path.join(test_utils.OSS_FUZZ_DIR, 'projects')
-
 
 class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   """Unit tests for sync."""
@@ -48,27 +45,19 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
               return_value=[{
                   'url': 'test_download'
               }])
-  @mock.patch('datetime.datetime')
+  @mock.patch('build_project.get_datetime_now',
+              return_value=test_utils.FAKE_DATETIME)
   def test_get_coverage_build_steps(self, mock_url, mock_corpora_steps,
-                                    mock_time):
+                                    mock_get_datetime_now):
     """Test for get_build_steps."""
-    del mock_url, mock_corpora_steps, mock_time
-    datetime.datetime = test_utils.SpoofedDatetime
+    del mock_url, mock_corpora_steps, mock_get_datetime_now
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'
                              '  - address\n'
                              'architectures:\n'
                              '  - x86_64\n')
-    project = 'test-project'
-    project_dir = os.path.join(PROJECTS_DIR, project)
-    self.fs.create_file(os.path.join(project_dir, 'project.yaml'),
-                        contents=project_yaml_contents)
-    dockerfile_contents = 'test line'
-    self.fs.create_file(os.path.join(project_dir, 'Dockerfile'),
-                        contents=dockerfile_contents)
-
-    image_project = 'oss-fuzz'
-    base_images_project = 'oss-fuzz-base'
+    self.fs.create_dir(test_utils.PROJECT_DIR)
+    test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
 
     expected_build_steps_file_path = test_utils.get_test_data_file_path(
         'expected_coverage_build_steps.json')
@@ -77,8 +66,11 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
       expected_coverage_build_steps = json.load(expected_build_steps_file)
 
     config = build_project.Config(False, False, None, False)
+    project_yaml, dockerfile = build_project.get_project_data(
+        test_utils.PROJECT)
     build_steps = build_and_run_coverage.get_build_steps(
-        project, image_project, base_images_project, config)
+        test_utils.PROJECT, project_yaml, dockerfile, test_utils.IMAGE_PROJECT,
+        test_utils.BASE_IMAGES_PROJECT, config)
     self.assertEqual(build_steps, expected_coverage_build_steps)
 
 

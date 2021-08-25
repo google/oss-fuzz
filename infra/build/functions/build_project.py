@@ -60,6 +60,8 @@ DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
 Config = collections.namedtuple(
     'Config', ['testing', 'test_images', 'branch', 'parallel'])
 
+WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+
 
 class Build:  # pylint: disable=too-few-public-methods
   """Class representing the configuration for a build."""
@@ -79,25 +81,32 @@ class Build:  # pylint: disable=too-few-public-methods
         f'{self.fuzzing_engine}-{self.sanitizer}-{self.architecture}')
 
 
+def get_project_data(project_name):
+  """Returns a tuple containing the contents of the project.yaml and Dockerfile
+  of |project_name|. Raises a FileNotFoundError if there is no Dockerfile for
+  |project_name|."""
+  project_dir = os.path.join(PROJECTS_DIR, project_name)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
+  try:
+    with open(dockerfile_path) as dockerfile:
+      dockerfile = dockerfile.read()
+  except FileNotFoundError:
+    logging.error('Project "%s" does not have a dockerfile.', project_name)
+    raise
+  project_yaml_path = os.path.join(project_dir, 'project.yaml')
+  with open(project_yaml_path, 'r') as project_yaml_file_handle:
+    project_yaml = yaml.safe_load(project_yaml_file_handle)
+  return project_yaml, dockerfile
+
+
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
-  def __init__(self, name, image_project):
+  def __init__(self, name, project_yaml, dockerfile, image_project):
     self.name = name
     self.image_project = image_project
-    project_dir = os.path.join(PROJECTS_DIR, self.name)
-    dockerfile_path = os.path.join(project_dir, 'Dockerfile')
-    try:
-      with open(dockerfile_path) as dockerfile:
-        dockerfile_lines = dockerfile.readlines()
-    except FileNotFoundError:
-      logging.error('Project "%s" does not have a dockerfile.', self.name)
-      raise
-    self.workdir = workdir_from_dockerfile(dockerfile_lines)
-    if not self.workdir:
-      self.workdir = '/src'
-    project_yaml_path = os.path.join(project_dir, 'project.yaml')
-    project_yaml = load_project_yaml(project_yaml_path)
+    self.workdir = workdir_from_dockerfile(dockerfile)
+    set_yaml_defaults(project_yaml)
     self._sanitizers = project_yaml['sanitizers']
     self.disabled = project_yaml['disabled']
     self.architectures = project_yaml['architectures']
@@ -152,25 +161,22 @@ def is_supported_configuration(build):
           build.architecture in fuzzing_engine_info.supported_architectures)
 
 
-def workdir_from_dockerfile(dockerfile_lines):
+def workdir_from_dockerfile(dockerfile):
   """Parses WORKDIR from the Dockerfile."""
-  workdir_regex = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+  dockerfile_lines = dockerfile.split('\n')
   for line in dockerfile_lines:
-    match = re.match(workdir_regex, line)
+    match = re.match(WORKDIR_REGEX, line)
     if match:
       # We need to escape '$' since they're used for subsitutions in Container
       # Builer builds.
       return match.group(1).replace('$', '$$')
 
-  return None
+  return '/src'
 
 
-def load_project_yaml(project_yaml_path):
-  """Loads project yaml and sets default values."""
-  with open(project_yaml_path, 'r') as project_yaml_file_handle:
-    project_yaml = yaml.safe_load(project_yaml_file_handle)
-  set_yaml_defaults(project_yaml)
-  return project_yaml
+def get_datetime_now():
+  """Returns datetime.datetime.now(). Used for mocking."""
+  return datetime.datetime.now()
 
 
 def get_env(fuzzing_language, build):
@@ -237,19 +243,17 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, image_project, base_images_project, config):
+    project_name, project_yaml, dockerfile, image_project, base_images_project,
+    config):
   """Returns build steps for project."""
 
-  try:
-    project = Project(project_name, image_project)
-  except FileNotFoundError:
-    return []
+  project = Project(project_name, project_yaml, dockerfile, image_project)
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M')
+  timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
 
   build_steps = build_lib.project_image_steps(project.name,
                                               project.image,
@@ -557,16 +561,25 @@ def build_script_main(script_description, get_build_steps_func, build_type):
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
   config = Config(args.testing, args.test_images, args.branch, args.parallel)
-  for oss_fuzz_project in args.projects:
-    logging.info('Getting steps for: "%s".', oss_fuzz_project)
-    steps = get_build_steps_func(oss_fuzz_project, image_project,
-                                 base_images_project, config)
-    if not steps:
-      logging.error('No steps. Skipping %s.', oss_fuzz_project)
+  for project_name in args.projects:
+    logging.info('Getting steps for: "%s".', project_name)
+    try:
+      project_yaml_contents, dockerfile_contents = get_project_data(
+          project_name)
+    except FileNotFoundError:
+      logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       error = True
       continue
 
-    run_build(oss_fuzz_project, steps, credentials, build_type)
+    steps = get_build_steps_func(project_name, project_yaml_contents,
+                                 dockerfile_contents, image_project,
+                                 base_images_project, config)
+    if not steps:
+      logging.error('No steps. Skipping %s.', project_name)
+      error = True
+      continue
+
+    run_build(project_name, steps, credentials, build_type)
   return 0 if not error else 1
 
 

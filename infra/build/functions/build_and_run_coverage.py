@@ -18,7 +18,6 @@
 
 Usage: build_and_run_coverage.py <project>.
 """
-import datetime
 import json
 import logging
 import os
@@ -69,9 +68,11 @@ class Bucket:  # pylint: disable=too-few-public-methods
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, image_project, base_images_project, config):
+    project_name, project_yaml_contents, dockerfile_lines, image_project,
+    base_images_project, config):
   """Returns build steps for project."""
-  project = build_project.Project(project_name, image_project)
+  project = build_project.Project(project_name, project_yaml_contents,
+                                  dockerfile_lines, image_project)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
@@ -82,7 +83,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
         project.name, project.fuzzing_language)
     return []
 
-  report_date = datetime.datetime.now().strftime('%Y%m%d')
+  report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = Bucket(project.name, report_date, PLATFORM, config.testing)
 
   build_steps = build_lib.project_image_steps(project.name,
