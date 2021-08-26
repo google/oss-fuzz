@@ -39,7 +39,7 @@ language: swift
 
 The only supported fuzzing engine is `libfuzzer`
 
-The supported sanitizers are and `address`, `thread`, `undefined`, `leaks`
+The supported sanitizers are and `address`, `thread`
 
 [Example](https://github.com/google/oss-fuzz/blob/2a15c3c88b21f4f1be2a7ff115f72bd7a08e34ac/projects/swift-nio/project.yaml#L9):
 
@@ -49,8 +49,6 @@ fuzzing_engines:
 sanitizers:
   - address
   - thread
-  - undefined
-  - leaks
 ```
 
 ### Dockerfile
