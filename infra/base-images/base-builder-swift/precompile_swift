@@ -17,7 +17,7 @@
 
 if [ "$SANITIZER" = "coverage" ]
 then
-    export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping"
+    export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping -Xswiftc -sanitize=fuzzer"
 else
     export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib -Xswiftc -sanitize=fuzzer,$SANITIZER --sanitize=$SANITIZER"
 fi
