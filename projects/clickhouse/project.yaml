@@ -5,6 +5,8 @@ auto_ccs:
  - "security@yandex-team.com"
  - "kyprizel@gmail.com"
  - "jakalletti@gmail.com"
+ - "man2gm@gmail.com"
+ - "kochetovnicolai@gmail.com"
 sanitizers:
  - address
  - memory
