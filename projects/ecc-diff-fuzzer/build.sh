@@ -123,6 +123,7 @@ cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
 )
 
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
