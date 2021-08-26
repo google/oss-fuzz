@@ -95,14 +95,15 @@ def get_project_data(project_name):
     raise
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
-    project_yaml = yaml.safe_load(project_yaml_file_handle)
-  return project_yaml, dockerfile
+    project_yaml_contents = project_yaml_file_handle.read()
+  return project_yaml_contents, dockerfile
 
 
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
-  def __init__(self, name, project_yaml, dockerfile, image_project):
+  def __init__(self, name, project_yaml_contents, dockerfile, image_project):
+    project_yaml = yaml.safe_load(project_yaml_contents)
     self.name = name
     self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
@@ -243,11 +244,12 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml, dockerfile, image_project, base_images_project,
-    config):
+    project_name, project_yaml_contents, dockerfile, image_project,
+    base_images_project, config):
   """Returns build steps for project."""
 
-  project = Project(project_name, project_yaml, dockerfile, image_project)
+  project = Project(project_name, project_yaml_contents, dockerfile,
+                    image_project)
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
