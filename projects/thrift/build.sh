@@ -18,6 +18,10 @@
 # build project
 export ASAN_OPTIONS=detect_leaks=0
 
+if [ "$SANITIZER" = "coverage" ]
+then
+    cp /usr/bin/ld.gold /usr/bin/ld
+fi
 ./bootstrap.sh
 # rust fails compilation with clippy warnings
 ./configure --with-rs=no
