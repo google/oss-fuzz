@@ -81,10 +81,3 @@ if [[ ! -d "$SRC/usbguard/src/Tests/Fuzzers/$corpus_dir" ]] ; then
   cp -R "$SRC/usbguard/src/Tests/USB/data" "${corpus_dir}"
   zip -r "${zip_name}" "${corpus_dir}"
 fi
-
-# Ubuntu 20.04 doesn't have a static libqb.
-mkdir -p $OUT/lib
-cp /lib/x86_64-linux-gnu/libqb* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-uevent
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-usb-descriptor
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-rules

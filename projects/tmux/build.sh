@@ -44,8 +44,3 @@ cat "${SRC}/tmux-fuzzing-corpus/iterm2"/* | \
     split -a5 -db$MAXLEN - iterm2.
 zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
     "${WORK}/fuzzing_corpus/"
-
-# Handle libevent not existing on runner.
-mkdir $OUT/lib
-cp /lib/x86_64-linux-gnu/libevent_core* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/input-fuzzer
