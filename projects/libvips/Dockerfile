@@ -31,6 +31,10 @@ RUN apt-get update && apt-get install -y \
   libexpat1-dev \
   libffi-dev \
   libselinux1-dev \
+  glib2.0-dev \
+  autopoint \
+  gettext \
+  libtool \
   glib2.0-dev
 RUN pip3 install meson ninja
 RUN mkdir afl-testcases
@@ -43,7 +47,7 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff 
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 https://github.com/strukturag/libheif
 RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl.git

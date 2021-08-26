@@ -20,7 +20,7 @@
 # Cribbed from projects/wget2, thanks rockdaboot@gmail.com
 
 export DEPS_PATH=$SRC/knot_deps
-export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$DEPS_PATH/lib64/pkgconfig:$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
