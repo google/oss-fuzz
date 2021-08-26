@@ -136,11 +136,6 @@ deploy_cloud_function base-image-build \
 					  $BASE_IMAGE_JOB_TOPIC \
 					  $PROJECT_ID
 
-deploy_cloud_function base-msan-build \
-					  build_msan \
-					  $BASE_IMAGE_JOB_TOPIC \
-					  $PROJECT_ID
-
 deploy_cloud_function request-build \
 					  build_project \
 					  $BUILD_JOB_TOPIC \
