@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN apt-get update && \
+    apt-get install systemd -y && \
     wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_20.10.5~3-0~ubuntu-xenial_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb
 
