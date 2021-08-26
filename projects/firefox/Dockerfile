@@ -15,13 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-  gawk \
-  libstdc++6 \
-  m4 \
-  python \
-  software-properties-common
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+      gawk \
+      libstdc++6 \
+      m4 \
+      python
 
 # This wrapper of cargo seems to interfere with our build system.
 RUN rm -f /usr/local/bin/cargo
