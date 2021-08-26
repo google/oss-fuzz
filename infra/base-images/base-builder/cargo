@@ -27,7 +27,7 @@ then
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix src=$crate_src_abspath/src"
 fi
 
-if [ "$SANITIZER" = "coverage" ] && [ $1 = "fuzz" ]
+if [ "$SANITIZER" = "coverage" ] && [ $1 = "fuzz" ] && [ $2 = "build" ]
 then
     # hack to turn cargo fuzz build into cargo build so as to get coverage
     # cargo fuzz adds "--target" "x86_64-unknown-linux-gnu"
