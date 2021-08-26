@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new:xenial
+if [ "$SANITIZER" = "coverage" ]
+then
+    export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping"
+else
+    export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib -Xswiftc -sanitize=fuzzer,$SANITIZER --sanitize=$SANITIZER"
+fi
 
-RUN install_swift.sh
+for f in $CFLAGS; do
+    export SWIFTFLAGS="$SWIFTFLAGS -Xcc=$f"
+done
 
-COPY precompile_swift /usr/local/bin/
+for f in $CXXFLAGS; do
+    export SWIFTFLAGS="$SWIFTFLAGS -Xcxx=$f"
+done
