@@ -53,7 +53,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/src/libetonyek-0.1.10.tar.xz \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.2.tar.xz \
     https://dev-www.libreoffice.org/src/libmspub-0.1.4.tar.xz \
-    https://dev-www.libreoffice.org/src/libmwaw-0.3.19.tar.xz \
+    https://dev-www.libreoffice.org/src/libmwaw-0.3.20.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.8.tar.xz \
     https://dev-www.libreoffice.org/src/liborcus-0.16.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.4.tar.xz \
@@ -67,8 +67,8 @@ ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/openssl-1.1.1k.tar.gz \
-    https://dev-www.libreoffice.org/src/language-subtag-registry-2021-03-05.tar.bz2 \
+    https://dev-www.libreoffice.org/src/openssl-1.1.1l.tar.gz \
+    https://dev-www.libreoffice.org/src/language-subtag-registry-2021-08-06.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.14.tgz \
     https://dev-www.libreoffice.org/src/harfbuzz-2.8.2.tar.xz \
     https://dev-www.libreoffice.org/src/glm-0.9.9.7.zip \
