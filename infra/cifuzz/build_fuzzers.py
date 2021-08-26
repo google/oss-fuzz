@@ -85,11 +85,6 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
-    if self.config.sanitizer == 'memory':
-      docker_args.extend(
-          _get_docker_build_fuzzers_args_msan(self.workspace.work))
-      self.handle_msan_prebuild(docker_container)
-
     docker_args.extend([
         docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
@@ -107,8 +102,6 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       logging.error('Building fuzzers failed.')
       return False
 
-    if self.config.sanitizer == 'memory':
-      self.handle_msan_postbuild(docker_container)
     return True
 
   def upload_build(self):
@@ -118,23 +111,6 @@ class Builder:  # pylint: disable=too-many-instance-attributes
           self.repo_manager.get_current_commit())
 
     return True
-
-  def handle_msan_postbuild(self, container):
-    """Post-build step for MSAN builds. Patches the build to use MSAN
-    libraries."""
-    helper.docker_run([
-        '--volumes-from', container, '-e', f'WORK={self.workspace.work}',
-        docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
-    ])
-
-  def handle_msan_prebuild(self, container):
-    """Pre-build step for MSAN builds. Copies MSAN libs to |msan_libs_dir| and
-    returns docker arguments to use that directory for MSAN libs."""
-    logging.info('Copying MSAN libs.')
-    helper.docker_run([
-        '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        f'cp -r /msan {self.workspace.work}'
-    ])
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
@@ -226,11 +202,3 @@ def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   |host_repo_path| when the host of the OSS-Fuzz builder container is not
   another container."""
   return ['-v', f'{host_repo_path}:{host_repo_path}']
-
-
-def _get_docker_build_fuzzers_args_msan(work_dir):
-  """Returns arguments to the docker build command that are needed to use
-  MSAN."""
-  # TODO(metzman): MSAN is broken, fix.
-  msan_libs_path = os.path.join(work_dir, 'msan')
-  return ['-e', f'MSAN_LIBS_PATH={msan_libs_path}']

@@ -23,7 +23,6 @@ import constants
 import utils
 
 BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
-MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.

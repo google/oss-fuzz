@@ -369,16 +369,5 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
     self.assertEqual(result, expected_result)
 
 
-class GetDockerBuildFuzzersArgsMsanTest(unittest.TestCase):
-  """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
-
-  def test_get_docker_build_fuzzers_args_msan(self):
-    """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
-    work_dir = '/work_dir'
-    result = build_fuzzers._get_docker_build_fuzzers_args_msan(work_dir)
-    expected_result = ['-e', 'MSAN_LIBS_PATH=/work_dir/msan']
-    self.assertEqual(result, expected_result)
-
-
 if __name__ == '__main__':
   unittest.main()
