@@ -299,7 +299,7 @@ index 368c8d7b581..50c3231a8b0 100644
                         int *len) {
 diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
 new file mode 100644
-index 00000000000..83f22a5dbb9
+index 00000000000..5b368d685cb
 --- /dev/null
 +++ b/vio/viofuzz.cc
 @@ -0,0 +1,124 @@
@@ -352,7 +352,7 @@ index 00000000000..83f22a5dbb9
 +  DBUG_ENTER("vio_socket_connect");
 +
 +  /* Only for socket-based transport types. */
-+  DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
++  //DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
 +
 +  /* Initiate the connection. */
 +  return 0;
