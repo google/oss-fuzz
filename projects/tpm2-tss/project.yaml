@@ -6,6 +6,7 @@ auto_ccs:
   - "tstruk@gmail.com"
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
 main_repo: 'https://github.com/tstruk/tpm2-tss.git'
