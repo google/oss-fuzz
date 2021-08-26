@@ -16,7 +16,7 @@
 ################################################################################
 
 export WGET2_DEPS_PATH=$SRC/wget2_deps
-export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib64/pkgconfig:$WGET2_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET2_DEPS_PATH/include"
 export LDFLAGS="-L$WGET2_DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib

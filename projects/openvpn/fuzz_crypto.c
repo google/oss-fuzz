@@ -61,7 +61,7 @@ static int init_frame(struct frame *frame) {
 }
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-  CRYPTO_malloc_init();
+  OPENSSL_malloc_init();
   SSL_library_init();
   ERR_load_crypto_strings();
 
