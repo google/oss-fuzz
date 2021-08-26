@@ -1,0 +1,9 @@
+homepage: 'https://nixos.org/'
+language: c++
+primary_contact: 'edolstra@gmail.com'
+# TODO: auto_ccs:
+# See https://nixos.org/community/teams/security.html .
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/nixos/nix'
