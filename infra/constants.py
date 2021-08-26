@@ -30,7 +30,7 @@ LANGUAGES = [
     'rust',
     'swift',
 ]
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
 SANITIZERS = [
     'address', 'none', 'memory', 'undefined', 'dataflow', 'thread', 'coverage'
 ]
