@@ -22,7 +22,7 @@ limitations under the License.
 
 int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
-    OPENSSL_malloc_init();
+    CRYPTO_malloc_init();
     SSL_library_init();
     ERR_load_crypto_strings();
 

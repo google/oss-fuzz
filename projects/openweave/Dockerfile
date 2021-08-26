@@ -14,15 +14,11 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip python-setuptools bridge-utils \
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y python-pip python-setuptools bridge-utils \
   libglib2.0-dev libdbus-1-dev libudev-dev \
   libical-dev libreadline-dev udev \
-  libtool autoconf automake systemd
+  libtool autoconf automake
 RUN pip3 install --user google-cloud googleapis-common-protos grpcio protobuf pycryptodomex
 RUN cpan -i Text::Template
 RUN git clone --depth 1 https://github.com/openweave/openweave-core
