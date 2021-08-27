@@ -34,7 +34,8 @@ def get_build_steps(project_name, image_project, base_images_project):
   return build_and_run_coverage.get_build_steps(project_name,
                                                 project_yaml_contents,
                                                 dockerfile_lines, image_project,
-                                                base_images_project, build_config)
+                                                base_images_project,
+                                                build_config)
 
 
 def request_coverage_build(event, context):
