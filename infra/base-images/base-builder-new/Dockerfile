@@ -135,11 +135,11 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 # Do precompiles before copying other scripts for better cache efficiency.
-COPY precompile_honggfuzz /usr/local/bin/
-RUN precompile_honggfuzz
-
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
+
+COPY precompile_honggfuzz /usr/local/bin/
+RUN precompile_honggfuzz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     debug_afl srcmap bazel_build_fuzz_tests \
