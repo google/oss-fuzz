@@ -156,14 +156,19 @@ echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 
+# Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
+set +u
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
 COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OSSFUZZ_RUSTPATH /rustc $OUT"
+set -u
 
-# Copy rust std lib to its path with a hash
-export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
-mkdir -p /rustc/$rustch/
-cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
+if [ "$FUZZING_LANGUAGE" = "rust" ]; then
+  # Copy rust std lib to its path with a hash.
+  export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
+  mkdir -p /rustc/$rustch/
+  cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
+fi
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
