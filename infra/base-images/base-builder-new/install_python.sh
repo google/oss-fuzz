@@ -1,3 +1,4 @@
+#!/bin/bash -eux
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install hypothesis
-
-RUN git clone --depth=1 https://github.com/Julian/jsonschema
-WORKDIR $SRC/jsonschema
-
-COPY build.sh $SRC/
+echo "ATHERIS INSTALL"
+unset CFLAGS CXXFLAGS
+pip3 install -v --no-cache-dir atheris>=2.0.6 pyinstaller==4.1
+rm -rf /tmp/*

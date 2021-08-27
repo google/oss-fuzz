@@ -14,10 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install hypothesis
+FROM gcr.io/oss-fuzz-base/base-builder-new
 
-RUN git clone --depth=1 https://github.com/Julian/jsonschema
-WORKDIR $SRC/jsonschema
-
-COPY build.sh $SRC/
+RUN install_python.sh

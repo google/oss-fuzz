@@ -146,6 +146,7 @@ COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     write_labels.py \
     # Swift installation
     install_swift.sh \
+    install_python.sh \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC
