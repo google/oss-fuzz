@@ -18,10 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 
 RUN git clone https://gitlab.xiph.org/xiph/opus.git
-# Install more recent wget to work around https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=34761
-# "OpenSSL: error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version"
-RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y --reinstall wget
 RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
 COPY build.sh $SRC/
