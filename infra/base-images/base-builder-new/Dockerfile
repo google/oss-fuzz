@@ -138,6 +138,7 @@ COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     precompile_honggfuzz precompile_afl debug_afl srcmap bazel_build_fuzz_tests \
     write_labels.py \
     # Swift installation
+    install_go.sh \
     install_swift.sh \
     /usr/local/bin/
 
