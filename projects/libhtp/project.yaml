@@ -1,5 +1,5 @@
 homepage: "https://github.com/OISF/libhtp"
-language: c++
+language: rust
 primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
