@@ -3,9 +3,8 @@ language: c++
 primary_contact: "caolanm@redhat.com"
 sanitizers:
   - address
-  # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-  # - memory
-  #    experimental: True
+  - memory:
+     experimental: True
   - undefined
 fuzzing_engines:
   # see https://github.com/google/oss-fuzz/issues/6233 for missing afl

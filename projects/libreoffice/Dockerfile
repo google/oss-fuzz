@@ -20,9 +20,6 @@ RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 #build requirements
 RUN apt-get update && apt-get build-dep -y libreoffice
 RUN apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
-#xenial gperf too old
-RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install gperf
 
 #cache build dependencies
 ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \

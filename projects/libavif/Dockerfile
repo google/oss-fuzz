@@ -15,10 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-
-ADD bionic.list /etc/apt/sources.list.d/bionic.list
-ADD nasm_apt.pin /etc/apt/preferences
-
 RUN apt-get update && \
     apt-get install --no-install-recommends -y curl python3-pip python3-setuptools python3-wheel cmake git && \
     pip3 install meson ninja
