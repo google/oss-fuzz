@@ -62,7 +62,7 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
-LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'swift', 'jvm'}
+LANGUAGES_WITH_BUILDER_IMAGES = {'swift', 'jvm'}
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
