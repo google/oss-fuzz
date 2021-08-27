@@ -41,7 +41,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-builder-new',
     'gcr.io/oss-fuzz-base/base-builder-swift',
-    'gcr.io/oss-fuzz-base/base-builder-go',
+    'gcr.io/oss-fuzz-base/base-builder-jvm',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
     'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
