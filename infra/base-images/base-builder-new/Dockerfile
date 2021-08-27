@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+FROM gcr.io/oss-fuzz-base/base-clang:xenial
 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
