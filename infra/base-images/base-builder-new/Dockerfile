@@ -134,8 +134,15 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
+
+COPY precompile_honggfuzz /usr/local/bin/
+RUN precompile_honggfuzz
+
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    precompile_honggfuzz precompile_afl debug_afl srcmap bazel_build_fuzz_tests \
+    debug_afl srcmap bazel_build_fuzz_tests \
     write_labels.py \
     # Swift installation
     install_swift.sh \
@@ -143,8 +150,5 @@ COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
-
-RUN precompile_honggfuzz
-RUN precompile_afl
 
 CMD ["compile"]
