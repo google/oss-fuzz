@@ -19,6 +19,7 @@ import base64
 import google.auth
 from google.cloud import ndb
 
+import build_project
 import build_and_run_coverage
 import request_build
 
@@ -27,12 +28,14 @@ BASE_PROJECT = 'oss-fuzz-base'
 
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
+  build_config = build_project.Config(False, False, False, False)
   project_yaml_contents, dockerfile_lines = request_build.get_project_data(
       project_name)
   return build_and_run_coverage.get_build_steps(project_name,
                                                 project_yaml_contents,
                                                 dockerfile_lines, image_project,
-                                                base_images_project)
+                                                base_images_project,
+                                                build_config)
 
 
 def request_coverage_build(event, context):
