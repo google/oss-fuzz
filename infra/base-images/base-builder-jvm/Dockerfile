@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-new
 
-COPY build.sh $SRC/
+ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk-amd64
+ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server
+ENV PATH $PATH:$JAVA_HOME/bin
+ENV JAZZER_API_PATH "/usr/local/lib/jazzer_api_deploy.jar"
 
-COPY ExampleFuzzerNative.h ExampleFuzzerNative.cpp $SRC/
-COPY ExampleFuzzer.java ExampleValueProfileFuzzer.java ExampleFuzzerNative.java default.options $SRC/
-
-WORKDIR $SRC/
+RUN install_java.sh
