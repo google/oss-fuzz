@@ -235,26 +235,6 @@ fi
 #    make -B
 #fi
 
-# Compile libgmp
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    cd $SRC/libgmp/
-    autoreconf -ivf
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure --enable-maintainer-mode
-    else
-        setarch i386 ./configure --enable-maintainer-mode
-    fi
-    make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"
-    export LIBGMP_INCLUDE_PATH=$(realpath .)
-    export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
-    # Compile Cryptofuzz libgmp module
-    cd $SRC/cryptofuzz/modules/libgmp
-    make -B
-fi
-
 # Compile mpdecimal
 cd $SRC/
 tar zxf mpdecimal-2.5.1.tar.gz
