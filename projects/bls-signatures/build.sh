@@ -90,27 +90,33 @@ then
     export CXXFLAGS="$CXXFLAGS -I $SRC/libgmp-install/include/"
 fi
 
-# Build blst
-cd $SRC/blst/
-if [[ "$SANITIZER" == "memory" ]]
-then
-    # Patch to disable assembly
-    touch new_no_asm.h
-    echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-    echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-    echo "#else" >>new_no_asm.h
-    echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-    echo "#endif" >>new_no_asm.h
-    cat src/no_asm.h >>new_no_asm.h
-    mv new_no_asm.h src/no_asm.h
+function build_blst() {
+    if [[ "$SANITIZER" == "memory" ]]
+    then
+        # Patch to disable assembly
+        touch new_no_asm.h
+        echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+        echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+        echo "#else" >>new_no_asm.h
+        echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+        echo "#endif" >>new_no_asm.h
+        cat src/no_asm.h >>new_no_asm.h
+        mv new_no_asm.h src/no_asm.h
 
-    CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
-else
-    ./build.sh
-fi
-export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
-export BLST_INCLUDE_PATH=$(realpath bindings/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+    else
+        ./build.sh
+    fi
+
+    export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+    export BLST_INCLUDE_PATH=$(realpath bindings/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+}
+
+# Build blst (normal)
+cp -R $SRC/blst/ $SRC/blst_normal/
+cd $SRC/blst_normal/
+build_blst
 
 # Build Chia
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
@@ -220,3 +226,18 @@ cd $SRC/cryptofuzz/
 make -B -j
 
 cp cryptofuzz $OUT/cryptofuzz-bls-signatures
+
+# Build blst (optimized for size)
+cp -R $SRC/blst/ $SRC/blst_optimize_size/
+cd $SRC/blst_optimize_size/
+export CFLAGS="$CFLAGS -D__OPTIMIZE_SIZE__"
+build_blst
+
+cd $SRC/cryptofuzz/modules/blst/
+make -B
+
+# Build Cryptofuzz
+cd $SRC/cryptofuzz/
+rm entry.o; make
+
+cp cryptofuzz $OUT/cryptofuzz-bls-signatures_optimize_size
