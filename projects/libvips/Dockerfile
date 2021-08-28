@@ -14,28 +14,24 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
-  curl \
   automake \
+  autopoint \
   cmake \
-  nasm \
-  gtk-doc-tools \
+  curl \
+  gettext \
+  glib2.0-dev \
   gobject-introspection \
-  python3-pip \
-  libfftw3-dev \
+  gtk-doc-tools \
+  libbrotli-dev \
   libexpat1-dev \
   libffi-dev \
+  libfftw3-dev \
   libselinux1-dev \
-  glib2.0-dev \
-  autopoint \
-  gettext \
   libtool \
-  glib2.0-dev
+  nasm \
+  python3-pip
 RUN pip3 install meson ninja
 RUN mkdir afl-testcases
 RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases
