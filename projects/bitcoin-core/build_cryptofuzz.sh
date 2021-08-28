@@ -160,12 +160,11 @@ rm cryptofuzz
 make
 cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w15-p4
 
-# Disabled because it makes Clang crash
-#build_libsecp256k1 "--with-ecmult-window=24" "--with-ecmult-gen-precision=8"
-#cd $SRC/cryptofuzz/
-#rm cryptofuzz
-#make
-#cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w24-p8
+build_libsecp256k1 "--with-ecmult-window=20" "--with-ecmult-gen-precision=8"
+cd $SRC/cryptofuzz/
+rm cryptofuzz
+make
+cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w20-p8
 
 # Convert Wycheproof test vectors to Cryptofuzz corpus format
 mkdir $SRC/corpus-cryptofuzz-wycheproof/
@@ -175,4 +174,4 @@ zip -j cryptofuzz-bitcoin-cryptography_seed_corpus.zip $SRC/corpus-cryptofuzz-wy
 # Use them as the seed corpus for each of the fuzzers
 cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w2-p2_seed_corpus.zip
 cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w15-p4_seed_corpus.zip
-#cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w24-p8_seed_corpus.zip
+cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w20-p8_seed_corpus.zip
