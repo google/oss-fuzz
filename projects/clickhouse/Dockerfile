@@ -23,14 +23,14 @@ RUN apt-get update -y \
             wget \
             curl \
             ccache \
-	        expect \
+            expect \
             ninja-build \
             perl \
             pkg-config \
-            python \
-            python-lxml \
-            python-requests \
-            python-termcolor \
+            python3 \
+            python3-lxml \
+            python3-requests \
+            python3-termcolor \
             sudo \
             tzdata
 
