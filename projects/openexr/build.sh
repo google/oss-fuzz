@@ -19,17 +19,16 @@ cd $WORK/
 
 CMAKE_SETTINGS=(
   "-D BUILD_SHARED_LIBS=OFF"         # Build static libraries only
-  "-D PYILMBASE_ENABLE=OFF"          # Don't build Python support
   "-D BUILD_TESTING=OFF"             # Or tests
-  "-D INSTALL_OPENEXR_EXAMPLES=OFF"  # Or examples
+  "-D OPENEXR_INSTALL_EXAMPLES=OFF"  # Or examples
   "-D OPENEXR_LIB_SUFFIX="           # Don't append the version number to library files
-  "-D ILMBASE_LIB_SUFFIX="
 )
 cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
 
 INCLUDES=(
   "-I $SRC"
+  "-I $SRC/openexr/src/lib/OpenEXRCore"
   "-I $SRC/openexr/src/lib/OpenEXR"
   "-I $SRC/openexr/src/lib/OpenEXRUtil"
   "-I $WORK/cmake"
@@ -38,6 +37,7 @@ INCLUDES=(
 LIBS=(
   "$WORK/src/lib/OpenEXRUtil/libOpenEXRUtil.a"
   "$WORK/src/lib/OpenEXR/libOpenEXR.a"
+  "$WORK/src/lib/OpenEXRCore/libOpenEXRCore.a"
   "$WORK/src/lib/IlmThread/libIlmThread.a"
   "$WORK/src/lib/Iex/libIex.a"
   "$WORK/_deps/imath-build/src/Imath/libImath*.a"
