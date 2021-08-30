@@ -36,6 +36,13 @@ def delete_unneeded_docker_images(config):
   project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
+      docker.BASE_BUILDER_TAG,
+      docker.BASE_BUILDER_TAG + ':xenial',
+      docker.BASE_BUILDER_TAG + '-go',
+      docker.BASE_BUILDER_TAG + '-jvm',
+      docker.BASE_BUILDER_TAG + '-python',
+      docker.BASE_BUILDER_TAG + '-rust',
+      docker.BASE_BUILDER_TAG + '-swift',
   ]
   docker.delete_images(images)
 
