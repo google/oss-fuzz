@@ -1,0 +1,16 @@
+homepage: https://github.com/KhronosGroup/SPIRV-Tools
+language: c++
+primary_contact: rharrison@google.com 
+auto_ccs:
+  - "afdx@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/KhronosGroup/SPIRV-Tools.git'
+architectures:
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - afl

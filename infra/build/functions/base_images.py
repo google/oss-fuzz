@@ -26,6 +26,8 @@ BASE_IMAGES = [
     'base-builder',
     'base-builder-new',
     'base-builder-python',
+    'base-builder-go',
+    'base-builder-jvm',
     'base-builder-swift',
     'base-runner',
     'base-runner-debug',
