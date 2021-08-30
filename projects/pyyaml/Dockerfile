@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/yaml/pyyaml
 WORKDIR $SRC
 COPY build.sh $SRC/

@@ -41,6 +41,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-builder-new',
     'gcr.io/oss-fuzz-base/base-builder-swift',
+    'gcr.io/oss-fuzz-base/base-builder-python',
     'gcr.io/oss-fuzz-base/base-builder-go',
     'gcr.io/oss-fuzz-base/base-builder-jvm',
     'gcr.io/oss-fuzz-base/base-runner',
@@ -63,7 +64,7 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
-LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'swift', 'jvm'}
+LANGUAGES_WITH_BUILDER_IMAGES = {'swift', 'python', 'jvm', 'go'}
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name

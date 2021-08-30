@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone --depth 1 https://github.com/urllib3/urllib3
 
 COPY build.sh $SRC/

@@ -147,6 +147,7 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
     # Go, java, and swift installation scripts.
     install_go.sh \
     install_swift.sh \
+    install_python.sh \
     install_java.sh \
     /usr/local/bin/
 
