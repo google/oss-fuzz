@@ -14,11 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build
+RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
+ENV PATH="${SRC}/depot_tools:${PATH}"
+RUN git clone --depth 1 https://dawn.googlesource.com/tint tint
+WORKDIR tint
 COPY build.sh $SRC/
-
-COPY ExampleFuzzerNative.h ExampleFuzzerNative.cpp $SRC/
-COPY ExampleFuzzer.java ExampleValueProfileFuzzer.java ExampleFuzzerNative.java default.options $SRC/
-
-WORKDIR $SRC/

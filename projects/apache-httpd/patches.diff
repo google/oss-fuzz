@@ -1,43 +1,44 @@
 diff --git a/server/apreq_parser_header.c b/server/apreq_parser_header.c
-index 19588be..ede2acf 100644
+index 19588be..7067e58 100644
 --- a/server/apreq_parser_header.c
 +++ b/server/apreq_parser_header.c
-@@ -89,6 +89,8 @@ static apr_status_t split_header_line(apreq_param_t **p,
+@@ -89,7 +89,7 @@ static apr_status_t split_header_line(apreq_param_t **p,
          if (s != APR_SUCCESS)
              return s;
  
-+	if (!(nlen >= len))
-+		return APR_EBADARG;
-         assert(nlen >= len);
+-        assert(nlen >= len);
++	if (!(nlen >= len)) { return APR_EBADARG; } assert(nlen >= len);
          end->iov_len = len;
          nlen -= len;
-@@ -103,12 +105,15 @@ static apr_status_t split_header_line(apreq_param_t **p,
+ 
+@@ -103,13 +103,13 @@ static apr_status_t split_header_line(apreq_param_t **p,
          if (s != APR_SUCCESS)
              return s;
  
-+	if (!(glen >= dlen))
-+		return APR_EBADARG;
-         assert(glen >= dlen);
+-        assert(glen >= dlen);
++	if (!(glen >= dlen)) { return APR_EBADARG; } assert(glen >= dlen);
          glen -= dlen;
          e = APR_BUCKET_NEXT(e);
      }
  
      /* copy value */
-+    if (!(vlen > 0)) return APR_EBADARG;
-     assert(vlen > 0);
+-    assert(vlen > 0);
++    if (!(vlen > 0)) { return APR_EBADARG; } assert(vlen > 0);
      dest = v->data;
      while (vlen > 0) {
-@@ -119,11 +124,13 @@ static apr_status_t split_header_line(apreq_param_t **p,
+ 
+@@ -119,12 +119,12 @@ static apr_status_t split_header_line(apreq_param_t **p,
  
          memcpy(dest, data, dlen);
          dest += dlen;
-+	if (!(vlen >= dlen)) return APR_EBADARG;
-         assert(vlen >= dlen);
+-        assert(vlen >= dlen);
++	if (!(vlen >= dlen)) { return APR_EBADARG; } assert(vlen >= dlen);
          vlen -= dlen;
          e = APR_BUCKET_NEXT(e);
      }
  
-+    if (!(dest[-1] == '\n')) return APR_EBADARG;
-     assert(dest[-1] == '\n');
+-    assert(dest[-1] == '\n');
++    if (!(dest[-1] == '\n')) { return APR_EBADARG; } assert(dest[-1] == '\n');
  
      if (dest[-2] == '\r')
+         --dest;

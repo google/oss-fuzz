@@ -9,3 +9,4 @@ language: rust
 auto_ccs:
   - "david@adalogics.com"
   - "dirkjan@ochtman.nl"
+  - "brian@briansmith.org"

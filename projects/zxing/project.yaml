@@ -1,0 +1,11 @@
+homepage: "https://github.com/zxing/zxing"
+language: jvm
+primary_contact: "srowen@gmail.com"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "meumertzheim@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/zxing/zxing.git"
+sanitizers:
+  - address

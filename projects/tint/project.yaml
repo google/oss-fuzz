@@ -1,0 +1,13 @@
+homepage: https://dawn.googlesource.com/tint
+language: c++
+primary_contact: bclayton@google.com 
+auto_ccs:
+  - "afdx@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://dawn.googlesource.com/tint.git'
+architectures:
+  - x86_64
+  - i386

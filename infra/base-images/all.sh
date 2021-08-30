@@ -21,5 +21,6 @@ docker build -t gcr.io/oss-fuzz-base/base-builder-new "$@" infra/base-images/bas
 docker build -t gcr.io/oss-fuzz-base/base-builder "$@" infra/base-images/base-builder
 docker build -t gcr.io/oss-fuzz-base/base-builder-swift "$@" infra/base-images/base-builder-swift
 docker build -t gcr.io/oss-fuzz-base/base-builder-go "$@" infra/base-images/base-builder-go
+docker build -t gcr.io/oss-fuzz-base/base-builder-jvm "$@" infra/base-images/base-builder-jvm
 docker build -t gcr.io/oss-fuzz-base/base-runner "$@" infra/base-images/base-runner
 docker build -t gcr.io/oss-fuzz-base/base-runner-debug "$@" infra/base-images/base-runner-debug

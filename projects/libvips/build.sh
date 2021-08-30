@@ -164,22 +164,16 @@ cmake -G "Unix Makefiles" \
   -DBUILD_SHARED_LIBS=0 \
   -DBUILD_TESTING=0 \
   -DJPEGXL_STATIC=1 \
+  -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
   -DJPEGXL_ENABLE_FUZZERS=0 \
   -DJPEGXL_ENABLE_MANPAGES=0 \
   -DJPEGXL_ENABLE_BENCHMARK=0 \
   -DJPEGXL_ENABLE_EXAMPLES=0 \
   -DJPEGXL_ENABLE_SKCMS=0 \
+  -DJPEGXL_ENABLE_SJPEG=0 \
   .
 make -j$(nproc)
 make install
-# libbrotli-dev package is too old in Ubuntu 16.04, use jpeg-xl version
-cp -r third_party/brotli/c/include/brotli $WORK/include
-cp third_party/brotli/*.a $WORK/lib
-cp third_party/brotli/*.pc $WORK/lib/pkgconfig
-# Fix pkg-config files of libbrotli
-sed -i'.bak' "s/-lbrotlienc/&-static/" $WORK/lib/pkgconfig/libbrotlienc.pc
-sed -i'.bak' "s/-lbrotlidec/&-static/" $WORK/lib/pkgconfig/libbrotlidec.pc
-sed -i'.bak' "s/-lbrotlicommon/&-static/" $WORK/lib/pkgconfig/libbrotlicommon.pc
 popd
 
 # libimagequant
@@ -244,15 +238,13 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libjxl.a \
     $WORK/lib/libjxl_threads.a \
     $WORK/lib/libhwy.a \
-    $WORK/lib/libbrotlienc-static.a \
-    $WORK/lib/libbrotlidec-static.a \
-    $WORK/lib/libbrotlicommon-static.a \
     $WORK/lib/libimagequant.a \
     $WORK/lib/libcgif.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
-    -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
-    -lresolv -lsepol -lselinux \
+    -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
+    -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
+    -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done
