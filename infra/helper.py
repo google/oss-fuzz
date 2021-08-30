@@ -41,6 +41,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-builder-new',
     'gcr.io/oss-fuzz-base/base-builder-swift',
+    'gcr.io/oss-fuzz-base/base-builder-jvm',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
     'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
@@ -60,6 +61,8 @@ LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+
+LANGUAGES_WITH_BUILDER_IMAGES = {'swift', 'jvm'}
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -1045,7 +1048,9 @@ def _get_current_datetime():
 
 def _base_builder_from_language(language):
   """Returns the base builder for the specified language."""
-  return 'base-builder' if language != 'swift' else 'base-builder-swift'
+  if language not in LANGUAGES_WITH_BUILDER_IMAGES:
+    return 'base-builder'
+  return 'base-builder-{language}'.format(language=language)
 
 
 def _generate_impl(project, language):

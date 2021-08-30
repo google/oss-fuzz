@@ -144,8 +144,9 @@ RUN precompile_honggfuzz
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     debug_afl srcmap bazel_build_fuzz_tests \
     write_labels.py \
-    # Swift installation
+    # Swift and java installation.
     install_swift.sh \
+    install_java.sh \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC

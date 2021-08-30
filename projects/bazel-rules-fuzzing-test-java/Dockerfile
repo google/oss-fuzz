@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN git clone https://github.com/bazelbuild/rules_fuzzing.git
 WORKDIR $SRC/rules_fuzzing/
