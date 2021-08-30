@@ -1,4 +1,6 @@
-# Copyright 2021 Google LL
+#!/bin/bash -eux
+# Copyright 2021 Google LLC
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,8 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone --depth 1 https://github.com/rust-lang/flate2-rs
-WORKDIR $SRC
 
-COPY build.sh $SRC/
+curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
+cargo install cargo-fuzz && rm -rf /rust/registry
+# Needed to recompile rust std library for MSAN
+rustup component add rust-src --toolchain nightly
