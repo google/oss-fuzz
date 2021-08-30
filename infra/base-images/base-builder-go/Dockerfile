@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-MAINTAINER s@sevki.org
+FROM gcr.io/oss-fuzz-base/base-builder-new
 
-RUN go get -v -u github.com/hugelgupf/p9/...
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
 
-WORKDIR /root/go/src/github.com/hugelgupf/p9
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-COPY build.sh $SRC/
+RUN install_go.sh

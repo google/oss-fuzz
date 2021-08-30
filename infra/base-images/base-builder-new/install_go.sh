@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eux
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-MAINTAINER s@sevki.org
+cd /tmp
+curl -O https://storage.googleapis.com/golang/getgo/installer_linux
+chmod +x ./installer_linux
+SHELL="bash" ./installer_linux
+rm -rf ./installer_linux
 
-RUN go get -v -u github.com/hugelgupf/p9/...
+echo 'Set "GOPATH=/root/go"'
+echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
 
-WORKDIR /root/go/src/github.com/hugelgupf/p9
-
-COPY build.sh $SRC/
+go get -u github.com/mdempsky/go114-fuzz-build
+ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz

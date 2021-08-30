@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/istio/istio
 COPY build.sh $SRC/
 WORKDIR $SRC/istio

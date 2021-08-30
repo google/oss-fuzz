@@ -141,10 +141,11 @@ RUN precompile_afl
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
-COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    debug_afl srcmap bazel_build_fuzz_tests \
-    write_labels.py \
-    # Swift and java installation.
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer debug_afl srcmap \
+    write_labels.py bazel_build_fuzz_tests \
+    # Go, java, and swift installation scripts.
+    install_go.sh \
     install_swift.sh \
     install_java.sh \
     /usr/local/bin/

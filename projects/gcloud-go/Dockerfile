@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 LABEL maintainer="codyoss@google.com"
 RUN go get cloud.google.com/go/spanner
 COPY build.sh $SRC/
