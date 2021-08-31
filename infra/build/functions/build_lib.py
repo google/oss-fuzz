@@ -216,10 +216,17 @@ def gsutil_rm_rf_step(url):
   return step
 
 
-def get_pull_test_image_steps(test_image_suffix):
+def get_pull_test_images_steps(test_image_suffix):
   """Returns steps to pull testing versions of base-images and tag them so that
   they are used in builds."""
-  images = ['gcr.io/oss-fuzz-base/base-builder']
+  images = [
+      'gcr.io/oss-fuzz-base/base-builder',
+      'gcr.io/oss-fuzz-base/base-builder-swift',
+      'gcr.io/oss-fuzz-base/base-builder-jvm',
+      'gcr.io/oss-fuzz-base/base-builder-go',
+      'gcr.io/oss-fuzz-base/base-builder-python',
+      'gcr.io/oss-fuzz-base/base-builder-rust',
+  ]
   steps = []
   for image in images:
     test_image = image + '-' + test_image_suffix
@@ -271,7 +278,7 @@ def project_image_steps(name,
 
   steps = [clone_step]
   if test_image_suffix:
-    steps.extend(get_pull_test_image_steps(test_image_suffix))
+    steps.extend(get_pull_test_images_steps(test_image_suffix))
 
   srcmap_step_id = get_srcmap_step_id()
   steps += [{

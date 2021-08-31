@@ -262,7 +262,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.image,
       project.fuzzing_language,
       branch=config.branch,
-      test_image_suffix=config.test_images)
+      test_image_suffix=config.test_image_suffix)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -538,7 +538,7 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Upload to testing buckets.')
-  parser.add_argument('--test-images-suffix',
+  parser.add_argument('--test-image-suffix',
                       required=False,
                       default=None,
                       help='Use testing base-images.')
