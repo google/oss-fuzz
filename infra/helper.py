@@ -47,7 +47,6 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder-swift',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
-    'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
 ]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
