@@ -4,7 +4,8 @@ primary_contact: "xzyfer@gmail.com"
 
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
 
 labels:

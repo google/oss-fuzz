@@ -23,4 +23,5 @@ RUN git clone --depth 1 https://github.com/herumi/mcl.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
+RUN wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
 COPY build.sh $SRC/

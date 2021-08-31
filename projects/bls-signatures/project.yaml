@@ -5,7 +5,8 @@ main_repo: "https://github.com/supranational/blst.git"
 sanitizers:
  - address
  - undefined
- - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 architectures:
  - x86_64
  - i386

@@ -84,7 +84,7 @@ OSS-Fuzz provides a
 tool that implements these steps in a standard way, so in most cases your
 build script only needs to invoke this command with no arguments.
 
-If necessary, the behavior of the tool can be customized though a set of
+If necessary, the behavior of the tool can be customized through a set of
 environment variables. The most common are:
 
 * `BAZEL_EXTRA_BUILD_FLAGS` are extra build flags passed on the Bazel command

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 --branch v2 https://github.com/russross/blackfriday
 COPY build.sh render_fuzzer.go $SRC/
 WORKDIR $SRC/blackfriday

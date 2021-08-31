@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool gettext 
 # Install automake 1.16.3 from future. See:
 # * https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commit;h=6ca540715139899137e1f86c7e1dcbd0288f15b3
 # * https://packages.ubuntu.com/en/hirsute/automake
-RUN sed -i -e 's/xenial/hirsute/g' /etc/apt/sources.list
+RUN sed -i -e 's/focal/hirsute/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y --reinstall automake
 
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error

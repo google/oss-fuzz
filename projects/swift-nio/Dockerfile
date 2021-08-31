@@ -14,30 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-# generic swift
-RUN apt-get update && apt install -y wget \
-           binutils \
-           libc6-dev \
-           libcurl3 \
-           libedit2 \
-           libgcc-5-dev \
-           libpython2.7 \
-           libsqlite3-0 \
-           libstdc++-5-dev \
-           libxml2 \
-           pkg-config \
-           tzdata \
-           zlib1g-dev
-RUN wget https://swift.org/builds/swift-5.3.3-release/ubuntu1604/swift-5.3.3-RELEASE/swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
-RUN tar xzf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
-RUN cp -r swift-5.3.3-RELEASE-ubuntu16.04/usr/* /usr/
-
-# generic swift symbolizer
-RUN apt-get update && apt-get install -y build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev --no-install-recommends
-RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
-COPY llvmsymbol.diff $SRC
+# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
+# See https://github.com/google/oss-fuzz/issues/6291 for more details.
+FROM gcr.io/oss-fuzz-base/base-builder-swift:xenial
+# Delete line above and uncomment line below to upgrade to 20.04.
+# FROM gcr.io/oss-fuzz-base/base-builder-swift
 
 # specific swift-nio
 RUN git clone --depth 1 https://github.com/google/fuzzing

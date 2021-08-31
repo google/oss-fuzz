@@ -16,9 +16,14 @@ import unittest
 from unittest import mock
 
 import docker
+import test_helpers
+import workspace_utils
 
 CONTAINER_NAME = 'example-container'
-OUT_DIR = '/example-out'
+config = test_helpers.create_run_config(oss_fuzz_project_name='project',
+                                        workspace='/workspace')
+config.workspace = '/workspace'
+WORKSPACE = workspace_utils.Workspace(config)
 SANITIZER = 'example-sanitizer'
 LANGUAGE = 'example-language'
 
@@ -37,7 +42,7 @@ class GetDeleteImagesTest(unittest.TestCase):
   """Tests for delete_images."""
 
   @mock.patch('utils.execute')
-  def test_delete_images(self, mocked_execute):  # pylint: disable=no-self-use
+  def test_delete_images(self, mock_execute):  # pylint: disable=no-self-use
     """Tests that get_project_image_name works as intended."""
     images = ['image']
     docker.delete_images(images)
@@ -46,7 +51,7 @@ class GetDeleteImagesTest(unittest.TestCase):
         mock.call(['docker', 'builder', 'prune', '-f'])
     ]
 
-    mocked_execute.assert_has_calls(expected_calls)
+    mock_execute.assert_has_calls(expected_calls)
 
 
 class GetBaseDockerRunArgsTest(unittest.TestCase):
@@ -57,14 +62,26 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
     """Tests that get_base_docker_run_args works as intended when inside a
     container."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        OUT_DIR, SANITIZER, LANGUAGE)
+        WORKSPACE, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, CONTAINER_NAME)
     expected_docker_args = []
     expected_docker_args = [
-        '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}',
-        '--volumes-from', CONTAINER_NAME, '-e', f'OUT={OUT_DIR}'
+        '--cap-add',
+        'SYS_PTRACE',
+        '-e',
+        'FUZZING_ENGINE=libfuzzer',
+        '-e',
+        'ARCHITECTURE=x86_64',
+        '-e',
+        'CIFUZZ=True',
+        '-e',
+        f'SANITIZER={SANITIZER}',
+        '-e',
+        f'FUZZING_LANGUAGE={LANGUAGE}',
+        '-e',
+        f'OUT={WORKSPACE.out}',
+        '--volumes-from',
+        CONTAINER_NAME,
     ]
     self.assertEqual(docker_args, expected_docker_args)
 
@@ -73,13 +90,14 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
     """Tests that get_base_docker_run_args works as intended when not inside a
     container."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        OUT_DIR, SANITIZER, LANGUAGE)
+        WORKSPACE, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
     expected_docker_args = [
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v',
-        f'{OUT_DIR}:/out'
+        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-e',
+        f'OUT={WORKSPACE.out}', '-v',
+        f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_args)
 
@@ -92,12 +110,13 @@ class GetBaseDockerRunCommandTest(unittest.TestCase):
     """Tests that get_base_docker_run_args works as intended when not inside a
     container."""
     docker_args, docker_container = docker.get_base_docker_run_command(
-        OUT_DIR, SANITIZER, LANGUAGE)
+        WORKSPACE, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
     expected_docker_command = [
         'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
         'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
-        f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out'
+        f'FUZZING_LANGUAGE={LANGUAGE}', '-e', f'OUT={WORKSPACE.out}', '-v',
+        f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_command)

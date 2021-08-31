@@ -9,7 +9,8 @@ auto_ccs:
 sanitizers:
     - address
     - undefined
-    - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 fuzzing_engines:
     - libfuzzer
 main_repo: 'https://github.com/Yubico/libfido2'

@@ -18,5 +18,6 @@ auto_ccs:
   - "kbaichoo@google.com"
   - "pcrao@google.com"
   - "tyxia@google.com"
+  - "krajshiva@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
 main_repo: 'https://github.com/envoyproxy/envoy.git'

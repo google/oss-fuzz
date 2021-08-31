@@ -14,33 +14,35 @@
 """Module for generating coverage reports."""
 import os
 
-import helper
-import docker
+import base_runner_utils
+import fuzz_target
+import utils
 
 
-def run_coverage_command(out_dir, config):
+def run_coverage_command(config, workspace):
   """Runs the coverage command in base-runner to generate a coverage report."""
-  docker_args, _ = docker.get_base_docker_run_args(out_dir, config.sanitizer,
-                                                   config.language)
-  docker_args += [
-      '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
-      docker.BASE_RUNNER_TAG, 'coverage'
-  ]
-  return helper.docker_run(docker_args)
+  env = base_runner_utils.get_env(config, workspace)
+  env['HTTP_PORT'] = ''
+  env['COVERAGE_EXTRA_ARGS'] = ''
+  env['CORPUS_DIR'] = workspace.corpora
+  env['COVERAGE_OUTPUT_DIR'] = workspace.coverage_report
+  command = 'coverage'
+  return utils.execute(command, env=env)
 
 
-def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):
-  """Downloads corpora to |out_dir| for the fuzz targets in |fuzz_target_paths|
-  using clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz"""
-  # TODO(metzman): Download to /corpus dir.
+def download_corpora(fuzz_target_paths, clusterfuzz_deployment):
+  """Downloads corpora for fuzz targets in |fuzz_target_paths| using
+  |clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz."""
   for target_path in fuzz_target_paths:
-    target = os.path.basename(target_path)
-    clusterfuzz_deployment.download_corpus(target, out_dir)
+    target_name = os.path.basename(target_path)
+    corpus_dir = fuzz_target.get_fuzz_target_corpus_dir(
+        clusterfuzz_deployment.workspace, target_name)
+    clusterfuzz_deployment.download_corpus(target_name, corpus_dir)
 
 
-def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
-                             config):
+def generate_coverage_report(fuzz_target_paths, workspace,
+                             clusterfuzz_deployment, config):
   """Generates a coverage report using Clang's source based coverage."""
-  download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment)
-  run_coverage_command(out_dir, config)
-  # TODO(metzman): Upload this build to the filestore.
+  download_corpora(fuzz_target_paths, clusterfuzz_deployment)
+  run_coverage_command(config, workspace)
+  clusterfuzz_deployment.upload_coverage()

@@ -33,19 +33,49 @@ def delete_unneeded_docker_images(config):
   if not config.low_disk_space:
     return
   logging.info('Deleting builder docker images to save disk space.')
-  project_image = docker.get_project_image_name(config.project_name)
+  project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
-      docker.BASE_RUNNER_TAG,
-      docker.MSAN_LIBS_BUILDER_TAG,
+      docker.BASE_BUILDER_TAG,
+      docker.BASE_BUILDER_TAG + ':xenial',
+      docker.BASE_BUILDER_TAG + '-go',
+      docker.BASE_BUILDER_TAG + '-jvm',
+      docker.BASE_BUILDER_TAG + '-python',
+      docker.BASE_BUILDER_TAG + '-rust',
+      docker.BASE_BUILDER_TAG + '-swift',
   ]
   docker.delete_images(images)
 
 
+def run_fuzzers_entrypoint():
+  """This is the entrypoint for the run_fuzzers github action.
+  This action can be added to any OSS-Fuzz project's workflow that uses
+  Github."""
+  config = config_utils.RunFuzzersConfig()
+  # The default return code when an error occurs.
+  returncode = 1
+  if config.dry_run:
+    # Sets the default return code on error to success.
+    returncode = 0
+
+  delete_unneeded_docker_images(config)
+  # Run the specified project's fuzzers from the build.
+  result = run_fuzzers.run_fuzzers(config)
+  if result == run_fuzzers.RunFuzzersResult.ERROR:
+    logging.error('Error occurred while running in workspace %s.',
+                  config.workspace)
+    return returncode
+  if result == run_fuzzers.RunFuzzersResult.BUG_FOUND:
+    logging.info('Bug found.')
+    if not config.dry_run:
+      # Return 2 when a bug was found by a fuzzer causing the CI to fail.
+      return 2
+  return 0
+
+
 def main():
-  """Runs OSS-Fuzz project's fuzzers for CI tools.
+  """Runs project's fuzzers for CI tools.
   This is the entrypoint for the run_fuzzers github action.
-  This action can be added to any OSS-Fuzz project's workflow that uses Github.
 
   NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
   directory in order for this action to be used. This action will only fuzz the
@@ -65,32 +95,9 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on failure.
+    0 on success or nonzero on failure.
   """
-  config = config_utils.RunFuzzersConfig()
-  # The default return code when an error occurs.
-  returncode = 1
-  if config.dry_run:
-    # Sets the default return code on error to success.
-    returncode = 0
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
-  delete_unneeded_docker_images(config)
-  # Run the specified project's fuzzers from the build.
-  result = run_fuzzers.run_fuzzers(config)
-  if result == run_fuzzers.RunFuzzersResult.ERROR:
-    logging.error('Error occurred while running in workspace %s.',
-                  config.workspace)
-    return returncode
-  if result == run_fuzzers.RunFuzzersResult.BUG_FOUND:
-    logging.info('Bug found.')
-    if not config.dry_run:
-      # Return 2 when a bug was found by a fuzzer causing the CI to fail.
-      return 2
-  return 0
+  return run_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':

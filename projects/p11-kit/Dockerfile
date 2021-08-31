@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev
-RUN echo deb http://archive.ubuntu.com/ubuntu/ bionic main >> /etc/apt/sources.list
-RUN apt-get update && apt-get install -y -t bionic gettext autopoint
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint
 RUN git clone --depth 1 https://github.com/p11-glue/p11-kit.git p11-kit
 WORKDIR p11-kit
 COPY build.sh $SRC/

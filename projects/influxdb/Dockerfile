@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 MAINTAINER william@influxdata.com
 RUN go get github.com/influxdata/influxdb
 RUN go get github.com/dgrijalva/jwt-go

@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN apt-get update && apt-get install python -y
 RUN git clone --depth 1 https://github.com/google/cel-cpp/
 COPY build.sh $SRC/
 RUN mkdir $SRC/cel-cpp/fuzz/

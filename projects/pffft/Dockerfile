@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y mercurial python-numpy
+RUN apt-get update && apt-get install -y mercurial python-numpy python
 RUN git clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft
 COPY build.sh $SRC

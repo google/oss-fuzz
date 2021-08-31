@@ -6,5 +6,6 @@ auto_ccs:
 sanitizers:
  - address
  - undefined
- - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 main_repo: 'https://github.com/nlohmann/json.git'

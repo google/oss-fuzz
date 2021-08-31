@@ -63,8 +63,9 @@ RUN export PYTHON_DEPS="\
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
+RUN echo ATHERIS INSTALL
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    atheris pyinstaller==4.1 six==1.15.0 && \
+    atheris>=2.0.6 pyinstaller==4.1 six==1.15.0 && \
     rm -rf /tmp/*
 
 # Download and install the latest stable Go.
@@ -97,7 +98,7 @@ RUN rustup component add rust-src --toolchain nightly
 ENV OSSFUZZ_RUSTPATH /rust
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
-ENV BAZELISK_VERSION 1.7.4
+ENV BAZELISK_VERSION 1.9.0
 RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
     chmod +x /usr/local/bin/bazel
 
@@ -181,7 +182,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout ade8cdca55951958024c86766453430f904381c5
+    git checkout 4fe572b80f76ff0b0e916b639d1e04d5af48b157
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \

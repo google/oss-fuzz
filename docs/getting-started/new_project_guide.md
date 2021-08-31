@@ -63,7 +63,8 @@ by running the following commands:
 ```bash
 $ cd /path/to/oss-fuzz
 $ export PROJECT_NAME=<project_name>
-$ python infra/helper.py generate $PROJECT_NAME
+$ export LANGUAGE=<project_language>
+$ python infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
 ```
 
 Once the template configuration files are created, you can modify them to fit your project.
@@ -121,9 +122,11 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 
 [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) ("memory") is also supported
 and recommended, but is not enabled by default due to the likelihood of false positives from
-un-instrumented system dependencies. If you want to use "memory," first make sure your project's
-runtime dependencies are listed in the OSS-Fuzz
-[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+un-instrumented system dependencies.
+If you want to use "memory," please build all libraries your project needs using
+MemorySanitizer.
+This can be done by building them with the compiler flags provided during
+MemorySanitizer builds.
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -368,9 +371,8 @@ information on code coverage generation.
 
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
-configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
-that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+configurations by default.
+MemorySanitizer is recommended, but needs to be enabled manually since you must build all runtime dependencies with MemorySanitizer.
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
@@ -389,8 +391,9 @@ following ways:
 
 ### Seed Corpus
 
-OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
+Most fuzzing engines use evolutionary fuzzing algorithms. Supplying a seed
+corpus consisting of good sample inputs is one of the best ways to improve [fuzz
+target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
@@ -403,7 +406,7 @@ Seed corpus files will be used for cross-mutations and portions of them might ap
 in bug reports or be used for further security research. It is important that corpus
 has an appropriate and consistent license.
 
-See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
+OSS-Fuzz only: See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
 
 ### Dictionaries
 

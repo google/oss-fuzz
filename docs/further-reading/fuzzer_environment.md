@@ -9,8 +9,7 @@ permalink: /further-reading/fuzzer-environment/
 # Fuzzer environment on ClusterFuzz
 
 Your fuzz targets will be run on a
-[Google Compute Engine](https://cloud.google.com/compute/) VM (Linux) with some
-[security restrictions](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-runner/run_minijail).
+[Google Compute Engine](https://cloud.google.com/compute/) VM (Linux).
 
 - TOC
 {:toc}

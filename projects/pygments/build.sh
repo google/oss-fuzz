@@ -19,7 +19,7 @@
 pip3 install .
 
 # Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer

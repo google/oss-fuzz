@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make mercurial zlib1g-dev gyp ninja-build libssl-dev
+RUN apt-get update && apt-get install -y make mercurial zlib1g-dev gyp ninja-build libssl-dev python
 
 RUN hg clone https://hg.mozilla.org/projects/nspr nspr
 RUN hg clone https://hg.mozilla.org/projects/nss nss

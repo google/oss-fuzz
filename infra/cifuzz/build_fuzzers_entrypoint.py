@@ -13,7 +13,6 @@
 # limitations under the License.
 """Builds a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
-import os
 import sys
 
 import build_fuzzers
@@ -22,19 +21,41 @@ import config_utils
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
 
 
-def main():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github.
+def build_fuzzers_entrypoint():
+  """Builds OSS-Fuzz project's fuzzers for CI tools."""
+  config = config_utils.BuildFuzzersConfig()
 
-  Note: The resulting clusterfuzz binaries of this build are placed in
+  if config.dry_run:
+    # Sets the default return code on error to success.
+    returncode = 0
+  else:
+    # The default return code when an error occurs.
+    returncode = 1
+
+  if not build_fuzzers.build_fuzzers(config):
+    logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
+                  config.commit_sha, config.pr_ref)
+    return returncode
+
+  if not config.bad_build_check:
+    # If we've gotten to this point and we don't need to do bad_build_check,
+    # then the build has succeeded.
+    returncode = 0
+  elif build_fuzzers.check_fuzzer_build(config):
+    returncode = 0
+
+  return returncode
+
+
+def main():
+  """Builds OSS-Fuzz project's fuzzers for CI tools.
+
+  Note: The resulting fuzz target binaries of this build are placed in
   the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
@@ -50,44 +71,9 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on failure.
+    0 on success or nonzero on failure.
   """
-  config = config_utils.BuildFuzzersConfig()
-
-  if config.dry_run:
-    # Sets the default return code on error to success.
-    returncode = 0
-  else:
-    # The default return code when an error occurs.
-    returncode = 1
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
-  if not build_fuzzers.build_fuzzers(config):
-    logging.error(
-        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.project_name, config.commit_sha, config.pr_ref)
-    return returncode
-
-  out_dir = os.path.join(config.workspace, 'out')
-
-  if not config.bad_build_check:
-    # If we've gotten to this point and we don't need to do bad_build_check,
-    # then the build has succeeded.
-    returncode = 0
-  # yapf: disable
-  elif build_fuzzers.check_fuzzer_build(
-      out_dir,
-      config.sanitizer,
-      config.language,
-      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
-  ):
-    # yapf: enable
-    returncode = 0
-
-  return returncode
+  return build_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':

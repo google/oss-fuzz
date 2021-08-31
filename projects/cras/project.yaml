@@ -1,12 +1,16 @@
 homepage: "https://www.chromium.org"
 language: c++
-primary_contact: "dgreid@chromium.org"
+primary_contact: "paulhsia@chromium.org"
 auto_ccs:
   - "hychao@chromium.org"
   - "cychiang@chromium.org"
-  - "paulhsia@chromium.org"
   - "yuhsuan@chromium.org"
   - "enshuo@chromium.org"
-  - "tzungbi@chromium.org"
   - "cujomalainey@chromium.org"
+  - "benzh@chromium.org"
+  - "judyhsiao@chromium.org"
+  - "johnylin@chromium.org"
+  - "aaronyu@chromium.org"
+  - "hunghsienchen@chromium.org"
+builds_per_day: 2
 main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'

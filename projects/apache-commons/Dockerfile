@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
@@ -51,6 +51,9 @@ RUN zip -uj $SRC/CompressTarFuzzer_seed_corpus.zip commons-compress/src/test/res
 
 # Imaging
 RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-imaging.git
+
+# Geometry
+RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-geometry.git
 
 # Copy build script and all fuzzers
 COPY build.sh $SRC/

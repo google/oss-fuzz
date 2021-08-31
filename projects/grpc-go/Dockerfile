@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 ENV GO111MODULE=on
 RUN go get google.golang.org/protobuf/cmd/protoc-gen-go google.golang.org/grpc/cmd/protoc-gen-go-grpc
 RUN git clone --depth 1 https://github.com/grpc/grpc-go $GOPATH/src/google.golang.org/grpc

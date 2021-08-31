@@ -27,7 +27,7 @@ import os
 ExampleRepo = collections.namedtuple('ExampleRepo', [
     'project_name', 'oss_repo_name', 'git_repo_name', 'image_location',
     'git_url', 'new_commit', 'old_commit', 'intro_commit', 'fuzz_target',
-    'test_case_path'
+    'testcase_path'
 ])
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -36,6 +36,8 @@ TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 # WARNING: Tests are dependent upon the following repos existing and the
 # specified commits existing.
 # TODO(metzman): Fix this problem.
+# TODO(metzman): The testcases got deleted here because the test that used them
+# was skipped. Probably worth deleting the test.
 TEST_REPOS = [
     ExampleRepo(project_name='curl',
                 oss_repo_name='curl',
@@ -46,7 +48,7 @@ TEST_REPOS = [
                 new_commit='dda418266c99ceab368d723facb52069cbb9c8d5',
                 intro_commit='df26f5f9c36e19cd503c0e462e9f72ad37b84c82',
                 fuzz_target='curl_fuzzer_ftp',
-                test_case_path=os.path.join(TEST_DIR_PATH, 'curl_test_data')),
+                testcase_path=os.path.join(TEST_DIR_PATH, 'curl_test_data')),
     ExampleRepo(project_name='libarchive',
                 oss_repo_name='libarchive',
                 git_repo_name='libarchive',
@@ -56,8 +58,8 @@ TEST_REPOS = [
                 new_commit='458e49358f17ec58d65ab1c45cf299baaf3c98d1',
                 intro_commit='840266712006de5e737f8052db920dfea2be4260',
                 fuzz_target='libarchive_fuzzer',
-                test_case_path=os.path.join(TEST_DIR_PATH,
-                                            'libarchive_test_data')),
+                testcase_path=os.path.join(TEST_DIR_PATH,
+                                           'libarchive_test_data')),
     ExampleRepo(project_name='gonids',
                 oss_repo_name='gonids',
                 git_repo_name='gonids',
@@ -67,7 +69,7 @@ TEST_REPOS = [
                 new_commit='',
                 intro_commit='',
                 fuzz_target='',
-                test_case_path='')
+                testcase_path='')
 ]
 
 INVALID_REPO = ExampleRepo(project_name='notaproj',
@@ -79,4 +81,4 @@ INVALID_REPO = ExampleRepo(project_name='notaproj',
                            new_commit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                            intro_commit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                            fuzz_target='NONEFUZZER',
-                           test_case_path='not/a/path')
+                           testcase_path='not/a/path')

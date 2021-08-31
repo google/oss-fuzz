@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/google/gonids
 
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip

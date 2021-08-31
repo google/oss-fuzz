@@ -14,13 +14,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
+# See https://github.com/google/oss-fuzz/issues/6291 for more details.
+FROM gcr.io/oss-fuzz-base/base-builder:xenial
+# Delete line above and uncomment line below to upgrade to 20.04.
+# FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update \
-    && apt-get install -y wget git patchelf zlib1g-dev libtinfo-dev --no-install-recommends
+    && apt-get install -y wget git patchelf zlib1g-dev python libtinfo-dev --no-install-recommends
 
 RUN git clone --depth 1 https://github.com/google/lldb-eval
 
 COPY build.sh $SRC/
+COPY lldb_vs_lldb_eval_libfuzzer_test.options $SRC/
 
 WORKDIR $SRC/lldb-eval

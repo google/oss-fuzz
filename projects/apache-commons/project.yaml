@@ -1,9 +1,8 @@
 homepage: "https://commons.apache.org"
 language: jvm
-primary_contact: "bodewig@apache.org"
+primary_contact: "boards@gmail.com"
 auto_ccs:
   - "fuzz-testing@commons.apache.org"
-  - "boards@gmail.com"
   - "brunodepaulak@gmail.com"
   - "meumertzheim@code-intelligence.com"
   - "peteralfredlee@gmail.com"

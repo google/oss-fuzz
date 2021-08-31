@@ -27,11 +27,13 @@ else
       -e 'jazzer_driver_with_sanitizer')"
 fi
 
-DUMPS_DIR="$OUT/dumps"
-FUZZER_STATS_DIR="$OUT/fuzzer_stats"
-LOGS_DIR="$OUT/logs"
-REPORT_ROOT_DIR="$OUT/report"
-REPORT_PLATFORM_DIR="$OUT/report/linux"
+COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
+
+DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
+FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
+LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
+REPORT_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report"
+REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/linux"
 
 for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR \
                  $REPORT_PLATFORM_DIR; do
@@ -59,6 +61,8 @@ objects=""
 # Number of CPUs available, this is needed for running tests in parallel.
 NPROC=$(nproc)
 
+CORPUS_DIR=${CORPUS_DIR:-"/corpus"}
+
 function run_fuzz_target {
   local target=$1
 
@@ -67,7 +71,7 @@ function run_fuzz_target {
   local profraw_file="$DUMPS_DIR/$target.%1m.profraw"
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
@@ -79,7 +83,7 @@ function run_fuzz_target {
   # because (A) corpuses are already minimized; (B) we do not use sancov, and so
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-merge=1 -timeout=100 -close_fd_mask=3 $corpus_dummy $corpus_real"
+  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
@@ -120,7 +124,7 @@ function run_go_fuzz_target {
   local target=$1
 
   echo "Running go target $target"
-  export FUZZ_CORPUS_DIR="/corpus/${target}/"
+  export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
   $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   # translate from golangish paths to current absolute paths
@@ -136,7 +140,7 @@ function run_java_fuzz_target {
   local exec_file="$DUMPS_DIR/$target.exec"
   local class_dump_dir="$DUMPS_DIR/${target}_classes/"
   mkdir "$class_dump_dir"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
@@ -144,7 +148,7 @@ function run_java_fuzz_target {
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
   local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*"
-  local args="-merge=1 -timeout=100 -close_fd_mask=3 --nohooks \
+  local args="-merge=1 -timeout=100 --nohooks \
       --additional_jvm_args=-javaagent:/opt/jacoco-agent.jar=$jacoco_args \
       $corpus_dummy $corpus_real"
 
@@ -296,6 +300,10 @@ else
       -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
 
 fi
+
+# Make sure report is readable.
+chmod -R +r $REPORT_ROOT_DIR
+find $REPORT_ROOT_DIR -type d -exec chmod +x {} +
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
