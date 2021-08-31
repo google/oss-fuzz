@@ -71,6 +71,7 @@ def build_and_push_images():
   ]
   max_parallelization = max([len(image_list) for image_list in images])
   proc_count = min(multiprocessing.cpu_count(), max_parallelization)
+  logging.info('Using %d parallel processes.', proc_count)
   pool = multiprocessing.Pool(proc_count)
   for image_list in images:
     pool.map(build_and_push_image, image_list)

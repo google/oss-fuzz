@@ -58,7 +58,7 @@ PROJECTS_DIR = os.path.abspath(
 DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
 
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_images', 'branch', 'parallel'])
+    'Config', ['testing', 'test_images_suffix', 'branch', 'parallel'])
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -261,7 +261,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                                               project.image,
                                               project.fuzzing_language,
                                               branch=config.branch,
-                                              test_images=config.test_images)
+                                              test_images_suffix=config.test_images)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -291,7 +291,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Test fuzz targets.
           test_step = {
               'name':
-                  get_runner_image_name(base_images_project, config.testing),
+                  get_runner_image_name(base_images_project, config.test_images_suffix),
               'env':
                   env,
               'args': [
@@ -322,7 +322,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
         if build.sanitizer == 'dataflow' and build.fuzzing_engine == 'dataflow':
           dataflow_steps = dataflow_post_build_steps(project.name, env,
                                                      base_images_project,
-                                                     config.testing)
+                                                     config.testing, config.test_images_suffix)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
           else:
@@ -332,7 +332,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             # Generate targets list.
             {
                 'name':
-                    get_runner_image_name(base_images_project, config.testing),
+                    get_runner_image_name(base_images_project, config.test_images_suffix),
                 'env':
                     env,
                 'args': [
@@ -433,16 +433,16 @@ def get_cleanup_step(project, build):
   }
 
 
-def get_runner_image_name(base_images_project, testing):
+def get_runner_image_name(base_images_project, test_images_suffix):
   """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |testing|."""
+  |base_images_project|. Returns the testing image if |test_images_suffix|."""
   image = f'gcr.io/{base_images_project}/base-runner'
-  if testing:
-    image += '-testing'
+  if test_images_suffix:
+    image += '-' + test_images_suffix
   return image
 
 
-def dataflow_post_build_steps(project_name, env, base_images_project, testing):
+def dataflow_post_build_steps(project_name, env, base_images_project, testing, test_images_suffix):
   """Appends dataflow post build steps."""
   steps = build_lib.download_corpora_steps(project_name, testing)
   if not steps:
@@ -450,7 +450,7 @@ def dataflow_post_build_steps(project_name, env, base_images_project, testing):
 
   steps.append({
       'name':
-          get_runner_image_name(base_images_project, testing),
+          get_runner_image_name(base_images_project, test_images_suffix),
       'env':
           env + [
               'COLLECT_DFT_TIMEOUT=2h',
@@ -533,10 +533,9 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Upload to testing buckets.')
-  parser.add_argument('--test-images',
-                      action='store_true',
+  parser.add_argument('--test-images-suffix',
                       required=False,
-                      default=False,
+                      default=None,
                       help='Use testing base-images.')
   parser.add_argument('--branch',
                       required=False,
@@ -563,7 +562,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing, args.test_images, args.branch, args.parallel)
+  config = Config(args.testing, args.test_images_suffix, args.branch, args.parallel)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:

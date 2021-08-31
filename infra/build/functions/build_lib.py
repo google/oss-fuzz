@@ -216,13 +216,13 @@ def gsutil_rm_rf_step(url):
   return step
 
 
-def get_pull_test_image_steps():
+def get_pull_test_image_steps(test_images_suffix):
   """Returns steps to pull testing versions of base-images and tag them so that
   they are used in builds."""
   images = ['gcr.io/oss-fuzz-base/base-builder']
   steps = []
   for image in images:
-    test_image = image + '-testing'
+    test_image = image + '-' + test_images_suffix
     steps.append({
         'name': 'gcr.io/cloud-builders/docker',
         'args': [
@@ -235,7 +235,7 @@ def get_pull_test_image_steps():
     # This step is hacky but gives us great flexibility. OSS-Fuzz has hardcoded
     # references to gcr.io/oss-fuzz-base/base-builder (in dockerfiles, for
     # example) and gcr.io/oss-fuzz-base-runner (in this build code). But the
-    # testing versions of those images are called
+    # testing versions of those images are called e.g.
     # gcr.io/oss-fuzz-base/base-builder-testing and
     # gcr.io/oss-fuzz-base/base-runner-testing. How can we get the build to use
     # the testing images instead of the real ones? By doing this step: tagging
@@ -253,7 +253,7 @@ def get_srcmap_step_id():
   return 'srcmap'
 
 
-def project_image_steps(name, image, language, branch=None, test_images=False):
+def project_image_steps(name, image, language, branch=None, test_images_suffix=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
   clone_step = {
       'args': [
@@ -266,8 +266,8 @@ def project_image_steps(name, image, language, branch=None, test_images=False):
     clone_step['args'].extend(['--branch', branch])
 
   steps = [clone_step]
-  if test_images:
-    steps.extend(get_pull_test_image_steps())
+  if test_images_suffix:
+    steps.extend(get_pull_test_image_steps(test_images_suffix))
 
   srcmap_step_id = get_srcmap_step_id()
   steps += [{
