@@ -67,6 +67,7 @@ export ASAN_OPTIONS=detect_leaks=0
     LDFLAGS="-L${TOR_DEPS}/lib64"
 
 make clean
+make micro-revision.i  # Workaround from https://gitlab.torproject.org/tpo/core/tor/-/issues/29520#note_2749427
 make -j$(nproc) oss-fuzz-fuzzers
 
 TORLIBS="`make show-testing-libs`"
