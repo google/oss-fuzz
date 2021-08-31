@@ -216,13 +216,13 @@ def gsutil_rm_rf_step(url):
   return step
 
 
-def get_pull_test_image_steps(test_images_suffix):
+def get_pull_test_image_steps(test_image_suffix):
   """Returns steps to pull testing versions of base-images and tag them so that
   they are used in builds."""
   images = ['gcr.io/oss-fuzz-base/base-builder']
   steps = []
   for image in images:
-    test_image = image + '-' + test_images_suffix
+    test_image = image + '-' + test_image_suffix
     steps.append({
         'name': 'gcr.io/cloud-builders/docker',
         'args': [
@@ -253,7 +253,11 @@ def get_srcmap_step_id():
   return 'srcmap'
 
 
-def project_image_steps(name, image, language, branch=None, test_images_suffix=None):
+def project_image_steps(name,
+                        image,
+                        language,
+                        branch=None,
+                        test_image_suffix=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
   clone_step = {
       'args': [
@@ -266,8 +270,8 @@ def project_image_steps(name, image, language, branch=None, test_images_suffix=N
     clone_step['args'].extend(['--branch', branch])
 
   steps = [clone_step]
-  if test_images_suffix:
-    steps.extend(get_pull_test_image_steps(test_images_suffix))
+  if test_image_suffix:
+    steps.extend(get_pull_test_image_steps(test_image_suffix))
 
   srcmap_step_id = get_srcmap_step_id()
   steps += [{
