@@ -24,9 +24,12 @@ RUN apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
 #cache build dependencies
 ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/extern/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf \
-    https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
-    https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
+    https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
+    https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
+    https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
+    https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
+    https://dev-www.libreoffice.org/src/e5be03eda13ef68aabab6e42aa67715e-redland-1.0.17.tar.gz \
     https://dev-www.libreoffice.org/src/boost_1_76_0.tar.xz \
     https://dev-www.libreoffice.org/src/box2d-2.3.1.tar.gz \
     https://dev-www.libreoffice.org/src/dtoa-20180411.tgz \
@@ -34,12 +37,8 @@ ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.3.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.11.tar.gz \
     https://dev-www.libreoffice.org/src/libexttextcat-3.4.5.tar.xz \
-    https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
-    https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
-    https://dev-www.libreoffice.org/src/e5be03eda13ef68aabab6e42aa67715e-redland-1.0.17.tar.gz \
     https://dev-www.libreoffice.org/src/cppunit-1.15.1.tar.gz \
-    https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
-    https://dev-www.libreoffice.org/src/cairo-1.16.0.tar.xz \
+    https://dev-www.libreoffice.org/src/cairo-1.17.4.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.78.0.tar.xz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.32.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
@@ -62,6 +61,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/src/libwpg-0.3.3.tar.xz \
     https://dev-www.libreoffice.org/src/libwps-0.4.12.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
+    https://dev-www.libreoffice.org/src/pixman-0.40.0.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.7.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.1.1l.tar.gz \
