@@ -17,12 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake zlib1g-dev wget pkg-config
 
-ARG OPENSSL_VERSION=1.1.1g
 WORKDIR /tmp
-RUN wget --quiet --show-progress --progress=dot:giga https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
-	&& sha256sum openssl-${OPENSSL_VERSION}.tar.gz | grep ^ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46 \
-	&& tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
-	&& cd openssl-${OPENSSL_VERSION} \
+RUN git clone https://github.com/openssl/openssl && cd openssl && git checkout openssl-3.0.0-beta2 \
 	&& ./Configure --prefix=/usr linux-x86_64 "$CFLAGS" \
 	&& make -j $(nproc) && make install
 
