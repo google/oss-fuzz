@@ -45,8 +45,13 @@ else
 fi
 CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
-$SRC/depot_tools/ninja libGLESv2 libEGL
-mv libGLESv2.so libEGL.so $OUT
+$SRC/depot_tools/ninja libGLESv2_deprecated libEGL_deprecated
+# Skia is looking for the names w/o the _deprecated tag. The libraries themselves
+# are looking for the _deprecated suffix, so we copy them both ways into the out
+# directory.
+cp libEGL_deprecated.so $OUT/libEGL.so
+cp libGLESv2_deprecated.so $OUT/libGLESv2.so
+mv libGLESv2_deprecated.so libEGL_deprecated.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
 popd
