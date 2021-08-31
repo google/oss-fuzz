@@ -387,8 +387,6 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
-      # Test errors with error: "ModuleNotFoundError: No module named 'apt'.
-      '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
       '--ignore-glob=infra/build/*',
   ]
   if parallel:
