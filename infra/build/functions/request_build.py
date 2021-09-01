@@ -58,6 +58,7 @@ def get_project_data(project_name):
 
 
 def get_empty_config():
+  """Returns an empty build config."""
   return build_project.Config(False, None, None, False)
 
 

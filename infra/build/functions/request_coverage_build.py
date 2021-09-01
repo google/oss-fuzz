@@ -19,7 +19,6 @@ import base64
 import google.auth
 from google.cloud import ndb
 
-import build_project
 import build_and_run_coverage
 import request_build
 
