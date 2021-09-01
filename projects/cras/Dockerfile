@@ -19,7 +19,7 @@
 ################################################################################
 # Defines a docker image that can build cras fuzzers.
 #
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN apt-get -y update && \
       apt-get install -y \
