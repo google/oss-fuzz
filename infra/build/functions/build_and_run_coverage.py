@@ -90,7 +90,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                               project.image,
                                               project.fuzzing_language,
                                               branch=config.branch,
-                                              test_images=config.test_images)
+                                              test_image_suffix=config.test_image_suffix)
 
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project.fuzzing_language, build)

@@ -25,5 +25,6 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 RUN install_go.sh
 
+# TODO(jonathanmetzman): Install this file using install_go.sh.
 COPY ossfuzz_coverage_runner.go $GOPATH
 
