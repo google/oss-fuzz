@@ -196,6 +196,7 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
     write_labels.py bazel_build_fuzz_tests /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
+COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
 RUN precompile_afl
