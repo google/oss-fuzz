@@ -442,7 +442,7 @@ def _workdir_from_dockerfile(project_name):
 
 def docker_run(run_args, print_output=True):
   """Calls `docker run`."""
-  command = ['docker', 'run', '--rm', '--privileged']
+  command = ['docker', 'run', '--rm', '--privileged', '--volume', 'nix:/nix']
 
   # Support environments with a TTY.
   if sys.stdin.isatty():

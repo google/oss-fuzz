@@ -14,11 +14,10 @@
 #
 ################################################################################
 
-#
 # Provide a truly reproducible environment
 #   * For build, using `nix`;
-#   * And runtime, by bundling with `exodus` to "extract" the binary and its dependency closure out of the `/nix/store`.
-#
+#   * And runtime, by bundling with `exodus` (https://github.com/intoli/exodus) to "extract" the binary
+#     and its dependency closure out of the `/nix/store`.
 
 function nixDevelop () {
   nix \
@@ -37,28 +36,42 @@ nixDevelop --command ./configure \
 
 make clean
 
-_fuzzer_LDFLAGS="-fsanitize=fuzzer "
-_lib_FLAGS='-fsanitize=fuzzer-no-link '
+# `nix` compilation will use `libstdc++` because we are on GNU/Linux.
+export CXXFLAGS=$(echo "$CXXFLAGS" | sed -e 's/ -stdlib=libc++//g')
+
+# We set `fuzzer_CXXFLAGS`, and `lib*_CXXFLAGS` to "inherit" the provided `CXXFLAGS`, and add some extra flags;
+# Also, `fuzzer_LDFLAGS`, and `lib*_LDFLAGS` receive some extra flags.
+
+_fuzzer_LDFLAGS='-fsanitize=fuzzer '
+_lib_flags=
+if [[ ! $SANITIZER = *coverage* ]]; then
+  # This flag breaks the linkage of the `src/lib*/libnix*.so` when building for coverage.
+  _lib_flags+='-fsanitize=fuzzer-no-link '
+fi
 for S in $SANITIZER; do
-  # Static `libasan` is linked by default with `clang`;
-  # However, this cause 1) problems with redefinition of symbols, 2) conflicts with `-Wl,-z,defs` that `nix` uses.
-  if [ $SANITIZER == 'address' ]; then
+  if [ $SANITIZER = 'address' ]; then
+    # Static `libasan` is linked by default with `clang`;
+    # However, this cause 1) problems with redefinition of symbols, 2) conflicts with `-Wl,-z,defs` that `nix` uses.
     _fuzzer_LDFLAGS+='-shared-libasan '
-    _lib_FLAGS+='-shared-libasan '
+    _lib_flags+='-shared-libasan '
+  elif [ $SANITIZER = 'coverage' ]; then
+    # The linkage of the libraries need the coverage instrumentation flags too (flags for the compiler are already given through `CXXFLAGS`).
+    _fuzzer_LDFLAGS+="$COVERAGE_FLAGS"
+    _lib_flags+="$COVERAGE_FLAGS"
+    continue
   fi
   _fuzzer_LDFLAGS+="-fsanitize=$S "
-  _lib_FLAGS+="-fsanitize=$S "
+  _lib_flags+="-fsanitize=$S "
 done
 
 export fuzzer_LDFLAGS=$_fuzzer_LDFLAGS
-# `nix` compilation will use `libstdc++` because we are on GNU/Linux.
-export fuzzer_CXXFLAGS=$(subst -stdlib=libc++,,$CXXFLAGS)
+export fuzzer_CXXFLAGS="$CXXFLAGS"
 
 for lib in src/lib*; do
   LIB="$(basename $lib)"
 
-  export "${LIB}_CXXFLAGS"="$_lib_FLAGS"
-  export "${LIB}_LDFLAGS"="$_lib_FLAGS"
+  export "${LIB}_CXXFLAGS"="$CXXFLAGS $_lib_flags"
+  export "${LIB}_LDFLAGS"="$_lib_flags"
 done
 
 export OPTIMIZE=0

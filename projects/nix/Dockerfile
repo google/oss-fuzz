@@ -22,9 +22,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install exodus-bundler
 
-# Debug helpers.
-RUN apt-get install -y vim
-
 COPY install-nix.sh .
 RUN sh install-nix.sh
 ENV PATH="/root/.nix-profile/bin:${PATH}"
@@ -33,22 +30,13 @@ ENV PATH="/root/.nix-profile/bin:${PATH}"
 # See https://github.com/NixOS/nix/pull/3160 .
 RUN git clone --depth 1 --branch fuzzing_meson https://github.com/Pamplemousse/nix.git
 
-# Bake the store in the image.
-RUN \
-  cd nix && \
-  /root/.nix-profile/bin/nix \
-    --experimental-features "nix-command flakes" \
-    develop .\#.clang11StdenvPackages \
-    --command echo 'success' && \
-  cd -
-
 COPY build.sh $SRC/
+
+# Hook with upstream's build system;
+# In particular to benefit from the configuration flags setup for the libraries.
+COPY targets/ $SRC/nix/fuzz/targets/
+COPY local.mk $SRC/nix/fuzz/
+RUN echo "include fuzz/local.mk" >> $SRC/nix/Makefile
 
 RUN apt autoremove -y \
       && rm -rf /var/lib/apt/lists/*
-
-COPY extract-binary.sh .
-
-# TODO: in the wait of having it integrated upstream.
-COPY local.mk $SRC/nix/fuzz/
-RUN echo "include fuzz/local.mk" >> $SRC/nix/Makefile
