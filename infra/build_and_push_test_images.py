@@ -61,12 +61,12 @@ def build_and_push_images():
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
-      ['base-clang', 'base-runner'],
-      ['base-builder', 'base-runner-debug', 'base-builder-new'],
+      ['base-clang'],
+      # base-runner is also dependent on base-clang.
+      ['base-builder', 'base-runner'],
       [
-          'base-runner-debug', 'base-sanitizer-build-libs', 'base-builder-go',
-          'base-builder-jvm', 'base-builder-python', 'base-builder-rust',
-          'base-builder-swift'
+          'base-runner-debug', 'base-builder-go', 'base-builder-jvm',
+          'base-builder-python', 'base-builder-rust', 'base-builder-swift'
       ],
   ]
   max_parallelization = max([len(image_list) for image_list in images])

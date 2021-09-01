@@ -1,5 +1,5 @@
 # base-builder
-> Abstract base image for project builders.
+> Abstract base builder for project builders.
 
 Every project image supports multiple commands that can be invoked through docker after the image is built:
 

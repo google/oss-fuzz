@@ -17,7 +17,6 @@
 
 docker build --pull -t gcr.io/oss-fuzz-base/base-image "$@" infra/base-images/base-image
 docker build -t gcr.io/oss-fuzz-base/base-clang "$@" infra/base-images/base-clang
-docker build -t gcr.io/oss-fuzz-base/base-builder-new "$@" infra/base-images/base-builder-new
 docker build -t gcr.io/oss-fuzz-base/base-builder "$@" infra/base-images/base-builder
 docker build -t gcr.io/oss-fuzz-base/base-builder-go "$@" infra/base-images/base-builder-go
 docker build -t gcr.io/oss-fuzz-base/base-builder-jvm "$@" infra/base-images/base-builder-jvm

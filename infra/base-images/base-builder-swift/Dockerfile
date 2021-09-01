@@ -14,6 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new:xenial
+FROM gcr.io/oss-fuzz-base/base-builder:xenial
 
 RUN install_swift.sh
