@@ -17,3 +17,4 @@
 
 compile_go_fuzzer github.com/jhump/protoreflect/desc/protoparse FuzzProtoParse fuzz_protoparse
 #compile_go_fuzzer github.com/jhump/protoreflect/proto_decoder Fuzz fuzz_dynamic
+
