@@ -24,3 +24,6 @@ ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 RUN install_go.sh
+
+COPY ossfuzz_coverage_runner.go $GOPATH
+
