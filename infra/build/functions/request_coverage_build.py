@@ -28,7 +28,7 @@ BASE_PROJECT = 'oss-fuzz-base'
 
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
-  build_config = build_project.Config(False, False, False, False)
+  build_config = request_build.get_empty_config()
   project_yaml_contents, dockerfile_lines = request_build.get_project_data(
       project_name)
   return build_and_run_coverage.get_build_steps(project_name,
