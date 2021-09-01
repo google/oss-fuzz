@@ -31,6 +31,3 @@ cp gdbm_fuzzer.rc $OUT
 # Create seed
 PATH=$SRC/gdbm/src:$PATH sh ./build_seed.sh -C seed
 zip -rj "$OUT/gdbm_fuzzer_seed_corpus.zip" seed/
-
-
-	    
