@@ -8,6 +8,7 @@ auto_ccs:
  - "man2gm@gmail.com"
  - "kochetovnicolai@gmail.com"
  - "hq.zero.iq@gmail.com"
+ - "pn.cheremushkin@gmail.com"
 sanitizers:
  - address
  - memory
