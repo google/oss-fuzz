@@ -86,11 +86,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = Bucket(project.name, report_date, PLATFORM, config.testing)
 
-  build_steps = build_lib.project_image_steps(project.name,
-                                              project.image,
-                                              project.fuzzing_language,
-                                              branch=config.branch,
-                                              test_images=config.test_images)
+  build_steps = build_lib.project_image_steps(
+      project.name,
+      project.image,
+      project.fuzzing_language,
+      branch=config.branch,
+      test_image_suffix=config.test_image_suffix)
 
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project.fuzzing_language, build)
@@ -122,7 +123,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append({
       'name':
           build_project.get_runner_image_name(base_images_project,
-                                              config.testing),
+                                              config.test_image_suffix),
       'env':
           coverage_env,
       'args': [

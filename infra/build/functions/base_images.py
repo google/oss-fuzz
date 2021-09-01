@@ -24,7 +24,6 @@ BASE_IMAGES = [
     'base-image',
     'base-clang',
     'base-builder',
-    'base-builder-new',
     'base-builder-go',
     'base-builder-jvm',
     'base-builder-python',
