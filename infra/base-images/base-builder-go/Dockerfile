@@ -23,6 +23,4 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-COPY ossfuzz_coverage_runner.go $GOPATH
-
 RUN install_go.sh
