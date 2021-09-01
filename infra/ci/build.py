@@ -216,6 +216,10 @@ def build_base_images():
       'base-image',
       'base-builder',
       'base-builder-new',
+      'base-builder-go',
+      'base-builder-jvm',
+      'base-builder-python',
+      'base-builder-rust',
       'base-builder-swift',
       'base-runner',
   ]
