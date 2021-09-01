@@ -122,7 +122,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append({
       'name':
           build_project.get_runner_image_name(base_images_project,
-                                              config.testing),
+                                              config.test_image_suffix),
       'env':
           coverage_env,
       'args': [
