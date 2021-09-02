@@ -56,7 +56,7 @@ cmake -G "Ninja" \
     -DLLVM_BUILD_TESTS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF llvm
 ninja -j$(nproc) llvm-symbolizer
-cp bin/llvm-symbolizer $OUT/
+cp bin/llvm-symbolizer /usr/local/bin/llvm-symbolizer-swift
 
 cd $SRC
 rm -rf llvm-project llvmsymbol.diff
