@@ -22,7 +22,7 @@ git clone https://dawn.googlesource.com/tint --depth=1
 mkdir build
 pushd build
 
-CMAKE_ARGS="-DSPIRV_BUILD_LIBFUZZER_TARGETS=ON"
+CMAKE_ARGS="-DSPIRV_BUILD_LIBFUZZER_TARGETS=ON -DSPIRV_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE"
 
 # With ubsan, RTTI must be enabled due to certain checks (vptr) requiring it.
 if [ $SANITIZER == "undefined" ];
