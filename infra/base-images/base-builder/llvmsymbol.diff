@@ -1,8 +1,8 @@
 diff --git a/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt b/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
-index acfb3bd0e..5c4cf9763 100644
+index acfb3bd0e..a499ee2e0 100644
 --- a/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
 +++ b/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
-@@ -12,4 +12,12 @@ add_llvm_component_library(LLVMSymbolize
+@@ -12,4 +12,11 @@ add_llvm_component_library(LLVMSymbolize
    Object
    Support
    Demangle
@@ -10,14 +10,13 @@ index acfb3bd0e..5c4cf9763 100644
 +
 +  LINK_LIBS
 +  /usr/lib/swift_static/linux/libswiftCore.a
-+  /usr/lib/swift_static/linux/libswiftImageInspectionShared.a
 +  /usr/lib/swift_static/linux/libicui18nswift.a
 +  /usr/lib/swift_static/linux/libicuucswift.a
 +  /usr/lib/swift_static/linux/libicudataswift.a
 +  /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 +)
 diff --git a/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp b/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
-index 4c3f3a3767e1..aa7b9f0f5abb 100644
+index fb4875f79..0030769ee 100644
 --- a/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
 +++ b/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
 @@ -36,6 +36,13 @@
@@ -34,7 +33,7 @@ index 4c3f3a3767e1..aa7b9f0f5abb 100644
  namespace llvm {
  namespace symbolize {
  
-@@ -632,6 +639,14 @@ LLVMSymbolizer::DemangleName(const std::string &Name,
+@@ -678,6 +685,14 @@ LLVMSymbolizer::DemangleName(const std::string &Name,
      free(DemangledName);
      return Result;
    }
