@@ -16,17 +16,31 @@
 ################################################################################
 
 
-SWIFT_PACKAGES="wget binutils libc6-dev libcurl3 libedit2 libgcc-5-dev libpython2.7 libsqlite3-0 libstdc++-5-dev libxml2 pkg-config tzdata zlib1g-dev"
+SWIFT_PACKAGES="wget \
+          binutils \
+          git \
+          gnupg2 \
+          libc6-dev \
+          libcurl4 \
+          libedit2 \
+          libgcc-9-dev \
+          libpython2.7 \
+          libsqlite3-0 \
+          libstdc++-9-dev \
+          libxml2 \
+          libz3-dev \
+          pkg-config \
+          tzdata \
+          zlib1g-dev"
 SWIFT_SYMBOLIZER_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends  
 
 
-wget https://swift.org/builds/swift-5.3.3-release/ubuntu1604/swift-5.3.3-RELEASE/swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
-tar xzf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
-cp -r swift-5.3.3-RELEASE-ubuntu16.04/usr/* /usr/
-rm -rf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
-
+wget https://swift.org/builds/swift-5.4.2-release/ubuntu2004/swift-5.4.2-RELEASE/swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-5.4.2-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
 # TODO: Move to a seperate work dir
 git clone --depth 1 https://github.com/llvm/llvm-project.git
 cd llvm-project
@@ -42,7 +56,7 @@ cmake -G "Ninja" \
     -DLLVM_BUILD_TESTS=OFF \
     -DLLVM_INCLUDE_TESTS=OFF llvm
 ninja -j$(nproc) llvm-symbolizer
-cp bin/llvm-symbolizer $OUT/
+cp bin/llvm-symbolizer /usr/local/bin/llvm-symbolizer-swift
 
 cd $SRC
 rm -rf llvm-project llvmsymbol.diff
