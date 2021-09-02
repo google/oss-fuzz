@@ -22,4 +22,4 @@ CFLAGS="$CFLAGS -D__unused=" pmake -C libteken libteken.a
 $CC $CFLAGS -c $SRC/libteken_fuzzer.c -o $SRC/libteken_fuzzer.o -I.
 $CXX $CXXFLAGS $SRC/libteken_fuzzer.o \
     -o $OUT/libteken_fuzzer \
-    -lFuzzingEngine libteken/libteken.a
+    $LIB_FUZZING_ENGINE libteken/libteken.a

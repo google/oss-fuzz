@@ -1,3 +1,6 @@
-homepage: "https://tls.mbed.org"
-primary_contact: "support-mbedtls@arm.com"
-auto_ccs : "p.antoine@catenacyber.fr"
+homepage: "https://developer.trustedfirmware.org/w/mbed-tls/"
+language: c++
+primary_contact: "mbed-tls-security@lists.trustedfirmware.org"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
+main_repo: 'https://github.com/ARMmbed/mbedtls.git'

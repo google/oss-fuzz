@@ -1,9 +1,12 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
+language: c++
 primary_contact: "lennart@poettering.net"
+builds_per_day: 4
 sanitizers:
   - address
   - undefined
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
@@ -14,3 +17,10 @@ auto_ccs:
   - evverx@gmail.com
   - Tixxdz@gmail.com
   - fsumsal@redhat.com
+  - johannbg@gmail.com
+  - ssahani@vmware.com
+  - chris@chrisdown.name
+  - the.anitazha@gmail.com
+  - daan.j.demeyer@gmail.com
+  - luca.boccassi@gmail.com
+main_repo: 'https://github.com/systemd/systemd'

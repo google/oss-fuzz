@@ -16,21 +16,35 @@
 ################################################################################
 
 cd $SRC
+tar xzf gperf*.tar.gz && rm -f gperf*.tar.gz
+cd gperf*
+FUZZ_CFLAGS="${CFLAGS}"
+FUZZ_CXXFLAGS="${CXXFLAGS}"
+unset CFLAGS
+unset CXXFLAGS
+# gperf is a code generator, so no need to sanitize it
+./configure --prefix=/usr
+make -j$(nproc) install
+export CFLAGS="${FUZZ_CFLAGS}"
+export CXXFLAGS="${FUZZ_CXXFLAGS}"
+
+
+cd $SRC
 cd extra-cmake-modules
 cmake .
 make install
 
 cd $SRC
 cd qtbase
-# add the flags to Qt build too, we may as well sanitize Qt too (and also fixes memory sanitizer build)
-sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
+# add the flags to Qt build too
+sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
 sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
-# Disable compressing rcc files, triggers a warning in the memory sanitizer that i'm not sure is valid. TODO investigate properly
-sed -i -e "s/DEFINES += QT_RCC QT_NO_CAST_FROM_ASCII QT_NO_FOREACH/DEFINES += QT_NO_COMPRESS QT_RCC QT_NO_CAST_FROM_ASCII QT_NO_FOREACH/g" src/tools/rcc/rcc.pro
+# make qmake compile faster
+sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
 ./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
 cd src
 ../bin/qmake -o Makefile src.pro
-make sub-corelib -j$(nproc)
+make sub-corelib sub-rcc -j$(nproc)
 
 cd $SRC
 cd kcodecs
@@ -41,6 +55,6 @@ make -j$(nproc) VERBOSE=1
 $CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kcodecs_fuzzer.cc -o $OUT/kcodecs_fuzzer \
                -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/kcodecs/src \
                -I $SRC/kcodecs/src/probers -L $SRC/qtbase/lib -L $SRC/kcodecs/lib \
-               -lQt5Core -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine -lKF5Codecs
+               -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE -lKF5Codecs
 
 zip -qr $OUT/kcodecs_fuzzer_seed_corpus.zip $SRC/uchardet/test/ $SRC/kcodecs/autotests/data

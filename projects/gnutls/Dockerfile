@@ -14,8 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
+# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
+# See https://github.com/google/oss-fuzz/issues/6291 for more details.
+FROM gcr.io/oss-fuzz-base/base-builder:xenial
+# Delete line above and uncomment line below to upgrade to 20.04.
+# FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -39,7 +42,7 @@ RUN git clone git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN hg clone https://gmplib.org/repo/gmp/ gmp
-RUN git clone --depth=1 https://gitlab.com/gnutls/libtasn1.git
+RUN git clone https://gitlab.com/gnutls/libtasn1.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 
 RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git

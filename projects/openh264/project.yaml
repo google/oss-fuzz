@@ -1,11 +1,19 @@
 homepage: "https://www.openh264.org"
+language: c++
 primary_contact: "huili2@cisco.com"
 auto_ccs:
   - "guangwwa@cisco.com"
   - "sijchen@cisco.com"
-  - "twsmith@mozilla.com"
   - "yanqian@cisco.com"
+  - "xiaotianshimail@gmail.com"
+vendor_ccs:
+  - "dminor@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
   - address
   - memory
   - undefined
+architectures:
+ - i386
+ - x86_64
+main_repo: 'https://github.com/cisco/openh264.git'

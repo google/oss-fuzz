@@ -15,15 +15,18 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER p.antoine@catenacyber.fr
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg
+RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg bison flex
+# Install automake 1.16.3 from future. See:
+# * https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commit;h=6ca540715139899137e1f86c7e1dcbd0288f15b3
+# * https://packages.ubuntu.com/en/hirsute/automake
+RUN sed -i -e 's/focal/hirsute/g' /etc/apt/sources.list
+RUN apt-get update && apt-get install -y --reinstall automake
 
-#wait for zesty, or backport ?
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.32.tar.bz2
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.2.tar.bz2
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.1.tar.bz2
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/npth/npth-1.5.tar.bz2
+RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
+RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git libgcrypt
+RUN git clone --depth 1 git://git.gnupg.org/libassuan.git libassuan
+RUN git clone --depth 1 git://git.gnupg.org/libksba.git libksba
+RUN git clone --depth 1 git://git.gnupg.org/npth.git npth
 
 RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
 

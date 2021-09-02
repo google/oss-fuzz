@@ -15,16 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER nickrterrell@gmail.com
-RUN apt-get update && apt-get install -y make python
-# Add corpora
-ADD https://github.com/facebook/zstd/releases/download/fuzz-corpora/block_decompress_seed_corpus.zip \
-    https://github.com/facebook/zstd/releases/download/fuzz-corpora/block_round_trip_seed_corpus.zip \
-    https://github.com/facebook/zstd/releases/download/fuzz-corpora/simple_decompress_seed_corpus.zip \
-    https://github.com/facebook/zstd/releases/download/fuzz-corpora/simple_round_trip_seed_corpus.zip \
-    https://github.com/facebook/zstd/releases/download/fuzz-corpora/stream_decompress_seed_corpus.zip \
-    https://github.com/facebook/zstd/releases/download/fuzz-corpora/stream_round_trip_seed_corpus.zip \
-    $SRC/
+RUN apt-get update && apt-get install -y make python wget
 # Clone source
 RUN git clone --depth 1 https://github.com/facebook/zstd
 WORKDIR zstd

@@ -21,11 +21,10 @@ mv ./res/*.264 ./corpus/
 zip -j0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./corpus/
 
 # build 
-if [[ $CXXFLAGS = *sanitize=memory* ]]
-then
+if [[ $CXXFLAGS = *sanitize=memory* ]]; then
   ASM_BUILD=No
 else
   ASM_BUILD=Yes
 fi
-make -j$(nproc) USE_ASM=$ASM_BUILD BUILDTYPE=Debug libraries
-$CXX $CXXFLAGS -o $OUT/decoder_fuzzer -I./codec/api/svc -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzingEngine $SRC/decoder_fuzzer.cpp libopenh264.a
+make -j$(nproc) ARCH=$ARCHITECTURE USE_ASM=$ASM_BUILD BUILDTYPE=Debug libraries
+$CXX $CXXFLAGS -o $OUT/decoder_fuzzer -I./codec/api/svc -I./codec/console/common/inc -I./codec/common/inc -L. $LIB_FUZZING_ENGINE $SRC/decoder_fuzzer.cpp libopenh264.a

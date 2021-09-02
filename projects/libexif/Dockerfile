@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paul.l.kehrer@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext autopoint
 RUN git clone --depth 1 https://github.com/libexif/libexif
 RUN git clone --depth 1 https://github.com/ianare/exif-samples
 WORKDIR libexif
-COPY exif_loader_fuzzer.cc build.sh $SRC/
+COPY exif_loader_fuzzer.cc exif_from_data_fuzzer.cc build.sh $SRC/

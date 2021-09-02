@@ -17,7 +17,7 @@
 ################################################################################
 
 # Tell CMake what fuzzing engine to link:
-export CMAKE_FUZZING_ENGINE="-lFuzzingEngine"
+export CMAKE_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
 
 bash "fuzzing/scripts/build-fuzzers.sh"
 bash "fuzzing/scripts/prepare-oss-fuzz.sh"

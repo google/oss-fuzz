@@ -21,7 +21,4 @@ RUN wget https://www.mpg123.de/snapshot
 RUN tar -xvf snapshot
 RUN mv mpg123* mpg123
 WORKDIR $SRC
-COPY read_fuzzer.c $SRC/
-COPY decode_fuzzer.cc $SRC/
-COPY byte_stream.h $SRC/
-COPY build.sh $SRC/
+COPY read_fuzzer.c decode_fuzzer.cc build.sh $SRC/

@@ -1,0 +1,13 @@
+homepage: "https://www.lysator.liu.se/~nisse/nettle/"
+language: c++
+primary_contact: guidovranken@gmail.com
+auto_ccs:
+    - "nisse@google.com"
+sanitizers:
+ - address
+ - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+# - memory
+architectures:
+ - x86_64
+ - i386

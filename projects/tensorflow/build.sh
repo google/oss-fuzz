@@ -15,126 +15,91 @@
 #
 ################################################################################
 
-# Generate the list of fuzzers we have (only the base/op name).
-FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
-declare -r FUZZERS=$(
-  grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2 | head -n5
-)
+# Force Python3, run configure.py to pick the right build config
+PYTHON=python3
+yes "" | ${PYTHON} configure.py
 
-# Add a few more flags to make sure fuzzers build and run successfully.
-# Note the c++11/libc++ flags to build using the same toolchain as the one used
-# to build libFuzzingEngine.
-CFLAGS="${CFLAGS} -fno-sanitize=vptr"
-CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
-
-# See https://github.com/bazelbuild/bazel/issues/6697
-sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc
-
-# Due to statically linking boringssl dependency, we have to define one extra
-# flag when compiling for memory fuzzing (see the boringssl project).
-if [ "$SANITIZER" = "memory" ]
-then
-  CFLAGS="${CFLAGS} -DOPENSSL_NO_ASM=1"
-  CXXFLAGS="${CXXFLAGS} -DOPENSSL_NO_ASM=1"
-fi
-
-# All of the flags in $CFLAGS and $CXXFLAGS need to be passed to bazel too.
-# Also, pass in flags to ensure static build and to help in debugging failures.
+# Since Bazel passes flags to compilers via `--copt`, `--conlyopt` and
+# `--cxxopt`, we need to move all flags from `$CFLAGS` and `$CXXFLAGS` to these.
+# We don't use `--copt` as warnings issued by C compilers when encountering a
+# C++-only option results in errors during build.
+#
+# Note: Make sure that by this line `$CFLAGS` and `$CXXFLAGS` are properly set
+# up as further changes to them won't be visible to Bazel.
+#
+# Note: for builds using the undefined behavior sanitizer we need to link
+# `clang_rt` ubsan library. Since Bazel uses `clang` for linking instead of
+# `clang++`, we need to add the additional `--linkopt` flag.
+# See issue: https://github.com/bazelbuild/bazel/issues/8777
 declare -r EXTRA_FLAGS="\
---config=monolithic --dynamic_mode=off \
---verbose_failures \
 $(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
 done
 for f in ${CXXFLAGS}; do
-  echo "--cxxopt=${f}" "--linkopt=${f}"
+    echo "--cxxopt=${f}" "--linkopt=${f}"
 done
+if [ "$SANITIZER" = "undefined" ]
+then
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+fi
 )"
 
-# We need a new bazel function to build the actual binary.
-cat >> tensorflow/core/kernels/fuzzing/tf_ops_fuzz_target_lib.bzl << END
+# Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
+# supported fuzzers are in `//tensorflow/security/fuzzing`.
+# Ignore fuzzers tagged with `no_oss` in opensource.
+declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))')
 
-def cc_tf(name):
-    native.cc_test(
-        name = name + "_fuzz",
-        deps = [
-            "//tensorflow/core/kernels/fuzzing:fuzz_session",
-            "//tensorflow/core/kernels/fuzzing:" + name + "_fuzz_lib",
-            "//tensorflow/cc:cc_ops",
-            "//tensorflow/cc:scope",
-            "//tensorflow/core:core_cpu",
-        ],
-    )
-END
+# Build the fuzzer targets.
+# Pass in `--config=libc++` to link against libc++.
+# Pass in `--verbose_failures` so it is easy to debug compile crashes.
+# Pass in `--strip=never` to ensure coverage support.
+# Pass in `$LIB_FUZZING_ENGINE` to `--copt` and `--linkopt` to ensure we have a
+# `main` symbol defined (all these fuzzers build without a `main` and by default
+# `$CFLAGS` and `CXXFLAGS` compile with `-fsanitize=fuzzer-no-link`).
+# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
+bazel build \
+  --config=libc++ \
+  ${EXTRA_FLAGS} \
+  --verbose_failures \
+  --strip=never \
+  --copt=${LIB_FUZZING_ENGINE} \
+  --linkopt=${LIB_FUZZING_ENGINE} \
+  --copt='-UNDEBUG' \
+  -- ${FUZZERS}
 
-# Import this function in the proper BUILD file.
-cat >> ${FUZZING_BUILD_FILE} << END
-
-load("//tensorflow/core/kernels/fuzzing:tf_ops_fuzz_target_lib.bzl", "cc_tf")
-
-END
-
-# And invoke it for all fuzzers.
-for fuzzer in ${FUZZERS}; do
-  echo cc_tf\(\"${fuzzer}\"\) >> ${FUZZING_BUILD_FILE}
+# The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
+# in `$OUT`, so move them accordingly.
+for bazel_target in ${FUZZERS}; do
+  colon_index=$(expr index "${bazel_target}" ":")
+  fuzz_name="${bazel_target:$colon_index}"
+  bazel_location="bazel-bin/${bazel_target/:/\/}"
+  cp ${bazel_location} ${OUT}/$fuzz_name
 done
 
-# Since we force the environment, we expect bazel to fail during the linking of
-# each fuzzer. Hence, we will do the linking manually at the end of the process.
-# We just need to make sure we use the same invocation as bazel would use, so
-# use --verbose_failures (in ${EXTRA_FLAGS}) to get it and then encode it in the
-# following ${LINK_ARGS}.
-declare -r LINK_ARGS="\
--pthread -fuse-ld=gold \
--Wl,-no-as-needed -Wl,-z,relro,-z,now \
--B/usr/local/bin -B/usr/bin -Wl,--gc-sections \
-"
-
-# This should always look as successful despite linking error mentioned above.
-bazel build --jobs=2 ${EXTRA_FLAGS} -k //tensorflow/core/kernels/fuzzing:all || true
-
-# For each fuzzer target, we only have to link it manually to get the binary.
-for fuzzer in ${FUZZERS}; do
-  fz=${fuzzer}_fuzz
-
-  # Get the file with the parameters for linking or fail if it didn't exist.
-  lfile=`ls -1 bazel-bin/tensorflow/core/kernels/fuzzing/${fz}*.params | head -n1`
-
-  # Manually link everything.
-  ${CXX} ${CXXFLAGS} -lFuzzingEngine -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
-done
-
-# For coverage, we need one extra step, see the envoy and grpc projects.
+# For coverage, we need to remap source files to correspond to the Bazel build
+# paths. We also need to resolve all symlinks that Bazel creates.
 if [ "$SANITIZER" = "coverage" ]
 then
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd
+  declare -r RSYNC_CMD="rsync -aLkR"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
   mkdir -p ${REMAP_PATH}
-  rsync -ak ${SRC}/tensorflow/tensorflow ${REMAP_PATH}
-  rsync -ak ${SRC}/tensorflow/third_party ${REMAP_PATH}
 
-  # Also copy bazel generated files (via genrules)
-  declare -r BAZEL_PREFIX=bazel-out/k8-opt
-  declare -r REMAP_BAZEL_PATH=${REMAP_PATH}/${BAZEL_PREFIX}
-  mkdir -p ${REMAP_BAZEL_PATH}
-  rsync -ak ${SRC}/tensorflow/${BAZEL_PREFIX}/genfiles ${REMAP_BAZEL_PATH}
+  # Sync existing code.
+  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
 
-  # Finally copy the external archives source files
-  rsync -ak ${SRC}/tensorflow/bazel-tensorflow/external ${REMAP_PATH}
+  # Sync generated proto files.
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/core/protobuf ${REMAP_PATH}
+
+  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
+  pushd bazel-tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+  ${RSYNC_CMD} external/ ${REMAP_PATH}
+  popd
 fi
-
-# Now that all is done, we just have to copy the existing corpora and
-# dictionaries to have them available in the runtime environment.
-# The tweaks to the filenames below are to make sure corpora/dictionary have
-# similar names as the fuzzer binary.
-for dict in tensorflow/core/kernels/fuzzing/dictionaries/*; do
-  name=$(basename -- $dict)
-  cp ${dict} ${OUT}/${name/.dict/_fuzz.dict}
-done
-for corpus in tensorflow/core/kernels/fuzzing/corpus/*; do
-  name=$(basename -- $corpus)
-  zip ${OUT}/${name}_fuzz_seed_corpus.zip ${corpus}/*
-done
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*

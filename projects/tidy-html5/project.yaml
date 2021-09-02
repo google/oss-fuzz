@@ -1,12 +1,20 @@
 homepage: "http://www.html-tidy.org/"
-primary_contact: "sbucur@google.com"
+language: c++
+primary_contact: "balthisar@gmail.com"
 auto_ccs:
   - "nmarrow@google.com"
   - "pmokati@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+  - dataflow
 labels:
   tidy_fuzzer:
     - sundew
+main_repo: 'https://github.com/htacg/tidy-html5.git'

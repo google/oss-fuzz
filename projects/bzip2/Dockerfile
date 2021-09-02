@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bshas3@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN wget https://fossies.org/linux/misc/bzip2-1.0.6.tar.gz
+RUN git clone git://sourceware.org/git/bzip2.git
+RUN git clone git://sourceware.org/git/bzip2-tests.git
 COPY build.sh *.c $SRC/
 WORKDIR $SRC

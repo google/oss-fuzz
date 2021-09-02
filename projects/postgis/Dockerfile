@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER lr@pcorp.us
-RUN echo deb http://archive.ubuntu.com/ubuntu/ disco main restricted universe multiverse >> /etc/apt/sources.list
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-11 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev
-RUN git clone --depth 1 https://git.osgeo.org/gogs/postgis/postgis.git postgis
+RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-12 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev
+RUN git clone --depth 1 https://git.osgeo.org/gitea/postgis/postgis.git postgis
 WORKDIR postgis
 COPY build.sh $SRC/

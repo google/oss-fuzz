@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER victor@inliniac.net
-RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev liblzma-dev
 RUN git clone --depth 1 https://github.com/OISF/libhtp.git libhtp
 WORKDIR $SRC
 COPY build.sh $SRC/

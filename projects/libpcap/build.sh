@@ -27,7 +27,7 @@ make
 for target in pcap filter both
 do
     $CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
-    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a -lFuzzingEngine
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a $LIB_FUZZING_ENGINE
 done
 
 # export other associated stuff

@@ -20,13 +20,13 @@
 make -j$(nproc) all
 
 # build your fuzzer(s)
-FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer"
+FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer cms_overwrite_transform_fuzzer"
 for F in $FUZZERS; do
     $CC $CFLAGS -c -Iinclude \
         $SRC/$F.c -o $SRC/$F.o
     $CXX $CXXFLAGS \
         $SRC/$F.o -o $OUT/$F \
-        -lFuzzingEngine src/.libs/liblcms2.a
+        $LIB_FUZZING_ENGINE src/.libs/liblcms2.a
 done
 
 cp $SRC/icc.dict $SRC/*.options $OUT/

@@ -14,6 +14,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-RUN svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
+WORKDIR llvm-project
 COPY build.sh $SRC/

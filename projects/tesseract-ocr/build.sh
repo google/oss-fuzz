@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,35 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-cd $SRC/leptonica
-./autogen.sh
-./configure
-make -j$(nproc)
-make install
-ldconfig
-
-cd $SRC/tesseract
-./autogen.sh
-CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG" ./configure --disable-graphics --disable-shared
-make -j$(nproc)
-
-cd $SRC/tesseract-ocr-fuzzers
-
-cp -R $SRC/tessdata $OUT
-
-$CXX $CXXFLAGS \
-    -I $SRC/tesseract/src/api \
-    -I $SRC/tesseract/src/ccstruct \
-    -I $SRC/tesseract/src/ccmain \
-    -I $SRC/tesseract/src/ccutil \
-     $SRC/tesseract-ocr-fuzzers/fuzzer-api.cpp -o $OUT/fuzzer-api \
-     $SRC/tesseract/src/api/.libs/libtesseract.a \
-     /usr/local/lib/liblept.a \
-     /usr/lib/x86_64-linux-gnu/libtiff.a \
-     /usr/lib/x86_64-linux-gnu/libpng.a \
-     /usr/lib/x86_64-linux-gnu/libjpeg.a \
-     /usr/lib/x86_64-linux-gnu/libjbig.a \
-     /usr/lib/x86_64-linux-gnu/liblzma.a \
-     -lz \
-     -lFuzzingEngine
+$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh

@@ -1,11 +1,23 @@
 homepage: "https://www.envoyproxy.io/"
+language: c++
 primary_contact: "htuch@google.com"
 auto_ccs:
-  - "mklein@lyft.com"
+  - "mattklein123@gmail.com"
   - "alyssar@google.com"
   - "dio@tetrate.io"
-  - "jbuckland@google.com"
   - "jmarantz@google.com"
   - "lizan@tetrate.io"
   - "envoy-security@googlegroups.com"
+  - "yavlasov@google.com"
+  - "asraa@google.com"
+  - "adip@google.com"
+  - "avd@google.com"
+  - "chaoqinli@google.com"
+  - "yanjunxiang@google.com"
+  - "david@adalogics.com"
+  - "kbaichoo@google.com"
+  - "pcrao@google.com"
+  - "tyxia@google.com"
+  - "krajshiva@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
+main_repo: 'https://github.com/envoyproxy/envoy.git'

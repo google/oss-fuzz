@@ -15,16 +15,10 @@
 #
 ################################################################################
 
-echo -n "Compiling honggfuzz to $LIB_FUZZING_ENGINE ..."
+echo "Skipping compilation; using precompiled honggfuzz"
 
-pushd $SRC/honggfuzz > /dev/null
-make clean
-CC=clang CFLAGS= make
-# libhfuzz.a will be added by CC/CXX linker directly during linking,
-# but it's defined here to satisfy the build infrastructure
-cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
-cp honggfuzz $OUT/
-popd > /dev/null
+cp $SRC/honggfuzz/honggfuzz.a $LIB_FUZZING_ENGINE
+cp $SRC/honggfuzz/honggfuzz $OUT/
 
 # Custom coverage flags, roughly in sync with:
 # https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c

@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
-RUN apt-get update && apt-get install -y mercurial automake autopoint cmake libtool nasm pkg-config
-RUN hg clone -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
-    hg clone -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
-    hg clone -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick
+RUN apt-get update && apt-get install -y mercurial automake autopoint cmake libtool nasm pkg-config po4a
+RUN hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
+    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
+    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick
 
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
@@ -27,10 +26,13 @@ RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/xz-mirror/xz
 RUN git clone --depth 1 https://github.com/facebook/zstd
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
-RUN git clone --depth 1 https://github.com/glennrp/libpng
+RUN git clone https://git.savannah.nongnu.org/r/freetype/freetype2.git/
+RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
-ADD http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz bzip2-1.0.6.tar.gz
+RUN git clone http://git.ghostscript.com/ghostpdl.git
+RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
+RUN git clone --depth 1 https://github.com/jasper-software/jasper
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 
 WORKDIR graphicsmagick
 COPY build.sh $SRC/

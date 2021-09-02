@@ -1,0 +1,13 @@
+homepage: "https://commons.apache.org"
+language: jvm
+primary_contact: "boards@gmail.com"
+auto_ccs:
+  - "fuzz-testing@commons.apache.org"
+  - "brunodepaulak@gmail.com"
+  - "meumertzheim@code-intelligence.com"
+  - "peteralfredlee@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://gitbox.apache.org/repos/asf/commons-compress.git"
+sanitizers:
+  - address

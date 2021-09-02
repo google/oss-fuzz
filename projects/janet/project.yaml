@@ -1,0 +1,6 @@
+homepage: "https://github.com/janet-lang/janet"
+primary_contact: "calsrose@gmail.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+main_repo: 'https://github.com/janet-lang/janet'

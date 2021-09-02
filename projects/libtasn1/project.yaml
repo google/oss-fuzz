@@ -1,0 +1,19 @@
+homepage: "https://gitlab.com/gnutls/libtasn1"
+language: c++
+primary_contact: "rockdaboot@gmail.com"
+auto_ccs:
+  - "dbaryshkov@gmail.com"
+  - "ueno@gnu.org"
+  - "n.mavrogiannopoulos@gmail.com"
+  - "simon@josefsson.org"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - memory
+  - undefined
+  - dataflow
+main_repo: 'https://gitlab.com/gnutls/libtasn1.git'

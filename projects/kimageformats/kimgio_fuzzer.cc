@@ -20,7 +20,7 @@
   Usage:
     python infra/helper.py build_image kimageformats
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory kimageformats
-    python infra/helper.py run_fuzzer kimageformats kimgio_fuzzer
+    python infra/helper.py run_fuzzer kimageformats kimgio_[ani|avif|heif|kra|ora|pcx|pic|psd|ras|rgb|tga|xcf]_fuzzer
 */
 
 
@@ -28,6 +28,11 @@
 #include <QCoreApplication>
 #include <QImage>
 
+#include "ani_p.h"
+#include "avif_p.h"
+#include "heif_p.h"
+#include "kra.h"
+#include "ora.h"
 #include "pcx_p.h"
 #include "pic_p.h"
 #include "psd_p.h"
@@ -41,26 +46,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int argc = 0;
     QCoreApplication a(argc, nullptr);
 
-    const QVector<QImageIOHandler*> handlers = {
-        new PCXHandler(),
-        new SoftimagePICHandler(),
-        new PSDHandler(),
-        new RASHandler(),
-        new RGBHandler(),
-        new TGAHandler(),
-        new XCFHandler()
-    };
+    QImageIOHandler* handler = new HANDLER();
 
-    for (QImageIOHandler *h : handlers) {
-        QImage i;
-        QBuffer b;
-        b.setData((const char *)data, size);
-        b.open(QIODevice::ReadOnly);
-        h->setDevice(&b);
-        h->canRead();
-        h->read(&i);
-    }
-    qDeleteAll(handlers);
+    QImage i;
+    QBuffer b;
+    b.setData((const char *)data, size);
+    b.open(QIODevice::ReadOnly);
+    handler->setDevice(&b);
+    handler->canRead();
+    handler->read(&i);
+
+    delete handler;
 
     return 0;
 }

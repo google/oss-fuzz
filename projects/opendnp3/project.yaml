@@ -1,8 +1,13 @@
 homepage: "http://www.automatak.com/opendnp3/"
+language: c++
 primary_contact: "info@automatak.com"
-auto_ccs : "p.antoine@catenacyber.fr"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
+  - "emile@automatak.com"
 
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+main_repo: 'https://github.com/dnp3/opendnp3.git'

@@ -1,0 +1,18 @@
+homepage: "https://github.com/sctplab/usrsctp"
+language: c++
+primary_contact: "weinrank@fh-muenster.de"
+auto_ccs:
+  - "t00fcxen@googlemail.com"
+  - "markwo@google.com"
+  - "natashenka@google.com"
+  - "orphis@google.com"
+  - "mbonadei@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/sctplab/usrsctp'

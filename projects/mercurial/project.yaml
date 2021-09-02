@@ -1,4 +1,5 @@
 homepage: "https://www.mercurial-scm.org/"
+language: c++
 primary_contact: "durin42@gmail.com"
 auto_ccs:
   - "gregory.szorc@gmail.com"
@@ -8,4 +9,6 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*

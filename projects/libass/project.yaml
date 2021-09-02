@@ -1,4 +1,5 @@
 homepage: "https://github.com/libass/libass"
+language: c++
 primary_contact: "greg@kinoho.net"
 auto_ccs:
   - "rodger.combs@gmail.com"
@@ -8,3 +9,4 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/libass/libass.git'

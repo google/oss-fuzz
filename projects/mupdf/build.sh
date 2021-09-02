@@ -19,8 +19,8 @@ LDFLAGS="$CXXFLAGS" make -j$(nproc) HAVE_GLUT=no build=debug OUT=$WORK
 fuzz_target=pdf_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
-    source/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
-    -lFuzzingEngine $WORK/libmupdf.a $WORK/libmupdf-third.a
+    $SRC/pdf_fuzzer.cc -o $OUT/$fuzz_target \
+    $LIB_FUZZING_ENGINE $WORK/libmupdf.a $WORK/libmupdf-third.a
 
 mv $SRC/{*.zip,*.dict,*.options} $OUT
 

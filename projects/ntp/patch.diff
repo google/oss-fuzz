@@ -1,0 +1,253 @@
+diff --git a/configure.ac b/configure.ac
+index 7975d31..528861c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -4399,6 +4399,37 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
+     [support dynamic interleave?])
+ AC_MSG_RESULT([$ntp_ok])
+ 
++AC_ARG_ENABLE(fuzztargets,
++    AS_HELP_STRING([--enable-fuzztargets], [Enable fuzz targets]),[enable_fuzztargets=$enableval],[enable_fuzztargets=no])
++AM_CONDITIONAL([BUILD_FUZZTARGETS], [test "x$enable_fuzztargets" = "xyes"])
++AS_IF([test "x$enable_fuzztargets" = "xyes"], [
++    AC_PROG_CXX
++    AC_LANG_PUSH(C++)
++    AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"], [
++        LIB_FUZZING_ENGINE=-fsanitize=fuzzer
++        AC_SUBST(LIB_FUZZING_ENGINE)
++    ])
++    tmp_saved_flags=$[]_AC_LANG_PREFIX[]FLAGS
++    _AC_LANG_PREFIX[]FLAGS="$[]_AC_LANG_PREFIX[]FLAGS $LIB_FUZZING_ENGINE"
++    AC_MSG_CHECKING([whether $CXX accepts $LIB_FUZZING_ENGINE])
++    AC_LINK_IFELSE([AC_LANG_SOURCE([[
++#include <sys/types.h>
++extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size);
++extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
++(void)Data;
++(void)Size;
++return 0;
++}
++        ]])],
++        [ AC_MSG_RESULT(yes)
++          has_sanitizefuzzer=yes],
++        [ AC_MSG_RESULT(no) ]
++    )
++    _AC_LANG_PREFIX[]FLAGS=$tmp_saved_flags, []
++    AC_LANG_POP()
++])
++AM_CONDITIONAL([HAS_SANITIZEFUZZER], [test "x$has_sanitizefuzzer" = "xyes"])
++
+ NTP_UNITYBUILD
+ 
+ dnl  gtest is needed for our tests subdirs. It would be nice if we could
+@@ -4459,6 +4490,7 @@ AC_CONFIG_FILES([tests/ntpd/Makefile])
+ AC_CONFIG_FILES([tests/ntpq/Makefile])
+ AC_CONFIG_FILES([tests/sandbox/Makefile])
+ AC_CONFIG_FILES([tests/sec-2853/Makefile])
++AC_CONFIG_FILES([tests/fuzz/Makefile])
+ AC_CONFIG_FILES([util/Makefile])
+ 
+ perllibdir="${datadir}/ntp/lib"
+diff --git a/ntpd/ntp_io.c b/ntpd/ntp_io.c
+index 7c3fdd4..190a373 100644
+--- a/ntpd/ntp_io.c
++++ b/ntpd/ntp_io.c
+@@ -503,7 +503,11 @@ io_open_sockets(void)
+ 	 * Create the sockets
+ 	 */
+ 	BLOCKIO();
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++	create_sockets(4123);
++#else
+ 	create_sockets(NTP_PORT);
++#endif
+ 	UNBLOCKIO();
+ 
+ 	init_async_notifications();
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index af502b9..60a2379 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -10,3 +10,6 @@ SUBDIRS +=		\
+ 	sec-2853	\
+ 	$(NULL)
+ 
++if BUILD_FUZZTARGETS
++    SUBDIRS += fuzz
++endif
+diff --git a/tests/fuzz/Makefile.am b/tests/fuzz/Makefile.am
+new file mode 100644
+index 0000000..7f482b5
+--- /dev/null
++++ b/tests/fuzz/Makefile.am
+@@ -0,0 +1,13 @@
++include $(top_srcdir)/includes.mf
++
++bin_PROGRAMS = fuzz_ntpd_receive
++
++fuzz_ntpd_receive_SOURCES = fuzz_ntpd_receive.c ../../ntpd/ntp_io.c ../../ntpd/ntp_config.c ../../ntpd/ntp_scanner.c ../../ntpd/ntp_parser.y ../../ntpd/ntpd-opts.c
++fuzz_ntpd_receive_CFLAGS = $(NTP_INCS) -I../../sntp/libopts -I../../ntpd/
++fuzz_ntpd_receive_LDADD = ../../ntpd/libntpd.a $(LIBPARSE) ../../libntp/libntp.a $(LDADD_LIBNTP) $(LIBOPTS_LDADD) $(PTHREAD_LIBS) $(LIBM) $(LDADD_NTP) $(LSCF) $(LDADD_LIBUTIL)
++
++if HAS_SANITIZEFUZZER
++    fuzz_ntpd_receive_LDFLAGS = $(LIB_FUZZING_ENGINE) -lstdc++ -stdlib=libc++
++else
++    fuzz_ntpd_receive_SOURCES += onefile.c
++endif
+diff --git a/tests/fuzz/fuzz_ntpd_receive.c b/tests/fuzz/fuzz_ntpd_receive.c
+new file mode 100644
+index 0000000..7cb8d99
+--- /dev/null
++++ b/tests/fuzz/fuzz_ntpd_receive.c
+@@ -0,0 +1,94 @@
++#include <stddef.h>
++#include <stdint.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include "config.h"
++#include "recvbuff.h"
++#include "ntpd.h"
++
++const char *Version = "libntpq 0.3beta";
++int listen_to_virtual_ips = TRUE;
++int mdnstries = 5;
++char const *progname = "fuzz_ntpd_receive";
++#ifdef HAVE_WORKING_FORK
++int    waitsync_fd_to_close = -1;    /* -w/--wait-sync */
++#endif
++int yydebug=0;
++
++static int initialized = 0;
++int sockfd;
++uint8_t itf_index;
++
++void fuzz_itf_selecter(void * data, interface_info_t * itf) {
++    endpt **ep = (endpt **)data;
++    if (itf_index == 0) {
++        *ep = itf->ep;
++    }
++    itf_index--;
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
++    struct recvbuf rbufp;
++
++    if (initialized == 0) {
++        sockfd = open("/dev/null", O_RDWR );
++        //adds interfaces
++        init_io();
++        init_auth();
++        init_util();
++        init_restrict();
++        init_mon();
++        init_timer();
++        init_lib();
++        init_request();
++        init_control();
++        init_peer();
++        init_proto();
++        init_loopfilter();
++        io_open_sockets();
++        initialized = 1;
++    }
++
++    if (Size < sizeof(l_fp)) {
++        return 0;
++    }
++    memcpy(&rbufp.recv_time, Data, sizeof(l_fp));
++    Data += sizeof(l_fp);
++    Size -= sizeof(l_fp);
++
++    if (Size < sizeof(sockaddr_u)) {
++        return 0;
++    }
++    memcpy(&rbufp.srcadr, Data, sizeof(sockaddr_u));
++    memcpy(&rbufp.recv_srcadr, &rbufp.srcadr, sizeof(sockaddr_u));
++    Data += sizeof(sockaddr_u);
++    Size -= sizeof(sockaddr_u);
++
++    if (Size < 1) {
++        return 0;
++    }
++    itf_index = Data[0];
++    rbufp.dstadr = NULL;
++    interface_enumerate(fuzz_itf_selecter, &rbufp.dstadr);
++    if (rbufp.dstadr == NULL) {
++        return 0;
++    }
++    Data++;
++    Size--;
++
++    if (Size > RX_BUFF_SIZE) {
++        Size = RX_BUFF_SIZE;
++    }
++    rbufp.recv_length = Size;
++    memcpy(rbufp.recv_buffer, Data, Size);
++
++    rbufp.msg_flags = 0;
++    rbufp.used = 0;
++    rbufp.link = NULL;
++    rbufp.fd = sockfd;
++
++    receive(&rbufp);
++    return 0;
++}
+diff --git a/tests/fuzz/onefile.c b/tests/fuzz/onefile.c
+new file mode 100644
+index 0000000..74be306
+--- /dev/null
++++ b/tests/fuzz/onefile.c
+@@ -0,0 +1,51 @@
++#include <stdint.h>
++#include <stdlib.h>
++#include <stdio.h>
++
++int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
++
++int main(int argc, char** argv)
++{
++    FILE * fp;
++    uint8_t *Data;
++    size_t Size;
++
++    if (argc != 2) {
++        return 1;
++    }
++    //opens the file, get its size, and reads it into a buffer
++    fp = fopen(argv[1], "rb");
++    if (fp == NULL) {
++        return 2;
++    }
++    if (fseek(fp, 0L, SEEK_END) != 0) {
++        fclose(fp);
++        return 2;
++    }
++    Size = ftell(fp);
++    if (Size == (size_t) -1) {
++        fclose(fp);
++        return 2;
++    }
++    if (fseek(fp, 0L, SEEK_SET) != 0) {
++        fclose(fp);
++        return 2;
++    }
++    Data = malloc(Size);
++    if (Data == NULL) {
++        fclose(fp);
++        return 2;
++    }
++    if (fread(Data, Size, 1, fp) != 1) {
++        fclose(fp);
++        free(Data);
++        return 2;
++    }
++
++    //lauch fuzzer
++    LLVMFuzzerTestOneInput(Data, Size);
++    free(Data);
++    fclose(fp);
++    return 0;
++}
++

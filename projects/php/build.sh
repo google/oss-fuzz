@@ -15,23 +15,57 @@
 #
 ################################################################################
 
-mkdir -p $OUT/lib/
-cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
-cp /usr/lib/x86_64-linux-gnu/libonig.so.2 $OUT/lib/
+# build oniguruma and link statically
+pushd oniguruma
+autoreconf -vfi
+./configure
+make -j$(nproc)
+popd
+export ONIG_CFLAGS="-I$PWD/oniguruma/src"
+export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
+
+# PHP's zend_function union is incompatible with the object-size sanitizer
+export CFLAGS="$CFLAGS -fno-sanitize=object-size"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
+
+# Make sure the right assembly files are picked
+BUILD_FLAG=""
+if [ "$ARCHITECTURE" = "i386" ]; then
+    BUILD_FLAG="--build=i686-pc-linux-gnu"
+fi
+
 # build project
 ./buildconf
-./configure --enable-fuzzer --enable-option-checking=fatal --disable-libxml --disable-dom \
-	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
-	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring
-make
+./configure $BUILD_FLAG \
+    --disable-all \
+    --enable-debug-assertions \
+    --enable-option-checking=fatal \
+    --enable-fuzzer \
+    --enable-exif \
+    --enable-mbstring \
+    --without-pcre-jit \
+    --disable-phpdbg \
+    --disable-cgi \
+    --with-pic
+make -j$(nproc)
 
-FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring"
+# Generate corpuses and dictionaries.
+sapi/cli/php sapi/fuzzer/generate_all.php
+
+# Copy dictionaries to expected locations.
+cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
+cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
+cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
+
+FUZZERS="php-fuzz-json
+php-fuzz-exif
+php-fuzz-mbstring
+php-fuzz-unserialize
+php-fuzz-unserializehash
+php-fuzz-parser
+php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
-	# for loading missing libs like libonig
-	chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName
-	# copy runtime options
-	cp $SRC/runtime.options $OUT/${fuzzerName}.options
 done
 # copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do

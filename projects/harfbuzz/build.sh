@@ -17,34 +17,40 @@
 
 # Disable:
 # 1. UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+export CFLAGS="$CFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
+
+# setup
+build=$WORK/build
+
+# cleanup
+rm -rf $build
+mkdir -p $build
 
 # Build the library.
-./autogen.sh
-./configure --enable-static --disable-shared
-make clean
-make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
+meson --default-library=static --wrap-mode=nodownload \
+      -Dexperimental_api=true \
+      -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
+      $build \
+  || (cat build/meson-logs/meson-log.txt && false)
 
-# Build the fuzzer.
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz.a
-
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
+# Build the fuzzers.
+ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,draw,subset,set}-fuzzer
+mv $build/test/fuzzing/hb-{shape,draw,subset,set}-fuzzer $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
 for d in \
-	test/shaping/data/in-house/fonts \
-	test/shaping/data/aots/fonts \
-	test/shaping/data/text-rendering-tests/fonts \
+	test/shape/data/in-house/fonts \
+	test/shape/data/aots/fonts \
+	test/shape/data/text-rendering-tests/fonts \
 	test/api/fonts \
 	test/fuzzing/fonts \
+	perf/fonts \
 	; do
 	cp $d/* all-fonts/
 done
 zip $OUT/hb-shape-fuzzer_seed_corpus.zip all-fonts/*
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-draw-fuzzer_seed_corpus.zip
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-subset-fuzzer_seed_corpus.zip
+zip $OUT/hb-set-fuzzer_seed_corpus.zip ./test/fuzzing/sets/*

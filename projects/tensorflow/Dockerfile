@@ -15,25 +15,24 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mihaimaruseac@google.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
-        python-dev \
         rsync \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN python3 -m pip install numpy
 
-# Install Bazel
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
+# Due to Bazel bug, need to symlink python3 to python
+# See https://github.com/bazelbuild/bazel/issues/8665
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python
 
-# Downgrade Bazel to latest supported version (0.21.0)
-RUN curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
-RUN chmod +x ./bazel-0.21.0-installer-linux-x86_64.sh
-RUN ./bazel-0.21.0-installer-linux-x86_64.sh
+# Install Bazelisk to keep bazel in sync with the version required by TensorFlow
+RUN curl -Lo /usr/bin/bazel \
+        https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64 \
+        && \
+    chmod +x /usr/bin/bazel
 
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow

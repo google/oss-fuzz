@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bshas3@email.com
 RUN apt-get update && apt-get install -y make autoconf autopoint libtool zip
 RUN git clone https://git.tukaani.org/xz.git
 COPY build.sh $SRC/

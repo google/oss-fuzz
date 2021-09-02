@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/s2geometry"
+language: c++
+primary_contact: "jmr@google.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/google/s2geometry"

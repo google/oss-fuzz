@@ -30,20 +30,4 @@ make install
 popd
 
 # qpdf
-./configure \
-  --enable-static \
-  --disable-shared \
-  --prefix="$WORK" \
-  LDFLAGS="-L$WORK/lib" \
-  CPPFLAGS="-I$WORK/include" \
-  LIBS="-pthread"
-make -j$(nproc)
-make install
-
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
-  "$SRC/qpdf_read_memory_fuzzer.cc" -o "$OUT/qpdf_read_memory_fuzzer" \
-  "$WORK/lib/libqpdf.a" \
-  "$WORK/lib/libjpeg.a" \
-  "$WORK/lib/libz.a" \
-  -pthread \
-  -lFuzzingEngine
+./fuzz/oss-fuzz-build

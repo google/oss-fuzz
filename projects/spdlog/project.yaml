@@ -1,0 +1,9 @@
+homepage: "https://github.com/gabime/spdlog"
+language: c++
+primary_contact: "gmelman1@gmail.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+# - memory
+  - undefined
+main_repo: 'https://github.com/gabime/spdlog.git'

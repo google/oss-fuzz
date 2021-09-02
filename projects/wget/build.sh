@@ -16,7 +16,7 @@
 ################################################################################
 
 export WGET_DEPS_PATH=$SRC/wget_deps
-export PKG_CONFIG_PATH=$WGET_DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$WGET_DEPS_PATH/lib64/pkgconfig:$WGET_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET_DEPS_PATH/include"
 export LDFLAGS="-L$WGET_DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
@@ -67,7 +67,8 @@ LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
+    --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
 make -j$(nproc)
 make install
 
@@ -77,6 +78,7 @@ export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget
 ./bootstrap
+autoreconf -fi
 
 # build and run non-networking tests
 LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \

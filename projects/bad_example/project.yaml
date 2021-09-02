@@ -1,6 +1,7 @@
-disabled: True
 homepage: "http://www.zlib.net/"
+language: c++
 sanitizers:
   - address
   - memory
   - undefined
+disabled: True

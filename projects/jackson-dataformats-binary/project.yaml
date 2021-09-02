@@ -1,0 +1,10 @@
+homepage: "https://github.com/FasterXML/jackson-dataformats-binary"
+language: jvm
+primary_contact: "tatu@fasterxml.com"
+auto_ccs:
+  - "meumertzheim@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/FasterXML/jackson-dataformats-binary"
+sanitizers:
+  - address

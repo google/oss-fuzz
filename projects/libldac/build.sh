@@ -19,7 +19,7 @@ $CC $CFLAGS -Iinc -c $SRC/libldac_encode_fuzzer.cc -o libldac_encode_fuzzer.o
 $CC $CFLAGS -Iinc -c src/ldaclib.c -o src/ldaclib.o
 $CC $CFLAGS -Iinc -c src/ldacBT.c -o src/ldacBT.o
 
-$CXX $CXXFLAGS -lFuzzingEngine \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
 	libldac_encode_fuzzer.o \
 	src/ldaclib.o \
 	src/ldacBT.o \

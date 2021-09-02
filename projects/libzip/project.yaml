@@ -1,0 +1,11 @@
+homepage: "https://libzip.org/"
+language: c++
+primary_contact: "libzip@nih.at"
+auto_ccs:
+  - "randy440088@gmail.com"
+sanitizers:
+  - address
+  - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://github.com/nih-at/libzip.git'

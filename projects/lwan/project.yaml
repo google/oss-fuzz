@@ -1,4 +1,6 @@
 homepage: "https://github.com/lpereira/lwan"
+language: c++
 primary_contact: "leandro.pereira@gmail.com"
 sanitizers:
   - address
+main_repo: 'git://github.com/lpereira/lwan'

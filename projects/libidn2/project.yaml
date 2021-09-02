@@ -1,9 +1,17 @@
 homepage: "https://gitlab.com/libidn/libidn2"
+language: c++
 primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "n.mavrogiannopoulos@gmail.com"
   - "simon@josefsson.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+  - dataflow
+main_repo: 'https://gitlab.com/libidn/libidn2.git'

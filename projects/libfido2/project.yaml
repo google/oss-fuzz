@@ -1,0 +1,16 @@
+homepage: https://github.com/Yubico/libfido2
+language: c++
+primary_contact: "kostas@yubico.com"
+auto_ccs:
+    - "pedro@ambientworks.net"
+    - "marissa.nishimoto@yubico.com"
+    - "pedro.ossfuzz@gmail.com"
+    - "ludvig.michaelsson@yubico.com"
+sanitizers:
+    - address
+    - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+fuzzing_engines:
+    - libfuzzer
+main_repo: 'https://github.com/Yubico/libfido2'

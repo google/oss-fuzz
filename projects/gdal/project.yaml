@@ -1,4 +1,5 @@
 homepage: "https://gdal.org"
+language: c++
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - "schwehr@gmail.com"
@@ -7,3 +8,8 @@ auto_ccs:
   - "juergen.fischer@gmail.com"
   - "athomas@thinkspatial.com.au"
   - "ari.jolma@gmail.com"
+  - "bjorn.harrtell@gmail.com"
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/OSGeo/gdal'

@@ -1,0 +1,10 @@
+homepage: "https://openbabel.org"
+language: c++
+primary_contact: "geoff.hutchison@gmail.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/openbabel/openbabel.git'

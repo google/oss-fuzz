@@ -16,7 +16,7 @@
 ################################################################################
 
 ./autogen.sh
-./configure --enable-static --without-raster --without-protobuf
+./configure --enable-static --without-raster --without-protobuf --without-wagyu --enable-debug
 cd liblwgeom
 make clean -s
 make -j$(nproc) -s

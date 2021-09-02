@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-make FUZZER_ENGINE="-lFuzzingEngine" fuzzers -Ctest
+make FUZZER_ENGINE="$LIB_FUZZING_ENGINE" fuzzers -Ctest
 
 FUZZER_FILES=$(find test/ -maxdepth 1 -executable -type f)
 for F in $FUZZER_FILES; do
@@ -23,3 +23,4 @@ for F in $FUZZER_FILES; do
     FUZZER=$(basename $F .cpp)
     cp $SRC/fuzzer-parse.options $OUT/$FUZZER.options
 done
+cp $SRC/parse_afl_fuzzer.dict $OUT/

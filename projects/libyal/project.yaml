@@ -1,0 +1,11 @@
+homepage: "https://github.com/libyal"
+language: c
+primary_contact: "joachim.metz@gmail.com"
+sanitizers:
+- address
+- memory
+- undefined
+architectures:
+- x86_64
+- i386
+main_repo: 'https://github.com/libyal/libfplist.git'

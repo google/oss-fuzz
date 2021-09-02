@@ -33,37 +33,26 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cc \
+$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
      -I$SRC/icu4c/source/test/fuzzer
 
-FUZZERS="break_iterator_fuzzer \
-  converter_fuzzer \
-  locale_fuzzer \
-  number_format_fuzzer \
-  ucasemap_fuzzer \
-  uloc_canonicalize_fuzzer \
-  uloc_for_language_tag_fuzzer \
-  uloc_get_name_fuzzer \
-  uloc_is_right_to_left_fuzzer \
-  uloc_open_keywords_fuzzer \
-  unicode_string_codepage_create_fuzzer \
-  uregex_open_fuzzer
-  "
+FUZZER_PATH=$SRC/icu/icu4c/source/test/fuzzer
+# Assumes that all fuzzers files end with'_fuzzer.cpp'.
+FUZZERS=$FUZZER_PATH/*_fuzzer.cpp
+
 for fuzzer in $FUZZERS; do
+  file=${fuzzer:${#FUZZER_PATH}+1}
   $CXX $CXXFLAGS -std=c++11 \
-    $SRC/icu/icu4c/source/test/fuzzer/$fuzzer.cc -o $OUT/$fuzzer locale_util.o \
+    $fuzzer -o $OUT/${file/.cpp/} locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
-    -lFuzzingEngine -licui18n -licuuc -licutu -licudata
+    $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata
 done
 
-CORPUS="uloc_canonicalize_fuzzer_seed_corpus \
-  uloc_for_language_tag_fuzzer_seed_corpus \
-  uloc_get_name_fuzzer_seed_corpus \
-  uloc_is_right_to_left_fuzzer_seed_corpus \
-  uloc_open_keywords_fuzzer_seed_corpus
-  "
+# Assumes that all seed files end with '*_fuzzer_seed_corpus.txt'.
+CORPUS=$SRC/icu/icu4c/source/test/fuzzer/*_fuzzer_seed_corpus.txt
 for corpus in $CORPUS; do
-  zip $OUT/$corpus.zip $SRC/icu/icu4c/source/test/fuzzer/$corpus.txt
+    zipfile=${corpus:${#FUZZER_PATH}+1}
+    zip $OUT/${zipfile/.txt/.zip} $corpus
 done
 
 cp $SRC/icu/icu4c/source/test/fuzzer/*.dict  $OUT/
