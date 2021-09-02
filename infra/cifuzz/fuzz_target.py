@@ -121,12 +121,12 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                              interactive=True):
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
       result = engine_impl.minimize_corpus(self.target_path, [],
-                                           self.latest_corpus_path,
+                                           [self.latest_corpus_path],
                                            self.pruned_corpus_path,
                                            self.workspace.artifacts,
                                            self.duration)
 
-    return FuzzResult(None, result.output, self.pruned_corpus_path)
+    return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -160,16 +160,12 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     # Only report first crash.
     crash = result.crashes[0]
-
-    # Crash was discovered.
-    logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                       (self.target_name.encode(), result.output))
+    logging.info('Fuzzer: %s. Detected bug:\n%s', self.target_name,
+                 crash.stacktrace)
 
     if self.is_crash_reportable(crash.input_path):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(crash.input_path, result.output,
-                        self.latest_corpus_path)
+      return FuzzResult(crash.input_path, result.logs, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None, self.latest_corpus_path)
