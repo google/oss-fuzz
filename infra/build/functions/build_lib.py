@@ -83,9 +83,9 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def get_upload_bucket(engine, testing=False, architecture='x86_64'):
-  """Returns the upload bucket for |engine|. Returns the testing bucket if
-  |testing|."""
+def get_upload_bucket(engine, architecture, testing):
+  """Returns the upload bucket for |engine| and architecture. Returns the
+  testing bucket if |testing|."""
   bucket = ENGINE_INFO[engine].upload_bucket
   if architecture != 'x86_64':
     bucket += '-' + architecture
@@ -96,8 +96,9 @@ def get_upload_bucket(engine, testing=False, architecture='x86_64'):
 
 def _get_targets_list(project_name, testing):
   """Returns target list."""
-  # libFuzzer ASan is the default configuration, get list of targets from it.
-  bucket = get_upload_bucket('libfuzzer', testing)
+  # libFuzzer ASan 'x86_84' is the default configuration, get list of targets
+  # from it.
+  bucket = get_upload_bucket('libfuzzer', 'x86_64', testing)
   url = get_targets_list_url(bucket, project_name, 'address')
 
   url = urlparse.urljoin(GCS_URL_BASENAME, url)
