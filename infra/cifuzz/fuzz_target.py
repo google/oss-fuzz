@@ -15,10 +15,8 @@
 import collections
 import logging
 import os
-import re
 import shutil
 import stat
-import subprocess
 import sys
 
 import base_runner_utils
