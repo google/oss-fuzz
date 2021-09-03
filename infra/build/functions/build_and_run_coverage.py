@@ -42,7 +42,7 @@ COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
