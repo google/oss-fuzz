@@ -82,5 +82,5 @@ def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   summary_str = fuzzer_output[begin_stack:end_stack]
 
   # Write sections of fuzzer output to specific files.
-  with open(parsed_output_file_path, 'ab') as summary_handle:
+  with open(parsed_output_file_path, 'a') as summary_handle:
     summary_handle.write(summary_str)
