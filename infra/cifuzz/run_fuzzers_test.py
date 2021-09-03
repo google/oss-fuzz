@@ -255,7 +255,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     runner.initialize()
     testcase = os.path.join(workspace, 'testcase')
     self.fs.create_file(testcase)
-    stacktrace = b'stacktrace'
+    stacktrace = 'stacktrace'
     corpus_dir = 'corpus'
     self.fs.create_dir(corpus_dir)
     mock_run_fuzz_target.return_value = fuzz_target.FuzzResult(
@@ -272,7 +272,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   """Tests that BatchFuzzTargetRunnerTest works as intended."""
   WORKSPACE = 'workspace'
-  STACKTRACE = b'stacktrace'
+  STACKTRACE = 'stacktrace'
   CORPUS_DIR = 'corpus'
 
   def setUp(self):
