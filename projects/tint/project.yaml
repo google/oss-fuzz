@@ -11,6 +11,3 @@ main_repo: 'https://dawn.googlesource.com/tint.git'
 architectures:
   - x86_64
   - i386
-fuzzing_engines:
-  - libfuzzer
-  - afl
