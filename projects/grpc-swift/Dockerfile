@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-swift
 
 # specific to project
+RUN apt-get update && apt-get install -y zlib1g-dev
 RUN git clone --depth 1 https://github.com/grpc/grpc-swift
 COPY build.sh $SRC
 WORKDIR $SRC/grpc-swift
