@@ -23,12 +23,11 @@ then
     export SWIFTFLAGS="$SWIFTFLAGS -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping -Xswiftc -sanitize=fuzzer"
 else
     export SWIFTFLAGS="$SWIFTFLAGS -Xswiftc -sanitize=fuzzer,$SANITIZER --sanitize=$SANITIZER"
+    for f in $CFLAGS; do
+        export SWIFTFLAGS="$SWIFTFLAGS -Xcc=$f"
+    done
+
+    for f in $CXXFLAGS; do
+        export SWIFTFLAGS="$SWIFTFLAGS -Xcxx=$f"
+    done
 fi
-
-for f in $CFLAGS; do
-    export SWIFTFLAGS="$SWIFTFLAGS -Xcc=$f"
-done
-
-for f in $CXXFLAGS; do
-    export SWIFTFLAGS="$SWIFTFLAGS -Xcxx=$f"
-done
