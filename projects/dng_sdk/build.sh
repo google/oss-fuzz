@@ -15,11 +15,16 @@
 #
 ################################################################################
 
+# compile source
 cd ./source
-
 rm dng_xmp*
 find . -name "*.cpp" -exec $CXX $CXXFLAGS -DqDNGUseLibJPEG=1 -DqDNGUseXMP=0 -DqDNGThreadSafe=1 -c {} \;
 ar cr libdns_sdk.a *.o
 
+# compile fuzzer
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp -o $OUT/dng_parser_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
+
+# move seeds
+cd ../fuzzer/seeds/CVE_2020_9589
+zip -q $OUT/dng_parser_fuzzer_seed_corpus.zip *.dng
