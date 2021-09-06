@@ -25,7 +25,7 @@ pushd out/Debug
 # when building tint.
 CFLAGS="$CFLAGS -fno-sanitize=vptr" \
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
-cmake -GNinja ../.. -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF
+cmake -GNinja ../.. -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
 
 SPIRV_FUZZERS="tint_spv_reader_fuzzer\
  tint_spv_reader_msl_writer_fuzzer\

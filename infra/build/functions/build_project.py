@@ -375,7 +375,8 @@ def get_upload_steps(project, build, timestamp, base_images_project, testing):
   """Returns the steps for uploading the fuzzer build specified by |project| and
   |build|. Uses |timestamp| for naming the uploads. Uses |base_images_project|
   and |testing| for determining which image to use for the upload."""
-  bucket = build_lib.get_upload_bucket(build.fuzzing_engine, testing)
+  bucket = build_lib.get_upload_bucket(build.fuzzing_engine, build.architecture,
+                                       testing)
   stamped_name = '-'.join([project.name, build.sanitizer, timestamp])
   zip_file = stamped_name + '.zip'
   upload_url = build_lib.get_signed_url(

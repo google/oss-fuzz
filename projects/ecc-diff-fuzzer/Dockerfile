@@ -14,7 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+ENV GOPATH /root/go
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+RUN install_go.sh
 RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake gettext libtool python curl
 RUN rustup target add i686-unknown-linux-gnu
 #use different package sources for recent npm
