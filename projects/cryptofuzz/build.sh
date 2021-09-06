@@ -147,27 +147,27 @@ then
     make -B
 fi
 
-# Build blst
-cd $SRC/blst/
-# Patch to disable assembly
-# This is to prevent false positives, see:
-# https://github.com/google/oss-fuzz/issues/5914
-touch new_no_asm.h
-echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-echo "#else" >>new_no_asm.h
-echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-echo "#endif" >>new_no_asm.h
-cat src/no_asm.h >>new_no_asm.h
-mv new_no_asm.h src/no_asm.h
-CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
-export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
-export BLST_INCLUDE_PATH=$(realpath bindings/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
-
-# Compile Cryptofuzz blst module
-cd $SRC/cryptofuzz/modules/blst/
-make -B -j$(nproc)
+## Build blst
+#cd $SRC/blst/
+## Patch to disable assembly
+## This is to prevent false positives, see:
+## https://github.com/google/oss-fuzz/issues/5914
+#touch new_no_asm.h
+#echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+#echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+#echo "#else" >>new_no_asm.h
+#echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+#echo "#endif" >>new_no_asm.h
+#cat src/no_asm.h >>new_no_asm.h
+#mv new_no_asm.h src/no_asm.h
+#CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+#export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+#export BLST_INCLUDE_PATH=$(realpath bindings/)
+#export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+#
+## Compile Cryptofuzz blst module
+#cd $SRC/cryptofuzz/modules/blst/
+#make -B -j$(nproc)
 
 # Build libsecp256k1
 cd $SRC/secp256k1/
