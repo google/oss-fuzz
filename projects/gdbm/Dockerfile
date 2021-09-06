@@ -27,6 +27,6 @@ RUN apt-get -qq update && \
       libtool\
       texinfo\
       gettext
-RUN git clone --depth 1 --branch fuzz https://git.gnu.org.ua/gdbm.git
+RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
 COPY build.sh $SRC/

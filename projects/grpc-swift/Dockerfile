@@ -14,13 +14,10 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder-swift:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder-swift
+FROM gcr.io/oss-fuzz-base/base-builder-swift
 
 # specific to project
+RUN apt-get update && apt-get install -y zlib1g-dev
 RUN git clone --depth 1 https://github.com/grpc/grpc-swift
 COPY build.sh $SRC
 WORKDIR $SRC/grpc-swift
