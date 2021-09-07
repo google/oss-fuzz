@@ -17,15 +17,25 @@
 
 
 . precompile_swift
-# build project
 cd FuzzTesting
+
+# debug build
 swift build -c debug $SWIFTFLAGS
 (
 cd .build/debug/
 find . -maxdepth 1 -type f -name "Fuzz*" -executable | while read i; do cp $i $OUT/"$i"_debug; done
 )
+
+# release build
 swift build -c release $SWIFTFLAGS
 (
 cd .build/release/
 find . -maxdepth 1 -type f -name "Fuzz*" -executable | while read i; do cp $i $OUT/"$i"_release; done
 )
+
+# Copy any dictionaries over.
+for fuzz_dict in Fuzz*.dict ; do
+  fuzzer_name=$(basename $fuzz_dict .dict)
+  cp $fuzz_dict $OUT/${fuzzer_name}_debug.dict
+  cp $fuzz_dict $OUT/${fuzzer_name}_release.dict
+done
