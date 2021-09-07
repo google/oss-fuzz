@@ -16,10 +16,9 @@
 ################################################################################
 
 
-git apply --ignore-whitespace $SRC/patch.diff
 # build project
 ./autogen.sh
-./configure PCRE2_LIBS=-l:libpcre2-8.a
+./configure --enable-oss-fuzz PCRE2_LIBS=-l:libpcre2-8.a
 make -j$(nproc) -C include/
 make -j$(nproc) -C lib/libvarnish/
 make -j$(nproc) -C lib/libvgz/
