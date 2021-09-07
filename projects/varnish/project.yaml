@@ -1,5 +1,5 @@
 homepage: "https://varnish-cache.org/"
-language: c++
+language: c
 primary_contact: "phk@varnish.org"
 auto_ccs:
   - "bsdphk@gmail.com"
