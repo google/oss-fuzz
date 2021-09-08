@@ -99,6 +99,7 @@ Programming language the project is written in. Values you can specify include:
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
+* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -208,10 +209,20 @@ COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzze
 ```
 In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`.
 
+Depending on your project's language, you will use a different base image,
+for instance `FROM gcr.io/oss-fuzz-base/base-builder-go` for golang.
+
 For an example, see
 [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)
 or
 [syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
+
+In the case of a project with multiple languages/toolchains needed,
+you can run installation scripts `install_lang.sh` where lang is the language needed.
+You also need to setup environment variables needed by this toolchain, for example `GOPATH` is needed by golang.
+For an example, see
+[ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
+where we use `base-builder-rust`and install golang
 
 ## build.sh {#buildsh}
 

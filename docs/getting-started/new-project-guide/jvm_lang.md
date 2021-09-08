@@ -63,6 +63,8 @@ sanitizers:
 
 ### Dockerfile
 
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-jvm`
+
 The OSS-Fuzz base Docker images already come with OpenJDK 15 pre-installed. If
 you need Maven to build your project, you can install it by adding the following
 line to your Dockerfile:
