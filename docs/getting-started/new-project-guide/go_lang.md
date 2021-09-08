@@ -59,6 +59,8 @@ sanitizers:
 
 ### Dockerfile
 
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-go`
+
 The OSS-Fuzz builder image has the latest stable release of Golang installed. In
 order to install dependencies of your project, add `RUN git clone ...` command to
 your Dockerfile.
