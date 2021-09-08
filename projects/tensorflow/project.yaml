@@ -3,6 +3,7 @@ language: c++
 primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
  - "amitpatankar@google.com"
+ - "lpak@google.com"
 sanitizers:
   - address
   - undefined
