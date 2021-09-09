@@ -146,6 +146,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       options = engine_impl.prepare(corpus_path, env.target_path, env.build_dir)
       options.merge_back_new_testcases = False
       options.analyze_dictionary = False
+      options.arguments.extend(LIBFUZZER_OPTIONS)
 
       result = engine_impl.fuzz(self.target_path, options,
                                 self.workspace.artifacts, self.duration)
