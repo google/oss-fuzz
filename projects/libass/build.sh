@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/fribidi
-./autogen.sh --disable-docs --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
-make install
-
 cd $SRC/harfbuzz
 
 # setup
@@ -45,10 +41,11 @@ export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./configure --disable-asm
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -I$SRC/libass -L/work/lib \
+$CXX $CXXFLAGS -std=c++11 -I$SRC/libass \
     $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
     $LIB_FUZZING_ENGINE libass/.libs/libass.a \
-    -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lharfbuzz -lz -lpng12 \
-    -lexpat -Wl,-Bdynamic
+    -Wl,-Bstatic \
+    $(pkg-config --static --libs fontconfig freetype2 fribidi harfbuzz | sed 's/-lm //g') \
+    -Wl,-Bdynamic
 
 cp $SRC/*.dict $SRC/*.options $OUT/
