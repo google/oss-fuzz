@@ -33,6 +33,7 @@ CFLAGS="$CFLAGS -fno-sanitize=vptr" \
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
 meson --default-library=static --wrap-mode=nodownload \
       -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
+      -Dtests=disabled \
       --prefix=/work/ --libdir=lib $build \
   || (cat build/meson-logs/meson-log.txt && false)
 meson install -C $build
