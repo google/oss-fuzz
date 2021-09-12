@@ -329,7 +329,7 @@ See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob
 The `build.sh` should produce fuzzers that are statically linked. This is because the
 fuzzer build environment is different to the fuzzer runtime environment and if your
 project depends on third party libraries then it is likely they will not be present
-in the execution environment. Thus any shared libraries you may install or compile in
+in the execution environment. Thus, any shared libraries you may install or compile in
 `build.sh` or `Dockerfile` will not be present in the fuzzer runtime environment. There
 are exceptions to this rule, and for further information on this please see the [fuzzer environment]({{ site.baseurl }}/further-reading/fuzzer-environment/) page.
 
