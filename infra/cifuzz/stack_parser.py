@@ -18,30 +18,30 @@ import logging
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the beginning of the stacktrace.
 STACKTRACE_TOOL_MARKERS = [
-    b'AddressSanitizer',
-    b'ASAN:',
-    b'CFI: Most likely a control flow integrity violation;',
-    b'ERROR: libFuzzer',
-    b'KASAN:',
-    b'LeakSanitizer',
-    b'MemorySanitizer',
-    b'ThreadSanitizer',
-    b'UndefinedBehaviorSanitizer',
-    b'UndefinedSanitizer',
+    'AddressSanitizer',
+    'ASAN:',
+    'CFI: Most likely a control flow integrity violation;',
+    'ERROR: libFuzzer',
+    'KASAN:',
+    'LeakSanitizer',
+    'MemorySanitizer',
+    'ThreadSanitizer',
+    'UndefinedBehaviorSanitizer',
+    'UndefinedSanitizer',
 ]
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the end of the stacktrace.
 STACKTRACE_END_MARKERS = [
-    b'ABORTING',
-    b'END MEMORY TOOL REPORT',
-    b'End of process memory map.',
-    b'END_KASAN_OUTPUT',
-    b'SUMMARY:',
-    b'Shadow byte and word',
-    b'[end of stack trace]',
-    b'\nExiting',
-    b'minidump has been written',
+    'ABORTING',
+    'END MEMORY TOOL REPORT',
+    'End of process memory map.',
+    'END_KASAN_OUTPUT',
+    'SUMMARY:',
+    'Shadow byte and word',
+    '[end of stack trace]',
+    '\nExiting',
+    'minidump has been written',
 ]
 
 
@@ -82,5 +82,5 @@ def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   summary_str = fuzzer_output[begin_stack:end_stack]
 
   # Write sections of fuzzer output to specific files.
-  with open(parsed_output_file_path, 'ab') as summary_handle:
+  with open(parsed_output_file_path, 'a') as summary_handle:
     summary_handle.write(summary_str)

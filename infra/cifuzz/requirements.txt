@@ -1,1 +1,2 @@
+clusterfuzz==2.5.4.post5
 requests==2.25.1

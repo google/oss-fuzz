@@ -15,16 +15,18 @@
 import collections
 import logging
 import os
-import re
 import shutil
 import stat
-import subprocess
 import sys
 
 import base_runner_utils
+import config_utils
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
+
+import clusterfuzz.environment
+import clusterfuzz.fuzz
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -111,68 +113,58 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   def prune(self):
     """Prunes the corpus and returns the result."""
     self._download_corpus()
-    prune_options = [
-        '-merge=1', self.pruned_corpus_path, self.latest_corpus_path
-    ]
-    result = self.fuzz(use_corpus=False, extra_libfuzzer_options=prune_options)
-    return FuzzResult(result.testcase, result.stacktrace,
-                      self.pruned_corpus_path)
+    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
+                                             self.config.sanitizer,
+                                             self.target_path,
+                                             interactive=True):
+      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+      result = engine_impl.minimize_corpus(self.target_path, [],
+                                           [self.latest_corpus_path],
+                                           self.pruned_corpus_path,
+                                           self.workspace.artifacts,
+                                           self.duration)
 
-  def fuzz(self, use_corpus=True, extra_libfuzzer_options=None):
+    return FuzzResult(None, result.logs, self.pruned_corpus_path)
+
+  def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    if extra_libfuzzer_options is None:
-      extra_libfuzzer_options = []
-    env = base_runner_utils.get_env(self.config, self.workspace)
-    # TODO(metzman): Is this needed?
-    env['RUN_FUZZER_MODE'] = 'interactive'
 
-    if use_corpus:
-      # If corpus can be downloaded, use it for fuzzing.
-      self._download_corpus()
-      env['CORPUS_DIR'] = self.latest_corpus_path
+    self._download_corpus()
+    corpus_path = self.latest_corpus_path
 
-    options = LIBFUZZER_OPTIONS.copy() + [
-        f'-max_total_time={self.duration}',
-        # Make sure libFuzzer artifact files don't pollute $OUT.
-        f'-artifact_prefix={self.workspace.artifacts}/'
-    ] + extra_libfuzzer_options
-    command = ['run_fuzzer', self.target_name] + options
+    logging.info('Starting fuzzing')
+    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
+                                             self.config.sanitizer,
+                                             self.target_path,
+                                             interactive=True) as env:
+      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+      options = engine_impl.prepare(corpus_path, env.target_path, env.build_dir)
+      options.merge_back_new_testcases = False
+      options.analyze_dictionary = False
+      options.arguments.extend(LIBFUZZER_OPTIONS)
 
-    logging.info('Running command: %s', command)
-    process = subprocess.Popen(command,
-                               env=env,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-
-    try:
-      _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
-    except subprocess.TimeoutExpired:
-      logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return FuzzResult(None, None, self.latest_corpus_path)
+      result = engine_impl.fuzz(self.target_path, options,
+                                self.workspace.artifacts, self.duration)
 
     # Libfuzzer timeout was reached.
-    if not process.returncode:
+    if not result.crashes:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return FuzzResult(None, None, self.latest_corpus_path)
 
-    # Crash was discovered.
-    logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    testcase = get_testcase(stderr)
-    if not testcase:
-      logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return FuzzResult(None, None, self.latest_corpus_path)
+    # Only report first crash.
+    crash = result.crashes[0]
+    logging.info('Fuzzer: %s. Detected bug:\n%s', self.target_name,
+                 crash.stacktrace)
 
-    utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                       (self.target_name.encode(), stderr))
-    if self.is_crash_reportable(testcase):
+    if self.is_crash_reportable(crash.input_path):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, stderr, self.latest_corpus_path)
+      return FuzzResult(crash.input_path, result.logs, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None, self.latest_corpus_path)
@@ -303,18 +295,3 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     logging.info('The crash is not reproducible on previous build. '
                  'Code change (pr/commit) introduced crash.')
     return True
-
-
-def get_testcase(stderr_bytes):
-  """Gets the file from a fuzzer run stacktrace.
-
-  Args:
-    stderr_bytes: The bytes containing the output from the fuzzer.
-
-  Returns:
-    The path to the testcase or None if not found.
-  """
-  match = re.search(rb'\bTest unit written to (.+)', stderr_bytes)
-  if match:
-    return match.group(1).decode('utf-8')
-  return None
