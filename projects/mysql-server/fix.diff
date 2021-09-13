@@ -21,6 +21,20 @@ index 4a4bbfa72fa..0478561e66c 100644
  # scripts/mysql_config depends on client and server targets loaded above.
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
+diff --git a/cmake/os/Linux.cmake b/cmake/os/Linux.cmake
+index 0e25e8eb..3ae74839 100644
+--- a/cmake/os/Linux.cmake
++++ b/cmake/os/Linux.cmake
+@@ -103,7 +103,8 @@ IF(NOT WITH_ASAN AND
+    NOT WITH_LSAN AND
+    NOT WITH_MSAN AND
+    NOT WITH_TSAN AND
+-   NOT WITH_UBSAN)
++   NOT WITH_UBSAN AND
++   NOT FUZZING)
+   SET(LINK_FLAG_NO_UNDEFINED "-Wl,--no-undefined")
+   SET(LINK_FLAG_Z_DEFS "-z,defs")
+ ENDIF()
 diff --git a/include/mysql.h b/include/mysql.h
 index 4700d74b853..bdf9b765ffb 100644
 --- a/include/mysql.h
