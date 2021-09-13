@@ -5,7 +5,7 @@ nav_order: 6
 permalink: /advanced-topics/bug-fixing-guidance
 ---
 
-# Bug solving
+# Bug fixing guidance
 {: .no_toc}
 
 This page provides brief guidance on how to prioritise and fix bugs reported by
@@ -92,4 +92,3 @@ not overcomplicate the project’s code.
 restrict the size of the input to avoid certain deep recursions or
 time-intensive loops.
 * Patch the code in the target despite complicating things.
-
