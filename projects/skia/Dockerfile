@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:2f69ffb7ab4602729fcdb90c85519ec2ab7fb62e2383fe1b198c0bfc01e49d73
 
 # Mesa and libz/zlib needed to build swiftshader
 RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake lib32z1-dev zlib1g-dev libxext-dev
