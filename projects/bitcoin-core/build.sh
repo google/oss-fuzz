@@ -65,9 +65,16 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
   FUZZ_TARGETS=( ${FUZZ_TARGETS[@]:0:2} )
 fi
 
-# Compile the fuzz executable again with a "magic string" as the name of the fuzz target
+# OSS-Fuzz requires a separate and self-contained binary for each fuzz target.
+# To inject the fuzz target name in the finished binary, compile the fuzz
+# executable with a "magic string" as the name of the fuzz target.
+#
+# An alternative to mocking the string in the finished binary would be to
+# replace the string in the source code and re-invoke 'make'. This is slower,
+# so use the hack.
 export MAGIC_STR="b5813eee2abc9d3358151f298b75a72264ffa119d2f71ae7fefa15c4b70b4bc5b38e87e3107a730f25891ea428b2b4fabe7a84f5bfa73c79e0479e085e4ff157"
-sed -i "s|std::getenv(\"FUZZ\")|\"$MAGIC_STR\"|g" "./src/test/fuzz/fuzz.cpp"
+sed -i "s|.*std::getenv(\"FUZZ\").*|std::string fuzz_target{\"$MAGIC_STR\"};|g" "./src/test/fuzz/fuzz.cpp"
+sed -i "s|.find(fuzz_target)|.find(fuzz_target.c_str())|g"                      "./src/test/fuzz/fuzz.cpp"
 make -j$(nproc)
 
 # Replace the magic string with the actual name of each fuzz target
