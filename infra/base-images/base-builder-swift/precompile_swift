@@ -17,7 +17,7 @@
 
 cp /usr/local/bin/llvm-symbolizer-swift $OUT/llvm-symbolizer
 
-export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib"
+export SWIFTFLAGS="-Xswiftc -parse-as-library -Xswiftc -static-stdlib --static-swift-stdlib"
 if [ "$SANITIZER" = "coverage" ]
 then
     export SWIFTFLAGS="$SWIFTFLAGS -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping -Xswiftc -sanitize=fuzzer"
