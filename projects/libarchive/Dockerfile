@@ -14,18 +14,14 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# Installing optional libraries can utilize more code path and/or improve
-# performance (avoid calling external programs).
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config \
         libbz2-dev liblzo2-dev liblzma-dev liblz4-dev libz-dev \
-        libxml2-dev libssl-dev libacl1-dev libattr1-dev lrzip \
-	liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk
+        libssl-dev libacl1-dev libattr1-dev lrzip \
+	      liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk
 RUN git clone --depth 1 https://github.com/libarchive/libarchive.git
-WORKDIR libarchive
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+
 COPY build.sh libarchive_fuzzer.cc $SRC/
+WORKDIR $SRC
