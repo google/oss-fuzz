@@ -43,7 +43,9 @@ elif [ $SANITIZER == "thread" ]; then
 else
   exit 1
 fi
-CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+# These deprecated warnings get quite noisy and mask other issues.
+CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
+  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
 $SRC/depot_tools/ninja libGLESv2_deprecated libEGL_deprecated
 # Skia is looking for the names w/o the _deprecated tag. The libraries themselves
