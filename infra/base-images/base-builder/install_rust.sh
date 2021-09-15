@@ -20,4 +20,8 @@ cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
 rustup component add rust-src --toolchain nightly
 
+(
+unset CFLAGS
+unset CXXFLAGS
 /root/checkout_build_install_llvm.sh llvmorg-13.0.0-rc2-g34ff6a75f583
+)
