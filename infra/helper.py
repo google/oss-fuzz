@@ -35,6 +35,8 @@ import constants
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
+BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
+
 BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-image',
     'gcr.io/oss-fuzz-base/base-clang',
@@ -44,7 +46,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder-python',
     'gcr.io/oss-fuzz-base/base-builder-rust',
     'gcr.io/oss-fuzz-base/base-builder-swift',
-    'gcr.io/oss-fuzz-base/base-runner',
+    BASE_RUNNER_IMAGE,
     'gcr.io/oss-fuzz-base/base-runner-debug',
 ]
 
@@ -377,7 +379,7 @@ def _check_fuzzer_exists(project, fuzzer_name):
   """Checks if a fuzzer exists."""
   command = ['docker', 'run', '--rm']
   command.extend(['-v', '%s:/out' % project.out])
-  command.append('ubuntu:16.04')
+  command.append(BASE_RUNNER_IMAGE)
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
 
@@ -715,7 +717,7 @@ def check_build(args):
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % args.project.out, '-t', 'gcr.io/oss-fuzz-base/base-runner'
+      '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
@@ -880,7 +882,7 @@ def coverage(args):
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      'gcr.io/oss-fuzz-base/base-runner',
+      BASE_RUNNER_IMAGE,
   ])
 
   run_args.append('coverage')
@@ -930,7 +932,7 @@ def run_fuzzer(args):
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      'gcr.io/oss-fuzz-base/base-runner',
+      BASE_RUNNER_IMAGE,
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args)
