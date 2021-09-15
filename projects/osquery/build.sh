@@ -20,7 +20,6 @@ PROJECT=osquery
 # Ensure xlocale.h is found.
 ln -s /usr/include/locale.h /usr/include/xlocale.h
 
-
 # Move the project content into the current overlay.
 # CMake builtin 'rename' will attempt a hardlink.
 ( cd / &&\
