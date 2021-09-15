@@ -190,8 +190,10 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 # Cleanup
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
-apt-get remove --purge -y $LLVM_DEP_PACKAGES
-apt-get autoremove -y
+if [ $# -eq 0 ] ; then
+  apt-get remove --purge -y $LLVM_DEP_PACKAGES
+  apt-get autoremove -y
+fi
 
 # Delete unneeded parts of LLVM to reduce image size.
 # See https://github.com/google/oss-fuzz/issues/5170
