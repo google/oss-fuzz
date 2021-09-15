@@ -48,7 +48,7 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   }]
 
   for base_image in images:
-    image = tag_prefix + base_image,
+    image = tag_prefix + base_image
     steps.append({
         'args': [
             'build',
