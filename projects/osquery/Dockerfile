@@ -14,13 +14,9 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev
+RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
 RUN git clone --depth 1 https://github.com/osquery/osquery osquery
 
