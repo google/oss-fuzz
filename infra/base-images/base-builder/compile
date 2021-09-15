@@ -102,7 +102,9 @@ then
     # link to C++ from comment in f5098035eb1a14aa966c8651d88ea3d64323823d
     export RUSTFLAGS="$RUSTFLAGS -Zinstrument-coverage -C link-arg=-lc++"
     if [ "$FUZZING_LANGUAGE" = "rust" ]; then
-        # Copy latest llvm-symbolizer in $OUT for stack symbolization.
+        # Copy right llvm coverage tools
+        export CC=clang-13
+        export CXX=clang++-13
         cp /usr/bin/llvm-cov-13 $OUT/llvm-cov
         cp /usr/bin/llvm-profdata-13 $OUT/llvm-profdata
     fi
