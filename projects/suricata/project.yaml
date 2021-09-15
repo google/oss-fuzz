@@ -1,5 +1,5 @@
 homepage: "https://suricata-ids.org"
-language: c++
+language: rust
 primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs:
 - "jish@openinfosecfoundation.org"
