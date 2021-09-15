@@ -29,7 +29,7 @@ class BaseFilestore:
     """Uploads the crashes at |directory| to |name|."""
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_corpus(self, name, directory):
+  def upload_corpus(self, name, directory, replace=False):
     """Uploads the corpus at |directory| to |name|."""
     raise NotImplementedError('Child class must implement method.')
 
