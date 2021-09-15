@@ -100,9 +100,8 @@ RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.ta
 
 # Get double conversion
 RUN git clone --single-branch https://github.com/google/double-conversion.git double-conversion && \
-    cd double-conversion && \
-    cd  ./double-conversion && \
-    cmake -GNinja ${SRC}/double-conversion && \
+    cd double-conversion/double-conversion && \
+    cmake -GNinja ../ && \
     ninja && \
     ninja install
 
