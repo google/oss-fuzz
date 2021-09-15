@@ -30,17 +30,20 @@ make install
 cp .libs/libxml2.a ${DEPS}/
 cd $SRC/libarchive
 
-# build libarchive
-./build/autogen.sh
-./configure
-make -j$(nproc) all
+sed -i 's/-Wall//g' ./CMakeLists.txt
+sed -i 's/-Werror//g' ./CMakeLists.txt
+
+mkdir build2
+cd build2
+cmake ../
+make
 
 # build seed
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
-       	$OUT/libarchive_fuzzer_seed_corpus.zip
+        $OUT/libarchive_fuzzer_seed_corpus.zip
 
 # build fuzzer(s)
-$CXX $CXXFLAGS -Ilibarchive \
+$CXX $CXXFLAGS -I../libarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
-    $LIB_FUZZING_ENGINE .libs/libarchive.a ./.libs/libarchive.a \
-    ./.libs/libarchive_fe.a -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+    $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
+    -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
