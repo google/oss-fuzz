@@ -716,8 +716,7 @@ def check_build(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v',
-      '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
+      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
