@@ -23,6 +23,7 @@ rustup component add rust-src --toolchain nightly
 (
 unset CFLAGS
 unset CXXFLAGS
+# so that compile_libfuzzer can copy, without knowing the clang version
 rm /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-*
 /root/checkout_build_install_llvm.sh llvmorg-13.0.0-rc2-g34ff6a75f583
 )
