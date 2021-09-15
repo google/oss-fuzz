@@ -17,9 +17,9 @@
 
 PROJECT=osquery
 
+# Ensure xlocale.h is found.
 ln -s /usr/include/locale.h /usr/include/xlocale.h
 
-# fix circular definitions
 
 # Move the project content into the current overlay.
 # CMake builtin 'rename' will attempt a hardlink.
@@ -43,7 +43,10 @@ cmake \
   "-DCMAKE_EXE_LINKER_FLAGS=${LIB_FUZZING_ENGINE} -Wl,-rpath,'\$ORIGIN/lib'" \
   ..
 
+# Fix circular definitions
+# See: https://github.com/osquery/osquery/issues/6551
 sed -i 's/AUDIT_FILTER_EXCLUDE/AUDIT_FILTER_EXCLUDE1/g' /src/osquery/libraries/cmake/source/libaudit/src/lib/libaudit.h
+
 # Build harnesses
 cmake --build . -j$(nproc) --target osqueryfuzz-config
 cmake --build . -j$(nproc) --target osqueryfuzz-sqlquery
