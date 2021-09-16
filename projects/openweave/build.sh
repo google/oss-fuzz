@@ -19,7 +19,7 @@ function copy_lib
     {
     local fuzzer_path=$1
     local lib=$2
-    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib
+    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib || true
     }
 
 mkdir -p $OUT/lib
@@ -31,16 +31,24 @@ then
     export CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link,address"
 fi
 
+sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEResponderStep1.cpp
+sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEResponderStep2.cpp
+sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEInitiatorStep1.cpp
+sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEInitiatorStep2.cpp
+sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEKeyConfirm.cpp
+
 # build project
 ./bootstrap
 # java fails with Source option 6 is no longer supported. Use 7 or later.
-./configure --disable-java --enable-fuzzing --disable-shared
+./configure --disable-java --enable-fuzzing --disable-shared --without-bluez
 make -j$(nproc)
-find src/test-apps/fuzz/ -type f -executable -name "Fuzz*" | while read i; do
-    patchelf --set-rpath '$ORIGIN/lib' ${i}
-    copy_lib ${i} libglib
-    copy_lib ${i} libdbus
-    cp ${i} $OUT/
+
+for fuzzname in FuzzPASEInitiatorStep2 FuzzPASEResponderStep2 FuzzCertificateConversion FuzzPASEKeyConfirm; do
+    fuzzpath=/src/openweave-core/src/test-apps/fuzz/${fuzzname}
+    patchelf --set-rpath '$ORIGIN/lib' ${fuzzpath}
+    copy_lib ${fuzzpath} libglib
+    copy_lib ${fuzzpath} libdbus
+    cp ${fuzzpath} $OUT/
 done
 
 # build corpus
