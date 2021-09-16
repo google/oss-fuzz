@@ -22,7 +22,7 @@ RUN apt-get update && apt-get build-dep -y libreoffice
 RUN apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
 
 #cache build dependencies
-ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
+ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.1.4.tar.gz \
     https://dev-www.libreoffice.org/extern/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf \
     https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
@@ -34,6 +34,7 @@ ADD https://dev-www.libreoffice.org/src/liberation-fonts-ttf-2.00.4.tar.gz \
     https://dev-www.libreoffice.org/src/box2d-2.3.1.tar.gz \
     https://dev-www.libreoffice.org/src/dtoa-20180411.tgz \
     https://dev-www.libreoffice.org/src/expat-2.4.1.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libcuckoo-93217f8d391718380c508a722ab9acd5e9081233.tar.gz \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.3.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.11.tar.gz \
     https://dev-www.libreoffice.org/src/libexttextcat-3.4.5.tar.xz \
