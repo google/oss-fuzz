@@ -34,6 +34,7 @@ BASE_IMAGES = [
 ]
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
+MAJOR_VERSION = 'v1'
 
 
 def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
@@ -47,11 +48,14 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   }]
 
   for base_image in images:
+    image = tag_prefix + base_image
     steps.append({
         'args': [
             'build',
             '-t',
-            tag_prefix + base_image,
+            image,
+            '-t',
+            f'{image}:{MAJOR_VERSION}',
             '.',
         ],
         'dir': 'oss-fuzz/infra/base-images/' + base_image,
@@ -77,7 +81,7 @@ def run_build(steps, images):
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
-      'images': images
+      'images': images + [f'{image}:{MAJOR_VERSION}' for image in images]
   }
   cloudbuild = build('cloudbuild',
                      'v1',
