@@ -24,3 +24,4 @@ RUN cpan -i Text::Template
 RUN git clone --depth 1 https://github.com/openweave/openweave-core
 WORKDIR $SRC/openweave-core
 COPY build.sh $SRC/
+COPY patch.diff $SRC/

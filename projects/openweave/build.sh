@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
+
 function copy_lib
     {
     local fuzzer_path=$1
@@ -31,24 +33,25 @@ then
     export CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link,address"
 fi
 
-sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEResponderStep1.cpp
-sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEResponderStep2.cpp
-sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEInitiatorStep1.cpp
-sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEInitiatorStep2.cpp
-sed -i 's/RAND_bytes/RAND2_bytes/g' ./src/test-apps/fuzz/FuzzPASEKeyConfirm.cpp
-
 # build project
 ./bootstrap
 # java fails with Source option 6 is no longer supported. Use 7 or later.
-./configure --disable-java --enable-fuzzing --disable-shared --without-bluez
+./configure --disable-java --enable-fuzzing --disable-shared
+
+# patch bluez
+sed -i 's/sys\/socket.h>/sys\/socket.h>\n#include <linux\/sockios.h>/g' ./third_party/bluez/repo/tools/l2test.c
+sed -i 's/sys\/stat.h>/sys\/stat.h>\n#include <linux\/sockios.h>/g' ./third_party/bluez/repo/tools/rctest.c
+
+# OpenSSL now declares RAND_bytes so we must patch
+find ./src/test-apps/fuzz/ -name "FuzzP*.cpp" -exec sed -i 's/RAND_bytes/RAND_bytes2/g' {} \;
+
 make -j$(nproc)
 
-for fuzzname in FuzzPASEInitiatorStep2 FuzzPASEResponderStep2 FuzzCertificateConversion FuzzPASEKeyConfirm; do
-    fuzzpath=/src/openweave-core/src/test-apps/fuzz/${fuzzname}
-    patchelf --set-rpath '$ORIGIN/lib' ${fuzzpath}
-    copy_lib ${fuzzpath} libglib
-    copy_lib ${fuzzpath} libdbus
-    cp ${fuzzpath} $OUT/
+find src/test-apps/fuzz/ -type f -executable -name "Fuzz*" | while read i; do
+    patchelf --set-rpath '$ORIGIN/lib' ${i}
+    copy_lib ${i} libglib
+    copy_lib ${i} libdbus
+    cp ${i} $OUT/
 done
 
 # build corpus
