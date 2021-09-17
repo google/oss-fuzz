@@ -36,16 +36,37 @@ SPIRV_FUZZERS="tint_spv_reader_fuzzer\
 # TODO(afd): add tint_spirv_tools_fuzzer
 
 # The spirv-as tool is used to build seed corpora
-ninja ${SPIRV_FUZZERS} spirv-as
+ninja ${SPIRV_FUZZERS}
 
 cp ${SPIRV_FUZZERS} $OUT
+
+popd
+
+# An un-instrumented build of spirv-as is used to generate a corpus of SPIR-V binaries.
+mkdir -p out/Standard
+pushd out/Standard
+
+# Back-up instrumentation options
+CFLAGS_SAVE="$CFLAGS"
+CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export AFL_NOOPT=1
+
+cmake -GNinja ../..
+ninja spirv-as
+
+# Restore instrumentation options
+export CFLAGS="${CFLAGS_SAVE}"
+export CXXFLAGS="${CXXFLAGS_SAVE}"
+unset AFL_NOOPT
 
 popd
 
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # tint repository.
 mkdir $WORK/spirv-corpus
-python3 fuzzers/generate_spirv_corpus.py test $WORK/spirv-corpus out/Debug/spirv-as
+python3 fuzzers/generate_spirv_corpus.py test $WORK/spirv-corpus out/Standard/spirv-as
 
 mkdir $WORK/spirv-corpus-hashed-names
 for f in `ls $WORK/spirv-corpus/*.spv`
