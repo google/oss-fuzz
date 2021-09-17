@@ -16,11 +16,50 @@
 
 # Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
 # See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
+#FROM gcr.io/oss-fuzz-base/base-builder:xenial
 # Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev liblzma-dev
+
+#libzstd-dev
+#libtiff-dev libzstd-dev
+
+
+#RUN git clone --depth 1 https://github.com/madler/zlib.git zlib && \
+#    cd zlib && \
+#    ./configure --static && \
+#    make -j$(nproc) all && \
+#    make install
+
+#RUN git clone --depth 1 https://github.com/facebook/zstd zstd && \
+#   cd zstd && \
+#   make -j$(nproc) install 
+
+#PREFIX="$WORK"
+
+RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit jbigkit && \
+    cd jbigkit && \
+    make clean && \
+    make -j$(nproc) lib && \
+    cp libjbig/libjbig.a /usr/lib/x86_64-linux-gnu/libjbig.a
+    
+
+#&& \
+#    make install
+#cp "$SRC"/jbigkit/libjbig/*.a "$WORK/lib/"
+#cp "$SRC"/jbigkit/libjbig/*.h "$WORK/include/"
+
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff libtiff && \
+  cd libtiff && \
+  cmake . -DBUILD_SHARED_LIBS=off && \
+  make clean && \
+  make -j$(nproc) && \
+  make install && \
+  cp libtiff/libtiff.a /usr/lib/x86_64-linux-gnu/libtiff.a
+
+#zlib1g-dev
 RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
-RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
+#RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
+RUN mkdir $SRC/tessdata
 COPY build.sh $SRC/
