@@ -13,22 +13,23 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
-# Install the build dependencies
+RUN apt-get update && \
+   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex gettext \
+    libffi-dev liblzma-dev libtheora-dev libogg-dev zlib1g-dev libcairo2-dev \
+    python3-pip ninja-build && \
+   pip3 install meson==0.55.1
 
-# install the minimum
-
-RUN sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list" && \
-   apt-get update && \
-   apt-get install -y build-essential pkg-config bison flex gettext \
-    libffi-dev liblzma-dev libvorbis-dev libtheora-dev libogg-dev zlib1g-dev \
-    python3-pip && \
-   pip3 install meson==0.55.1 ninja==1.10.0.post2
+# We must install libvorbis from scratch as otherwise we will run into
+# undefined functions in Ubuntu 20.04
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git && \
+    cd $SRC/vorbis && \
+    ./autogen.sh && \
+    ./configure --enable-static && \
+    make clean && \
+    make -j$(nproc) && \
+    make install
 
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 
@@ -38,6 +39,8 @@ RUN \
   git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer && \
   git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gst-plugins-base.git gst-plugins-base && \
   git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gst-ci.git gst-ci
+
+RUN sed -i 's/theoraenc theoradec theora/theoraenc theoradec theora cairo/g' $SRC/gst-ci/fuzzing/build-oss-fuzz.sh
 
 ADD https://people.freedesktop.org/~bilboed/gst-discoverer_seed_corpus.zip $SRC
 
