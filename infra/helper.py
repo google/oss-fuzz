@@ -37,18 +37,20 @@ BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
 
-BASE_IMAGES = [
-    'gcr.io/oss-fuzz-base/base-image',
-    'gcr.io/oss-fuzz-base/base-clang',
-    'gcr.io/oss-fuzz-base/base-builder',
-    'gcr.io/oss-fuzz-base/base-builder-go',
-    'gcr.io/oss-fuzz-base/base-builder-jvm',
-    'gcr.io/oss-fuzz-base/base-builder-python',
-    'gcr.io/oss-fuzz-base/base-builder-rust',
-    'gcr.io/oss-fuzz-base/base-builder-swift',
-    BASE_RUNNER_IMAGE,
-    'gcr.io/oss-fuzz-base/base-runner-debug',
-]
+BASE_IMAGES = {
+    'generic': [
+        'gcr.io/oss-fuzz-base/base-image',
+        'gcr.io/oss-fuzz-base/base-clang',
+        'gcr.io/oss-fuzz-base/base-builder',
+        BASE_RUNNER_IMAGE,
+        'gcr.io/oss-fuzz-base/base-runner-debug',
+    ],
+    'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
+    'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
+    'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
+    'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
+    'swift': ['gcr.io/oss-fuzz-base/base-builder-swift'],
+}
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
@@ -471,7 +473,7 @@ def build_image_impl(project, cache=True, pull=False):
     docker_build_dir = project.path
     image_project = 'oss-fuzz'
 
-  if pull and not pull_images():
+  if pull and not pull_images(project.language):
     return False
 
   build_args = []
@@ -1128,11 +1130,15 @@ def shell(args):
   return True
 
 
-def pull_images():
-  """Pulls base images."""
-  for base_image in BASE_IMAGES:
-    if not docker_pull(base_image):
-      return False
+def pull_images(language=None):
+  """Pulls base images used to build projects in language lang (or all if lang
+  is None)."""
+  for base_image_lang, base_images in BASE_IMAGES.items():
+    if (language is None or base_image_lang == 'generic' or
+        base_image_lang == language):
+      for base_image in base_images:
+        if not docker_pull(base_image):
+          return False
 
   return True
 
