@@ -21,7 +21,7 @@ function copy_lib
     {
     local fuzzer_path=$1
     local lib=$2
-    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib || true
+    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib
     }
 
 mkdir -p $OUT/lib
