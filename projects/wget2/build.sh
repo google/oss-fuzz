@@ -105,7 +105,14 @@ make -j$(nproc) -C src
 
 # build fuzzers
 cd fuzz
-cp $SRC/tmp-Makefile Makefile
+#cp $SRC/tmp-Makefile Makefile
+
+sed -i 's/-lpsl/\/src\/libpsl\/src\/.libs\/libpsl.a/g' ./Makefile
+sed -i 's/-lunistring/\/src\/libunistring\/lib\/.libs\/libunistring.a/g' ./Makefile
+sed -i 's/-lgnutls/\/src\/gnutls\/lib\/.libs\/libgnutls.a/g' ./Makefile
+sed -i 's/-lhogweed/\/src\/nettle\/libhogweed.a/g' ./Makefile
+sed -i 's/-lnettle/\/src\/nettle\/libnettle.a/g' ./Makefile
+
 CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
 
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'

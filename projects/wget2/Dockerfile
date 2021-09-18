@@ -54,5 +54,5 @@ RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
 COPY build.sh $SRC/
-COPY tmp-Makefile $SRC/wget2/fuzz/Makefile
-COPY tmp-Makefile $SRC/tmp-Makefile
+#COPY tmp-Makefile $SRC/wget2/fuzz/Makefile
+#COPY tmp-Makefile $SRC/tmp-Makefile
