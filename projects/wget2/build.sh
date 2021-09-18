@@ -78,28 +78,27 @@ export ASAN_OPTIONS=detect_leaks=0
 cd $SRC/wget2
 ./bootstrap
 
-./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc)
 make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
-./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C include
 make -j$(nproc) -C libwget
 make -j$(nproc) -C src
 
+# Ensure our libraries can be found
+ln -s $WGET2_DEPS_PATH/lib64/libhogweed.a $WGET2_DEPS_PATH/lib/libhogweed.a
+ln -s $WGET2_DEPS_PATH/lib64/libnettle.a  $WGET2_DEPS_PATH/lib/libnettle.a
+
 # build fuzzers
 cd fuzz
-
-# Ensure we load the sanitizer-build libraries
-sed -i 's/-lpsl/\/src\/libpsl\/src\/.libs\/libpsl.a/g' ./Makefile
-sed -i 's/-lunistring/\/src\/libunistring\/lib\/.libs\/libunistring.a/g' ./Makefile
-sed -i 's/-lgnutls/\/src\/gnutls\/lib\/.libs\/libgnutls.a/g' ./Makefile
-sed -i 's/-lhogweed/\/src\/nettle\/libhogweed.a/g' ./Makefile
-sed -i 's/-lnettle/\/src\/nettle\/libnettle.a/g' ./Makefile
 
 CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
 
