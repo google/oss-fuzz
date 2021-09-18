@@ -77,7 +77,6 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
       -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  \
       ../
 make
-cd ../
 
 # Build our fuzzer
 $CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c $SRC/phonefuzz.cc
