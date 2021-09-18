@@ -68,7 +68,7 @@ sed -i 's/set (BUILD_SHARED_LIB true)/set (BUILD_SHARED_LIB false)/g' CMakeLists
 sed -i 's/list (APPEND CMAKE_C_FLAGS "-pthread")/string (APPEND CMAKE_C_FLAGS " -pthread")/g' CMakeLists.txt
 
 mkdir build && cd build
-cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
       -DPROTOBUF_LIB="/src/protobuf/src/.libs/libprotobuf.a" \
       -DBUILD_STATIC_LIB=ON \
       -DICU_UC_INCLUDE_DIR=$SRC/icu/source/comon \
@@ -76,14 +76,11 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
       -DICU_I18N_INCLUDE_DIR=$SRC/icu/source/i18n/ \
       -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  \
       ../
-
-make V=1 || true
+make
 cd ../
 
 # Build our fuzzer
-cp $SRC/*fuzz.cc .
-$CXX -I/src/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c phonefuzz.cc
-
+$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c phonefuzz.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
-     build/libphonenumber.a $SRC/protobuf/src/.libs/libprotobuf.a \
+     ./libphonenumber.a $SRC/protobuf/src/.libs/libprotobuf.a \
      $DEPS_PATH/lib/libicu.a -lpthread
