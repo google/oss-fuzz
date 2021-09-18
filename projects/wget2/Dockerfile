@@ -16,9 +16,9 @@
 
 # Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
 # See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
+#FROM gcr.io/oss-fuzz-base/base-builder:xenial
 # Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -38,7 +38,8 @@ RUN apt-get update && apt-get install -y \
  wget \
  python \
  lzip \
- rsync
+ rsync \
+ libmicrohttpd-dev
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
@@ -53,3 +54,5 @@ RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
 COPY build.sh $SRC/
+COPY tmp-Makefile $SRC/wget2/fuzz/Makefile
+COPY tmp-Makefile $SRC/tmp-Makefile
