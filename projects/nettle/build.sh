@@ -56,7 +56,7 @@ then
         cp -R $SRC/nettle $SRC/nettle-with-libgmp/
         cd $SRC/nettle-with-libgmp/
         bash .bootstrap
-        export NETTLE_LIBDIR=`realpath ../nettle-with-libgmp-install/lib`
+        export NETTLE_LIBDIR=`realpath ../nettle-with-libgmp-install`/lib
         if [[ $CFLAGS != *sanitize=memory* ]]
         then
             ./configure --disable-documentation --disable-openssl --prefix=`realpath ../nettle-with-libgmp-install` --libdir="$NETTLE_LIBDIR"
@@ -115,7 +115,7 @@ fi
     cp -R $SRC/nettle $SRC/nettle-with-mini-gmp/
     cd $SRC/nettle-with-mini-gmp/
     bash .bootstrap
-    export NETTLE_LIBDIR=`realpath ../nettle-with-libgmp-install/lib`
+    export NETTLE_LIBDIR=`realpath ../nettle-with-mini-gmp-install`/lib
     if [[ $CFLAGS != *sanitize=memory* ]]
     then
         ./configure --enable-mini-gmp --disable-documentation --disable-openssl --prefix=`realpath ../nettle-with-mini-gmp-install` --libdir="$NETTLE_LIBDIR"
