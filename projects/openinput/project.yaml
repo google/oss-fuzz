@@ -1,0 +1,12 @@
+homepage: 'https://github.com/openinput-fw/openinput'
+language: c
+primary_contact: 'lains@riseup.net'
+auto_ccs:
+  - 'lains@riseup.net'
+  - 'perigoso@riseup.net'
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/openinput-fw/openinput.git'
