@@ -93,8 +93,8 @@ make -j$(nproc) -C src
 
 # build fuzzers
 cd fuzz
-#cp $SRC/tmp-Makefile Makefile
 
+# Ensure we load the sanitizer-build libraries
 sed -i 's/-lpsl/\/src\/libpsl\/src\/.libs\/libpsl.a/g' ./Makefile
 sed -i 's/-lunistring/\/src\/libunistring\/lib\/.libs\/libunistring.a/g' ./Makefile
 sed -i 's/-lgnutls/\/src\/gnutls\/lib\/.libs\/libgnutls.a/g' ./Makefile
