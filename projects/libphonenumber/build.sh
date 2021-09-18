@@ -80,7 +80,7 @@ make
 cd ../
 
 # Build our fuzzer
-$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c phonefuzz.cc
+$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c $SRC/phonefuzz.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
      ./libphonenumber.a $SRC/protobuf/src/.libs/libprotobuf.a \
      $DEPS_PATH/lib/libicu.a -lpthread

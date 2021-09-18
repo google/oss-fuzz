@@ -27,7 +27,6 @@ RUN apt-get install -y libgtest-dev && \
 		cd build && \
 		cmake .. && \
 		make && \
-		cd .. && \
 		mkdir /usr/local/lib/googletest && \
 		ln -sn /usr/local/lib/googletest/libgtest.a /usr/lib/libgtest.a && \
 		ln -sn /usr/local/lib/googletest/libgtest_main.a /usr/lib/libgtest_main.a && \
