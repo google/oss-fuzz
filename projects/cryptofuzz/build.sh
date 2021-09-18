@@ -93,23 +93,23 @@ then
 fi
 
 # Compile NSS
-if [[ $CFLAGS != *-m32* ]]
-then
-    mkdir $SRC/nss-nspr
-    mv $SRC/nss $SRC/nss-nspr/
-    mv $SRC/nspr $SRC/nss-nspr/
-    cd $SRC/nss-nspr/
-
-    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
-
-    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
-    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
-
-    # Compile Cryptofuzz NSS module
-    cd $SRC/cryptofuzz/modules/nss
-    make -B
-fi
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    mkdir $SRC/nss-nspr
+#    mv $SRC/nss $SRC/nss-nspr/
+#    mv $SRC/nspr $SRC/nss-nspr/
+#    cd $SRC/nss-nspr/
+#
+#    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
+#
+#    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
+#    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
+#
+#    # Compile Cryptofuzz NSS module
+#    cd $SRC/cryptofuzz/modules/nss
+#    make -B
+#fi
 
 # Compile Monocypher
 cd $SRC/Monocypher/
@@ -449,27 +449,27 @@ then
     make -B
 fi
 
-if [[ $CFLAGS != *-m32* ]]
-then
-    # Compile Cryptofuzz (NSS-based)
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
-
-    rm $SRC/cryptofuzz/modules/nss/module.a
-
-    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
-    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
-fi
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    # Compile Cryptofuzz (NSS-based)
+#    cd $SRC/cryptofuzz
+#    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
+#
+#    # Generate dictionary
+#    ./generate_dict
+#
+#    # Copy fuzzer
+#    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
+#    # Copy dictionary
+#    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
+#    # Copy seed corpus
+#    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
+#
+#    rm $SRC/cryptofuzz/modules/nss/module.a
+#
+#    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
+#    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
+#fi
 
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
