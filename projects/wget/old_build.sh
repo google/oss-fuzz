@@ -24,19 +24,19 @@ export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
 ./autogen.sh
-./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH
+./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
 make -j$(nproc)
 make install
 
 cd $SRC/libidn2
 ./bootstrap
-./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET_DEPS_PATH
+./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
 make -j$(nproc)
 make install
 
 cd $SRC/libpsl
 ./autogen.sh
-./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET_DEPS_PATH
+./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
 make -j$(nproc)
 make install
 
@@ -52,7 +52,7 @@ fi
 # instead.
 cd $SRC/nettle
 bash .bootstrap
-./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
+./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET_DEPS_PATH $NETTLE_CONFIGURE_FLAGS --cache-file ../config.cache
 ( make -j$(nproc) || make -j$(nproc) ) && make install
 if test $? != 0;then
         echo "Failed to compile nettle"
@@ -72,35 +72,38 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
+
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-
-cp /src/wget_deps/lib64/libnettle.a /src/wget_deps/lib/libnettle.a
-cp /src/wget_deps/lib64/libhogweed.a /src/wget_deps/lib/libhogweed.a
-
 cd $SRC/wget
 ./bootstrap
-
 autoreconf -fi
 
-export CFLAGS="$CFLAGS -I$WGET_DEPS_PATH/include"
-export CXXFLAGS="$CXXFLAGS -I$WGET_DEPS_PATH/include"
-
 # build and run non-networking tests
-GNUTLS_CFLAGS="-lgnutls" GNUTLS_LIBS="-lgnutls" LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" ./configure -C
+#LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
+
+./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-GNUTLS_CFLAGS="-lgnutls" GNUTLS_LIBS="-lgnutls" LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" ./configure --enable-fuzzing -C
+#LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
+
+./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C src
 
 # build fuzzers
 cd fuzz
+sed -i 's/-lpsl/\/src\/libpsl\/src\/.libs\/libpsl.a/g' ./Makefile
+sed -i 's/-lunistring/\/src\/libunistring\/lib\/.libs\/libunistring.a/g' ./Makefile
+sed -i 's/-lgnutls/\/src\/gnutls\/lib\/.libs\/libgnutls.a/g' ./Makefile
+sed -i 's/-lhogweed/\/src\/nettle\/libhogweed.a/g' ./Makefile
+sed -i 's/-lnettle/\/src\/nettle\/libnettle.a/g' ./Makefile
+
 make -j$(nproc) ../src/libunittest.a
 CXXFLAGS="$CXXFLAGS -L$WGET_DEPS_PATH/lib/" make oss-fuzz
 
