@@ -44,7 +44,8 @@ RUN set -ex && \
         libreadline-dev \
         libudev-dev \
         libprotobuf-dev \
-        protobuf-compiler
+        protobuf-compiler \
+        libunbound-dev
 
 WORKDIR monero
 
