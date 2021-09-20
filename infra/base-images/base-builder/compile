@@ -59,7 +59,7 @@ fi
 
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
-    cp -R /usr/i386/lib/* /usr/lib
+    cp -R /usr/i386/lib/* /usr/local/lib
 fi
 # JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
 if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
@@ -71,7 +71,7 @@ if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then
   # Take all libraries from lib/msan and MSAN_LIBS_PATH
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
-  cp -R /usr/msan/lib/* /usr/lib/
+  cp -R /usr/msan/lib/* /usr/local/lib/
 
   echo 'Building without MSan instrumented libraries.'
 fi
