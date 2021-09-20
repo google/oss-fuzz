@@ -37,6 +37,13 @@ fi
 sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./configure.ac"
 ./autogen.sh
 
+# Temporarily compile with O2 to work around clang-13 (and later) UBSan
+# -fsanitize=vptr,object-size false positive that only happens with -O1
+if [ "$SANITIZER" = "undefined" ]; then
+  export CFLAGS="$CFLAGS -O2"
+  export CXXFLAGS="$CXXFLAGS -O2"
+fi
+
 # OSS-Fuzz will provide CC, CXX, etc. So only set:
 # * --enable-fuzz, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
 # * CONFIG_SITE, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
