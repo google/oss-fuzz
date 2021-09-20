@@ -1,5 +1,5 @@
 diff --git a/src/blockdata.c b/src/blockdata.c
-index f7740b5..b02915a 100644
+index 0986285..852c961 100644
 --- a/src/blockdata.c
 +++ b/src/blockdata.c
 @@ -15,16 +15,22 @@
@@ -31,7 +31,7 @@ index f7740b5..b02915a 100644
  
 +  fuzz_total_alloc_ptr = 0;
 +  for (int m = 0; m < 200; m++)
-+    total_allocated[m] = NULL;
++	  total_allocated[m] = NULL;
 +
    /* Note that daemon->cachesize is enforced to have non-zero size if OPT_DNSSEC_VALID is set */  
    if (option_bool(OPT_DNSSEC_VALID))
@@ -39,18 +39,18 @@ index f7740b5..b02915a 100644
  }
  
 +void fuzz_blockdata_cleanup() {
-+  for (int i = 0; i < 200; i++) {
-+    if (total_allocated[i] != NULL) {
-+      free(total_allocated[i]);
-+    }
-+  }
++	for (int i = 0; i < 200; i++) {
++		if (total_allocated[i] != NULL) {
++			free(total_allocated[i]);
++		}
++	}
 +}
 +
  void blockdata_report(void)
  {
-   my_syslog(LOG_INFO, _("pool memory in use %u, max %u, allocated %u"), 
+   my_syslog(LOG_INFO, _("pool memory in use %zu, max %zu, allocated %zu"), 
 diff --git a/src/dhcp.c b/src/dhcp.c
-index 97324f2..1751df7 100644
+index e500bc2..7215590 100644
 --- a/src/dhcp.c
 +++ b/src/dhcp.c
 @@ -183,18 +183,26 @@ void dhcp_packet(time_t now, int pxe_fd)
@@ -93,7 +93,7 @@ index 97324f2..1751df7 100644
  #elif defined(HAVE_BSD_NETWORK) 
    if (msg.msg_controllen >= sizeof(struct cmsghdr))
 diff --git a/src/dhcp6.c b/src/dhcp6.c
-index 2be877f..d3f5739 100644
+index ae1f5c1..ce7397d 100644
 --- a/src/dhcp6.c
 +++ b/src/dhcp6.c
 @@ -116,10 +116,14 @@ void dhcp6_packet(time_t now)
@@ -146,7 +146,7 @@ index 7840ef9..2419897 100644
  	{
  	  if (errno == ENOBUFS)
 diff --git a/src/network.c b/src/network.c
-index 3ef71b9..e305c03 100644
+index 296c7bd..c03961a 100644
 --- a/src/network.c
 +++ b/src/network.c
 @@ -697,6 +697,7 @@ int enumerate_interfaces(int reset)
