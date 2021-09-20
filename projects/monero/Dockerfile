@@ -45,7 +45,7 @@ RUN set -ex && \
         libudev-dev \
         libprotobuf-dev \
         protobuf-compiler \
-        libunbound-dev
+        libexpat-dev
 
 WORKDIR monero
 
@@ -117,6 +117,9 @@ RUN set -ex \
     && ./configure --enable-static --disable-shared \
     && make \
     && make install
+
+RUN git clone https://github.com/NLnetLabs/unbound && \
+    cd unbound && ./configure && make && make install
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
 COPY build.sh $SRC/
