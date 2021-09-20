@@ -37,7 +37,7 @@ RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
-RUN hg clone https://hg.mozilla.org/projects/nss
+#RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 #RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
