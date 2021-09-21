@@ -21,7 +21,7 @@ from unittest import mock
 import certifi
 # Importing this later causes import failures with pytest for some reason.
 # TODO(ochang): Figure out why.
-import google.cloud.ndb
+import google.cloud.ndb  # pylint: disable=unused-import
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
