@@ -21,6 +21,7 @@ from unittest import mock
 import certifi
 # Importing this later causes import failures with pytest for some reason.
 # TODO(ochang): Figure out why.
+from clusterfuzz.fuzz import engine
 import google.cloud.ndb  # pylint: disable=unused-import
 import parameterized
 from pyfakefs import fake_filesystem_unittest
@@ -38,10 +39,10 @@ EXAMPLE_PROJECT = 'example'
 EXAMPLE_FUZZER = 'example_crash_fuzzer'
 
 # The return value of a successful call to utils.execute.
-EXECUTE_SUCCESS_RETVAL = ('', '', 0)
+EXECUTE_SUCCESS_RETVAL = engine.ReproduceResult([], 0, 0, '')
 
 # The return value of a failed call to utils.execute.
-EXECUTE_FAILURE_RETVAL = ('', '', 1)
+EXECUTE_FAILURE_RETVAL = engine.ReproduceResult([], 1, 0, '')
 
 
 def _create_config(**kwargs):
@@ -97,34 +98,30 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
-    with mock.patch('utils.execute', side_effect=all_repro) as mock_execute:
+    with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
+      mock_get_engine().reproduce.side_effect = all_repro
+
       result = self.target.is_reproducible(self.testcase_path,
                                            self.fuzz_target_path)
-      expected_command = ['reproduce', 'fuzz-target', '-runs=100']
-      expected_env = {
-          'SANITIZER': self.config.sanitizer,
-          'FUZZING_LANGUAGE': 'c++',
-          'OUT': self.workspace.out,
-          'CIFUZZ': 'True',
-          'FUZZING_ENGINE': 'libfuzzer',
-          'ARCHITECTURE': 'x86_64',
-          'TESTCASE': self.testcase_path,
-          'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25'
-      }
-      mock_execute.assert_called_once_with(expected_command, env=expected_env)
+      mock_get_engine().reproduce.assert_called_once_with(
+          '/workspace/build-out/fuzz-target',
+          '/testcase',
+          arguments=[],
+          max_time=30)
       self.assertTrue(result)
-      self.assertEqual(1, mock_execute.call_count)
+      self.assertEqual(1, mock_get_engine().reproduce.call_count)
 
   def test_flaky(self, _):
     """Tests that is_reproducible returns True if crash is detected on the last
     attempt."""
     last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
-    with mock.patch('utils.execute',
-                    side_effect=last_time_repro) as mock_execute:
+    with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
+      mock_get_engine().reproduce.side_effect = last_time_repro
       self.assertTrue(
           self.target.is_reproducible(self.testcase_path,
                                       self.fuzz_target_path))
-      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS, mock_execute.call_count)
+      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS,
+                       mock_get_engine().reproduce.call_count)
 
   def test_nonexistent_fuzzer(self, _):
     """Tests that is_reproducible raises an error if it could not attempt
@@ -136,7 +133,8 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible returns False for a crash that did not
     reproduce."""
     all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
-    with mock.patch('utils.execute', side_effect=all_unrepro):
+    with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
+      mock_get_engine().reproduce.side_effect = all_unrepro
       result = self.target.is_reproducible(self.testcase_path,
                                            self.fuzz_target_path)
       self.assertFalse(result)
