@@ -21,10 +21,10 @@ from unittest import mock
 import certifi
 # Importing this later causes import failures with pytest for some reason.
 # TODO(ochang): Figure out why.
-from clusterfuzz.fuzz import engine
-import google.cloud.ndb  # pylint: disable=unused-import
 import parameterized
+import google.cloud.ndb  # pylint: disable=unused-import
 from pyfakefs import fake_filesystem_unittest
+from clusterfuzz.fuzz import engine
 
 import clusterfuzz_deployment
 import fuzz_target
