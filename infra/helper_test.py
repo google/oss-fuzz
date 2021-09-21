@@ -165,7 +165,7 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.project_name = 'project'
     self.internal_project = helper.Project(self.project_name)
-    self.external_project_path = os.path.join('path', 'to', self.project_name)
+    self.external_project_path = os.path.join('/path', 'to', self.project_name)
     self.external_project = helper.Project(self.external_project_path,
                                            is_external=True)
     self.setUpPyfakefs()

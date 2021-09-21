@@ -86,8 +86,8 @@ class Project:
       build_integration_path=constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH):
     self.is_external = is_external
     if self.is_external:
-      self.name = os.path.basename(os.path.abspath(project_name_or_path))
-      self.path = project_name_or_path
+      self.path = os.path.abspath(project_name_or_path)
+      self.name = os.path.basename(self.path)
       self.build_integration_path = os.path.join(self.path,
                                                  build_integration_path)
     else:
@@ -137,14 +137,16 @@ class Project:
 def main():  # pylint: disable=too-many-branches,too-many-return-statements
   """Gets subcommand from program arguments and does it. Returns 0 on success 1
   on error."""
-  os.chdir(OSS_FUZZ_DIR)
-  if not os.path.exists(BUILD_DIR):
-    os.mkdir(BUILD_DIR)
-
   logging.basicConfig(level=logging.INFO)
 
   parser = get_parser()
   args = parse_args(parser)
+
+  # Note: this has to happen after parse_args above as parse_args needs to know
+  # the original CWD for external projects.
+  os.chdir(OSS_FUZZ_DIR)
+  if not os.path.exists(BUILD_DIR):
+    os.mkdir(BUILD_DIR)
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
