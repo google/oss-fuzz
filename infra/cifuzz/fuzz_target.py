@@ -19,11 +19,7 @@ import shutil
 import stat
 import sys
 
-import base_runner_utils
 import config_utils
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import utils
 
 import clusterfuzz.environment
 import clusterfuzz.fuzz
