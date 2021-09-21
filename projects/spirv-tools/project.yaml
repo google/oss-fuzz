@@ -7,6 +7,7 @@ auto_ccs:
   - "stevenperron@google.com"
 sanitizers:
   - address
+  - memory
   - undefined
 main_repo: 'https://github.com/KhronosGroup/SPIRV-Tools.git'
 architectures:
