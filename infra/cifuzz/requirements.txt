@@ -1,2 +1,3 @@
 clusterfuzz==2.5.5.post1
+google-cloud-ndb==1.10.2
 requests==2.25.1
