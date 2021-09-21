@@ -19,6 +19,9 @@ import unittest
 from unittest import mock
 
 import certifi
+# Importing this later causes import failures with pytest for some reason.
+# TODO(ochang): Figure out why.
+import google.cloud.ndb
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
@@ -85,7 +88,10 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
                                          self.workspace, deployment,
                                          deployment.config)
 
+    # ClusterFuzz requires ROOT_DIR.
+    root_dir = os.environ['ROOT_DIR']
     test_helpers.patch_environ(self, empty=True)
+    os.environ['ROOT_DIR'] = root_dir
 
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
