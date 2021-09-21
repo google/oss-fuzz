@@ -15,14 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make curl yasm autoconf libtool meson
-RUN git clone --depth 1 https://github.com/spdk/spdk
-RUN mkdir nasm-2.15 && cd nasm-2.15 && \
-	curl -O -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz && \
-	tar -xf nasm-2.15.05.tar.xz --strip-components=1 && \
-	./configure --prefix=/usr && \
-        make -j$(nproc) && \
-        make -j$(nproc) install 
+RUN apt-get update && apt-get install -y make curl yasm autoconf libtool meson nasm
+RUN git clone --depth 1 https://github.com/spdk/spdk && \
+    cd spdk && \
+    git submodule update --init
 WORKDIR $SRC/spdk
-RUN git submodule update --init
 COPY build.sh parse_json_fuzzer.cc $SRC/
