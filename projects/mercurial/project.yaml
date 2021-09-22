@@ -6,6 +6,7 @@ auto_ccs:
   - "kbullock@ringworld.org"
   - "security@mercurial-scm.org"
   - "martinvonz@google.com"
+  - "raphael.gomes@octobus.net"
 sanitizers:
   - address
   - undefined
