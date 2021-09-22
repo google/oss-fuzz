@@ -12,3 +12,4 @@ sanitizers:
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*
+main_repo: "https://www.mercurial-scm.org/repo/hg"
