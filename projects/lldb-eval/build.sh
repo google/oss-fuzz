@@ -17,7 +17,7 @@
 
 (
 cd $SRC/
-GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-12"
+GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-ubuntu-20.04"
 
 if [ "$SANITIZER" = "address" ]
 then
