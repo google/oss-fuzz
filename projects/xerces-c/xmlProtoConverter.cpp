@@ -94,8 +94,7 @@ void ProtoConverter::visit(KeyValue const& _x)
 		else
 			m_output << removeNonAscii(_x.key()) << "=\"" << removeNonAscii(_x.value()) << "\" ";
 		break;
-	case KeyValue_XmlNamespace_KeyValue_XmlNamespace_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case KeyValue_XmlNamespace_KeyValue_XmlNamespace_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 }
@@ -165,8 +164,7 @@ void ProtoConverter::visit(ElementDecl const& _x)
 		m_output << ")>";
 		break;
 	}
-	case ElementDecl_ContentSpec_ElementDecl_ContentSpec_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case ElementDecl_ContentSpec_ElementDecl_ContentSpec_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 }
@@ -194,8 +192,7 @@ void ProtoConverter::visit(AttValue const& _x)
 	case AttValue::FUZZ:
 		prefix = "fuzz";
 		break;
-	case AttValue_Type_AttValue_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case AttValue_Type_AttValue_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	for (auto const& name: _x.value())
@@ -223,8 +220,7 @@ void ProtoConverter::visit(DefaultDecl const& _x)
 	case DefaultDecl::FUZZ:
 		m_output << "#FUZZ";
 		break;
-	case DefaultDecl_Type_DefaultDecl_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case DefaultDecl_Type_DefaultDecl_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 }
@@ -264,8 +260,7 @@ void ProtoConverter::visit(AttDef const& _x)
 	case AttDef::FUZZ:
 		m_output << "FUZZ ";
 		break;
-	case AttDef_Type_AttDef_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case AttDef_Type_AttDef_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	visit(_x.def());
@@ -360,8 +355,7 @@ void ProtoConverter::visit(EntityValue const& _x)
 	case EntityValue::FUZZ:
 		prefix = "fuzz";
 		break;
-	case EntityValue_Type_EntityValue_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case EntityValue_Type_EntityValue_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	for (auto const& ref: _x.name())
@@ -385,8 +379,7 @@ void ProtoConverter::visit(EntityDecl const& _x)
 		m_output << "% " << _x.name() << " ";
 		visit(_x.pedef());
 		break;
-	case EntityDecl_Type_EntityDecl_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case EntityDecl_Type_EntityDecl_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	m_output << ">";
@@ -415,8 +408,7 @@ void ProtoConverter::visit(ConditionalSect const& _x)
 		visit(_x.ext());
 		m_output << "]]>";
 		break;
-	case ConditionalSect_Type_ConditionalSect_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case ConditionalSect_Type_ConditionalSect_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 }
@@ -500,8 +492,7 @@ string ProtoConverter::getPredefined(Element_Id _x, string const& _prop)
 		output = "xi:include accept=\"" + removeNonAscii(_prop) + "\"";
 	case Element::XIACCEPTLANG:
 		output = "xi:include accept-language=\"" + removeNonAscii(_prop) + "\"";
-	case Element_Id_Element_Id_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case Element_Id_Element_Id_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		output = "xi:fuzz xifuzz=\"fuzz\"";
 	}
 	return output;
@@ -523,8 +514,7 @@ string ProtoConverter::getUri(Element_Id _x)
 	case Element::XIENCODING:
 	case Element::XIACCEPT:
 	case Element::XIACCEPTLANG:
-	case Element_Id_Element_Id_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case Element_Id_Element_Id_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		return s_XInclude;
 	}
 }
@@ -548,8 +538,7 @@ void ProtoConverter::visit(Element const& _x)
 		pUri = getUri(_x.id());
 		break;
 	case Element::FUZZ:
-	case Element_Type_Element_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case Element_Type_Element_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 
@@ -595,8 +584,7 @@ void ProtoConverter::visit(ExternalId const& _x)
 	case ExternalId::FUZZ:
 		m_output << "FUZZ " << "\"" << removeNonAscii(_x.pub()) << "\"";
 		break;
-	case ExternalId_Type_ExternalId_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case ExternalId_Type_ExternalId_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 }
@@ -623,8 +611,7 @@ void ProtoConverter::visit(VersionNum const& _x)
 		m_output << "\"1.0\"";
 		break;
 	case VersionNum::FUZZ:
-	case VersionNum_Type_VersionNum_Type_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case VersionNum_Type_VersionNum_Type_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		m_output << "\"" << _x.major() << "." << _x.minor() << "\"";
 		break;
 	}
@@ -716,8 +703,7 @@ void ProtoConverter::visit(Encodings const& _x)
 	case Encodings::FUZZ:
 		m_output << removeNonAscii(_x.fuzz());
 		break;
-	case Encodings_Enc_Encodings_Enc_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case Encodings_Enc_Encodings_Enc_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	m_output << "\"";
@@ -736,9 +722,7 @@ void ProtoConverter::visit(XmlDeclaration const& _x)
 	case XmlDeclaration::NO:
 		m_output << " standalone=\'no\'";
 		break;
-	case XmlDeclaration_Standalone_XmlDeclaration_Standalone_INT_MIN_SENTINEL_DO_NOT_USE_:
-	case XmlDeclaration_Standalone_XmlDeclaration_Standalone_INT_MAX_SENTINEL_DO_NOT_USE_:
-	default:
+	default:  // Handle unexpected enum values
 		break;
 	}
 	m_output << "?>\n";
