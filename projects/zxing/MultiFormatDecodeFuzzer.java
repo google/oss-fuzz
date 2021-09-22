@@ -41,6 +41,8 @@ public final class MultiFormatDecodeFuzzer {
         }
         if (image == null)
             return;
+        if ((long) image.getHeight() * (long) image.getWidth() > 10000000)
+            return;
 
         BufferedImageLuminanceSource source = new BufferedImageLuminanceSource(image);
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
