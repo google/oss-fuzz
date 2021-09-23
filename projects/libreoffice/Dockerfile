@@ -134,6 +134,7 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/scrtffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/dbffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/docxfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xlsxfuzzer_seed_corpus.zip \
