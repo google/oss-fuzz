@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# supp_size is unused in harfbuzz so we will avoid it being unused.
+sed -i 's/supp_size;/supp_size;(void)(supp_size);/g' ./thirdparty/harfbuzz/src/hb-subset-cff1.cc
+
 LDFLAGS="$CXXFLAGS" make -j$(nproc) HAVE_GLUT=no build=debug OUT=$WORK
 fuzz_target=pdf_fuzzer
 
