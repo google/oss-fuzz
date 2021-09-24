@@ -38,11 +38,9 @@ EXAMPLE_PROJECT = 'example'
 # An example fuzzer that triggers an error.
 EXAMPLE_FUZZER = 'example_crash_fuzzer'
 
-# The return value of a successful call to utils.execute.
-EXECUTE_SUCCESS_RETVAL = engine.ReproduceResult([], 0, 0, '')
-
-# The return value of a failed call to utils.execute.
-EXECUTE_FAILURE_RETVAL = engine.ReproduceResult([], 1, 0, '')
+# Mock return values for engine_impl.reproduce.
+EXECUTE_SUCCESS_RESULT = engine.ReproduceResult([], 0, 0, '')
+EXECUTE_FAILURE_RESULT = engine.ReproduceResult([], 1, 0, '')
 
 
 def _create_config(**kwargs):
@@ -97,7 +95,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
-    all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
+    all_repro = [EXECUTE_FAILURE_RESULT] * fuzz_target.REPRODUCE_ATTEMPTS
     with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
       mock_get_engine().reproduce.side_effect = all_repro
 
@@ -114,7 +112,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   def test_flaky(self, _):
     """Tests that is_reproducible returns True if crash is detected on the last
     attempt."""
-    last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
+    last_time_repro = [EXECUTE_SUCCESS_RESULT] * 9 + [EXECUTE_FAILURE_RESULT]
     with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
       mock_get_engine().reproduce.side_effect = last_time_repro
       self.assertTrue(
@@ -132,7 +130,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   def test_unreproducible(self, _):
     """Tests that is_reproducible returns False for a crash that did not
     reproduce."""
-    all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
+    all_unrepro = [EXECUTE_SUCCESS_RESULT] * fuzz_target.REPRODUCE_ATTEMPTS
     with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
       mock_get_engine().reproduce.side_effect = all_unrepro
       result = self.target.is_reproducible(self.testcase_path,

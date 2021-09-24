@@ -228,7 +228,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
           return True
 
-    logging.info('Reproduce command returned 0. Not reproducible on %s.',
+    logging.info('Reproduce command returned: 0. Not reproducible on %s.',
                  target_path)
     return False
 
