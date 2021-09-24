@@ -3,6 +3,7 @@ language: python
 primary_contact: "amitpatankar@google.com"
 auto_ccs:
  - "mihaimaruseac@google.com"
+ - "lpak@google.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
