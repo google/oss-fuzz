@@ -61,7 +61,7 @@ cp -R $CPYTHON_INSTALL_PATH $OUT/
 
 rm -rf $OUT/django-dependencies
 mkdir $OUT/django-dependencies
-$CPYTHON_INSTALL_PATH/bin/pip3 install asgiref pytz sqlparse -t $OUT/django-dependencies
+$CPYTHON_INSTALL_PATH/bin/pip3 install asgiref pytz sqlparse backports.zoneinfo -t $OUT/django-dependencies
 
 cd $SRC/django-fuzzers
 rm $CPYTHON_INSTALL_PATH/lib/python3.8/lib-dynload/_tkinter*.so
