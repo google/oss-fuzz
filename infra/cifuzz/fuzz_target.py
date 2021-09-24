@@ -17,13 +17,8 @@ import logging
 import os
 import shutil
 import stat
-import sys
 
-import base_runner_utils
 import config_utils
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import utils
 
 import clusterfuzz.environment
 import clusterfuzz.fuzz
@@ -38,6 +33,8 @@ LIBFUZZER_OPTIONS = ['-seed=1337', '-len_control=0']
 
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
+
+REPRODUCE_TIME_SECONDS = 30
 
 # Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
@@ -213,21 +210,25 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    env = base_runner_utils.get_env(self.config, self.workspace)
-    env['TESTCASE'] = testcase
-    command = ['reproduce', self.target_name, '-runs=100']
+    logging.info('Trying to reproduce crash using: %s.', testcase)
+    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
+                                             self.config.sanitizer,
+                                             target_path,
+                                             interactive=True):
+      for _ in range(REPRODUCE_ATTEMPTS):
+        engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+        result = engine_impl.reproduce(target_path,
+                                       testcase,
+                                       arguments=[],
+                                       max_time=REPRODUCE_TIME_SECONDS)
 
-    logging.info('Running reproduce command: %s.', ' '.join(command))
-    for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, returncode = utils.execute(command, env=env)
+        if result.return_code != 0:
+          logging.info('Reproduce command returned: %s. Reproducible on %s.',
+                       result.return_code, target_path)
 
-      if returncode != 0:
-        logging.info('Reproduce command returned: %s. Reproducible on %s.',
-                     returncode, target_path)
+          return True
 
-        return True
-
-    logging.info('Reproduce command returned 0. Not reproducible on %s.',
+    logging.info('Reproduce command returned: 0. Not reproducible on %s.',
                  target_path)
     return False
 
