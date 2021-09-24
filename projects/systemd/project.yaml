@@ -5,8 +5,7 @@ builds_per_day: 4
 sanitizers:
   - address
   - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+  - memory
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
