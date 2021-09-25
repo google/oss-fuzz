@@ -19,6 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         rsync \
+        default-jre default-jdk nasm autoconf automake libtool wget \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -37,3 +38,7 @@ RUN curl -Lo /usr/bin/bazel \
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow
 COPY build.sh $SRC/
+COPY workspace.bzl $SRC/tensorflow/third_party/libprotobuf_mutator/workspace.bzl
+COPY repo.bzl $SRC/tensorflow/third_party/repo.bzl
+COPY BUILD $SRC/tensorflow/tensorflow/security/fuzzing/BUILD
+

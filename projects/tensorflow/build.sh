@@ -15,6 +15,25 @@
 #
 ################################################################################
 
+export TF_SYSTEM_LIBS="nasm, com_google_protobuf"
+
+
+cd ${SRC}
+git clone https://github.com/google/protobuf.git
+cd protobuf
+git submodule update --init --recursive
+./autogen.sh
+./configure
+make -j$(nproc)
+make install
+ldconfig
+
+cd $SRC/tensorflow
+#sed -i 's/checkpoint_reader_fuzz/not_on_oss/g' ./tensorflow/security/fuzzing/BUILD
+#cp ./tensorflow/security/fuzzing/checkpoint_reader_fuzz_input.proto ./tensorflow/security/fuzzing/not_on_oss_input.proto
+#cp ./tensorflow/security/fuzzing/checkpoint_reader_fuzz.cc ./tensorflow/security/fuzzing/not_on_oss.cc
+#sed -i 's/checkpoint_reader_fuzz_input/not_on_oss_input/g' ./tensorflow/security/fuzzing/not_on_oss.cc
+
 # Force Python3, run configure.py to pick the right build config
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
@@ -49,6 +68,9 @@ fi
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
 # Ignore fuzzers tagged with `no_oss` in opensource.
 declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))')
+
+#echo "${FUZZERS}"
+#exit 0
 
 # Build the fuzzer targets.
 # Pass in `--config=libc++` to link against libc++.
