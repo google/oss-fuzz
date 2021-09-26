@@ -40,6 +40,9 @@ echo -n "--force-module=blst " >>extra_options.h
 echo -n "--operations=" >>extra_options.h
 echo -n "BignumCalc," >>extra_options.h
 echo -n "BignumCalc_Fp2," >>extra_options.h
+echo -n "BignumCalc_Fp12," >>extra_options.h
+echo -n "BLS_BatchVerify," >>extra_options.h
+echo -n "BLS_FinalExp," >>extra_options.h
 echo -n "BLS_GenerateKeyPair," >>extra_options.h
 echo -n "BLS_HashToG1," >>extra_options.h
 echo -n "BLS_HashToG2," >>extra_options.h
