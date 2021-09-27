@@ -86,6 +86,8 @@ BUILD_TEMPLATE = """\
 """
 
 EXTERNAL_BUILD_TEMPLATE = """\
+#!/bin/bash -eu
+
 # build project
 # e.g.
 # ./autogen.sh
