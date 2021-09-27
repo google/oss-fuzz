@@ -17,9 +17,13 @@
 FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN apt-get update && \
-    apt-get install systemd -y && \
+    apt-get install systemd y && \
+    apt-get install nodejs npm --no-install-recommends &&
     wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb
+
+# Install github actions toolkit
+RUN npm install @actions/core
 
 # Install newer Python from base-builder.
 COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
