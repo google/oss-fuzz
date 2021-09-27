@@ -42,14 +42,7 @@ def build_fuzzers_entrypoint():
                   config.commit_sha, config.pr_ref)
     return returncode
 
-  if not config.bad_build_check:
-    # If we've gotten to this point and we don't need to do bad_build_check,
-    # then the build has succeeded.
-    returncode = 0
-  elif build_fuzzers.check_fuzzer_build(config):
-    returncode = 0
-
-  return returncode
+  return 0
 
 
 def main():
