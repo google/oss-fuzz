@@ -124,8 +124,10 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Builds the image, checkouts the source (if needed), builds the fuzzers
     and then removes the unaffectted fuzzers. Returns True on success."""
     methods = [
-        self.build_image_and_checkout_src, self.build_fuzzers,
-        self.remove_unaffected_fuzz_targets, self.check_fuzzer_build,
+        self.build_image_and_checkout_src,
+        self.build_fuzzers,
+        self.remove_unaffected_fuzz_targets,
+        self.check_fuzzer_build,
         self.upload_build,
     ]
     for method in methods:
