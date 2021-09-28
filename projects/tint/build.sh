@@ -94,3 +94,4 @@ mutate_depth = 1
 tint_enable_all_mutations = false
 tint_mutation_batch_size = 5
 " > "$OUT/${fuzzer}.options"
+done
