@@ -92,6 +92,7 @@ zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file
 unzip ../emerging.rules.zip
 cd rules
+cat *.rules > $OUT/fuzz.rules
 i=0
 mkdir corpus
 # quiet output for commands
