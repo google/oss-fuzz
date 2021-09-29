@@ -119,6 +119,7 @@ def is_fuzz_target_local(file_path):
   Copied from clusterfuzz src/python/bot/fuzzers/utils.py
   with slight modifications.
   """
+  # pylint: disable=too-many-return-statements
   filename, file_extension = os.path.splitext(os.path.basename(file_path))
   if not VALID_TARGET_NAME_REGEX.match(filename):
     # Check fuzz target has a valid name (without any special chars).
