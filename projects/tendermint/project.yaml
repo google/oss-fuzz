@@ -4,7 +4,7 @@ auto_ccs:
   - fuzzing@orijtech.com
   - emmanuel@orijtech.com
   - cuong@orijtech.com
-  - tess@interchain.io
+  - callum@interchain.io
   - tychoish@interchain.io
   - william@interchain.io
 language: go
