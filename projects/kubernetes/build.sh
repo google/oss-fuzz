@@ -28,6 +28,7 @@ cd kops
 
 # Compile Kubernetes fuzzers
 cd $SRC/kubernetes
+go mod download && go mod vendor
 
 function compile_fuzzer {
   local pkg=$1
@@ -44,3 +45,20 @@ compile_fuzzer "yaml" "FuzzTimeStrict"
 compile_fuzzer "yaml" "FuzzYamlV2"
 compile_fuzzer "json" "FuzzStrictDecode"
 compile_fuzzer "json" "FuzzNonStrictDecode"
+
+compile_fuzzer "apimachinery" "FuzzParseQuantity"
+compile_fuzzer "apimachinery" "FuzzMeta1ParseToLabelSelector"
+compile_fuzzer "apimachinery" "FuzzParseSelector"
+compile_fuzzer "apimachinery" "FuzzLabelsParse"
+compile_fuzzer "apimachinery" "FuzzParseGroupVersion"
+compile_fuzzer "apimachinery" "FuzzParseResourceArg"
+compile_fuzzer "apimachinery" "FuzzParseVersion"
+compile_fuzzer "client-go" "FuzzParsePrivateKeyPEM"
+compile_fuzzer "client-go" "FuzzParsePublicKeysPEM"
+compile_fuzzer "cmd" "FuzzParseHostPort"
+compile_fuzzer "credentialprovider" "FuzzUrlsMatch"
+compile_fuzzer "kubectl" "FuzzParseCSR"
+compile_fuzzer "kubectl" "FuzzParseEnv"
+compile_fuzzer "kubelet" "FuzzParseQOSReserve"
+compile_fuzzer "kubelet" "FuzzParseCPUSet"
+compile_fuzzer "util" "FuzzParseImageName"
