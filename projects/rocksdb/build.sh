@@ -21,6 +21,7 @@ export PATH=$PWD/external.protobuf/bin:$PATH
 cd $SRC/rocksdb
 export FUZZ_ENV=ossfuzz
 export CC=$CXX
+export DISABLE_WARNING_AS_ERROR=1
 make static_lib
 
 cd fuzz
