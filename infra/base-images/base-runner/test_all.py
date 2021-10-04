@@ -24,8 +24,11 @@ import shutil
 import subprocess
 import stat
 import sys
+import uuid
 
-TMP_FUZZER_DIR = '/tmp/not-out'
+# Make the temp directory random so that integration tests can run in parallel.
+_UUID4 = uuid.uuid4()
+TMP_FUZZER_DIR = '/tmp/not-out-' + _UUID4.hex
 
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
