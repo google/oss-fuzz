@@ -21,7 +21,7 @@ const artifactClient = artifact.create()
 const artifactName = process.argv[1];
 const rootDirectory = process.argv[2]
 const files = process.argv.slice(3);
-process.stderr.write("arguments" + " " + artifactName " " + rootDirectory + " " + files);
+process.stderr.write("arguments" + " " + artifactName + " " + rootDirectory + " " + files);
 const options = {
     continueOnError: true
 }
