@@ -22,11 +22,16 @@ export LD_EXTRA_OPTS="${CFLAGS}"
 
 sed -i 's/int main(/int main2(/g' ./src/main.c
 
-make || true
+export MEMPKG=sys
+make Q=verbose || true
 cd src
 mkdir objects && find . -name "*.o" -exec cp {} ./objects/ \;
 ar -r libkamilio.a ./objects/*.o
 cd ../
 $CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_uri.c -o $OUT/fuzz_uri \
+    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
+    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
+$CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_parse_msg.c -o $OUT/fuzz_parse_msg \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
     -I./src/ -I./src/core/parser -ldl -lresolv -lm

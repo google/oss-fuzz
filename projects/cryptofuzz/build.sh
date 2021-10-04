@@ -93,23 +93,23 @@ then
 fi
 
 # Compile NSS
-if [[ $CFLAGS != *-m32* ]]
-then
-    mkdir $SRC/nss-nspr
-    mv $SRC/nss $SRC/nss-nspr/
-    mv $SRC/nspr $SRC/nss-nspr/
-    cd $SRC/nss-nspr/
-
-    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
-
-    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
-    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
-
-    # Compile Cryptofuzz NSS module
-    cd $SRC/cryptofuzz/modules/nss
-    make -B
-fi
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    mkdir $SRC/nss-nspr
+#    mv $SRC/nss $SRC/nss-nspr/
+#    mv $SRC/nspr $SRC/nss-nspr/
+#    cd $SRC/nss-nspr/
+#
+#    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
+#
+#    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
+#    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
+#
+#    # Compile Cryptofuzz NSS module
+#    cd $SRC/cryptofuzz/modules/nss
+#    make -B
+#fi
 
 # Compile Monocypher
 cd $SRC/Monocypher/
@@ -147,27 +147,27 @@ then
     make -B
 fi
 
-# Build blst
-cd $SRC/blst/
-# Patch to disable assembly
-# This is to prevent false positives, see:
-# https://github.com/google/oss-fuzz/issues/5914
-touch new_no_asm.h
-echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-echo "#else" >>new_no_asm.h
-echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-echo "#endif" >>new_no_asm.h
-cat src/no_asm.h >>new_no_asm.h
-mv new_no_asm.h src/no_asm.h
-CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
-export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
-export BLST_INCLUDE_PATH=$(realpath bindings/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
-
-# Compile Cryptofuzz blst module
-cd $SRC/cryptofuzz/modules/blst/
-make -B -j$(nproc)
+## Build blst
+#cd $SRC/blst/
+## Patch to disable assembly
+## This is to prevent false positives, see:
+## https://github.com/google/oss-fuzz/issues/5914
+#touch new_no_asm.h
+#echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+#echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+#echo "#else" >>new_no_asm.h
+#echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+#echo "#endif" >>new_no_asm.h
+#cat src/no_asm.h >>new_no_asm.h
+#mv new_no_asm.h src/no_asm.h
+#CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+#export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+#export BLST_INCLUDE_PATH=$(realpath bindings/)
+#export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+#
+## Compile Cryptofuzz blst module
+#cd $SRC/cryptofuzz/modules/blst/
+#make -B -j$(nproc)
 
 # Build libsecp256k1
 cd $SRC/secp256k1/
@@ -449,27 +449,27 @@ then
     make -B
 fi
 
-if [[ $CFLAGS != *-m32* ]]
-then
-    # Compile Cryptofuzz (NSS-based)
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
-
-    rm $SRC/cryptofuzz/modules/nss/module.a
-
-    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
-    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
-fi
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    # Compile Cryptofuzz (NSS-based)
+#    cd $SRC/cryptofuzz
+#    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
+#
+#    # Generate dictionary
+#    ./generate_dict
+#
+#    # Copy fuzzer
+#    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
+#    # Copy dictionary
+#    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
+#    # Copy seed corpus
+#    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
+#
+#    rm $SRC/cryptofuzz/modules/nss/module.a
+#
+#    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
+#    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
+#fi
 
 if [[ $CFLAGS != *sanitize=memory* ]]
 then

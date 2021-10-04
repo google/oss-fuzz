@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
@@ -24,3 +24,7 @@ ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 RUN install_go.sh
+
+# TODO(jonathanmetzman): Install this file using install_go.sh.
+COPY ossfuzz_coverage_runner.go $GOPATH
+

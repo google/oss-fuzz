@@ -43,10 +43,17 @@ elif [ $SANITIZER == "thread" ]; then
 else
   exit 1
 fi
-CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+# These deprecated warnings get quite noisy and mask other issues.
+CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
+  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
-$SRC/depot_tools/ninja libGLESv2 libEGL
-mv libGLESv2.so libEGL.so $OUT
+$SRC/depot_tools/ninja libGLESv2_deprecated libEGL_deprecated
+# Skia is looking for the names w/o the _deprecated tag. The libraries themselves
+# are looking for the _deprecated suffix, so we copy them both ways into the out
+# directory.
+cp libEGL_deprecated.so $OUT/libEGL.so
+cp libGLESv2_deprecated.so $OUT/libGLESv2.so
+mv libGLESv2_deprecated.so libEGL_deprecated.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
 popd
@@ -54,8 +61,10 @@ popd
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
+export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2\
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2\
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.

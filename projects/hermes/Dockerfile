@@ -14,15 +14,18 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool wget libicu-dev \
-    ninja-build python zip libreadline-dev libatomic-ops-dev
+    apt-get install -y make autoconf automake libtool wget \
+    python zip libreadline-dev libatomic-ops-dev
+
+RUN pip3 install meson ninja
+RUN ln -s /usr/local/bin/ninja /usr/bin/ninja
+
+RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.tar.gz && \
+    tar xzvf ./2021-08-25.tar.gz && \
+    mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
 
 RUN git clone https://github.com/facebook/hermes.git
-WORKDIR hermes
+WORKDIR $SRC
 COPY build.sh $SRC/

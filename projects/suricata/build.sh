@@ -92,6 +92,7 @@ zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file
 unzip ../emerging.rules.zip
 cd rules
+cat *.rules > $OUT/fuzz.rules
 i=0
 mkdir corpus
 # quiet output for commands
@@ -126,3 +127,13 @@ done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
 echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
+rm -Rf corpus
+mkdir corpus
+set +x
+ls | grep -v corpus | while read t; do
+fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+done
+set -x
+zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus
+echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict

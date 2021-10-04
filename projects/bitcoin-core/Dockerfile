@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 # Packages taken from:
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions

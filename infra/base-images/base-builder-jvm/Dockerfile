@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new
+FROM gcr.io/oss-fuzz-base/base-builder
 
 ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server

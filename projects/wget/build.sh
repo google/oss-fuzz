@@ -76,20 +76,31 @@ make install
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
+# Ensure our libraries can be found
+ln -s $WGET_DEPS_PATH/lib64/libhogweed.a $WGET_DEPS_PATH/lib/libhogweed.a
+ln -s $WGET_DEPS_PATH/lib64/libnettle.a  $WGET_DEPS_PATH/lib/libnettle.a
+
 cd $SRC/wget
 ./bootstrap
 autoreconf -fi
 
+export CFLAGS="$CFLAGS -I$WGET_DEPS_PATH/include"
+export CXXFLAGS="$CXXFLAGS -I$WGET_DEPS_PATH/include"
+
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure -C
+GNUTLS_CFLAGS="-lgnutls" \
+GNUTLS_LIBS="-lgnutls" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure --enable-fuzzing -C
+GNUTLS_CFLAGS="-lgnutls" \
+GNUTLS_LIBS="-lgnutls" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C src

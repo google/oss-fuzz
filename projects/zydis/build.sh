@@ -20,6 +20,7 @@ mv $SRC/ZydisFuzz_seed_corpus.zip $OUT/ZydisFuzz_seed_corpus.zip
 mkdir build && cd build
 
 cmake                                   \
+    -DZYAN_FORCE_ASSERTS=ON             \
     -DZYDIS_BUILD_EXAMPLES=OFF          \
     -DZYDIS_BUILD_TOOLS=OFF             \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo   \
@@ -29,7 +30,7 @@ cmake                                   \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS"       \
     ..
 
-make -j8
+make -j$(nproc) VERBOSE=1
 
 $CXX                                    \
     $CXXFLAGS                           \

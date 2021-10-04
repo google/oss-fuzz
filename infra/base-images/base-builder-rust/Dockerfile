@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new
+FROM gcr.io/oss-fuzz-base/base-builder
 
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup

@@ -21,9 +21,9 @@ import logging
 import multiprocessing
 import os
 import subprocess
+import sys
 
 TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
-TESTING_TAG_SUFFIX = '-testing'
 INFRA_DIR = os.path.dirname(__file__)
 IMAGES_DIR = os.path.join(INFRA_DIR, 'base-images')
 
@@ -36,10 +36,10 @@ def push_image(tag):
   logging.info('Pushed: %s', tag)
 
 
-def build_and_push_image(image):
+def build_and_push_image(image, test_image_suffix):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
   main_tag = TAG_PREFIX + image
-  testing_tag = main_tag + TESTING_TAG_SUFFIX
+  testing_tag = main_tag + '-' + test_image_suffix
   tags = [main_tag, testing_tag]
   build_image(image, tags)
   push_image(testing_tag)
@@ -57,32 +57,35 @@ def build_image(image, tags):
   logging.info('Built: %s', image)
 
 
-def build_and_push_images():
+def build_and_push_images(test_image_suffix):
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
-      ['base-clang', 'base-runner'],
-      ['base-builder', 'base-runner-debug', 'base-builder-new'],
+      ['base-clang'],
+      # base-runner is also dependent on base-clang.
+      ['base-builder', 'base-runner'],
       [
-          'base-runner-debug', 'base-sanitizer-build-libs', 'base-builder-go',
-          'base-builder-jvm', 'base-builder-python', 'base-builder-rust',
-          'base-builder-swift'
+          'base-runner-debug', 'base-builder-go', 'base-builder-jvm',
+          'base-builder-python', 'base-builder-rust', 'base-builder-swift'
       ],
   ]
   max_parallelization = max([len(image_list) for image_list in images])
   proc_count = min(multiprocessing.cpu_count(), max_parallelization)
+  logging.info('Using %d parallel processes.', proc_count)
   pool = multiprocessing.Pool(proc_count)
   for image_list in images:
-    pool.map(build_and_push_image, image_list)
+    args_list = [(image, test_image_suffix) for image in image_list]
+    pool.starmap(build_and_push_image, args_list)
 
 
 def main():
   """"Builds base-images tags them with "-testing" suffix (in addition to normal
-  tag) and pushes "-testing" suffixed images to docker registry."""
+  tag) and pushes testing suffixed images to docker registry."""
+  test_image_suffix = sys.argv[1]
   logging.basicConfig(level=logging.DEBUG)
   logging.info('Doing simple gcloud command to ensure 2FA passes.')
   subprocess.run(['gcloud', 'projects', 'list', '--limit=1'], check=True)
-  build_and_push_images()
+  build_and_push_images(test_image_suffix)
 
 
 if __name__ == '__main__':

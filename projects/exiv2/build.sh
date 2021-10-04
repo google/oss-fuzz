@@ -15,7 +15,10 @@
 #
 ################################################################################
 
-pwd
+# Added to fix a false positive result: https://github.com/google/oss-fuzz/issues/6489
+CXXFLAGS="${CXXFLAGS} -fno-sanitize=float-divide-by-zero"
+
+# Build Exiv2
 mkdir -p build
 cd build
 cmake -DEXIV2_ENABLE_PNG=ON -DEXIV2_ENABLE_WEBREADY=ON -DEXIV2_ENABLE_CURL=OFF -DEXIV2_ENABLE_BMFF=ON -DEXIV2_TEAM_WARNINGS_AS_ERRORS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DEXIV2_BUILD_FUZZ_TESTS=ON -DEXIV2_TEAM_OSS_FUZZ=ON -DLIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" ..

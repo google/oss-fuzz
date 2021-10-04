@@ -60,13 +60,16 @@ for i in readelf; do
 done
 
 # Link the files
-## Readelf
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
-mv fuzz_readelf $OUT/fuzz_readelf
+# Only link if they exist
+if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
+  ## Readelf
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
+  mv fuzz_readelf $OUT/fuzz_readelf
 
-### Set up seed corpus for readelf in the form of a single ELF file. 
-zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
-mv fuzz_readelf_seed_corpus.zip $OUT/ 
+  ### Set up seed corpus for readelf in the form of a single ELF file. 
+  zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
+  mv fuzz_readelf_seed_corpus.zip $OUT/ 
 
-## Copy over the options file
-cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
+  ## Copy over the options file
+  cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
+fi

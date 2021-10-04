@@ -10,6 +10,7 @@ auto_ccs:
   - "rsavitski@google.com"
   - "eseckler@google.com"
   - "altimin@google.com"
+  - "ddiproietto@google.com"
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com

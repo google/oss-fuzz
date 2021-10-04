@@ -34,12 +34,7 @@ RUN apt-get update -y \
             sudo \
             tzdata
 
-
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.21.1/cmake-3.21.1-Linux-x86_64.sh; \
-    chmod +x cmake-3.21.1-Linux-x86_64.sh; \
-    ./cmake-3.21.1-Linux-x86_64.sh --skip-license --prefix="/usr"
-
-RUN git clone --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
+RUN git clone -j 8 --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
 WORKDIR $SRC/ClickHouse
 
 COPY build.sh $SRC/

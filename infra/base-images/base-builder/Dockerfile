@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,71 +61,14 @@ RUN export PYTHON_DEPS="\
     rm -rf /usr/local/lib/python3.8/test && \
     apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
-# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
-# six for Bazel rules.
-RUN echo ATHERIS INSTALL
+# Install six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    atheris>=2.0.6 pyinstaller==4.1 six==1.15.0 && \
-    rm -rf /tmp/*
-
-# Download and install the latest stable Go.
-RUN cd /tmp && \
-    curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
-    chmod +x ./installer_linux && \
-    SHELL="bash" ./installer_linux && \
-    rm -rf ./installer_linux
-
-# Set up Golang environment variables (copied from /root/.bash_profile).
-ENV GOPATH /root/go
-
-# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
-# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
-
-# Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
-RUN go get -u github.com/mdempsky/go114-fuzz-build && \
-    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
-
-# Install Rust and cargo-fuzz for libFuzzer instrumentation.
-ENV CARGO_HOME=/rust
-ENV RUSTUP_HOME=/rust/rustup
-ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
-RUN cargo install cargo-fuzz && rm -rf /rust/registry
-# Needed to recompile rust std library for MSAN
-RUN rustup component add rust-src --toolchain nightly
-# Set up custom environment variable for source code copy for coverage reports
-ENV OSSFUZZ_RUSTPATH /rust
+    six==1.15.0 && rm -rf /tmp/*
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.9.0
 RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
     chmod +x /usr/local/bin/bazel
-
-# Install OpenJDK 15 and trim its size by removing unused components.
-ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
-ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
-ENV PATH=$PATH:$JAVA_HOME/bin
-RUN cd /tmp && \
-    curl -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
-    mkdir -p $JAVA_HOME && \
-    tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
-    rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
-    rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
-
-# Install the latest Jazzer in $OUT.
-# jazzer_api_deploy.jar is required only at build-time, the agent and the
-# drivers are copied to $OUT as they need to be present on the runners.
-ENV JAZZER_API_PATH "/usr/local/lib/jazzer_api_deploy.jar"
-RUN cd $SRC/ && \
-    git clone --depth=1 https://github.com/CodeIntelligenceTesting/jazzer && \
-    cd jazzer && \
-    bazel build --java_runtime_version=localjdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
-        //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar && \
-    cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/ && \
-    cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH && \
-    rm -rf ~/.cache/bazel ~/.cache/bazelisk && \
-    rm -rf $SRC/jazzer
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -191,14 +134,25 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
-    write_labels.py bazel_build_fuzz_tests /usr/local/bin/
-
-COPY detect_repo.py /opt/cifuzz/
-COPY ossfuzz_coverage_runner.go $GOPATH
-
-RUN precompile_honggfuzz
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
+
+COPY precompile_honggfuzz /usr/local/bin/
+RUN precompile_honggfuzz
+
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer debug_afl srcmap \
+    write_labels.py bazel_build_fuzz_tests \
+    # Go, java, and swift installation scripts.
+    install_go.sh \
+    install_java.sh \
+    install_python.sh \
+    install_rust.sh \
+    install_swift.sh \
+    /usr/local/bin/
+
+COPY llvmsymbol.diff $SRC
+COPY detect_repo.py /opt/cifuzz/
 
 CMD ["compile"]

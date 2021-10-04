@@ -22,7 +22,7 @@ NPROC=$(expr $(nproc) / 2)
 
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
-apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
+apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -74,7 +74,7 @@ OUR_LLVM_REVISION=llvmorg-12-init-17251-g6de48655
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
-FORCE_OUR_REVISION=1
+FORCE_OUR_REVISION=0
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
@@ -124,10 +124,24 @@ rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 # Use the clang we just built from now on.
 CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
+function cmake_libcxx {
+  extra_args="$@"
+  cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+      $extra_args \
+      $LLVM_SRC/llvm
+}
+
 # 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
@@ -145,7 +159,7 @@ cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
@@ -158,7 +172,7 @@ rm -rf $WORK/msan
 mkdir -p $WORK/dfsan
 cd $WORK/dfsan
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
@@ -197,7 +211,7 @@ rm -rf /usr/local/bin/llvm-*
 mv $LLVM_TOOLS_TMPDIR/* /usr/local/bin/
 rm -rf $LLVM_TOOLS_TMPDIR
 
-# Remove binaries from LLVM buld that we don't need.
+# Remove binaries from LLVM build that we don't need.
 rm -f \
   /usr/local/bin/bugpoint \
   /usr/local/bin/llc \

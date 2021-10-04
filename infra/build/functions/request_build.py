@@ -57,11 +57,16 @@ def get_project_data(project_name):
   return project.project_yaml_contents, project.dockerfile_contents
 
 
+def get_empty_config():
+  """Returns an empty build config."""
+  return build_project.Config(False, None, None, False)
+
+
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
   # TODO(metzman): Figure out if we need this.
   project_yaml_contents, dockerfile_lines = get_project_data(project_name)
-  build_config = build_project.Config(False, False, False, False)
+  build_config = get_empty_config()
   return build_project.get_build_steps(project_name, project_yaml_contents,
                                        dockerfile_lines, image_project,
                                        base_images_project, build_config)

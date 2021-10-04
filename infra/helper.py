@@ -35,20 +35,22 @@ import constants
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
-BASE_IMAGES = [
-    'gcr.io/oss-fuzz-base/base-image',
-    'gcr.io/oss-fuzz-base/base-clang',
-    'gcr.io/oss-fuzz-base/base-builder',
-    'gcr.io/oss-fuzz-base/base-builder-new',
-    'gcr.io/oss-fuzz-base/base-builder-go',
-    'gcr.io/oss-fuzz-base/base-builder-jvm',
-    'gcr.io/oss-fuzz-base/base-builder-python',
-    'gcr.io/oss-fuzz-base/base-builder-rust',
-    'gcr.io/oss-fuzz-base/base-builder-swift',
-    'gcr.io/oss-fuzz-base/base-runner',
-    'gcr.io/oss-fuzz-base/base-runner-debug',
-    'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-]
+BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
+
+BASE_IMAGES = {
+    'generic': [
+        'gcr.io/oss-fuzz-base/base-image',
+        'gcr.io/oss-fuzz-base/base-clang',
+        'gcr.io/oss-fuzz-base/base-builder',
+        BASE_RUNNER_IMAGE,
+        'gcr.io/oss-fuzz-base/base-runner-debug',
+    ],
+    'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
+    'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
+    'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
+    'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
+    'swift': ['gcr.io/oss-fuzz-base/base-builder-swift'],
+}
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
@@ -84,8 +86,8 @@ class Project:
       build_integration_path=constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH):
     self.is_external = is_external
     if self.is_external:
-      self.name = os.path.basename(os.path.abspath(project_name_or_path))
-      self.path = project_name_or_path
+      self.path = os.path.abspath(project_name_or_path)
+      self.name = os.path.basename(self.path)
       self.build_integration_path = os.path.join(self.path,
                                                  build_integration_path)
     else:
@@ -135,14 +137,16 @@ class Project:
 def main():  # pylint: disable=too-many-branches,too-many-return-statements
   """Gets subcommand from program arguments and does it. Returns 0 on success 1
   on error."""
-  os.chdir(OSS_FUZZ_DIR)
-  if not os.path.exists(BUILD_DIR):
-    os.mkdir(BUILD_DIR)
-
   logging.basicConfig(level=logging.INFO)
 
   parser = get_parser()
   args = parse_args(parser)
+
+  # Note: this has to happen after parse_args above as parse_args needs to know
+  # the original CWD for external projects.
+  os.chdir(OSS_FUZZ_DIR)
+  if not os.path.exists(BUILD_DIR):
+    os.mkdir(BUILD_DIR)
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
@@ -379,7 +383,7 @@ def _check_fuzzer_exists(project, fuzzer_name):
   """Checks if a fuzzer exists."""
   command = ['docker', 'run', '--rm']
   command.extend(['-v', '%s:/out' % project.out])
-  command.append('ubuntu:16.04')
+  command.append(BASE_RUNNER_IMAGE)
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
 
@@ -471,7 +475,7 @@ def build_image_impl(project, cache=True, pull=False):
     docker_build_dir = project.path
     image_project = 'oss-fuzz'
 
-  if pull and not pull_images():
+  if pull and not pull_images(project.language):
     return False
 
   build_args = []
@@ -716,8 +720,7 @@ def check_build(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v',
-      '%s:/out' % args.project.out, '-t', 'gcr.io/oss-fuzz-base/base-runner'
+      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
@@ -882,7 +885,7 @@ def coverage(args):
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      'gcr.io/oss-fuzz-base/base-runner',
+      BASE_RUNNER_IMAGE,
   ])
 
   run_args.append('coverage')
@@ -932,7 +935,7 @@ def run_fuzzer(args):
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      'gcr.io/oss-fuzz-base/base-runner',
+      BASE_RUNNER_IMAGE,
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args)
@@ -1129,11 +1132,15 @@ def shell(args):
   return True
 
 
-def pull_images():
-  """Pulls base images."""
-  for base_image in BASE_IMAGES:
-    if not docker_pull(base_image):
-      return False
+def pull_images(language=None):
+  """Pulls base images used to build projects in language lang (or all if lang
+  is None)."""
+  for base_image_lang, base_images in BASE_IMAGES.items():
+    if (language is None or base_image_lang == 'generic' or
+        base_image_lang == language):
+      for base_image in base_images:
+        if not docker_pull(base_image):
+          return False
 
   return True
 

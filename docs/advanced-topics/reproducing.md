@@ -82,8 +82,11 @@ The `sanitizer` used in the report is the value in the
   * **memory** for MemorySanitizer.
   * **undefined** for UndefinedBehaviorSanitizer.
 
-**Note**: The `architecture` argument is only necessary if you want to specify
+**Notes**:
+   * The `architecture` argument is only necessary if you want to specify
 `i386` configuration.
+   * Some bugs (specially ones related to pointer and integer overflows) are reproducible only in 32 bit mode or only in 64 bit mode.
+If you can't reproduce a particular bug building for x86_64, try building for i386.
 
 ## Reproducing bugs
 

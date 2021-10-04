@@ -14,6 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-new
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN install_python.sh

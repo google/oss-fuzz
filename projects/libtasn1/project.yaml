@@ -10,10 +10,8 @@ fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 main_repo: 'https://gitlab.com/gnutls/libtasn1.git'
