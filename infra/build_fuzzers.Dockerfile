@@ -29,5 +29,3 @@ WORKDIR ${OSS_FUZZ_ROOT}/infra
 ADD . ${OSS_FUZZ_ROOT}/infra
 
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
-# !!! TEMP CODE FOR TESTING.
-RUN npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
