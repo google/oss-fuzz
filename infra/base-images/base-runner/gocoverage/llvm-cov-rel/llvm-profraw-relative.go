@@ -102,6 +102,18 @@ func relativizeProfraw(data []byte, sectPrfCnts uint64, sectPrfData uint64) (err
 	h.NamesDelta = binary.LittleEndian.Uint64(data[72:80])
 	h.ValueKindLast = binary.LittleEndian.Uint64(data[80:88])
 
+	if h.BinaryIdsSize%8 != 0 {
+		// adds padding for binary ids
+		// cf commit b9f547e8e51182d32f1912f97a3e53f4899ea6be https://reviews.llvm.org/D110365
+		padlen := 8 - (h.BinaryIdsSize % 8)
+		data2 := make([]byte, len(data)+int(padlen))
+		copy(data2, data[0:88+h.BinaryIdsSize])
+		copy(data2[88+h.BinaryIdsSize+padlen:], data[88+h.BinaryIdsSize:])
+		data = data2
+		h.BinaryIdsSize += padlen
+		binary.LittleEndian.PutUint64(data[16:24], h.BinaryIdsSize)
+	}
+
 	if h.CountersDelta != sectPrfCnts-sectPrfData {
 		// Rust linking adds an offset ? not seen in readelf.
 		sectPrfData = h.CountersDelta - sectPrfCnts + sectPrfData
