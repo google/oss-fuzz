@@ -2,6 +2,6 @@ homepage: "https://www.pidgin.im/"
 primary_contact: "gary.kramlich@gmail.com"
 language: c
 auto_ccs:
-  - Adam@adalogics.com
-  - david@adalogics.com
+  - "quantum.analyst@gmail.com"
+  - "rekkanoryo.guifications@gmail.com"
 main_repo: 'https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.4/pidgin-2.14.4.tar.bz2'

@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3667900243c..337344e124d 100644
+index 4a4bbfa72fa..0478561e66c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -597,6 +597,7 @@ IF(WITH_JEMALLOC AND (WITH_TCMALLOC OR WITH_TCMALLOC_DEBUG))
+@@ -688,6 +688,7 @@ IF(WITH_JEMALLOC AND (WITH_TCMALLOC OR WITH_TCMALLOC_DEBUG))
    MESSAGE(FATAL_ERROR "Specify only *one* of WITH_TCMALLOC and WITH_JEMALLOC")
  ENDIF()
  
@@ -10,8 +10,8 @@ index 3667900243c..337344e124d 100644
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
  
-@@ -1587,6 +1588,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
-   TARGET_LINK_LIBRARIES(server_unittest_library ${ICU_LIBRARIES})
+@@ -1804,6 +1805,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+   ENDIF()
  ENDIF()
  
 +IF (FUZZING)
@@ -21,8 +21,22 @@ index 3667900243c..337344e124d 100644
  # scripts/mysql_config depends on client and server targets loaded above.
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
+diff --git a/cmake/os/Linux.cmake b/cmake/os/Linux.cmake
+index 0e25e8eb..3ae74839 100644
+--- a/cmake/os/Linux.cmake
++++ b/cmake/os/Linux.cmake
+@@ -103,7 +103,8 @@ IF(NOT WITH_ASAN AND
+    NOT WITH_LSAN AND
+    NOT WITH_MSAN AND
+    NOT WITH_TSAN AND
+-   NOT WITH_UBSAN)
++   NOT WITH_UBSAN AND
++   NOT FUZZING)
+   SET(LINK_FLAG_NO_UNDEFINED "-Wl,--no-undefined")
+   SET(LINK_FLAG_Z_DEFS "-z,defs")
+ ENDIF()
 diff --git a/include/mysql.h b/include/mysql.h
-index b805bffdf88..23d2311299e 100644
+index 4700d74b853..bdf9b765ffb 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
 @@ -262,7 +262,8 @@ enum mysql_protocol_type {
@@ -36,10 +50,10 @@ index b805bffdf88..23d2311299e 100644
  
  enum mysql_ssl_mode {
 diff --git a/include/mysql.h.pp b/include/mysql.h.pp
-index ce785802ad9..4f048082335 100644
+index 39ebd0fcb93..c041cc4690f 100644
 --- a/include/mysql.h.pp
 +++ b/include/mysql.h.pp
-@@ -485,7 +485,8 @@ enum mysql_protocol_type {
+@@ -486,7 +486,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -50,7 +64,7 @@ index ce785802ad9..4f048082335 100644
  enum mysql_ssl_mode {
    SSL_MODE_DISABLED = 1,
 diff --git a/include/violite.h b/include/violite.h
-index c04e82505a7..2498ba0053c 100644
+index a6ccd1a607d..8dc0d46dd7f 100644
 --- a/include/violite.h
 +++ b/include/violite.h
 @@ -108,12 +108,14 @@ enum enum_vio_type : int {
@@ -91,13 +105,13 @@ index c04e82505a7..2498ba0053c 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index 4956a0dc2d8..bab0aa3b504 100644
+index 334d1b7d3ef..c37c5ad930e 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -353,11 +353,11 @@ IF(UNIX)
+@@ -345,11 +345,11 @@ IF(LINUX_STANDALONE AND KERBEROS_CUSTOM_LIBRARY)
+ ENDIF()
  
-   ADD_INSTALL_RPATH_FOR_OPENSSL(libmysql)
- 
+ IF(UNIX)
 -  IF(LINK_FLAG_Z_DEFS)
 +  IF(LINK_FLAG_Z_DEFS AND NOT FUZZING)
      MY_TARGET_LINK_OPTIONS(libmysql "LINKER:${LINK_FLAG_Z_DEFS}")
@@ -105,23 +119,11 @@ index 4956a0dc2d8..bab0aa3b504 100644
  
 -  IF(LINUX)
 +  IF(LINUX AND NOT FUZZING)
+     CONFIGURE_FILE(libmysql.ver.in ${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver)
      MY_TARGET_LINK_OPTIONS(libmysql
        "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver")
-   ENDIF() 
-diff --git a/mysys/mf_tempfile.cc b/mysys/mf_tempfile.cc
-index f4f5dffba9a..26ab2ce0917 100644
---- a/mysys/mf_tempfile.cc
-+++ b/mysys/mf_tempfile.cc
-@@ -320,6 +320,7 @@ File create_temp_file(char *to, const char *dir, const char *prefix,
-       set_my_errno(ENAMETOOLONG);
-       return file;
-     }
-+    sprintf(prefix_buff, "%sXXXXXX", prefix ? prefix : "tmp.");
-     my_stpcpy(convert_dirname(to, dir, NullS), prefix_buff);
-     file = mkstemp(to);
-     file_info::RegisterFilename(file, to, file_info::OpenType::FILE_BY_MKSTEMP);
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
-index 8253e3967d4..034c71de600 100644
+index 2fc7820eaa3..248ea909db8 100644
 --- a/mysys/my_rnd.cc
 +++ b/mysys/my_rnd.cc
 @@ -48,6 +48,9 @@
@@ -158,10 +160,10 @@ index 8253e3967d4..034c71de600 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index 61404be555b..721802cb60c 100644
+index b8050f2b1a7..9a65178c5c4 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5774,6 +5774,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5892,6 +5892,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -175,12 +177,12 @@ index 61404be555b..721802cb60c 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index 519926135ed..db75dc7f5e5 100644
+index 50b76e2fa75..871006c2d8f 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6862,7 +6862,9 @@ int mysqld_main(int argc, char **argv)
-     unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
-   }
+@@ -6991,7 +6991,9 @@ int mysqld_main(int argc, char **argv)
+ 
+   keyring_lockable_init();
  
 +#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
    my_init_signals();
@@ -188,7 +190,7 @@ index 519926135ed..db75dc7f5e5 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -7347,8 +7349,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7497,8 +7499,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -199,7 +201,7 @@ index 519926135ed..db75dc7f5e5 100644
  #endif
  
    /* set all persistent options */
-@@ -7393,8 +7397,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7543,8 +7547,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -210,7 +212,7 @@ index 519926135ed..db75dc7f5e5 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7441,6 +7446,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7591,6 +7596,10 @@ int mysqld_main(int argc, char **argv)
  
    (void)RUN_HOOK(server_state, before_handle_connection, (nullptr));
  
@@ -221,7 +223,7 @@ index 519926135ed..db75dc7f5e5 100644
  #if defined(_WIN32)
    if (mysqld_socket_acceptor != nullptr)
      mysqld_socket_acceptor->check_and_spawn_admin_connection_handler_thread();
-@@ -10281,6 +10290,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+@@ -10500,6 +10509,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -232,10 +234,10 @@ index 519926135ed..db75dc7f5e5 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index fba0684f322..8352dacbc03 100644
+index 7ecc10961ac..5f13f94eb02 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
-@@ -1487,18 +1487,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
+@@ -1476,18 +1476,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
        n = n_instances;
      }
  
@@ -257,7 +259,7 @@ index fba0684f322..8352dacbc03 100644
          err = errs[id];
        }
 diff --git a/vio/CMakeLists.txt b/vio/CMakeLists.txt
-index d44eebce63a..975bc878e17 100644
+index 35ab5f17f15..9b39bfdbdbf 100644
 --- a/vio/CMakeLists.txt
 +++ b/vio/CMakeLists.txt
 @@ -27,6 +27,7 @@ SET(VIO_SOURCES
@@ -269,7 +271,7 @@ index d44eebce63a..975bc878e17 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index 38e3d90f20e..abbc9a52478 100644
+index 368c8d7b581..50c3231a8b0 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
 @@ -284,6 +284,26 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
@@ -311,7 +313,7 @@ index 38e3d90f20e..abbc9a52478 100644
                         int *len) {
 diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
 new file mode 100644
-index 00000000000..83f22a5dbb9
+index 00000000000..5b368d685cb
 --- /dev/null
 +++ b/vio/viofuzz.cc
 @@ -0,0 +1,124 @@
@@ -364,7 +366,7 @@ index 00000000000..83f22a5dbb9
 +  DBUG_ENTER("vio_socket_connect");
 +
 +  /* Only for socket-based transport types. */
-+  DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
++  //DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
 +
 +  /* Initiate the connection. */
 +  return 0;

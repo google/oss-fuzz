@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
+
 function copy_lib
     {
     local fuzzer_path=$1
@@ -35,7 +37,16 @@ fi
 ./bootstrap
 # java fails with Source option 6 is no longer supported. Use 7 or later.
 ./configure --disable-java --enable-fuzzing --disable-shared
+
+# patch bluez
+sed -i 's/sys\/socket.h>/sys\/socket.h>\n#include <linux\/sockios.h>/g' ./third_party/bluez/repo/tools/l2test.c
+sed -i 's/sys\/stat.h>/sys\/stat.h>\n#include <linux\/sockios.h>/g' ./third_party/bluez/repo/tools/rctest.c
+
+# OpenSSL now declares RAND_bytes so we must patch
+find ./src/test-apps/fuzz/ -name "FuzzP*.cpp" -exec sed -i 's/RAND_bytes/RAND_bytes2/g' {} \;
+
 make -j$(nproc)
+
 find src/test-apps/fuzz/ -type f -executable -name "Fuzz*" | while read i; do
     patchelf --set-rpath '$ORIGIN/lib' ${i}
     copy_lib ${i} libglib

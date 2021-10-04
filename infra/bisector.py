@@ -115,7 +115,10 @@ def main():
         'Bisection Error: Both the first and the last commits in'
         'the given range have the same behavior, bisection is not possible. ')
     return 1
-  print('Error was introduced at commit %s' % result.commit)
+  if args.type == 'regressed':
+    print('Error was introduced at commit %s' % result.commit)
+  elif args.type == 'fixed':
+    print('Error was fixed at commit %s' % result.commit)
   return 0
 
 

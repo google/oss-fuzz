@@ -25,7 +25,8 @@ import helper
 
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
 FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
-VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+VALID_TARGET_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
+BLOCKLISTED_TARGET_NAME_REGEX = re.compile(r'^(jazzer_driver.*)$')
 
 # Location of google cloud storage for latest OSS-Fuzz builds.
 GCS_BASE_URL = 'https://storage.googleapis.com/'
@@ -118,9 +119,15 @@ def is_fuzz_target_local(file_path):
   Copied from clusterfuzz src/python/bot/fuzzers/utils.py
   with slight modifications.
   """
+  # pylint: disable=too-many-return-statements
   filename, file_extension = os.path.splitext(os.path.basename(file_path))
-  if not VALID_TARGET_NAME.match(filename):
+  if not VALID_TARGET_NAME_REGEX.match(filename):
     # Check fuzz target has a valid name (without any special chars).
+    return False
+
+  if BLOCKLISTED_TARGET_NAME_REGEX.match(filename):
+    # Check fuzz target an explicitly disallowed name (e.g. binaries used for
+    # jazzer-based targets).
     return False
 
   if file_extension not in ALLOWED_FUZZ_TARGET_EXTENSIONS:

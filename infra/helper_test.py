@@ -59,9 +59,9 @@ class BuildImageImplTest(unittest.TestCase):
   def test_pull(self, mock_pull_images, _):
     """Tests that pull=True is handled properly."""
     image_name = 'base-image'
-    self.assertTrue(
-        helper.build_image_impl(helper.Project(image_name), pull=True))
-    mock_pull_images.assert_called_with()
+    project = helper.Project(image_name, is_external=True)
+    self.assertTrue(helper.build_image_impl(project, pull=True))
+    mock_pull_images.assert_called_with('c++')
 
   @mock.patch('helper.docker_build')
   def test_base_image(self, mock_docker_build):
@@ -165,7 +165,7 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.project_name = 'project'
     self.internal_project = helper.Project(self.project_name)
-    self.external_project_path = os.path.join('path', 'to', self.project_name)
+    self.external_project_path = os.path.join('/path', 'to', self.project_name)
     self.external_project = helper.Project(self.external_project_path,
                                            is_external=True)
     self.setUpPyfakefs()

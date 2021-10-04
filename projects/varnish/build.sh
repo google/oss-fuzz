@@ -16,12 +16,11 @@
 ################################################################################
 
 
-git apply --ignore-whitespace $SRC/patch.diff
 # build project
 ./autogen.sh
-./configure PCRE2_LIBS=-l:libpcre2-8.a
-make -j$(nproc) -C include/
-make -j$(nproc) -C lib/libvarnish/
-make -j$(nproc) -C lib/libvgz/
-make -j$(nproc) -C bin/varnishd/ VSC_main.c esi_parse_fuzzer
+./configure --enable-oss-fuzz PCRE2_LIBS=-l:libpcre2-8.a
+make -j2 -C include/
+make -j2 -C lib/libvarnish/
+make -j2 -C lib/libvgz/
+make -j2 -C bin/varnishd/ VSC_main.c esi_parse_fuzzer
 cp bin/varnishd/*_fuzzer $OUT/

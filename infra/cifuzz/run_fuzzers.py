@@ -178,7 +178,8 @@ class PruneTargetRunner(BaseFuzzTargetRunner):
     result = fuzz_target_obj.prune()
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
-                                              result.corpus_path)
+                                              result.corpus_path,
+                                              replace=True)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use

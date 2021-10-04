@@ -46,7 +46,7 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
     # Read the fuzzer output from disk.
     fuzzer_output_path = os.path.join(TEST_DATA_PATH, fuzzer_output_file)
     self.fs.add_real_file(fuzzer_output_path)
-    with open(fuzzer_output_path, 'rb') as fuzzer_output_handle:
+    with open(fuzzer_output_path, 'r') as fuzzer_output_handle:
       fuzzer_output = fuzzer_output_handle.read()
     bug_summary_path = '/bug-summary.txt'
     with mock.patch('logging.info') as mock_info:
@@ -68,7 +68,7 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
     """Checks that no files are created when an invalid input was given."""
     artifact_path = '/bug-summary.txt'
     with mock.patch('logging.error') as mock_error:
-      stack_parser.parse_fuzzer_output(b'not a valid output_string',
+      stack_parser.parse_fuzzer_output('not a valid output_string',
                                        artifact_path)
       assert mock_error.call_count
     self.assertFalse(os.path.exists(artifact_path))

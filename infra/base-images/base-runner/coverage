@@ -99,6 +99,9 @@ function run_fuzz_target {
     return 0
   fi
 
+  # If necessary translate to latest profraw version.
+  llvm-cov-rel $OUT/$target $profraw_file_mask tmp.profraw
+  mv tmp.profraw $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.

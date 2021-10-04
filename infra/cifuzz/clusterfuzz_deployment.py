@@ -63,7 +63,7 @@ class BaseClusterFuzzDeployment:
     """Uploads crashes in |crashes_dir| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name, corpus_dir, replace=False):  # pylint: disable=no-self-use,unused-argument
     """Uploads the corpus for |target_name| to filestore."""
     raise NotImplementedError('Child class must implement method.')
 
@@ -152,12 +152,12 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the name of the crashes artifact."""
     return 'current'
 
-  def upload_corpus(self, target_name, corpus_dir):
+  def upload_corpus(self, target_name, corpus_dir, replace=False):
     """Upload the corpus produced by |target_name|."""
     logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
     name = self._get_corpus_name(target_name)
     try:
-      self.filestore.upload_corpus(name, corpus_dir)
+      self.filestore.upload_corpus(name, corpus_dir, replace=replace)
       logging.info('Done uploading corpus.')
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
@@ -272,7 +272,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name, corpus_dir, replace=False):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
 
@@ -323,7 +323,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
 
-  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+  def upload_corpus(self, target_name, corpus_dir, replace=False):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
 

@@ -14,7 +14,8 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang uuid-runtime
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl \
+    cmake python llvm-dev libclang-dev clang uuid-runtime pkg-config libssl-dev
 
 RUN git clone --depth=1 --branch=develop https://github.com/google/OpenSK  && \
     cd OpenSK && \

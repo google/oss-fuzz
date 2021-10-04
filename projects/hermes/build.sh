@@ -15,6 +15,23 @@
 #
 ################################################################################
 
+# build ICU for linking statically.
+cd $SRC/icu/source
+./configure --disable-shared --enable-static --disable-layoutex \
+  --disable-tests --disable-samples --with-data-packaging=static
+make install -j$(nproc)
+
+# Ugly ugly hack to get static linking to work for icu.
+cd lib
+ls *.a | xargs -n1 ar x
+rm *.a
+ar r libicu.a *.{ao,o}
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
+
+cd $SRC/hermes
+
 if [ "${SANITIZER}" = address ]
 then
     CONFIGURE_FLAGS="--enable-asan"

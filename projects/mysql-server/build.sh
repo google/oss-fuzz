@@ -25,7 +25,7 @@ if [[ $SANITIZER = *undefined* ]]; then
 else
     cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql
 fi
-make install
+make -j$(nproc) install
 mv $OUT/mysql/bin/fuzz* $OUT/
 cp ../fuzz/fuzz*.options $OUT/
 cp ../fuzz/fuzz*.dict $OUT/

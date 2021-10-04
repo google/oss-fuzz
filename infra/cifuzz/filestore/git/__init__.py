@@ -112,10 +112,13 @@ class GitFilestore(filestore.BaseFilestore):
     """Uploads the crashes at |directory| to |name|."""
     return self._ci_filestore.upload_crashes(name, directory)
 
-  def upload_corpus(self, name, directory):
+  def upload_corpus(self, name, directory, replace=False):
     """Uploads the corpus at |directory| to |name|."""
-    self._upload_to_git('Corpus upload', self.config.git_store_branch,
-                        os.path.join(_CORPUS_DIR, name), directory)
+    self._upload_to_git('Corpus upload',
+                        self.config.git_store_branch,
+                        os.path.join(_CORPUS_DIR, name),
+                        directory,
+                        replace=replace)
 
   def upload_build(self, name, directory):
     """Uploads the build at |directory| to |name|."""

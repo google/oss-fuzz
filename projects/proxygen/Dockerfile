@@ -14,11 +14,7 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # Install packages we need to build dependencies
 RUN apt-get update && \
@@ -32,7 +28,9 @@ RUN apt-get update && \
     gcc \
     g++ \
     python \
-    python-dev
+    python-dev \
+    cmake \
+    ninja-build
 
 # Install and build boost from source so we can have it use libc++
 RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
@@ -100,6 +98,13 @@ RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.ta
     cd .. && \
     rm -rf zstd-1.4.2
 
+# Get double conversion
+RUN git clone --single-branch https://github.com/google/double-conversion.git double-conversion && \
+    cd double-conversion/double-conversion && \
+    cmake -GNinja ../ && \
+    ninja && \
+    ninja install
+
 # Build and install `fmt` needed by folly
 RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
     tar xzf 6.0.0.tar.gz && \
@@ -153,7 +158,6 @@ RUN apt-get install -y \
     zlib1g-dev \
     binutils-dev \
     libsodium-dev \
-    libdouble-conversion-dev \
     libunwind8-dev
 
 # Install patchelf so we can fix path to libunwind
