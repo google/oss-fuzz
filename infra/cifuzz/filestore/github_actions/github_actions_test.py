@@ -93,8 +93,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                                     'cifuzz-corpus-' + name)
 
   @mock.patch('filestore.github_actions.tar_directory')
-  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
-              '.upload_artifact')
+  @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
   def test_upload_corpus(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading corpus."""
     self._create_local_dir()
@@ -109,8 +108,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self.assert_upload(mock_upload_artifact, mock_tar_directory,
                        'corpus-target')
 
-  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
-              '.upload_artifact')
+  @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
   def test_upload_crashes(self, mock_upload_artifact):
     """Test uploading crashes."""
     self._create_local_dir()
@@ -121,8 +119,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
         [mock.call('crashes-current', ['/local-dir/testcase'], '/local-dir')])
 
   @mock.patch('filestore.github_actions.tar_directory')
-  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
-              '.upload_artifact')
+  @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
   def test_upload_build(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading build."""
     self._create_local_dir()
@@ -138,8 +135,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                        'build-sanitizer')
 
   @mock.patch('filestore.github_actions.tar_directory')
-  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
-              '.upload_artifact')
+  @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
   def test_upload_coverage(self, mock_upload_artifact, mock_tar_directory):
     """Test uploading coverage."""
     self._create_local_dir()
