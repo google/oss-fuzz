@@ -164,6 +164,9 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
+    base_runner_path = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
+    os.environ['PATH'] = os.environ['PATH'] + os.pathsep + base_runner_path
+
   def tearDown(self):
     self.temp_dir_obj.cleanup()
 
