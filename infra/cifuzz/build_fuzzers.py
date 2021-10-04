@@ -80,7 +80,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        self.workspace, self.config.sanitizer, self.config.language)
+        self.workspace, self.config.sanitizer, self.config.language,
+        self.config.docker_in_docker)
     if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))

@@ -69,7 +69,8 @@ def delete_images(images):
 
 def get_base_docker_run_args(workspace,
                              sanitizer=constants.DEFAULT_SANITIZER,
-                             language=constants.DEFAULT_LANGUAGE):
+                             language=constants.DEFAULT_LANGUAGE,
+                             docker_in_docker=False):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
@@ -81,7 +82,7 @@ def get_base_docker_run_args(workspace,
   docker_args += get_docker_env_vars(env_mapping)
   docker_container = utils.get_container_name()
   logging.info('Docker container: %s.', docker_container)
-  if docker_container:
+  if docker_container and not docker_in_docker:
     # Don't map specific volumes if in a docker container, it breaks when
     # running a sibling container.
     docker_args += ['--volumes-from', docker_container]
@@ -92,11 +93,12 @@ def get_base_docker_run_args(workspace,
 
 def get_base_docker_run_command(workspace,
                                 sanitizer=constants.DEFAULT_SANITIZER,
-                                language=constants.DEFAULT_LANGUAGE):
+                                language=constants.DEFAULT_LANGUAGE,
+                                docker_in_docker=False):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
-      workspace, sanitizer, language)
+      workspace, sanitizer, language, docker_in_docker=docker_in_docker)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
 
