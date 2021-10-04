@@ -112,12 +112,23 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
     return True
 
+  def check_fuzzer_build(self):
+    """Checks the fuzzer build. Returns True on success or if config specifies
+    to skip check."""
+    if not self.config.bad_build_check:
+      return True
+
+    return check_fuzzer_build(self.config)
+
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
     and then removes the unaffectted fuzzers. Returns True on success."""
     methods = [
-        self.build_image_and_checkout_src, self.build_fuzzers,
-        self.upload_build, self.remove_unaffected_fuzz_targets
+        self.build_image_and_checkout_src,
+        self.build_fuzzers,
+        self.remove_unaffected_fuzz_targets,
+        self.check_fuzzer_build,
+        self.upload_build,
     ]
     for method in methods:
       if not method():
