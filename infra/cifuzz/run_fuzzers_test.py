@@ -370,7 +370,9 @@ class CoverageReportIntegrationTest(unittest.TestCase):
           commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
           base_commit='da0746452433dc18bae699e355a9821285d863c8',
           sanitizer=self.SANITIZER,
-          is_github=True)
+          is_github=True,
+          # Needed for test not to fail because of permissions issues.
+          bad_build_check=False)
       self.assertTrue(build_fuzzers.build_fuzzers(build_config))
 
       # TODO(metzman): Get rid of this here and make 'compile' do this.
