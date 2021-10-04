@@ -18,9 +18,9 @@
 const fs = require('fs');
 const artifact = require('@actions/artifact');
 const artifactClient = artifact.create()
-const artifactName = process.argv[1];
-const rootDirectory = process.argv[2]
-const files = process.argv.slice(3);
+const artifactName = process.argv[2];
+const rootDirectory = process.argv[3]
+const files = process.argv.slice(4);
 process.stderr.write("arguments" + " " + artifactName + " " + rootDirectory + " " + files);
 const options = {
     continueOnError: true

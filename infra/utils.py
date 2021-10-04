@@ -66,7 +66,9 @@ def execute(command, env=None, location=None, check_result=False):
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')
   if err:
-    logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
+    if not isinstance(command, str):
+      command = ' '.join(command)
+    logging.debug('Stderr of command \'%s\' is %s.', command, err)
   if check_result and process.returncode:
     raise RuntimeError(
         'Executing command \'{0}\' failed with error: {1}.'.format(
