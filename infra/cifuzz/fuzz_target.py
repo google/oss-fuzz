@@ -18,10 +18,10 @@ import os
 import shutil
 import stat
 
-import config_utils
-
 import clusterfuzz.environment
 import clusterfuzz.fuzz
+
+import config_utils
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

@@ -20,7 +20,6 @@ import contextlib
 import multiprocessing
 import os
 import re
-import shutil
 import subprocess
 import stat
 import sys
