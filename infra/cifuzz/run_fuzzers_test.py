@@ -342,9 +342,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
   def setUp(self):
     test_helpers.patch_environ(self, runner=True)
 
-  @mock.patch('third_party.github_actions_toolkit.artifact.artifact_client'
-              '.upload_artifact',
-              return_value=True)
+  @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
   def test_coverage_report(self, _):
     """Tests generation of coverage reports end-to-end, from building to
     generation."""

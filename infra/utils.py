@@ -17,6 +17,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import stat
 import subprocess
 import sys
@@ -39,17 +40,25 @@ def chdir_to_root():
     os.chdir(helper.OSS_FUZZ_DIR)
 
 
+def command_to_string(command):
+  """Returns the stringfied version of |command| a list representing a binary to
+  run and arguments to pass to it or a string representing a binary to run."""
+  if isinstance(command, str):
+    return command
+  return shlex.join(command)
+
+
 def execute(command, env=None, location=None, check_result=False):
   """Runs a shell command in the specified directory location.
 
   Args:
     command: The command as a list to be run.
     env: (optional) an environment to pass to Popen to run the command in.
-    location: The directory the command is run in.
-    check_result: Should an exception be thrown on failed command.
+    location (optional): The directory to run command in.
+    check_result (optional): Should an exception be thrown on failure.
 
   Returns:
-    stdout, stderr, return code.
+    stdout, stderr, returncode.
 
   Raises:
     RuntimeError: running a command resulted in an error.
@@ -65,17 +74,18 @@ def execute(command, env=None, location=None, check_result=False):
   out, err = process.communicate()
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')
+
+  command_str = command_to_string(command)
   if err:
-    logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
+    logging.debug('Stderr of command "%s" is: %s.', command_str, err)
   if check_result and process.returncode:
-    raise RuntimeError(
-        'Executing command \'{0}\' failed with error: {1}.'.format(
-            ' '.join(command), err))
+    raise RuntimeError('Executing command "{0}" failed with error: {1}.'.format(
+        command_str, err))
   return out, err, process.returncode
 
 
 def get_fuzz_targets(path, top_level_only=False):
-  """Get list of fuzz targets in a directory.
+  """Gets fuzz targets in a directory.
 
   Args:
     path: A path to search for fuzz targets in.
@@ -148,7 +158,7 @@ def is_fuzz_target_local(file_path):
 
 
 def binary_print(string):
-  """Print that can print a binary string."""
+  """Prints string. Can print a binary string."""
   if isinstance(string, bytes):
     string += b'\n'
   else:
