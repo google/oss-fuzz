@@ -209,6 +209,7 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+    self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
