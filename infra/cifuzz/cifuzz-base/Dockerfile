@@ -22,12 +22,6 @@ RUN apt-get update && \
     wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb
 
-# Install newer Python from base-builder.
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
-RUN ldconfig
-
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
 ADD . ${OSS_FUZZ_ROOT}
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
