@@ -79,9 +79,8 @@ def execute(command, env=None, location=None, check_result=False):
   if err:
     logging.debug('Stderr of command "%s" is: %s.', command_str, err)
   if check_result and process.returncode:
-    raise RuntimeError(
-        'Executing command "{0}" failed with error: {1}.'.format(
-            command_str, err))
+    raise RuntimeError('Executing command "{0}" failed with error: {1}.'.format(
+        command_str, err))
   return out, err, process.returncode
 
 
