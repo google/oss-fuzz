@@ -372,11 +372,16 @@ def is_base_image(image_name):
 
 def check_project_exists(project):
   """Checks if a project exists."""
-  if not os.path.exists(project.path):
-    logging.error('%s does not exist.', project.name)
-    return False
+  if os.path.exists(project.path):
+    return True
 
-  return True
+  if project.is_external:
+    descriptive_project_name = project.path
+  else:
+    descriptive_project_name = project.name
+
+  logging.error('"%s" does not exist.', descriptive_project_name)
+  return False
 
 
 def _check_fuzzer_exists(project, fuzzer_name):
