@@ -72,7 +72,7 @@ sh autogen.sh
 #run configure with right options
 if [ "$SANITIZER" = "address" ]
 then
-    export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth"
+    export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Ccodegen-units=1"
 fi
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
@@ -121,7 +121,7 @@ rm -Rf corpus
 mkdir corpus
 set +x
 ls | grep -v corpus | while read t; do
-cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+grep -v "#" $t/*.rules | head -1 | cut -d "(" -f2 | cut -d ")" -f1 > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
 set -x
