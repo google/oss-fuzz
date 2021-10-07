@@ -22,5 +22,6 @@
 make -j2 -C include/
 make -j2 -C lib/libvarnish/
 make -j2 -C lib/libvgz/
-make -j2 -C bin/varnishd/ VSC_main.c esi_parse_fuzzer
+make -j2 -C lib/libvsc/
+make -j2 -C bin/varnishd/ esi_parse_fuzzer
 cp bin/varnishd/*_fuzzer $OUT/
