@@ -15,7 +15,7 @@
 #
 ################################################################################
 cp -r $SRC/fuzzer src/backend/
-git apply ../add_fuzzers.diff
+git apply --ignore-space-change --ignore-whitespace  ../add_fuzzers.diff
 
 useradd fuzzuser
 chown -R fuzzuser .
