@@ -25,7 +25,7 @@ pushd out/Debug
 # when building tint.
 CFLAGS="$CFLAGS -fno-sanitize=vptr" \
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
-cmake -GNinja ../.. -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
+cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
 
 SPIRV_TOOLS_FUZZERS="tint_spirv_tools_hlsl_writer_fuzzer\
  tint_spirv_tools_msl_writer_fuzzer\
@@ -56,7 +56,7 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 
-cmake -GNinja ../..
+cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release
 ninja spirv-as
 
 # Restore instrumentation options
