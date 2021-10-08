@@ -1,0 +1,6 @@
+homepage: "https://opensips.org/"
+main_repo: "https://github.com/OpenSIPS/opensips"
+primary_contact: "liviu@opensips.org"
+language: c
+auto_ccs:
+  - "david@adalogics.com"
