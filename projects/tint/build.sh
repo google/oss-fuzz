@@ -25,15 +25,27 @@ pushd out/Debug
 # when building tint.
 CFLAGS="$CFLAGS -fno-sanitize=vptr" \
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
-cmake -GNinja ../.. -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
+cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
 
-SPIRV_FUZZERS="tint_spv_reader_fuzzer\
- tint_spv_reader_msl_writer_fuzzer\
- tint_spv_reader_wgsl_writer_fuzzer\
- tint_spv_reader_hlsl_writer_fuzzer\
- tint_spv_reader_spv_writer_fuzzer"
-
-# TODO(afd): add tint_spirv_tools_fuzzer
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # When running in the CI, restrict to a small number of fuzz targets to save
+  # time and disk space.  A SPIR-V Tools-based fuzzer that uses the HLSL
+  # back-end, and a regular fuzzer that uses the MSL back-end, are selected.
+  SPIRV_TOOLS_FUZZERS="tint_spirv_tools_hlsl_writer_fuzzer"
+  SPIRV_FUZZERS="tint_spv_reader_msl_writer_fuzzer\
+   ${SPIRV_TOOLS_FUZZERS}"
+else
+  SPIRV_TOOLS_FUZZERS="tint_spirv_tools_hlsl_writer_fuzzer\
+   tint_spirv_tools_msl_writer_fuzzer\
+   tint_spirv_tools_spv_writer_fuzzer\
+   tint_spirv_tools_wgsl_writer_fuzzer"
+  SPIRV_FUZZERS="tint_spv_reader_hlsl_writer_fuzzer\
+   tint_spv_reader_msl_writer_fuzzer\
+   tint_spv_reader_spv_writer_fuzzer\
+   tint_spv_reader_wgsl_writer_fuzzer\
+   ${SPIRV_TOOLS_FUZZERS}"
+fi
 
 # The spirv-as tool is used to build seed corpora
 ninja ${SPIRV_FUZZERS}
@@ -53,7 +65,7 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 
-cmake -GNinja ../..
+cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release
 ninja spirv-as
 
 # Restore instrumentation options
@@ -80,4 +92,15 @@ zip -j "$WORK/seed_corpus.zip" "$WORK"/spirv-corpus-hashed-names/*
 for fuzzer in $SPIRV_FUZZERS
 do
   cp "$WORK/seed_corpus.zip" "$OUT/${fuzzer}_seed_corpus.zip"
+done
+
+for fuzzer in $SPIRV_TOOLS_FUZZERS
+do
+  echo "[libfuzzer]
+max_len = 10000
+cross_over = 0
+mutate_depth = 1
+tint_enable_all_mutations = false
+tint_mutation_batch_size = 5
+" > "$OUT/${fuzzer}.options"
 done
