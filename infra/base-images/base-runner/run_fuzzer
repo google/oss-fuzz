@@ -120,7 +120,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   test -e "$OUT/afl++.dict" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -x $OUT/afl++.dict"
   # Ensure timeout is a bit larger than 1sec as some of the OSS-Fuzz fuzzers
   # are slower than this.
-  AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -t 5000+"
+  AFL_FUZZER_ARGS="$FUZZER_ARGS $AFL_FUZZER_ARGS -t 5000+"
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
   echo afl++ setup:
@@ -140,7 +140,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $FUZZER_ARGS $* -- \"$OUT/$FUZZER\""
 
 else
 
