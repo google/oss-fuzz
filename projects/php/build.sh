@@ -66,6 +66,7 @@ done
 # In practice it is currently also incompatible with ubsan.
 if [ "$SANITIZER" != "memory" ] && [ "$SANITIZER" != "undefined" ]; then
     cp sapi/fuzzer/php-fuzz-function-jit $OUT/
+    cp sapi/fuzzer/php-fuzz-tracing-jit $OUT/
 
     # Copy opcache.so extension, which does not support static linking.
     mkdir -p $OUT/modules
