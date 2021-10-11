@@ -4,3 +4,4 @@ primary_contact: "liviu@opensips.org"
 language: c
 auto_ccs:
   - "david@adalogics.com"
+  - "liviu.chircu@gmail.com"
