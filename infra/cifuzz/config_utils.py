@@ -348,3 +348,7 @@ class BuildFuzzersConfig(BaseConfig):
     if self.upload_build:
       logging.info('Keeping all fuzzers because we are uploading build.')
       self.keep_unaffected_fuzz_targets = True
+
+    if self.sanitizer == 'coverage':
+      self.keep_unaffected_fuzz_targets = True
+      self.bad_build_check = False
