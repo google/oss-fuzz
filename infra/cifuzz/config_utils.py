@@ -175,7 +175,7 @@ class GithubEnvironment(BaseCiEnvironment):
   def repo_url(self):
     """Returns the GitHub repo URL."""
     repository = os.getenv('GITHUB_REPOSITORY')
-    return f'git://github.com/{repository}.git'
+    return f'https://github.com/{repository}.git'
 
 
 class ConfigError(Exception):
