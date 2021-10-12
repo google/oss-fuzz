@@ -3,8 +3,7 @@ language: c++
 primary_contact: "caolanm@redhat.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  - memory
   - undefined
 fuzzing_engines:
   # see https://github.com/google/oss-fuzz/issues/6233 for missing afl
