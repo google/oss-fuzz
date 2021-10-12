@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-mkdir build
-cd build
+mkdir $SRC/build
+cd $SRC/build
 
 cmake -GNinja $SRC/SockFuzzer
 ninja
