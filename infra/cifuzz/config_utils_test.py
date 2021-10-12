@@ -217,7 +217,7 @@ class GetRepoUrlTest(unittest.TestCase):
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = f'repo/owner'
+    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
     self.assertEqual('git://github.com/repo/owner.git',
                      self.github_env.repo_url)
 
