@@ -7,4 +7,3 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - memory
