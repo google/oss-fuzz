@@ -197,7 +197,8 @@ class InternalGithub(GithubCiMixin, BaseCi):
         inferred_url,
         self.workspace.repo_storage,
         repo_name=image_repo_name,
-        username=self.config.token)
+        username=self.config.actor,
+        password=self.config.token)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
@@ -306,7 +307,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
         self.config.git_url,
         self.workspace.repo_storage,
         repo_name=self.config.project_repo_name,
-        username=self.config.token)
+        username=self.config.actor,
+        password=self.config.token)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 

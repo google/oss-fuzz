@@ -81,14 +81,16 @@ def execute(command,
 
   if log_command:
     command_str = command_to_string(command)
+    display_err = err
   else:
     command_str = 'redacted'
+    display_err = 'redacted'
 
   if err:
-    logging.debug('Stderr of command "%s" is: %s.', command_str, err)
+    logging.debug('Stderr of command "%s" is: %s.', command_str, display_err)
   if check_result and process.returncode:
     raise RuntimeError('Executing command "{0}" failed with error: {1}.'.format(
-        command_str, err))
+        command_str, display_err))
   return out, err, process.returncode
 
 
