@@ -1,7 +1,5 @@
 homepage: "https://github.com/hashicorp/hcl"
 language: go
-auto_ccs:
-  - federico.maggi@gmail.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:
