@@ -219,6 +219,7 @@ class BaseConfig:
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
+    self.actor = self._ci_env.actor
     self.token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')

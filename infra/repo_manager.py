@@ -26,9 +26,9 @@ import logging
 import os
 import shutil
 
-import utils
-
 import urllib.parse
+
+import utils
 
 
 class RepoManager:
