@@ -49,9 +49,14 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
   if generic_header.version == 5:
     generic_header = generic_header._replace(version=7)
     # Upgrade from version 5 to 7 by adding binaryids field.
-    data = struct.pack('QQ', generic_header) + struct.pack('Q', 0) + data[16:]
+    data = data[:8] + struct.pack('Q', generic_header.version) + struct.pack(
+        'Q', 0) + data[16:]
   if generic_header.version < 7:
     raise Exception('Unhandled version.')
+  if generic_header.version == 7:
+    # cf https://reviews.llvm.org/D111123
+    generic_header = generic_header._replace(version=8)
+    data = data[:8] + struct.pack('Q', generic_header.version) + data[16:]
   v7_header = HeaderVersion7._make(struct.unpack('QQQQQQQQQ', data[16:88]))
 
   if v7_header.BinaryIdsSize % 8 != 0:
