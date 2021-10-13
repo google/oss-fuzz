@@ -48,7 +48,11 @@ def command_to_string(command):
   return shlex.join(command)
 
 
-def execute(command, env=None, location=None, check_result=False):
+def execute(command,
+            env=None,
+            location=None,
+            check_result=False,
+            log_command=True):
   """Runs a shell command in the specified directory location.
 
   Args:
@@ -75,7 +79,11 @@ def execute(command, env=None, location=None, check_result=False):
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')
 
-  command_str = command_to_string(command)
+  if log_command:
+    command_str = command_to_string(command)
+  else:
+    command_str = 'redacted'
+
   if err:
     logging.debug('Stderr of command "%s" is: %s.', command_str, err)
   if check_result and process.returncode:
