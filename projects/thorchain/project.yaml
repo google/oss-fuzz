@@ -1,0 +1,8 @@
+homepage: "https://thorchain.org/"
+language: go
+primary_contact: "guidovranken@gmail.com"
+sanitizers:
+  - address
+main_repo: "https://gitlab.com/thorchain/thornode.git"
+auto_ccs:
+    - "fuzz-alerts@ninerealms.co"
