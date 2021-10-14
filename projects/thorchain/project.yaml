@@ -6,3 +6,4 @@ sanitizers:
 main_repo: "https://gitlab.com/thorchain/thornode.git"
 auto_ccs:
     - "fuzz-alerts@ninerealms.co"
+    - "dev@thorchain.org"
