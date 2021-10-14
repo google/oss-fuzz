@@ -19,3 +19,4 @@
 sed -i 's#github.com/ethereum/go-ethereum v1.10.4#github.com/ethereum/go-ethereum v1.10.9#g' $GOPATH/src/gitlab.com/thorchain/thornode/go.mod
 
 compile_go_fuzzer gitlab.com/thorchain/thornode/fuzzers/memo Fuzz memo-fuzzer
+cp $GOPATH/src/gitlab.com/thorchain/thornode/fuzzers/memo/memo.dict $OUT/memo-fuzzer.dict
