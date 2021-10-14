@@ -18,12 +18,13 @@ inputs:
     default: 'address'
   run-fuzzers-mode:
     description: |
-      The mode to run the fuzzers with ("ci" or "batch").
-      "ci" is for fuzzing a pull request or commit.
+      The mode to run the fuzzers with ("code-review", "batch", "coverage", or "prune").
+      "code-review" is for fuzzing a pull request or commit.
       "batch" is for non-interactive fuzzing of an entire project.
-      "batch" is in alpha and should not be used in production.
+      "coverage" is for coverage generation.
+      "prune" is for corpus pruning.
     required: false
-    default: 'ci'
+    default: 'code-review'
   github-token:
     description: |
       Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
@@ -60,7 +61,7 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
+    RUN_FUZZERS_TASK: ${{ inputs.task }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     GIT_STORE_REPO: ${{ inputs.storage-repo }}
