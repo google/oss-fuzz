@@ -70,7 +70,8 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
     data = data[:88 + v7_header.BinaryIdsSize] + bytes(
         padlen) + data[88 + v7_header.BinaryIdsSize:]
 
-  if v7_header.CountersDelta != sect_prf_cnts - sect_prf_data:
+  if v7_header.CountersDelta != (sect_prf_cnts -
+                                 sect_prf_data) & 0xffffffffffffffff:
     # Rust linking seems to add an offset...
     sect_prf_data = v7_header.CountersDelta - sect_prf_cnts + sect_prf_data
     sect_prf_cnts = v7_header.CountersDelta
@@ -108,9 +109,9 @@ def main():
     return 2
   for line in iter(output.split(b'\n')):
     if b'__llvm_prf_cnts' in line:
-      sect_prf_cnts = int(line.split()[4], 16)
+      sect_prf_cnts = int(line.split()[3], 16)
     elif b'__llvm_prf_data' in line:
-      sect_prf_data = int(line.split()[4], 16)
+      sect_prf_data = int(line.split()[3], 16)
 
   # Then open and read the input profraw file.
   with open(sys.argv[2], 'rb') as input_file:
