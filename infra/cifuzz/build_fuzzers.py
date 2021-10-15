@@ -30,9 +30,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import utils
 
+log_level = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+    level=log_level)
 
 
 def check_project_src_path(project_src_path):

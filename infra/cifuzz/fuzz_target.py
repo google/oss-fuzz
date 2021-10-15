@@ -23,9 +23,10 @@ import clusterfuzz.fuzz
 
 import config_utils
 
+log_level = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+    level=log_level)
 
 # Use a fixed seed for determinism. Use len_control=0 since we don't have enough
 # time fuzzing for len_control to make sense (probably).
