@@ -17,7 +17,7 @@
 
 # Build and install project (using current CFLAGS, CXXFLAGS). This is required
 # for projects with C extensions so that they're built with the proper flags.
-pip3 install .
+pip3 install . --no-binary schema_salad
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
