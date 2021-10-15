@@ -4,6 +4,9 @@ primary_contact: "nedwill@google.com"
 main_repo: "https://github.com/googleprojectzero/SockFuzzer"
 auto_ccs:
   - "ddkilzer@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
