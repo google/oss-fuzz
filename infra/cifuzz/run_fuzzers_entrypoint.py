@@ -13,6 +13,7 @@
 # limitations under the License.
 """Runs a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
+import os
 import sys
 
 import config_utils
