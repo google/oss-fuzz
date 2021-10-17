@@ -40,8 +40,15 @@ git clone git://sourceware.org/git/elfutils.git
 cd elfutils &&
 git checkout a83fe48 &&
 git log --oneline -1 &&
+
+# ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
 find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
+
+# ASan isn't compatible with -Wl,-z,defs either:
+# https://clang.llvm.org/docs/AddressSanitizer.html#usage
 sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
+
+
 autoreconf -i -f &&
 ./configure --enable-maintainer-mode --disable-debuginfod CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS" &&
 make -C config -j$(nproc) V=1 &&
@@ -56,4 +63,12 @@ $CC $CFLAGS -Isrc -Iinclude -Iinclude/uapi -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_
 ZLIB_DIR=$(pkg-config --variable=libdir zlib)
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE bpf-object-fuzzer.o src/libbpf.a "$(pwd)/elfutils/libelf/libelf.a" "$ZLIB_DIR/libz.a" -o "$OUT/bpf-object-fuzzer"
 
+# minimal.bpf.o was borrowed from https://github.com/libbpf/libbpf-bootstrap
+# and was generated with
+#   $ clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I.output -I../../libbpf/include/uapi \
+#          -I../../vmlinux/ -idirafter /usr/local/include -idirafter /usr/lib64/clang/11.0.0/include \
+#          -idirafter /usr/include -c minimal.bpf.c -o .output/minimal.bpf.o
+#   $ llvm-strip -g .output/minimal.bpf.o
+# In theory it's possible to generate it on the fly so as not to keep it in the repository
+# but clang on OSS-Fuzz doesn't support -target bpf
 zip -j "$OUT/bpf-object-fuzzer_seed_corpus.zip" "$SRC/minimal.bpf.o"
