@@ -34,6 +34,7 @@ rm -rf elfutils
 git clone --depth=1 git://sourceware.org/git/elfutils.git
 (
 cd elfutils &&
+git log --oneline -1 &&
 find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
 sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
 autoreconf -i -f &&
