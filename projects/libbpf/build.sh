@@ -47,11 +47,7 @@ make -C src BUILD_STATIC_ONLY=y V=1 clean
 make -C src -j$(nproc) CFLAGS="-I$(pwd)/elfutils/libelf $CFLAGS" BUILD_STATIC_ONLY=y V=1
 
 $CC $CFLAGS -Isrc -Iinclude -Iinclude/uapi -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -c "$SRC/bpf-object-fuzzer.c" -o bpf-object-fuzzer.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE bpf-object-fuzzer.o src/libbpf.a $(pwd)/elfutils/libelf/libelf.a -lz -o "$OUT/bpf-object-fuzzer"
-
-mkdir -p "$OUT/LIB"
-cp $(ldd "$OUT/bpf-object-fuzzer" | grep libz | awk '{ print $3 }') "$OUT/LIB"
-patchelf --set-rpath '$ORIGIN/LIB' "$OUT/bpf-object-fuzzer"
-ldd "$OUT/bpf-object-fuzzer"
+ZLIB_DIR=$(pkg-config --variable=libdir zlib)
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE bpf-object-fuzzer.o src/libbpf.a "$(pwd)/elfutils/libelf/libelf.a" "$ZLIB_DIR/libz.a" -o "$OUT/bpf-object-fuzzer"
 
 zip -j "$OUT/bpf-object-fuzzer_seed_corpus.zip" "$SRC/minimal.bpf.o"
