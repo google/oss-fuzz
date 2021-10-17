@@ -3,6 +3,8 @@ language: c
 primary_contact: ""
 sanitizers:
   - address
+  - undefined
+  - memory
 auto_ccs:
   - evverx@gmail.com
 main_repo: 'https://github.com/libbpf/libbpf'
