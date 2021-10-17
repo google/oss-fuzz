@@ -30,10 +30,15 @@ mkdir -p "$OUT"
 
 export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 
+# Ideally libbelf should be built using release tarballs available
+# at https://sourceware.org/elfutils/ftp/. Unfortunately the latest
+# release fails to compile with LDFLAGS enabled due to https://bugs.gentoo.org/794601
+# (which was fixed in https://sourceware.org/git/?p=elfutils.git;a=commit;h=c6e1f664254a8a)
 rm -rf elfutils
-git clone --depth=1 git://sourceware.org/git/elfutils.git
+git clone git://sourceware.org/git/elfutils.git
 (
 cd elfutils &&
+git checkout a83fe48 &&
 git log --oneline -1 &&
 find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
 sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
