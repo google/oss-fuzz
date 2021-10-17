@@ -15,13 +15,6 @@
 #
 ################################################################################
 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <getopt.h>
-#include <sys/stat.h>
-
 #include "libbpf.h"
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
