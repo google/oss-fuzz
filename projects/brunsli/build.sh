@@ -24,11 +24,11 @@ make -j$(nproc) brunslidec-static
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode.cc \
     -o $OUT/fuzz_decode $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
-    ./third_party/brotli/libbrotlidec-static.a \
-    ./third_party/brotli/libbrotlicommon-static.a
+    ./_deps/brotli-build/libbrotlidec-static.a \
+    ./_deps/brotli-build/libbrotlicommon-static.a
 
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode_streaming.cc \
     -o $OUT/fuzz_decode_streaming $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
-    ./third_party/brotli/libbrotlidec-static.a \
-    ./third_party/brotli/libbrotlicommon-static.a
+    ./_deps/brotli-build/libbrotlidec-static.a \
+    ./_deps/brotli-build/libbrotlicommon-static.a
