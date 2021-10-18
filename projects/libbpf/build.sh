@@ -25,7 +25,10 @@ export CFLAGS=${CFLAGS:-$flags}
 export CXX=${CXX:-clang++}
 export CXXFLAGS=${CXXFLAGS:-$flags}
 
-export OUT=${OUT:-$(pwd)/out}
+export SRC=${SRC:-$(realpath -- $(dirname -- "$0"))}
+cd "$SRC/libbpf"
+
+export OUT=${OUT:-"$SRC/out"}
 mkdir -p "$OUT"
 
 export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
