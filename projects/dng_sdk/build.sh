@@ -28,6 +28,16 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp -o $OUT/dng_p
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_stage_fuzzer.cpp -o $OUT/dng_stage_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
+
+sed -i 's/main/main2/g' $SRC/dng_sdk/source/dng_validate.cpp
+sed -i 's/printf ("Val/\/\//g' $SRC/dng_sdk/source/dng_validate.cpp
+cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_validate_fuzzer.cpp >> $SRC/dng_validate_fuzzer1.cpp
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
+  $SRC/dng_sdk/source/dng_globals.cpp \
+  $SRC/dng_validate_fuzzer1.cpp \
+  -o $OUT/dng_validate_fuzzer1 \
+  ./libdns_sdk.a -I./ -l:libjpeg.a -lz
+
 # move seeds
 cd ../fuzzer/seeds/CVE_2020_9589
 zip -q $OUT/dng_parser_fuzzer_seed_corpus.zip *.dng

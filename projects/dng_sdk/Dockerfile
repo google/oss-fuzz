@@ -19,5 +19,5 @@ RUN apt-get update && apt-get install -y wget cmake libjpeg-turbo8-dev zlib1g-de
 RUN git clone https://android.googlesource.com/platform/external/dng_sdk/
 
 COPY build.sh $SRC/
-COPY dng_stage_fuzzer.cpp $SRC/
+COPY *_fuzzer.cpp $SRC/
 WORKDIR dng_sdk
