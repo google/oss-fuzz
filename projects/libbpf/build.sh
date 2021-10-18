@@ -14,6 +14,28 @@
 # limitations under the License.
 #
 ################################################################################
+
+# This script is supposed to be compatible with OSS-Fuzz, i.e. it has to use
+# environment variables like $CC, $CFLAGS, $OUT, link the fuzz targets with CXX
+# (even though the project is written in C) and so on:
+# https://google.github.io/oss-fuzz/getting-started/new-project-guide/#buildsh
+
+# It can be used to build and run the fuzz targets using Docker and the images
+# provided by the OSS-Fuzz project: https://google.github.io/oss-fuzz/advanced-topics/reproducing/#building-using-docker
+
+# It can also be used to build and run the fuzz target locally without Docker.
+# After installing clang and the build dependencies of libelf by running something
+# like `dnf build-dep elfutils-devel` on Fedora or `apt-get build-dep libelf-dev`
+# on Debian/Ubuntu, the following commands should be run:
+#
+#  $ git clone https://github.com/google/oss-fuzz
+#  $ cd oss-fuzz/projects/libbpf
+#  $ git clone https://github.com/libbpf/libbpf
+#  $ ./build.sh
+#  $ unzip -d CORPUS ./out/bpf-object-fuzzer_seed_corpus.zip
+#  $ ./out/bpf-object-fuzzer CORPUS
+
+
 set -eux
 
 SANITIZER=${SANITIZER:-address}
