@@ -1,24 +1,27 @@
 diff --git a/configure.ac b/configure.ac
-index 7b398f3df..ee69b3063 100644
+index fea504e..131595e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -991,6 +991,15 @@ if test x"$use_tofu" = xyes ; then
+@@ -989,6 +989,18 @@ if test x"$use_tofu" = xyes ; then
+ *** $tmp]])
    fi
  fi
- 
++
 +# TODO choose when to build fuzzing with option ?
 +AC_CHECK_LIB(FuzzingEngine, main,
-+              [ LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
-+                have_fuzz=yes
-+             ])
++            [ LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
++              have_fuzz=yes
++            ])
 +AC_SUBST(LIB_FUZZING_ENGINE)
 +AC_CHECK_PROG(HAVE_CLANGXX, clang++, 1)
 +AM_CONDITIONAL(HAVE_LIB_FUZZING_ENGINE, [test "$have_fuzz" = yes -a "$HAVE_CLANGXX" = 1])
 +
- AM_CONDITIONAL(SQLITE3, test "$have_sqlite" = "yes")
- 
- if test x"$use_tofu" = xyes ; then
-@@ -2149,6 +2158,7 @@ tests/migrations/Makefile
++
++
+ if test "$have_sqlite" != "yes"; then
+     build_keyboxd=no
+ fi
+@@ -2151,6 +2163,7 @@ tests/migrations/Makefile
  tests/tpm2dtests/Makefile
  tests/gpgme/Makefile
  tests/pkits/Makefile
