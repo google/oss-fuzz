@@ -19,7 +19,7 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  task:
+  mode:
     description: |
       The mode to run the fuzzers with ("code-change", "batch", "coverage", or "prune").
       "code-change" is for fuzzing a pull request or commit.
@@ -49,7 +49,7 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    RUN_FUZZERS_MODE: ${{ inputs.task }}
+    RUN_FUZZERS_MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
