@@ -202,6 +202,32 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
                      (None, self.repo_name))
 
 
+class GetRepoUrlTest(unittest.TestCase):
+  """Tests for GenericCiEnvironment.repo_url."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    self.github_env = config_utils.GithubEnvironment()
+    self.generic_ci_env = config_utils.GenericCiEnvironment()
+
+  def test_unset_repository(self):
+    """Tests that the correct result is returned when repository is not set."""
+    self.assertEqual(self.generic_ci_env.repo_url, None)
+
+  def test_github_repository(self):
+    """Tests that the correct result is returned when repository contains the
+    owner and repo name (as it does on GitHub)."""
+    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
+    self.assertEqual('https://github.com/repo/owner.git',
+                     self.github_env.repo_url)
+
+  def test_nongithub_repository(self):
+    """Tests that the correct result is returned when repository contains the
+    just the repo name (as it does outside of GitHub)."""
+    os.environ['REPOSITORY_URL'] = 'https://repo/url'
+    self.assertEqual('https://repo/url', self.generic_ci_env.repo_url)
+
+
 class GetSanitizerTest(unittest.TestCase):
   """Tests for _get_sanitizer."""
 

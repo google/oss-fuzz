@@ -126,6 +126,11 @@ class GenericCiEnvironment(BaseCiEnvironment):
     # Repo owner is a githubism.
     return None, repository
 
+  @property
+  def repo_url(self):
+    """Returns the repo URL."""
+    return os.getenv('REPOSITORY_URL')
+
 
 class GithubEnvironment(BaseCiEnvironment):
   """CI environment for GitHub."""
@@ -165,6 +170,12 @@ class GithubEnvironment(BaseCiEnvironment):
     repository = os.getenv('GITHUB_REPOSITORY')
     # Use os.path.split to split owner from repo.
     return os.path.split(repository)
+
+  @property
+  def repo_url(self):
+    """Returns the GitHub repo URL."""
+    repository = os.getenv('GITHUB_REPOSITORY')
+    return f'https://github.com/{repository}.git'
 
 
 class ConfigError(Exception):
@@ -319,8 +330,6 @@ class BuildFuzzersConfig(BaseConfig):
       self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
       logging.debug('pr_ref: %s', self.pr_ref)
 
-    self.git_url = event_data['repository']['html_url']
-
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
@@ -329,8 +338,9 @@ class BuildFuzzersConfig(BaseConfig):
     event = os.getenv('GITHUB_EVENT_NAME')
 
     self.pr_ref = None
-    self.git_url = None
+    self.git_url = self._ci_env.repo_url
     self.base_commit = None
+
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
