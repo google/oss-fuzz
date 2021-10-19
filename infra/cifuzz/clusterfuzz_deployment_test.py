@@ -130,7 +130,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    self.deployment = _create_deployment(run_fuzzers_task='batch',
+    self.deployment = _create_deployment(run_fuzzers_mode='batch',
                                          oss_fuzz_project_name='',
                                          is_github=True)
     self.corpus_dir = os.path.join(self.deployment.workspace.corpora,

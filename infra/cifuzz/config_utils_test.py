@@ -134,20 +134,20 @@ class RunFuzzersConfigTest(unittest.TestCase):
     return config_utils.RunFuzzersConfig()
 
   def test_coverage(self):
-    """Tests that run_fuzzers_task is overriden properly based on
+    """Tests that run_fuzzers_mode is overriden properly based on
     is_coverage."""
     # Test that it is overriden when it is supposed to be.
     os.environ['SANITIZER'] = 'coverage'
-    os.environ['RUN_FUZZERS_TASK'] = 'code-review'
+    os.environ['RUN_FUZZERS_MODE'] = 'code-change'
     config = self._create_config()
-    self.assertEqual(config.run_fuzzers_task, 'coverage')
+    self.assertEqual(config.run_fuzzers_mode, 'coverage')
 
     # Test that it isn't overriden when it isn't supposed to be.
     os.environ['SANITIZER'] = 'address'
-    run_fuzzers_task = 'code-review'
-    os.environ['RUN_FUZZERS_TASK'] = run_fuzzers_task
+    run_fuzzers_mode = 'code-change'
+    os.environ['RUN_FUZZERS_MODE'] = run_fuzzers_mode
     config = self._create_config()
-    self.assertEqual(config.run_fuzzers_task, run_fuzzers_task)
+    self.assertEqual(config.run_fuzzers_mode, run_fuzzers_mode)
 
   def test_run_config_validate(self):
     """Tests that _run_config_validate returns True when the config is valid."""
@@ -155,14 +155,14 @@ class RunFuzzersConfigTest(unittest.TestCase):
 
   @mock.patch('logging.error')
   def test_run_config_invalid_mode(self, mock_error):
-    """Tests that _run_config_validate returns False when run_fuzzers_task is
+    """Tests that _run_config_validate returns False when run_fuzzers_mode is
     invalid."""
     fake_mode = 'fake-mode'
-    os.environ['RUN_FUZZERS_TASK'] = fake_mode
+    os.environ['RUN_FUZZERS_MODE'] = fake_mode
     self.assertFalse(self._create_config()._run_config_validate())
     mock_error.assert_called_with(
-        'Invalid RUN_FUZZERS_TASK: %s. Must be one of %s.', fake_mode,
-        config_utils.RUN_FUZZERS_TASKS)
+        'Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.', fake_mode,
+        config_utils.RUN_FUZZERS_MODES)
 
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):

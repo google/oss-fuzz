@@ -263,19 +263,19 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     return result
 
 
-_RUN_FUZZERS_TASK_RUNNER_MAPPING = {
+_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
     'batch': BatchFuzzTargetRunner,
     'coverage': CoverageTargetRunner,
     'prune': PruneTargetRunner,
-    'code-review': CiFuzzTargetRunner,
+    'code-change': CiFuzzTargetRunner,
 }
 
 
 def get_fuzz_target_runner(config):
-  """Returns a fuzz target runner object based on the run_fuzzers_task of
+  """Returns a fuzz target runner object based on the run_fuzzers_mode of
   |config|."""
-  runner = _RUN_FUZZERS_TASK_RUNNER_MAPPING[config.run_fuzzers_task](config)
-  logging.info('RUN_FUZZERS_TASK is: %s. Runner: %s.', config.run_fuzzers_task,
+  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
+  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
                runner)
   return runner
 
