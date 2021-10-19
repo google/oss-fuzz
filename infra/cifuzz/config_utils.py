@@ -280,7 +280,8 @@ class RunFuzzersConfig(BaseConfig):
     super().__init__()
     # TODO(metzman): Pick a better default for pruning.
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
-    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'code-change').lower()
+    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE',
+                                           'code-change').lower()
     if self.is_coverage:
       self.run_fuzzers_mode = 'coverage'
 
