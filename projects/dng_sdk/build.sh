@@ -42,7 +42,7 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
 cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_fixed_validate_fuzzer.cpp >> $SRC/dng_fixed_validate_fuzzer.tmp
-mv $SRC/dng_fixed_validate_fuzzer.tmp dng_fixed_validate_fuzzer.cpp
+mv $SRC/dng_fixed_validate_fuzzer.tmp $SRC/dng_fixed_validate_fuzzer.cpp
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   $SRC/dng_sdk/source/dng_globals.cpp \
   $SRC/dng_fixed_validate_fuzzer.cpp \
