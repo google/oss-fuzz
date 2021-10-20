@@ -31,6 +31,7 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_stage_fuzzer.cpp -o $OUT/dng_stage_f
 
 sed -i 's/main/main2/g' $SRC/dng_sdk/source/dng_validate.cpp
 sed -i 's/printf ("Val/\/\//g' $SRC/dng_sdk/source/dng_validate.cpp
+sed -i 's/static//g' $SRC/dng_sdk/source/dng_validate.cpp
 cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_validate_fuzzer.cpp >> $SRC/dng_validate_fuzzer1.cpp
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   $SRC/dng_sdk/source/dng_globals.cpp \
