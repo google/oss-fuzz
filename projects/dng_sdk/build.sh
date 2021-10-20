@@ -31,14 +31,26 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_stage_fuzzer.cpp -o $OUT/dng_stage_f
 
 sed -i 's/main/main2/g' $SRC/dng_sdk/source/dng_validate.cpp
 sed -i 's/printf ("Val/\/\//g' $SRC/dng_sdk/source/dng_validate.cpp
-cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_validate_fuzzer.cpp >> $SRC/dng_validate_fuzzer1.cpp
+sed -i 's/static//g' $SRC/dng_sdk/source/dng_validate.cpp
+
+cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_validate_fuzzer.cpp >> $SRC/dng_validate_fuzzer.tmp
+mv $SRC/dng_validate_fuzzer.tmp $SRC/dng_validate_fuzzer.cpp
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   $SRC/dng_sdk/source/dng_globals.cpp \
-  $SRC/dng_validate_fuzzer1.cpp \
-  -o $OUT/dng_validate_fuzzer1 \
+  $SRC/dng_validate_fuzzer.cpp \
+  -o $OUT/dng_validate_fuzzer \
+  ./libdns_sdk.a -I./ -l:libjpeg.a -lz
+
+cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_fixed_validate_fuzzer.cpp >> $SRC/dng_fixed_validate_fuzzer.tmp
+mv $SRC/dng_fixed_validate_fuzzer.tmp $SRC/dng_fixed_validate_fuzzer.cpp
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
+  $SRC/dng_sdk/source/dng_globals.cpp \
+  $SRC/dng_fixed_validate_fuzzer.cpp \
+  -o $OUT/dng_fixed_validate_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
 # move seeds
 cd ../fuzzer/seeds/CVE_2020_9589
 zip -q $OUT/dng_parser_fuzzer_seed_corpus.zip *.dng
 zip -q $OUT/dng_stage_fuzzer_seed_corpus.zip *.dng
+zip -q $OUT/dng_fixed_validate_fuzzer_seed_corpus.zip *.dng
