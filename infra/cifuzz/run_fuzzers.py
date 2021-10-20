@@ -267,7 +267,7 @@ _RUN_FUZZERS_MODE_RUNNER_MAPPING = {
     'batch': BatchFuzzTargetRunner,
     'coverage': CoverageTargetRunner,
     'prune': PruneTargetRunner,
-    'ci': CiFuzzTargetRunner,
+    'code-change': CiFuzzTargetRunner,
 }
 
 

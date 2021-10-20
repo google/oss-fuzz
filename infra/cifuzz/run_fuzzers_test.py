@@ -458,7 +458,7 @@ class GetFuzzTargetRunnerTest(unittest.TestCase):
 
   @parameterized.parameterized.expand([
       ('batch', run_fuzzers.BatchFuzzTargetRunner),
-      ('ci', run_fuzzers.CiFuzzTargetRunner),
+      ('code-change', run_fuzzers.CiFuzzTargetRunner),
       ('coverage', run_fuzzers.CoverageTargetRunner)
   ])
   def test_get_fuzz_target_runner(self, run_fuzzers_mode,

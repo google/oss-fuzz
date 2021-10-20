@@ -138,13 +138,13 @@ class RunFuzzersConfigTest(unittest.TestCase):
     is_coverage."""
     # Test that it is overriden when it is supposed to be.
     os.environ['SANITIZER'] = 'coverage'
-    os.environ['RUN_FUZZERS_MODE'] = 'ci'
+    os.environ['RUN_FUZZERS_MODE'] = 'code-change'
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, 'coverage')
 
     # Test that it isn't overriden when it isn't supposed to be.
     os.environ['SANITIZER'] = 'address'
-    run_fuzzers_mode = 'ci'
+    run_fuzzers_mode = 'code-change'
     os.environ['RUN_FUZZERS_MODE'] = run_fuzzers_mode
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, run_fuzzers_mode)
