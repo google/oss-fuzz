@@ -83,6 +83,11 @@ class BaseCiEnvironment:
     raise NotImplementedError('Child class must implment method.')
 
   @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    raise NotImplementedError('Child class must implment method.')
+
+  @property
   def token(self):
     """Returns the CI API token."""
     raise NotImplementedError('Child class must implment method.')
@@ -120,6 +125,11 @@ class GenericCiEnvironment(BaseCiEnvironment):
     return os.getenv('TOKEN')
 
   @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    return os.getenv('ACTOR')
+
+  @property
   def project_repo_owner_and_name(self):
     """Returns a tuple containing the project repo owner and None."""
     repository = os.getenv('REPOSITORY')
@@ -144,6 +154,11 @@ class GithubEnvironment(BaseCiEnvironment):
   def git_sha(self):
     """Returns the Git SHA to diff against."""
     return os.getenv('GITHUB_SHA')
+
+  @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    return os.getenv('GITHUB_ACTOR')
 
   @property
   def token(self):
@@ -215,6 +230,7 @@ class BaseConfig:
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
+    self.actor = self._ci_env.actor
     self.token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')

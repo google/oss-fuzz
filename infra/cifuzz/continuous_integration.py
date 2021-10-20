@@ -194,7 +194,11 @@ class InternalGithub(GithubCiMixin, BaseCi):
 
     # Checkout project's repo in the shared volume.
     manager = repo_manager.clone_repo_and_get_manager(
-        inferred_url, self.workspace.repo_storage, repo_name=image_repo_name)
+        inferred_url,
+        self.workspace.repo_storage,
+        repo_name=image_repo_name,
+        username=self.config.actor,
+        password=self.config.token)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
@@ -302,7 +306,9 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     manager = repo_manager.clone_repo_and_get_manager(
         self.config.git_url,
         self.workspace.repo_storage,
-        repo_name=self.config.project_repo_name)
+        repo_name=self.config.project_repo_name,
+        username=self.config.actor,
+        password=self.config.token)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
