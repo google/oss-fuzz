@@ -38,7 +38,7 @@ mv $SRC/dng_validate_fuzzer.tmp $SRC/dng_validate_fuzzer.cpp
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   $SRC/dng_sdk/source/dng_globals.cpp \
   $SRC/dng_validate_fuzzer.cpp \
-  -o $OUT/dng_validate_fuzzer1 \
+  -o $OUT/dng_validate_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
 cat $SRC/dng_sdk/source/dng_validate.cpp $SRC/dng_fixed_validate_fuzzer.cpp >> $SRC/dng_fixed_validate_fuzzer.tmp
@@ -46,7 +46,7 @@ mv $SRC/dng_fixed_validate_fuzzer.tmp $SRC/dng_fixed_validate_fuzzer.cpp
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   $SRC/dng_sdk/source/dng_globals.cpp \
   $SRC/dng_fixed_validate_fuzzer.cpp \
-  -o $OUT/dng_validate_fuzzer4 \
+  -o $OUT/dng_fixed_validate_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
 # move seeds
