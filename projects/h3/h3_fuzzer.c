@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// for h3NeighborRotations
+#include "algos.h"
 #include "h3api.h"
 #include "utility.h"
 
@@ -64,7 +66,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // fuzz h3NeighborRotations
   int rotations = 0;
   for (int i = 0; i < 7; i++) {
-    h3NeighborRotations(h3, DIGITS[i], &rotations);
+    H3Index neighborRotationsOut;
+    h3NeighborRotations(h3, DIGITS[i], &rotations, &neighborRotationsOut);
   }
   free(compacted);
   return 0;
