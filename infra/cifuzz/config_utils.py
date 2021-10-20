@@ -210,6 +210,8 @@ class BaseConfig:
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
     self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
+    self.filestore = os.environ.get('FILESTORE')
+    self.cloud_bucket = os.environ.get('CLOUD_BUCKET')
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
@@ -232,6 +234,10 @@ class BaseConfig:
     if self.language not in constants.LANGUAGES:
       logging.error('Invalid LANGUAGE: %s. Must be one of: %s.', self.language,
                     constants.LANGUAGES)
+      return False
+
+    if not self.repository:
+      logging.error('Must set REPOSITORY.')
       return False
 
     return True

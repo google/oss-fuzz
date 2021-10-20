@@ -15,12 +15,18 @@
 import filestore
 import filestore.git
 import filestore.github_actions
+import filestore.google_cloud_storage
+
+FILESTORE_MAPPING = {
+    'gsutil': filestore.gsutil,
+    'github-actions': filestore.github_actions,
+    'git': filestore.git,
+}
 
 
 def get_filestore(config):
   """Returns the correct filestore based on the platform in |config|.
   Raises an exception if there is no correct filestore for the platform."""
-  # TODO(metzman): Force specifying of filestore.
   if config.platform == config.Platform.EXTERNAL_GITHUB:
     ci_filestore = filestore.github_actions.GithubActionsFilestore(config)
     if not config.git_store_repo:
@@ -28,4 +34,8 @@ def get_filestore(config):
 
     return filestore.git.GitFilestore(config, ci_filestore)
 
-  raise filestore.FilestoreError('Filestore doesn\'t support platform.')
+  filestore_impl = FILESTORE_MAPPING.get(config.filestore)
+  if filestore_impl is None:
+    raise filestore.FilestoreError('Filestore %s doesn\'t exist.' %
+                                   config.filestore)
+  return filestore_impl
