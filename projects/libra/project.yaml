@@ -9,4 +9,5 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+disabled: true
 main_repo: 'https://github.com/libra/libra'
