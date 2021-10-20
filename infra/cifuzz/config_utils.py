@@ -236,7 +236,7 @@ class BaseConfig:
                     constants.LANGUAGES)
       return False
 
-    if not self.repository:
+    if not self.project_repo_name:
       logging.error('Must set REPOSITORY.')
       return False
 
