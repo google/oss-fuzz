@@ -212,6 +212,8 @@ class BaseConfig:
     self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
     self.filestore = os.environ.get('FILESTORE')
     self.cloud_bucket = os.environ.get('CLOUD_BUCKET')
+    self.no_clusterfuzz_deployment = os.environ.get(
+        'NO_CLUSTERFUZZ_DEPLOYMENT', False)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
