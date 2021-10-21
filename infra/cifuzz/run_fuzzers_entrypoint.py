@@ -13,7 +13,6 @@
 # limitations under the License.
 """Runs a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
-import os
 import sys
 
 import config_utils
@@ -37,7 +36,6 @@ def delete_unneeded_docker_images(config):
   images = [
       project_image,
       docker.BASE_BUILDER_TAG,
-      docker.BASE_BUILDER_TAG + ':xenial',
       docker.BASE_BUILDER_TAG + '-go',
       docker.BASE_BUILDER_TAG + '-jvm',
       docker.BASE_BUILDER_TAG + '-python',

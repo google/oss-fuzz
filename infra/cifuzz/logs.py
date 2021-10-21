@@ -18,6 +18,7 @@ import os
 
 
 def init():
+  """Initialize logging."""
   log_level = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
   logging.basicConfig(
       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
