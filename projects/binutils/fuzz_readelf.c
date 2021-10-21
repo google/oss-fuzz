@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+ * We convert readelf.c into a header file to make convenient for fuzzing.
+ * We do this for several of the binutils applications when creating
+ * the binutils fuzzers.
+ */
 #include "readelf.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
