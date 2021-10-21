@@ -13,19 +13,16 @@
 # limitations under the License.
 """Builds a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
-import os
 import sys
 
 import build_fuzzers
+import logs
 import config_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-LOG_LEVEL = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=LOG_LEVEL)
+logs.init()
 
 
 def build_fuzzers_entrypoint():
