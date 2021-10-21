@@ -63,7 +63,7 @@ sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/
 
 # Patch the remainders
 for i in objdump nm; do
-    cp ../../fuzz_$i .
+    cp ../../fuzz_$i.c .
     sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' $i.c >> fuzz_$i.h
 done
 
