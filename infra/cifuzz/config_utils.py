@@ -209,11 +209,12 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
+    self.project_src_path = self._ci_env.project_src_path
     self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
     self.filestore = os.environ.get('FILESTORE')
     self.cloud_bucket = os.environ.get('CLOUD_BUCKET')
-    self.no_clusterfuzz_deployment = os.environ.get(
-        'NO_CLUSTERFUZZ_DEPLOYMENT', False)
+    self.no_clusterfuzz_deployment = os.environ.get('NO_CLUSTERFUZZ_DEPLOYMENT',
+                                                    False)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
@@ -342,7 +343,6 @@ class BuildFuzzersConfig(BaseConfig):
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.project_src_path = self._ci_env.project_src_path
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')

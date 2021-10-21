@@ -142,9 +142,6 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
 class GithubCiMixin:
   """Mixin for Github based CI systems."""
 
-  def __init__(self, config):
-    super().__init__(config)
-
   @property
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
@@ -225,6 +222,10 @@ class InternalGeneric(BaseCi):
   """Class representing CI for an OSS-Fuzz project on a CI other than Github
   actions."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    self._repo_dir = config.project_src_path
+
   @property
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
@@ -277,10 +278,15 @@ def build_external_project_docker_image(project_src, build_integration_path):
 class ExternalGeneric(BaseCi):
   """CI implementation for generic CI for external (non-OSS-Fuzz) projects."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    self._repo_dir = config.project_src_path
+
   @property
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
     returned otherwise."""
+    logging.info("repo dir: %s", self._repo_dir)
     return self._repo_dir
 
   def get_diff_base(self):

@@ -12,23 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Filestore implementation using gsutil."""
+import logging
+import os
 import posixpath
-import threading
+import subprocess
+import sys
 
-from clusterfuzz._internal.google_cloud_utils import gsutil
-
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             os.pardir, os.pardir, os.pardir))
 import filestore
+import utils
 
-# Thread-local global variables.
-_local = threading.local()  # pylint: disable=too-few-public-methods
 
-def _create_runner():
-  _local.runner = gsutil.GSUtilRunner()
+def _gsutil_execute(*args, parallel=True):
+  """Executes a gsutil command, passing |*args| to gsutil and returns the
+  stdout, stderr and returncode. Exceptions on failure."""
+  command = ['gsutil']
+  if parallel:
+    command.append('-m')
+  command += list(args)
+  logging.info('Executing gsutil command: %s', command)
+  return utils.execute(command, check_result=True)
 
-def _runner():
-  if getattr(_local, 'runner', None) is None:
-    _create_runner()
-  return _local.runner
+
+def _rsync(src, dst, delete=False):
+  """Executes gsutil rsync on |src| and |dst|"""
+  args = ['rsync', src, dst]
+  if delete:
+    args.append('--delete')
+  return _gsutil_execute(*args)
 
 
 class GSUtilFilestore(filestore.BaseFilestore):
@@ -40,31 +53,34 @@ class GSUtilFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    self._runner = _runner()
     self._cloud_bucket = self.config.cloud_bucket
 
-  def get_gsutil_url(self, name, prefix_dir):
+  def _get_gsutil_url(self, name, prefix_dir):
     """Returns the gsutil URL for |name| and |prefix_dir|."""
     if not prefix_dir:
       return posixpath.join(self._cloud_bucket, name)
     return posixpath.join(self._cloud_bucket, prefix_dir, name)
 
   def _upload_directory(self, name, directory, prefix, delete=False):
-    gsutil_url = self.get_gsutil_url(name, prefix)
-    return self._runner.rsync(directory, gsutil_url, delete=delete)
+    gsutil_url = self._get_gsutil_url(name, prefix)
+    return _rsync(directory, gsutil_url, delete=delete)
 
   def _download_directory(self, name, dst_directory, prefix):
-    gsutil_url = self.get_gsutil_url(name, prefix)
-    return self._runner.rsync(gsutil_url, dst_directory)
+    gsutil_url = self._get_gsutil_url(name, prefix)
+    return _rsync(gsutil_url, dst_directory)
 
   def upload_crashes(self, name, directory):
     """Uploads the crashes at |directory| to |name|."""
+    # Name is going to be "current". I don't know if this makes sense outside of
+    # GitHub Actions.
     return self._upload_directory(name, directory, self.CRASHES_DIR)
 
   def upload_corpus(self, name, directory, replace=False):
     """Uploads the crashes at |directory| to |name|."""
-    return self._upload_directory(
-        name, directory, self.CORPUS_DIR, delete=replace)
+    return self._upload_directory(name,
+                                  directory,
+                                  self.CORPUS_DIR,
+                                  delete=replace)
 
   def upload_build(self, name, directory):
     """Uploads the build located at |directory| to |name|."""

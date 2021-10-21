@@ -353,14 +353,10 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
 
 
 _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING = {
-    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.INTERNAL_GITHUB:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI:
-        ClusterFuzzLite,
-    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB:
-        ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI: OSSFuzz,
+    config_utils.BaseConfig.Platform.INTERNAL_GITHUB: OSSFuzz,
+    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI: ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB: ClusterFuzzLite,
 }
 
 
