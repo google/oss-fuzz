@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget libpcre3 \
-                                         libpcre3-dev uuid-dev pkg-config libtool-bin
+                                         libpcre3-dev uuid-dev pkg-config libtool-bin \
+                                         libbsd-dev
 
 RUN git clone https://github.com/AdaLogics/fuzz-headers
 
