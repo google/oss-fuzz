@@ -41,7 +41,10 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	do_arch = true;
 	do_notes = true;
 
-    // Main fuzz entrypoint
+  // Enable DWARF analysis
+  dwarf_select_sections_all();
+
+  // Main fuzz entrypoint
 	process_file(filename);
 
 	unlink(filename);
