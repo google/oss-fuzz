@@ -26,4 +26,3 @@ docker build --tag gcr.io/oss-fuzz-base/cifuzz-base --file $CIFUZZ_DIR/cifuzz-ba
 # Build run-fuzzers and build-fuzzers images.
 docker build --tag gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1 --file $INFRA_DIR/build_fuzzers.Dockerfile $INFRA_DIR
 docker build --tag gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1 --file $INFRA_DIR/run_fuzzers.Dockerfile $INFRA_DIR
-

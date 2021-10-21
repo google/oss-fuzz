@@ -91,6 +91,7 @@ class BaseConfigTest(unittest.TestCase):
     """Tests that validate returns True if config is valid."""
     os.environ['OSS_FUZZ_PROJECT_NAME'] = 'example'
     os.environ['WORKSPACE'] = '/workspace'
+    os.environ['REPOSITORY'] = 'repo'
     config = self._create_config()
     self.assertTrue(config.validate())
 

@@ -19,8 +19,9 @@ import subprocess
 import sys
 
 # pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             os.pardir, os.pardir, os.pardir))
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
+                 os.pardir, os.pardir))
 import filestore
 import utils
 
