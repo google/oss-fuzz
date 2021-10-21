@@ -1,0 +1,11 @@
+homepage: "https://github.com/martinblech/xmltodict"
+language: python
+primary_contact: cneo@google.com
+auto_css:
+    - "martinblech@gmail.com"
+fuzzing_engines:
+    - libfuzzer
+sanitizers:
+    - address
+    - undefined
+main_repo: "https://github.com/martinblech/xmltodict.git"
