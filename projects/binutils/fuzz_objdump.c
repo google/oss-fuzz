@@ -21,15 +21,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-		return 0;
+  FILE *fp = fopen(filename, "wb");
+  if (!fp) {
+    return 0;
+  }
 
-	fwrite(data, size, 1, fp);
-	fclose(fp);
+  fwrite(data, size, 1, fp);
+  fclose(fp);
 
   process_links = true;
   do_follow_links = true;
@@ -41,9 +42,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   dump_dynamic_reloc_info = true;
 
   // Main fuzz entrypoint in objdump.c
-	display_file(filename, NULL, true);
+  display_file(filename, NULL, true);
 
-	unlink(filename);
-
-	return 0;
+  unlink(filename);
+  return 0;
 }

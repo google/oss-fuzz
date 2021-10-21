@@ -21,20 +21,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-		return 0;
+  FILE *fp = fopen(filename, "wb");
+  if (!fp) {
+    return 0;
+  }
 
-	fwrite(data, size, 1, fp);
-	fclose(fp);
+  fwrite(data, size, 1, fp);
+  fclose(fp);
 
   // Main fuzz entrypoint in nm.c
-	display_file(filename);
+  display_file(filename);
 
-	unlink(filename);
-
-	return 0;
+  unlink(filename);
+  return 0;
 }
