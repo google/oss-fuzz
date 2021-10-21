@@ -22,11 +22,9 @@ import clusterfuzz.environment
 import clusterfuzz.fuzz
 
 import config_utils
+import logs
 
-LOG_LEVEL = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=LOG_LEVEL)
+logs.init()
 
 # Use a fixed seed for determinism. Use len_control=0 since we don't have enough
 # time fuzzing for len_control to make sense (probably).
@@ -157,8 +155,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     # Only report first crash.
     crash = result.crashes[0]
-    logging.info('Fuzzer: %s. Detected bug:\n%s', self.target_name,
-                 crash.stacktrace)
+    logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
     if self.is_crash_reportable(crash.input_path):
       # We found a bug in the fuzz target and we will report it.
@@ -215,7 +212,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
                                              target_path,
-                                             interactive=True):
+                                             interactive=False):
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         result = engine_impl.reproduce(target_path,

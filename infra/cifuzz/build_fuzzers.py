@@ -23,6 +23,7 @@ import base_runner_utils
 import clusterfuzz_deployment
 import continuous_integration
 import docker
+import logs
 import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -30,10 +31,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import utils
 
-LOG_LEVEL = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=LOG_LEVEL)
+logs.init()
 
 
 def check_project_src_path(project_src_path):

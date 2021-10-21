@@ -18,15 +18,13 @@ import sys
 
 import config_utils
 import docker
+import logs
 import run_fuzzers
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-LOG_LEVEL = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=LOG_LEVEL)
+logs.init()
 
 
 def delete_unneeded_docker_images(config):
