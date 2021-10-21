@@ -18,7 +18,7 @@ limitations under the License.
  * We do this for several of the binutils applications when creating
  * the binutils fuzzers.
  */
-#include "fuzz_readelf.h"
+#include "readelf.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int

@@ -49,14 +49,26 @@ done
 # Now compile the src/binutils fuzzers
 cd ../binutils
 
-# Compile the fuzzers
-for i in objdump readelf nm; do
-    cp ../../fuzz_$i.c .
+# Compile the fuzzers.
+# The general strategy is to remove main functions such that the fuzzer (which has its own main)
+# can link against the code.
 
-    # Modify main functions so we dont have them anymore
+# Patching
+# First do readelf. We do this by changing readelf.c to readelf.h - the others will be changed
+# to fuzz_readelf.h where readelf is their respective name. The reason it's different for readelf
+# is because readelf does not have a header file so we can use readelf.h instead, and changing it
+# might cause an annoyance on monorail since bugs will be relocated as the files will be different.
+cp ../../fuzz_readelf.c .
+sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' readelf.c >> readelf.h
+
+# Patch the remainders
+for i in objdump nm; do
+    cp ../../fuzz_$i .
     sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' $i.c >> fuzz_$i.h
+done
 
-    # Compile object file
+# Compile
+for i in objdump readelf nm; do
     $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
       -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
       -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
