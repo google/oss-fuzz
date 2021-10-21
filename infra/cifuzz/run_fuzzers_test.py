@@ -236,11 +236,13 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
+  @mock.patch('clusterfuzz_deployment.OSSFuzz.upload_crashes')
   @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mock_create_fuzz_target_obj,
-                                  mock_run_fuzz_target, mock_get_fuzz_targets):
+                                  mock_run_fuzz_target, mock_get_fuzz_targets,
+                                  mock_upload_crashes):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'build-out')
@@ -267,6 +269,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertIn('target1-address-testcase',
                   os.listdir(runner.workspace.artifacts))
     self.assertEqual(mock_run_fuzz_target.call_count, 1)
+    self.assertEqual(mock_upload_crashes.call_count, 1)
 
 
 class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
@@ -288,12 +291,11 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
                                                  is_github=True)
 
   @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_build',
-              return_value=True)
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mock_create_fuzz_target_obj,
-                                  mock_run_fuzz_target, _, __):
+                                  mock_run_fuzz_target, mock_upload_crashes, _):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
     runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
     runner.initialize()
@@ -318,20 +320,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     mock_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
     self.assertEqual(mock_run_fuzz_target.call_count, 2)
-
-  @mock.patch('run_fuzzers.BaseFuzzTargetRunner.run_fuzz_targets',
-              return_value=False)
-  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
-  def test_run_fuzz_targets_upload_crashes_and_builds(self, mock_upload_crashes,
-                                                      _):
-    """Tests that run_fuzz_targets uploads crashes and builds correctly."""
-    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
-    # TODO(metzman): Don't rely on this failing gracefully.
-    runner.initialize()
-
-    self.assertFalse(runner.run_fuzz_targets())
     self.assertEqual(mock_upload_crashes.call_count, 1)
-
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
