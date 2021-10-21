@@ -1,11 +1,8 @@
-/* Copyright 2020 Google Inc.
-
+/* Copyright 2021 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
       http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +11,11 @@ limitations under the License.
 */
 
 /*
- * We convert readelf.c into a header file to make convenient for fuzzing.
+ * We convert objdump.c into a header file to make convenient for fuzzing.
  * We do this for several of the binutils applications when creating
  * the binutils fuzzers.
  */
-#include "fuzz_readelf.h"
+#include "fuzz_objdump.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
@@ -33,33 +30,20 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	fwrite(data, size, 1, fp);
 	fclose(fp);
-	do_syms = true;
-	do_reloc = true;
-	do_unwind = true;
-	do_dynamic = true;
-	do_header = true;
-	do_sections = true;
-	do_section_groups = true;
-	do_segments = true;
-	do_version = true;
-	do_histogram = true;
-	do_arch = true;
-	do_notes = true;
 
-  // Enable DWARF analysis
-  dwarf_select_sections_all();
+  process_links = true;
+  do_follow_links = true;
+  dump_section_contents = true;
+  dump_section_headers = true;
+  dump_private_headers = true;
+  dump_ar_hdrs = true;
+  dump_reloc_info = true;
+  dump_dynamic_reloc_info = true;
 
-  // Main fuzz entrypoint
-	process_file(filename);
+  // Main fuzz entrypoint in objdump.c
+	display_file(filename, NULL, true);
 
 	unlink(filename);
-
-	free (dump_ctf_symtab_name);
-	dump_ctf_symtab_name = NULL;
-	free (dump_ctf_strtab_name);
-	dump_ctf_strtab_name = NULL;
-	free (dump_ctf_parent_name);
-	dump_ctf_parent_name = NULL;
 
 	return 0;
 }
