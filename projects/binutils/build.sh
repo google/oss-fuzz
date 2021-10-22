@@ -109,5 +109,5 @@ fi
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/
 
-# Copy over the options file
-cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
+# Copy over options files
+cp $SRC/fuzz_*.options $OUT/
