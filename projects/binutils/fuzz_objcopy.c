@@ -35,13 +35,13 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   program_name = filename;
 
-	if (initialized == 0) {
-		if (bfd_init () != BFD_INIT_MAGIC) {
-			abort();
-		}
-		set_default_bfd_target();
-		initialized = 1;
-	}
+  if (initialized == 0) {
+    if (bfd_init () != BFD_INIT_MAGIC) {
+      abort();
+    }
+    set_default_bfd_target();
+    initialized = 1;
+  }
 
 
   create_symbol_htabs();
