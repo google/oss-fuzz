@@ -1,0 +1,9 @@
+homepage: "https://github.com/abdulla98/faas"
+language: python
+primary_contact: "a.bakija98@gmail.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined
+main_repo: 'https://github.com/abdulla98/faas.git'
