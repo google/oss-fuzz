@@ -11,7 +11,7 @@ limitations under the License.
 */
 
 /*
- * We convert nm.c into a header file to make convenient for fuzzing.
+ * We convert objcopy.c into a header file to make convenient for fuzzing.
  * We do this for several of the binutils applications when creating
  * the binutils fuzzers.
  */
