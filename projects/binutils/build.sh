@@ -67,6 +67,7 @@ for i in objdump nm objcopy; do
     sed -i 's/strip_main/strip_mian/g' $i.c
     sed -i 's/copy_main/copy_mian/g' $i.c
     sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' $i.c > fuzz_$i.h
+    sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
 done
 
 # Compile

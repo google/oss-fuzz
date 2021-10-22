@@ -51,7 +51,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   fakeArgv[1] = filename;
   fakeArgv[2] = "/tmp/random.out";
   fakeArgv[3] = NULL;
-  copy_mian(3, fakeArgv);
+  copy_main(3, fakeArgv);
 
   // Cleanup
   free (strip_specific_buffer);
