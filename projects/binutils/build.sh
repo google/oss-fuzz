@@ -62,13 +62,16 @@ cp ../../fuzz_readelf.c .
 sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' readelf.c >> readelf.h
 
 # Patch the remainders
-for i in objdump nm; do
+for i in objdump nm objcopy; do
     cp ../../fuzz_$i.c .
-    sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' $i.c >> fuzz_$i.h
+    sed -i 's/strip_main/strip_mian/g' $i.c
+    sed -i 's/copy_main/copy_mian/g' $i.c
+    sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' $i.c > fuzz_$i.h
+    sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
 done
 
 # Compile
-for i in objdump readelf nm; do
+for i in objdump readelf nm objcopy; do
     $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
       -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
       -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
@@ -90,6 +93,12 @@ if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
     -o $OUT/fuzz_objdump fuzz_objdump.o ${OBJS} \
     -Wl,--start-group ${LIBS} -Wl,--end-group
 
+  # link objcopy fuzzer
+  OBJS="is-strip.o rename.o rddbg.o debug.o stabs.o rdcoff.o wrstabs.o bucomm.o version.o filemode.o"
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+    -o $OUT/fuzz_objcopy fuzz_objcopy.o ${OBJS} \
+    -Wl,--start-group ${LIBS} -Wl,--end-group
+
   # Link nm fuzzer
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
     -o $OUT/fuzz_nm fuzz_nm.o bucomm.o version.o filemode.o \
@@ -100,5 +109,5 @@ fi
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/
 
-# Copy over the options file
-cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
+# Copy over options files
+cp $SRC/fuzz_*.options $OUT/
