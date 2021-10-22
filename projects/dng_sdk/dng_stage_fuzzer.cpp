@@ -87,11 +87,15 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
                        dng_version, false);
 
       // Write TIFF
-      dng_file_stream stream2("/tmp/randpng", true);
-      const dng_image &stage3 = *negative->Stage3Image();
-      dng_image_writer writer2;
-      writer2.WriteTIFF(host, stream2, stage3,
-                        stage3.Planes() >= 3 ? piRGB : piBlackIsZero);
+      uint32_t compression_arr[8] = { ccUncompressed, ccLZW, ccOldJPEG, ccJPEG,
+        ccDeflate, ccPackBits, ccOldDeflate, ccLossyJPEG};
+      for (int c = 0; c < 8; c++) {
+        dng_file_stream stream2("/tmp/randpng", true);
+        const dng_image &stage3 = *negative->Stage3Image();
+        dng_image_writer writer2;
+        writer2.WriteTIFF(host, stream2, stage3,
+                          stage3.Planes() >= 3 ? piRGB : piBlackIsZero, compression_arr[c]);
+      }
 
       // Create a renderer
       dng_render render(host, *negative);
