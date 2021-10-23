@@ -40,7 +40,6 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   dump_dynamic_reloc_info = true;
   disassemble = true;
   disassemble_all = true;
-  seenflag = true;
 
   // Main fuzz entrypoint in objdump.c
   display_file(filename, NULL, true);
