@@ -30,6 +30,14 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   fwrite(data, size, 1, fp);
   fclose(fp);
 
+  // Globals
+  line_numbers = 1;
+  no_sort = 0;
+  sort_numerically = 1;
+  sort_by_size = 0;
+  filename_per_symbol = 1;
+
+
   // Main fuzz entrypoint in nm.c
   display_file(filename);
 
