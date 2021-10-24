@@ -30,6 +30,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   fwrite(data, size, 1, fp);
   fclose(fp);
 
+  program_name = filename;
+
   process_links = true;
   do_follow_links = true;
   dump_section_contents = true;
