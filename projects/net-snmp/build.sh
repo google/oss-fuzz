@@ -24,3 +24,7 @@ for fuzzer in mib agent_e2e; do
   echo "[libfuzzer]" > $OUT/snmp_${fuzzer}_fuzzer.options
   echo "detect_leaks=0" >> $OUT/snmp_${fuzzer}_fuzzer.options
 done
+
+# Create dictionary and seeds
+cp $SRC/mib.dict $OUT/snmp_mib_fuzzer.dict
+zip $OUT/snmp_mib_fuzzer_seed_corpus.zip $SRC/net-snmp/mibs/*.txt

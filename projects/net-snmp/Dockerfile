@@ -19,3 +19,4 @@ RUN git clone -q --depth 1 https://github.com/net-snmp/net-snmp net-snmp
 RUN net-snmp/ci/install.sh
 WORKDIR net-snmp
 COPY build.sh $SRC/
+COPY *.dict $SRC/
