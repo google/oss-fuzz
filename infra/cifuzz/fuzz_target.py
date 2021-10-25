@@ -112,7 +112,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   def _target_artifact_path(self):
     """Target artifact path."""
     artifact_path = os.path.join(self.workspace.artifacts, self.target_name,
-        self.config.sanitizer)
+                                 self.config.sanitizer)
     os.makedirs(artifact_path, exist_ok=True)
     return artifact_path
 
@@ -184,8 +184,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       if self.is_crash_reportable(crash.input_path):
         # We found a bug in the fuzz target and we will report it.
         saved_path = self._save_crash(crash)
-        return FuzzResult(saved_path, result.logs,
-                          self.latest_corpus_path)
+        return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None, self.latest_corpus_path)
