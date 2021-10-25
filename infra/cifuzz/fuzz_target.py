@@ -120,8 +120,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                           os.path.basename(crash.input_path))
     shutil.copy(crash.input_path, target_reproducer_path)
 
-    with open(target_reproducer_path + '.stacktrace', 'w') as f:
-      f.write(crash.stacktrace)
+    with open(target_reproducer_path + '.stacktrace', 'w') as handle:
+      handle.write(crash.stacktrace)
+
+    return target_reproducer_path
 
   def prune(self):
     """Prunes the corpus and returns the result."""
@@ -179,8 +181,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
       if self.is_crash_reportable(crash.input_path):
         # We found a bug in the fuzz target and we will report it.
-        self._save_crash(crash)
-        return FuzzResult(crash.input_path, result.logs,
+        saved_path = self._save_crash(crash)
+        return FuzzResult(saved_path, result.logs,
                           self.latest_corpus_path)
 
     # We found a bug but we won't report it.
