@@ -21,6 +21,3 @@ ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.
 
 COPY build.sh $SRC/
 WORKDIR $SRC/gonids
-
-# Debug for https://github.com/golang/go/issues/49075
-COPY regexp.go /root/.go/src/regexp/
