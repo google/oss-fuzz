@@ -19,7 +19,7 @@ FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 
 build_and_copy() {
   pushd "$1"
-  cargo +nightly fuzz build --release --debug-assertions
+  cargo fuzz build --release --debug-assertions
   for f in fuzz/fuzz_targets/*.rs
   do
     cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
