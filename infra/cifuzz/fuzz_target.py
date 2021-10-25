@@ -23,6 +23,7 @@ import clusterfuzz.environment
 import clusterfuzz.fuzz
 
 import config_utils
+import stack_parser
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -110,7 +111,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
   def _target_artifact_path(self):
     """Target artifact path."""
-    artifact_path = os.path.join(self.workspace.artifacts, self.target_name)
+    artifact_path = os.path.join(self.workspace.artifacts, self.target_name,
+        self.config.sanitizer)
     os.makedirs(artifact_path, exist_ok=True)
     return artifact_path
 
@@ -120,9 +122,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                           os.path.basename(crash.input_path))
     shutil.copy(crash.input_path, target_reproducer_path)
 
-    with open(target_reproducer_path + '.stacktrace', 'w') as handle:
-      handle.write(crash.stacktrace)
-
+    bug_summary_artifact_path = target_reproducer_path + '.summary'
+    stack_parser.parse_fuzzer_output(crash.stacktrace,
+                                     bug_summary_artifact_path)
     return target_reproducer_path
 
   def prune(self):
