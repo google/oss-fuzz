@@ -173,7 +173,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         return FuzzResult(None, None, self.latest_corpus_path)
 
       # Only report first crash.
-      crash = crashes[0]
+      crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug:\n%s', self.target_name,
                    crash.stacktrace)
 
