@@ -46,7 +46,7 @@ for i in fuzz_disassemble fuzz_bfd; do
 done
 
 # Build targeted disassembly fuzzers
-for ARCH_TARGET in bfd_arch_arm; do
+for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky; do
     $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
       -o fuzz_disas_ext-$ARCH_TARGET.o
     $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
@@ -132,9 +132,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
 # Set up seed corpus for readelf in the form of a single ELF file.
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/
-
 cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
+cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
+cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
 
-# Copy over options files
+# Copy options files
 cp $SRC/fuzz_*.options $OUT/
 cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
+cp $OUT/fuzz_objcopy.options $OUT/fuzz_disas_ext-bfd_arch_csky.options

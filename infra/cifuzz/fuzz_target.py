@@ -23,11 +23,10 @@ import clusterfuzz.environment
 import clusterfuzz.fuzz
 
 import config_utils
+import logs
 import stack_parser
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 # Use a fixed seed for determinism. Use len_control=0 since we don't have enough
 # time fuzzing for len_control to make sense (probably).
@@ -237,7 +236,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
                                              target_path,
-                                             interactive=True):
+                                             interactive=False):
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         result = engine_impl.reproduce(target_path,

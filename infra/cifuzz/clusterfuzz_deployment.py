@@ -118,7 +118,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       try:
         if self.filestore.download_build(build_name,
                                          self.workspace.clusterfuzz_build):
-          logging.info('Done downloading previus build.')
+          logging.info('Done downloading previous build.')
           return self.workspace.clusterfuzz_build
 
         logging.info('Build for %s does not exist.', old_commit)
@@ -296,6 +296,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
                   '-backup.clusterfuzz-external.appspot.com/corpus/'
                   f'libFuzzer/{project_qualified_fuzz_target_name}/'
                   f'{self.CORPUS_ZIP_NAME}')
+    logging.info('Downloading corpus from OSS-Fuzz: %s', corpus_url)
 
     if not http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
       logging.warning('Failed to download corpus for %s.', target_name)

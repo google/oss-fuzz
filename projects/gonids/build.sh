@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+export GODEBUG=cpu.all=off
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 
 cd $SRC

@@ -22,6 +22,7 @@ then
   export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
   chmod +x $SRC/rustc.py
   export RUSTC="$SRC/rustc.py"
+  export CFLAGS=""
 fi
 
 cargo fuzz build --release

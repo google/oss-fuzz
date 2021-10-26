@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+"""Log helpers."""
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/google/gonids
+import logging
+import os
 
-ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
-COPY build.sh $SRC/
-WORKDIR $SRC/gonids
+def init():
+  """Initialize logging."""
+  log_level = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
+  logging.basicConfig(
+      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+      level=log_level)
