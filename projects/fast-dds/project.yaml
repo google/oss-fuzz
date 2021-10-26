@@ -3,6 +3,7 @@ language: c++
 primary_contact: "miguelcompany@eprosima.com"
 auto_ccs:
 - "p.antoine@catenacyber.fr"
+- "federico.maggi@gmail.com"
 sanitizers:
 - address
 - undefined
