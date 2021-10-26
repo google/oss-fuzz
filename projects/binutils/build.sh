@@ -31,7 +31,7 @@ cd ../
 
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
 	    --disable-libdecnumber --disable-readline --disable-sim \
-	    --enable-targets=all --disable-werror
+	    --disable-libbacktrace --disable-werror --enable-targets=all
 make MAKEINFO=true && true
 
 # Make fuzzer directory
@@ -139,4 +139,6 @@ cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
 # Copy options files
 cp $SRC/fuzz_*.options $OUT/
 cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
+cp $OUT/fuzz_objcopy.options $OUT/fuzz_nm.options
+cp $OUT/fuzz_objcopy.options $OUT/fuzz_objdump.options
 cp $OUT/fuzz_objcopy.options $OUT/fuzz_disas_ext-bfd_arch_csky.options
