@@ -11,18 +11,18 @@ jobs:
 
     steps:
       - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.8.0
+        uses: styfle/cancel-workflow-action@3d86a7cc43670094ac248017207be0295edbc31d # v0.8.0
         with:
           access_token: ${{ github.token }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # v2
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@dc73133d4da04e56a135ae2246682783cc7c7cb6 # v2
         with:
           python-version: 3.8
 
