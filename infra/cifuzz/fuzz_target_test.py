@@ -234,7 +234,7 @@ class FuzzTest(fake_filesystem_unittest.TestCase):
 
   def test_get_fuzz_target_artifact(self):
     """Tests that get_fuzz_target_artifact works as intended."""
-    # pylint: disable=private-access
+    # pylint: disable=protected-access
     fuzz_target_artifact = self.fuzz_target._target_artifact_path()
     self.assertEqual('/workspace/out/artifacts/fuzz-target/address',
                      fuzz_target_artifact)
