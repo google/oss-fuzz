@@ -15,14 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/ClickHouse
-
-git remote add me https://github.com/nikitamikhaylov/ClickHouse
-git fetch --all
-git checkout me/fix-fuzzer-build
-git log -3
-
-cd ../..
 
 mkdir $SRC/ClickHouse/build
 cd $SRC/ClickHouse/build
@@ -48,6 +40,8 @@ CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
 # So, this flag only helps to supress error from `protoc` built with any kind of sanitizer
 export MSAN_OPTIONS=exit_code=0
 
+printenv
+
 CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
     "-DCMAKE_C_COMPILER=$CC"
@@ -56,20 +50,26 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
     "-DENABLE_FUZZING=1"
     "-DWITH_COVERAGE=1"
+    "-DENABLE_PROTOBUF=1"
+    "-DUSE_INTERNAL_PROTOBUF_LIBRARY=1"
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS"
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]}
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
 fi
 
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) / 2))
+NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) * 2))
 
 TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
 
 for FUZZER_TARGET in $TARGETS
 do
+    # Skip this fuzzer because of linker errors (the size of the binary is too big)
+    if [ "$FUZZER_TARGET" = "execute_query_fuzzer" ]; then
+        continue
+    fi
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
