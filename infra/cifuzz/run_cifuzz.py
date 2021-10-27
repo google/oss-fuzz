@@ -37,7 +37,7 @@ def docker_run(name, workspace, project_src_path):
       'docker', 'run', '--name', name, '--rm', '-e', 'PROJECT_SRC_PATH', '-e',
       'OSS_FUZZ_PROJECT_NAME', '-e', 'WORKSPACE', '-e', 'REPOSITORY', '-e',
       'DRY_RUN', '-e', 'CI', '-e', 'SANITIZER', '-e', 'GIT_SHA',
-      '-e', 'FILESTORE'
+      '-e', 'FILESTORE', '-e', 'NO_CLUSTERFUZZ_DEPLOYMENT'
   ]
   if project_src_path:
     command += ['-v', f'{project_src_path}:{project_src_path}']
