@@ -20,6 +20,6 @@ RUN go get -u -d github.com/holiman/uint256/...
 
 RUN git clone --depth 1 https://github.com/holiman/uint256.git uint256
 
-RUN cp $GOPATH/src/github.com/ethereum/uint256/oss-fuzz.sh $SRC/build.sh
+RUN cp uint256/oss-fuzz.sh $SRC/build.sh
 
 WORKDIR $SRC/
