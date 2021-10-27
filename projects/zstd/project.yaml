@@ -10,6 +10,7 @@ auto_ccs:
   - "dpc@fb.com"
   - "mhl@fb.com"
   - "reed@fb.com"
+  - "binhvo@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
