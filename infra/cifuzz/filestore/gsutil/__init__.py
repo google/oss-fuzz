@@ -74,7 +74,9 @@ class GSUtilFilestore(filestore.BaseFilestore):
     """Uploads the crashes at |directory| to |name|."""
     # Name is going to be "current". I don't know if this makes sense outside of
     # GitHub Actions.
-    return self._upload_directory(name, directory, self.CRASHES_DIR)
+    gsutil_url = self._get_gsutil_url(name, self.CRASHES_DIR)
+    logging.info('Uploading crashes to %s.')
+    return _rsync(directory, gsutil_url)
 
   def upload_corpus(self, name, directory, replace=False):
     """Uploads the crashes at |directory| to |name|."""
