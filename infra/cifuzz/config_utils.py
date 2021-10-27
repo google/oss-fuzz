@@ -132,9 +132,9 @@ class GenericCiEnvironment(BaseCiEnvironment):
   @property
   def project_repo_owner_and_name(self):
     """Returns a tuple containing the project repo owner and None."""
-    repository = os.getenv('REPOSITORY')
+    project_repo_name = os.getenv('PROJECT_NAME')
     # Repo owner is a githubism.
-    return None, repository
+    return None, project_repo_name
 
   @property
   def repo_url(self):
@@ -267,7 +267,7 @@ class BaseConfig:
       return False
 
     if not self.project_repo_name:
-      logging.error('Must set REPOSITORY.')
+      logging.error('Must set PROJECT_NAME.')
       return False
 
     return True
