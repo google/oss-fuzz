@@ -142,6 +142,12 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
 class GithubCiMixin:
   """Mixin for Github based CI systems."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    # Unlike in other classes, here _repo_dir is the parent directory of the
+    # repo, not its actual directory.
+    self._repo_dir = self.workspace.repo_storage
+
   @property
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
@@ -286,7 +292,6 @@ class ExternalGeneric(BaseCi):
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
     returned otherwise."""
-    logging.info("repo dir: %s", self._repo_dir)
     return self._repo_dir
 
   def get_diff_base(self):
