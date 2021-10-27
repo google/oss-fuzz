@@ -21,6 +21,7 @@ FILESTORE_MAPPING = {
     'gsutil': filestore.gsutil.GSUtilFilestore,
     'github-actions': filestore.github_actions.GithubActionsFilestore,
     'git': filestore.git.GitFilestore,
+    'no_filestore': filestore.no_filestore.NoFilestore,
 }
 
 
@@ -36,6 +37,5 @@ def get_filestore(config):
 
   filestore_cls = FILESTORE_MAPPING.get(config.filestore)
   if filestore_cls is None:
-    raise filestore.FilestoreError('Filestore: %s doesn\'t exist.' %
-                                   config.filestore)
+    raise filestore.FilestoreError('Filestore doesn\'t exist.')
   return filestore_cls(config)
