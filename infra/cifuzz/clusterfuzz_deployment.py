@@ -148,10 +148,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the name of the corpus artifact."""
     return target_name
 
-  def _get_crashes_artifact_name(self):  # pylint: disable=no-self-use
-    """Returns the name of the crashes artifact."""
-    return 'current'
-
   def upload_corpus(self, target_name, corpus_dir, replace=False):
     """Upload the corpus produced by |target_name|."""
     logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
@@ -177,19 +173,24 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_crashes(self):
     """Uploads crashes."""
-    if not os.listdir(self.workspace.artifacts):
+    artifact_dirs = os.listdir(self.workspace.artifacts)
+    if not artifact_dirs:
       logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
       return
 
-    crashes_artifact_name = self._get_crashes_artifact_name()
+    for crash_target in artifact_dirs:
+      artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
+      if not os.path.isdir(artifact_dir):
+        logging.warning('%s is not an expected artifact directory, skipping.',
+                        crash_target)
+        continue
 
-    logging.info('Uploading crashes in %s.', self.workspace.artifacts)
-    try:
-      self.filestore.upload_crashes(crashes_artifact_name,
-                                    self.workspace.artifacts)
-      logging.info('Done uploading crashes.')
-    except Exception as error:  # pylint: disable=broad-except
-      logging.error('Failed to upload crashes. Error: %s', error)
+      logging.info('Uploading crashes in %s.', artifact_dir)
+      try:
+        self.filestore.upload_crashes(crash_target, artifact_dir)
+        logging.info('Done uploading crashes.')
+      except Exception as error:  # pylint: disable=broad-except
+        logging.error('Failed to upload crashes. Error: %s', error)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
