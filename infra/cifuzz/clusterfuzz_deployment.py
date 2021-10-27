@@ -179,12 +179,12 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       return
 
     for crash_target in artifact_dirs:
-      if not os.path.isdir(crash_target):
+      artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
+      if not os.path.isdir(artifact_dir):
         logging.warning('%s is not an expected artifact directory, skipping.',
                         crash_target)
         continue
 
-      artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
       logging.info('Uploading crashes in %s.', artifact_dir)
       try:
         self.filestore.upload_crashes(crash_target, artifact_dir)
