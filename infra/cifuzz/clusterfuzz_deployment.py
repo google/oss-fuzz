@@ -173,8 +173,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_crashes(self):
     """Uploads crashes."""
-    artifact_dirs = self.workspace.artifacts
-    if not os.listdir(artifact_dirs):
+    artifact_dirs = os.listdir(self.workspace.artifacts)
+    if not artifact_dirs:
       logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
       return
 
