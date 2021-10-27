@@ -211,24 +211,6 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
                              out_path)
       self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
 
-  def test_get_fuzz_target_artifact(self):
-    """Tests that get_fuzz_target_artifact works as intended."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      runner = self._create_runner(workspace=tmp_dir)
-      crashes_dir = 'crashes-dir'
-      runner.crashes_dir = crashes_dir
-      artifact_name = 'artifact-name'
-      target = mock.MagicMock()
-      target_name = 'target_name'
-      target.target_name = target_name
-
-      fuzz_target_artifact = runner.get_fuzz_target_artifact(
-          target, artifact_name)
-      expected_fuzz_target_artifact = os.path.join(
-          tmp_dir, 'out', 'artifacts', 'target_name-address-artifact-name')
-
-      self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
-
 
 class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   """Tests that CiFuzzTargetRunner works as intended."""
@@ -264,8 +246,6 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mock_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-address-testcase',
-                  os.listdir(runner.workspace.artifacts))
     self.assertEqual(mock_run_fuzz_target.call_count, 1)
 
 

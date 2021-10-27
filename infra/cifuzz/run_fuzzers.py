@@ -15,14 +15,12 @@
 import enum
 import logging
 import os
-import shutil
 import sys
 import time
 
 import clusterfuzz_deployment
 import fuzz_target
 import generate_coverage_report
-import stack_parser
 import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -106,13 +104,6 @@ class BaseFuzzTargetRunner:
     bug is found."""
     raise NotImplementedError('Child class must implement method.')
 
-  def get_fuzz_target_artifact(self, target, artifact_name):
-    """Returns the path of a fuzzing artifact named |artifact_name| for
-    |fuzz_target|."""
-    artifact_name = (f'{target.target_name}-{self.config.sanitizer}-'
-                     f'{artifact_name}')
-    return os.path.join(self.workspace.artifacts, artifact_name)
-
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
     return fuzz_target.FuzzTarget(target_path, run_seconds, self.workspace,
@@ -148,15 +139,6 @@ class BaseFuzzTargetRunner:
         logging.info('Fuzzer %s finished running without crashes.',
                      target.target_name)
         continue
-
-      # TODO(metzman): Do this with filestore.
-      testcase_artifact_path = self.get_fuzz_target_artifact(
-          target, os.path.basename(result.testcase))
-      shutil.move(result.testcase, testcase_artifact_path)
-      bug_summary_artifact_path = self.get_fuzz_target_artifact(
-          target, 'bug-summary.txt')
-      stack_parser.parse_fuzzer_output(result.stacktrace,
-                                       bug_summary_artifact_path)
 
       bug_found = True
       if self.quit_on_bug_found:

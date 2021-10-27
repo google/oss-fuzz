@@ -17,12 +17,14 @@ import logging
 import os
 import shutil
 import stat
+import tempfile
 
 import clusterfuzz.environment
 import clusterfuzz.fuzz
 
 import config_utils
 import logs
+import stack_parser
 
 logs.init()
 
@@ -106,6 +108,24 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                                 self.latest_corpus_path)
     return self.latest_corpus_path
 
+  def _target_artifact_path(self):
+    """Target artifact path."""
+    artifact_path = os.path.join(self.workspace.artifacts, self.target_name,
+                                 self.config.sanitizer)
+    os.makedirs(artifact_path, exist_ok=True)
+    return artifact_path
+
+  def _save_crash(self, crash):
+    """Add stacktraces to crashes."""
+    target_reproducer_path = os.path.join(self._target_artifact_path(),
+                                          os.path.basename(crash.input_path))
+    shutil.copy(crash.input_path, target_reproducer_path)
+
+    bug_summary_artifact_path = target_reproducer_path + '.summary'
+    stack_parser.parse_fuzzer_output(crash.stacktrace,
+                                     bug_summary_artifact_path)
+    return target_reproducer_path
+
   def prune(self):
     """Prunes the corpus and returns the result."""
     self._download_corpus()
@@ -117,7 +137,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       result = engine_impl.minimize_corpus(self.target_path, [],
                                            [self.latest_corpus_path],
                                            self.pruned_corpus_path,
-                                           self.workspace.artifacts,
+                                           self._target_artifact_path(),
                                            self.duration)
 
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
@@ -134,32 +154,36 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     corpus_path = self.latest_corpus_path
 
     logging.info('Starting fuzzing')
-    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
-                                             self.config.sanitizer,
-                                             self.target_path,
-                                             interactive=True) as env:
-      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
-      options = engine_impl.prepare(corpus_path, env.target_path, env.build_dir)
-      options.merge_back_new_testcases = False
-      options.analyze_dictionary = False
-      options.arguments.extend(LIBFUZZER_OPTIONS)
+    with tempfile.TemporaryDirectory() as artifacts_dir:
+      with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
+                                               self.config.sanitizer,
+                                               self.target_path,
+                                               interactive=True) as env:
+        engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+        options = engine_impl.prepare(corpus_path, env.target_path,
+                                      env.build_dir)
+        options.merge_back_new_testcases = False
+        options.analyze_dictionary = False
+        options.arguments.extend(LIBFUZZER_OPTIONS)
 
-      result = engine_impl.fuzz(self.target_path, options,
-                                self.workspace.artifacts, self.duration)
+        result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
+                                  self.duration)
 
-    # Libfuzzer timeout was reached.
-    if not result.crashes:
-      logging.info('Fuzzer %s finished with no crashes discovered.',
-                   self.target_name)
-      return FuzzResult(None, None, self.latest_corpus_path)
+      # Libfuzzer timeout was reached.
+      if not result.crashes:
+        logging.info('Fuzzer %s finished with no crashes discovered.',
+                     self.target_name)
+        return FuzzResult(None, None, self.latest_corpus_path)
 
-    # Only report first crash.
-    crash = result.crashes[0]
-    logging.info('Fuzzer: %s. Detected bug.', self.target_name)
+      # Only report first crash.
+      crash = result.crashes[0]
+      logging.info('Fuzzer: %s. Detected bug:\n%s', self.target_name,
+                   crash.stacktrace)
 
-    if self.is_crash_reportable(crash.input_path):
-      # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(crash.input_path, result.logs, self.latest_corpus_path)
+      if self.is_crash_reportable(crash.input_path):
+        # We found a bug in the fuzz target and we will report it.
+        saved_path = self._save_crash(crash)
+        return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None, self.latest_corpus_path)
