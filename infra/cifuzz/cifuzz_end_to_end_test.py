@@ -39,6 +39,8 @@ class EndToEndTest(unittest.TestCase):
     """Simple end-to-end test using run_cifuzz.main()."""
     os.environ['REPOSITORY'] = 'external-project'
     os.environ['PROJECT_SRC_PATH'] = EXTERNAL_PROJECT_PATH
+    os.environ['FILESTORE'] = 'no_filestore'
+    os.environ['NO_CLUSTERFUZZ_DEPLOYMENT'] = 'True'
 
     with test_helpers.docker_temp_dir() as temp_dir:
       os.environ['WORKSPACE'] = temp_dir

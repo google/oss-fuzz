@@ -49,6 +49,6 @@ class BaseFilestore:
     """Downloads the build with |name| to |dst_directory|."""
     raise NotImplementedError('Child class must implement method.')
 
-  def download_coverage(self, dst_directory):
+  def download_coverage(self, name, dst_directory):
     """Downloads the latest project coverage report."""
     raise NotImplementedError('Child class must implement method.')

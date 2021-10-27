@@ -100,7 +100,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       # called if multiple bugs are found.
       return self.workspace.clusterfuzz_build
 
-    repo_dir = self.ci_system.repo_dir()
+    repo_dir = self.ci_system.repo_dir
     if not repo_dir:
       raise RuntimeError('Repo checkout does not exist.')
 
@@ -355,20 +355,19 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
 
 
 _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING = {
-    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.INTERNAL_GITHUB:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI:
-        NoClusterFuzzDeployment,
-    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB:
-        ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI: OSSFuzz,
+    config_utils.BaseConfig.Platform.INTERNAL_GITHUB: OSSFuzz,
+    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI: ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB: ClusterFuzzLite,
 }
 
 
 def get_clusterfuzz_deployment(config, workspace):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
   deployment_cls = _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING[config.platform]
+  if config.no_clusterfuzz_deployment:
+    logging.info('Overriding ClusterFuzzDeployment. Using None.')
+    deployment_cls = NoClusterFuzzDeployment
   result = deployment_cls(config, workspace)
   logging.info('ClusterFuzzDeployment: %s.', result)
   return result

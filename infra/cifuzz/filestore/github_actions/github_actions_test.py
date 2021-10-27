@@ -24,8 +24,7 @@ from pyfakefs import fake_filesystem_unittest
 
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(
-        os.path.abspath(__file__)))))
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(INFRA_DIR)
 
 from filestore import github_actions

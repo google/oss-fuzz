@@ -201,6 +201,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         project_repo_name=project_repo_name,
         workspace=self.workspace,
         git_url=git_url,
+        filestore='no_filestore',
         commit_sha='HEAD',
         project_src_path=project_src_path,
         base_commit='HEAD^1')

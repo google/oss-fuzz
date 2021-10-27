@@ -143,8 +143,9 @@ class BaseFuzzTargetRunner:
       bug_found = True
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
-        return bug_found
+        break
 
+    self.clusterfuzz_deployment.upload_crashes()
     return bug_found
 
 
@@ -238,11 +239,6 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # before we get a chance to upload it. We can't delete the fuzz target
     # because it is needed when we upload the build.
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
-
-  def run_fuzz_targets(self):
-    result = super().run_fuzz_targets()
-    self.clusterfuzz_deployment.upload_crashes()
-    return result
 
 
 _RUN_FUZZERS_MODE_RUNNER_MAPPING = {

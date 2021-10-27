@@ -132,6 +132,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
     self.deployment = _create_deployment(run_fuzzers_mode='batch',
                                          oss_fuzz_project_name='',
+                                         cloud_bucket='gs://bucket',
                                          is_github=True)
     self.corpus_dir = os.path.join(self.deployment.workspace.corpora,
                                    EXAMPLE_FUZZER)
@@ -157,7 +158,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
               side_effect=[False, True])
   @mock.patch('repo_manager.RepoManager.get_commit_list',
               return_value=['commit1', 'commit2'])
-  @mock.patch('continuous_integration.BaseCi.repo_dir',
+  @mock.patch('continuous_integration.GithubCiMixin.repo_dir',
               return_value='/path/to/repo')
   def test_download_latest_build(self, mock_repo_dir, mock_get_commit_list,
                                  mock_download_build):
@@ -173,7 +174,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
               side_effect=Exception)
   @mock.patch('repo_manager.RepoManager.get_commit_list',
               return_value=['commit1', 'commit2'])
-  @mock.patch('continuous_integration.BaseCi.repo_dir',
+  @mock.patch('continuous_integration.GithubCiMixin.repo_dir',
               return_value='/path/to/repo')
   def test_download_latest_build_fail(self, mock_repo_dir, mock_get_commit_list,
                                       _):
@@ -195,10 +196,13 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     config = test_helpers.create_run_config(workspace=WORKSPACE,
-                                            is_github=False)
+                                            is_github=False,
+                                            filestore='no_filestore',
+                                            no_clusterfuzz_deployment=True)
     workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
+
     self.corpus_dir = os.path.join(workspace.corpora, EXAMPLE_FUZZER)
 
   @mock.patch('logging.info')
@@ -241,7 +245,7 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
       (config_utils.BaseConfig.Platform.INTERNAL_GITHUB,
        clusterfuzz_deployment.OSSFuzz),
       (config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI,
-       clusterfuzz_deployment.NoClusterFuzzDeployment),
+       clusterfuzz_deployment.ClusterFuzzLite),
       (config_utils.BaseConfig.Platform.EXTERNAL_GITHUB,
        clusterfuzz_deployment.ClusterFuzzLite),
   ])

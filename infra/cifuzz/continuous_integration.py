@@ -53,23 +53,13 @@ class BaseCi:
   def __init__(self, config):
     self.config = config
     self.workspace = workspace_utils.Workspace(config)
+    self._repo_dir = None
 
+  @property
   def repo_dir(self):
     """Returns the source repo path, if it has been checked out. None is
     returned otherwise."""
-    if not os.path.exists(self.workspace.repo_storage):
-      return None
-
-    # Note: this assumes there is only one repo checked out here.
-    listing = os.listdir(self.workspace.repo_storage)
-    if len(listing) != 1:
-      raise RuntimeError('Invalid repo storage.')
-
-    repo_path = os.path.join(self.workspace.repo_storage, listing[0])
-    if not os.path.isdir(repo_path):
-      raise RuntimeError('Repo is not a directory.')
-
-    return repo_path
+    raise NotImplementedError('Child class must implement method.')
 
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image and gets the source code we need to
@@ -152,6 +142,31 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
 class GithubCiMixin:
   """Mixin for Github based CI systems."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    # Unlike in other classes, here _repo_dir is the parent directory of the
+    # repo, not its actual directory.
+    self._repo_dir = self.workspace.repo_storage
+
+  @property
+  def repo_dir(self):
+    """Returns the source repo path, if it has been checked out. None is
+    returned otherwise."""
+    if not os.path.exists(self._repo_dir):
+      logging.warning('Repo dir: %s does not exist.', self._repo_dir)
+      return None
+
+    # Note: this assumes there is only one repo checked out here.
+    listing = os.listdir(self._repo_dir)
+    if len(listing) != 1:
+      raise RuntimeError('Invalid repo directory.')
+
+    repo_path = os.path.join(self._repo_dir, listing[0])
+    if not os.path.isdir(repo_path):
+      raise RuntimeError('Repo is not a directory.')
+
+    return repo_path
+
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""
@@ -217,6 +232,16 @@ class InternalGeneric(BaseCi):
   """Class representing CI for an OSS-Fuzz project on a CI other than Github
   actions."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    self._repo_dir = config.project_src_path
+
+  @property
+  def repo_dir(self):
+    """Returns the source repo path, if it has been checked out. None is
+    returned otherwise."""
+    return self._repo_dir
+
   def prepare_for_fuzzer_build(self):
     """Builds the project builder image for an OSS-Fuzz project outside of
     GitHub actions. Returns the repo_manager. Does not checkout source code
@@ -262,6 +287,16 @@ def build_external_project_docker_image(project_src, build_integration_path):
 
 class ExternalGeneric(BaseCi):
   """CI implementation for generic CI for external (non-OSS-Fuzz) projects."""
+
+  def __init__(self, config):
+    super().__init__(config)
+    self._repo_dir = config.project_src_path
+
+  @property
+  def repo_dir(self):
+    """Returns the source repo path, if it has been checked out. None is
+    returned otherwise."""
+    return self._repo_dir
 
   def get_diff_base(self):
     return 'origin...'
