@@ -180,7 +180,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
     for crash_target in artifact_dirs:
       if not os.path.isdir(crash_target):
-        logging.warning('%s is not an expected artifact directory, skipping.', crash_target)
+        logging.warning('%s is not an expected artifact directory, skipping.',
+                        crash_target)
         continue
 
       artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
