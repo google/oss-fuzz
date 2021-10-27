@@ -16,11 +16,12 @@ import logging
 
 import filestore
 
-
+# pylint:disable=no-self-use,unused-argument
 
 
 class NoFilestore(filestore.BaseFilestore):
   """Empty Filestore implementation."""
+
   def upload_crashes(self, name, directory):
     """Noop implementation of upload_crashes."""
     logging.info('Not uploading crashes because no Filestore.')

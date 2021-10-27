@@ -322,6 +322,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(mock_run_fuzz_target.call_count, 2)
     self.assertEqual(mock_upload_crashes.call_count, 1)
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class CoverageReportIntegrationTest(unittest.TestCase):

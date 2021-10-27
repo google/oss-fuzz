@@ -195,10 +195,13 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     config = test_helpers.create_run_config(workspace=WORKSPACE,
-                                            is_github=False)
+                                            is_github=False,
+                                            filestore='no_filestore',
+                                            no_clusterfuzz_deployment=True)
     workspace = workspace_utils.Workspace(config)
     self.deployment = clusterfuzz_deployment.get_clusterfuzz_deployment(
         config, workspace)
+
     self.corpus_dir = os.path.join(workspace.corpora, EXAMPLE_FUZZER)
 
   @mock.patch('logging.info')
