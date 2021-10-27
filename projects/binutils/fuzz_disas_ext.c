@@ -54,8 +54,10 @@ static int objdump_sprintf (void *vf, const char *format, ...)
   return n;
 }
 
-
 char options[100]; // Enable the disassemblers to have random options.
+char private_data[100]; // This is used for some targets. Watch out when
+                        // using it as some disassemblers have pointers
+                        // within their private_data.
 
 void
 disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
@@ -72,6 +74,10 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
   disasm_info.buffer_length = Size-10;
   disasm_info.insn_info_valid = 0;
   disasm_info.disassembler_options = options;
+
+  if (arch == bfd_arch_arm) {
+    disasm_info.private_data = private_data;
+  }
 
   s.buffer = AssemblyText;
   s.pos = 0;
@@ -104,7 +110,7 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  if (Size < 110 || Size > 16394) {
+  if (Size < 210 || Size > 16394) {
     // 10 bytes for options
     // 16394 limit code to prevent timeouts
     return 0;
@@ -113,6 +119,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   // Create a random options string
   memcpy(options, Data, 100);
+  options[99] = '\0';
+  Data += 100;
+  Size -= 100;
+
+  // The private data may or may not be used in the disassemble_architecture
+  // depending on the the target.
+  memcpy(private_data, Data, 100);
   options[99] = '\0';
   Data += 100;
   Size -= 100;
