@@ -17,14 +17,13 @@ import sys
 
 import config_utils
 import docker
+import logs
 import run_fuzzers
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def delete_unneeded_docker_images(config):
@@ -37,7 +36,6 @@ def delete_unneeded_docker_images(config):
   images = [
       project_image,
       docker.BASE_BUILDER_TAG,
-      docker.BASE_BUILDER_TAG + ':xenial',
       docker.BASE_BUILDER_TAG + '-go',
       docker.BASE_BUILDER_TAG + '-jvm',
       docker.BASE_BUILDER_TAG + '-python',

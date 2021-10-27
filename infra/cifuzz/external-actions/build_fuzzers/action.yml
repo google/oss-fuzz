@@ -61,3 +61,4 @@ runs:
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
     UPLOAD_BUILD: ${{ inputs.upload-build }}
+    CIFUZZ_DEBUG: 'True'

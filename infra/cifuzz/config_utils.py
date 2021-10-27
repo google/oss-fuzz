@@ -26,7 +26,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 
-RUN_FUZZERS_MODES = ['batch', 'ci', 'coverage', 'prune']
+RUN_FUZZERS_MODES = ['batch', 'code-change', 'coverage', 'prune']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
@@ -83,6 +83,11 @@ class BaseCiEnvironment:
     raise NotImplementedError('Child class must implment method.')
 
   @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    raise NotImplementedError('Child class must implment method.')
+
+  @property
   def token(self):
     """Returns the CI API token."""
     raise NotImplementedError('Child class must implment method.')
@@ -120,11 +125,21 @@ class GenericCiEnvironment(BaseCiEnvironment):
     return os.getenv('TOKEN')
 
   @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    return os.getenv('ACTOR')
+
+  @property
   def project_repo_owner_and_name(self):
     """Returns a tuple containing the project repo owner and None."""
     repository = os.getenv('REPOSITORY')
     # Repo owner is a githubism.
     return None, repository
+
+  @property
+  def repo_url(self):
+    """Returns the repo URL."""
+    return os.getenv('REPOSITORY_URL')
 
 
 class GithubEnvironment(BaseCiEnvironment):
@@ -139,6 +154,11 @@ class GithubEnvironment(BaseCiEnvironment):
   def git_sha(self):
     """Returns the Git SHA to diff against."""
     return os.getenv('GITHUB_SHA')
+
+  @property
+  def actor(self):
+    """Name of the actor for the CI."""
+    return os.getenv('GITHUB_ACTOR')
 
   @property
   def token(self):
@@ -165,6 +185,12 @@ class GithubEnvironment(BaseCiEnvironment):
     repository = os.getenv('GITHUB_REPOSITORY')
     # Use os.path.split to split owner from repo.
     return os.path.split(repository)
+
+  @property
+  def repo_url(self):
+    """Returns the GitHub repo URL."""
+    repository = os.getenv('GITHUB_REPOSITORY')
+    return f'https://github.com/{repository}.git'
 
 
 class ConfigError(Exception):
@@ -204,6 +230,7 @@ class BaseConfig:
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
+    self.actor = self._ci_env.actor
     self.token = self._ci_env.token
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
@@ -289,7 +316,8 @@ class RunFuzzersConfig(BaseConfig):
     super().__init__()
     # TODO(metzman): Pick a better default for pruning.
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
-    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
+    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE',
+                                           'code-change').lower()
     if self.is_coverage:
       self.run_fuzzers_mode = 'coverage'
 
@@ -328,8 +356,6 @@ class BuildFuzzersConfig(BaseConfig):
       self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
       logging.debug('pr_ref: %s', self.pr_ref)
 
-    self.git_url = event_data['repository']['html_url']
-
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
@@ -338,8 +364,9 @@ class BuildFuzzersConfig(BaseConfig):
     event = os.getenv('GITHUB_EVENT_NAME')
 
     self.pr_ref = None
-    self.git_url = None
+    self.git_url = self._ci_env.repo_url
     self.base_commit = None
+
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
@@ -356,3 +383,7 @@ class BuildFuzzersConfig(BaseConfig):
     if self.upload_build:
       logging.info('Keeping all fuzzers because we are uploading build.')
       self.keep_unaffected_fuzz_targets = True
+
+    if self.sanitizer == 'coverage':
+      self.keep_unaffected_fuzz_targets = True
+      self.bad_build_check = False

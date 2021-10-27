@@ -50,4 +50,12 @@ cmake --build . --target install
 mkdir build && cd build
 cmake .. -DBUILD_SHARED_LIBS=OFF
 make -j $(nproc)
-cp src/cpp/fuzz* $OUT/
+cd ..
+
+find build/fuzz -maxdepth 3 -type f -name 'fuzz_*' | while read fuzzer; do
+    cp "$fuzzer" $OUT/
+done
+
+find fuzz/ -type d -name 'fuzz_*_seed_corpus' | while read corpus_dir; do
+  zip -j $OUT/$(basename "$corpus_dir").zip $corpus_dir/*
+done

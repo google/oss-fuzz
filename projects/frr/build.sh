@@ -37,6 +37,8 @@ make install
 
 # build project
 export ASAN_OPTIONS=detect_leaks=0
+export CFLAGS="${CFLAGS} -DFUZZING_OVERRIDE_LLVMFuzzerTestOneInput"
+export CXXFLAGS="${CXXFLAGS} -DFUZZING_OVERRIDE_LLVMFuzzerTestOneInput"
 ./bootstrap.sh
 ./configure --enable-libfuzzer --enable-static --enable-static-bin --sbindir=$SRC/bin
 make -j$(nproc)

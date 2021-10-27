@@ -220,5 +220,25 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
         'introduced.')
 
 
+class FuzzTest(fake_filesystem_unittest.TestCase):
+  """Fuzz test."""
+
+  def setUp(self):
+    """Sets up example fuzz target to test is_reproducible method."""
+    self.setUpPyfakefs()
+    deployment = _create_deployment()
+    config = deployment.config
+    workspace = deployment.workspace
+    self.fuzz_target = fuzz_target.FuzzTarget('/path/fuzz-target', 10,
+                                              workspace, deployment, config)
+
+  def test_get_fuzz_target_artifact(self):
+    """Tests that get_fuzz_target_artifact works as intended."""
+    # pylint: disable=protected-access
+    fuzz_target_artifact = self.fuzz_target._target_artifact_path()
+    self.assertEqual('/workspace/out/artifacts/fuzz-target/address',
+                     fuzz_target_artifact)
+
+
 if __name__ == '__main__':
   unittest.main()

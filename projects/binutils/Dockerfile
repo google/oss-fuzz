@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 #TODO change
-RUN apt-get update && apt-get install -y make
+RUN apt-get update && apt-get install -y make texinfo
 RUN apt-get install -y flex bison
 RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
 COPY fuzz_readelf_seed_corpus $SRC/fuzz_readelf_seed_corpus
-COPY fuzz_readelf.options $SRC/fuzz_readelf.options
+COPY *.options $SRC/

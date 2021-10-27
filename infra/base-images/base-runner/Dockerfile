@@ -115,6 +115,7 @@ COPY bad_build_check \
     reproduce \
     run_fuzzer \
     parse_options.py \
+    profraw_update.py \
     targets_list \
     test_all.py \
     test_one.py \

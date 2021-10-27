@@ -1,0 +1,11 @@
+homepage: "https://github.com/hashicorp/hcl"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "security@hashicorp.com"
+auto_ccs:
+  - jfinnigan@hashicorp.com
+  - kent@hashicorp.com
+main_repo: 'https://github.com/hashicorp/hcl'

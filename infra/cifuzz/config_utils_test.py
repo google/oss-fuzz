@@ -139,13 +139,13 @@ class RunFuzzersConfigTest(unittest.TestCase):
     is_coverage."""
     # Test that it is overriden when it is supposed to be.
     os.environ['SANITIZER'] = 'coverage'
-    os.environ['RUN_FUZZERS_MODE'] = 'ci'
+    os.environ['RUN_FUZZERS_MODE'] = 'code-change'
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, 'coverage')
 
     # Test that it isn't overriden when it isn't supposed to be.
     os.environ['SANITIZER'] = 'address'
-    run_fuzzers_mode = 'ci'
+    run_fuzzers_mode = 'code-change'
     os.environ['RUN_FUZZERS_MODE'] = run_fuzzers_mode
     config = self._create_config()
     self.assertEqual(config.run_fuzzers_mode, run_fuzzers_mode)
@@ -201,6 +201,32 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     os.environ['REPOSITORY'] = self.repo_name
     self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
                      (None, self.repo_name))
+
+
+class GetRepoUrlTest(unittest.TestCase):
+  """Tests for GenericCiEnvironment.repo_url."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+    self.github_env = config_utils.GithubEnvironment()
+    self.generic_ci_env = config_utils.GenericCiEnvironment()
+
+  def test_unset_repository(self):
+    """Tests that the correct result is returned when repository is not set."""
+    self.assertEqual(self.generic_ci_env.repo_url, None)
+
+  def test_github_repository(self):
+    """Tests that the correct result is returned when repository contains the
+    owner and repo name (as it does on GitHub)."""
+    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
+    self.assertEqual('https://github.com/repo/owner.git',
+                     self.github_env.repo_url)
+
+  def test_nongithub_repository(self):
+    """Tests that the correct result is returned when repository contains the
+    just the repo name (as it does outside of GitHub)."""
+    os.environ['REPOSITORY_URL'] = 'https://repo/url'
+    self.assertEqual('https://repo/url', self.generic_ci_env.repo_url)
 
 
 class GetSanitizerTest(unittest.TestCase):
