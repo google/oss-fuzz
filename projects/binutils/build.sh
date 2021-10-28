@@ -82,6 +82,13 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
   done
 
+  # Special handling of dlltool
+  for i in dlltool; do
+      cp ../../fuzz_$i.c .
+      sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' $i.c > fuzz_$i.h
+      sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
+  done
+
   # Compile
   for i in objdump readelf nm objcopy; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
@@ -89,6 +96,15 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
         -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
         fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
   done
+
+  # Special handling of dlltool
+  for i in dlltool; do
+      $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
+        -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+        -DDLLTOOL_I386 -DDLLTOOL_DEFAULT_I386 -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+        fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
+  done
+
 
   # Compile a special version of objdump that limits the amount
   # of calls to bfd_fatal.
@@ -126,6 +142,12 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     # Link nm fuzzer
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_nm fuzz_nm.o bucomm.o version.o filemode.o \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
+
+    # link dlltool fuzzer
+    OBJS="defparse.o deflex.o bucomm.o version.o filemode.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_dlltool fuzz_dlltool.o ${OBJS} \
       -Wl,--start-group ${LIBS} -Wl,--end-group
   fi
 
@@ -169,6 +191,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_readelf.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_nm.options
+  cp $OUT/fuzz_objcopy.options $OUT/fuzz_dlltool.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_objdump.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_disas_ext-bfd_arch_csky.options
 fi
