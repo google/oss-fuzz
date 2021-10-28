@@ -227,6 +227,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_target(self, fuzz_target_obj):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
+
     result = fuzz_target_obj.fuzz()
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
@@ -241,7 +242,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
 
 
-_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
+_MODE_RUNNER_MAPPING = {
     'batch': BatchFuzzTargetRunner,
     'coverage': CoverageTargetRunner,
     'prune': PruneTargetRunner,
@@ -250,11 +251,10 @@ _RUN_FUZZERS_MODE_RUNNER_MAPPING = {
 
 
 def get_fuzz_target_runner(config):
-  """Returns a fuzz target runner object based on the run_fuzzers_mode of
+  """Returns a fuzz target runner object based on the mode of
   |config|."""
-  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
-  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
-               runner)
+  runner = _MODE_RUNNER_MAPPING[config.mode](config)
+  logging.info('run fuzzers MODE is: %s. Runner: %s.', config.mode, runner)
   return runner
 
 

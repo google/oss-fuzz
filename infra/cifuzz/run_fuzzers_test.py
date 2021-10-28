@@ -356,7 +356,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
       run_config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                                   workspace=temp_dir,
                                                   sanitizer=self.SANITIZER,
-                                                  run_fuzzers_mode='coverage',
+                                                  mode='coverage',
                                                   is_github=True)
       result = run_fuzzers.run_fuzzers(run_config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
@@ -431,16 +431,15 @@ class GetFuzzTargetRunnerTest(unittest.TestCase):
       ('code-change', run_fuzzers.CiFuzzTargetRunner),
       ('coverage', run_fuzzers.CoverageTargetRunner)
   ])
-  def test_get_fuzz_target_runner(self, run_fuzzers_mode,
-                                  fuzz_target_runner_cls):
+  def test_get_fuzz_target_runner(self, mode, fuzz_target_runner_cls):
     """Tests that get_fuzz_target_runner returns the correct runner based on the
-    specified run_fuzzers_mode."""
+    specified mode."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       run_config = test_helpers.create_run_config(
           fuzz_seconds=FUZZ_SECONDS,
           workspace=tmp_dir,
           oss_fuzz_project_name='example',
-          run_fuzzers_mode=run_fuzzers_mode)
+          mode=mode)
       runner = run_fuzzers.get_fuzz_target_runner(run_config)
       self.assertTrue(isinstance(runner, fuzz_target_runner_cls))
 
