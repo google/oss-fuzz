@@ -31,7 +31,9 @@ cd ../
 
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
 	    --disable-libdecnumber --disable-readline --disable-sim \
-	    --disable-libbacktrace --disable-werror --enable-targets=all
+	    --disable-libbacktrace --disable-gas --disable-ld --disable-werror \
+      --enable-targets=all
+make clean
 make MAKEINFO=true && true
 
 # Due to a bug in AFLPP that occurs *sometimes* we continue only if we have the
@@ -82,6 +84,13 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
   done
 
+  # Special handling of dlltool
+  for i in dlltool; do
+      cp ../../fuzz_$i.c .
+      sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' $i.c > fuzz_$i.h
+      sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
+  done
+
   # Compile
   for i in objdump readelf nm objcopy; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
@@ -89,6 +98,15 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
         -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
         fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
   done
+
+  # Special handling of dlltool
+  for i in dlltool; do
+      $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
+        -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+        -DDLLTOOL_I386 -DDLLTOOL_DEFAULT_I386 -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+        fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
+  done
+
 
   # Compile a special version of objdump that limits the amount
   # of calls to bfd_fatal.
@@ -127,23 +145,30 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_nm fuzz_nm.o bucomm.o version.o filemode.o \
       -Wl,--start-group ${LIBS} -Wl,--end-group
+
+    # link dlltool fuzzer
+    OBJS="defparse.o deflex.o bucomm.o version.o filemode.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_dlltool fuzz_dlltool.o ${OBJS} \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
   fi
 
-  # Build GAS fuzzer
-  cd ../gas
-  ./configure
-  make
-  sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
-  rm as.o || true
-  ar r libar.a *.o
+  # Build GAS fuzzer. Will keep this here in case GAS fuzzer is used in the future.
+  if [ "$FUZZING_ENGINE" != 'afl' ]; then
+    cd ../gas
+    ./configure
+    make
+    sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
+    rm as.o || true
+    ar r libar.a *.o
 
-  $CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
-      -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
-      libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
-      ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
-      -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
-
+    $CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
+        -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
+        libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
+        ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
+        -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
+  fi
   # Set up seed corpus for readelf in the form of a single ELF file.
   # Assuming all went well then we can simply create a fuzzer based on
   # the object files in the binutils directory.
@@ -169,6 +194,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_readelf.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_nm.options
+  cp $OUT/fuzz_objcopy.options $OUT/fuzz_dlltool.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_objdump.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_disas_ext-bfd_arch_csky.options
 fi
