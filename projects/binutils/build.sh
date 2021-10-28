@@ -32,7 +32,15 @@ cd ../
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
 	    --disable-libdecnumber --disable-readline --disable-sim \
 	    --disable-libbacktrace --disable-werror --enable-targets=all
-make MAKEINFO=true && true
+# Try building four times as AFL will fail on some
+for i in 1 2 3 4; do
+  if ([ -f ./libctf/.libs/libctf.a ]); then
+    echo "Done"
+  else
+    make clean
+    make MAKEINFO=true && true
+  fi
+done
 
 # Due to a bug in AFLPP that occurs *sometimes* we continue only if we have the
 # libraries that we need
