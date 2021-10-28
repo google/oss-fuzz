@@ -93,7 +93,7 @@ fi
 )"
 
 
-# The machine hasssuming we have ~32 cores and ~28.8 GiB RAM. By limiting the
+# Asssuming we have ~32 cores and ~28.8 GiB RAM. By limiting the
 # number of CPUs (--local_cpu_resources) we limit the per-CPU mem-usage.
 # Benchmark about 3.6 GB per CPU (8 threads for 28.8 GB RAM)
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
