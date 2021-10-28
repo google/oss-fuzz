@@ -241,7 +241,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
 
 
-_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
+_MODE_RUNNER_MAPPING = {
     'batch': BatchFuzzTargetRunner,
     'coverage': CoverageTargetRunner,
     'prune': PruneTargetRunner,
@@ -250,11 +250,10 @@ _RUN_FUZZERS_MODE_RUNNER_MAPPING = {
 
 
 def get_fuzz_target_runner(config):
-  """Returns a fuzz target runner object based on the run_fuzzers_mode of
+  """Returns a fuzz target runner object based on the mode of
   |config|."""
-  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
-  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
-               runner)
+  runner = _MODE_RUNNER_MAPPING[config.mode](config)
+  logging.info('run fuzzers MODE is: %s. Runner: %s.', config.mode, runner)
   return runner
 
 

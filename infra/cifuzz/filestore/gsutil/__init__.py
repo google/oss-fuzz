@@ -37,11 +37,14 @@ def _gsutil_execute(*args, parallel=True):
   return utils.execute(command, check_result=True)
 
 
-def _rsync(src, dst, delete=False):
+def _rsync(src, dst, recursive=True, delete=False):
   """Executes gsutil rsync on |src| and |dst|"""
-  args = ['rsync', src, dst]
+  args = ['rsync']
+  if recursive:
+    args.append('-r')
   if delete:
-    args.append('--delete')
+    args.append('-d')
+  args += [src, dst]
   return _gsutil_execute(*args)
 
 
@@ -75,7 +78,7 @@ class GSUtilFilestore(filestore.BaseFilestore):
     # Name is going to be "current". I don't know if this makes sense outside of
     # GitHub Actions.
     gsutil_url = self._get_gsutil_url(name, self.CRASHES_DIR)
-    logging.info('Uploading crashes to %s.')
+    logging.info('Uploading crashes to %s.', gsutil_url)
     return _rsync(directory, gsutil_url)
 
   def upload_corpus(self, name, directory, replace=False):

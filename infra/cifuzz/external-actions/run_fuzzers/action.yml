@@ -61,7 +61,7 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    RUN_FUZZERS_MODE: ${{ inputs.mode }}
+    MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     GIT_STORE_REPO: ${{ inputs.storage-repo }}

@@ -26,7 +26,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 
-RUN_FUZZERS_MODES = ['batch', 'code-change', 'coverage', 'prune']
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
@@ -312,14 +311,15 @@ def _get_ci_environment(platform):
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
+  MODES = ['batch', 'code-change', 'coverage', 'prune']
+
   def __init__(self):
     super().__init__()
     # TODO(metzman): Pick a better default for pruning.
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
-    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE',
-                                           'code-change').lower()
+    self.mode = os.environ.get('MODE', 'code-change').lower()
     if self.is_coverage:
-      self.run_fuzzers_mode = 'coverage'
+      self.mode = 'coverage'
 
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
@@ -333,9 +333,9 @@ class RunFuzzersConfig(BaseConfig):
     """Do extra validation on RunFuzzersConfig.__init__(). Do not name this
     validate or else it will be called when using the parent's __init__ and will
     fail. Returns True if valid."""
-    if self.run_fuzzers_mode not in RUN_FUZZERS_MODES:
-      logging.error('Invalid RUN_FUZZERS_MODE: %s. Must be one of %s.',
-                    self.run_fuzzers_mode, RUN_FUZZERS_MODES)
+    if self.mode not in self.MODES:
+      logging.error('Invalid MODE: %s. Must be one of %s.', self.mode,
+                    self.MODES)
       return False
 
     return True
