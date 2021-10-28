@@ -49,7 +49,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   done
 
   # Build targeted disassembly fuzzers
-  for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky; do
+  for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky bfd_arch_mep; do
       $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
         -o fuzz_disas_ext-$ARCH_TARGET.o
       $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
@@ -90,6 +90,13 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
         fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
   done
 
+  # Compile a special version of objdump that limits the amount
+  # of calls to bfd_fatal.
+  $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -DOBJDUMP_SAFE -I. -I../bfd -I./../bfd -I./../include \
+    -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+    -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+    fuzz_objdump_safe.o -MD -MP -c -o fuzz_objdump_safe.o fuzz_objdump.c
+
   # Link the files
   # Only link if they exist
   if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
@@ -103,6 +110,11 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_objdump fuzz_objdump.o ${OBJS} \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
+
+    # Link safe objdump fuzzer
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_objdump_safe fuzz_objdump_safe.o ${OBJS} \
       -Wl,--start-group ${LIBS} -Wl,--end-group
 
     # link objcopy fuzzer
@@ -133,14 +145,28 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
 
   # Set up seed corpus for readelf in the form of a single ELF file.
-  zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
-  mv fuzz_readelf_seed_corpus.zip $OUT/
+  # Assuming all went well then we can simply create a fuzzer based on
+  # the object files in the binutils directory.
+  cp $SRC/binutils-gdb/binutils/*.o $SRC/fuzz_readelf_seed_corpus/
+
+  # Create a simple archive
+  mkdir $SRC/tmp_archive
+  cp $SRC/binutils-gdb/binutils/rename.o $SRC/tmp_archive/
+  cp $SRC/binutils-gdb/binutils/is-ranlib.o $SRC/tmp_archive/
+  cp $SRC/binutils-gdb/binutils/not-strip.o $SRC/tmp_archive/
+  ar cr $SRC/seed_archive.a $SRC/tmp_archive/*.o
+  mv $SRC/seed_archive.a $SRC/fuzz_readelf_seed_corpus/seed_archive.a
+
+  # Zip the folder together as OSS-Fuzz expects the seed corpus as ZIP
+  zip -r $OUT/fuzz_readelf_seed_corpus.zip $SRC/fuzz_readelf_seed_corpus
+
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
 
   # Copy options files
   cp $SRC/fuzz_*.options $OUT/
+  cp $OUT/fuzz_objcopy.options $OUT/fuzz_readelf.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_nm.options
   cp $OUT/fuzz_objcopy.options $OUT/fuzz_objdump.options
