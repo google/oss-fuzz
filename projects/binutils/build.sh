@@ -33,15 +33,8 @@ cd ../
 	    --disable-libdecnumber --disable-readline --disable-sim \
 	    --disable-libbacktrace --disable-gas --disable-ld --disable-werror \
       --enable-targets=all
-# Try building four times as AFL will fail on some
-#for i in 1 2 3 4; do
-#  if ([ -f ./libctf/.libs/libctf.a ]); then
-#    echo "Done"
-#  else
-    make clean
-    make MAKEINFO=true && true
-#  fi
-#done
+make clean
+make MAKEINFO=true && true
 
 # Due to a bug in AFLPP that occurs *sometimes* we continue only if we have the
 # libraries that we need
@@ -160,20 +153,20 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       -Wl,--start-group ${LIBS} -Wl,--end-group
   fi
 
-  # Build GAS fuzzer
+  # Build GAS fuzzer. Will keep this here in case GAS fuzzer is used in the future.
   #cd ../gas
   #./configure
   #make
   #sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
   #rm as.o || true
   #ar r libar.a *.o
-#
-#  $CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
-#      -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
-#  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
-#      libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
-#      ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
-#      -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
+  #
+  #  $CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
+  #      -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
+  #  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
+  #      libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
+  #      ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
+  #      -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
 
   # Set up seed corpus for readelf in the form of a single ELF file.
   # Assuming all went well then we can simply create a fuzzer based on
