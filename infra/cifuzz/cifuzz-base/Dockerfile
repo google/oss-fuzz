@@ -32,8 +32,12 @@ RUN apt-get update && \
 
 ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
+
+# Do this step before copying to make rebuilding faster when developing.
+COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
 ADD . ${OSS_FUZZ_ROOT}
-RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
 RUN npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
 
 # Python file to execute when the docker container starts up.
