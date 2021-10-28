@@ -38,10 +38,25 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   dump_section_headers = true;
   dump_private_headers = true;
   dump_ar_hdrs = true;
-  dump_reloc_info = true;
-  dump_dynamic_reloc_info = true;
-  disassemble = true;
+  dump_dwarf_section_info = true;
+  dwarf_select_sections_all ();
+  dump_debugging = true;
+
+  dump_stab_section_info = true;
   disassemble_all = true;
+
+  // These flags contain a large set of calls to bfd_fatal (which calls
+  // exit), so to enable fuzzing of objdump with a fuzzer that lives for
+  // a longer period of time (more than 10 seconds) define
+  // OBJDUMP_SAFE
+#ifndef OBJDUMP_SAFE
+  dump_reloc_info = true;
+  // ctf section and reloc are simply too quick to exit and disrupts
+  // fuzzing too much. Will leave this commented out for now.
+  //dump_dynamic_reloc_info = true;
+  //dump_ctf_section_info = true;
+  disassemble = true;
+#endif
 
   // Main fuzz entrypoint in objdump.c
   display_file(filename, NULL, true);
