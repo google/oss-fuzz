@@ -43,7 +43,7 @@ def _rsync(src, dst, recursive=True, delete=False):
   if recursive:
     args.append('-r')
   if delete:
-    args.append('--delete')
+    args.append('-d')
   args += [src, dst]
   return _gsutil_execute(*args)
 
