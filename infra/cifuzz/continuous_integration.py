@@ -76,7 +76,9 @@ class BaseCi:
     base = self.get_diff_base()
     fix_git_repo_for_diff(repo_manager_obj)
     logging.info('Diffing against %s.', base)
-    return repo_manager_obj.get_git_diff(base)
+    # git diff <commit>... is equivalent to
+    # git diff $(git merge-base <commit> HEAD)
+    return repo_manager_obj.get_git_diff(base + '...')
 
   def get_build_command(self, host_repo_path, image_repo_path):
     """Returns the command for building the project that is run inside the
@@ -265,7 +267,7 @@ class InternalGeneric(BaseCi):
                                   repo_manager=manager)
 
   def get_diff_base(self):
-    return 'origin...'
+    return 'origin'
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
     """Returns the command for building the project that is run inside the
@@ -299,7 +301,7 @@ class ExternalGeneric(BaseCi):
     return self._repo_dir
 
   def get_diff_base(self):
-    return 'origin...'
+    return 'origin'
 
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
