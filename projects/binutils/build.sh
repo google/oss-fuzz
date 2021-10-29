@@ -51,12 +51,17 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   done
 
   # Build targeted disassembly fuzzers
-  for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky bfd_arch_mep; do
-      $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
-        -o fuzz_disas_ext-$ARCH_TARGET.o
-      $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
-        -Wl,--start-group ${LIBS} -Wl,--end-group
-  done
+  if [ -n "${OSS_FUZZ_CI-}" ]
+  then
+    echo "Skipping specialised disassembly fuzzers in CI"
+  else
+    for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky bfd_arch_mep; do
+        $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
+          -o fuzz_disas_ext-$ARCH_TARGET.o
+        $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
+          -Wl,--start-group ${LIBS} -Wl,--end-group
+    done
+  fi
 
   # TODO build corpuses
 
