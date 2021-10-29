@@ -22,7 +22,7 @@ git clone https://dawn.googlesource.com/tint --depth=1
 mkdir build
 pushd build
 
-CMAKE_ARGS="-DSPIRV_BUILD_LIBFUZZER_TARGETS=ON -DSPIRV_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE"
+CMAKE_ARGS="-DSPIRV_BUILD_FUZZER=ON -DSPIRV_BUILD_LIBFUZZER_TARGETS=ON -DSPIRV_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE"
 
 # With ubsan, RTTI must be enabled due to certain checks (vptr) requiring it.
 if [ $SANITIZER == "undefined" ];
@@ -34,6 +34,7 @@ ninja
 
 SPIRV_BINARY_FUZZERS="spvtools_binary_parser_fuzzer\
  spvtools_dis_fuzzer\
+ spvtools_fuzz_fuzzer\
  spvtools_opt_legalization_fuzzer\
  spvtools_opt_performance_fuzzer\
  spvtools_opt_size_fuzzer\
