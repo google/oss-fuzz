@@ -45,7 +45,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cd fuzz
 
   LIBS="../opcodes/libopcodes.a ../libctf/.libs/libctf.a ../bfd/libbfd.a ../zlib/libz.a ../libiberty/libiberty.a"
-  for i in fuzz_disassemble fuzz_bfd; do
+  for i in fuzz_disassemble fuzz_bfd fuzz_bfd_ext; do
       $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c $i.c -o $i.o
       $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE -Wl,--start-group ${LIBS} -Wl,--end-group
   done
@@ -195,6 +195,12 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # the object files in the binutils directory.
   cp $SRC/binutils-gdb/binutils/*.o $SRC/fuzz_readelf_seed_corpus/
 
+  git clone https://github.com/DavidKorczynski/binary-samples $SRC/binary-samples
+  cp $SRC/binary-samples/elf* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/Mach* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/pe* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/lib* $SRC/fuzz_readelf_seed_corpus/
+
   # Create a simple archive
   mkdir $SRC/tmp_archive
   cp $SRC/binutils-gdb/binutils/rename.o $SRC/tmp_archive/
@@ -207,12 +213,22 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   zip -r $OUT/fuzz_readelf_seed_corpus.zip $SRC/fuzz_readelf_seed_corpus
 
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_safe_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_strings_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
+
+  # Seed targeted the pef file format
+  mkdir $SRC/bfd_ext_seeds
+  echo "Joy!peffAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" >> $SRC/bfd_ext_seeds/seed1
+  zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
 
   # Copy options files
   for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation; do
     echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
     echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
   done
+
 fi
