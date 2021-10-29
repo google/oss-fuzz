@@ -107,11 +107,15 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
     repo = repo_manager.RepoManager(repo_dir)
 
+    diff_base = self.ci_system.get_diff_base()
+    if not diff_base:
+      diff_base = 'HEAD^'
+
     # Builds are stored by commit, so try the latest |LATEST_BUILD_WINDOW|
-    # commits before the current.
+    # commits before the current diff base.
     # TODO(ochang): If API usage becomes an issue, this can be optimized by the
     # filestore accepting a list of filenames to try.
-    for old_commit in repo.get_commit_list('HEAD^',
+    for old_commit in repo.get_commit_list(diff_base,
                                            limit=self.LATEST_BUILD_WINDOW):
       logging.info('Trying to downloading previous build %s.', old_commit)
       build_name = self._get_build_name(old_commit)
