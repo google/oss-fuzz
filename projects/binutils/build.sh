@@ -51,12 +51,17 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   done
 
   # Build targeted disassembly fuzzers
-  for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky bfd_arch_mep; do
-      $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
-        -o fuzz_disas_ext-$ARCH_TARGET.o
-      $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
-        -Wl,--start-group ${LIBS} -Wl,--end-group
-  done
+  if [ -n "${OSS_FUZZ_CI-}" ]
+  then
+    echo "Skipping specialised disassembly fuzzers in CI"
+  else
+    for ARCH_TARGET in bfd_arch_arm bfd_arch_mips bfd_arch_i386 bfd_arch_arc bfd_arch_csky bfd_arch_mep; do
+        $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c fuzz_disas_ext.c -DFUZZ_TARGET_ARCH=$ARCH_TARGET \
+          -o fuzz_disas_ext-$ARCH_TARGET.o
+        $CXX $CXXFLAGS fuzz_disas_ext-$ARCH_TARGET.o -o $OUT/fuzz_disas_ext-$ARCH_TARGET $LIB_FUZZING_ENGINE \
+          -Wl,--start-group ${LIBS} -Wl,--end-group
+    done
+  fi
 
   # TODO build corpuses
 
@@ -76,7 +81,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' readelf.c >> readelf.h
 
   # Patch the remainders
-  for i in objdump nm objcopy; do
+  for i in objdump nm objcopy windres strings; do
       cp ../../fuzz_$i.c .
       sed -i 's/strip_main/strip_mian/g' $i.c
       sed -i 's/copy_main/copy_mian/g' $i.c
@@ -91,8 +96,10 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
   done
 
+  cp ../../fuzz_ranlib_simulation.c .
+
   # Compile
-  for i in objdump readelf nm objcopy; do
+  for i in objdump readelf nm objcopy windres ranlib_simulation strings; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
         -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
         -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
@@ -151,8 +158,22 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_dlltool fuzz_dlltool.o ${OBJS} \
       -Wl,--start-group ${LIBS} -Wl,--end-group
-  fi
 
+    OBJS="resrc.o rescoff.o resbin.o rcparse.o rclex.o winduni.o resres.o bucomm.o version.o filemode.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_windres fuzz_windres.o ${OBJS} \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
+
+    OBJS=""
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_ranlib_simulation fuzz_ranlib_simulation.o ${OBJS} \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
+
+    OBJS="bucomm.o version.o filemode.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_strings fuzz_strings.o ${OBJS} \
+      -Wl,--start-group ${LIBS} -Wl,--end-group
+  fi 
   # Build GAS fuzzer. Will keep this here in case GAS fuzzer is used in the future.
   if [ "$FUZZING_ENGINE" != 'afl' ]; then
     cd ../gas
@@ -190,11 +211,8 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
 
   # Copy options files
-  cp $SRC/fuzz_*.options $OUT/
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_readelf.options
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_as.options
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_nm.options
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_dlltool.options
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_objdump.options
-  cp $OUT/fuzz_objcopy.options $OUT/fuzz_disas_ext-bfd_arch_csky.options
+  for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation; do
+    echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
+    echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
+  done
 fi

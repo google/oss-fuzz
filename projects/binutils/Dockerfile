@@ -23,4 +23,3 @@ WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
 COPY fuzz_readelf_seed_corpus $SRC/fuzz_readelf_seed_corpus
-COPY *.options $SRC/
