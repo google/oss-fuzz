@@ -206,12 +206,32 @@ class BaseConfig:
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
     EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
+  def _get_config_from_event_path(self):
+    event = os.getenv('GITHUB_EVENT_NAME')
+    if not self._github_event_path or not os.path.exists(
+        self._github_event_path):
+      return
+    with open(self._github_event_path, encoding='utf-8') as file_handle:
+      event_data = json.load(file_handle)
+    if event == 'push':
+      self.base_commit = event_data['before']
+      logging.debug('base_commit: %s', self.base_commit)
+    elif event == 'pull_request':
+      self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
+      logging.debug('pr_ref: %s', self.pr_ref)
+
   def __init__(self):
     # Need to set these before calling self.platform.
     self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(self._github_event_path)
+
     logging.debug('Is github: %s.', self.is_github)
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
+
+    self.base_commit = None
+    self.pr_ref = None
+    self.base_ref = os.getenv('GITHUB_BASE_REF')
+    self._get_config_from_event_path()
 
     self._ci_env = _get_ci_environment(self.platform)
     self.workspace = self._ci_env.workspace
@@ -344,32 +364,12 @@ class RunFuzzersConfig(BaseConfig):
 class BuildFuzzersConfig(BaseConfig):
   """Class containing constant configuration for building fuzzers in CIFuzz."""
 
-  def _get_config_from_event_path(self, event):
-    if not self._github_event_path:
-      return
-    with open(self._github_event_path, encoding='utf-8') as file_handle:
-      event_data = json.load(file_handle)
-    if event == 'push':
-      self.base_commit = event_data['before']
-      logging.debug('base_commit: %s', self.base_commit)
-    elif event == 'pull_request':
-      self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
-      logging.debug('pr_ref: %s', self.pr_ref)
-
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     super().__init__()
     self.commit_sha = self._ci_env.git_sha
-    event = os.getenv('GITHUB_EVENT_NAME')
-
-    self.pr_ref = None
     self.git_url = self._ci_env.repo_url
-    self.base_commit = None
-
-    self._get_config_from_event_path(event)
-
-    self.base_ref = os.getenv('GITHUB_BASE_REF')
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
