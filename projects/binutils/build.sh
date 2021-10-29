@@ -195,6 +195,12 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # the object files in the binutils directory.
   cp $SRC/binutils-gdb/binutils/*.o $SRC/fuzz_readelf_seed_corpus/
 
+  git https://github.com/DavidKorczynski/binary-samples $SRC/binary-samples
+  cp $SRC/binary-samples/elf* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/Mach* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/pe* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/lib* $SRC/fuzz_readelf_seed_corpus/
+
   # Create a simple archive
   mkdir $SRC/tmp_archive
   cp $SRC/binutils-gdb/binutils/rename.o $SRC/tmp_archive/
