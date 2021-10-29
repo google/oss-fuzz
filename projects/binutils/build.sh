@@ -213,8 +213,17 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   zip -r $OUT/fuzz_readelf_seed_corpus.zip $SRC/fuzz_readelf_seed_corpus
 
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_safe_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_strings_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
+
+  # Seed targeted the pef file format
+  mkdir $SRC/bfd_ext_seeds
+  echo "Joy!peffAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" >> $SRC/bfd_ext_seeds/seed1
+  zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
 
   # Copy options files
   for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation; do
@@ -222,8 +231,4 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
   done
 
-  # Seed targeted the pef file format
-  mkdir $SRC/bfd_ext_seeds
-  echo "Joy!peffAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" >> $SRC/bfd_ext_seeds/seed1
-  zip -r $OUT/fuzz_bfd_seed_corpus.zip $SRC/bfd_ext_seeds/
 fi
