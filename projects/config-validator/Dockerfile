@@ -15,7 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/GoogleCloudPlatform/config-validator
 
-WORKDIR $SRC/config-validator
+# Clone the actual repo with the fuzz target.
+RUN git clone --depth 1 --branch 'fuzz-relative-files' https://github.com/MartinPetkov/config-validator $GOPATH/src/github.com/GoogleCloudPlatform/config-validator
+
 COPY build.sh $SRC/
+
+# Required to avoid 'working directory is not part of a module' error.
+WORKDIR $GOPATH/src/github.com/GoogleCloudPlatform/config-validator
