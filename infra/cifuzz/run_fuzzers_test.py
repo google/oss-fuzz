@@ -335,7 +335,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
           oss_fuzz_project_name=EXAMPLE_PROJECT,
           project_repo_name='oss-fuzz',
           workspace=temp_dir,
-          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+          git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
           base_commit='da0746452433dc18bae699e355a9821285d863c8',
           sanitizer=self.SANITIZER,
           is_github=True,

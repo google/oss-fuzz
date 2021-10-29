@@ -154,16 +154,10 @@ def build_fuzzers(config):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
-    project_name: The name of the OSS-Fuzz project being built.
-    project_repo_name: The name of the project's repo.
-    workspace: The location in a shared volume to store a git repo and build
-      artifacts.
-    pr_ref: The pull request reference to be built.
-    commit_sha: The commit sha for the project to be built at.
-    sanitizer: The sanitizer the fuzzers should be built with.
+    config: The configuration object for building fuzzers.
 
   Returns:
-    True if build succeeded or False on failure.
+    True if build succeeded.
   """
   # Do some quick validation.
   if config.project_src_path and not check_project_src_path(

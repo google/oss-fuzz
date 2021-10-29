@@ -93,7 +93,7 @@ class InternalGithubBuildTest(unittest.TestCase):
   """Tests for building OSS-Fuzz projects on GitHub actions."""
   PROJECT_REPO_NAME = 'myproject'
   SANITIZER = 'address'
-  COMMIT_SHA = 'fake'
+  GIT_SHA = 'fake'
   PR_REF = 'fake'
 
   def _create_builder(self, tmp_dir, oss_fuzz_project_name='myproject'):
@@ -103,7 +103,7 @@ class InternalGithubBuildTest(unittest.TestCase):
         project_repo_name=self.PROJECT_REPO_NAME,
         workspace=tmp_dir,
         sanitizer=self.SANITIZER,
-        commit_sha=self.COMMIT_SHA,
+        git_sha=self.GIT_SHA,
         pr_ref=self.PR_REF,
         is_github=True)
     ci_system = continuous_integration.get_ci(config)
@@ -180,7 +180,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         project_repo_name=project_repo_name,
         workspace=self.workspace,
         git_url=git_url,
-        commit_sha='HEAD',
+        git_sha='HEAD',
         is_github=True,
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
@@ -202,7 +202,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         git_url=git_url,
         filestore='no_filestore',
-        commit_sha='HEAD',
+        git_sha='HEAD',
         project_src_path=project_src_path,
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
@@ -215,7 +215,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
         base_commit='da0746452433dc18bae699e355a9821285d863c8',
         is_github=True)
     self.assertTrue(build_fuzzers.build_fuzzers(config))
@@ -252,7 +252,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name='not_a_valid_project',
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_repo_name(self):
@@ -261,16 +261,16 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='not-real-repo',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
-  def test_invalid_commit_sha(self):
+  def test_invalid_git_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
     config = test_helpers.create_build_config(
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='',
+        git_sha='',
         is_github=True)
     with self.assertRaises(AssertionError):
       build_fuzzers.build_fuzzers(config)
@@ -281,7 +281,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=os.path.join(self.workspace, 'not', 'a', 'dir'),
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
 
