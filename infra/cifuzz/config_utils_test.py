@@ -16,6 +16,8 @@ import os
 import unittest
 from unittest import mock
 
+import ci_environment
+import ci_environment.github
 import config_utils
 import constants
 import test_helpers
@@ -171,8 +173,8 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
-    self.github_env = config_utils.GithubEnvironment()
-    self.generic_ci_env = config_utils.GenericCiEnvironment()
+    self.github_env = ci_environment.github.CiEnvironment()
+    self.generic_ci_env = ci_environment.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
@@ -206,8 +208,8 @@ class GetRepoUrlTest(unittest.TestCase):
 
   def setUp(self):
     test_helpers.patch_environ(self)
-    self.github_env = config_utils.GithubEnvironment()
-    self.generic_ci_env = config_utils.GenericCiEnvironment()
+    self.github_env = ci_environment.github.CiEnvironment()
+    self.generic_ci_env = ci_environment.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
@@ -262,7 +264,7 @@ class ProjectSrcPathTest(unittest.TestCase):
   def test_unset(self):
     """Tests that project_src_path returns None when no PROJECT_SRC_PATH is
     set."""
-    github_env = config_utils.GithubEnvironment()
+    github_env = ci_environment.github.CiEnvironment()
     self.assertIsNone(github_env.project_src_path)
 
   def test_github(self):
@@ -270,7 +272,7 @@ class ProjectSrcPathTest(unittest.TestCase):
     os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
     expected_project_src_path = os.path.join(self.workspace,
                                              self.project_src_dir_name)
-    github_env = config_utils.GithubEnvironment()
+    github_env = ci_environment.github.CiEnvironment()
     self.assertEqual(github_env.project_src_path, expected_project_src_path)
 
   def test_not_github(self):
@@ -278,7 +280,7 @@ class ProjectSrcPathTest(unittest.TestCase):
     GitHub."""
     project_src_path = os.path.join('/', self.project_src_dir_name)
     os.environ['PROJECT_SRC_PATH'] = project_src_path
-    generic_ci_env = config_utils.GenericCiEnvironment()
+    generic_ci_env = ci_environment.BaseCiEnvironment()
     self.assertEqual(generic_ci_env.project_src_path, project_src_path)
 
 

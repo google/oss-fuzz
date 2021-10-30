@@ -105,7 +105,7 @@ class InternalGithubBuildTest(unittest.TestCase):
         sanitizer=self.SANITIZER,
         commit_sha=self.COMMIT_SHA,
         pr_ref=self.PR_REF,
-        is_github=True)
+        ci_system='github')
     ci_system = continuous_integration.get_ci(config)
     builder = build_fuzzers.Builder(config, ci_system)
     builder.repo_manager = repo_manager.RepoManager('/fake')
@@ -181,7 +181,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         git_url=git_url,
         commit_sha='HEAD',
-        is_github=True,
+        ci_system='github',
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
@@ -217,7 +217,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
         base_commit='da0746452433dc18bae699e355a9821285d863c8',
-        is_github=True)
+        ci_system='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
@@ -230,7 +230,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         pr_ref='refs/pull/1757/merge',
         base_ref='master',
-        is_github=True)
+        ci_system='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
@@ -243,7 +243,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         pr_ref='ref-1/merge',
         base_ref='master',
-        is_github=True)
+        ci_system='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_oss_fuzz_project_name(self):
@@ -271,7 +271,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
         commit_sha='',
-        is_github=True)
+        ci_system='github')
     with self.assertRaises(AssertionError):
       build_fuzzers.build_fuzzers(config)
 
