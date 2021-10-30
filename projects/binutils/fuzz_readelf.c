@@ -47,6 +47,9 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	do_notes = true;
 
   // Enable DWARF analysis
+  // We must call both dwarf_select_sections_by_letters and dwarf_select_sections_all
+  // since dwarf_select_sections_all does not set do_debug_lines |= FLAG_DEBUG_LINES_DECODED;
+  dwarf_select_sections_by_letters("L");
   dwarf_select_sections_all();
 
   // Main fuzz entrypoint
