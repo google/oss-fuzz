@@ -18,12 +18,10 @@ cd librdkafka
 ./configure --install-deps --disable-regex-ext
 make
 
-export LIBZSTD=$PWD/mklove/deps/dest/libzstd/usr/lib/libzstd.a
-export LIBZ_LIB=$PWD/mklove/deps/dest/zlib/usr/lib/libz.a
+export LIBZSTD=$PWD/mklove/deps/dest/usr/lib/libzstd.a
+export LIBZ_LIB=$PWD/mklove/deps/dest/usr/lib/libz.a
 
 cd tests
-echo $PWD
-ls -al 
 $CC -g -fPIC $CFLAGS -I../src -c ./fuzzers/fuzz_regex.c -o fuzz_regex.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
     ../src/librdkafka.a -lm ${LIBZSTD} -lsasl2 -lssl -lcrypto \
