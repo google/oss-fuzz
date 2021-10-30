@@ -38,6 +38,7 @@ ls ./build/bin/local/fuzzer_* | while read i; do
     copy_lib ${i} libfreeradius
     copy_lib ${i} talloc
     copy_lib ${i} kqueue
+    copy_lib ${i} libunwind
     cp ${i} $OUT/
 done
 cp -r /usr/local/share/freeradius/dictionary $OUT/dict
