@@ -85,6 +85,46 @@ class BaseCi:
     project builder container."""
     raise NotImplementedError('Child class must implement method.')
 
+  def _build_external_project_docker_image(self, manager):
+    """Helper for child classes that builds an external project's docker image.
+    Returns a BuildPreparationResult indicating failure or success."""
+    build_integration_abs_path = os.path.join(
+        manager.repo_dir, self.config.build_integration_path)
+    if not build_external_project_docker_image(manager.repo_dir,
+                                               build_integration_abs_path):
+      logging.error('Failed to build external project.')
+      return get_build_preparation_failure()
+    image_repo_path = os.path.join('/src', self.config.project_repo_name)
+    return BuildPreparationResult(success=True,
+                                  image_repo_path=image_repo_path,
+                                  repo_manager=manager)
+
+  def _clone_repo_and_checkout(self, repo_url, repo_name):
+    """Helper for child classes that clones the git repo specified by |repo_url|
+    to |repo_name|, checks out the specified commit, and returns the
+    |manager|."""
+    os.makedirs(self.workspace.repo_storage, exist_ok=True)
+    # Checkout project's repo in the shared volume.
+    manager = repo_manager.clone_repo_and_get_manager(
+        repo_url,
+        self.workspace.repo_storage,
+        repo_name=repo_name,
+        username=self.config.actor,
+        password=self.config.token)
+    checkout_specified_commit(manager, self.config.pr_ref,
+                              self.config.commit_sha)
+    return manager
+
+  def _detect_main_repo(self):
+    """Helper for child classes that detects the main repo and returns a tuple
+    containing the inffered url and path to the repo in the image."""
+    inferred_url, image_repo_path = build_specified_commit.detect_main_repo(
+        self.config.oss_fuzz_project_name,
+        repo_name=self.config.project_repo_name)
+    if not inferred_url or not image_repo_path:
+      logging.error('Could not detect repo.')
+    return inferred_url, image_repo_path
+
 
 def get_build_command():
   """Returns the command to build the project inside the project builder
@@ -191,34 +231,17 @@ class InternalGithub(GithubCiMixin, BaseCi):
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image, checks out the pull request/commit and
     returns the BuildPreparationResult."""
-    logging.info('Building OSS-Fuzz project on Github Actions.')
+    logging.info('InternalGithub: preparing for fuzzer build.')
     assert self.config.pr_ref or self.config.commit_sha
-    # detect_main_repo builds the image as a side effect.
-    inferred_url, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.oss_fuzz_project_name,
-        repo_name=self.config.project_repo_name))
+    # _detect_main_repo builds the image as a side effect.
+    inferred_url, image_repo_path = self._detect_main_repo()
 
     if not inferred_url or not image_repo_path:
-      logging.error('Could not detect repo.')
-      return BuildPreparationResult(success=False,
-                                    image_repo_path=None,
-                                    repo_manager=None)
-
-    os.makedirs(self.workspace.repo_storage, exist_ok=True)
+      return get_build_preparation_failure()
 
     # Use the same name used in the docker image so we can overwrite it.
     image_repo_name = os.path.basename(image_repo_path)
-
-    # Checkout project's repo in the shared volume.
-    manager = repo_manager.clone_repo_and_get_manager(
-        inferred_url,
-        self.workspace.repo_storage,
-        repo_name=image_repo_name,
-        username=self.config.actor,
-        password=self.config.token)
-    checkout_specified_commit(manager, self.config.pr_ref,
-                              self.config.commit_sha)
-
+    manager = self._clone_repo_and_checkout(inferred_url, image_repo_name)
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
@@ -228,6 +251,13 @@ class InternalGithub(GithubCiMixin, BaseCi):
     project builder container. Command also replaces |image_repo_path| with
     |host_repo_path|."""
     return get_replace_repo_and_build_command(host_repo_path, image_repo_path)
+
+
+def get_build_preparation_failure():
+  """Returns a BuildPreparationResult indicating failure."""
+  return BuildPreparationResult(success=False,
+                                image_repo_path=None,
+                                repo_manager=None)
 
 
 class InternalGeneric(BaseCi):
@@ -249,17 +279,12 @@ class InternalGeneric(BaseCi):
     GitHub actions. Returns the repo_manager. Does not checkout source code
     since external projects are expected to bring their own source code to
     CIFuzz."""
-    logging.info('Building OSS-Fuzz project.')
+    logging.info('InternalGeneric: preparing for fuzzer build.')
     # detect_main_repo builds the image as a side effect.
-    _, image_repo_path = (build_specified_commit.detect_main_repo(
-        self.config.oss_fuzz_project_name,
-        repo_name=self.config.project_repo_name))
+    _, image_repo_path = self._detect_main_repo()
 
     if not image_repo_path:
-      logging.error('Could not detect repo.')
-      return BuildPreparationResult(success=False,
-                                    image_repo_path=None,
-                                    repo_manager=None)
+      return get_build_preparation_failure()
 
     manager = repo_manager.RepoManager(self.config.project_src_path)
     return BuildPreparationResult(success=True,
@@ -306,20 +331,7 @@ class ExternalGeneric(BaseCi):
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
     manager = repo_manager.RepoManager(self.config.project_src_path)
-    build_integration_abs_path = os.path.join(
-        manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(manager.repo_dir,
-                                               build_integration_abs_path):
-      logging.error('Failed to build external project: %s.',
-                    self.config.oss_fuzz_project_name)
-      return BuildPreparationResult(success=False,
-                                    image_repo_path=None,
-                                    repo_manager=None)
-
-    image_repo_path = os.path.join('/src', self.config.project_repo_name)
-    return BuildPreparationResult(success=True,
-                                  image_repo_path=image_repo_path,
-                                  repo_manager=manager)
+    return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
     """Returns the command for building the project that is run inside the
@@ -335,33 +347,14 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     actions. Sets the repo manager. Does not checkout source code since external
     projects are expected to bring their own source code to CIFuzz. Returns True
     on success."""
-    logging.info('Building external project.')
+    logging.info('ExternalGithub: preparing for fuzzer build.')
     os.makedirs(self.workspace.repo_storage, exist_ok=True)
     # Checkout before building, so we don't need to rely on copying the source
-    # into the image.
-    # TODO(metzman): Figure out if we want second copy at all.
-    manager = repo_manager.clone_repo_and_get_manager(
-        self.config.git_url,
-        self.workspace.repo_storage,
-        repo_name=self.config.project_repo_name,
-        username=self.config.actor,
-        password=self.config.token)
-    checkout_specified_commit(manager, self.config.pr_ref,
-                              self.config.commit_sha)
+    # from the image.
+    manager = self._clone_repo_and_checkout(self.config.git_url,
+                                            self.config.project_repo_name)
 
-    build_integration_abs_path = os.path.join(
-        manager.repo_dir, self.config.build_integration_path)
-    if not build_external_project_docker_image(manager.repo_dir,
-                                               build_integration_abs_path):
-      logging.error('Failed to build external project.')
-      return BuildPreparationResult(success=False,
-                                    image_repo_path=None,
-                                    repo_manager=None)
-
-    image_repo_path = os.path.join('/src', self.config.project_repo_name)
-    return BuildPreparationResult(success=True,
-                                  image_repo_path=image_repo_path,
-                                  repo_manager=manager)
+    return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
     """Returns the command for building the project that is run inside the
