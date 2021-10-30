@@ -77,28 +77,22 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # to fuzz_readelf.h where readelf is their respective name. The reason it's different for readelf
   # is because readelf does not have a header file so we can use readelf.h instead, and changing it
   # might cause an annoyance on monorail since bugs will be relocated as the files will be different.
-  cp ../../fuzz_readelf.c .
+  cp ../../fuzz_*.c .
   sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' readelf.c >> readelf.h
 
-  # Patch the remainders
+  # Special handling of dlltool
+  sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' dlltool.c > fuzz_dlltool.h
+  sed -i 's/copy_mian/copy_main/g' fuzz_dlltool.h
+
+  # Patch the rest
   for i in objdump nm objcopy windres strings; do
-      cp ../../fuzz_$i.c .
       sed -i 's/strip_main/strip_mian/g' $i.c
       sed -i 's/copy_main/copy_mian/g' $i.c
       sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' $i.c > fuzz_$i.h
       sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
   done
 
-  # Special handling of dlltool
-  for i in dlltool; do
-      cp ../../fuzz_$i.c .
-      sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' $i.c > fuzz_$i.h
-      sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
-  done
-
-  cp ../../fuzz_ranlib_simulation.c .
-
-  # Compile
+  # Compile all fuzzers
   for i in objdump readelf nm objcopy windres ranlib_simulation strings; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
         -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
@@ -122,57 +116,52 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
     fuzz_objdump_safe.o -MD -MP -c -o fuzz_objdump_safe.o fuzz_objdump.c
 
-  # Link the files
-  # Only link if they exist
+  # Link the files, but only if everything went well, which we verify by checking
+  # the presence of some object files.
   if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
+    LINK_LIBS="-Wl,--start-group ${LIBS} -Wl,--end-group"
     ## Readelf
+    OBJS="version.o unwind-ia64.o dwarf.o elfcomm.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib \
       -o $OUT/fuzz_readelf fuzz_readelf.o \
-      version.o unwind-ia64.o dwarf.o elfcomm.o \
+      ${OBJS} \
       ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a
 
     # Link objdump fuzzer
     OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_objdump fuzz_objdump.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_objdump fuzz_objdump.o ${OBJS} ${LINK_LIBS}
 
     # Link safe objdump fuzzer
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_objdump_safe fuzz_objdump_safe.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_objdump_safe fuzz_objdump_safe.o ${OBJS} ${LINK_LIBS}
 
     # link objcopy fuzzer
     OBJS="is-strip.o rename.o rddbg.o debug.o stabs.o rdcoff.o wrstabs.o bucomm.o version.o filemode.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_objcopy fuzz_objcopy.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_objcopy fuzz_objcopy.o ${OBJS} ${LINK_LIBS}
 
     # Link nm fuzzer
+    OBJS="bucomm.o version.o filemode.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_nm fuzz_nm.o bucomm.o version.o filemode.o \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_nm fuzz_nm.o ${OBJS} ${LINK_LIBS}
 
     # link dlltool fuzzer
     OBJS="defparse.o deflex.o bucomm.o version.o filemode.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_dlltool fuzz_dlltool.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_dlltool fuzz_dlltool.o ${OBJS} ${LINK_LIBS}
 
     OBJS="resrc.o rescoff.o resbin.o rcparse.o rclex.o winduni.o resres.o bucomm.o version.o filemode.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_windres fuzz_windres.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_windres fuzz_windres.o ${OBJS} ${LINK_LIBS}
 
     OBJS=""
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_ranlib_simulation fuzz_ranlib_simulation.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_ranlib_simulation fuzz_ranlib_simulation.o ${OBJS} ${LINK_LIBS}
 
     OBJS="bucomm.o version.o filemode.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
-      -o $OUT/fuzz_strings fuzz_strings.o ${OBJS} \
-      -Wl,--start-group ${LIBS} -Wl,--end-group
+      -o $OUT/fuzz_strings fuzz_strings.o ${OBJS} ${LINK_LIBS}
   fi 
   # Build GAS fuzzer. Will keep this here in case GAS fuzzer is used in the future.
   if [ "$FUZZING_ENGINE" != 'afl' ]; then
@@ -190,6 +179,8 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
         ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
         -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
   fi
+
+  # BUILD SEEDS
   # Set up seed corpus for readelf in the form of a single ELF file.
   # Assuming all went well then we can simply create a fuzzer based on
   # the object files in the binutils directory.
