@@ -1,0 +1,6 @@
+homepage: "https://sourceforge.net/projects/libdwarf/"
+language: c
+primary_contact: "someone@libdwarf.src"
+main_repo: "https://git.code.sf.net/p/libdwarf/code"
+auto_ccs:
+  - "david@adalogics.com"
