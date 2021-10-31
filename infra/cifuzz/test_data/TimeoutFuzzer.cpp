@@ -22,7 +22,7 @@
 // This is a fuzz target that times out on every input by infinite looping.
 // This is used for testing.
 // Build instructions:
-// 1. clang++ -fsanitize=fuzzer TimeoutFuzzer.cpp -Os -o timeout_fuzzer
+// 1. clang++ -fsanitize=fuzzer TimeoutFuzzer.cpp -o timeout_fuzzer
 // 2. strip timeout_fuzzer
 // The binary is stripped to save space in the git repo.
 
