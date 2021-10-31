@@ -125,6 +125,10 @@ class BaseCi:
       logging.error('Could not detect repo.')
     return inferred_url, image_repo_path
 
+  def _create_repo_manager_for_project_src_path(self):
+    """Returns a repo manager for |project_src_path|."""
+    return repo_manager.RepoManager(self.config.project_src_path)
+
 
 def get_build_command():
   """Returns the command to build the project inside the project builder
@@ -286,7 +290,7 @@ class InternalGeneric(BaseCi):
     if not image_repo_path:
       return get_build_preparation_failure()
 
-    manager = repo_manager.RepoManager(self.config.project_src_path)
+    manager = self._create_repo_manager_for_project_src_path()
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
@@ -330,7 +334,7 @@ class ExternalGeneric(BaseCi):
 
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
-    manager = repo_manager.RepoManager(self.config.project_src_path)
+    manager = self._create_repo_manager_for_project_src_path()
     return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
@@ -348,7 +352,6 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     projects are expected to bring their own source code to CIFuzz. Returns True
     on success."""
     logging.info('ExternalGithub: preparing for fuzzer build.')
-    os.makedirs(self.workspace.repo_storage, exist_ok=True)
     # Checkout before building, so we don't need to rely on copying the source
     # from the image.
     manager = self._clone_repo_and_checkout(self.config.git_url,
