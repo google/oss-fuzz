@@ -43,7 +43,6 @@ class BaseCiEnvironment:
   @property
   def git_sha(self):
     """Returns the Git SHA to diff against."""
-    # !!! Needed?
     return os.getenv('GIT_SHA')
 
   @property

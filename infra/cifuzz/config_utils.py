@@ -106,7 +106,6 @@ class BaseConfig:
   def __init__(self):
     self.ci_system = os.getenv('CI_SYSTEM')
     # Need to set these before calling self.platform.
-    # !!! Get rid of these.
     self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
 
     logging.debug('Is github: %s.', self.is_github)
@@ -120,7 +119,8 @@ class BaseConfig:
     self.ci_env = _get_ci_environment(self.ci_system)
     self.workspace = self.ci_env.workspace
 
-    # !!! Make owner GH specific.
+    # TODO(metzman): This method is weird because owner is a GitHubism.
+    # Try to seperate it into two methods.
     self.project_repo_owner, self.project_repo_name = (
         self.ci_env.project_repo_owner_and_name)
 
@@ -134,7 +134,6 @@ class BaseConfig:
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
-    # !!! GH specific
     self.actor = self.ci_env.actor
     self.token = self.ci_env.token
 
@@ -252,7 +251,6 @@ class BuildFuzzersConfig(BaseConfig):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     super().__init__()
-    # !!! GH specific
     self.commit_sha = self.ci_env.git_sha
     self.git_url = self.ci_env.repo_url
 

@@ -32,8 +32,6 @@ import test_helpers
 
 # pylint: disable=protected-access,no-self-use
 
-# !!! Set CI_SYSTEM=github in actions in google/clusterfuzzlite repo.
-
 
 class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   """Tests for GithubActionsFilestore."""
