@@ -252,7 +252,7 @@ class TimeoutIntegrationTest(unittest.TestCase):
   TIMEOUT_FUZZER_NAME = 'timeout_fuzzer'
 
   @parameterized.parameterized.expand([(True, True), (False, False)])
-  def test_timeout_not_reported(self, report_timeouts, expect_crash):
+  def test_timeout_reported(self, report_timeouts, expect_crash):
     """Tests that timeouts are not reported."""
     with test_helpers.temp_dir_copy(TEST_DATA_PATH) as temp_dir:
       fuzz_target_path = os.path.join(temp_dir, 'build-out',
