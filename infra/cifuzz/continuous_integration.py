@@ -82,6 +82,8 @@ class BaseCi:
 
   def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
+    if self.config.base_ref:
+      repo_manager_obj.fetch_branch(self.config.base_ref)
     fix_git_repo_for_diff(repo_manager_obj)
     base = self.get_diff_base()
     logging.info('Diffing against %s.', base)
@@ -177,12 +179,6 @@ class GithubCiMixin:
       raise RuntimeError('Repo is not a directory.')
 
     return repo_path
-
-  def get_changed_code_under_test(self, repo_manager_obj):
-    """Returns the changed files that need to be tested."""
-    if self.config.base_ref:
-      repo_manager_obj.fetch_branch(self.config.base_ref)
-    return super().get_changed_code_under_test(repo_manager_obj)
 
 
 class InternalGithub(GithubCiMixin, BaseCi):
