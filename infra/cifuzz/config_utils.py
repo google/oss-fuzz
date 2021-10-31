@@ -354,7 +354,7 @@ class BaseConfig:
     EXTERNAL_GITHUB = 0  # Non-OSS-Fuzz on GitHub actions.
     INTERNAL_GITHUB = 1  # OSS-Fuzz on GitHub actions.
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
-    EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI
+    EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
   def __init__(self):
     # Need to set these before calling self.platform.
