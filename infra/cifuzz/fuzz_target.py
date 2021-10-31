@@ -264,6 +264,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     Args:
       testcase: The path to the testcase that triggered the crash.
       reproduce_args: The arguments to pass to the target to reproduce the
+      crash.
 
     Returns:
       True if the crash was introduced by the current pull request.
