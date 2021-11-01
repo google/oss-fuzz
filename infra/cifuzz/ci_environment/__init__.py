@@ -19,17 +19,10 @@ import os
 class BaseCiEnvironment:
   """Base class for CiEnvironment subclasses."""
 
-  # TODO(metzman): Alphabetize these.
-  @property
-  def workspace(self):
-    """Returns the workspace."""
-    return os.getenv('WORKSPACE')
-
   @property
   def project_src_path(self):
     """Returns the manually checked out path of the project's source if
     specified or None."""
-
     path = os.getenv('PROJECT_SRC_PATH')
     if not path:
       logging.debug('No PROJECT_SRC_PATH.')
@@ -38,16 +31,57 @@ class BaseCiEnvironment:
     logging.debug('PROJECT_SRC_PATH: %s.', path)
     return path
 
+  @property
+  def workspace(self):
+    """Returns the workspace."""
+    return os.getenv('WORKSPACE')
+
   # Optional config variables.
 
   @property
   def git_sha(self):
-    """Returns the Git SHA to diff against."""
-    return os.getenv('GIT_SHA')
+    """Returns the Git SHA to checkout and fuzz. This is used only by GitHub
+    projects when commit fuzzing. It is not used when PR fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    return None
+
+  @property
+  def base_commit(self):
+    """Returns the base commit to diff against (commit fuzzing)."""
+    # !!! base_commit ->git_base_commit
+    return os.getenv('GIT_BASE_COMMIT')
+
+  @property
+  def base_ref(self):
+    """Returns the base branch to diff against (pr fuzzing)."""
+    # !!! base_ref ->git_base_ref
+    return os.getenv('GIT_BASE_REF')
+
+  @property
+  def pr_ref(self):
+    """Returns the pull request to checkout and fuzz. This is used only by
+    GitHub projects when PR fuzzing. It is not used when commit fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    return None
 
   @property
   def project_repo_owner_and_name(self):
     """Returns a tuple containing the project repo owner and None."""
+    # !!! Split this.
     repository = os.getenv('REPOSITORY')
     # Repo owner is a githubism.
     return None, repository
@@ -55,14 +89,22 @@ class BaseCiEnvironment:
   @property
   def actor(self):
     """Name of the actor for the CI."""
-    return os.getenv('ACTOR')
+    return None
 
   @property
   def token(self):
     """Returns the CI API token."""
-    return os.getenv('TOKEN')
+    return None
 
   @property
-  def repo_url(self):
-    """Returns the repo URL."""
-    return os.getenv('REPOSITORY_URL')
+  def git_url(self):
+    """Returns the repo URL. This is only used by GitHub users. Right now it is
+    needed by external on GitHub because we need to clone a new repo because the
+    copy they give us doesn't work for diffing. It isn't used by OSS-Fuzz on
+    github users since the Git URL is determined using repo detection.
+
+    TODO(metzman): Try to eliminate the need for this by making the clone
+    from external github projects usable.
+    TODO(metzman): As an easier goal, maybe make OSS-Fuzz GitHub use this too
+    for: 1. Consistency 2. Maybe it will allow use on forks."""
+    return None

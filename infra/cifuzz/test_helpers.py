@@ -33,8 +33,8 @@ import helper
 
 @mock.patch('config_utils._is_dry_run', return_value=True)
 @mock.patch('ci_environment.BaseCiEnvironment.project_src_path',
-            return_value=None)
-@mock.patch('os.path.basename', return_value=None)
+            return_value=None)  # Why do we need this?
+@mock.patch('os.path.basename', return_value=None)  # Why do we need this?
 def _create_config(config_cls, _, __, ___, **kwargs):
   """Creates a config object from |config_cls| and then sets every attribute
   that is a key in |kwargs| to the corresponding value. Asserts that each key in

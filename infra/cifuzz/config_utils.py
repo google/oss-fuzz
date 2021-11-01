@@ -14,7 +14,6 @@
 """Module for getting the configuration CIFuzz needs to run."""
 
 import enum
-import json
 import importlib
 import logging
 import os
@@ -42,12 +41,6 @@ DEFAULT_ARCHITECTURE = 'x86_64'
 # that are supposed to be strings.
 
 
-def _get_pr_ref(event):
-  if event == 'pull_request':
-    return os.getenv('GITHUB_REF')
-  return None
-
-
 def _get_sanitizer():
   return os.getenv('SANITIZER', constants.DEFAULT_SANITIZER).lower()
 
@@ -67,7 +60,7 @@ def _get_language():
   return os.getenv('LANGUAGE', constants.DEFAULT_LANGUAGE)
 
 
-# pylint: disable=too-few-public-methods,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 
 
 class ConfigError(Exception):
@@ -84,69 +77,47 @@ class BaseConfig:
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
     EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
-  def _get_config_from_event_path(self):
-    event = os.getenv('GITHUB_EVENT_NAME')
-    if not self._github_event_path or not os.path.exists(
-        self._github_event_path):
-      return
-    with open(self._github_event_path, encoding='utf-8') as file_handle:
-      event_data = json.load(file_handle)
-    if event == 'push':
-      self.base_commit = event_data['before']
-      logging.debug('base_commit: %s', self.base_commit)
-    elif event == 'pull_request':
-      self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
-      logging.debug('pr_ref: %s', self.pr_ref)
-
   @property
   def is_github(self):
     """Returns True if running on GitHub."""
     return self.ci_system == 'github'
 
   def __init__(self):
-    self.ci_system = os.getenv('CI_SYSTEM')
     # Need to set these before calling self.platform.
-    self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
-
-    logging.debug('Is github: %s.', self.is_github)
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
-
-    self.base_commit = None
-    self.pr_ref = None
-    self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self._get_config_from_event_path()
+    self.ci_system = os.getenv('CI_SYSTEM')
+    logging.debug('Is github: %s.', self.is_github)
 
     self.ci_env = _get_ci_environment(self.ci_system)
+    self.base_commit = self.ci_env.base_commit
+    self.base_ref = self.ci_env.base_ref
+    self.pr_ref = self.ci_env.pr_ref
     self.workspace = self.ci_env.workspace
+    self.project_src_path = self.ci_env.project_src_path
+    self.actor = self.ci_env.actor
+    self.token = self.ci_env.token
 
     # TODO(metzman): This method is weird because owner is a GitHubism.
     # Try to seperate it into two methods.
     self.project_repo_owner, self.project_repo_name = (
         self.ci_env.project_repo_owner_and_name)
 
-    # Check if failures should not be reported.
-    self.dry_run = _is_dry_run()
-
+    self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
-
-    self.build_integration_path = (
-        constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
-
-    self.actor = self.ci_env.actor
-    self.token = self.ci_env.token
 
     self.git_store_repo = os.environ.get('GIT_STORE_REPO')
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
-    self.project_src_path = self.ci_env.project_src_path
     self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
     self.filestore = os.environ.get('FILESTORE')
     self.cloud_bucket = os.environ.get('CLOUD_BUCKET')
-    self.no_clusterfuzz_deployment = os.environ.get('NO_CLUSTERFUZZ_DEPLOYMENT',
-                                                    False)
+    self.no_clusterfuzz_deployment = environment.get_bool(
+        'NO_CLUSTERFUZZ_DEPLOYMENT', False)
+    self.build_integration_path = (
+        constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
@@ -251,22 +222,29 @@ class BuildFuzzersConfig(BaseConfig):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     super().__init__()
-    self.commit_sha = self.ci_env.git_sha
-    self.git_url = self.ci_env.repo_url
+    self.git_sha = self.ci_env.git_sha
+    self.git_url = self.ci_env.git_url
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
-    # pylint: disable=consider-using-ternary
-    self.keep_unaffected_fuzz_targets = (
-        # Not from a commit or PR.
-        (not self.base_ref and not self.base_commit) or
-        environment.get_bool('KEEP_UNAFFECTED_FUZZERS'))
+
+    self.keep_unaffected_fuzz_targets = environment.get_bool(
+        'KEEP_UNAFFECTED_FUZZERS')
+
     self.upload_build = environment.get_bool('UPLOAD_BUILD', False)
-    if self.upload_build:
-      logging.info('Keeping all fuzzers because we are uploading build.')
-      self.keep_unaffected_fuzz_targets = True
+    if not self.keep_unaffected_fuzz_targets:
+      has_base_for_diff = (self.base_ref or self.base_commit)
+      if not has_base_for_diff:
+        logging.info(
+            'Keeping all fuzzers because there is nothing to diff against.')
+        self.keep_unaffected_fuzz_targets = True
+      elif self.upload_build:
+        logging.info('Keeping all fuzzers because we are uploading build.')
+        self.keep_unaffected_fuzz_targets = True
+      elif self.sanitizer == 'coverage':
+        logging.info('Keeping all fuzzers because we are doing coverage.')
+        self.keep_unaffected_fuzz_targets = True
 
     if self.sanitizer == 'coverage':
-      self.keep_unaffected_fuzz_targets = True
       self.bad_build_check = False
