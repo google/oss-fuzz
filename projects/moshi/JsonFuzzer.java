@@ -14,15 +14,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-//import com.squareup.moshi.JsonReader;
-//import com.squareup.moshi.Moshi;
-//import java.io.IOException;
-//import okio.ByteString;
 
-//import com.squareup.moshi;
 import com.squareup.moshi.Moshi;
-//import com.squareup.moshi;
-//import com.squareup.moshi.recipes;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.recipes.models.Player;
@@ -32,14 +25,8 @@ import java.io.*;
 
 public class JsonFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-
     Moshi moshi = new Moshi.Builder().build();
     JsonAdapter<Player> jsonAdapter = moshi.adapter(Player.class);
-    //
-
-    //Player player = jsonAdapter.fromJson(data.consumeRemainingAsString());
-    //Moshi moshi = new Moshi.Builder().add(ByteString.class, new Base64ByteStringAdapter()).build();
-    //JsonAdapter<ByteString> jsonAdapter = moshi.adapter(ByteString.class);
     try {
       jsonAdapter.fromJson(data.consumeRemainingAsString());
     }
