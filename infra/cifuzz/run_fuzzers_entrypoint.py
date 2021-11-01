@@ -75,7 +75,7 @@ def main():
   """Runs project's fuzzers for CI tools.
   This is the entrypoint for the run_fuzzers github action.
 
-  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
+  NOTE: libFuzzer binaries must be located in the $WORKSPACE/build-out
   directory in order for this action to be used. This action will only fuzz the
   binaries that are located in that directory. It is recommended that you add
   the build_fuzzers action preceding this one.
@@ -84,13 +84,6 @@ def main():
   ${GITHUB_WORKSPACE}/out/testcase
   This can be used in parallel with the upload-artifact action to surface the
   logs.
-
-  Required environment variables:
-    FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
-    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
-    DRY_RUN: If true, no failures will surface.
-    OSS_FUZZ_PROJECT_NAME: The name of the relevant OSS-Fuzz project.
-    SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
     0 on success or nonzero on failure.

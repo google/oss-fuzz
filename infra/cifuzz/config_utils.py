@@ -40,12 +40,6 @@ DEFAULT_ARCHITECTURE = 'x86_64'
 # that are supposed to be strings.
 
 
-def _get_pr_ref(event):
-  if event == 'pull_request':
-    return os.getenv('GITHUB_REF')
-  return None
-
-
 def _get_sanitizer():
   return os.getenv('SANITIZER', constants.DEFAULT_SANITIZER).lower()
 
@@ -74,22 +68,31 @@ class BaseCiEnvironment:
   @property
   def workspace(self):
     """Returns the workspace."""
-    raise NotImplementedError('Child class must implment method.')
+    raise NotImplementedError('Child class must implement method.')
 
   @property
   def git_sha(self):
-    """Returns the Git SHA to diff against."""
-    raise NotImplementedError('Child class must implment method.')
+    """Returns the Git SHA to checkout and fuzz. This is used only by GitHub
+    projects when commit fuzzing. It is not used when PR fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    raise NotImplementedError('Child class must implement method.')
 
   @property
   def actor(self):
     """Name of the actor for the CI."""
-    raise NotImplementedError('Child class must implment method.')
+    raise NotImplementedError('Child class must implement method.')
 
   @property
   def token(self):
     """Returns the CI API token."""
-    raise NotImplementedError('Child class must implment method.')
+    raise NotImplementedError('Child class must implement method.')
 
   @property
   def project_src_path(self):
@@ -104,6 +107,43 @@ class BaseCiEnvironment:
     logging.debug('PROJECT_SRC_PATH set: %s.', path)
     return path
 
+  @property
+  def base_commit(self):
+    """Returns the base commit to diff against (commit fuzzing)."""
+    raise NotImplementedError('Child class must implement method.')
+
+  @property
+  def pr_ref(self):
+    """Returns the pull request to checkout and fuzz. This is used only by
+    GitHub projects when PR fuzzing. It is not used when commit fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    raise NotImplementedError('Child class must implement method.')
+
+  @property
+  def base_ref(self):
+    """Returns the base branch to diff against (pr fuzzing)."""
+    raise NotImplementedError('Child class must implement method.')
+
+  @property
+  def git_url(self):
+    """Returns the repo URL. This is only used by GitHub users. Right now it is
+    needed by external on GitHub because we need to clone a new repo because the
+    copy they give us doesn't work for diffing. It isn't used by OSS-Fuzz on
+    github users since the Git URL is determined using repo detection.
+
+    TODO(metzman): Try to eliminate the need for this by making the clone
+    from external github projects usable.
+    TODO(metzman): As an easier goal, maybe make OSS-Fuzz GitHub use this too
+    for: 1. Consistency 2. Maybe it will allow use on forks."""
+    raise NotImplementedError('Child class must implement method.')
+
 
 class GenericCiEnvironment(BaseCiEnvironment):
   """CI Environment for generic CI systems."""
@@ -115,8 +155,17 @@ class GenericCiEnvironment(BaseCiEnvironment):
 
   @property
   def git_sha(self):
-    """Returns the Git SHA to diff against."""
-    return os.getenv('GIT_SHA')
+    """Returns the Git SHA to checkout and fuzz. This is used only by GitHub
+    projects when commit fuzzing. It is not used when PR fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    return None
 
   @property
   def token(self):
@@ -136,13 +185,55 @@ class GenericCiEnvironment(BaseCiEnvironment):
     return None, repository
 
   @property
-  def repo_url(self):
-    """Returns the repo URL."""
-    return os.getenv('REPOSITORY_URL')
+  def git_url(self):
+    """Returns the repo URL. This is only used by GitHub users. Right now it is
+    needed by external on GitHub because we need to clone a new repo because the
+    copy they give us doesn't work for diffing. It isn't used by OSS-Fuzz on
+    github users since the Git URL is determined using repo detection.
+
+    TODO(metzman): Try to eliminate the need for this by making the clone
+    from external github projects usable.
+    TODO(metzman): As an easier goal, maybe make OSS-Fuzz GitHub use this too
+    for: 1. Consistency 2. Maybe it will allow use on forks."""
+    return None
+
+  @property
+  def base_commit(self):
+    """Returns the base commit to diff against (commit fuzzing)."""
+    return os.getenv('GIT_BASE_COMMIT')
+
+  @property
+  def pr_ref(self):
+    """Returns the pull request to checkout and fuzz. This is used only by
+    GitHub projects when PR fuzzing. It is not used when commit fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    return None
+
+  @property
+  def base_ref(self):
+    """Returns the base branch to diff against (pr fuzzing)."""
+    return os.getenv('GIT_BASE_REF')
+
+
+def _get_event_data():
+  github_event_path = _get_github_event_path()
+  with open(github_event_path, encoding='utf-8') as file_handle:
+    return json.load(file_handle)
 
 
 class GithubEnvironment(BaseCiEnvironment):
   """CI environment for GitHub."""
+
+  def __init__(self):
+    self._event_data = _get_event_data()
+    self._event = os.getenv('GITHUB_EVENT_NAME')
 
   @property
   def workspace(self):
@@ -151,7 +242,16 @@ class GithubEnvironment(BaseCiEnvironment):
 
   @property
   def git_sha(self):
-    """Returns the Git SHA to diff against."""
+    """Returns the Git SHA to checkout and fuzz. This is used only by GitHub
+    projects when commit fuzzing. It is not used when PR fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
     return os.getenv('GITHUB_SHA')
 
   @property
@@ -186,14 +286,64 @@ class GithubEnvironment(BaseCiEnvironment):
     return os.path.split(repository)
 
   @property
-  def repo_url(self):
-    """Returns the GitHub repo URL."""
+  def git_url(self):
+    """Returns the repo URL. This is only used by GitHub users. Right now it is
+    needed by external on GitHub because we need to clone a new repo because the
+    copy they give us doesn't work for diffing. It isn't used by OSS-Fuzz on
+    github users since the Git URL is determined using repo detection.
+
+    TODO(metzman): Try to eliminate the need for this by making the clone
+    from external github projects usable.
+    TODO(metzman): As an easier goal, maybe make OSS-Fuzz GitHub use this too
+    for: 1. Consistency 2. Maybe it will allow use on forks."""
     repository = os.getenv('GITHUB_REPOSITORY')
+    # TODO(metzman): Probably need to change this to github.server_url.
     return f'https://github.com/{repository}.git'
+
+  @property
+  def base_commit(self):
+    """Returns the base commit to diff against (commit fuzzing)."""
+    base_commit = None
+    if self._event == 'push':
+      base_commit = self._event_data['before']
+    logging.debug('base_commit: %s', base_commit)
+    return base_commit
+
+  @property
+  def pr_ref(self):
+    """Returns the pull request to checkout and fuzz. This is used only by
+    GitHub projects when PR fuzzing. It is not used when commit fuzzing. It is
+    definitely needed by OSS-Fuzz on GitHub since they have no copy of the repo
+    on the host and the repo on the builder image is a clone from main/master.
+    Right now it is needed by external on GitHub because we need to clone a new
+    repo because the copy they give us doesn't work for diffing.
+
+    TODO(metzman): Try to eliminate the need for this by 1. Making the clone
+    from external github projects usable. 2. Forcing OSS-Fuzz on Github to clone
+    before starting CIFuzz."""
+    if self._event == 'pull_request':
+      pr_ref = f'refs/pull/{self._event_data["pull_request"]["number"]}/merge'
+      logging.debug('pr_ref: %s', pr_ref)
+      return pr_ref
+    return None
+
+  @property
+  def base_ref(self):
+    """Returns the base branch to diff against (pr fuzzing)."""
+    return os.getenv('GITHUB_BASE_REF')
 
 
 class ConfigError(Exception):
   """Error for invalid configuration."""
+
+
+def _is_github():
+  """Returns True if running on Github Actions."""
+  return bool(_get_github_event_path())
+
+
+def _get_github_event_path():
+  return os.getenv('GITHUB_EVENT_PATH')
 
 
 class BaseConfig:
@@ -206,34 +356,16 @@ class BaseConfig:
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
     EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
-  def _get_config_from_event_path(self):
-    event = os.getenv('GITHUB_EVENT_NAME')
-    if not self._github_event_path or not os.path.exists(
-        self._github_event_path):
-      return
-    with open(self._github_event_path, encoding='utf-8') as file_handle:
-      event_data = json.load(file_handle)
-    if event == 'push':
-      self.base_commit = event_data['before']
-      logging.debug('base_commit: %s', self.base_commit)
-    elif event == 'pull_request':
-      self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
-      logging.debug('pr_ref: %s', self.pr_ref)
-
   def __init__(self):
     # Need to set these before calling self.platform.
-    self._github_event_path = os.getenv('GITHUB_EVENT_PATH')
-    self.is_github = bool(self._github_event_path)
-
+    self.is_github = _is_github()
     logging.debug('Is github: %s.', self.is_github)
+
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
-
-    self.base_commit = None
-    self.pr_ref = None
-    self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self._get_config_from_event_path()
-
     self._ci_env = _get_ci_environment(self.platform)
+    self.base_commit = self._ci_env.base_commit
+    self.base_ref = self._ci_env.base_ref
+    self.pr_ref = self._ci_env.pr_ref
     self.workspace = self._ci_env.workspace
 
     self.project_repo_owner, self.project_repo_name = (
@@ -368,22 +500,29 @@ class BuildFuzzersConfig(BaseConfig):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     super().__init__()
-    self.commit_sha = self._ci_env.git_sha
-    self.git_url = self._ci_env.repo_url
+    self.git_sha = self._ci_env.git_sha
+    self.git_url = self._ci_env.git_url
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
-    # pylint: disable=consider-using-ternary
-    self.keep_unaffected_fuzz_targets = (
-        # Not from a commit or PR.
-        (not self.base_ref and not self.base_commit) or
-        environment.get_bool('KEEP_UNAFFECTED_FUZZERS'))
+
+    self.keep_unaffected_fuzz_targets = environment.get_bool(
+        'KEEP_UNAFFECTED_FUZZERS')
+
     self.upload_build = environment.get_bool('UPLOAD_BUILD', False)
-    if self.upload_build:
-      logging.info('Keeping all fuzzers because we are uploading build.')
-      self.keep_unaffected_fuzz_targets = True
+    if not self.keep_unaffected_fuzz_targets:
+      has_base_for_diff = (self.base_ref or self.base_commit)
+      if not has_base_for_diff:
+        logging.info(
+            'Keeping all fuzzers because there is nothing to diff against.')
+        self.keep_unaffected_fuzz_targets = True
+      elif self.upload_build:
+        logging.info('Keeping all fuzzers because we are uploading build.')
+        self.keep_unaffected_fuzz_targets = True
+      elif self.sanitizer == 'coverage':
+        logging.info('Keeping all fuzzers because we are doing coverage.')
+        self.keep_unaffected_fuzz_targets = True
 
     if self.sanitizer == 'coverage':
-      self.keep_unaffected_fuzz_targets = True
       self.bad_build_check = False

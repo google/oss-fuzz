@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module for getting the configuration CIFuzz needs to run."""
+"""Tests for config_utils."""
 import os
 import unittest
 from unittest import mock
@@ -20,7 +20,7 @@ import config_utils
 import constants
 import test_helpers
 
-# pylint: disable=no-self-use,protected-access
+# pylint: disable=no-self-use,protected-access,arguments-differ
 
 
 class BaseConfigTest(unittest.TestCase):
@@ -105,10 +105,20 @@ class BuildFuzzersConfigTest(unittest.TestCase):
   def _create_config(self):
     return config_utils.BuildFuzzersConfig()
 
-  def test_base_ref(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def test_github_base_ref(self, _):
     """Tests that base_ref is set properly."""
     expected_base_ref = 'expected_base_ref'
     os.environ['GITHUB_BASE_REF'] = expected_base_ref
+    os.environ['GITHUB_EVENT_PATH'] = '/event'
+    os.environ['GITHUB_REPOSITORY'] = 'owner/repo'
+    config = self._create_config()
+    self.assertEqual(config.base_ref, expected_base_ref)
+
+  def test_base_ref(self):
+    """Tests that base_ref is set properly."""
+    expected_base_ref = 'expected_base_ref'
+    os.environ['GIT_BASE_REF'] = expected_base_ref
     config = self._create_config()
     self.assertEqual(config.base_ref, expected_base_ref)
 
@@ -120,7 +130,7 @@ class BuildFuzzersConfigTest(unittest.TestCase):
   def test_keep_unaffected_defaults_to_false_when_pr(self):
     """Tests that keep_unaffected_fuzz_targets defaults to false when from a
     pr."""
-    os.environ['GITHUB_BASE_REF'] = 'base-ref'
+    os.environ['GIT_BASE_REF'] = 'base-ref'
     config = self._create_config()
     self.assertFalse(config.keep_unaffected_fuzz_targets)
 
@@ -167,7 +177,8 @@ class RunFuzzersConfigTest(unittest.TestCase):
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   """Tests for BaseCiEnv.get_project_repo_owner_and_name."""
 
-  def setUp(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def setUp(self, _):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
@@ -201,30 +212,31 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
                      (None, self.repo_name))
 
 
-class GetRepoUrlTest(unittest.TestCase):
-  """Tests for GenericCiEnvironment.repo_url."""
+class GetGitUrlTest(unittest.TestCase):
+  """Tests for GenericCiEnvironment.git_url."""
 
-  def setUp(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def setUp(self, _):
     test_helpers.patch_environ(self)
     self.github_env = config_utils.GithubEnvironment()
     self.generic_ci_env = config_utils.GenericCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(self.generic_ci_env.repo_url, None)
+    self.assertEqual(self.generic_ci_env.git_url, None)
 
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
     self.assertEqual('https://github.com/repo/owner.git',
-                     self.github_env.repo_url)
+                     self.github_env.git_url)
 
   def test_nongithub_repository(self):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
-    os.environ['REPOSITORY_URL'] = 'https://repo/url'
-    self.assertEqual('https://repo/url', self.generic_ci_env.repo_url)
+    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
+    self.assertEqual(None, self.generic_ci_env.git_url)
 
 
 class GetSanitizerTest(unittest.TestCase):
@@ -259,13 +271,15 @@ class ProjectSrcPathTest(unittest.TestCase):
 
     self.project_src_dir_name = 'project-src'
 
-  def test_unset(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def test_github_unset(self, _):
     """Tests that project_src_path returns None when no PROJECT_SRC_PATH is
     set."""
     github_env = config_utils.GithubEnvironment()
     self.assertIsNone(github_env.project_src_path)
 
-  def test_github(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def test_github(self, _):
     """Tests that project_src_path returns the correct result on GitHub."""
     os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
     expected_project_src_path = os.path.join(self.workspace,

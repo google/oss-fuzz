@@ -255,12 +255,13 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
                     return_value=platform,
                     new_callable=mock.PropertyMock):
       with mock.patch('filestore_utils.get_filestore', return_value=None):
-        config = _create_config()
-        workspace = workspace_utils.Workspace(config)
+        with mock.patch('config_utils._get_event_data', return_value={}):
+          config = _create_config()
+          workspace = workspace_utils.Workspace(config)
 
-        self.assertIsInstance(
-            clusterfuzz_deployment.get_clusterfuzz_deployment(
-                config, workspace), expected_deployment_cls)
+          self.assertIsInstance(
+              clusterfuzz_deployment.get_clusterfuzz_deployment(
+                  config, workspace), expected_deployment_cls)
 
 
 if __name__ == '__main__':
