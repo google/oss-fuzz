@@ -69,3 +69,4 @@ runs:
     GIT_STORE_BRANCH_COVERAGE: ${{ inputs.storage-repo-branch-coverage }}
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
     CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'

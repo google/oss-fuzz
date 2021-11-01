@@ -62,3 +62,4 @@ runs:
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
     UPLOAD_BUILD: ${{ inputs.upload-build }}
     CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'

@@ -61,7 +61,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   def test_remove_unaffected_fuzz_targets(self, side_effect, expected_dir_len):
     """Tests that remove_unaffected_fuzzers has the intended effect."""
     config = test_helpers.create_run_config(
-        is_github=True,
+        cfl_platform='github',
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         workspace='/workspace')
     workspace = workspace_utils.Workspace(config)

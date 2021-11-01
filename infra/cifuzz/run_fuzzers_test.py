@@ -268,7 +268,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.testcase2)
     self.config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                                  workspace=self.WORKSPACE,
-                                                 is_github=True)
+                                                 cfl_platform='github')
 
   @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
@@ -338,7 +338,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
           git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
           base_commit='da0746452433dc18bae699e355a9821285d863c8',
           sanitizer=self.SANITIZER,
-          is_github=True,
+          cfl_platform='github',
           # Needed for test not to fail because of permissions issues.
           bad_build_check=False)
       self.assertTrue(build_fuzzers.build_fuzzers(build_config))
@@ -357,7 +357,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
                                                   workspace=temp_dir,
                                                   sanitizer=self.SANITIZER,
                                                   mode='coverage',
-                                                  is_github=True)
+                                                  cfl_platform='github')
       result = run_fuzzers.run_fuzzers(run_config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
       expected_summary_path = os.path.join(

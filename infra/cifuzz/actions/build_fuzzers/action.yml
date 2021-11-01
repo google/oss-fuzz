@@ -38,3 +38,4 @@ runs:
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
     CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'

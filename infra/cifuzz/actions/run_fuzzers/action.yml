@@ -54,3 +54,4 @@ runs:
     LOW_DISK_SPACE: 'True'
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
     CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'
