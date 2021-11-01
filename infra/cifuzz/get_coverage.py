@@ -57,7 +57,7 @@ class BaseCoverage:
       logging.info('No files found in coverage report.')
       return None
 
-    logging.info('HI!!! repo_path: %s', self.repo_path)
+    logging.info('HI!!! repo_path: %s %s', self.repo_path, coverage_per_file)
     affected_file_list = []
     for file_cov in coverage_per_file:
       norm_file_path = os.path.normpath(file_cov['filename'])
