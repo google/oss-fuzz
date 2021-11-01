@@ -20,7 +20,7 @@ export CC CXX CFLAGS CXXFLAGS SRC WORK OUT LIB_FUZZING_ENGINE
 ci/build.sh
 
 # Avoid leak detection atm
-for fuzzer in mib agent_e2e; do
+for fuzzer in mib agent_e2e api; do
   echo "[libfuzzer]" > $OUT/snmp_${fuzzer}_fuzzer.options
   echo "detect_leaks=0" >> $OUT/snmp_${fuzzer}_fuzzer.options
 done
