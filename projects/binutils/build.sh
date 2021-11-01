@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+
 # build project
 if [ "$SANITIZER" = undefined ]; then
     export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow"
@@ -208,7 +210,6 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
-  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_strings_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
 
   # Seed targeted the pef file format

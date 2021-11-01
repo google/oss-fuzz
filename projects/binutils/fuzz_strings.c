@@ -33,7 +33,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   program_name = "fuzz_strings";
 
   // Main fuzz entrypoint in strings.c
-  strings_file(filename);
+  strings_object_file(filename);
 
   unlink(filename);
   return 0;
