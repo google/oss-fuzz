@@ -57,6 +57,7 @@ class BaseCoverage:
       logging.info('No files found in coverage report.')
       return None
 
+    logging.info('HI!!! repo_path: %s', self.repo_path)
     affected_file_list = []
     for file_cov in coverage_per_file:
       norm_file_path = os.path.normpath(file_cov['filename'])
@@ -170,7 +171,6 @@ class FilesystemCoverage(BaseCoverage):
       The target's coverage json dict or None on failure.
     """
     logging.info('Getting coverage for %s from filesystem.', target)
-    logging.info('project_coverage_dir: %s', os.listdir(self.project_coverage_dir))
     fuzzer_stats_json_path = os.path.join(self.project_coverage_dir,
                                           'fuzzer_stats', target + '.json')
     if not os.path.exists(fuzzer_stats_json_path):
