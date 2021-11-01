@@ -34,7 +34,7 @@ steps:
   - '-t'
   - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
   - '-t'
-  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
   - '-f'
   - infra/run_fuzzers.Dockerfile
   - infra
