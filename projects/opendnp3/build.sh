@@ -17,7 +17,10 @@
 
 # build project
 cmake -DDNP3_FUZZING=ON -DSTATICLIBS=ON .
-make -j$(nproc) all
+
+# We must set AFL_LLVM_INSTRUMENT as otherwise the build fails with AFL
+export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+make all
 
 cd cpp/tests/fuzz
 

@@ -22,7 +22,7 @@ sed -i 's/\.git//g' .gitmodules
 git submodule update --init --recursive
 sed -i 's/-Werror//g' ./cmake/define.inc
 mkdir debug && cd debug
-cmake .. && cmake --build .
+cmake -DBUILD_HTTP=true  .. && cmake --build .
 
 cd build/bin
 

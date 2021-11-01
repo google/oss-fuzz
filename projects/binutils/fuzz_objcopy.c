@@ -54,7 +54,6 @@ init_objcopy_global_state() {
   gap_fill_set = false;
   gap_fill = 0;
   pad_to_set = false;
-  pad_to;
   use_alt_mach_code = 0;
   add_sections = NULL;
   update_sections = NULL;

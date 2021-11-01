@@ -29,10 +29,10 @@ for fuzzer in $(find $SRC -name '*_fuzz.py'); do
 
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libz-eb09ad1d.so.1.2.3 $OUT
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libquadmath-2d0c479f.so.0.0.0 $OUT
   cp /usr/local/lib/python3.8/site-packages/numpy.libs/libgfortran-2e0d59d6.so.5.0.0 $OUT
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libopenblasp-r0-09e95953.3.13.so $OUT
+  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libopenblasp-r0-2d23e62b.3.17.so $OUT
+  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libquadmath-2d0c479f.so.0.0.0 $OUT
+
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")

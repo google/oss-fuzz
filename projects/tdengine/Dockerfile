@@ -15,8 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y  libtool build-essential
+RUN apt-get update && apt-get install -y  libtool build-essential wget
 RUN git clone --depth 1 https://github.com/taosdata/TDengine tdengine
+RUN cd /tmp \
+  && wget https://golang.org/dl/go1.16.8.linux-amd64.tar.gz \
+  && tar -xf go1.16.8.linux-amd64.tar.gz
+ENV PATH ${PATH}:/tmp/go/bin
+
 WORKDIR tdengine
 COPY build.sh $SRC/
 COPY *.options $SRC/
