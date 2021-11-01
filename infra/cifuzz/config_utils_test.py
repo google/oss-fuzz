@@ -110,7 +110,7 @@ class BuildFuzzersConfigTest(unittest.TestCase):
     """Tests that base_ref is set properly."""
     expected_base_ref = 'expected_base_ref'
     os.environ['GITHUB_BASE_REF'] = expected_base_ref
-    os.environ['CI_SYSTEM'] = 'github'
+    os.environ['CFL_PLATFORM'] = 'github'
     os.environ['GITHUB_REPOSITORY'] = 'owner/repo'
     config = self._create_config()
     self.assertEqual(config.base_ref, expected_base_ref)

@@ -29,7 +29,7 @@ class GetFilestoreTest(unittest.TestCase):
 
   @parameterized.parameterized.expand([
       ({
-          'ci_system': 'github',
+          'cfl_platform': 'github',
       }, github_actions.GithubActionsFilestore),
   ])
   def test_get_filestore(self, config_kwargs, filestore_cls):

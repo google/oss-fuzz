@@ -43,7 +43,7 @@ def _create_config(**kwargs):
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
   defaults = {
-      'ci_system': 'github',
+      'cfl_platform': 'github',
       'oss_fuzz_project_name': EXAMPLE_PROJECT,
       'workspace': WORKSPACE,
   }
@@ -195,7 +195,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
     config = test_helpers.create_run_config(workspace=WORKSPACE,
-                                            ci_system='other',
+                                            cfl_platform='other',
                                             filestore='no_filestore',
                                             no_clusterfuzz_deployment=True)
     workspace = workspace_utils.Workspace(config)

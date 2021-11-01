@@ -48,7 +48,7 @@ def _create_config(**kwargs):
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
   defaults = {
-      'ci_system': 'github',
+      'cfl_platform': 'github',
       'oss_fuzz_project_name': EXAMPLE_PROJECT,
       'workspace': '/workspace'
   }

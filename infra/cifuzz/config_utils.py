@@ -80,15 +80,15 @@ class BaseConfig:
   @property
   def is_github(self):
     """Returns True if running on GitHub."""
-    return self.ci_system == 'github'
+    return self.cfl_platform == 'github'
 
   def __init__(self):
     # Need to set these before calling self.platform.
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
-    self.ci_system = os.getenv('CI_SYSTEM')
+    self.cfl_platform = os.getenv('CFL_PLATFORM')
     logging.debug('Is github: %s.', self.is_github)
 
-    self.ci_env = _get_ci_environment(self.ci_system)
+    self.ci_env = _get_ci_environment(self.cfl_platform)
     self.base_commit = self.ci_env.base_commit
     self.base_ref = self.ci_env.base_ref
     self.pr_ref = self.ci_env.pr_ref
@@ -169,9 +169,9 @@ class BaseConfig:
     return self.sanitizer == 'coverage'
 
 
-def _get_ci_environment(ci_system):
-  """Returns the CI environment object for |ci_system|."""
-  module_name = f'ci_environment.{ci_system}'
+def _get_ci_environment(cfl_platform):
+  """Returns the CI environment object for |cfl_platform|."""
+  module_name = f'ci_environment.{cfl_platform}'
   try:
     cls = importlib.import_module(module_name).CiEnvironment
   except ImportError:
