@@ -170,6 +170,7 @@ class FilesystemCoverage(BaseCoverage):
       The target's coverage json dict or None on failure.
     """
     logging.info('Getting coverage for %s from filesystem.', target)
+    logging.info('project_coverage_dir: %s', os.listdir(self.project_coverage_dir))
     fuzzer_stats_json_path = os.path.join(self.project_coverage_dir,
                                           'fuzzer_stats', target + '.json')
     if not os.path.exists(fuzzer_stats_json_path):
