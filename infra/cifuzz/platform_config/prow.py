@@ -14,6 +14,7 @@
 """Module for getting the configuration CIFuzz needs to run on prow."""
 import logging
 import os
+
 import platform_config
 
 # pylint: disable=too-few-public-methods
@@ -27,7 +28,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     """Returns the manually checked out path of the project's source if
     specified or the current directory if not. Prow will run ClusterfuzzLite
     at the directory head for the repo."""
-    project_src_path = os.getenv('PROJECT_SRC_PATH', '.')
+    project_src_path = os.getenv('PROJECT_SRC_PATH', os.getcwd())
     logging.debug('PROJECT_SRC_PATH: %s.', project_src_path)
     return project_src_path
 
