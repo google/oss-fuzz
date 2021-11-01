@@ -28,4 +28,5 @@ WORKDIR ${OSS_FUZZ_ROOT}/infra
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
 
+ENV PYTHONUNBUFFERED=1
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
