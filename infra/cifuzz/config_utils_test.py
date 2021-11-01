@@ -16,13 +16,11 @@ import os
 import unittest
 from unittest import mock
 
-import ci_environment
-import ci_environment.github
 import config_utils
 import constants
 import test_helpers
 
-# pylint: disable=no-self-use,protected-access,arguments-differ
+# pylint: disable=no-self-use,protected-access
 
 
 class BaseConfigTest(unittest.TestCase):
@@ -176,77 +174,6 @@ class RunFuzzersConfigTest(unittest.TestCase):
                                   config_utils.RunFuzzersConfig.MODES)
 
 
-class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
-  """Tests for get_project_repo_owner and get_project_repo_name."""
-
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
-  def setUp(self, _):
-    test_helpers.patch_environ(self)
-    self.repo_owner = 'repo-owner'
-    self.repo_name = 'repo-name'
-    self.github_env = ci_environment.github.CiEnvironment()
-    self.base_ci_env = ci_environment.BaseCiEnvironment()
-
-  def test_unset_repository(self):
-    """Tests that the correct result is returned when repository is not set."""
-    self.assertIsNone(self.base_ci_env.project_repo_name)
-
-  def test_owner(self):
-    """Tests that the correct result is returned for owner."""
-    self.assertIsNone(self.base_ci_env.project_repo_owner)
-
-  def test_repository(self):
-    """Tests that the correct result is returned when repository is an empty
-    string."""
-    os.environ['REPOSITORY'] = ''
-    self.assertEqual(self.base_ci_env.project_repo_name, '')
-
-  def test_github_repository_owner(self):
-    """Tests that the correct result is returned when repository contains the
-    owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(self.github_env.project_repo_owner, self.repo_owner)
-
-  def test_github_repository_name(self):
-    """Tests that the correct result is returned when repository contains the
-    owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(self.github_env.project_repo_name, self.repo_name)
-
-  def test_nongithub_repository(self):
-    """Tests that the correct result is returned when repository contains the
-    just the repo name (as it does outside of GitHub)."""
-    os.environ['REPOSITORY'] = self.repo_name
-    self.assertEqual(self.base_ci_env.project_repo_name, self.repo_name)
-
-
-class GetGitUrlTest(unittest.TestCase):
-  """Tests for GenericCiEnvironment.git_url."""
-
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
-  def setUp(self, _):
-    test_helpers.patch_environ(self)
-    self.github_env = ci_environment.github.CiEnvironment()
-    self.base_ci_env = ci_environment.BaseCiEnvironment()
-
-  def test_unset_repository(self):
-    """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(self.base_ci_env.git_url, None)
-
-  def test_github_repository(self):
-    """Tests that the correct result is returned when repository contains the
-    owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
-    self.assertEqual('https://github.com/repo/owner.git',
-                     self.github_env.git_url)
-
-  def test_nongithub_repository(self):
-    """Tests that the correct result is returned when repository contains the
-    just the repo name (as it does outside of GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
-    self.assertEqual(None, self.base_ci_env.git_url)
-
-
 class GetSanitizerTest(unittest.TestCase):
   """Tests for _get_sanitizer."""
 
@@ -267,41 +194,6 @@ class GetSanitizerTest(unittest.TestCase):
     """Tests that that _get_sanitizer handles capitalization properly."""
     os.environ['SANITIZER'] = self.sanitizer.upper()
     self.assertEqual(config_utils._get_sanitizer(), self.sanitizer)
-
-
-class ProjectSrcPathTest(unittest.TestCase):
-  """Tests for project_src_path."""
-
-  def setUp(self):
-    test_helpers.patch_environ(self)
-    self.workspace = '/workspace'
-    os.environ['GITHUB_WORKSPACE'] = self.workspace
-
-    self.project_src_dir_name = 'project-src'
-
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
-  def test_github_unset(self, _):
-    """Tests that project_src_path returns None when no PROJECT_SRC_PATH is
-    set."""
-    github_env = ci_environment.github.CiEnvironment()
-    self.assertIsNone(github_env.project_src_path)
-
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
-  def test_github(self, _):
-    """Tests that project_src_path returns the correct result on GitHub."""
-    os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
-    expected_project_src_path = os.path.join(self.workspace,
-                                             self.project_src_dir_name)
-    github_env = ci_environment.github.CiEnvironment()
-    self.assertEqual(github_env.project_src_path, expected_project_src_path)
-
-  def test_not_github(self):
-    """Tests that project_src_path returns the correct result not on
-    GitHub."""
-    project_src_path = os.path.join('/', self.project_src_dir_name)
-    os.environ['PROJECT_SRC_PATH'] = project_src_path
-    generic_ci_env = ci_environment.BaseCiEnvironment()
-    self.assertEqual(generic_ci_env.project_src_path, project_src_path)
 
 
 if __name__ == '__main__':
