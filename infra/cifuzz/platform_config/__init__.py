@@ -16,8 +16,8 @@ import logging
 import os
 
 
-class BaseCiEnvironment:
-  """Base class for CiEnvironment subclasses."""
+class BasePlatformConfig:
+  """Base class for PlatformConfig subclasses."""
 
   @property
   def project_src_path(self):

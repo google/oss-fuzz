@@ -41,7 +41,7 @@ class GetFilestoreTest(unittest.TestCase):
 
   @mock.patch('config_utils.BaseConfig.platform', return_value='other')
   @mock.patch('config_utils._get_platform_config',
-              return_value=platform_config.BaseCiEnvironment())
+              return_value=platform_config.BasePlatformConfig())
   def test_get_filestore_unsupported_platform(self, _, __):
     """Tests that get_filestore exceptions given a platform it doesn't
     support."""

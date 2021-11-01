@@ -30,7 +30,7 @@ def _get_event_data():
     return json.load(file_handle)
 
 
-class CiEnvironment(platform_config.BaseCiEnvironment):
+class PlatformConfig(platform_config.BasePlatformConfig):
   """CI environment for GitHub."""
 
   def __init__(self):

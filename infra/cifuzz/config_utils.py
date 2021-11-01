@@ -173,9 +173,9 @@ def _get_platform_config(cfl_platform):
   """Returns the CI environment object for |cfl_platform|."""
   module_name = f'platform_config.{cfl_platform}'
   try:
-    cls = importlib.import_module(module_name).CiEnvironment
+    cls = importlib.import_module(module_name).PlatformConfig
   except ImportError:
-    cls = platform_config.BaseCiEnvironment
+    cls = platform_config.BasePlatformConfig
   return cls()
 
 

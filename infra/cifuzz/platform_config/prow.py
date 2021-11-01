@@ -17,6 +17,6 @@ import platform_config
 # pylint: disable=too-few-public-methods
 
 
-class CiEnvironment(platform_config.BaseCiEnvironment):
+class PlatformConfig(platform_config.BasePlatformConfig):
   """CI environment for Prow."""
   # TODO(mpherman2) Fill this out.

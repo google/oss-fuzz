@@ -26,7 +26,7 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
-    self.env = platform_config.BaseCiEnvironment()
+    self.env = platform_config.BasePlatformConfig()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
@@ -60,23 +60,23 @@ class ProjectSrcPathTest(unittest.TestCase):
     GitHub."""
     project_src_path = 'project-src'
     os.environ['PROJECT_SRC_PATH'] = project_src_path
-    generic_ci_env = platform_config.BaseCiEnvironment()
+    generic_ci_env = platform_config.BasePlatformConfig()
     self.assertEqual(generic_ci_env.project_src_path, project_src_path)
 
 
 class GetGitUrlTest(unittest.TestCase):
-  """Tests for GenericCiEnvironment.git_url."""
+  """Tests for BasePlatformConfig.git_url."""
 
   def setUp(self):
     test_helpers.patch_environ(self)
-    self.env = platform_config.BaseCiEnvironment()
+    self.env = platform_config.BasePlatformConfig()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
     self.assertEqual(self.env.git_url, None)
 
   def test_repository(self):
-    """Tests that the correct result is returned when repository contains the
-    just the repo name (as it does outside of GitHub)."""
+    """Tests that the correct result is returned when GITHUB_REPOSITORY is
+    set."""
     os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
     self.assertIsNone(self.env.git_url)

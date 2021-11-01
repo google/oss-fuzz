@@ -18,7 +18,7 @@ import os
 import platform_config
 
 
-class CiEnvironment(platform_config.BaseCiEnvironment):
+class PlatformConfig(platform_config.BasePlatformConfig):
   """CI environment for Google Cloud Build."""
 
   @property
