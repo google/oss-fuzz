@@ -36,7 +36,8 @@ import test_helpers
 class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
   """Tests for GithubActionsFilestore."""
 
-  def setUp(self):
+  @mock.patch('config_utils._get_event_data', return_value={})
+  def setUp(self, _):  # pylint: disable=arguments-differ
     test_helpers.patch_environ(self)
     self.token = 'example githubtoken'
     self.owner = 'exampleowner'

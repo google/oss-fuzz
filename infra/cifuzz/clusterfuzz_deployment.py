@@ -203,6 +203,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
+    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_coverage)
     try:
       if not self.filestore.download_coverage(
           self.COVERAGE_NAME, self.workspace.clusterfuzz_coverage):

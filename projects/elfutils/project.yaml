@@ -1,0 +1,14 @@
+homepage: "https://sourceware.org/elfutils/"
+language: c++
+primary_contact: "izzeem@google.com"
+main_repo: "git://sourceware.org/git/elfutils.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64

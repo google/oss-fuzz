@@ -69,12 +69,23 @@ class BaseCi:
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""
-    raise NotImplementedError('Child class must implement method.')
+    if self.config.base_ref:
+      logging.debug('Diffing against base_ref: %s.', self.config.base_ref)
+      return self.config.base_ref
+    if self.config.base_commit:
+      logging.debug('Diffing against base_commit: %s.', self.config.base_commit)
+      return self.config.base_commit
+    # TODO(metzman): Do we want this at all? What purpose does it serve? I guess
+    # it is a decent fallback when there is no base_commit or base_ref.
+    logging.debug('Diffing against origin.')
+    return 'origin'
 
   def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
-    base = self.get_diff_base()
+    if self.config.base_ref:
+      repo_manager_obj.fetch_branch(self.config.base_ref)
     fix_git_repo_for_diff(repo_manager_obj)
+    base = self.get_diff_base()
     logging.info('Diffing against %s.', base)
     # git diff <commit>... is equivalent to
     # git diff $(git merge-base <commit> HEAD)
@@ -111,8 +122,7 @@ class BaseCi:
         repo_name=repo_name,
         username=self.config.actor,
         password=self.config.token)
-    checkout_specified_commit(manager, self.config.pr_ref,
-                              self.config.commit_sha)
+    checkout_specified_commit(manager, self.config.pr_ref, self.config.git_sha)
     return manager
 
   def _detect_main_repo(self):
@@ -171,18 +181,18 @@ def get_ci(config):
   return InternalGithub(config)
 
 
-def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
+def checkout_specified_commit(repo_manager_obj, pr_ref, git_sha):
   """Checks out the specified commit or pull request using
   |repo_manager_obj|."""
   try:
     if pr_ref:
       repo_manager_obj.checkout_pr(pr_ref)
     else:
-      repo_manager_obj.checkout_commit(commit_sha)
+      repo_manager_obj.checkout_commit(git_sha)
   except (RuntimeError, ValueError):
     logging.error(
         'Can not check out requested state %s. '
-        'Using current repo state', pr_ref or commit_sha)
+        'Using current repo state', pr_ref or git_sha)
 
 
 class GithubCiMixin:
@@ -213,21 +223,6 @@ class GithubCiMixin:
 
     return repo_path
 
-  def get_diff_base(self):
-    """Returns the base to diff against with git to get the change under
-    test."""
-    if self.config.base_ref:
-      logging.debug('Diffing against base_ref: %s.', self.config.base_ref)
-      return self.config.base_ref
-    logging.debug('Diffing against base_commit: %s.', self.config.base_commit)
-    return self.config.base_commit
-
-  def get_changed_code_under_test(self, repo_manager_obj):
-    """Returns the changed files that need to be tested."""
-    if self.config.base_ref:
-      repo_manager_obj.fetch_branch(self.config.base_ref)
-    return super().get_changed_code_under_test(repo_manager_obj)
-
 
 class InternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for an OSS-Fuzz project on Github Actions."""
@@ -239,7 +234,6 @@ class InternalGithub(GithubCiMixin, BaseCi):
     assert self.config.pr_ref or self.config.commit_sha
     # _detect_main_repo builds the image as a side effect.
     inferred_url, image_repo_path = self._detect_main_repo()
-
     if not inferred_url or not image_repo_path:
       return get_build_preparation_failure()
 
@@ -295,9 +289,6 @@ class InternalGeneric(BaseCi):
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
-  def get_diff_base(self):
-    return 'origin'
-
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
     """Returns the command for building the project that is run inside the
     project builder container. Command also replaces |image_repo_path| with
@@ -329,9 +320,6 @@ class ExternalGeneric(BaseCi):
     returned otherwise."""
     return self._repo_dir
 
-  def get_diff_base(self):
-    return 'origin'
-
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
     manager = self._create_repo_manager_for_project_src_path()
@@ -354,9 +342,9 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     logging.info('ExternalGithub: preparing for fuzzer build.')
     # Checkout before building, so we don't need to rely on copying the source
     # from the image.
+    # TODO(metzman): Figure out if we want second copy at all.
     manager = self._clone_repo_and_checkout(self.config.git_url,
                                             self.config.project_repo_name)
-
     return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
