@@ -18,6 +18,8 @@ steps:
   - '-t'
   - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1
   - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers
+  - '-t'
   - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
   - '-f'
   - infra/build_fuzzers.Dockerfile
@@ -29,6 +31,8 @@ steps:
   - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers
   - '-t'
   - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
   - '-t'
   - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
   - '-f'
