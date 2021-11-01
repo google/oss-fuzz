@@ -127,8 +127,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
         self.build_image_and_checkout_src,
         self.build_fuzzers,
         self.remove_unaffected_fuzz_targets,
-        self.check_fuzzer_build,
         self.upload_build,
+        self.check_fuzzer_build,
     ]
     for method in methods:
       if not method():
