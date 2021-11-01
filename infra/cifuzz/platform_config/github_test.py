@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for ci_environment.github."""
+"""Tests for platform_config.github."""
 import os
 import unittest
 from unittest import mock
 
-import ci_environment.github
+import platform_config.github
 import test_helpers
 
 # pylint: disable=arguments-differ
@@ -25,24 +25,24 @@ import test_helpers
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   """Tests for get_project_repo_owner and get_project_repo_name."""
 
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
+  @mock.patch('platform_config.github._get_event_data', return_value={})
   def setUp(self, _):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.env = ci_environment.github.CiEnvironment()
+    self.platform_conf = platform_config.github.CiEnvironment()
 
   def test_github_repository_owner(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
-    self.assertEqual(self.env.project_repo_owner, self.repo_owner)
+    self.assertEqual(self.platform_conf.project_repo_owner, self.repo_owner)
 
   def test_github_repository_name(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(self.env.project_repo_name, self.repo_name)
+    self.assertEqual(self.platform_conf.project_repo_name, self.repo_name)
 
 
 class ProjectSrcPathTest(unittest.TestCase):
@@ -54,33 +54,34 @@ class ProjectSrcPathTest(unittest.TestCase):
     os.environ['GITHUB_WORKSPACE'] = self.workspace
     self.project_src_dir_name = 'project-src'
 
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
+  @mock.patch('platform_config.github._get_event_data', return_value={})
   def test_github_unset(self, _):
     """Tests that project_src_path returns None when no PROJECT_SRC_PATH is
     set."""
-    github_env = ci_environment.github.CiEnvironment()
+    github_env = platform_config.github.CiEnvironment()
     self.assertIsNone(github_env.project_src_path)
 
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
+  @mock.patch('platform_config.github._get_event_data', return_value={})
   def test_github(self, _):
     """Tests that project_src_path returns the correct result on GitHub."""
     os.environ['PROJECT_SRC_PATH'] = self.project_src_dir_name
     expected_project_src_path = os.path.join(self.workspace,
                                              self.project_src_dir_name)
-    github_env = ci_environment.github.CiEnvironment()
+    github_env = platform_config.github.CiEnvironment()
     self.assertEqual(github_env.project_src_path, expected_project_src_path)
 
 
 class GetGitUrlTest(unittest.TestCase):
   """Tests for GenericCiEnvironment.git_url."""
 
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
+  @mock.patch('platform_config.github._get_event_data', return_value={})
   def setUp(self, _):
     test_helpers.patch_environ(self)
-    self.env = ci_environment.github.CiEnvironment()
+    self.platform_conf = platform_config.github.CiEnvironment()
 
   def test_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
-    self.assertEqual('https://github.com/repo/owner.git', self.env.git_url)
+    self.assertEqual('https://github.com/repo/owner.git',
+                     self.platform_conf.git_url)

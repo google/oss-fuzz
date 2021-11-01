@@ -33,7 +33,7 @@ import helper
 
 # TODO(metzman): Get rid of these decorators.
 @mock.patch('config_utils._is_dry_run', return_value=True)
-@mock.patch('ci_environment.BaseCiEnvironment.project_src_path',
+@mock.patch('platform_config.BaseCiEnvironment.project_src_path',
             return_value=None)
 @mock.patch('os.path.basename', return_value=None)
 def _create_config(config_cls, _, __, ___, **kwargs):

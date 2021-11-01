@@ -24,7 +24,7 @@ import environment
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import ci_environment
+import platform_config
 import constants
 
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
@@ -88,16 +88,16 @@ class BaseConfig:
     self.cfl_platform = os.getenv('CFL_PLATFORM')
     logging.debug('Is github: %s.', self.is_github)
 
-    self.ci_env = _get_ci_environment(self.cfl_platform)
-    self.base_commit = self.ci_env.base_commit
-    self.base_ref = self.ci_env.base_ref
-    self.pr_ref = self.ci_env.pr_ref
-    self.workspace = self.ci_env.workspace
-    self.project_src_path = self.ci_env.project_src_path
-    self.actor = self.ci_env.actor
-    self.token = self.ci_env.token
-    self.project_repo_owner = self.ci_env.project_repo_owner
-    self.project_repo_name = self.ci_env.project_repo_name
+    self.platform_conf = _get_platform_config(self.cfl_platform)
+    self.base_commit = self.platform_conf.base_commit
+    self.base_ref = self.platform_conf.base_ref
+    self.pr_ref = self.platform_conf.pr_ref
+    self.workspace = self.platform_conf.workspace
+    self.project_src_path = self.platform_conf.project_src_path
+    self.actor = self.platform_conf.actor
+    self.token = self.platform_conf.token
+    self.project_repo_owner = self.platform_conf.project_repo_owner
+    self.project_repo_name = self.platform_conf.project_repo_name
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
@@ -169,13 +169,13 @@ class BaseConfig:
     return self.sanitizer == 'coverage'
 
 
-def _get_ci_environment(cfl_platform):
+def _get_platform_config(cfl_platform):
   """Returns the CI environment object for |cfl_platform|."""
-  module_name = f'ci_environment.{cfl_platform}'
+  module_name = f'platform_config.{cfl_platform}'
   try:
     cls = importlib.import_module(module_name).CiEnvironment
   except ImportError:
-    cls = ci_environment.BaseCiEnvironment
+    cls = platform_config.BaseCiEnvironment
   return cls()
 
 
@@ -219,8 +219,8 @@ class BuildFuzzersConfig(BaseConfig):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     super().__init__()
-    self.git_sha = self.ci_env.git_sha
-    self.git_url = self.ci_env.git_url
+    self.git_sha = self.platform_conf.git_sha
+    self.git_url = self.platform_conf.git_url
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')

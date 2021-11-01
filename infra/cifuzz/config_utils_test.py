@@ -105,7 +105,7 @@ class BuildFuzzersConfigTest(unittest.TestCase):
   def _create_config(self):
     return config_utils.BuildFuzzersConfig()
 
-  @mock.patch('ci_environment.github._get_event_data', return_value={})
+  @mock.patch('platform_config.github._get_event_data', return_value={})
   def test_github_base_ref(self, _):
     """Tests that base_ref is set properly."""
     expected_base_ref = 'expected_base_ref'

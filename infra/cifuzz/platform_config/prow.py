@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for getting the configuration CIFuzz needs to run on prow."""
-import ci_environment
+import platform_config
 
 # pylint: disable=too-few-public-methods
 
 
-class CiEnvironment(ci_environment.BaseCiEnvironment):
+class CiEnvironment(platform_config.BaseCiEnvironment):
   """CI environment for Prow."""
   # TODO(mpherman2) Fill this out.

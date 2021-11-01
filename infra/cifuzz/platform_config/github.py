@@ -16,7 +16,7 @@ import json
 import logging
 import os
 
-import ci_environment
+import platform_config
 
 
 def _get_github_event_path():
@@ -30,7 +30,7 @@ def _get_event_data():
     return json.load(file_handle)
 
 
-class CiEnvironment(ci_environment.BaseCiEnvironment):
+class CiEnvironment(platform_config.BaseCiEnvironment):
   """CI environment for GitHub."""
 
   def __init__(self):

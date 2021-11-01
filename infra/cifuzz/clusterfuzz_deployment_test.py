@@ -254,7 +254,7 @@ class GetClusterFuzzDeploymentTest(unittest.TestCase):
                     return_value=platform,
                     new_callable=mock.PropertyMock):
       with mock.patch('filestore_utils.get_filestore', return_value=None):
-        with mock.patch('ci_environment.github._get_event_data',
+        with mock.patch('platform_config.github._get_event_data',
                         return_value={}):
           config = _create_config()
           workspace = workspace_utils.Workspace(config)

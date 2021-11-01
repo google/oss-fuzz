@@ -15,10 +15,10 @@
 import logging
 import os
 
-import ci_environment
+import platform_config
 
 
-class CiEnvironment(ci_environment.BaseCiEnvironment):
+class CiEnvironment(platform_config.BaseCiEnvironment):
   """CI environment for Google Cloud Build."""
 
   @property

@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for ci_environment."""
+"""Tests for platform_config."""
 import os
 import unittest
 
-import ci_environment
+import platform_config
 import test_helpers
 
 
@@ -26,7 +26,7 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     test_helpers.patch_environ(self)
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
-    self.env = ci_environment.BaseCiEnvironment()
+    self.env = platform_config.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
@@ -60,7 +60,7 @@ class ProjectSrcPathTest(unittest.TestCase):
     GitHub."""
     project_src_path = 'project-src'
     os.environ['PROJECT_SRC_PATH'] = project_src_path
-    generic_ci_env = ci_environment.BaseCiEnvironment()
+    generic_ci_env = platform_config.BaseCiEnvironment()
     self.assertEqual(generic_ci_env.project_src_path, project_src_path)
 
 
@@ -69,7 +69,7 @@ class GetGitUrlTest(unittest.TestCase):
 
   def setUp(self):
     test_helpers.patch_environ(self)
-    self.env = ci_environment.BaseCiEnvironment()
+    self.env = platform_config.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
