@@ -55,13 +55,13 @@ class BaseCiEnvironment:
   @property
   def base_commit(self):
     """Returns the base commit to diff against (commit fuzzing)."""
-    # !!! base_commit ->git_base_commit
+    # TODO(metzman) Rename base_commit to git_base_commit.
     return os.getenv('GIT_BASE_COMMIT')
 
   @property
   def base_ref(self):
     """Returns the base branch to diff against (pr fuzzing)."""
-    # !!! base_ref ->git_base_ref
+    # TODO(metzman) Rename base_ref to git_base_ref.
     return os.getenv('GIT_BASE_REF')
 
   @property
@@ -79,12 +79,14 @@ class BaseCiEnvironment:
     return None
 
   @property
-  def project_repo_owner_and_name(self):
-    """Returns a tuple containing the project repo owner and None."""
-    # !!! Split this.
-    repository = os.getenv('REPOSITORY')
-    # Repo owner is a githubism.
-    return None, repository
+  def project_repo_owner(self):
+    """Returns the project repo owner (githubism)."""
+    return None
+
+  @property
+  def project_repo_name(self):
+    """Returns the project repo name."""
+    return os.environ.get('REPOSITORY')
 
   @property
   def actor(self):

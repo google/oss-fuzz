@@ -177,7 +177,7 @@ class RunFuzzersConfigTest(unittest.TestCase):
 
 
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
-  """Tests for BaseCiEnv.get_project_repo_owner_and_name."""
+  """Tests for get_project_repo_owner and get_project_repo_name."""
 
   @mock.patch('ci_environment.github._get_event_data', return_value={})
   def setUp(self, _):
@@ -185,33 +185,39 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
     self.github_env = ci_environment.github.CiEnvironment()
-    self.generic_ci_env = ci_environment.BaseCiEnvironment()
+    self.base_ci_env = ci_environment.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
-                     (None, None))
+    self.assertIsNone(self.base_ci_env.project_repo_name)
 
-  def test_empty_repository(self):
+  def test_owner(self):
+    """Tests that the correct result is returned for owner."""
+    self.assertIsNone(self.base_ci_env.project_repo_owner)
+
+  def test_repository(self):
     """Tests that the correct result is returned when repository is an empty
     string."""
     os.environ['REPOSITORY'] = ''
-    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
-                     (None, ''))
+    self.assertEqual(self.base_ci_env.project_repo_name, '')
 
-  def test_github_repository(self):
+  def test_github_repository_owner(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
-    self.assertEqual(self.github_env.project_repo_owner_and_name,
-                     (self.repo_owner, self.repo_name))
+    self.assertEqual(self.github_env.project_repo_owner, self.repo_owner)
+
+  def test_github_repository_name(self):
+    """Tests that the correct result is returned when repository contains the
+    owner and repo name (as it does on GitHub)."""
+    os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
+    self.assertEqual(self.github_env.project_repo_name, self.repo_name)
 
   def test_nongithub_repository(self):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
     os.environ['REPOSITORY'] = self.repo_name
-    self.assertEqual(self.generic_ci_env.project_repo_owner_and_name,
-                     (None, self.repo_name))
+    self.assertEqual(self.base_ci_env.project_repo_name, self.repo_name)
 
 
 class GetGitUrlTest(unittest.TestCase):
@@ -221,11 +227,11 @@ class GetGitUrlTest(unittest.TestCase):
   def setUp(self, _):
     test_helpers.patch_environ(self)
     self.github_env = ci_environment.github.CiEnvironment()
-    self.generic_ci_env = ci_environment.BaseCiEnvironment()
+    self.base_ci_env = ci_environment.BaseCiEnvironment()
 
   def test_unset_repository(self):
     """Tests that the correct result is returned when repository is not set."""
-    self.assertEqual(self.generic_ci_env.git_url, None)
+    self.assertEqual(self.base_ci_env.git_url, None)
 
   def test_github_repository(self):
     """Tests that the correct result is returned when repository contains the
@@ -238,7 +244,7 @@ class GetGitUrlTest(unittest.TestCase):
     """Tests that the correct result is returned when repository contains the
     just the repo name (as it does outside of GitHub)."""
     os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
-    self.assertEqual(None, self.generic_ci_env.git_url)
+    self.assertEqual(None, self.base_ci_env.git_url)
 
 
 class GetSanitizerTest(unittest.TestCase):

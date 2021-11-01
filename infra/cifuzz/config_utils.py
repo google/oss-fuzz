@@ -96,11 +96,8 @@ class BaseConfig:
     self.project_src_path = self.ci_env.project_src_path
     self.actor = self.ci_env.actor
     self.token = self.ci_env.token
-
-    # TODO(metzman): This method is weird because owner is a GitHubism.
-    # Try to seperate it into two methods.
-    self.project_repo_owner, self.project_repo_name = (
-        self.ci_env.project_repo_owner_and_name)
+    self.project_repo_owner = self.ci_env.project_repo_owner
+    self.project_repo_name = self.ci_env.project_repo_name
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()

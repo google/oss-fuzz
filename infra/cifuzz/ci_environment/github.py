@@ -79,13 +79,23 @@ class CiEnvironment(ci_environment.BaseCiEnvironment):
     return os.path.join(self.workspace, project_src_path)
 
   @property
-  def project_repo_owner_and_name(self):
+  def _project_repo_owner_and_name(self):
     """Returns a tuple containing the project repo owner and the name of the
     repo."""
     # On GitHub this includes owner and repo name.
     repository = os.getenv('GITHUB_REPOSITORY')
     # Use os.path.split to split owner from repo.
     return os.path.split(repository)
+
+  @property
+  def project_repo_owner(self):
+    """Returns the project repo owner (githubism)."""
+    return self._project_repo_owner_and_name[0]
+
+  @property
+  def project_repo_name(self):
+    """Returns the project repo name."""
+    return self._project_repo_owner_and_name[1]
 
   @property
   def git_url(self):
