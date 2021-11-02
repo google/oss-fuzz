@@ -195,6 +195,9 @@ class RunFuzzersConfig(BaseConfig):
     self.report_unreproducible_crashes = environment.get_bool(
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
 
+    self.report_timeouts = environment.get_bool('REPORT_TIMEOUTS', False)
+    self.report_ooms = environment.get_bool('REPORT_OOMS', True)
+
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
     if not os.getenv('CIFUZZ_TEST') and not self._run_config_validate():

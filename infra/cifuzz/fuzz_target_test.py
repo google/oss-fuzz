@@ -14,6 +14,7 @@
 """Tests the functionality of the fuzz_target module."""
 
 import os
+import shutil
 import tempfile
 import unittest
 from unittest import mock
@@ -41,6 +42,8 @@ EXAMPLE_FUZZER = 'example_crash_fuzzer'
 # Mock return values for engine_impl.reproduce.
 EXECUTE_SUCCESS_RESULT = engine.ReproduceResult([], 0, 0, '')
 EXECUTE_FAILURE_RESULT = engine.ReproduceResult([], 1, 0, '')
+
+TEST_DATA_PATH = os.path.join(os.path.dirname(__file__), 'test_data')
 
 
 def _create_config(**kwargs):
@@ -100,7 +103,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
       mock_get_engine().reproduce.side_effect = all_repro
 
       result = self.target.is_reproducible(self.testcase_path,
-                                           self.fuzz_target_path)
+                                           self.fuzz_target_path, [])
       mock_get_engine().reproduce.assert_called_once_with(
           '/workspace/build-out/fuzz-target',
           '/testcase',
@@ -116,8 +119,8 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
       mock_get_engine().reproduce.side_effect = last_time_repro
       self.assertTrue(
-          self.target.is_reproducible(self.testcase_path,
-                                      self.fuzz_target_path))
+          self.target.is_reproducible(self.testcase_path, self.fuzz_target_path,
+                                      []))
       self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS,
                        mock_get_engine().reproduce.call_count)
 
@@ -125,7 +128,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible raises an error if it could not attempt
     reproduction because the fuzzer doesn't exist."""
     with self.assertRaises(fuzz_target.ReproduceError):
-      self.target.is_reproducible(self.testcase_path, '/non-existent-path')
+      self.target.is_reproducible(self.testcase_path, '/non-existent-path', [])
 
   def test_unreproducible(self, _):
     """Tests that is_reproducible returns False for a crash that did not
@@ -134,7 +137,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     with mock.patch('clusterfuzz.fuzz.get_engine') as mock_get_engine:
       mock_get_engine().reproduce.side_effect = all_unrepro
       result = self.target.is_reproducible(self.testcase_path,
-                                           self.fuzz_target_path)
+                                           self.fuzz_target_path, [])
       self.assertFalse(result)
 
 
@@ -167,7 +170,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     """Tests that a new reproducible crash returns True."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.target.out_dir = tmp_dir
-      self.assertTrue(self.target.is_crash_reportable(self.testcase_path))
+      self.assertTrue(self.target.is_crash_reportable(self.testcase_path, []))
     mock_info.assert_called_with(
         'The crash is not reproducible on previous build. '
         'Code change (pr/commit) introduced crash.')
@@ -191,7 +194,8 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
                     side_effect=is_reproducible_retvals):
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
                       return_value=self.oss_fuzz_build_path):
-        self.assertFalse(self.target.is_crash_reportable(self.testcase_path))
+        self.assertFalse(self.target.is_crash_reportable(
+            self.testcase_path, []))
 
   @mock.patch('logging.info')
   @mock.patch('fuzz_target.FuzzTarget.is_reproducible', return_value=[True])
@@ -201,7 +205,9 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     is new)."""
     os.remove(self.oss_fuzz_target_path)
 
-    def is_reproducible_side_effect(_, target_path):
+    def is_reproducible_side_effect(testcase, target_path, reproduce_arguments):
+      del testcase
+      del reproduce_arguments
       if os.path.dirname(target_path) == self.oss_fuzz_build_path:
         raise fuzz_target.ReproduceError()
       return True
@@ -211,9 +217,9 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
         side_effect=is_reproducible_side_effect) as mock_is_reproducible:
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
                       return_value=self.oss_fuzz_build_path):
-        self.assertTrue(self.target.is_crash_reportable(self.testcase_path))
+        self.assertTrue(self.target.is_crash_reportable(self.testcase_path, []))
     mock_is_reproducible.assert_any_call(self.testcase_path,
-                                         self.oss_fuzz_target_path)
+                                         self.oss_fuzz_target_path, [])
     mock_info.assert_called_with(
         'Could not run previous build of target to determine if this code '
         'change (pr/commit) introduced crash. Assuming crash was newly '
@@ -238,6 +244,35 @@ class FuzzTest(fake_filesystem_unittest.TestCase):
     fuzz_target_artifact = self.fuzz_target._target_artifact_path()
     self.assertEqual('/workspace/out/artifacts/fuzz-target/address',
                      fuzz_target_artifact)
+
+
+class TimeoutIntegrationTest(unittest.TestCase):
+  """Tests handling of fuzzer timeout (timeout crashes reported by
+  libFuzzer)."""
+  TIMEOUT_FUZZER_NAME = 'timeout_fuzzer'
+
+  @parameterized.parameterized.expand([(True, True), (False, False)])
+  def test_timeout_reported(self, report_timeouts, expect_crash):
+    """Tests that timeouts are not reported."""
+    with test_helpers.temp_dir_copy(TEST_DATA_PATH) as temp_dir:
+      fuzz_target_path = os.path.join(temp_dir, 'build-out',
+                                      self.TIMEOUT_FUZZER_NAME)
+      shutil.copy(os.path.join(temp_dir, self.TIMEOUT_FUZZER_NAME),
+                  fuzz_target_path)
+      deployment = _create_deployment(workspace=temp_dir,
+                                      report_timeouts=report_timeouts)
+      config = deployment.config
+      fuzz_target_obj = fuzz_target.FuzzTarget(fuzz_target_path,
+                                               fuzz_target.REPRODUCE_ATTEMPTS,
+                                               deployment.workspace, deployment,
+                                               config)
+      with mock.patch('clusterfuzz._internal.bot.fuzzers.libfuzzer.'
+                      'fix_timeout_argument_for_reproduction') as _:
+        with mock.patch(
+            'clusterfuzz._internal.bot.fuzzers.libFuzzer.fuzzer.get_arguments',
+            return_value=['-timeout=1', '-rss_limit_mb=2560']):
+          fuzz_result = fuzz_target_obj.fuzz()
+    self.assertEqual(bool(fuzz_result.testcase), expect_crash)
 
 
 if __name__ == '__main__':

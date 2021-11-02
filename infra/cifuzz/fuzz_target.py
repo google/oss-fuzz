@@ -169,8 +169,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
 
-      # Libfuzzer timeout was reached.
       if not result.crashes:
+        # Libfuzzer max time was reached.
         logging.info('Fuzzer %s finished with no crashes discovered.',
                      self.target_name)
         return FuzzResult(None, None, self.latest_corpus_path)
@@ -179,7 +179,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
-      if self.is_crash_reportable(crash.input_path):
+      if self.is_crash_reportable(crash.input_path, crash.reproduce_args):
         # We found a bug in the fuzz target and we will report it.
         saved_path = self._save_crash(crash)
         return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
@@ -211,12 +211,14 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       os.remove(self.target_path)
     logging.info('Done deleting.')
 
-  def is_reproducible(self, testcase, target_path):
+  def is_reproducible(self, testcase, target_path, reproduce_args):
     """Checks if the testcase reproduces.
 
       Args:
         testcase: The path to the testcase to be tested.
         target_path: The path to the fuzz target to be tested
+        reproduce_args: The arguments to pass to the target to reproduce the
+          crash.
 
       Returns:
         True if crash is reproducible and we were able to run the
@@ -240,7 +242,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         result = engine_impl.reproduce(target_path,
                                        testcase,
-                                       arguments=[],
+                                       arguments=reproduce_args,
                                        max_time=REPRODUCE_TIME_SECONDS)
 
         if result.return_code != 0:
@@ -253,13 +255,15 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  target_path)
     return False
 
-  def is_crash_reportable(self, testcase):
+  def is_crash_reportable(self, testcase, reproduce_args):
     """Returns True if a crash is reportable. This means the crash is
     reproducible but not reproducible on a build from the ClusterFuzz deployment
     (meaning the crash was introduced by this PR/commit/code change).
 
     Args:
       testcase: The path to the testcase that triggered the crash.
+      reproduce_args: The arguments to pass to the target to reproduce the
+      crash.
 
     Returns:
       True if the crash was introduced by the current pull request.
@@ -267,12 +271,16 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     Raises:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
+
+    if not self.is_crash_type_reportable(testcase):
+      return False
+
     if not os.path.exists(testcase):
       raise ReproduceError(f'Testcase {testcase} not found.')
 
     try:
       reproducible_on_code_change = self.is_reproducible(
-          testcase, self.target_path)
+          testcase, self.target_path, reproduce_args)
     except ReproduceError as error:
       logging.error('Could not check for crash reproducibility.'
                     'Please file an issue:'
@@ -284,9 +292,20 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       return self.config.report_unreproducible_crashes
 
     logging.info('Crash is reproducible.')
-    return self.is_crash_novel(testcase)
+    return self.is_crash_novel(testcase, reproduce_args)
 
-  def is_crash_novel(self, testcase):
+  def is_crash_type_reportable(self, testcase):
+    """Returns True if |testcase| is an actual crash. If crash is a timeout or
+    OOM then returns True if config says we should report those."""
+    # TODO(metzman): Use a less hacky method.
+    testcase = os.path.basename(testcase)
+    if testcase.startswith('oom-'):
+      return self.config.report_ooms
+    if testcase.startswith('timeout-'):
+      return self.config.report_timeouts
+    return True
+
+  def is_crash_novel(self, testcase, reproduce_args):
     """Returns whether or not the crash is new. A crash is considered new if it
     can't be reproduced on an older ClusterFuzz build of the target."""
     if not os.path.exists(testcase):
@@ -303,7 +322,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     try:
       reproducible_on_clusterfuzz_build = self.is_reproducible(
-          testcase, clusterfuzz_target_path)
+          testcase, clusterfuzz_target_path, reproduce_args)
     except ReproduceError:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
