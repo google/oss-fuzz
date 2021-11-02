@@ -17,12 +17,14 @@ limitations under the License.
 #include <unistd.h>
 
 #include "dwarf.h"
-#include "dwarf_incl.h"
-#include "dwarf_alloc.h"
-#include "dwarfstring.h"
 #include "libdwarf.h"
 #include "libdwarf_private.h"
+#include "dwarf_alloc.h"
 
+
+/*
+ * A fuzzer that simulates a small part of the simplereader.c example.
+ */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
@@ -36,14 +38,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   Dwarf_Ptr errarg = 0;
   Dwarf_Handler errhand = 0;
   Dwarf_Debug dbg = _dwarf_get_debug();
-  Dwarf_Error err = 0;
-  Dwarf_Error *errp = &err;
+  Dwarf_Error *errp = NULL;
 #define MACHO_PATH_LEN 2000
   char macho_real_path[2000];
-  dwarf_init_path(filename, macho_real_path, MACHO_PATH_LEN, DW_DLC_READ,
-                  DW_GROUPNUMBER_ANY, errhand, errarg, &dbg, 0, 0, 0, errp);
+  dwarf_init_path(filename, macho_real_path, MACHO_PATH_LEN,
+                  DW_GROUPNUMBER_ANY, errhand, errarg, &dbg, errp);
 
-  dwarf_finish(dbg, errp);
+  dwarf_finish(dbg);
 
   unlink(filename);
   return 0;

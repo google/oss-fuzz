@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://git.code.sf.net/p/libdwarf/code libdwarf
+RUN git clone --depth 1 https://github.com/davea42/libdwarf-code libdwarf
 WORKDIR libdwarf
 COPY build.sh $SRC/
 COPY fuzz*.c $SRC/
