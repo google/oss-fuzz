@@ -5,6 +5,7 @@ auto_ccs:
 - philip.withnall@gmail.com
 - mwl458@gmail.com
 - iain@orangesquash.org.uk
+- slomo@coaxion.net
 sanitizers:
 - address
 - undefined
