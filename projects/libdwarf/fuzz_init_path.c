@@ -13,7 +13,12 @@ limitations under the License.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "dwarf.h"
+#include "dwarf_incl.h"
+#include "dwarf_alloc.h"
 #include "dwarfstring.h"
 #include "libdwarf.h"
 #include "libdwarf_private.h"
@@ -30,12 +35,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fclose(fp);
   Dwarf_Ptr errarg = 0;
   Dwarf_Handler errhand = 0;
-  Dwarf_Debug dbg = 0;
-  Dwarf_Error *errp = 0;
+  Dwarf_Debug dbg = _dwarf_get_debug();
+  Dwarf_Error err = 0;
+  Dwarf_Error *errp = &err;
 #define MACHO_PATH_LEN 2000
   char macho_real_path[2000];
   dwarf_init_path(filename, macho_real_path, MACHO_PATH_LEN, DW_DLC_READ,
                   DW_GROUPNUMBER_ANY, errhand, errarg, &dbg, 0, 0, 0, errp);
+
+  dwarf_finish(dbg, errp);
 
   unlink(filename);
   return 0;
