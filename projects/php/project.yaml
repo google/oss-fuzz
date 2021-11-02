@@ -11,4 +11,5 @@ sanitizers:
 architectures:
  - x86_64
  - i386
+view_restrictions: none
 main_repo: 'https://github.com/php/php-src.git'
