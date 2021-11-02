@@ -98,6 +98,8 @@ class BaseConfig:
     self.token = self.platform_conf.token
     self.project_repo_owner = self.platform_conf.project_repo_owner
     self.project_repo_name = self.platform_conf.project_repo_name
+    self.docker_in_docker = self.platform_conf.docker_in_docker
+    self.filestore = self.platform_conf.filestore
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
@@ -108,8 +110,6 @@ class BaseConfig:
     self.git_store_branch = os.environ.get('GIT_STORE_BRANCH')
     self.git_store_branch_coverage = os.environ.get('GIT_STORE_BRANCH_COVERAGE',
                                                     self.git_store_branch)
-    self.docker_in_docker = os.environ.get('DOCKER_IN_DOCKER')
-    self.filestore = os.environ.get('FILESTORE')
     self.cloud_bucket = os.environ.get('CLOUD_BUCKET')
     self.no_clusterfuzz_deployment = environment.get_bool(
         'NO_CLUSTERFUZZ_DEPLOYMENT', False)
