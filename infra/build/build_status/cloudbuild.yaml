@@ -1,0 +1,10 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/build-status
+  - '-f'
+  - infra/build_status/Dockerfile
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', 'gcr.io/oss-fuzz-base/build-status']
