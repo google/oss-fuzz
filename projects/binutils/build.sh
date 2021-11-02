@@ -16,6 +16,8 @@
 ################################################################################
 
 export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+export AFL_ENABLE_CMPLOG=0
+export AFL_LAF_CHANCE=30
 
 # build project
 if [ "$SANITIZER" = undefined ]; then
