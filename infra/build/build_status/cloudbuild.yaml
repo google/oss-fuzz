@@ -6,5 +6,6 @@ steps:
   - gcr.io/oss-fuzz-base/build-status
   - '-f'
   - infra/build/build_status/Dockerfile
+  - ./build/
 - name: 'gcr.io/cloud-builders/docker'
   args: ['run', 'gcr.io/oss-fuzz-base/build-status']
