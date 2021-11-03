@@ -101,7 +101,7 @@ class BasePlatformConfig:
   @property
   def docker_in_docker(self):
     """Returns whether or not CFL is running using DIND."""
-    return os.environ.get('DOCKER_IN_DOCKER')
+    return os.environ.get('DOCKER_IN_DOCKER', False)
 
   @property
   def filestore(self):
