@@ -1,6 +1,6 @@
 # action.yml
 name: 'build-fuzzers'
-description: "Builds an OSS-Fuzz project's fuzzers."
+description: "Builds project's fuzzers."
 inputs:
   language:
     description: 'Programming language project is written in.'
@@ -41,7 +41,7 @@ inputs:
     default: false
   github-token:
     description: |
-      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
+      Token for GitHub API.
       You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
       hardcode the token.
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):

@@ -1,6 +1,6 @@
 # action.yml
 name: 'run-fuzzers'
-description: 'Runs fuzz target binaries for a specified length of time.'
+description: 'Runs fuzz target binaries.'
 inputs:
   language:
     description: 'Programming language project is written in.'
@@ -27,7 +27,7 @@ inputs:
     default: 'code-change'
   github-token:
     description: |
-      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
+      Token for GitHub API.
       You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
       hardcode the token.
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
@@ -49,19 +49,18 @@ inputs:
     default: gh-pages
     required: false
   report-unreproducible-crashes:
-    description: 'If True, then unreproducible crashes will be reported by CIFuzz.'
+    description: 'If True, then unreproducible crashes will be reported by ClusterFuzzLite.'
     required: false
     default: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
   env:
-    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
-    LANGUAGE: ${{ inputs.language }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
+    MODE: ${{ inputs.mode }}
+    LANGUAGE: ${{ inputs.language }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     GIT_STORE_REPO: ${{ inputs.storage-repo }}
