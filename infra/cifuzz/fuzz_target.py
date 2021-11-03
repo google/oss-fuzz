@@ -184,7 +184,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
-      if self.is_crash_reportable(crash.input_path, crash.reproduce_args):
+      if self.is_crash_reportable(crash.input_path,
+                                  crash.reproduce_args,
+                                  batch=batch):
         # We found a bug in the fuzz target and we will report it.
         saved_path = self._save_crash(crash)
         return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
@@ -260,7 +262,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                  target_path)
     return False
 
-  def is_crash_reportable(self, testcase, reproduce_args):
+  def is_crash_reportable(self, testcase, reproduce_args, batch=False):
     """Returns True if a crash is reportable. This means the crash is
     reproducible but not reproducible on a build from the ClusterFuzz deployment
     (meaning the crash was introduced by this PR/commit/code change).
@@ -297,6 +299,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       return self.config.report_unreproducible_crashes
 
     logging.info('Crash is reproducible.')
+    if batch:
+      # We don't need to check if the crash is novel for batch fuzzing.
+      return True
+
     return self.is_crash_novel(testcase, reproduce_args)
 
   def is_crash_type_reportable(self, testcase):
