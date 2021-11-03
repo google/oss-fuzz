@@ -2,3 +2,5 @@ homepage: "https://github.com/bluez/bluez"
 language: c
 primary_contact: "someone@bluez.com"
 main_repo: "https://github.com/bluez/bluez"
+auto_ccs:
+  - "david@adalogics.com"

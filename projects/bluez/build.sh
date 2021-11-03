@@ -20,10 +20,9 @@ autoreconf -f
 ./configure
 make
 
-DEP_INCLUDES="-I. -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I./lib -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include  -I./lib -I./obexd/src"
-
+INCLUDES="-I. -I./lib"
 STATIC_LIBS="./src/.libs/libshared-glib.a ./lib/.libs/libbluetooth-internal.a  -l:libical.a -l:libicalss.a -l:libicalvcal.a -l:libdbus-1.a -l:libglib-2.0.a"
-$CC $CFLAGS $LIB_FUZZING_ENGINE $DEP_INCLUDES \
+$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
  $SRC/fuzz_sdp.c -o $OUT/fuzz_sdp \
  $STATIC_LIBS -ldl -lpthread
 
