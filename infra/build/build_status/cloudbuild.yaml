@@ -7,5 +7,5 @@ steps:
   - '-f'
   - infra/build/build_status/Dockerfile
   - .
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['run', 'gcr.io/oss-fuzz-base/build-status']
+- name: 'gcr.io/oss-fuzz-base/build-status'
+  args: []
