@@ -28,9 +28,11 @@ import stack_parser
 
 logs.init()
 
-# Use a fixed seed for determinism. Use len_control=0 since we don't have enough
-# time fuzzing for len_control to make sense (probably).
-LIBFUZZER_OPTIONS = ['-seed=1337', '-len_control=0']
+# Use len_control=0 since we don't have enough time fuzzing for len_control to
+# make sense (probably).
+LIBFUZZER_OPTIONS_BATCH = ['-len_control=0']
+# Use a fixed seed for determinism for code change fuzzing.
+LIBFUZZER_OPTIONS_CODE_CHANGE = LIBFUZZER_OPTIONS_BATCH + ['-seed=1337']
 
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
@@ -142,7 +144,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
-  def fuzz(self):
+  def fuzz(self, batch=False):
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
@@ -164,7 +166,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                       env.build_dir)
         options.merge_back_new_testcases = False
         options.analyze_dictionary = False
-        options.arguments.extend(LIBFUZZER_OPTIONS)
+        if batch:
+          options.arguments.extend(LIBFUZZER_OPTIONS_BATCH)
+        else:
+          options.arguments.extend(LIBFUZZER_OPTIONS_CODE_CHANGE)
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
