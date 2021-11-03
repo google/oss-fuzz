@@ -298,7 +298,7 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
-                                 nargs=argparse.REMAINDER)
+                                 nargs='*')
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -344,7 +344,7 @@ def get_parser():  # pylint: disable=too-many-statements
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args',
                                 help='arguments to pass to the fuzzer',
-                                nargs=argparse.REMAINDER)
+                                nargs='*')
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
 
