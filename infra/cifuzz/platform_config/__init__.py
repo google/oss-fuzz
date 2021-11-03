@@ -99,6 +99,16 @@ class BasePlatformConfig:
     return None
 
   @property
+  def docker_in_docker(self):
+    """Returns whether or not CFL is running using DIND."""
+    return os.environ.get('DOCKER_IN_DOCKER', False)
+
+  @property
+  def filestore(self):
+    """Returns the filestore used to store persistant data."""
+    return os.environ.get('FILESTORE')
+
+  @property
   def git_url(self):
     """Returns the repo URL. This is only used by GitHub users. Right now it is
     needed by external on GitHub because we need to clone a new repo because the

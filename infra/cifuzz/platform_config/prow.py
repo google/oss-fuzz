@@ -52,3 +52,13 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   def base_commit(self):
     """Returns the base commit to diff against (commit fuzzing)."""
     return os.getenv('PULL_BASE_SHA')
+
+  @property
+  def docker_in_docker(self):
+    """Returns whether or not CFL is running using DIND."""
+    return True
+
+  @property
+  def filestore(self):
+    """Returns whether or not CFL is running using DIND."""
+    return os.environ.get('FILESTORE', 'gsutil')
