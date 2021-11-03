@@ -188,13 +188,15 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # Set up seed corpus for readelf in the form of a single ELF file.
   # Assuming all went well then we can simply create a fuzzer based on
   # the object files in the binutils directory.
-  cp $SRC/binutils-gdb/binutils/*.o $SRC/fuzz_readelf_seed_corpus/
+  cd $SRC/
+  mkdir corp
+  cp $SRC/binutils-gdb/binutils/*.o ./corp/
 
   git clone https://github.com/DavidKorczynski/binary-samples $SRC/binary-samples
-  cp $SRC/binary-samples/elf* $SRC/fuzz_readelf_seed_corpus/
-  cp $SRC/binary-samples/Mach* $SRC/fuzz_readelf_seed_corpus/
-  cp $SRC/binary-samples/pe* $SRC/fuzz_readelf_seed_corpus/
-  cp $SRC/binary-samples/lib* $SRC/fuzz_readelf_seed_corpus/
+  cp $SRC/binary-samples/elf* $SRC/corp
+  cp $SRC/binary-samples/Mach* $SRC/corp
+  cp $SRC/binary-samples/pe* $SRC/corp
+  cp $SRC/binary-samples/lib* $SRC/corp
 
   # Create a simple archive
   mkdir $SRC/tmp_archive
@@ -202,11 +204,11 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $SRC/binutils-gdb/binutils/is-ranlib.o $SRC/tmp_archive/
   cp $SRC/binutils-gdb/binutils/not-strip.o $SRC/tmp_archive/
   ar cr $SRC/seed_archive.a $SRC/tmp_archive/*.o
-  mv $SRC/seed_archive.a $SRC/fuzz_readelf_seed_corpus/seed_archive.a
+  mv $SRC/seed_archive.a ./corp/seed_archive.a
 
-  # Zip the folder together as OSS-Fuzz expects the seed corpus as ZIP
-  zip -r $OUT/fuzz_readelf_seed_corpus.zip $SRC/fuzz_readelf_seed_corpus
-
+  # Zip the folder together as OSS-Fuzz expects the seed corpus as ZIP, and
+  # then copy the folder around to various fuzzers.
+  zip -r -j $OUT/fuzz_readelf_seed_corpus.zip $SRC/corp
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_safe_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip

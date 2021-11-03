@@ -22,4 +22,3 @@ RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git bi
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
-COPY fuzz_readelf_seed_corpus $SRC/fuzz_readelf_seed_corpus
