@@ -18,6 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y wget cmake libjpeg-turbo8-dev zlib1g-dev libxmp-dev
 RUN git clone https://android.googlesource.com/platform/external/dng_sdk/
 
+# For seed corpus
+RUN git clone --depth=1 https://github.com/ianare/exif-samples exif-samples
+
 COPY build.sh $SRC/
 COPY *_fuzzer.cpp $SRC/
 WORKDIR dng_sdk

@@ -49,8 +49,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   -o $OUT/dng_fixed_validate_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
-# move seeds
-cd ../fuzzer/seeds/CVE_2020_9589
-zip -q $OUT/dng_parser_fuzzer_seed_corpus.zip *.dng
-zip -q $OUT/dng_stage_fuzzer_seed_corpus.zip *.dng
-zip -q $OUT/dng_fixed_validate_fuzzer_seed_corpus.zip *.dng
+# Create seed corpus and distribute to fuzzers
+mkdir $SRC/seed_corpus
+cp $SRC/dng_sdk/fuzzer/seeds/CVE_2020_9589/*.dng $SRC/seed_corpus/
+find $SRC/exif-samples/ -name "*.jpg" -exec cp {} $SRC/seed_corpus/ \;
+
+zip -r -j $OUT/dng_parser_fuzzer_seed_corpus.zip $SRC/seed_corpus
+cp $OUT/dng_parser_fuzzer_seed_corpus.zip $OUT/dng_stage_fuzzer_seed_corpus.zip
+cp $OUT/dng_parser_fuzzer_seed_corpus.zip $OUT/dng_fixed_validate_fuzzer_seed_corpus.zip
