@@ -144,7 +144,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
 
   # Need to do this before chdir.
   # TODO(https://github.com/google/oss-fuzz/issues/6758): Get rid of chdir.
-  if getattr(args, 'testcase_path'):
+  if hasattr(args, 'testcase_path'):
     args.testcase_path = _get_absolute_path(args.testcase_path)
   # Note: this has to happen after parse_args above as parse_args needs to know
   # the original CWD for external projects.
