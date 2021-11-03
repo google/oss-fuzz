@@ -184,7 +184,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
-      if self.is_crash_reportable(crash.input_path, crash.reproduce_args, batch=batch):
+      if self.is_crash_reportable(crash.input_path,
+                                  crash.reproduce_args,
+                                  batch=batch):
         # We found a bug in the fuzz target and we will report it.
         saved_path = self._save_crash(crash)
         return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
