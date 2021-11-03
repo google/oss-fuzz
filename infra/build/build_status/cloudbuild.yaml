@@ -10,4 +10,4 @@ steps:
 - name: 'gcr.io/oss-fuzz-base/build-status'
   args: []
 options:
-  logging: None
+  logging: CLOUD_LOGGING_ONLY
