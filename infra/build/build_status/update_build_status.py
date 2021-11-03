@@ -303,17 +303,17 @@ def update_badges():
     concurrent.futures.wait(futures)
 
 if __name__ == "__main__":
-    #not sure on this!
-    update_badges()
+  #not sure on this!
 
-    fuzz_tag = build_project.FUZZING_BUILD_TYPE
-    fuzz_status_filename = FUZZING_STATUS_FILENAME
+  fuzz_tag = build_project.FUZZING_BUILD_TYPE
+  fuzz_status_filename = FUZZING_STATUS_FILENAME
 
-    with ndb.Client().context():
-        update_build_status(fuzz_tag, fuzz_status_filename)
+  with ndb.Client().context():
+      update_build_status(fuzz_tag, fuzz_status_filename)
 
-    coverage_tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
-    coverage_status_filename = COVERAGE_STATUS_FILENAME
+  coverage_tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
+  coverage_status_filename = COVERAGE_STATUS_FILENAME
 
-    with ndb.Client().context():
-        update_build_status(coverage_tag, coverage_status_filename)
+  with ndb.Client().context():
+      update_build_status(coverage_tag, coverage_status_filename)
+  update_badges()
