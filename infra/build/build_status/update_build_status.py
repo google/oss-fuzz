@@ -239,33 +239,6 @@ def upload_log(build_id):
   return True
 
 
-# pylint: disable=no-member
-# def update_status(event, context):
-#   """Entry point for cloud function to update build statuses and badges."""
-#   del context
-
-#   if 'data' in event:
-#     status_type = base64.b64decode(event['data']).decode()
-#   else:
-#     raise RuntimeError('No data')
-
-#   if status_type == 'badges':
-#     update_badges()
-#     return
-
-#   if status_type == 'fuzzing':
-#     tag = build_project.FUZZING_BUILD_TYPE
-#     status_filename = FUZZING_STATUS_FILENAME
-#   elif status_type == 'coverage':
-#     tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
-#     status_filename = COVERAGE_STATUS_FILENAME
-#   else:
-#     raise RuntimeError('Invalid build status type ' + status_type)
-
-#   with ndb.Client().context():
-#     update_build_status(tag, status_filename)
-
-
 def load_status_from_gcs(filename):
   """Load statuses from bucket."""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
@@ -303,8 +276,6 @@ def update_badges():
     concurrent.futures.wait(futures)
 
 if __name__ == "__main__":
-  #not sure on this!
-
   fuzz_tag = build_project.FUZZING_BUILD_TYPE
   fuzz_status_filename = FUZZING_STATUS_FILENAME
 
