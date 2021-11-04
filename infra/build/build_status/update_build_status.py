@@ -274,6 +274,7 @@ def update_badges():
                             coverage_build_status))
     concurrent.futures.wait(futures)
 
+
 def main():
   """Entry point for cloudbuild"""
   fuzz_tag = build_project.FUZZING_BUILD_TYPE
@@ -288,6 +289,7 @@ def main():
   with ndb.Client().context():
     update_build_status(coverage_tag, coverage_status_filename)
   update_badges()
+
 
 if __name__ == "__main__":
   main()
