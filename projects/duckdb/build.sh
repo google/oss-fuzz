@@ -17,7 +17,7 @@
 
 make
 THIRD_PARTY_LIBS=$(find ./build/release/third_party/ -name "*.a")
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/duckdb/parse_fuzz_test.cpp \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/parse_fuzz_test.cpp \
     -o $OUT/parse_fuzz_test -I./ -I./src/include \
     ./build/release/src/libduckdb_static.a \
     ${THIRD_PARTY_LIBS}
