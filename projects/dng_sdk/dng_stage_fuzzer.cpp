@@ -39,7 +39,9 @@ limitations under the License.
 // This code is inspired by dng_validate.cpp and performs many of the same
 // operations in a simplified manner.
 void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
-                               bool linear, bool preview, bool should_proxy) {
+                               bool linear, bool preview, bool should_proxy,
+                               bool KeepOriginalFile, bool NeedsMeta,
+                               bool NeedsImage, int do_color_coding) {
   dng_host host;
   host.SetPreferredSize(0);
   host.SetMinimumSize(0);
@@ -48,6 +50,9 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
   host.SetSaveLinearDNG(linear);
   host.SetForPreview(preview);
   host.ValidateSizes();
+  host.SetKeepOriginalFile(KeepOriginalFile);
+  host.SetNeedsMeta(NeedsMeta);
+  host.SetNeedsImage(NeedsImage);
 
   AutoPtr<dng_negative> negative;
   try {
@@ -67,6 +72,15 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
 
       negative->SynchronizeMetadata();
       negative->SetFourColorBayer();
+      if (do_color_coding == 1) {
+        negative->SetRGB();
+      }
+      else if (do_color_coding == 2) {
+        negative->SetCMY();
+      }
+      else if (do_color_coding == 3) {
+        negative->SetGMCY();
+      }
       negative->BuildStage2Image(host);
       negative->BuildStage3Image(host, 1);
 
@@ -119,13 +133,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fclose(fp);
 
   // parse the data using a variable set of options for dng_host
-  runFuzzerWithVariableHost(filename, dngVersion_None, true, false, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_0_0_0, true, true, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_1_0_0, true, true, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_2_0_0, true, true, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_3_0_0, true, true, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_4_0_0, true, true, false);
-  runFuzzerWithVariableHost(filename, dngVersion_1_4_0_0, false, false, true);
+  runFuzzerWithVariableHost(filename, dngVersion_None, true, false, false, true, true, true, 1);
+  runFuzzerWithVariableHost(filename, dngVersion_1_0_0_0, true, true, false, true, true, true, 2);
+  runFuzzerWithVariableHost(filename, dngVersion_1_1_0_0, true, true, false, true, true, true, 3);
+  runFuzzerWithVariableHost(filename, dngVersion_1_2_0_0, true, true, false, true, true, true, 4);
+  runFuzzerWithVariableHost(filename, dngVersion_1_3_0_0, true, true, false, true, true, true, 1);
+  runFuzzerWithVariableHost(filename, dngVersion_1_4_0_0, true, true, false, true, true, true, 2);
+  runFuzzerWithVariableHost(filename, dngVersion_1_4_0_0, false, false, true, true, true, true, 3);
 
   unlink(filename);
   return 0;
