@@ -45,14 +45,32 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+  if (size < 512) {
+    return 0;
+  }
+
+  /* def file */
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
   FILE *fp = fopen(filename, "wb");
   if (!fp) {
     return 0;
   }
-  fwrite(data, size, 1, fp);
+  fwrite(data, 412, 1, fp);
   fclose(fp);
+
+  data += 412;
+  size -= 412;
+
+  char filename2[256];
+  sprintf(filename2, "/tmp/libfuzzer-2.%d", getpid());
+  FILE *fp2 = fopen(filename2, "wb");
+  if (!fp2) {
+    return 0;
+  }
+
+  fwrite(data, size, 1, fp2);
+  fclose(fp2);
 
   init_dlltool_global_state();
 
@@ -62,7 +80,9 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   // At the moment we focus on the def file processing
   def_file = filename;
   process_def_file(filename);
+  scan_obj_file(filename2);
 
   unlink(filename);
+  unlink(filename2);
   return 0;
 }
