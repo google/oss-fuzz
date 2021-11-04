@@ -15,9 +15,15 @@
 #
 ################################################################################
 
+export CFLAGS="${CFLAGS} -g"
+export CXXFLAGS="${CXXFLAGS} -g"
+
 mkdir build
 cd build
 cmake ../
 make
-$CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
-  $SRC/fuzz_init_path.c -o $OUT/fuzz_init_path ./src/lib/libdwarf/libdwarf.a
+
+for fuzzName in init_path init_binary; do
+  $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
+    $SRC/fuzz_${fuzzName}.c -o $OUT/fuzz_${fuzzName} ./src/lib/libdwarf/libdwarf.a
+done
