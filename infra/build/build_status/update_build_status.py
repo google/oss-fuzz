@@ -14,7 +14,6 @@
 #
 ################################################################################
 """Cloud function to request builds."""
-import base64
 import concurrent.futures
 import json
 import sys
@@ -280,11 +279,11 @@ if __name__ == "__main__":
   fuzz_status_filename = FUZZING_STATUS_FILENAME
 
   with ndb.Client().context():
-      update_build_status(fuzz_tag, fuzz_status_filename)
+    update_build_status(fuzz_tag, fuzz_status_filename)
 
   coverage_tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
   coverage_status_filename = COVERAGE_STATUS_FILENAME
 
   with ndb.Client().context():
-      update_build_status(coverage_tag, coverage_status_filename)
+    update_build_status(coverage_tag, coverage_status_filename)
   update_badges()
