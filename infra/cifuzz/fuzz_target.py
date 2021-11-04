@@ -24,7 +24,6 @@ import clusterfuzz.fuzz
 
 import config_utils
 import logs
-import stack_parser
 
 logs.init()
 
@@ -124,8 +123,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     shutil.copy(crash.input_path, target_reproducer_path)
 
     bug_summary_artifact_path = target_reproducer_path + '.summary'
-    stack_parser.parse_fuzzer_output(crash.stacktrace,
-                                     bug_summary_artifact_path)
+    with open(bug_summary_artifact_path, 'w') as handle:
+      handle.write(crash.stacktrace)
+
     return target_reproducer_path
 
   def prune(self):
