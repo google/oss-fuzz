@@ -274,7 +274,7 @@ def update_badges():
                             coverage_build_status))
     concurrent.futures.wait(futures)
 
-if __name__ == "__main__":
+def main():
   fuzz_tag = build_project.FUZZING_BUILD_TYPE
   fuzz_status_filename = FUZZING_STATUS_FILENAME
 
@@ -287,3 +287,6 @@ if __name__ == "__main__":
   with ndb.Client().context():
     update_build_status(coverage_tag, coverage_status_filename)
   update_badges()
+
+if __name__ == "__main__":
+  main()
