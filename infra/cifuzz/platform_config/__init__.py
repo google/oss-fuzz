@@ -15,6 +15,8 @@
 import logging
 import os
 
+import environment
+
 
 class BasePlatformConfig:
   """Base class for PlatformConfig subclasses."""
@@ -100,12 +102,12 @@ class BasePlatformConfig:
 
   @property
   def docker_in_docker(self):
-    """Returns whether or not CFL is running using DIND."""
-    return os.environ.get('DOCKER_IN_DOCKER', False)
+    """Returns whether or not CFL is running using Docker in Docker."""
+    return environment.get_bool('DOCKER_IN_DOCKER', False)
 
   @property
   def filestore(self):
-    """Returns the filestore used to store persistant data."""
+    """Returns the filestore used to store persistent data."""
     return os.environ.get('FILESTORE')
 
   @property

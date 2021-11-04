@@ -33,3 +33,8 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   def workspace(self):
     """Returns the workspace."""
     return os.getenv('WORKSPACE', '/builder/home')
+
+  @property
+  def filestore(self):
+    """Returns the filestore used to store persistent data."""
+    return os.environ.get('FILESTORE', 'gsutil')
