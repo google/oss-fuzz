@@ -17,7 +17,7 @@
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
-language: %(language)s"
+language: %(language)s
 primary_contact: "<primary_contact_email>"
 main_repo: "https://path/to/main/repo.git"
 """
@@ -101,6 +101,10 @@ EXTERNAL_BUILD_TEMPLATE = """\
 #     $LIB_FUZZING_ENGINE /path/to/library.a
 """
 
+EXTERNAL_PROJECT_YAML_TEMPLATE = """\
+language: %(language)s
+"""
+
 TEMPLATES = {
     'build.sh': BUILD_TEMPLATE,
     'Dockerfile': DOCKER_TEMPLATE,
@@ -109,5 +113,6 @@ TEMPLATES = {
 
 EXTERNAL_TEMPLATES = {
     'build.sh': EXTERNAL_BUILD_TEMPLATE,
-    'Dockerfile': EXTERNAL_DOCKER_TEMPLATE
+    'Dockerfile': EXTERNAL_DOCKER_TEMPLATE,
+    'project.yaml': EXTERNAL_PROJECT_YAML_TEMPLATE
 }
