@@ -275,6 +275,7 @@ def update_badges():
     concurrent.futures.wait(futures)
 
 def main():
+  """Entry point for cloudbuild"""
   fuzz_tag = build_project.FUZZING_BUILD_TYPE
   fuzz_status_filename = FUZZING_STATUS_FILENAME
 
