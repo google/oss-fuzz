@@ -4,4 +4,5 @@ primary_contact: "quack@duckdb.org"
 main_repo: "https://github.com/duckdb/duckdb/"
 auto_ccs: 
   - "hannes.muehleisen@gmail.com"
+  - "mark@duckdblabs.com"
   - "david@adalogics.com"
