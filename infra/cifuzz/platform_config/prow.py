@@ -55,10 +55,10 @@ class PlatformConfig(platform_config.BasePlatformConfig):
 
   @property
   def docker_in_docker(self):
-    """Returns whether or not CFL is running using DIND."""
+    """Returns True if using Docker in Docker."""
     return True
 
   @property
   def filestore(self):
-    """Returns whether or not CFL is running using DIND."""
+    """Returns the filestore used to store persistent data."""
     return os.environ.get('FILESTORE', 'gsutil')

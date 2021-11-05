@@ -98,8 +98,11 @@ class BaseConfig:
     self.token = self.platform_conf.token
     self.project_repo_owner = self.platform_conf.project_repo_owner
     self.project_repo_name = self.platform_conf.project_repo_name
-    self.docker_in_docker = self.platform_conf.docker_in_docker
     self.filestore = self.platform_conf.filestore
+
+    # This determines if builds are done using docker in docker
+    # rather than the normal method which is sibling containers.
+    self.docker_in_docker = self.platform_conf.docker_in_docker
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
