@@ -19,10 +19,10 @@
 
 echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$CXXFLAGS\" <linkflags>\"${LIB_FUZZING_ENGINE}\" ;" >user-config.jam
 
-./b2 --user-config=user-config.jam --toolset=clang-ossfuzz --prefix=$OUT --with-json link=static install
+./b2 --user-config=user-config.jam --toolset=clang-ossfuzz --prefix=$WORK/stage --with-json link=static install
 
 for i in libs/json/fuzzing/*.cpp; do
    fuzzer=$(basename $i .cpp)
-   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $OUT/include/ $OUT/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
+   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $WORK/stage/include/ $WORK/stage/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
 done
 
