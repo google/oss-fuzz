@@ -21,5 +21,7 @@ auto_ccs:
   - "krajshiva@google.com"
   - "dominik.klemba@trailofbits.com"
   - "dominik.czarnota@trailofbits.com"
+  - "luis.merino@x41-dsec.de"
+  - "dasfuzzer@x41-dsec.de"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
 main_repo: 'https://github.com/envoyproxy/envoy.git'
