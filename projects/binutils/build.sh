@@ -89,7 +89,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   sed -i 's/copy_mian/copy_main/g' fuzz_dlltool.h
 
   # Patch the rest
-  for i in objdump nm objcopy windres strings; do
+  for i in objdump nm objcopy windres strings addr2line; do
       sed -i 's/strip_main/strip_mian/g' $i.c
       sed -i 's/copy_main/copy_mian/g' $i.c
       sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' $i.c > fuzz_$i.h
@@ -97,7 +97,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   done
 
   # Compile all fuzzers
-  for i in objdump readelf nm objcopy windres ranlib_simulation strings; do
+  for i in objdump readelf nm objcopy windres ranlib_simulation strings addr2line; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
         -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
         -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
@@ -139,6 +139,11 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     # Link safe objdump fuzzer
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_objdump_safe fuzz_objdump_safe.o ${OBJS} ${LINK_LIBS}
+
+    # link addr2line fuzzer
+    OBJS="bucomm.o version.o filemode.o "
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_addr2line fuzz_addr2line.o ${OBJS} ${LINK_LIBS}
 
     # link objcopy fuzzer
     OBJS="is-strip.o rename.o rddbg.o debug.o stabs.o rdcoff.o wrstabs.o bucomm.o version.o filemode.o"
@@ -215,6 +220,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_addr2line_seed_corpus.zip
 
   # Seed targeted the pef file format
   mkdir $SRC/bfd_ext_seeds
@@ -222,7 +228,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
 
   # Copy options files
-  for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation; do
+  for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line; do
     echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
     echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
   done
