@@ -3,7 +3,7 @@ language: c++
 primary_contact: "chortos@inbox.lv"
 auto_ccs:
   - "greg@kinoho.net"
-  - "rodger.combs@gmail.com"
+  - "rcombs@rcombs.me"
   - "vabnick@gmail.com"
 sanitizers:
   - address
