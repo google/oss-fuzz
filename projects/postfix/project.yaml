@@ -4,3 +4,5 @@ primary_contact: "someone@postfix.com"
 main_repo: "https://github.com/vdukhovni/postfix"
 auto_ccs:
   - "david@adalogics.com"
+sanitizers:
+  - address
