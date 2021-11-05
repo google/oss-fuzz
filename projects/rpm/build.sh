@@ -21,4 +21,6 @@ sed -i 's/lua\ /lua5.2\ /g' ./configure
 ./configure --disable-sqlite --enable-static
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_header.c -DHAVE___PROGNAME ./lib/.libs/librpm.a ./rpmio/.libs/librpmio.a -I./include/ -I./ -Wl,--start-group -l:liblua5.2.a -l:libgcrypt.a -l:libgpg-error.a -l:libpopt.a -Wl,--end-group -lz -o $OUT/fuzz_header
+$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_header.c -o $OUT/fuzz_header \
+  -DHAVE___PROGNAME ./lib/.libs/librpm.a ./rpmio/.libs/librpmio.a -I./include/ -I./ \
+  -Wl,--start-group -l:liblua5.2.a -l:libgcrypt.a -l:libgpg-error.a -l:libpopt.a -Wl,--end-group
