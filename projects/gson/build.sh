@@ -17,8 +17,8 @@
 
 MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -X"
 $MVN --batch-mode --update-snapshots verify ${MAVEN_ARGS}
+find ./gson -name "gson-*.jar" -exec mv {} $OUT/gson.jar \;
 
-mv ./gson/target/gson-2.9.0-SNAPSHOT.jar $OUT/gson.jar
 ALL_JARS="gson.jar"
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):.:\$this_dir
