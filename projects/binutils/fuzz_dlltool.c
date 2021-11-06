@@ -41,6 +41,20 @@ init_dlltool_global_state() {
   def_file = NULL;
 }
 
+void callIntoDlltool(char *, char*, bool);
+void
+callIntoDlltool(char *deffile, char *objfile, bool var_export_all_symbols) {
+  init_dlltool_global_state();
+  program_name = "fuzz_dlltool";
+  mname = "mcore-elf";
+  export_all_symbols = var_export_all_symbols;
+
+  // At the moment we focus on the def file processing
+  def_file = deffile;
+  process_def_file(deffile);
+  scan_obj_file(objfile);
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
@@ -72,15 +86,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   fwrite(data, size, 1, fp2);
   fclose(fp2);
 
-  init_dlltool_global_state();
-
-  program_name = "fuzz_dlltool";
-  mname = "mcore-elf";
-
-  // At the moment we focus on the def file processing
-  def_file = filename;
-  process_def_file(filename);
-  scan_obj_file(filename2);
+  callIntoDlltool(filename, filename2, true);
+  callIntoDlltool(filename, filename2, false);
 
   unlink(filename);
   unlink(filename2);
