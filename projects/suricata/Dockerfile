@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y build-essential autoconf automake libtool make pkg-config  python flex bison zlib1g-dev libpcre3-dev cmake tshark
 
 # TODO libmagic, liblzma and other optional libraries
-ADD https://ftp.pcre.org/pub/pcre/pcre2-10.36.tar.gz pcre2-10.36.tar.gz
+ADD https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.39/pcre2-10.39.tar.gz pcre2-10.39.tar.gz
 ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
 ADD http://www.digip.org/jansson/releases/jansson-2.12.tar.gz jansson-2.12.tar.gz
 RUN git clone --depth=1 https://github.com/yaml/libyaml
