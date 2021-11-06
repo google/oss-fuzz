@@ -61,6 +61,7 @@ if [[ $CFLAGS != *-m32* ]]
 then
     make
 else
+    rustup target add i686-unknown-linux-gnu
     make -f Makefile.i386
 fi
 
