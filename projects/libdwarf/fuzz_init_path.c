@@ -37,7 +37,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fclose(fp);
   Dwarf_Ptr errarg = 0;
   Dwarf_Handler errhand = 0;
-  Dwarf_Debug dbg = _dwarf_get_debug();
+  Dwarf_Debug dbg = 0;
   Dwarf_Error *errp = NULL;
 #define MACHO_PATH_LEN 2000
   char macho_real_path[2000];

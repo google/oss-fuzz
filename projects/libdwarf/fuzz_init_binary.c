@@ -43,7 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   Dwarf_Ptr errarg = 0;
   Dwarf_Handler errhand = 0;
   Dwarf_Error *errp = NULL;
-  Dwarf_Debug dbg = _dwarf_get_debug();
+  Dwarf_Debug dbg = 0;
 
   my_init_fd = open(filename, O_RDONLY);
   if (my_init_fd != -1) {
