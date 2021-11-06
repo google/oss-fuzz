@@ -17,8 +17,8 @@
 
 # build dependencies statically
 (
-tar -xvzf pcre2-10.36.tar.gz
-cd pcre2-10.36
+tar -xvzf pcre2-10.39.tar.gz
+cd pcre2-10.39
 ./configure --disable-shared
 make -j$(nproc) clean
 make -j$(nproc) all
