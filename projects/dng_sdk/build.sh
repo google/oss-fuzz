@@ -24,10 +24,8 @@ ar cr libdns_sdk.a *.o
 # compile fuzzer
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp -o $OUT/dng_parser_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
-
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_stage_fuzzer.cpp -o $OUT/dng_stage_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
-
 
 sed -i 's/main/main2/g' $SRC/dng_sdk/source/dng_validate.cpp
 sed -i 's/printf ("Val/\/\//g' $SRC/dng_sdk/source/dng_validate.cpp
@@ -49,10 +47,14 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
   -o $OUT/dng_fixed_validate_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
+
 # Create seed corpus and distribute to fuzzers
 mkdir $SRC/seed_corpus
 cp $SRC/dng_sdk/fuzzer/seeds/CVE_2020_9589/*.dng $SRC/seed_corpus/
 find $SRC/exif-samples/ -name "*.jpg" -exec cp {} $SRC/seed_corpus/ \;
+
+# Download a compressed JPEG
+wget https://upload.wikimedia.org/wikipedia/commons/b/b2/JPEG_compression_Example.jpg -O $SRC/seed_corpus/compressed_JPEG.jpg
 
 zip -r -j $OUT/dng_parser_fuzzer_seed_corpus.zip $SRC/seed_corpus
 cp $OUT/dng_parser_fuzzer_seed_corpus.zip $OUT/dng_stage_fuzzer_seed_corpus.zip
