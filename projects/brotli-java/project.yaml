@@ -4,3 +4,7 @@ primary_contact: "someone@google.com"
 main_repo: "https://github.com/google/brotli"
 auto_ccs:
   - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
