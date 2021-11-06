@@ -14,6 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import java.awt.image.RasterFormatException;
 import java.io.IOException;
 import java.util.HashMap;
 import org.apache.commons.imaging.ImageReadException;
@@ -24,7 +25,7 @@ public class ImagingBmpFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     try {
       new BmpImageParser().getBufferedImage(new ByteSourceArray(input), new HashMap<>());
-    } catch (IOException | ImageReadException ignored) {
+    } catch (IOException | ImageReadException | IllegalArgumentException | NullPointerException | RasterFormatException ignored) {
     }
   }
 }
