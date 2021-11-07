@@ -22,6 +22,6 @@ public class FuzzParse {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       JsonParser.parseString(data.consumeRemainingAsString());
-    } catch (JsonSyntaxException expected) { }
+    } catch (JsonParseException expected) { }
   }
 }
