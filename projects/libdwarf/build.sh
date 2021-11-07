@@ -15,13 +15,23 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -g"
-export CXXFLAGS="${CXXFLAGS} -g"
+export CFLAGS="${CFLAGS} -g -Werror"
+export CXXFLAGS="${CXXFLAGS} -g -Werror"
 
 mkdir build
 cd build
 cmake ../
 make
+
+# Build corpus for fuzzing
+mkdir $SRC/corp
+cp $SRC/binary-samples/elf* $SRC/corp
+cp $SRC/binary-samples/Mach* $SRC/corp
+cp $SRC/binary-samples/pe* $SRC/corp
+cp $SRC/binary-samples/lib* $SRC/corp
+
+zip -r -j $OUT/fuzz_init_path_seed_corpus.zip $SRC/corp
+cp $OUT/fuzz_init_path_seed_corpus.zip $OUT/fuzz_init_binary_seed_corpus.zip
 
 for fuzzName in init_path init_binary; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \

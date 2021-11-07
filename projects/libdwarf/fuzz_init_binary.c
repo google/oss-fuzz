@@ -18,11 +18,11 @@ limitations under the License.
 #include <fcntl.h>
 #include <unistd.h>
 
+/*
+ * Libdwarf library callers can only use these headers.
+ */
 #include "dwarf.h"
 #include "libdwarf.h"
-#include "libdwarf_private.h"
-#include "dwarf_alloc.h"
-
 
 /*
  * A fuzzer that simulates a small part of the simplereader.c example.
