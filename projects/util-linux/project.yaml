@@ -1,4 +1,4 @@
-homepage: "https://github.com/karelzak/util-linux"
+homepage: "https://github.com/util-linux/util-linux"
 primary_contact: "ruediger.meier@ga-group.nl"
 language: c
 builds_per_day: 4
@@ -14,4 +14,4 @@ sanitizers:
   - address
   - undefined
   - memory
-main_repo: 'https://github.com/karelzak/util-linux'
+main_repo: 'https://github.com/util-linux/util-linux'
