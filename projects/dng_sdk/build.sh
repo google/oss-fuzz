@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+
 # compile source
 cd ./source
 rm dng_xmp*
@@ -51,7 +52,9 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DqDNGValidateTarget \
 # Create seed corpus and distribute to fuzzers
 mkdir $SRC/seed_corpus
 cp $SRC/dng_sdk/fuzzer/seeds/CVE_2020_9589/*.dng $SRC/seed_corpus/
-find $SRC/exif-samples/ -name "*.jpg" -exec cp {} $SRC/seed_corpus/ \;
+find $SRC/image-tiff/ -regextype sed -regex ".*\.\(pbm\|pgm\|tif\|tiff\|png\|ppm\|jpg\|exif\)" -exec cp {} $SRC/seed_corpus/ \;
+find $SRC/TiffLibrary/ -regextype sed -regex ".*\.\(pbm\|pgm\|tif\|tiff\|png\|ppm\|jpg\|exif\)" -exec cp {} $SRC/seed_corpus/ \;
+find $SRC/exif-samples/ -regextype sed -regex ".*\.\(pbm\|pgm\|tif\|tiff\|png\|ppm\|jpg\|exif\)" -exec cp {} $SRC/seed_corpus/ \;
 
 # Download a compressed JPEG
 wget https://upload.wikimedia.org/wikipedia/commons/b/b2/JPEG_compression_Example.jpg -O $SRC/seed_corpus/compressed_JPEG.jpg
