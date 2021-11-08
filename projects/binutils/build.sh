@@ -40,6 +40,7 @@ cd ../
 make clean
 make MAKEINFO=true && true
 
+
 # Due to a bug in AFLPP that occurs *sometimes* we continue only if we have the
 # libraries that we need
 if ([ -f ./libctf/.libs/libctf.a ]); then
@@ -75,6 +76,9 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # Compile the fuzzers.
   # The general strategy is to remove main functions such that the fuzzer (which has its own main)
   # can link against the code.
+
+  # Copy over precondition files
+  cp $SRC/binutils-preconditions/*.h .
 
   # Patching
   # First do readelf. We do this by changing readelf.c to readelf.h - the others will be changed
