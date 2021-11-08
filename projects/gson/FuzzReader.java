@@ -30,6 +30,6 @@ public class FuzzReader {
       while (reader.peek() != JsonToken.END_DOCUMENT) {
         adapter.read(reader);
       }
-    } catch (JsonSyntaxException | IllegalStateException | NumberFormatException | IOException expected) { }
+    } catch (JsonParseException | IllegalStateException | NumberFormatException | IOException expected) { }
   }
 }
