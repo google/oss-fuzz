@@ -1,9 +1,5 @@
 homepage: "https://github.com/libra/libra"
-primary_contact: "davidwong.crypto@gmail.com"
-auto_ccs:
-  - "davidwg@fb.com"
-  - "youngyl@fb.com"
-  - "fuzzing@fb.com"
+primary_contact: "david@adalogics.com"
 language: rust
 sanitizers:
   - address
