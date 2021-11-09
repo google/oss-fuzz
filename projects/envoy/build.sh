@@ -22,6 +22,12 @@ declare -r FUZZ_TARGET_QUERY='
 declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
 
 declare -r EXTRA_BAZEL_FLAGS="$(
+if [ -n "$CC" ]; then
+  echo "--action_env=CC=${CC}"
+fi
+if [ -n "$CXX" ]; then
+  echo "--action_env=CXX=${CXX}"
+fi
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
