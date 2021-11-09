@@ -24,7 +24,7 @@ BASE=$PWD
 cd ${BASE}/src/global
 $CC $CFLAGS -DHAS_DEV_URANDOM -DSNAPSHOT -UUSE_DYNAMIC_LIBS -DDEF_SHLIB_DIR=\"no\" \
                -UUSE_DYNAMIC_MAPS -I. -I../../include -DNO_EAI -DDEF_SMTPUTF8_ENABLE=\"no\" \
-                -g -O -DLINUX4 -c $SRC/fuzz_tok822.c
+                -g -O -DLINUX4 -Wformat -Wno-comment -fno-common -c $SRC/fuzz_tok822.c
 
 # Link fuzzers
 cd ${BASE}
