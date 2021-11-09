@@ -23,9 +23,7 @@ limitations under the License.
 #include "tok822.h"
 
 
-int
-LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
-
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
