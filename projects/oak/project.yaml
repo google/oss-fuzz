@@ -9,7 +9,7 @@ auto_ccs:
   - "ivanpetrov@google.com"
   - "razieh@google.com"
 sanitizers:
-  - address
+  - coverage
 fuzzing_engines:
   - libfuzzer
 main_repo: 'https://github.com/project-oak/oak'
