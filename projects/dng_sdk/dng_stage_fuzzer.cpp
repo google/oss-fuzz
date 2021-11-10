@@ -58,7 +58,6 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
 
   AutoPtr<dng_camera_profile> customCameraProfile (new dng_camera_profile ());
   customCameraProfile->SetName("custom profile");
-  customCameraProfile->SetFourColorBayer();
 
   AutoPtr<dng_negative> negative;
   try {
@@ -88,7 +87,6 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
       
       negative->SetStage3Gain(2);
       negative->SetIsPreview(true);
-
 
       negative->Parse(host, stream, info);
       negative->PostParse(host, stream, info);
