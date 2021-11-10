@@ -1,5 +1,5 @@
 homepage: "https://github.com/gravitational/teleport"
-main_repo: https://github.com/gravitational/teleport
+main_repo: "https://github.com/gravitational/teleport"
 primary_contact: "rjones@goteleport.com"
 auto_ccs :
   - "adam@adalogics.com"
