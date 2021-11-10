@@ -23,6 +23,8 @@ readonly FUZZERS=( \
   clangd-fuzzer \
   llvm-itanium-demangle-fuzzer \
   llvm-microsoft-demangle-fuzzer \
+  llvm-dlang-demangle-fuzzer \
+  llvm-rust-demangle-fuzzer \
   llvm-dwarfdump-fuzzer \
   llvm-isel-fuzzer \
   llvm-special-case-list-fuzzer \
