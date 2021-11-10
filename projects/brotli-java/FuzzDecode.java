@@ -23,7 +23,6 @@ public class FuzzDecode {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     byte[] buffer = new byte[65536];
     ByteArrayInputStream input = new ByteArrayInputStream(data.consumeBytes(65536));
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
     try {
       BrotliInputStream brotliInput = new BrotliInputStream(input);
       while (true) {
