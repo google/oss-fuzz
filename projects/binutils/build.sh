@@ -124,6 +124,14 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
     fuzz_objdump_safe.o -MD -MP -c -o fuzz_objdump_safe.o fuzz_objdump.c
 
+  # Targeted version of readelf. We try with a single target for now, but
+  # this should be revised at a later stage.
+  $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -DREADELF_TARGETED -I. -I../bfd -I./../bfd -I./../include \
+    -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+    -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+    -MD -MP -c -o fuzz_readelf_pef.o fuzz_readelf.c
+
+
   # Link the files, but only if everything went well, which we verify by checking
   # the presence of some object files.
   if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
@@ -133,7 +141,13 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib \
       -o $OUT/fuzz_readelf fuzz_readelf.o \
       ${OBJS} \
-      ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a
+      ${LINK_LIBS}
+
+    # Targeted readelf fuzzer
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib \
+      -o $OUT/fuzz_readelf_pef fuzz_readelf_pef.o \
+      ${OBJS} \
+      ${LINK_LIBS}
 
     # Link objdump fuzzer
     OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o"
@@ -218,12 +232,14 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   # Zip the folder together as OSS-Fuzz expects the seed corpus as ZIP, and
   # then copy the folder around to various fuzzers.
   zip -r -j $OUT/fuzz_readelf_seed_corpus.zip $SRC/corp
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_readelf_pef_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objdump_safe_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_nm_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_objcopy_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_addr2line_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_addr2line_seed_corpus.zip
 
   # Seed targeted the pef file format
@@ -232,9 +248,8 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
 
   # Copy options files
-  for ft in readelf objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line; do
+  for ft in readelf readelf_pef objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line; do
     echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
     echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
   done
-
 fi
