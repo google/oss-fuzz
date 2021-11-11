@@ -258,38 +258,35 @@ def update_badges():
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
     futures = []
-    with ndb.Client().context():
-      for project in Project.query():
-        if project.name not in project_build_statuses:
-          continue
-        # Certain projects (e.g. JVM and Python) do not have any coverage
-        # builds, but should still receive a badge.
-        coverage_build_status = None
-        if project.name in coverage_build_statuses:
-          coverage_build_status = coverage_build_statuses[project.name]
+    for project in Project.query():
+      if project.name not in project_build_statuses:
+        continue
+      # Certain projects (e.g. JVM and Python) do not have any coverage
+      # builds, but should still receive a badge.
+      coverage_build_status = None
+      if project.name in coverage_build_statuses:
+        coverage_build_status = coverage_build_statuses[project.name]
 
-        futures.append(
-            executor.submit(update_build_badges, project.name,
-                            project_build_statuses[project.name],
-                            coverage_build_status))
+      futures.append(
+          executor.submit(update_build_badges, project.name,
+                          project_build_statuses[project.name],
+                          coverage_build_status))
     concurrent.futures.wait(futures)
 
 
 def main():
   """Entry point for cloudbuild"""
-  fuzz_tag = build_project.FUZZING_BUILD_TYPE
-  fuzz_status_filename = FUZZING_STATUS_FILENAME
+  config = (
+    (build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
+    (build_and_run_coverage.COVERAGE_BUILD_TYPE, COVERAGE_STATUS_FILENAME)
+  )
 
-  with ndb.Client().context():
-    update_build_status(fuzz_tag, fuzz_status_filename)
+  for tag, filename in config:
+    update_build_status(tag, filename)
 
-  coverage_tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
-  coverage_status_filename = COVERAGE_STATUS_FILENAME
-
-  with ndb.Client().context():
-    update_build_status(coverage_tag, coverage_status_filename)
   update_badges()
 
 
 if __name__ == '__main__':
-  main()
+  with ndb.Client.context():
+    main()
