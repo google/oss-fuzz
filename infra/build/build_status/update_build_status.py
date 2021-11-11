@@ -276,10 +276,9 @@ def update_badges():
 
 def main():
   """Entry point for cloudbuild"""
-  config = (
-    (build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
-    (build_and_run_coverage.COVERAGE_BUILD_TYPE, COVERAGE_STATUS_FILENAME)
-  )
+  config = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
+            (build_and_run_coverage.COVERAGE_BUILD_TYPE,
+             COVERAGE_STATUS_FILENAME))
 
   for tag, filename in config:
     update_build_status(tag, filename)
@@ -288,5 +287,5 @@ def main():
 
 
 if __name__ == '__main__':
-  with ndb.Client.context():
+  with ndb.Client().context():
     main()
