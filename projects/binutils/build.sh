@@ -108,6 +108,12 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
         fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
   done
 
+  # fuzz_dwarf
+  $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
+        -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+        -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+        fuzz_dwarf.o -MD -MP -c -o fuzz_dwarf.o fuzz_dwarf.c
+
   # Special handling of dlltool
   for i in dlltool; do
       $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
@@ -157,6 +163,11 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
     # Link safe objdump fuzzer
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_objdump_safe fuzz_objdump_safe.o ${OBJS} ${LINK_LIBS}
+
+    # Link dwarf fuzzer
+    OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o demanguse.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
+      -o $OUT/fuzz_dwarf fuzz_dwarf.o ${OBJS} ${LINK_LIBS}
 
     # link addr2line fuzzer
     OBJS="bucomm.o version.o filemode.o "
@@ -240,7 +251,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_bdf_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_windres_seed_corpus.zip
   cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_addr2line_seed_corpus.zip
-  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_addr2line_seed_corpus.zip
+  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_dwarf_seed_corpus.zip
 
   # Seed targeted the pef file format
   mkdir $SRC/bfd_ext_seeds
