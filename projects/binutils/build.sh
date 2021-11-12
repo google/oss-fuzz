@@ -137,7 +137,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   if ([ -f dwarf.o ] && [ -f elfcomm.o ] && [ -f version.o ]); then
     LINK_LIBS="-Wl,--start-group ${LIBS} -Wl,--end-group"
     ## Readelf
-    OBJS="version.o unwind-ia64.o dwarf.o elfcomm.o"
+    OBJS="version.o unwind-ia64.o dwarf.o elfcomm.o demanguse.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib \
       -o $OUT/fuzz_readelf fuzz_readelf.o \
       ${OBJS} \
@@ -150,7 +150,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       ${LINK_LIBS}
 
     # Link objdump fuzzer
-    OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o"
+    OBJS="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o version.o filemode.o elfcomm.o od-xcoff.o demanguse.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_objdump fuzz_objdump.o ${OBJS} ${LINK_LIBS}
 
