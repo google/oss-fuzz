@@ -259,7 +259,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
   zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
 
   # Copy options files
-  for ft in readelf readelf_pef objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line; do
+  for ft in readelf readelf_pef objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line dwarf; do
     echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
     echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
   done
