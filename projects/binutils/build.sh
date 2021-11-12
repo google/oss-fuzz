@@ -169,7 +169,7 @@ if ([ -f ./libctf/.libs/libctf.a ]); then
       -o $OUT/fuzz_objcopy fuzz_objcopy.o ${OBJS} ${LINK_LIBS}
 
     # Link nm fuzzer
-    OBJS="bucomm.o version.o filemode.o"
+    OBJS="bucomm.o version.o filemode.o demanguse.o"
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib \
       -o $OUT/fuzz_nm fuzz_nm.o ${OBJS} ${LINK_LIBS}
 
