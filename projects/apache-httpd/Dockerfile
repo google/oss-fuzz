@@ -32,4 +32,4 @@ RUN git clone --depth=1 https://github.com/apache/httpd
 WORKDIR httpd
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
-COPY patches.diff $SRC/
+#COPY patches.diff $SRC/
