@@ -35,7 +35,8 @@ make -j$(nproc) VERBOSE=1
 $CXX                                    \
     $CXXFLAGS                           \
     $LIB_FUZZING_ENGINE                 \
-    ../tools/ZydisFuzzIn.c              \
+    ../tools/ZydisFuzzDecoder.c         \
+    ../tools/ZydisFuzzShared.c          \
     -DZYDIS_LIBFUZZER                   \
     -o $OUT/ZydisFuzz                   \
     -I .                                \
