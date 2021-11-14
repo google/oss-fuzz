@@ -33,6 +33,9 @@ limitations under the License.
 #include "ap_provider.h"
 #include "ap_regex.h"
 
+#include <string.h>
+#include <unistd.h>
+
 #include "ada_fuzz_header.h"
 
 
@@ -92,13 +95,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         ap_cstr_casecmpn(new_str, new_str + 2, size - 2);
       }
 
-      char *d = malloc(size * 2);
-      ap_escape_errorlog_item(d, new_str, size * 2);
+      size_t dsize = strlen(new_str) * 2 + 1;
+      char *d = malloc(dsize);
+      ap_escape_errorlog_item(d, new_str, dsize);
       free(d);
 
       // base64
-      char *decoded = NULL;
-      decoded = ap_pbase64decode(pool, new_str);
+      ap_pbase64decode(pool, new_str);
       ap_pbase64encode(pool, new_str);
 
       char *ns12 = af_gb_get_null_terminated(&data2, &size2);
@@ -108,7 +111,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         ap_pbase64decode_strict(pool, ns12, &d, &dlen);
       }
 
-      char *tmp_s = new_str;
+      const char *tmp_s = new_str;
       ap_getword_conf2(pool, &tmp_s);
 
       // str functions
@@ -119,7 +122,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       tmp_s = new_str;
       ap_get_list_item(pool, &tmp_s);
       tmp_s = new_str;
-      ap_find_list_item(pool, &tmp_s, "kjahsdfkj");
+      ap_find_list_item(pool, tmp_s, "kjahsdfkj");
       ap_find_token(pool, tmp_s, "klsjdfk");
       ap_find_last_token(pool, tmp_s, "sdadf");
       ap_is_chunked(pool, tmp_s);
@@ -127,15 +130,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       apr_array_header_t *offers = NULL;
       ap_parse_token_list_strict(pool, new_str, &offers, 0);
 
-      char *tmp_null = NULL;
+      const char *tmp_null = NULL;
       ap_pstr2_alnum(pool, new_str, &tmp_null);
 
       // Word functions
       tmp_s = new_str;
       ap_getword(pool, &tmp_s, 0);
 
-      tmp_s = new_str;
-      ap_getword_white_nc(pool, &tmp_s);
+      char *tmp_s_nc = strdup(new_str), *tmp_end = tmp_s_nc;
+      ap_getword_white_nc(pool, &tmp_end);
+      free(tmp_s_nc);
 
       tmp_s = new_str;
       ap_get_token(pool, &tmp_s, 1);
@@ -146,8 +150,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       apr_interval_time_t timeout;
       ap_timeout_parameter_parse(new_str, &timeout, "ms");
 
-      tmp_s = new_str;
-      ap_content_type_tolower(tmp_s);
+      tmp_s_nc = strdup(new_str);
+      ap_content_type_tolower(tmp_s_nc);
+      free(tmp_s_nc);
 
 
 			char filename[256];
