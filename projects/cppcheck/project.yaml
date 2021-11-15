@@ -1,4 +1,5 @@
 homepage: "https://cppcheck.sourceforge.net"
+language: c++
 primary_contact: "daniel.marjamaki@gmail.com"
 auto_ccs:
   - "daniel.marjamaki@gmail.com"
@@ -6,3 +7,4 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/danmar/cppcheck.git'

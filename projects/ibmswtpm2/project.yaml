@@ -1,4 +1,5 @@
 homepage: https://sourceforge.net/projects/ibmswtpm2/
+language: c++
 primary_contact: kgoldman@us.ibm.com
 auto_ccs:
   - "john.s.andersen@intel.com"
@@ -6,5 +7,6 @@ auto_ccs:
   - "david.wooten@ieee.org"
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined

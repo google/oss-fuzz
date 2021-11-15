@@ -1,4 +1,5 @@
 homepage: "https://github.com/bblanchon/ArduinoJson"
+language: c++
 primary_contact: "benoit.blanchon@gmail.com"
 sanitizers:
   - address
@@ -7,3 +8,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/bblanchon/ArduinoJson.git'

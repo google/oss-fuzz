@@ -1,4 +1,5 @@
 homepage: "http://www.zlib.net/"
+language: c++
 primary_contact: "glennrp@gmail.com"
 auto_ccs:
   - "sebpop@gmail.com"
@@ -6,6 +7,7 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
+  - honggfuzz
   - dataflow
 sanitizers:
   - address
@@ -15,3 +17,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/madler/zlib.git'

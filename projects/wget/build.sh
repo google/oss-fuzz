@@ -16,7 +16,7 @@
 ################################################################################
 
 export WGET_DEPS_PATH=$SRC/wget_deps
-export PKG_CONFIG_PATH=$WGET_DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$WGET_DEPS_PATH/lib64/pkgconfig:$WGET_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET_DEPS_PATH/include"
 export LDFLAGS="-L$WGET_DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
@@ -67,7 +67,8 @@ LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
+    --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
 make -j$(nproc)
 make install
 
@@ -75,19 +76,31 @@ make install
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
+# Ensure our libraries can be found
+ln -s $WGET_DEPS_PATH/lib64/libhogweed.a $WGET_DEPS_PATH/lib/libhogweed.a
+ln -s $WGET_DEPS_PATH/lib64/libnettle.a  $WGET_DEPS_PATH/lib/libnettle.a
+
 cd $SRC/wget
 ./bootstrap
+autoreconf -fi
+
+export CFLAGS="$CFLAGS -I$WGET_DEPS_PATH/include"
+export CXXFLAGS="$CXXFLAGS -I$WGET_DEPS_PATH/include"
 
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure -C
+GNUTLS_CFLAGS="-lgnutls" \
+GNUTLS_LIBS="-lgnutls" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure --enable-fuzzing -C
+GNUTLS_CFLAGS="-lgnutls" \
+GNUTLS_LIBS="-lgnutls" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C src

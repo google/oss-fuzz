@@ -1,8 +1,15 @@
 homepage: "http://www.ntp.org"
+language: c++
 primary_contact: "security@ntp.org"
-auto_ccs : "p.antoine@catenacyber.fr"
-
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - memory
+  - undefined
+  - dataflow

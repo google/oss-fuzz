@@ -30,9 +30,12 @@ overview of ClusterFuzz user interface is available on this [page].
 
 ### Fuzz Target
 
-In addition to its general definition, in OSS-Fuzz a fuzz target can be used to
-[reproduce bug reports]({{ site.baseurl }}/advanced-topics/reproducing/). It is recommended to use it for
-regression testing as well (see [ideal integration]({{ site.baseurl }}/advanced-topics/ideal-integration/)).
+In addition to its
+[general definition](https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzz-target),
+in OSS-Fuzz a fuzz target can be used to
+[reproduce bug reports]({{ site.baseurl }}/advanced-topics/reproducing/).
+It is recommended to use it for regression testing as well (see
+[ideal integration]({{ site.baseurl }}/advanced-topics/ideal-integration/)).
 
 ### Job type
 
@@ -89,7 +92,7 @@ These flags can be overridden by specifying `$SANITIZER_FLAGS` directly.
 You can choose which configurations to automatically run your fuzzers with in `project.yaml` file (e.g. [sqlite3](https://github.com/google/oss-fuzz/tree/master/projects/sqlite3/project.yaml)).
 
 ### Architectures
-ClusterFuzz supports fuzzing on x86_64 (aka x64) by default. However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifiying the `$ARCHITECTURE` build environment variable using the `--architecture` option:
+ClusterFuzz supports fuzzing on x86_64 (aka x64) by default. However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying the `$ARCHITECTURE` build environment variable using the `--architecture` option:
 
 ```bash
 python infra/helper.py build_fuzzers --architecture i386 json

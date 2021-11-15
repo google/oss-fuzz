@@ -1,7 +1,15 @@
 homepage: "https://ghostscript.com"
+language: c++
 primary_contact: "skau@google.com"
 auto_ccs:
   - "henry.stiles@artifex.com"
   - "skau@google.com"
+  - "sebastian.rasmussen@artifex.com"
+  - "julians.artifex@gmail.com"
+  - "chris.liddell@artifex.com"
+  - "kdlee@chromium.org"
 sanitizers:
   - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'git://git.ghostscript.com/ghostpdl.git'

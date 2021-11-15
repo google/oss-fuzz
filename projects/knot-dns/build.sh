@@ -20,7 +20,7 @@
 # Cribbed from projects/wget2, thanks rockdaboot@gmail.com
 
 export DEPS_PATH=$SRC/knot_deps
-export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$DEPS_PATH/lib64/pkgconfig:$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
@@ -56,23 +56,28 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
+cd $SRC/lmdb/libraries/liblmdb
+make -j$(nproc)
+make install
 
 # Compile knot, install fuzzers to $OUT
 
 cd $SRC/knot-dns
+sed -i 's/-llmdb/-Wl,-Bstatic,-llmdb,-Bdynamic/' configure.ac
 autoreconf -if
-
-./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --disable-modules
-
+./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation \
+    --disable-fastparser --disable-modules
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
 /bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str "$OUT"
 
-
 # Set up fuzzing seeds
 
 git submodule update --init -- ./fuzz_packet.in
-find ./fuzz_packet.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
 git submodule update --init -- ./fuzz_zscanner.in
-find ./fuzz_zscanner.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+# ./fuzz_dname_to_str.in/ and ./fuzz_dname_from_str.in/ are stored in the base repository
+find ./fuzz_packet.in/         -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
+find ./fuzz_zscanner.in/       -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+find ./fuzz_dname_to_str.in/   -type f -exec zip -u $OUT/fuzz_dname_to_str_seed_corpus.zip {} \;
+find ./fuzz_dname_from_str.in/ -type f -exec zip -u $OUT/fuzz_dname_from_str_seed_corpus.zip {} \;

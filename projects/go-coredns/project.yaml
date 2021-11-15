@@ -1,0 +1,10 @@
+homepage: "https://coredns.io"
+primary_contact: "security@coredns.io"
+auto_ccs :
+- "miek@miek.nl"
+- "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

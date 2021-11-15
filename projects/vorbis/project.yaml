@@ -1,17 +1,19 @@
 homepage: "https://xiph.org/vorbis/"
+language: c++
 primary_contact: "daede003@umn.edu"
 auto_ccs:
   - paul.l.kehrer@gmail.com
   - alex.gaynor@gmail.com
 vendor_ccs:
-  - cdiehl@mozilla.com
   - twsmith@mozilla.com
 fuzzing_engines:
   - libfuzzer
   - afl
+  - honggfuzz
   - dataflow
 sanitizers:
   - address
   - dataflow
   - memory
   - undefined
+main_repo: 'https://gitlab.xiph.org/xiph/vorbis.git'

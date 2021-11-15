@@ -73,7 +73,7 @@ An ideal build integration for OSS-Fuzz looks like this:
 * For every fuzz target `foo` in the project, there is a build rule that
 builds `foo_fuzzer`, a binary that: 
 	* Contains the fuzzing entry point.
-	* Contains (`LLVMFuzzerTestOneInput`) and all the code it depends on
+	* Contains (`LLVMFuzzerTestOneInput`) and all the code it depends on.
 	* Uses the `main()` function from `$LIB_FUZZING_ENGINE` (env var [provided]({{ site.baseurl }}/getting-started/new-project-guide/) by OSS-Fuzz environment).
 * Since the build system supports changing the compiler and passing extra compiler
 flags, the build command for `foo_fuzzer` looks similar to this:
@@ -112,9 +112,9 @@ Examples:
 
 For some input types, a simple dictionary of tokens used by the input language
 can have a dramatic impact on fuzzing efficiency.  For example, when fuzzing an
-XML parser, a dictionary of XML tokens is helpful. AFL has a
-[collection](https://github.com/google/AFL/tree/master/dictionaries) of
-dictionaries for popular data formats. Ideally, a dictionary should be
+XML parser, a dictionary of XML tokens is helpful. AFL++ has a
+[collection](https://github.com/AFLplusplus/AFLplusplus/tree/master/dictionaries)
+of dictionaries for popular data formats. Ideally, a dictionary should be
 maintained alongside the fuzz target, and it must use [correct
 syntax](http://libfuzzer.info/#dictionaries).
 
@@ -143,7 +143,7 @@ in previous step. We recommend you use
 [sanitizers](https://github.com/google/sanitizers) during regression testing.
 
 Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
-[openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
+[openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c).
 
 ## Performance
 

@@ -27,8 +27,6 @@ RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers graphicsfu
 RUN git clone --depth=1 https://github.com/google/effcee graphicsfuzz-spirv/SPIRV-Tools/external/effcee
 RUN git clone --depth=1 https://github.com/google/re2 graphicsfuzz-spirv/SPIRV-Tools/external/re2
 
-# TODO(metzman): Build GraphicsFuzz and bundle it so that the blackbox fuzzer is always using the latest version.
-
 COPY build.sh $SRC/
 
 WORKDIR graphicsfuzz-spirv

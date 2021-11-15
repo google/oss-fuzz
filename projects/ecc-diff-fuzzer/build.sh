@@ -23,19 +23,21 @@ tar -xvf ../gmp-6.1.2.tar.bz2
 cd gmp-6.1.2
 #do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
 #we could do instead --enable-fat
-./configure --disable-assembly
-make
+./configure --disable-shared --disable-assembly
+make -j$(nproc)
 make install
 cd ..
 autoreconf
-./configure
-make
+./configure --disable-shared --disable-openssl
+make -j$(nproc)
+make install
 )
 
 #cryptopp
 (
 cd cryptopp
-make
+make -j$(nproc)
+make install
 )
 
 #gcrypt
@@ -47,16 +49,17 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
 else
     ./configure --disable-doc --enable-static --disable-shared
 fi
-make
+make -j$(nproc)
 make install
 cd ../gcrypt
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 else
-    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 fi
-make
+make -j$(nproc)
+make install
 )
 
 #mbedtls
@@ -64,6 +67,7 @@ make
 cd mbedtls
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
+make install
 )
 
 #openssl
@@ -76,42 +80,74 @@ else
     ./config no-poly1305 no-shared no-threads
 fi
 make build_generated libcrypto.a
+make install
 )
 
 #libecc
 (
 cd libecc
 #required by libecc
-(export CFLAGS="$CFLAGS -fPIC"; make)
+(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r src/* /usr/local/include/)
 )
 
 #botan
 (
 cd botan
-#help it find libstdc++
-cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so
-export LDFLAGS=$CXXFLAGS
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure.py --disable-shared-library --cpu x86_32
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy --cpu x86_32
 else
-    ./configure.py --disable-shared-library
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy
 fi
-make
+make -j$(nproc)
+make install
 )
 
+#quickjs
+(
+cd quickjs
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    make qjsc
+    cp qjsc /usr/local/bin/
+    make clean
+    # Makefile should not override CFLAGS
+    sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
+    CFLAGS="-m32" make libquickjs.a
+else
+    make && make install
+fi
+cp quickjs*.h /usr/local/include/
+cp libquickjs.a /usr/local/lib/
+)
+
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 #build fuzz target
 cd ecfuzzer
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    export GOARCH=386
+#needed explicitly because of cross compilation cf https://golang.org/cmd/cgo/
+    export CGO_ENABLED=1
+    export CARGO_BUILD_TARGET=i686-unknown-linux-gnu
+fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
+cp fuzz_ec.dict $OUT/fuzz_ec_noblocker.dict
 
-$CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
-$CC $CFLAGS -I. -I../mbedtls/include -I../mbedtls/crypto/include -c modules/mbedtls.c -o mbedtls.o
-$CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
-$CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
-$CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
-$CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
-$CC $CFLAGS -I. -I../ -c modules/nettle.c -o nettle.o
-$CXX $CXXFLAGS -std=c++11 -I. -I../ -I../botan/build/include -c modules/botan.cpp -o botan.o
+mkdir build
+cd build
+#no afl with long javascript initialization
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+    cmake ..
+    make -j$(nproc)
+    cp ecfuzzer $OUT/fuzz_ec
+    rm -Rf *
+fi
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o botan.o -o $OUT/fuzz_ec ../mbedtls/crypto/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a ../botan/libbotan-2.a -lgpg-error $LIB_FUZZING_ENGINE
+#another target without javascript
+cmake -DDISABLE_JS=ON ..
+make -j$(nproc)
+cp ecfuzzer $OUT/fuzz_ec_noblocker

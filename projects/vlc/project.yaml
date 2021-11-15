@@ -1,0 +1,10 @@
+homepage: "https://github.com/videolan/vlc"
+language: c
+primary_contact: "ossfuzz@videolan.org"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/videolan/vlc'

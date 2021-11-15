@@ -38,8 +38,8 @@ the fuzz target with your build and test system, all you have to do is run this 
 $ ./fuzz_target_binary <testcase_path>
 ```
 
-For timeout bugs, add the `-timeout=25` argument. For OOM bugs, add the
-`-rss_limit_mb=2048` argument. Read more on [how timeouts and OOMs are
+For timeout bugs, add the `-timeout=65` argument. For OOM bugs, add the
+`-rss_limit_mb=2560` argument. Read more on [how timeouts and OOMs are
 handled]({{ site.baseurl }}/faq/#how-do-you-handle-timeouts-and-ooms).
 
 Depending on the nature of the bug, the fuzz target binary needs to be built
@@ -78,12 +78,15 @@ $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
 
 The `sanitizer` used in the report is the value in the
 **Sanitizer** column. It's one of the following:
-  * **address** for AddressSanitizer
-  * **memory** for MemorySanitizer
-  * **undefined** for UndefinedBehaviorSanitizer
+  * **address** for AddressSanitizer.
+  * **memory** for MemorySanitizer.
+  * **undefined** for UndefinedBehaviorSanitizer.
 
-**Note**: The `architecture` argument is only necessary if you want to specify
+**Notes**:
+   * The `architecture` argument is only necessary if you want to specify
 `i386` configuration.
+   * Some bugs (specially ones related to pointer and integer overflows) are reproducible only in 32 bit mode or only in 64 bit mode.
+If you can't reproduce a particular bug building for x86_64, try building for i386.
 
 ## Reproducing bugs
 
@@ -92,6 +95,9 @@ After you build an image and a fuzzer, you can reproduce a bug by running the fo
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
+
+**Note**: The reproduce command only supports `libfuzzer` fuzzing engine. Crashes
+found with other fuzzing engines should be reproducible with `libfuzzer` too.
 
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and

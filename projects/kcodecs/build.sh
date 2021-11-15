@@ -16,6 +16,20 @@
 ################################################################################
 
 cd $SRC
+tar xzf gperf*.tar.gz && rm -f gperf*.tar.gz
+cd gperf*
+FUZZ_CFLAGS="${CFLAGS}"
+FUZZ_CXXFLAGS="${CXXFLAGS}"
+unset CFLAGS
+unset CXXFLAGS
+# gperf is a code generator, so no need to sanitize it
+./configure --prefix=/usr
+make -j$(nproc) install
+export CFLAGS="${FUZZ_CFLAGS}"
+export CXXFLAGS="${FUZZ_CXXFLAGS}"
+
+
+cd $SRC
 cd extra-cmake-modules
 cmake .
 make install
@@ -30,7 +44,7 @@ sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
 ./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
 cd src
 ../bin/qmake -o Makefile src.pro
-make sub-corelib -j$(nproc)
+make sub-corelib sub-rcc -j$(nproc)
 
 cd $SRC
 cd kcodecs

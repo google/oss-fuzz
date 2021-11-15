@@ -1,0 +1,6 @@
+homepage: "https://tracker.debian.org/pkg/w3m"
+primary_contact: "tats@debian.org"
+language: c
+auto_ccs :
+  - "david@adalogics.com"
+main_repo: 'https://github.com/tats/w3m'

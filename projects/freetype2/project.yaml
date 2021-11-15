@@ -1,14 +1,19 @@
 homepage: "https://www.freetype.org/"
+language: c++
 primary_contact: "lemzwerg@gmail.com"
 auto_ccs:
-  - "darnold@adobe.com"
   - "lemzwerg@googlemail.com"
   - "HinTak.Leung@gmail.com"
   - "ewaldhew@gmail.com"
   - "apodtele@gmail.com"
   - "prince.cherusker@gmail.com"
+  - "drott@chromium.org"
 vendor_ccs:
-  - "cdiehl@mozilla.com"
+  - "jkew@mozilla.com"
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/freetype/freetype2-testing.git'

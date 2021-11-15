@@ -15,7 +15,36 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER nigeltao@golang.org
+RUN apt-get update && apt-get install -y wget
+
+# Get Wuffs' first-party code.
+
 RUN git clone --depth 1 https://github.com/google/wuffs.git
+
+# Get third-party test corpora.
+
+RUN git clone --depth 1 https://github.com/nst/JSONTestSuite.git
+
+RUN wget -O bmpsuite.zip https://entropymine.com/jason/bmpsuite/releases/bmpsuite-2.6.zip
+RUN mkdir bmpsuite_corpus
+RUN unzip -j bmpsuite.zip -d bmpsuite_corpus
+RUN rm bmpsuite.zip
+
+RUN wget -O pngsuite.tgz http://www.schaik.com/pngsuite/PngSuite-2017jul19.tgz
+RUN mkdir pngsuite_corpus
+RUN tar xf pngsuite.tgz --one-top-level=pngsuite_corpus
+RUN rm pngsuite.tgz
+
+RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
+RUN mkdir rapidjson_corpus
+RUN unzip -j rapidjson.zip -d rapidjson_corpus
+RUN rm rapidjson.zip
+
+RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
+RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
+RUN rm -rf simdjson-fuzz
+
+# Finish.
+
 WORKDIR wuffs
 COPY build.sh $SRC/

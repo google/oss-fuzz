@@ -1,0 +1,9 @@
+homepage: "https://github.com/AOMediaCodec/libavif"
+language: c++
+primary_contact: "wtc@google.com"
+auto_ccs:
+  - "fgalligan@google.com"
+  - "joedrago@gmail.com"
+  - "jzern@google.com"
+  - "yguyon@google.com"
+main_repo: 'https://github.com/AOMediaCodec/libavif.git'

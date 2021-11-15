@@ -1,10 +1,16 @@
 homepage: "https://opus-codec.org/"
+language: c++
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
   - "flim@google.com"
 vendor_ccs:
-  - "cdiehl@mozilla.com"
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+main_repo: 'https://gitlab.xiph.org/xiph/opus.git'

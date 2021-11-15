@@ -1,4 +1,5 @@
 homepage: "https://osquery.io"
+language: c++
 primary_contact: "osquery@osquery.io"
 auto_ccs:
   - "theopolis@osquery.io"
@@ -7,7 +8,12 @@ auto_ccs:
   - "alessandro.gario@gmail.com"
   - "tom@ritter.vg"
   - "mhl@fb.com"
+  - "sharvil@sharvilshah.com"
+  - "gellerbedoya@gmail.com"
+  - "stefano.bonicatti@gmail.com"
 sanitizers:
  - address
 fuzzing_engines:
  - libfuzzer
+ - afl
+main_repo: 'https://github.com/osquery/osquery'

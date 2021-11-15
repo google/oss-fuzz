@@ -1,4 +1,5 @@
 homepage: "http://giflib.sourceforge.net/"
+language: c++
 primary_contact: "esr@thyrsus.com"
 auto_ccs:
   - "vincent.ulitzsch@live.de"

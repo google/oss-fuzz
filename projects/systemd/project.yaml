@@ -1,5 +1,7 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
+language: c++
 primary_contact: "lennart@poettering.net"
+builds_per_day: 4
 sanitizers:
   - address
   - undefined
@@ -18,3 +20,6 @@ auto_ccs:
   - ssahani@vmware.com
   - chris@chrisdown.name
   - the.anitazha@gmail.com
+  - daan.j.demeyer@gmail.com
+  - luca.boccassi@gmail.com
+main_repo: 'https://github.com/systemd/systemd'

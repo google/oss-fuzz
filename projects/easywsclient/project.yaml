@@ -1,0 +1,12 @@
+homepage: "https://github.com/dhbaird/easywsclient"
+language: c++
+primary_contact: "dhbaird@gmail.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/dhbaird/easywsclient'

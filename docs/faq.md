@@ -12,6 +12,15 @@ permalink: /faq/
 {:toc}
 ---
 
+## Where can I learn more about fuzzing?
+
+We recommend reading [libFuzzer tutorial] and the other docs in [google/fuzzing]
+repository. These and some other resources are listed on the
+[useful links]({{ site.baseurl }}/reference/useful-links/#tutorials) page.
+
+[google/fuzzing]: https://github.com/google/fuzzing/tree/master/docs
+[libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
+
 ## What kind of projects are you accepting?
 
 We accept established projects that have a critical impact on infrastructure and
@@ -30,11 +39,18 @@ if we are not able to accept your project at this time!
 You should look for places in your code that:
 
   - consume un-trusted data from users or from the network.
-  - consume complex data input or event if it's 'trusted'.
+  - consume complex input data even if it's 'trusted'.
   - use an algorithm that has two or more implementations
     (to verify their equivalence).
   - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects)
     and find similarities.
+
+## Where can I store fuzz target sources and the build script if it's not yet accepted upstream?
+
+Fuzz target sources as well as the build script may temporarily live inside the
+`projects/<your_project>` directory in the OSS-Fuzz repository. Note that we do
+not accept integrations that rely on forked repositories. Refer to the
+[ideal integration guide] for the preferred long term solution.
 
 ## My project is not open source. Can I use OSS-Fuzz?
 
@@ -45,7 +61,6 @@ your own environment and run continuously at scale.
 OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
 [OSS-Fuzz repository]: build scripts, `project.yaml` files with contacts, etc.
 
-[ClusterFuzz]: https://github.com/google/clusterfuzz
 [OSS-Fuzz repository]: https://github.com/google/oss-fuzz
 
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
@@ -73,7 +88,7 @@ building and execution.
 ## How do you handle timeouts and OOMs?
 
 If a single input to a [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)
-requires more than **~25 seconds** or more than **2GB RAM** to process, we
+requires more than **~25 seconds** or more than **2.5GB RAM** to process, we
 report this as a timeout or an OOM (out-of-memory) bug
 (examples: [timeouts](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=%22Crash+Type%3A+Timeout%22),
 [OOMs](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q="Crash+Type%3A+Out-of-memory")).
@@ -143,7 +158,21 @@ We work with open source projects and try to keep as much information public as
 possible. We believe that public code coverage reports do not put users at risk,
 as they do not indicate the presence of bugs or lack thereof.
 
+## Why is the coverage command complaining about format compatibility issues?
+
+This may happen if the Docker images fetched locally become out of sync. Make
+sure you run the following command to pull the most recent images:
+
+```bash
+$ python infra/helper.py pull_images
+```
+
+Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 ## What happens when I rename a fuzz target ?
+
 If you rename your fuzz targets, the existing bugs for those targets will get
 closed and fuzzing will start from scratch from a fresh corpora
 (seed corpus only). Similar corpora will get accumulated over time depending on
@@ -154,23 +183,33 @@ target (instructions to download
 restore it to the new GCS location later (instruction to find the
 new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corpus-for-a-fuzz-target)).
 
-## Does OSS-Fuzz support AFL?
-OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its
-[fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine) but this is an implementation
-detail. Just follow the
-[ideal integration guide]({{ site.baseurl }}/advanced-topics/ideal-integration/)
-and OSS-Fuzz will use all its fuzzing engines on your code.
+## Does OSS-Fuzz support AFL or honggfuzz?
 
-## Does OSS-Fuzz support Honggfuzz?
-OSS-Fuzz (the service) does not use honggfuzz to find bugs.
-That is because [ClusterFuzz](https://github.com/google/clusterfuzz)
-(the infrastructure OSS-Fuzz runs on) does not support honggfuzz. 
-However, OSS-Fuzz supports **building** fuzz targets for use with honggfuzz,
-similar to the way it supports [AFL](#does-oss-fuzz-support-afl). 
-Currently OSS-Fuzz builders do builds for libFuzzer, AFL, and honggfuzz.
+OSS-Fuzz *uses* the following
+[fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine):
+
+1. [libFuzzer](https://llvm.org/docs/LibFuzzer.html).
+1. [AFL++](https://github.com/AFLplusplus/AFLplusplus), an improved and
+   well-maintained version of [AFL](https://lcamtuf.coredump.cx/afl/).
+1. [Honggfuzz](https://github.com/google/honggfuzz).
+
+Follow the [new project guide] and OSS-Fuzz will use all its fuzzing engines
+on your code.
 
 ## What are the specs on your machines?
+
 OSS-Fuzz builders have 32CPU/28.8GB RAM.
 
 Fuzzing machines only have a single core and fuzz targets should not use more
-than 2GB of RAM.
+than 2.5GB of RAM.
+
+## Are there any restrictions on using test cases / corpora generated by OSS-Fuzz?
+
+No, you can freely use (i.e. share, add to your repo, etc.) the test cases and
+corpora generated by OSS-Fuzz. OSS-Fuzz infrastructure is fully open source
+(including [ClusterFuzz], various fuzzing engines, and other dependencies). We
+have no intent to restrict the use of the artifacts produced by OSS-Fuzz.
+
+[ClusterFuzz]: https://github.com/google/clusterfuzz
+[new project guide]: {{ site.baseurl }}/getting-started/new-project-guide/
+[ideal integration guide]: {{ site.baseurl }}/getting-started/new-project-guide/

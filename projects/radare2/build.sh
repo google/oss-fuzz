@@ -6,7 +6,7 @@ export HOST_CC=$CC
 sys/static.sh
 cp -r r2-static $OUT/
 
-cp -r ../radare2-regressions/fuzz/targets .
+cp -r ../radare2-fuzz/targets .
 export RADARE2_STATIC_BUILD=$OUT/r2-static
 
 cd targets 

@@ -15,13 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER vmalvarez@google.com
 RUN \
   apt-get update && apt-get install -y \
   automake \
   autoconf \
   make \
-  libtool
+  libtool \
+  pkg-config \
+  bison \
+  flex
 
 RUN git clone --depth 1 https://github.com/VirusTotal/yara.git
 COPY build.sh $SRC/

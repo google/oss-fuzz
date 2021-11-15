@@ -15,22 +15,11 @@
 #
 ################################################################################
 
-# build target function
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
+export GODEBUG=cpu.all=off
+compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path
-
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
-}
-
-compile_fuzzer . Fuzz fuzz_parserule
-
-unzip ../emerging.rules.zip
+cd $SRC
+unzip emerging.rules.zip
 cd rules
 i=0
 mkdir corpus
@@ -38,4 +27,4 @@ mkdir corpus
 set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
-zip -r $OUT/fuzz_parserule_seed_corpus.zip corpus
+zip -q -r $OUT/fuzz_parserule_seed_corpus.zip corpus

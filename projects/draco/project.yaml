@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/draco"
+language: c++
+primary_contact: "fgalligan@google.com"
+auto_ccs:
+  - "ostava@google.com"
+  - "vytyaz@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+main_repo: 'https://github.com/google/draco'

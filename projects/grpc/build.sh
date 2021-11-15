@@ -19,13 +19,12 @@ set -o errexit
 set -o nounset
 
 readonly FUZZER_DICTIONARIES=(
-  test/core/end2end/fuzzers/api_fuzzer.dictionary
   test/core/end2end/fuzzers/hpack.dictionary
 )
 
 readonly FUZZER_TARGETS=(
   test/core/json:json_fuzzer
-  test/core/client_channel:uri_fuzzer_test
+  test/core/uri:uri_fuzzer_test
   test/core/http:request_fuzzer
   test/core/http:response_fuzzer
   test/core/nanopb:fuzzer_response
@@ -33,7 +32,6 @@ readonly FUZZER_TARGETS=(
   test/core/slice:percent_decode_fuzzer
   test/core/slice:percent_encode_fuzzer
   test/core/transport/chttp2:hpack_parser_fuzzer
-  test/core/end2end/fuzzers:api_fuzzer
   test/core/end2end/fuzzers:client_fuzzer
   test/core/end2end/fuzzers:server_fuzzer
   test/core/security:ssl_server_fuzzer
@@ -131,7 +129,7 @@ cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
 zip "${OUT}/json_fuzzer_seed_corpus.zip" test/core/json/corpus/*
-zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/client_channel/uri_corpus/*
+zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/uri/uri_corpus/*
 zip "${OUT}/request_fuzzer_seed_corpus.zip" test/core/http/request_corpus/*
 zip "${OUT}/response_fuzzer_seed_corpus.zip" test/core/http/response_corpus/*
 zip "${OUT}/fuzzer_response_seed_corpus.zip" test/core/nanopb/corpus_response/*
@@ -139,7 +137,6 @@ zip "${OUT}/fuzzer_serverlist_seed_corpus.zip" test/core/nanopb/corpus_serverlis
 zip "${OUT}/percent_decode_fuzzer_seed_corpus.zip" test/core/slice/percent_decode_corpus/*
 zip "${OUT}/percent_encode_fuzzer_seed_corpus.zip" test/core/slice/percent_encode_corpus/*
 zip "${OUT}/hpack_parser_fuzzer_seed_corpus.zip" test/core/transport/chttp2/hpack_parser_corpus/*
-zip "${OUT}/api_fuzzer_seed_corpus.zip" test/core/end2end/fuzzers/api_fuzzer_corpus/*
 zip "${OUT}/client_fuzzer_seed_corpus.zip" test/core/end2end/fuzzers/client_fuzzer_corpus/*
 zip "${OUT}/server_fuzzer_seed_corpus.zip" test/core/end2end/fuzzers/server_fuzzer_corpus/*
 zip "${OUT}/ssl_server_fuzzer_seed_corpus.zip" test/core/security/corpus/ssl_server_corpus/*

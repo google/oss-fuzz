@@ -20,20 +20,27 @@ set -o pipefail
 set -o errexit
 set -x
 
-# Based on the function from oss-fuzz/projects/golang/build.sh script.
+# Compile kOps fuzzers
+(
+cd kops
+./tests/fuzz/build.sh
+)
+
+# Compile Kubernetes fuzzers
+cd $SRC/kubernetes
+
 function compile_fuzzer {
   local pkg=$1
   local function=$2
   local fuzzer="${pkg}_${function}"
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func "${function}" -o "${fuzzer}.a" "k8s.io/kubernetes/test/fuzz/${pkg}"
-
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "${fuzzer}.a" -lpthread -o "${OUT}/${fuzzer}"
+  compile_go_fuzzer "k8s.io/kubernetes/test/fuzz/${pkg}" $function $fuzzer
 }
 
+compile_fuzzer "yaml" "FuzzDurationStrict"
+compile_fuzzer "yaml" "FuzzMicroTimeStrict"
 compile_fuzzer "yaml" "FuzzSigYaml"
+compile_fuzzer "yaml" "FuzzTimeStrict"
 compile_fuzzer "yaml" "FuzzYamlV2"
 compile_fuzzer "json" "FuzzStrictDecode"
 compile_fuzzer "json" "FuzzNonStrictDecode"

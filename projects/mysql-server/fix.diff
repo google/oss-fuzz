@@ -1,17 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 17939f7c6f4..e05deb5911e 100644
+index 4a4bbfa72fa..0478561e66c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -517,6 +517,7 @@ IF(WITH_JEMALLOC)
-   STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
+@@ -688,6 +688,7 @@ IF(WITH_JEMALLOC AND (WITH_TCMALLOC OR WITH_TCMALLOC_DEBUG))
+   MESSAGE(FATAL_ERROR "Specify only *one* of WITH_TCMALLOC and WITH_JEMALLOC")
  ENDIF()
  
 +OPTION(FUZZING "Fuzzing" OFF)
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
- IF(UNIX)
-@@ -1324,6 +1325,10 @@ IF(NOT WITHOUT_SERVER)
-   ADD_SUBDIRECTORY(sql)
+ 
+@@ -1804,6 +1805,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+   ENDIF()
  ENDIF()
  
 +IF (FUZZING)
@@ -21,11 +21,25 @@ index 17939f7c6f4..e05deb5911e 100644
  # scripts/mysql_config depends on client and server targets loaded above.
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
+diff --git a/cmake/os/Linux.cmake b/cmake/os/Linux.cmake
+index 0e25e8eb..3ae74839 100644
+--- a/cmake/os/Linux.cmake
++++ b/cmake/os/Linux.cmake
+@@ -103,7 +103,8 @@ IF(NOT WITH_ASAN AND
+    NOT WITH_LSAN AND
+    NOT WITH_MSAN AND
+    NOT WITH_TSAN AND
+-   NOT WITH_UBSAN)
++   NOT WITH_UBSAN AND
++   NOT FUZZING)
+   SET(LINK_FLAG_NO_UNDEFINED "-Wl,--no-undefined")
+   SET(LINK_FLAG_Z_DEFS "-z,defs")
+ ENDIF()
 diff --git a/include/mysql.h b/include/mysql.h
-index 1f499e9d9e5..a85c181ae78 100644
+index 4700d74b853..bdf9b765ffb 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
-@@ -261,7 +261,8 @@ enum mysql_protocol_type {
+@@ -262,7 +262,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -35,11 +49,25 @@ index 1f499e9d9e5..a85c181ae78 100644
  };
  
  enum mysql_ssl_mode {
+diff --git a/include/mysql.h.pp b/include/mysql.h.pp
+index 39ebd0fcb93..c041cc4690f 100644
+--- a/include/mysql.h.pp
++++ b/include/mysql.h.pp
+@@ -486,7 +486,8 @@ enum mysql_protocol_type {
+   MYSQL_PROTOCOL_TCP,
+   MYSQL_PROTOCOL_SOCKET,
+   MYSQL_PROTOCOL_PIPE,
+-  MYSQL_PROTOCOL_MEMORY
++  MYSQL_PROTOCOL_MEMORY,
++  MYSQL_PROTOCOL_FUZZ
+ };
+ enum mysql_ssl_mode {
+   SSL_MODE_DISABLED = 1,
 diff --git a/include/violite.h b/include/violite.h
-index 9f9d6e62e2e..32bed2eeb30 100644
+index a6ccd1a607d..8dc0d46dd7f 100644
 --- a/include/violite.h
 +++ b/include/violite.h
-@@ -106,12 +106,14 @@ enum enum_vio_type : int {
+@@ -108,12 +108,14 @@ enum enum_vio_type : int {
    */
    VIO_TYPE_PLUGIN = 7,
  
@@ -55,9 +83,9 @@ index 9f9d6e62e2e..32bed2eeb30 100644
  };
  
  /**
-@@ -449,4 +451,20 @@ struct Vio {
- #define SSL_handle void *
- #endif
+@@ -444,4 +446,20 @@ struct Vio {
+ 
+ #define SSL_handle SSL *
  
 +
 +//Vio fuzzing
@@ -77,23 +105,28 @@ index 9f9d6e62e2e..32bed2eeb30 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index 52b9b61271f..e452fc202a5 100644
+index 334d1b7d3ef..c37c5ad930e 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -320,7 +320,7 @@ IF(UNIX)
+@@ -345,11 +345,11 @@ IF(LINUX_STANDALONE AND KERBEROS_CUSTOM_LIBRARY)
+ ENDIF()
+ 
+ IF(UNIX)
+-  IF(LINK_FLAG_Z_DEFS)
++  IF(LINK_FLAG_Z_DEFS AND NOT FUZZING)
+     MY_TARGET_LINK_OPTIONS(libmysql "LINKER:${LINK_FLAG_Z_DEFS}")
    ENDIF()
  
-   GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
--  IF(LINK_FLAG_NO_UNDEFINED)
-+  IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
-     STRING_APPEND(libmysql_link_flags
-       " ${LINK_FLAG_NO_UNDEFINED}")
-     STRING_APPEND(libmysql_link_flags
+-  IF(LINUX)
++  IF(LINUX AND NOT FUZZING)
+     CONFIGURE_FILE(libmysql.ver.in ${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver)
+     MY_TARGET_LINK_OPTIONS(libmysql
+       "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver")
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
-index fa96e35eb02..e03ee47c220 100644
+index 2fc7820eaa3..248ea909db8 100644
 --- a/mysys/my_rnd.cc
 +++ b/mysys/my_rnd.cc
-@@ -51,6 +51,9 @@
+@@ -48,6 +48,9 @@
  */
  
  double my_rnd(struct rand_struct *rand_st) {
@@ -103,7 +136,7 @@ index fa96e35eb02..e03ee47c220 100644
    rand_st->seed1 = (rand_st->seed1 * 3 + rand_st->seed2) % rand_st->max_value;
    rand_st->seed2 = (rand_st->seed1 + rand_st->seed2 + 33) % rand_st->max_value;
    return (((double)rand_st->seed1) / rand_st->max_value_dbl);
-@@ -67,6 +70,12 @@ Fill a buffer with random bytes using the SSL library routines
+@@ -64,6 +67,12 @@ Fill a buffer with random bytes using the SSL library routines
  */
  int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
    int rc;
@@ -116,7 +149,7 @@ index fa96e35eb02..e03ee47c220 100644
    rc = RAND_bytes(buffer, (int)buffer_size);
  
    if (!rc) {
-@@ -88,6 +97,9 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
+@@ -85,6 +94,9 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
  double my_rnd_ssl(bool *failed) {
    unsigned int res;
  
@@ -127,10 +160,10 @@ index fa96e35eb02..e03ee47c220 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index f5e760cc37d..09037a9e236 100644
+index b8050f2b1a7..9a65178c5c4 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5850,6 +5850,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5892,6 +5892,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -144,12 +177,12 @@ index f5e760cc37d..09037a9e236 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index 178a572a5aa..03b9d6346f9 100644
+index 50b76e2fa75..871006c2d8f 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6353,7 +6353,9 @@ int mysqld_main(int argc, char **argv)
-     unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
-   }
+@@ -6991,7 +6991,9 @@ int mysqld_main(int argc, char **argv)
+ 
+   keyring_lockable_init();
  
 +#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
    my_init_signals();
@@ -157,7 +190,7 @@ index 178a572a5aa..03b9d6346f9 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -6837,8 +6839,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7497,8 +7499,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -168,7 +201,7 @@ index 178a572a5aa..03b9d6346f9 100644
  #endif
  
    /* set all persistent options */
-@@ -6980,8 +6984,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7543,8 +7547,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -179,18 +212,18 @@ index 178a572a5aa..03b9d6346f9 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7028,6 +7033,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7591,6 +7596,10 @@ int mysqld_main(int argc, char **argv)
  
-   (void)RUN_HOOK(server_state, before_handle_connection, (NULL));
+   (void)RUN_HOOK(server_state, before_handle_connection, (nullptr));
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +  return 0;
 +#endif
 +
  #if defined(_WIN32)
-   setup_conn_event_handler_threads();
- #else
-@@ -9850,6 +9859,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+   if (mysqld_socket_acceptor != nullptr)
+     mysqld_socket_acceptor->check_and_spawn_admin_connection_handler_thread();
+@@ -10500,6 +10509,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -201,10 +234,10 @@ index 178a572a5aa..03b9d6346f9 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index 983603eb58c..d577c6fcc05 100644
+index 7ecc10961ac..5f13f94eb02 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
-@@ -1484,18 +1484,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
+@@ -1476,18 +1476,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
        n = n_instances;
      }
  
@@ -226,10 +259,10 @@ index 983603eb58c..d577c6fcc05 100644
          err = errs[id];
        }
 diff --git a/vio/CMakeLists.txt b/vio/CMakeLists.txt
-index 497ab98396c..a6cf2a647a6 100644
+index 35ab5f17f15..9b39bfdbdbf 100644
 --- a/vio/CMakeLists.txt
 +++ b/vio/CMakeLists.txt
-@@ -25,6 +25,7 @@ SET(VIO_SOURCES
+@@ -27,6 +27,7 @@ SET(VIO_SOURCES
    viosocket.cc
    viossl.cc
    viosslfactories.cc
@@ -238,38 +271,37 @@ index 497ab98396c..a6cf2a647a6 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index 85cc77df645..03ed154dcee 100644
+index 368c8d7b581..50c3231a8b0 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
-@@ -300,6 +300,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
-     return false;
-   }
- #endif /* HAVE_OPENSSL */
-+  if (type == VIO_TYPE_FUZZ) {
-+    vio->viodelete = vio_delete;
-+    vio->vioerrno = vio_errno;
-+    vio->read = vio_read_buff_fuzz;
-+    vio->write = vio_write_buff_fuzz;
-+    vio->fastsend = vio_fastsend_fuzz;
-+    vio->viokeepalive = vio_keepalive_fuzz;
-+    vio->should_retry = vio_should_retry_fuzz;
-+    vio->was_timeout = vio_was_timeout_fuzz;
-+    vio->vioshutdown = vio_shutdown_fuzz;
-+    vio->peer_addr = vio_peer_addr;
-+    vio->timeout = vio_socket_timeout_fuzz;
-+    vio->io_wait = vio_io_wait_fuzz;
-+    vio->is_connected = vio_is_connected_fuzz;
-+    vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
-+    vio->is_blocking = vio_is_blocking;
-+    vio->set_blocking = vio_set_blocking;
-+    vio->set_blocking_flag = vio_set_blocking_flag;
-+    vio->is_blocking_flag = false;
-+    return false;
-+  }
-   vio->viodelete = vio_delete;
-   vio->vioerrno = vio_errno;
-   vio->read = vio->read_buffer ? vio_read_buff : vio_read;
-@@ -575,7 +596,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+@@ -284,6 +284,26 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
+       vio->is_blocking_flag = true;
+       break;
+ 
++    case VIO_TYPE_FUZZ:
++      vio->viodelete = vio_delete;
++      vio->vioerrno = vio_errno;
++      vio->read = vio_read_buff_fuzz;
++      vio->write = vio_write_buff_fuzz;
++      vio->fastsend = vio_fastsend_fuzz;
++      vio->viokeepalive = vio_keepalive_fuzz;
++      vio->should_retry = vio_should_retry_fuzz;
++      vio->was_timeout = vio_was_timeout_fuzz;
++      vio->vioshutdown = vio_shutdown_fuzz;
++      vio->peer_addr = vio_peer_addr;
++      vio->timeout = vio_socket_timeout_fuzz;
++      vio->io_wait = vio_io_wait_fuzz;
++      vio->is_connected = vio_is_connected_fuzz;
++      vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
++      vio->is_blocking = vio_is_blocking;
++      vio->set_blocking = vio_set_blocking;
++      vio->set_blocking_flag = vio_set_blocking_flag;
++      vio->is_blocking_flag = false;
++
+     default:
+       vio->viodelete = vio_delete;
+       vio->vioerrno = vio_errno;
+@@ -568,7 +588,8 @@ static const vio_string vio_type_names[] = {{"", 0},
                                              {STRING_WITH_LEN("SSL/TLS")},
                                              {STRING_WITH_LEN("Shared Memory")},
                                              {STRING_WITH_LEN("Internal")},
@@ -281,10 +313,10 @@ index 85cc77df645..03ed154dcee 100644
                         int *len) {
 diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
 new file mode 100644
-index 00000000000..73f29662b96
+index 00000000000..5b368d685cb
 --- /dev/null
 +++ b/vio/viofuzz.cc
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,124 @@
 +
 +#include "my_config.h"
 +
@@ -331,16 +363,13 @@ index 00000000000..73f29662b96
 +
 +bool vio_connect_fuzz(Vio *vio, struct sockaddr *addr, socklen_t len,
 +                        int timeout) {
-+  int ret;
 +  DBUG_ENTER("vio_socket_connect");
 +
 +  /* Only for socket-based transport types. */
-+  DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
++  //DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
 +
 +  /* Initiate the connection. */
-+  ret=0;
-+
-+  DBUG_RETURN(MY_TEST(ret));
++  return 0;
 +}
 +
 +

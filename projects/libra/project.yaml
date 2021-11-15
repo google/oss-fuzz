@@ -1,0 +1,9 @@
+homepage: "https://github.com/libra/libra"
+primary_contact: "david@adalogics.com"
+language: rust
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+disabled: true
+main_repo: 'https://github.com/libra/libra'

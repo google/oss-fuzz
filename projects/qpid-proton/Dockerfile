@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jdanek@redhat.com
 RUN apt-get update && \
     apt-get install -y \
         cmake
@@ -24,4 +23,3 @@ RUN git clone https://github.com/apache/qpid-proton.git
 
 WORKDIR qpid-proton
 COPY build.sh $SRC/
-COPY c_tests_fuzz_CMakeLists.patch $SRC/

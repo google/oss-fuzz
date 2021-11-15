@@ -59,7 +59,6 @@ make install
 cp -R $CPYTHON_INSTALL_PATH $OUT/
 
 cd $SRC/python-library-fuzzers
-rm $CPYTHON_INSTALL_PATH/lib/python3.9/lib-dynload/_tkinter*.so
 make
 
 cp $SRC/python-library-fuzzers/fuzzer-html $OUT/

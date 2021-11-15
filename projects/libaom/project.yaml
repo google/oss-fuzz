@@ -1,13 +1,15 @@
 homepage: "https://aomedia.org/av1-features/get-started/"
+language: c++
 primary_contact: "urvang@google.com"
 sanitizers:
 - address
 - memory
 - undefined
 auto_ccs:
-- huisu@google.com
 - jaikk@google.com
 - jzern@google.com
 - wtc@google.com
+- yunqingwang@google.com
 vendor_ccs:
-- cdiehl@mozilla.com
+- twsmith@mozilla.com
+main_repo: 'https://aomedia.googlesource.com/aom'

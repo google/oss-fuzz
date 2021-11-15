@@ -15,6 +15,15 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_74_0.tar.bz2
+cd boost_1_74_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
+
 mkdir -p $WORK/libressl
 cd $WORK/libressl
 
@@ -58,3 +67,26 @@ done
 cp $SRC/*.options $OUT/
 cp $LIBRESSL_FUZZERS/oids.txt $OUT/asn1.dict
 cp $LIBRESSL_FUZZERS/oids.txt $OUT/x509.dict
+
+# Cryptofuzz
+cd $SRC/cryptofuzz/
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
+# Generate lookup tables
+python3 gen_repository.py
+# Compile Cryptofuzz LibreSSL module
+cd $SRC/cryptofuzz/modules/openssl
+OPENSSL_INCLUDE_PATH="$SRC/libressl/include" OPENSSL_LIBCRYPTO_A_PATH="$WORK/libressl/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL" make
+# Compile Cryptofuzz
+cd $SRC/cryptofuzz/
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL -I $SRC/libressl/include" make -j$(nproc)
+# Generate dictionary
+./generate_dict
+# Copy fuzzer
+cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz
+# Copy dictionary
+cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz.dict
+# Copy seed corpus
+cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz_seed_corpus.zip

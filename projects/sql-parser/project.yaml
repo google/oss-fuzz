@@ -1,0 +1,7 @@
+homepage: "https://github.com/hyrise/sql-parser"
+main_repo: "https://github.com/hyrise/sql-parser"
+primary_contact: "marcel.weisgut@hpi.de"
+language: c++
+auto_ccs:
+  - "klauck2@gmail.com"
+  - "david@adalogics.com"

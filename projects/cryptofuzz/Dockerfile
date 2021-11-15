@@ -14,33 +14,50 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+ENV GOPATH /root/go
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+RUN install_go.sh
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev wget
-
-# BoringSSL needs Go to build
-RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
-RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
+RUN apt-get update && \
+    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN git clone --depth 1 https://github.com/openssl/openssl
-
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
-RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
+RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
-RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0-stable.zip
-RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_0_2-stable.zip
 RUN git clone --depth 1 https://github.com/google/cityhash.git
-RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
-RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
+RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git
+RUN hg clone https://hg.mozilla.org/projects/nspr
+#RUN hg clone https://hg.mozilla.org/projects/nss
+RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
+RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
+#RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
+RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
+RUN git clone --depth 1 https://github.com/indutny/bn.js.git
+RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
+RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
+RUN git clone --depth 1 https://github.com/brix/crypto-js.git
+RUN git clone --depth 1 https://github.com/LoupVaillant/Monocypher.git
+RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
+RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
+RUN git clone --depth 1 https://github.com/paulmillr/noble-ed25519.git
+RUN git clone --depth 1 https://github.com/paulmillr/noble-bls12-381.git
+RUN git clone --depth 1 https://github.com/paulmillr/noble-secp256k1.git
+RUN git clone --depth 1 https://github.com/supranational/blst.git
+RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN apt-get remove -y libunwind8
+RUN apt-get install -y libssl-dev
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
 
-COPY build.sh $SRC/
+COPY build.sh xxd.c $SRC/

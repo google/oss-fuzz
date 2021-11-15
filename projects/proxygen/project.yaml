@@ -1,4 +1,5 @@
 homepage: "https://github.com/facebook/proxygen"
+language: c++
 primary_contact: "mhl@fb.com"
 auto_ccs:
   - "gulshan@fb.com"
@@ -20,3 +21,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/facebook/proxygen.git'

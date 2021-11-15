@@ -15,17 +15,13 @@
 #
 ################################################################################
 
-# Based on the function from oss-fuzz/projects/golang/build.sh script.
-function compile_fuzzer {
-  package=$1
-  function=$2
-  fuzzer=$3
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $package
 
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/google/go-attestation/attest FuzzParseEventLog parse_event_log_fuzzer
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseEventLog \
+    parse_event_log_fuzzer
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic12 \
+    parse_ak_public12_fuzzer
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic20 \
+    parse_ak_public20_fuzzer
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseEKCertificate \
+    parse_ek_certificate_fuzzer

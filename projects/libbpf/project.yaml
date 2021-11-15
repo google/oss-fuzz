@@ -1,0 +1,11 @@
+homepage: "https://github.com/libbpf/libbpf"
+language: c
+primary_contact: "andrii.nakryiko@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - evverx@gmail.com
+main_repo: "https://github.com/libbpf/libbpf"
+builds_per_day: 4

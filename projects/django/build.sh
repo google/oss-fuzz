@@ -41,12 +41,12 @@ case $SANITIZER in
     ;;
 esac
 
-export CPYTHON_INSTALL_PATH=$OUT/cpython-install
+export CPYTHON_INSTALL_PATH=$SRC/cpython-install
 rm -rf $CPYTHON_INSTALL_PATH
 mkdir $CPYTHON_INSTALL_PATH
 
-tar zxf v3.8.0b2.tar.gz
-cd cpython-3.8.0b2/
+tar zxf v3.8.7.tar.gz
+cd cpython-3.8.7/
 cp $SRC/django-fuzzers/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage
@@ -57,9 +57,11 @@ sed -i 's/case TARGET\(.*\): {/\0\nfuzzer_record_code_coverage(f->f_code, f->f_l
 make -j$(nproc)
 make install
 
+cp -R $CPYTHON_INSTALL_PATH $OUT/
+
 rm -rf $OUT/django-dependencies
 mkdir $OUT/django-dependencies
-$CPYTHON_INSTALL_PATH/bin/pip3 install asgiref pytz sqlparse -t $OUT/django-dependencies
+$CPYTHON_INSTALL_PATH/bin/pip3 install asgiref pytz sqlparse backports.zoneinfo -t $OUT/django-dependencies
 
 cd $SRC/django-fuzzers
 rm $CPYTHON_INSTALL_PATH/lib/python3.8/lib-dynload/_tkinter*.so

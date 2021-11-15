@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
 RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev
 
 RUN git clone --depth=1 https://git.libssh.org/projects/libssh.git

@@ -1,0 +1,11 @@
+homepage: "https://github.com/golang/snappy"
+primary_contact: "nigeltao@golang.org"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/golang/snappy'
+disabled: true

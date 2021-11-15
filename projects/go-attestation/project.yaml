@@ -7,3 +7,5 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+language: go
+main_repo: 'https://github.com/google/go-attestation'

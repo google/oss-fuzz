@@ -1,12 +1,22 @@
 homepage: "https://developers.google.com/speed/webp/"
+language: c++
 primary_contact: "jzern@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
-- address
-- undefined
-- memory
+  - address
+  - undefined
+  - memory
+  - dataflow
 auto_ccs:
-- pascal.massimino@gmail.com
-- vrabaud@google.com
-- yguyon@google.com
+  - pascal.massimino@gmail.com
+  - vrabaud@google.com
+  - yguyon@google.com
 vendor_ccs:
-- cdiehl@mozilla.com
+  - aosmond@mozilla.com
+  - tnikkel@mozilla.com
+  - twsmith@mozilla.com
+main_repo: 'https://chromium.googlesource.com/webm/libwebp'

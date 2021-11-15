@@ -16,13 +16,24 @@
 #
 ################################################################################
 
+
 ./autogen.sh
 ./configure --enable-static --disable-shared --without-selinux
 make -j$(nproc)
 
-for fuzzer in augeas_escape_name_fuzzer; do
+sed -i '31 i\#ifdef __cplusplus'\\n'\extern "C" {'\\n'\#endif'\\n src/fa.h
+sed -i '326 i\#ifdef __cplusplus'\\n'\}'\\n'\#endif'\\n src/fa.h
+
+ASAN_OPTIONS=detect_leaks=0
+
+cp $SRC/augeas_escape_name_fuzzer.cc .
+cp $SRC/augeas_fa_fuzzer.cc .
+cp $SRC/augeas_api_fuzzer.cc .
+
+
+for fuzzer in augeas_api_fuzzer augeas_escape_name_fuzzer augeas_fa_fuzzer; do
     $CXX $CXXFLAGS -std=c++11 -Isrc/ `xml2-config --cflags` \
-        $SRC/$fuzzer.cc -o $OUT/$fuzzer $LIB_FUZZING_ENGINE \
+        $fuzzer.cc -o $OUT/$fuzzer $LIB_FUZZING_ENGINE \
         src/.libs/libaugeas.a src/.libs/libfa.a ./gnulib/lib/.libs/libgnu.a \
         /usr/lib/x86_64-linux-gnu/libxml2.a
 done

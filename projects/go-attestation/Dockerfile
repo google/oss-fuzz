@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bweeks@google.com
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN go get -u -d github.com/google/go-attestation/...
 

@@ -16,5 +16,5 @@
 ################################################################################
 
 $CXX $CXXFLAGS $SRC/fuzzing-puzzles/MultipleConstraintsOnSmallInputTest.cpp \
-    -o $OUT/multiple_constraints_on_small_input_afl_fuzzer \
+    -o $OUT/multiple_constraints_on_small_input_honggfuzz_fuzzer \
     $LIB_FUZZING_ENGINE

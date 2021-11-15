@@ -1,4 +1,5 @@
 homepage: "https://github.com/hyperledger/iroha"
+language: c++
 primary_contact: "boldrev@soramitsu.co.jp"
 auto_ccs:
   - "andrei@soramitsu.co.jp"
@@ -7,3 +8,4 @@ auto_ccs:
   - "gorbachev@soramitsu.co.jp"
 sanitizers:
   - address
+main_repo: 'https://github.com/hyperledger/iroha.git'

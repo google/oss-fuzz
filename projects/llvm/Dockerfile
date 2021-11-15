@@ -15,16 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcc@google.com
 RUN apt-get update -y
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
     binutils liblzma-dev libz-dev python-all cmake ninja-build subversion \
     pkg-config
 
 # Get LLVM
-RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm > svn.log 2>&1
-RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r $(cd ../ && svn info | grep Revision | awk '{print $2}') >> svn.log 2>&1 
-RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1 
-RUN cd llvm/tools/clang/tools && svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1
+RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 
 COPY build.sh $SRC/

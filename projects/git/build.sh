@@ -34,7 +34,7 @@ done
 zip -j $OUT/fuzz-pack-headers_seed_corpus.zip .git/objects/pack/*.pack.trimmed
 
 # build commit-graph corpus
-./git commit-graph write
+ASAN_OPTIONS=detect_leaks=0 ./git commit-graph write
 zip -j $OUT/fuzz-commit-graph_seed_corpus .git/objects/info/commit-graph
 
 # Mute stderr

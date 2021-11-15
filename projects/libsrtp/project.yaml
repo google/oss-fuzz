@@ -1,4 +1,5 @@
 homepage: "https://github.com/cisco/libsrtp"
+language: c++
 primary_contact: "richbarn@cisco.com"
 auto_ccs:
  - "guidovranken@gmail.com"
@@ -8,3 +9,4 @@ sanitizers:
 architectures:
  - x86_64
  - i386
+main_repo: 'https://github.com/cisco/libsrtp'

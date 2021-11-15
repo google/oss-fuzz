@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER emmiller@gmail.com
 RUN apt-get update && apt-get install -y make autoconf autoconf-archive automake gettext libtool
 
 RUN git clone --depth 1 https://github.com/libxls/libxls libxls

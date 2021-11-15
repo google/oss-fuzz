@@ -15,35 +15,49 @@
 #
 ################################################################################
 
-cd expat
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
-./buildconf.sh
-./configure
-make clean
-make -j$(nproc) all
+cmake_args=(
+    # Specific to Expat
+    -DEXPAT_BUILD_FUZZERS=ON
+    -DEXPAT_OSSFUZZ_BUILD=ON
+    -DEXPAT_SHARED_LIBS=OFF
 
-ENCODING_TYPES="UTF_16 \
-  UTF_8 \
-  ISO_8859_1 \
-  US_ASCII \
-  UTF_16BE \
-  UTF_16LE"
+    # C compiler
+    -DCMAKE_C_COMPILER="${CC}"
+    -DCMAKE_C_FLAGS="${CFLAGS}"
 
-for encoding in $ENCODING_TYPES; do
-  fuzz_target_name=parse_${encoding}_fuzzer
+    # C++ compiler
+    -DCMAKE_CXX_COMPILER="${CXX}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
 
-  $CXX $CXXFLAGS -std=c++11 -Ilib/ -DENCODING_${encoding} \
-      $SRC/parse_fuzzer.cc -o $OUT/${fuzz_target_name} \
-      $LIB_FUZZING_ENGINE lib/.libs/libexpat.a
+    # Linker
+    -DCMAKE_LINKER="${LD}"
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+)
 
-  # Use dictionaries in proper encoding for 16-bit encoding types.
-  if [[ $encoding == *"UTF_16"* ]]; then
-    cp $SRC/xml_${encoding}.dict  $OUT/${fuzz_target_name}.dict
+mkdir -p build
+cd build
+cmake ../expat "${cmake_args[@]}"
+make -j$(nproc)
+
+for fuzzer in fuzz/*;
+do
+  cp $fuzzer $OUT
+  fuzzer_name=$(basename $fuzzer)
+  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]];
+  then
+    cp $SRC/xml_UTF_16.dict $OUT/${fuzzer_name}.dict
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]];
+  then
+    cp $SRC/xml_UTF_16LE.dict $OUT/${fuzzer_name}.dict
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]];
+  then
+    cp $SRC/xml_UTF_16BE.dict $OUT/${fuzzer_name}.dict
   else
-    cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
+    cp $SRC/xml.dict $OUT/${fuzzer_name}.dict
   fi
-
-  # Generate .option files for each fuzzer.
-  echo -en "[libfuzzer]\ndict = ${fuzz_target_name}.dict\nmax_len = 1024\n" \
-      > $OUT/${fuzz_target_name}.options
 done
