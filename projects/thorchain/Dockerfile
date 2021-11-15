@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --branch fuzzers --depth 1 https://gitlab.com/guidovranken/thornode.git $GOPATH/src/gitlab.com/thorchain/thornode
+RUN git clone --depth 1 https://gitlab.com/guidovranken/thornode.git $GOPATH/src/gitlab.com/thorchain/thornode
+RUN git clone --depth 1 https://github.com/guidovranken/thorchain.git
 WORKDIR $GOPATH/src/gitlab.com/thorchain/thornode
 COPY build.sh $SRC/

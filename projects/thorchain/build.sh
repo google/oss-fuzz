@@ -15,8 +15,10 @@
 #
 ################################################################################
 
+mv $SRC/thorchain/fuzzers $GOPATH/src/gitlab.com/thorchain/thornode
 # Set go-ethereum to a newer version which fixes fuzzer breakage
 sed -i 's#github.com/ethereum/go-ethereum v1.10.4#github.com/ethereum/go-ethereum v1.10.9#g' $GOPATH/src/gitlab.com/thorchain/thornode/go.mod
 
 compile_go_fuzzer gitlab.com/thorchain/thornode/fuzzers/memo Fuzz memo-fuzzer
+zip memo_seed_corpus.zip $GOPATH/src/gitlab.com/thorchain/thornode/fuzzers/memo/corp
 cp $GOPATH/src/gitlab.com/thorchain/thornode/fuzzers/memo/memo.dict $OUT/memo-fuzzer.dict
