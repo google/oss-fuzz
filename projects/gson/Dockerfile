@@ -25,6 +25,4 @@ ENV MVN $SRC/maven/apache-maven-3.8.3/bin/mvn
 RUN git clone --depth 1 https://github.com/google/gson gson
 WORKDIR gson
 COPY build.sh $SRC/
-COPY pom.xml $SRC/gson/pom.xml
-COPY gson/pom.xml $SRC/gson/gson/pom.xml
 COPY *.java $SRC/
