@@ -33,7 +33,7 @@ perf --version ||
     pushd linux-stable/tools/perf/
     apt-get install -y flex bison make
     # clang finds errors such as tautological-bitwise-compare
-    CC=gcc DESTDIR=/usr/ make install
+    WERROR=0 CC=gcc DESTDIR=/usr/ make install
     apt-get remove -y --purge flex bison
     popd
     rm -rf linux-stable
