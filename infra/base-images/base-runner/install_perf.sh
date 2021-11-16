@@ -31,10 +31,10 @@ perf --version ||
     export tagname=v`uname -r | cut -d- -f1 | sed 's/\.0$//'`
     git clone --depth 1 --branch $tagname git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
     pushd linux-stable/tools/perf/
-    apt-get install -y flex bison make elfutils
+    apt-get install -y flex bison make elfutils libelf-dev
     # clang finds errors such as tautological-bitwise-compare
     WERROR=0 CC=gcc DESTDIR=/usr/ make install
-    apt-get remove -y --purge flex bison elfutils
+    apt-get remove -y --purge flex bison elfutils libelf-dev
     popd
     rm -rf linux-stable
 )
