@@ -22,11 +22,18 @@ declare -r FUZZ_TARGET_QUERY='
 declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
 
 declare -r EXTRA_BAZEL_FLAGS="$(
+if [ -n "$CC" ]; then
+  echo "--action_env=CC=${CC}"
+fi
+if [ -n "$CXX" ]; then
+  echo "--action_env=CXX=${CXX}"
+fi
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
-  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
   echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
