@@ -124,7 +124,7 @@ function run_fuzz_target {
 
   perf script -i $DUMPS_DIR/$target.perf | \
     $PERF_DIR/stackcollapse-perf.pl | \
-    rcfilt | \ # demangle
+    rcfilt | \
     $PERF_DIR/flamegraph.pl > $REPORT_ROOT_DIR/perf-$target.svg
 }
 
