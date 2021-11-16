@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
 DESTINATION_BADGE_DIR = 'badges'
 MAX_BUILD_LOGS = 7
 
-STATUS_BUCKET = 'oss-fuzz-build-logs-test'
+STATUS_BUCKET = 'oss-fuzz-build-logs'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
@@ -276,16 +276,16 @@ def update_badges():
 
 def main():
   """Entry point for cloudbuild"""
-  config = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
-            (build_and_run_coverage.COVERAGE_BUILD_TYPE,
-             COVERAGE_STATUS_FILENAME))
+  with ndb.Client().context():
+    configs = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
+               (build_and_run_coverage.COVERAGE_BUILD_TYPE,
+                COVERAGE_STATUS_FILENAME))
 
-  for tag, filename in config:
-    update_build_status(tag, filename)
+    for tag, filename in configs:
+      update_build_status(tag, filename)
 
-  update_badges()
+    update_badges()
 
 
 if __name__ == '__main__':
-  with ndb.Client().context():
-    main()
+  main()
