@@ -58,8 +58,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   AutoPtr<dng_camera_profile> customCameraProfile (new dng_camera_profile ());
   customCameraProfile->ParseExtended(fStream);
 
-  // TODO: once the parse routine has run for a while on clusterfuzz,
-  // extend with more calls on the camera profile class.
+  // The profile is not stubeed, so we can calculate the fingerprint.
+  const dng_fingerprint &fPrint = customCameraProfile->Fingerprint();
 
   unlink(filename);
   return 0;
