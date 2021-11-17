@@ -9,6 +9,7 @@ auto_ccs:
   - "lglovin@apple.com"
   - "Product-Security@apple.com"
   - "vlubet@apple.com"
+  - "iang@apple.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

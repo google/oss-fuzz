@@ -19,7 +19,11 @@ unset CPP
 unset CXX
 export LDFLAGS="-l:libbsd.a"
 
-git apply  --ignore-space-change --ignore-whitespace $SRC/patches.diff
+# We used to patch out assert statements. But since https://github.com/apache/httpd/commit/a6e5a92b0d0e74ead5a43f20f81f5cf880ea4fb8
+# This does not seem to be relevant anymore.
+# I will keep the lines and let the fuzzers runs for a while, then remove the patch entirely
+# if it proves no longer needed.
+#git apply  --ignore-space-change --ignore-whitespace $SRC/patches.diff
 
 # Download apr and place in httpd srclib folder. Apr-2.0 includes apr-utils
 svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
@@ -28,6 +32,8 @@ svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 ./buildconf
 ./configure --with-included-apr --enable-pool-debug
 make
+
+static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
 # Build the fuzzers
 for fuzzname in utils parse tokenize addr_parse uri request preq; do
@@ -42,5 +48,5 @@ for fuzzname in utils parse tokenize addr_parse uri request preq; do
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
                       ./srclib/apr/.libs/libapr-2.a \
-    -Wl,--end-group -luuid -lpcre -lcrypt -lexpat -l:libbsd.a
+    -Wl,--end-group -luuid -lcrypt -lexpat -l:libbsd.a ${static_pcre}
 done

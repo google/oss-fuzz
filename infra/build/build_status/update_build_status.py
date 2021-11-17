@@ -14,7 +14,6 @@
 #
 ################################################################################
 """Cloud function to request builds."""
-import base64
 import concurrent.futures
 import json
 import sys
@@ -239,33 +238,6 @@ def upload_log(build_id):
   return True
 
 
-# pylint: disable=no-member
-def update_status(event, context):
-  """Entry point for cloud function to update build statuses and badges."""
-  del context
-
-  if 'data' in event:
-    status_type = base64.b64decode(event['data']).decode()
-  else:
-    raise RuntimeError('No data')
-
-  if status_type == 'badges':
-    update_badges()
-    return
-
-  if status_type == 'fuzzing':
-    tag = build_project.FUZZING_BUILD_TYPE
-    status_filename = FUZZING_STATUS_FILENAME
-  elif status_type == 'coverage':
-    tag = build_and_run_coverage.COVERAGE_BUILD_TYPE
-    status_filename = COVERAGE_STATUS_FILENAME
-  else:
-    raise RuntimeError('Invalid build status type ' + status_type)
-
-  with ndb.Client().context():
-    update_build_status(tag, status_filename)
-
-
 def load_status_from_gcs(filename):
   """Load statuses from bucket."""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
@@ -286,18 +258,34 @@ def update_badges():
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
     futures = []
-    with ndb.Client().context():
-      for project in Project.query():
-        if project.name not in project_build_statuses:
-          continue
-        # Certain projects (e.g. JVM and Python) do not have any coverage
-        # builds, but should still receive a badge.
-        coverage_build_status = None
-        if project.name in coverage_build_statuses:
-          coverage_build_status = coverage_build_statuses[project.name]
+    for project in Project.query():
+      if project.name not in project_build_statuses:
+        continue
+      # Certain projects (e.g. JVM and Python) do not have any coverage
+      # builds, but should still receive a badge.
+      coverage_build_status = None
+      if project.name in coverage_build_statuses:
+        coverage_build_status = coverage_build_statuses[project.name]
 
-        futures.append(
-            executor.submit(update_build_badges, project.name,
-                            project_build_statuses[project.name],
-                            coverage_build_status))
+      futures.append(
+          executor.submit(update_build_badges, project.name,
+                          project_build_statuses[project.name],
+                          coverage_build_status))
     concurrent.futures.wait(futures)
+
+
+def main():
+  """Entry point for cloudbuild"""
+  with ndb.Client().context():
+    configs = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
+               (build_and_run_coverage.COVERAGE_BUILD_TYPE,
+                COVERAGE_STATUS_FILENAME))
+
+    for tag, filename in configs:
+      update_build_status(tag, filename)
+
+    update_badges()
+
+
+if __name__ == '__main__':
+  main()

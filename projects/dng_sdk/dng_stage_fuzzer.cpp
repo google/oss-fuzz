@@ -34,6 +34,7 @@ limitations under the License.
 #include "dng_tag_codes.h"
 #include "dng_tag_types.h"
 #include "dng_tag_values.h"
+#include "dng_camera_profile.h"
 
 // Run a set of the operations high-level operations on the dng_sdk
 // This code is inspired by dng_validate.cpp and performs many of the same
@@ -55,6 +56,9 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
   host.SetNeedsMeta(NeedsMeta);
   host.SetNeedsImage(NeedsImage);
 
+  AutoPtr<dng_camera_profile> customCameraProfile (new dng_camera_profile ());
+  customCameraProfile->SetName("custom profile");
+
   AutoPtr<dng_negative> negative;
   try {
     dng_info info;
@@ -68,6 +72,22 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
 
     if (info.IsValidDNG()) {
       negative.Reset(host.Make_dng_negative());
+      negative->AddProfile(customCameraProfile);
+
+      if (do_color_coding == 1) {
+        negative->SetDefaultCropSize((uint32)100,(uint32)100);
+        negative->SetDefaultCropOrigin((uint32)50,(uint32)100);
+      }
+      else if (do_color_coding == 2) {
+        negative->ResetDefaultUserCrop();
+      }
+      else {
+        negative->SetDefaultUserCropT(dng_urational(0, 1));
+      }
+      
+      negative->SetStage3Gain(2);
+      negative->SetIsPreview(true);
+
       negative->Parse(host, stream, info);
       negative->PostParse(host, stream, info);
       negative->ReadStage1Image(host, stream, info);
@@ -120,6 +140,11 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
       dng_render render(host, *negative);
       AutoPtr<dng_image> finalImage;
       finalImage.Reset(render.Render());
+
+      // Use a random var to determine if we should clear profiles from disk.
+      if (do_color_coding == 3) {
+      negative->ClearProfiles(true, true);
+      }
     }
   } catch (dng_exception &e) {
     // dng_sdk throws C++ exceptions on errors

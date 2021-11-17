@@ -27,6 +27,8 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzer/dng_parser_fuzzer.cpp -o $OUT/dng_p
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_stage_fuzzer.cpp -o $OUT/dng_stage_fuzzer \
   ./libdns_sdk.a -I./ -l:libjpeg.a -lz
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/dng_camera_profile_fuzzer.cpp -o $OUT/dng_camera_profile_fuzzer \
+  ./libdns_sdk.a -I./ -l:libjpeg.a -lz
 
 sed -i 's/main/main2/g' $SRC/dng_sdk/source/dng_validate.cpp
 sed -i 's/printf ("Val/\/\//g' $SRC/dng_sdk/source/dng_validate.cpp

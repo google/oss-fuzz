@@ -20,6 +20,46 @@ limitations under the License.
  */
 #include "readelf.h"
 
+#include "bfd.h"
+#include "libbfd.h"
+
+int check_architecture(char *tmpfilename, char *arch_string) {
+  bfd_cleanup cleanup = NULL;
+  bfd *file = bfd_openr(tmpfilename, arch_string);
+  if (file == NULL) {
+    remove(tmpfilename);
+    return 0;
+  }
+
+  if (!bfd_read_p(file) ||
+      (unsigned int)file->format >= (unsigned int)bfd_type_end) {
+    bfd_close(file);
+    return 0;
+  }
+
+  bool doAnalysis = false;
+  if (bfd_seek(file, (file_ptr)0, SEEK_SET) == 0) {
+    file->format = bfd_object;
+    cleanup = BFD_SEND_FMT(file, _bfd_check_format, (file));
+    if (cleanup) {
+      doAnalysis = true;
+      cleanup(file);
+    }
+    file->format = bfd_unknown;
+  }
+
+  if (file != NULL) {
+    bfd_close(file);
+  }
+
+  // return 1 if the architecture matches.
+  if (doAnalysis) {
+    return 1;
+  }
+  return 0;
+}
+
+
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
@@ -30,6 +70,13 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	FILE *fp = fopen(filename, "wb");
 	if (!fp)
 		return 0;
+
+#ifdef READELF_TARGETED
+  if (check_architecture(filename, "pef") == 0) {
+    unlink(filename);
+		return 0;
+  }
+#endif
 
 	fwrite(data, size, 1, fp);
 	fclose(fp);

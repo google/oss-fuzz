@@ -27,8 +27,7 @@ PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '--cap-add', 'SYS_PTRACE', '-e',
-    'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
+    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
     'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 

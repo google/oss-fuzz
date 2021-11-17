@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    mercurial git libpcre2-dev
-RUN hg clone http://hg.nginx.org/njs
-RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
-
-WORKDIR njs
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 COPY build.sh $SRC/

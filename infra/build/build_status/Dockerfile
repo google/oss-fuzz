@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    mercurial git libpcre2-dev
-RUN hg clone http://hg.nginx.org/njs
-RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
+FROM gcr.io/oss-fuzz-base/base-runner
 
-WORKDIR njs
-COPY build.sh $SRC/
+RUN mkdir -p /opt/oss-fuzz/infra/build_status
+COPY ${OSS_FUZZ_ROOT}/infra/build/functions/* /opt/oss-fuzz/infra/build_status/
+COPY ${OSS_FUZZ_ROOT}/infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
+RUN pip install -r /opt/oss-fuzz/infra/build_status/requirements.txt
+
+ENTRYPOINT [ "python3", "/opt/oss-fuzz/infra/build_status/update_build_status.py" ]
