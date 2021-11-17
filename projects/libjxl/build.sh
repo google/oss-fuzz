@@ -37,7 +37,11 @@ build_args=(
 
   mkdir -p ${WORK}/libjxl-corpus
   cd ${WORK}/libjxl-corpus
-  cmake "${build_args[@]}" "${SRC}/libjxl"
+  cmake \
+    "${build_args[@]}" \
+    -DCMAKE_C_FLAGS="-DHWY_DISABLED_TARGETS=HWY_SSSE3" \
+    -DCMAKE_CXX_FLAGS="-DHWY_DISABLED_TARGETS=HWY_SSSE3" \
+    "${SRC}/libjxl"
   ninja clean
   ninja fuzzer_corpus
 
@@ -56,6 +60,8 @@ cd ${WORK}/libjxl-fuzzer
 cmake \
   "${build_args[@]}" \
   -DJPEGXL_FUZZER_LINK_FLAGS="${LIB_FUZZING_ENGINE}" \
+  -DCMAKE_C_FLAGS="-DHWY_DISABLED_TARGETS=HWY_SSSE3 ${CFLAGS}" \
+  -DCMAKE_CXX_FLAGS="-DHWY_DISABLED_TARGETS=HWY_SSSE3 ${CXXFLAGS}" \
   "${SRC}/libjxl"
 
 fuzzers=(
