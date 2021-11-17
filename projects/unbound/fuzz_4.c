@@ -63,7 +63,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t nr) {
   if (parse_packet(pkt, &msg, reg) != LDNS_RCODE_NOERROR) {    
     goto out;
   }
-  if (parse_extract_edns(&msg, &edns, reg) != LDNS_RCODE_NOERROR) {
+  if (parse_extract_edns_from_response_msg(&msg, &edns, reg) != LDNS_RCODE_NOERROR) {
     goto out;
   }
 
