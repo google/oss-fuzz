@@ -19,12 +19,6 @@ unset CPP
 unset CXX
 export LDFLAGS="-l:libbsd.a"
 
-# We used to patch out assert statements. But since https://github.com/apache/httpd/commit/a6e5a92b0d0e74ead5a43f20f81f5cf880ea4fb8
-# This does not seem to be relevant anymore.
-# I will keep the lines and let the fuzzers runs for a while, then remove the patch entirely
-# if it proves no longer needed.
-#git apply  --ignore-space-change --ignore-whitespace $SRC/patches.diff
-
 # Download apr and place in httpd srclib folder. Apr-2.0 includes apr-utils
 svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 
