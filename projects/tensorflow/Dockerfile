@@ -34,6 +34,10 @@ RUN curl -Lo /usr/bin/bazel \
         && \
     chmod +x /usr/bin/bazel
 
+ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk-amd64
+# it fails after installing java due to jazzer env variables missing
+RUN install_java.sh || true
+
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow
 COPY build.sh $SRC/
