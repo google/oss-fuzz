@@ -125,7 +125,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 132630d48d0f9fe50e9388f941433c85636587da
+    git checkout 7777045c09c404b1274c930788317525fedb43ad
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
