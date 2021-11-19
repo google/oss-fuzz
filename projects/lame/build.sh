@@ -16,7 +16,11 @@
 ################################################################################
 
 pushd mpg123
-./configure --enable-static --with-cpu=$ARCHITECTURE
+if [[ "$ARCHITECTURE" == "i386" ]]; then
+	./configure --enable-static --with-cpu=$ARCHITECTURE
+else
+	./configure --enable-static
+fi
 make -j$(nproc)
 make install
 popd
