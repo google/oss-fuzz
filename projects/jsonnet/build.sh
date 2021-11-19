@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+# Build go-jsonnet fuzzers
+mv $SRC/fuzz.go $SRC/go-jsonnet/
+cd $SRC/go-jsonnet/
+compile_go_fuzzer github.com/google/go-jsonnet Fuzz fuzz
+
+cd $SRC
+
+# Build jsonnet fuzzers
 mkdir jsonnet/build
 pushd jsonnet/build
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
