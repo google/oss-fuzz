@@ -16,7 +16,7 @@
 ################################################################################
 
 pushd mpg123
-./configure --enable-static
+./configure --enable-static --with-cpu=$ARCHITECTURE
 make -j$(nproc)
 make install
 popd
