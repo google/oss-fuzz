@@ -47,7 +47,7 @@ fi
 
 # Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
 # and not for other binaries such as protoc
-sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
+sed -i -e 's/linkstatic/linkopts = \["'"$LIB_FUZZING_ENGINE"'"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
 
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
