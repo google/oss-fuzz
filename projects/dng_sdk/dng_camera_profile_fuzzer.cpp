@@ -55,11 +55,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   dng_file_stream fStream(filename, false, 0);
 
   // Create a custom camera profile based on the fstream above
-  AutoPtr<dng_camera_profile> customCameraProfile (new dng_camera_profile ());
-  customCameraProfile->ParseExtended(fStream);
+  try {
+    AutoPtr<dng_camera_profile> customCameraProfile (new dng_camera_profile ());
+    customCameraProfile->ParseExtended(fStream);
 
-  // The profile is not stubeed, so we can calculate the fingerprint.
-  const dng_fingerprint &fPrint = customCameraProfile->Fingerprint();
+    // The profile is not stubeed, so we can calculate the fingerprint.
+    const dng_fingerprint &fPrint = customCameraProfile->Fingerprint();
+  } catch (dng_exception &e) {}
 
   unlink(filename);
   return 0;

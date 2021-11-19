@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,12 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y pkg-config libpcsclite-dev
-RUN git clone --depth 1 https://github.com/sigstore/cosign
+import sys
+import subprocess
 
-COPY build.sh $SRC/
-WORKDIR $SRC/cosign
+#Disable coverage for troubling crates.
+sys.argv[0] = "rustc"
+if "tokio_util" in sys.argv or "hyper" in sys.argv:
+    try:
+        sys.argv.remove("-Zinstrument-coverage")
+    except:
+        pass
+    print(sys.argv)
+subprocess.call(sys.argv)

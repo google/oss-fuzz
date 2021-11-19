@@ -16,9 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
+RUN apt-get --yes update \
+   && apt-get install --no-install-recommends --yes \
+   libssl-dev \
+   pkg-config \
+   python \
+   && apt-get clean \
+   && rm --recursive --force /var/lib/apt/lists/*
 
 RUN git clone https://github.com/ctz/rustls
 
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY *.py $SRC/

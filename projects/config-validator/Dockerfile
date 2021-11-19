@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +14,12 @@
 #
 ################################################################################
 
-cd oak_functions/loader/
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-if [ "$SANITIZER" = "coverage" ]
-then
-  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-  chmod +x $SRC/rustc.py
-  export RUSTC="$SRC/rustc.py"
-  export CFLAGS=""
-fi
+# Clone the actual repo with the fuzz target.
+RUN git clone --depth 1 https://github.com/GoogleCloudPlatform/config-validator $GOPATH/src/github.com/GoogleCloudPlatform/config-validator
 
-cargo-fuzz build --release --target-dir=fuzz/target
+COPY build.sh $SRC/
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-done
-
-
+# Required to avoid 'working directory is not part of a module' error.
+WORKDIR $GOPATH/src/github.com/GoogleCloudPlatform/config-validator

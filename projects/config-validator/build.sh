@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,14 @@
 #
 ################################################################################
 
-cd oak_functions/loader/
+# Copy the library files needed to initialize the validator.
+mkdir -p $OUT/validatorfiles
+cp -a 'test/cf/constraints' $OUT/validatorfiles
+cp -a 'test/cf/library' $OUT/validatorfiles
+cp -a 'test/cf/templates' $OUT/validatorfiles
 
-if [ "$SANITIZER" = "coverage" ]
-then
-  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-  chmod +x $SRC/rustc.py
-  export RUSTC="$SRC/rustc.py"
-  export CFLAGS=""
-fi
+# Copy the corpus.
+zip -jr $OUT/fuzz_config_validator_seed_corpus.zip internal/fuzz/corpus
 
-cargo-fuzz build --release --target-dir=fuzz/target
-
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-done
-
-
+# Compile the fuzzer.
+compile_go_fuzzer github.com/GoogleCloudPlatform/config-validator/internal/fuzz Fuzz fuzz_config_validator

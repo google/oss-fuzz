@@ -150,12 +150,14 @@ pushd $SRC/libjxl
 sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
 # Don't overwrite our linker flags
 sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
+# FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
+# https://github.com/libjxl/libjxl/issues/858
 cmake -G "Unix Makefiles" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=$CC \
   -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS" \
-  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DCMAKE_C_FLAGS="$CFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
   -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
   -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
   -DCMAKE_INSTALL_PREFIX="$WORK" \
