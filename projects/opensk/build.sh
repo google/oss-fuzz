@@ -17,9 +17,13 @@
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 
+# do not use override toolchain
+# cf https://rust-lang.github.io/rustup/overrides.html
+export RUSTUP_TOOLCHAIN=nightly
+
 build_and_copy() {
   pushd "$1"
-  cargo +nightly fuzz build --release --debug-assertions
+  cargo fuzz build --release --debug-assertions
   for f in fuzz/fuzz_targets/*.rs
   do
     cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
