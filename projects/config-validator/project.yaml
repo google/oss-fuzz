@@ -1,8 +1,9 @@
 homepage: "https://github.com/GoogleCloudPlatform/config-validator/"
 main_repo: "https://github.com/GoogleCloudPlatform/config-validator/"
-primary_contact: "martin.p.petkov@gmail.com"
+primary_contact: "mpetkov@google.com"
 auto_ccs:
 - morgantep@google.com
+- martin.p.petkov@gmail.com
 language: go
 fuzzing_engines:
 - libfuzzer
