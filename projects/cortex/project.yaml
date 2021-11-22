@@ -1,0 +1,10 @@
+homepage: "https://cortexmetrics.io"
+main_repo: "https://github.com/cortexproject/cortex"
+primary_contact: ""
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
