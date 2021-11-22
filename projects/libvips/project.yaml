@@ -4,4 +4,6 @@ primary_contact: "jcupitt@gmail.com"
 auto_ccs:
   - "kleisauke@gmail.com"
   - "lovell.fuller@gmail.com"
+  - "jon.sneyers@gmail.com"
+  - "eustas@google.com"
 main_repo: 'https://github.com/libvips/libvips'
