@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2020 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfontconfig1-dev libfreetype-dev libfribidi-dev python3-pip && \
-    pip3 install meson==0.55.0 ninja
+mkdir $SRC/linkerd2/test/fuzzing
 
-RUN git clone --depth 1 https://github.com/libass/libass.git
-RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git
+mv $SRC/fuzzers.go $SRC/linkerd2/test/fuzzing/
 
-COPY build.sh libass_fuzzer.cc *.dict *.options $SRC/
+compile_go_fuzzer github.com/linkerd/linkerd2/test/fuzzing FuzzParseContainerOpaquePorts FuzzParseContainerOpaquePorts
+compile_go_fuzzer github.com/linkerd/linkerd2/test/fuzzing FuzzParsePorts FuzzParsePorts
+compile_go_fuzzer github.com/linkerd/linkerd2/test/fuzzing FuzzHealthCheck FuzzHealthCheck

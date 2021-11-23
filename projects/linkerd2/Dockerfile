@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfontconfig1-dev libfreetype-dev libfribidi-dev python3-pip && \
-    pip3 install meson==0.55.0 ninja
-
-RUN git clone --depth 1 https://github.com/libass/libass.git
-RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git
-
-COPY build.sh libass_fuzzer.cc *.dict *.options $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/linkerd/linkerd2
+COPY build.sh fuzzers.go $SRC/
+WORKDIR $SRC/linkerd2
