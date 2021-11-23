@@ -15,20 +15,10 @@
 #
 ################################################################################
 
-# afl++ configuration options.
-# The 'env|grep' setup ensures we do not trigger the linter.
-# The variables need to be set to "1" here - or before running this script.
+# AFL++ setup
+echo "Copying precompiled AFL++"
 
-# AFL++ settings.
-export AFL_LLVM_MODE_WORKAROUND=0
-export AFL_ENABLE_DICTIONARY=0
-export AFL_ENABLE_CMPLOG=1
-export AFL_LAF_CHANCE=3
-
-# Start compiling afl++.
-echo "Copying precompiled afl++"
-
-# Copy afl++ tools necessary for fuzzing.
+# Copy AFL++ tools necessary for fuzzing.
 pushd $SRC/aflplusplus > /dev/null
 
 cp -f libAFLDriver.a $LIB_FUZZING_ENGINE
@@ -39,42 +29,65 @@ ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $OUT
 export CC="$SRC/aflplusplus/afl-clang-fast"
 export CXX="$SRC/aflplusplus/afl-clang-fast++"
 
-# Set sane afl++ environment defaults:
+# Set sane AFL++ environment defaults:
 # Be quiet, otherwise this can break some builds.
 export AFL_QUIET=1
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
+# No complain on unknown AFL environment variables
+export AFL_IGNORE_UNKNOWN_ENVS=1
 
-# AFL compile option roulette. It is OK if they all happen together.
+# To analyze build failures and set specific AFL++ settings, set
+# `export AFL_SKIP_OSSFUZZ=1`
+# The 'env|grep' setup ensures we do not trigger the linter.
+env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
 
-# 20% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
-# edge coverage).
-test $(($RANDOM % 100)) -lt 20 && {
-  export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
-  export AFL_ENABLE_CMPLOG=0
-  export AFL_LAF_CHANCE=30
-}
+  # The variables need to be set to "1" here - or before running this script.
+  # AFL++ configuration options.
+  export AFL_LLVM_MODE_WORKAROUND=0
+  export AFL_ENABLE_DICTIONARY=0
+  export AFL_ENABLE_CMPLOG=1
+  export AFL_LAF_CHANCE=5
 
-# 40% chance to create a dictionary.
-test $(($RANDOM % 100)) -lt 40 && {
-  export AFL_ENABLE_DICTIONARY=1
-}
+  #
+  # AFL++ compile option roulette. It is OK if they all happen together.
+  #
 
-# 60% chance to perform CMPLOG/REDQUEEN.
-rm -f "$OUT/afl_cmplog.txt"
-test "$AFL_ENABLE_CMPLOG" = "1" -a $(($RANDOM % 100)) -lt 60 && {
-  export AFL_LLVM_CMPLOG=1
-  touch "$OUT/afl_cmplog.txt"
-}
+  # 20% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
+  # edge coverage).
+  test $(($RANDOM % 100)) -lt 20 && {
+    export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+    export AFL_ENABLE_CMPLOG=0
+    # we increase the chance for LAF because we do not do CMPLOG with CTX
+    export AFL_LAF_CHANCE=30
+  }
 
-# 3% chance to perform COMPCOV/LAF_INTEL.
-test $(($RANDOM % 100)) -lt $AFL_LAF_CHANCE && {
-  export AFL_LLVM_LAF_ALL=1
-}
+  # 40% chance to create a dictionary.
+  test $(($RANDOM % 100)) -lt 40 && {
+    export AFL_ENABLE_DICTIONARY=1
+  }
 
-# Create a dictionary if one is wanted.
-test "$AFL_ENABLE_DICTIONARY" = "1" && {
-  export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
+  # 60% chance to perform CMPLOG/REDQUEEN.
+  rm -f "$OUT/afl_cmplog.txt"
+  test "$AFL_ENABLE_CMPLOG" = "1" -a $(($RANDOM % 100)) -lt 60 && {
+    export AFL_LLVM_CMPLOG=1
+    touch "$OUT/afl_cmplog.txt"
+  }
+
+  # chance to perform COMPCOV/LAF_INTEL - if CMPLOG is not enabled.
+  test $(($RANDOM % 100)) -lt $AFL_LAF_CHANCE -a "$AFL_ENABLE_CMPLOG" = "0" && {
+    export AFL_LLVM_LAF_ALL=1
+  }
+
+  #
+  # End of AFL++ compile option roulette
+  #
+
+  # Create a dictionary if one is wanted.
+  test "$AFL_ENABLE_DICTIONARY" = "1" && {
+    export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
+  }
+
 }
 
 # In case afl-clang-fast ever breaks, this is a workaround:
@@ -96,10 +109,10 @@ test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
   cp -f libAFLDrivernew.a $LIB_FUZZING_ENGINE
 }
 
-# Provide a way to document the afl++ options used in this build:
+# Provide a way to document the AFL++ options used in this build:
 echo
-echo afl++ target compilation setup:
-env | grep AFL_ | tee "$OUT/afl_options.txt"
+echo AFL++ target compilation setup:
+env | egrep '^AFL_' | tee "$OUT/afl_options.txt"
 echo
 
 popd > /dev/null
