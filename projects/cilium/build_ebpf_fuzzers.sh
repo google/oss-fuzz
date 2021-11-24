@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y wget
-RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.dict -O $OUT/fuzz.dict
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
-RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN git clone https://github.com/cilium/cilium
-RUN cp $SRC/cilium/test/fuzzing/oss-fuzz-build.sh $SRC/build.sh
-
-RUN git clone https://github.com/cilium/ebpf
-COPY build_ebpf_fuzzers.sh ebpf_fuzzers.go $SRC/
-RUN sed -i '3 a $SRC/build_ebpf_fuzzers.sh' $SRC/build.sh
-WORKDIR $SRC/cilium
+cd $SRC/ebpf
+cp $SRC/ebpf_fuzzers.go internal/btf/
+rm internal/btf/fuzz.go
+compile_go_fuzzer github.com/cilium/ebpf/internal/btf FuzzLoadRawSpec fuzz_load_raw_spec
+compile_go_fuzzer github.com/cilium/ebpf/internal/btf FuzzLoadSpecFromReader fuzz_load_spec_from_reader
