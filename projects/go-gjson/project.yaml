@@ -1,0 +1,10 @@
+homepage: "https://github.com/tidwall/gjson"
+main_repo: "https://github.com/tidwall/gjson"
+primary_contact: ""
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
