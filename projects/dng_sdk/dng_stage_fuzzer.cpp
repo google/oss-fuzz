@@ -95,6 +95,16 @@ void runFuzzerWithVariableHost(char *filename, uint32_t dng_version,
         negative->ReadTransparencyMask(host, stream, info);
       }
 
+      if (do_color_coding == 2) {
+        const char fingerprint_raw[32] = { 'a', 'a','a','a','a','a',
+          'a','a','a','a','a','a','a','a','a','a','a','a','a',
+          'a','a','a','a','a','a','a','a','a','a','a','a','a'};
+
+        dng_fingerprint fp;
+        fp.FromUtf8HexString(fingerprint_raw);
+        dng_camera_profile_id dcpi("random id", fp);
+        negative->ProfileByID(dcpi, true);
+      }
       negative->SynchronizeMetadata();
       negative->SetFourColorBayer();
       if (do_color_coding == 1) {
