@@ -147,9 +147,6 @@ popd
 
 # jpeg-xl (libjxl)
 pushd $SRC/libjxl
-sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
-# Don't overwrite our linker flags
-sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
 # FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
 # https://github.com/libjxl/libjxl/issues/858
 cmake -G "Unix Makefiles" \
@@ -165,9 +162,9 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_USE_PTHREADS_INIT=1 \
   -DBUILD_SHARED_LIBS=0 \
   -DBUILD_TESTING=0 \
-  -DJPEGXL_STATIC=1 \
   -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
   -DJPEGXL_ENABLE_FUZZERS=0 \
+  -DJPEGXL_ENABLE_TOOLS=0 \
   -DJPEGXL_ENABLE_MANPAGES=0 \
   -DJPEGXL_ENABLE_BENCHMARK=0 \
   -DJPEGXL_ENABLE_EXAMPLES=0 \
