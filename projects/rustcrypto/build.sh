@@ -47,7 +47,8 @@ echo -n    'KDF_HKDF,' >>extra_options.h
 echo -n    'KDF_ARGON2,' >>extra_options.h
 echo -n    'KDF_BCRYPT,' >>extra_options.h
 echo -n    'KDF_PBKDF2,' >>extra_options.h
-echo -n    'KDF_SCRYPT' >>extra_options.h
+echo -n    'KDF_SCRYPT,' >>extra_options.h
+echo -n    'BignumCalc_Mod_2Exp256' >>extra_options.h
 echo -n '"' >>extra_options.h
 
 cd $SRC/botan
