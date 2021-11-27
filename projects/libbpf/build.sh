@@ -86,6 +86,12 @@ make -C lib -j$(nproc) V=1 &&
 make -C libelf -j$(nproc) V=1
 )
 
+if [[ "$SANITIZER" == undefined ]]; then
+    UBSAN_FLAGS="-fsanitize=alignment -fno-sanitize-recover=alignment"
+    CFLAGS="$CFLAGS $UBSAN_FLAGS"
+    CXXFLAGS="$CXXFLAGS $UBSAN_FLAGS"
+fi
+
 make -C src BUILD_STATIC_ONLY=y V=1 clean
 make -C src -j$(nproc) CFLAGS="-I$(pwd)/elfutils/libelf $CFLAGS" BUILD_STATIC_ONLY=y V=1
 
