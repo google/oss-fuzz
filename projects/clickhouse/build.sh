@@ -55,9 +55,9 @@ CLICKHOUSE_CMAKE_FLAGS=(
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]}
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
 fi
 
 NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) * 2))
