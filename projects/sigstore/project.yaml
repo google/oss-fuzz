@@ -1,0 +1,12 @@
+homepage: "https://sigstore.dev"
+main_repo: "https://github.com/sigstore/sigstore"
+primary_contact: "naveensrinivasan@protonmail.com"
+auto_ccs:
+  - lhinds@protonmail.com
+  - bob.callaway@gmail.com
+  - dlorenc@protonmail.com
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
