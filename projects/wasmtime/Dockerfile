@@ -29,8 +29,8 @@ RUN git clone --depth 1 https://github.com/bytecodealliance/regalloc.rs regalloc
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
 WORKDIR wasmtime
-RUN git submodule update --init --recursive
+#RUN git submodule update --init --recursive
 
-RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
+#RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
 COPY build.sh default.options $SRC/
