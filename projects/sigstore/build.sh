@@ -14,9 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-fuzzer=fuzz_loadCertificates.a
-cd "$GOPATH"/src/github.com/sigstore/sigstore/test/fuzz/pem
-
-go-fuzz -tags go-fuzz -func FuzzLoadCertificates -o $fuzzer  .
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer -o $OUT/$fuzzer
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
