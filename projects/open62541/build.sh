@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+git submodule update --init --recursive
+
 mkdir -p $WORK/open62541
 cd $WORK/open62541
 

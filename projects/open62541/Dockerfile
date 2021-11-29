@@ -24,5 +24,4 @@ RUN wget https://open62541.org/libmbedtls/libmbedtls-dev_2.6.0-1_amd64.deb && \
     dpkg -i *.deb
 RUN git clone --depth 1 https://github.com/open62541/open62541.git -bmaster open62541
 WORKDIR open62541
-RUN git submodule update --init --recursive
 COPY build.sh $SRC/
