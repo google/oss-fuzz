@@ -57,9 +57,11 @@ def convert(xml):
     canonical_path = os.path.join(package_name, basename)
 
     class_summary = make_element_summary(class_element)
-    summary['data'][0]['files'].append({
-        'filename': relative_to_src_path(src_files, canonical_path),
-        'summary': class_summary,
+    src_files = relative_to_src_path(src_files, canonical_path)
+    for src_file in src_files:
+      summary['data'][0]['files'].append({
+          'filename': src_file,
+          'summary': class_summary,
     })
 
   return json.dumps(summary)
