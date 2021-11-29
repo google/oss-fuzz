@@ -14,4 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGetPassword
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeDigest FuzzComputeDigest
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeVerifying FuzzComputeVerifying
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzED25529SignerVerfier FuzzED25529SignerVerfier
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPKCS1v15SignerVerfier FuzzRSAPKCS1v15SignerVerfier
