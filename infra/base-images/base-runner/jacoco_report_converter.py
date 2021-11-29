@@ -62,7 +62,7 @@ def convert(xml):
       summary['data'][0]['files'].append({
           'filename': src_file,
           'summary': class_summary,
-    })
+      })
 
   return json.dumps(summary)
 
