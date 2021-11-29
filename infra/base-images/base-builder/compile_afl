@@ -23,7 +23,7 @@
 export AFL_LLVM_MODE_WORKAROUND=0
 export AFL_ENABLE_DICTIONARY=0
 export AFL_ENABLE_CMPLOG=1
-export AFL_LAF_CHANCE=3
+export AFL_LAF_CHANCE=100
 
 # Start compiling afl++.
 echo "Copying precompiled afl++"
@@ -49,26 +49,27 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 
 # 20% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
 # edge coverage).
-test $(($RANDOM % 100)) -lt 20 && {
+test $(($RANDOM % 100)) -lt 0 && {
   export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
   export AFL_ENABLE_CMPLOG=0
   export AFL_LAF_CHANCE=30
 }
 
 # 40% chance to create a dictionary.
-test $(($RANDOM % 100)) -lt 40 && {
+test $(($RANDOM % 100)) -lt 0 && {
   export AFL_ENABLE_DICTIONARY=1
 }
 
 # 60% chance to perform CMPLOG/REDQUEEN.
 rm -f "$OUT/afl_cmplog.txt"
-test "$AFL_ENABLE_CMPLOG" = "1" -a $(($RANDOM % 100)) -lt 60 && {
+test "$AFL_ENABLE_CMPLOG" = "1" -a $(($RANDOM % 100)) -lt 0 && {
   export AFL_LLVM_CMPLOG=1
   touch "$OUT/afl_cmplog.txt"
 }
 
 # 3% chance to perform COMPCOV/LAF_INTEL.
 test $(($RANDOM % 100)) -lt $AFL_LAF_CHANCE && {
+  echo "HIHIHIHI"
   export AFL_LLVM_LAF_ALL=1
 }
 
