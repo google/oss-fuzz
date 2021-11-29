@@ -41,11 +41,6 @@ set -eux
 SANITIZER=${SANITIZER:-address}
 flags="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
 
-# TODO: once https://github.com/libbpf/libbpf/issues/391 is fixed
-# "-fsanitize=alignment -fno-sanitize-recover=alignment" should be added
-# to CFLAGS, CXXFLAGS explicitly (because the alignment check is turned off
-# by default on OSS-Fuzz)
-
 export CC=${CC:-clang}
 export CFLAGS=${CFLAGS:-$flags}
 
