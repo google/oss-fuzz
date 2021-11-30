@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+cd $SRC/ClickHouse
+
+# This is the command to sync our submodules being used for ages
+git submodule sync --recursive && git submodule update --init --recursive &&
+git submodule foreach git reset --hard && git submodule foreach git clean -xfd &&
+git submodule foreach git submodule sync --recursive &&
+git submodule foreach git submodule update --init --recursive &&
+git submodule foreach git submodule foreach git reset --hard &&
+git submodule foreach git submodule foreach git clean -xfd
 
 mkdir $SRC/ClickHouse/build
 cd $SRC/ClickHouse/build
