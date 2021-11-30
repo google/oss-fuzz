@@ -56,14 +56,15 @@ mkdir -p "$OUT"
 export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 
 # Ideally libbelf should be built using release tarballs available
-# at https://sourceware.org/elfutils/ftp/. Unfortunately the latest
-# release fails to compile with LDFLAGS enabled due to https://bugs.gentoo.org/794601
-# (which was fixed in https://sourceware.org/git/?p=elfutils.git;a=commit;h=c6e1f664254a8a)
+# at https://sourceware.org/elfutils/ftp/. Unfortunately sometimes they
+# fail to compile (for example, elfutils-0.185 fails to compile with LDFLAGS enabled
+# due to https://bugs.gentoo.org/794601) so let's just point the script to
+# commits referring to versions of libelf that actually can be built
 rm -rf elfutils
 git clone git://sourceware.org/git/elfutils.git
 (
 cd elfutils &&
-git checkout a83fe48 &&
+git checkout 983e86fd89e8bf02f2d27ba5dce5bf078af4ceda &&
 git log --oneline -1 &&
 
 # ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
