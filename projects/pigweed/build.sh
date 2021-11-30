@@ -67,6 +67,7 @@ EXTRA_CXXFLAGS="-Wno-unused-command-line-argument"
 
 # Disable UBSan vptr since target built with -fno-rtti.
 EXTRA_CXXFLAGS+=" -fno-sanitize=vptr"
+EXTRA_CXXFLAGS+=" -fcoverage-compilation-dir=$PW_ROOT"
 
 # Build!
 CXXFLAGS="$CXXFLAGS $EXTRA_CXXFLAGS" LDFLAGS="$CXXFLAGS" \

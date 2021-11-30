@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Commands migrated from Dockerfile to make CIFuzz work
+# REF: https://github.com/google/oss-fuzz/issues/6755
+git submodule update --init --recursive
+git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
+
+
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {

@@ -15,8 +15,13 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_RUSTCRYPTO -DCRYPTOFUZZ_NO_OPENSSL"
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
+
+rm -f /usr/local/bin/cargo
+
+curl https://sh.rustup.rs -sSf | sh -s -- -y
+source $HOME/.cargo/env
 
 # Install Boost headers
 cd $SRC/
@@ -26,15 +31,26 @@ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
 
-# Build libecc
-cd $SRC/libecc
-git checkout cryptofuzz
-export CFLAGS="$CFLAGS -DUSE_CRYPTOFUZZ"
-make -j$(nproc) build/libsign.a
-export LIBECC_PATH=$(realpath .)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBECC"
+cd $SRC/cryptofuzz/
+python gen_repository.py
 
-# Build Botan
+rm extra_options.h
+echo -n '"' >>extra_options.h
+echo -n '--force-module=RustCrypto ' >>extra_options.h
+echo -n '--operations=' >>extra_options.h
+echo -n    'Digest,' >>extra_options.h
+echo -n    'HMAC,' >>extra_options.h
+echo -n    'CMAC,' >>extra_options.h
+echo -n    'SymmetricEncrypt,' >>extra_options.h
+echo -n    'SymmetricDecrypt,' >>extra_options.h
+echo -n    'KDF_HKDF,' >>extra_options.h
+echo -n    'KDF_ARGON2,' >>extra_options.h
+echo -n    'KDF_BCRYPT,' >>extra_options.h
+echo -n    'KDF_PBKDF2,' >>extra_options.h
+echo -n    'KDF_SCRYPT,' >>extra_options.h
+echo -n    'BignumCalc_Mod_2Exp256' >>extra_options.h
+echo -n '"' >>extra_options.h
+
 cd $SRC/botan
 if [[ $CFLAGS != *-m32* ]]
 then
@@ -43,27 +59,29 @@ else
     ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
 fi
 make -j$(nproc)
-
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
 export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
 export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
-# Build Cryptofuzz
-cd $SRC/cryptofuzz
-python gen_repository.py
-rm extra_options.h
-echo -n '"' >>extra_options.h
-echo -n '--force-module=libecc ' >>extra_options.h
-echo -n '--operations=Digest,HMAC,ECC_PrivateToPublic,ECDSA_Sign,ECDSA_Verify,ECGDSA_Sign,ECGDSA_Verify,ECRDSA_Sign,ECRDSA_Verify,ECC_Point_Add,ECC_Point_Mul,BignumCalc ' >>extra_options.h
-echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1,secp256k1 ' >>extra_options.h
-echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256,SM3,SHAKE256_114,STREEBOG-256,STREEBOG-512 ' >>extra_options.h
-echo -n '--calcops=Add,AddMod,And,Bit,GCD,InvMod,IsOdd,IsOne,IsZero,LShift1,Mod,Mul,MulMod,NumBits,Or,RShift,Sqr,Sub,SubMod,Xor ' >>extra_options.h
-echo -n '"' >>extra_options.h
-cd modules/libecc/
-make -B -j$(nproc)
-cd ../botan/
-make -B -j$(nproc)
-cd ../../
-make -B -j$(nproc)
+cd $SRC/cryptofuzz/modules/botan/
+make -j$(nproc) -f Makefile-oracle
 
-cp cryptofuzz $OUT/cryptofuzz-libecc
+cd $SRC/cryptofuzz/modules/rustcrypto/
+if [[ $CFLAGS != *-m32* ]]
+then
+    make
+else
+    rustup target add i686-unknown-linux-gnu
+    make -f Makefile.i386
+fi
+
+cd $SRC/cryptofuzz/
+make -j$(nproc)
+
+cp $SRC/cryptofuzz/cryptofuzz $OUT/
+
+# Create seed corpus
+unzip -n $SRC/corpus_cryptofuzz.zip -d $SRC/cryptofuzz_seed_corpus/
+cd $SRC/cryptofuzz_seed_corpus
+zip -r $SRC/cryptofuzz_seed_corpus.zip .
+cp $SRC/cryptofuzz_seed_corpus.zip $OUT/

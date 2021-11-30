@@ -41,11 +41,6 @@ set -eux
 SANITIZER=${SANITIZER:-address}
 flags="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
 
-# TODO: once https://github.com/libbpf/libbpf/issues/391 is fixed
-# "-fsanitize=alignment -fno-sanitize-recover=alignment" should be added
-# to CFLAGS, CXXFLAGS explicitly (because the alignment check is turned off
-# by default on OSS-Fuzz)
-
 export CC=${CC:-clang}
 export CFLAGS=${CFLAGS:-$flags}
 
@@ -61,14 +56,15 @@ mkdir -p "$OUT"
 export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 
 # Ideally libbelf should be built using release tarballs available
-# at https://sourceware.org/elfutils/ftp/. Unfortunately the latest
-# release fails to compile with LDFLAGS enabled due to https://bugs.gentoo.org/794601
-# (which was fixed in https://sourceware.org/git/?p=elfutils.git;a=commit;h=c6e1f664254a8a)
+# at https://sourceware.org/elfutils/ftp/. Unfortunately sometimes they
+# fail to compile (for example, elfutils-0.185 fails to compile with LDFLAGS enabled
+# due to https://bugs.gentoo.org/794601) so let's just point the script to
+# commits referring to versions of libelf that actually can be built
 rm -rf elfutils
 git clone git://sourceware.org/git/elfutils.git
 (
 cd elfutils &&
-git checkout a83fe48 &&
+git checkout 983e86fd89e8bf02f2d27ba5dce5bf078af4ceda &&
 git log --oneline -1 &&
 
 # ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380

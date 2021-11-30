@@ -38,8 +38,8 @@ cmake -DFLB_TESTS_INTERNAL=ON \
 make
 
 # Create options files
-for fuzz in http msgpack_parser record_ac signv4 engine; do
-    echo "[libfuzzer]" >> $OUT/flb-it-fuzz-${fuzz}_fuzzer_OSSFUZZ.options
+for fuzz in http msgpack_parser record_ac signv4 engine config config_random; do
+    echo "[libfuzzer]" > $OUT/flb-it-fuzz-${fuzz}_fuzzer_OSSFUZZ.options
     echo "detect_leaks=0" >> $OUT/flb-it-fuzz-${fuzz}_fuzzer_OSSFUZZ.options
 done
 

@@ -1,9 +1,7 @@
-homepage: "https://clickhouse.tech/"
+homepage: "https://clickhouse.com/"
 language: c++
-primary_contact: "clickhouse-security@yandex-team.com"
+primary_contact: "security@clickhouse.com"
 auto_ccs:
- - "security@yandex-team.com"
- - "kyprizel@gmail.com"
  - "jakalletti@gmail.com"
  - "man2gm@gmail.com"
  - "kochetovnicolai@gmail.com"

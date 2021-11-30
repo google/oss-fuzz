@@ -15,11 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y bison flex libssl-dev pkg-config
-RUN git clone https://github.com/OpenSIPS/opensips
-
-COPY patch.diff $SRC/
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://storage.googleapis.com/pub/gsutil.tar.gz -O $SRC/gsutil.tar.gz
+RUN tar zxf $SRC/gsutil.tar.gz
+ENV PATH="${PATH}:$SRC/gsutil"
+# Retrieve corpus from the OSS-Fuzz 'cryptofuzz' project
+RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz.zip
 COPY build.sh $SRC/
-COPY fuzz_*.c $SRC/
-
-WORKDIR opensips

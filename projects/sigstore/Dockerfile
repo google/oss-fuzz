@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,8 @@
 #
 ################################################################################
 
-./configure --fuzzing --disable-doc --disable-nls --disable-idn
-make fuzz
-cp fuzz/address-fuzz $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/sigstore/sigstore
 
-cd $SRC/corpus-address
-cp address-fuzz.options $OUT/
-cp address-fuzz.dict $OUT/
-
-cd corpus
-zip -q -r $OUT/address-fuzz_seed_corpus.zip .
-
+COPY build.sh $SRC
+WORKDIR $SRC/sigstore/test/fuzz

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,4 @@
 #
 ################################################################################
 
-./configure --fuzzing --disable-doc --disable-nls --disable-idn
-make fuzz
-cp fuzz/address-fuzz $OUT/
-
-cd $SRC/corpus-address
-cp address-fuzz.options $OUT/
-cp address-fuzz.dict $OUT/
-
-cd corpus
-zip -q -r $OUT/address-fuzz_seed_corpus.zip .
-
+source fuzz/oss-fuzz-build.sh
