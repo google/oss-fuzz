@@ -111,7 +111,7 @@ class InternalGithubBuildTest(unittest.TestCase):
     builder.repo_manager = repo_manager.RepoManager('/fake')
     return builder
 
-  @mock.patch('repo_manager._clone', side_effect=None)
+  @mock.patch('helper.docker_run', return_value=True)
   @mock.patch('continuous_integration.checkout_specified_commit',
               side_effect=None)
   def test_correct_host_repo_path(self, _, __):
@@ -159,8 +159,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
   def setUp(self):
-    self.temp_dir_obj = tempfile.TemporaryDirectory()
-    self.workspace = self.temp_dir_obj.name
+    self.temp_dir_ctx_manager = test_helpers.docker_temp_dir()
+    self.workspace = self.temp_dir_ctx_manager.__enter__()
     self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
@@ -168,7 +168,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     os.environ['PATH'] = os.environ['PATH'] + os.pathsep + base_runner_path
 
   def tearDown(self):
-    self.temp_dir_obj.cleanup()
+    self.temp_dir_ctx_manager.__exit__(None, None, None)
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
@@ -195,7 +195,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     # github.com/jonathanmetzman/cifuzz-external-example.
     manager = repo_manager.clone_repo_and_get_manager(
         'https://github.com/jonathanmetzman/cifuzz-external-example',
-        self.temp_dir_obj.name)
+        self.workspace)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
         project_repo_name=project_repo_name,

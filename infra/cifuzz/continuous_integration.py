@@ -236,7 +236,7 @@ class InternalGithub(GithubCiMixin, BaseCi):
   def _copy_repo_from_image(self, image_repo_path):
     self._make_repo_storage_dir()
     repo_name = os.path.basename(image_repo_path)
-    host_repo_path = os.path.join(self.config.repo_storage, repo_name)
+    host_repo_path = os.path.join(self._repo_dir, repo_name)
     bash_command = f'cp -r {image_repo_path} {host_repo_path}'
     docker_args, _ = docker.get_base_docker_run_args(
         self.workspace, self.config.sanitizer, self.config.language,
