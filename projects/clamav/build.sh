@@ -29,7 +29,7 @@ cd ${WORK}/build
 # Run ./configure
 #
 export CLAMAV_DEPENDENCIES=/mussels/install
-cmake ${SRC}/clamav-devel \
+cmake ${SRC}/clamav \
     -DENABLE_FUZZ=ON                                                   \
     -DHAVE_MMAP=OFF                                                    \
     -DJSONC_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include/json-c"          \
