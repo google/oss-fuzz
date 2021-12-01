@@ -76,7 +76,7 @@ sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
 
 
 autoreconf -i -f &&
-./configure --enable-maintainer-mode --disable-debuginfod CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS" &&
+./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS" &&
 make -C config -j$(nproc) V=1 &&
 make -C lib -j$(nproc) V=1 &&
 make -C libelf -j$(nproc) V=1
