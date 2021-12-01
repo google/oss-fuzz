@@ -61,6 +61,7 @@ cp ./fuzz/clamav_* ${OUT}/.
 # `scanfile` & `scanmap`
 # ----------
 mkdir ${WORK}/all-scantype-seeds
+git clone --depth 1 https://github.com/Cisco-Talos/clamav-fuzz-corpus.git $SRC/clamav-fuzz-corpus
 
 for type in ARCHIVE MAIL OLE2 PDF HTML PE ELF SWF XMLDOCS HWP3; do
     # Prepare seed corpus for the type-specific fuzz targets.
