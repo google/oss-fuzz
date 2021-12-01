@@ -24,6 +24,10 @@ sed -i 's/-Werror//g' ./cmake/define.inc
 mkdir debug && cd debug
 export LDFLAGS="${CXXFLAGS}"
 
+if [[ $SANITIZER = *coverage* ]]; then
+  ln -f -s /usr/bin/gold /usr/bin/ld
+fi
+
 cmake -DBUILD_HTTP=true ..
 cmake --build .
 
