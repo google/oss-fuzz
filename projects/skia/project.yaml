@@ -3,11 +3,12 @@ language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "hcm@google.com"
-  - "reed@google.com"
   - "bsalomon@google.com"
   - "brianosman@google.com"
   - "johnstiles@google.com"
   - "ethannicholas@google.com"
+  - "egdaniel@google.com"
+  - "skia-gpu-wrangler@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
