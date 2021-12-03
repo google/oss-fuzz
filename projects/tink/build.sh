@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y  libtool build-essential wget pkg-config zlib1g-dev liblzma-dev libjansson-dev
-RUN git clone --depth 1 https://github.com/taosdata/TDengine tdengine
-RUN cd /tmp \
-  && wget https://golang.org/dl/go1.16.8.linux-amd64.tar.gz \
-  && tar -xf go1.16.8.linux-amd64.tar.gz
-ENV PATH ${PATH}:/tmp/go/bin
-
-WORKDIR tdengine
-COPY build.sh $SRC/
-COPY *.options $SRC/
+mkdir ./cc/fuzzing 
+cp $SRC/tink_encrypt_decrypt_fuzzer.cc ./cc/fuzzing/
+cp $SRC/fuzzing_CMake ./cc/fuzzing/CMakeLists.txt
+cd cc/fuzzing && cmake .
+make -j$(nproc)
+mv tink_encrypt_fuzzer $OUT/

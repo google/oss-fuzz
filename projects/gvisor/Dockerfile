@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 --branch go https://github.com/google/gvisor
+RUN git clone https://github.com/google/gvisor
 COPY build.sh state_fuzzer.go $SRC/
 ENV GVISOR_ROOT $SRC/gvisor
 WORKDIR $GVISOR_ROOT

@@ -15,35 +15,65 @@
 #
 ################################################################################
 
-# build elf tooling targets
-autoreconf -i -f
-./configure --enable-maintainer-mode --disable-libdebuginfod --enable-libdebuginfod=dummy --disable-debuginfod --disable-libdebuginfod
+# This script is supposed to be compatible with OSS-Fuzz, i.e. it has to use
+# environment variables like $CC, $CFLAGS, $OUT, link the fuzz targets with CXX
+# (even though the project is written in C) and so on:
+# https://google.github.io/oss-fuzz/getting-started/new-project-guide/#buildsh
 
-cd lib && make libeu.a && cd ..
-cd libdwfl && make libdwfl.a && cd ..
-cd libebl && make libebl.a && cd ..
-cd backends && make libebl_backends.a && cd ..
-cd libcpu && make libcpu.a && cd ..
-cd libdwelf && make libdwelf.a && cd ..
-cd libdw && make libdw.a known-dwarf.h && cd ..
-cd libelf && make libelf.a && cd ..
-cd src && cp readelf.c libreadelf.c && patch libreadelf.c libreadelf.diff && make libreadelf && cd ..
+# It can be used to build and run the fuzz targets using Docker and the images
+# provided by the OSS-Fuzz project: https://google.github.io/oss-fuzz/advanced-topics/reproducing/#building-using-docker
 
-# build fuzzer
-cd fuzz
+# It can also be used to build and run the fuzz target locally without Docker.
+# After installing clang and the build dependencies of libelf by running something
+# like `dnf build-dep elfutils-devel` on Fedora or `apt-get build-dep libelf-dev`
+# on Debian/Ubuntu, the following commands should be run:
+#
+#  $ git clone https://github.com/google/oss-fuzz
+#  $ cd oss-fuzz/projects/elfutils
+#  $ git clone git://sourceware.org/git/elfutils.git
+#  $ ./build.sh
+#  $ unzip -d CORPUS fuzz-dwfl-core_seed_corpus.zip
+#  $ ./out/fuzz-dwfl-core CORPUS/
 
-mv ../src/libreadelf libreadelf.o
-ar -x ../libdw/libdw.a
-ar -x ../libebl/libebl.a
-ar -x ../backends/libebl_backends.a
-ar -x ../libcpu/libcpu.a
-ar -x ../libelf/libelf.a
-ar -x ../lib/libeu.a
-ar -x ../libdwfl/libdwfl.a
-ar -x ../libdwelf/libdwelf.a
+set -eux
 
-$CXX $CXXFLAGS fuzz.cc -o $OUT/testfuzz *.o -lz -ldl -lpthread -lbz2 -llzma $LIB_FUZZING_ENGINE
+SANITIZER=${SANITIZER:-address}
+flags="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
 
-# build corpus
-zip -j0r $OUT/testfuzz_seed_corpus.zip corpus/*
+export CC=${CC:-clang}
+export CFLAGS=${CFLAGS:-$flags}
 
+export CXX=${CXX:-clang++}
+export CXXFLAGS=${CXXFLAGS:-$flags}
+
+export SRC=${SRC:-$(realpath -- $(dirname -- "$0"))}
+export OUT=${OUT:-"$SRC/out"}
+mkdir -p "$OUT"
+
+export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
+
+cd "$SRC/elfutils"
+
+# ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
+find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
+
+# ASan isn't compatible with -Wl,-z,defs either:
+# https://clang.llvm.org/docs/AddressSanitizer.html#usage
+sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
+
+autoreconf -i -f &&
+./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
+            --without-bzlib --without-lzma --without-zstd \
+	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS" &&
+ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
+
+
+ZLIB_DIR=$(pkg-config --variable=libdir zlib)
+$CC $CFLAGS \
+	-D_GNU_SOURCE -DHAVE_CONFIG_H \
+	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
+	./libdw/libdw.a ./libelf/libelf.a "$ZLIB_DIR/libz.a" \
+	-o "$OUT/fuzz-dwfl-core"
+cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"
