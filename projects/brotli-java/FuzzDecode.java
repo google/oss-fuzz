@@ -22,7 +22,12 @@ import org.brotli.dec.BrotliInputStream;
 public class FuzzDecode {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     byte[] buffer = new byte[65536];
-    ByteArrayInputStream input = new ByteArrayInputStream(data.consumeBytes(65536));
+    byte[] inputBytes = data.consumeBytes(65536);
+    // Brotli allows 0-bit prefix codes - thus even small input could produce large output.
+    long totalOutputCap = Math.min(4096L * inputBytes.length, 3L << 24);
+    totalOutputCap = Math.max(totalOutputCap, 1L << 20);
+    long totalOutput = 0;
+    ByteArrayInputStream input = new ByteArrayInputStream(inputBytes);
     try {
       BrotliInputStream brotliInput = new BrotliInputStream(input);
       while (true) {
@@ -30,6 +35,8 @@ public class FuzzDecode {
         if (len <= 0) {
           break;
         }
+        totalOutput += len;
+        if (totalOutput >= totalOutputCap) break;
       }
     } catch (IOException expected) {}
   }
