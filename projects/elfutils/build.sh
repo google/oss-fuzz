@@ -55,16 +55,20 @@ export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 cd "$SRC/elfutils"
 
 # ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
-find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
+find -name Makefile.am | xargs sed -i 's/,--no-undefined//'
 
 # ASan isn't compatible with -Wl,-z,defs either:
 # https://clang.llvm.org/docs/AddressSanitizer.html#usage
-sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
+sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac
 
-autoreconf -i -f &&
-./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
+autoreconf -i -f
+if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --without-bzlib --without-lzma --without-zstd \
-	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS" &&
+	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS"; then
+    cat config.log
+    exit 1
+fi
+
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 
 
