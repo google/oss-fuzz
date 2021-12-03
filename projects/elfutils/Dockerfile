@@ -17,6 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y pkg-config make autoconf autopoint zlib1g-dev flex bison gawk
-RUN git clone --depth 1 git://sourceware.org/git/elfutils.git
+RUN bash -x -c "\
+if [[ '$CIFUZZ' == True ]]; then \
+    git clone --depth 1 https://github.com/evverx/elfutils; \
+else \
+    git clone --depth 1 git://sourceware.org/git/elfutils.git; \
+fi"
 WORKDIR elfutils
 COPY build.sh *.c *.zip $SRC/
