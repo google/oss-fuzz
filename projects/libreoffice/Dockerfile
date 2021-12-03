@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 #build requirements
 RUN apt-get update && apt-get build-dep -y libreoffice
-RUN apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
+RUN apt-get install -y lockfile-progs wget yasm locales && locale-gen en_US.UTF-8
 
 #clone source
 RUN git clone --depth 1 https://git.libreoffice.org/core libreoffice
