@@ -70,7 +70,7 @@ cd clang
 LLVM_SRC=$SRC/llvm-project
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-14-init-8033-gabb2a91b
+OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
