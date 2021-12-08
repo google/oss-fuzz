@@ -252,8 +252,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                          testcase,
                                          arguments=reproduce_args,
                                          max_time=REPRODUCE_TIME_SECONDS)
-        except TimeoutError:
-          logging.info('Reproducing with %s timed out.', target_path)
+        except TimeoutError as error:
+          logging.error('%s.', error)
           return False
 
         if result.return_code != 0:
