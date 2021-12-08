@@ -247,10 +247,14 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                              interactive=False):
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
-        result = engine_impl.reproduce(target_path,
-                                       testcase,
-                                       arguments=reproduce_args,
-                                       max_time=REPRODUCE_TIME_SECONDS)
+        try:
+          result = engine_impl.reproduce(target_path,
+                                         testcase,
+                                         arguments=reproduce_args,
+                                         max_time=REPRODUCE_TIME_SECONDS)
+        except TimeoutError:
+          logging.info('Reproducing with %s timed out.', target_path)
+          return False
 
         if result.return_code != 0:
           logging.info('Reproduce command returned: %s. Reproducible on %s.',

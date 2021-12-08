@@ -95,6 +95,25 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     test_helpers.patch_environ(self, empty=True)
     os.environ['ROOT_DIR'] = root_dir
 
+  @mock.patch('os.chmod')
+  @mock.patch(
+      'clusterfuzz._internal.bot.fuzzers.libFuzzer.engine.LibFuzzerEngine.'
+      'reproduce',
+      side_effect=TimeoutError)
+  @mock.patch('logging.info')
+  def test_repro_timed_out(self, mock_info, mock_reproduce, mock_chmod,
+                           mock_get_container_name):
+    """Tests that is_reproducible behaves correctly when reproduction times
+    out."""
+    del mock_get_container_name
+    del mock_chmod
+    del mock_reproduce
+
+    self.assertFalse(
+        self.target.is_reproducible('/testcase', self.target.target_path, []))
+    mock_info.assert_called_with('Reproducing with %s timed out.',
+                                 self.target.target_path)
+
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
@@ -230,7 +249,7 @@ class FuzzTest(fake_filesystem_unittest.TestCase):
   """Fuzz test."""
 
   def setUp(self):
-    """Sets up example fuzz target to test is_reproducible method."""
+    """Sets up example fuzz target."""
     self.setUpPyfakefs()
     deployment = _create_deployment()
     config = deployment.config
