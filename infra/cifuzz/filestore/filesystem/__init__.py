@@ -14,6 +14,7 @@
 """Filestore implementation using a filesystem directory."""
 import logging
 import os
+import shutil
 import subprocess
 import sys
 
@@ -30,7 +31,7 @@ def recursive_list_dir(directory):
   """Returns list of all files in |directory|, including those in
   subdirectories."""
   files = []
-  for root, _, filenames in  os.walk(directory):
+  for root, _, filenames in os.walk(directory):
     for filename in filenames:
       files.append(os.path.join(root, filename))
   return files
