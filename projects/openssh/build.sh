@@ -30,7 +30,7 @@ if ! env CFLAGS="" ./configure \
     --with-cflags-after="$CFLAGS" \
     --with-ldflags-after="-g $CFLAGS" ; then
 	echo "------ config.log:" 1>&2
-	cat config.log
+	cat config.log 1>&2
 	echo "ERROR: configure failed" 1>&2
 	exit 1
 fi
