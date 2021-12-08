@@ -104,6 +104,10 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     del mock_get_container_name
     del mock_chmod
 
+    # There's an extremely bad issue that happens if this mock is done using a
+    # decorator. Other tests in this file fail in CI with stacktraces using
+    # referencing fakefs even if the tests do not use fakefs.
+    # TODO(metzman): Stop using fakefs.
     with mock.patch(
         'clusterfuzz._internal.bot.fuzzers.libFuzzer.engine.LibFuzzerEngine.'
         'reproduce',
