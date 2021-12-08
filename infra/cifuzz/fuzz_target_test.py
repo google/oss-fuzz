@@ -103,7 +103,6 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     out."""
     del mock_get_container_name
     del mock_chmod
-    del mock_reproduce
 
     with mock.patch(
         'clusterfuzz._internal.bot.fuzzers.libFuzzer.engine.LibFuzzerEngine.'
