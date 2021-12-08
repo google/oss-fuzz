@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for getting the configuration CIFuzz needs to run standalone."""
-import logging
 import os
 
 import platform_config
