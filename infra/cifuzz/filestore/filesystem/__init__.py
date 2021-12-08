@@ -68,7 +68,7 @@ class FilesystemFilestore(filestore.BaseFilestore):
 
     files_to_delete = initial_files - copied_files
     for file_path in files_to_delete:
-      shutil.remove(file_path)
+      os.remove(file_path)
     return True
 
   def _download_directory(self, name, dst_directory, prefix):
