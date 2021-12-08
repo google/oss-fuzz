@@ -175,6 +175,24 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
         'The crash is not reproducible on previous build. '
         'Code change (pr/commit) introduced crash.')
 
+  @mock.patch('fuzz_target.FuzzTarget.is_reproducible', return_value=True)
+  @mock.patch('fuzz_target.FuzzTarget.is_crash_novel', return_value=False)
+  def test_old_reproducible_crash(self, _, __):
+    """Tests that an old reproducible crash returns False."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.target.out_dir = tmp_dir
+      self.assertFalse(self.target.is_crash_reportable(self.testcase_path, []))
+
+  @mock.patch('fuzz_target.FuzzTarget.is_reproducible', return_value=True)
+  @mock.patch('fuzz_target.FuzzTarget.is_crash_novel', return_value=False)
+  def test_old_reproducible_crash_report_unreproducible(self, _, __):
+    """Tests that an old reproducible crash returns True if config to report old
+    crashes is True."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.target.out_dir = tmp_dir
+      self.target.config.report_old_crashes = True
+      self.assertTrue(self.target.is_crash_reportable(self.testcase_path, []))
+
   # yapf: disable
   @parameterized.parameterized.expand([
       # Reproducible on PR build, but also reproducible on OSS-Fuzz.

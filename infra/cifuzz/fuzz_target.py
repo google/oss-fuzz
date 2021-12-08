@@ -303,7 +303,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       # We don't need to check if the crash is novel for batch fuzzing.
       return True
 
-    return self.is_crash_novel(testcase, reproduce_args)
+    is_novel = self.is_crash_novel(testcase, reproduce_args)
+    if not is_novel:
+      return self.config.report_old_crashes
+    return True
 
   def is_crash_type_reportable(self, testcase):
     """Returns True if |testcase| is an actual crash. If crash is a timeout or

@@ -206,6 +206,8 @@ class RunFuzzersConfig(BaseConfig):
     if not os.getenv('CIFUZZ_TEST') and not self._run_config_validate():
       raise ConfigError('Invalid Run Configuration.')
 
+    self.report_old_crashes = environment.get_bool('REPORT_OLD_CRASHES', False)
+
   def _run_config_validate(self):
     """Do extra validation on RunFuzzersConfig.__init__(). Do not name this
     validate or else it will be called when using the parent's __init__ and will
