@@ -192,11 +192,15 @@ make -B -j$(nproc)
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
+
     # noble-secp256k1
-    cd $SRC/cryptofuzz/modules/noble-secp256k1/
-    export NOBLE_SECP256K1_PATH="$SRC/noble-secp256k1/index.js"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_SECP256K1"
-    make -B
+#    cd $SRC/noble-secp256k1/
+#    npm install && npm run build
+#    export NOBLE_SECP256K1_PATH=$(realpath lib/index.js)
+#
+#    cd $SRC/cryptofuzz/modules/noble-secp256k1/
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_SECP256K1"
+#    make -B
 
     # noble-bls12-381
     cd $SRC/noble-bls12-381/
