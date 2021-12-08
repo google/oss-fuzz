@@ -20,7 +20,6 @@ RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
     # libelf build dependencies \
     apt-get build-dep -y --no-install-recommends libelf-dev && \
     apt-get install -y --no-install-recommends pkg-config && \
-    apt-get install -y --no-install-recommends libcurl4-gnutls-dev && \
     # libbpf build dependencies \
     apt-get install -y --no-install-recommends libz-dev
 RUN git clone --depth 1 https://github.com/libbpf/libbpf

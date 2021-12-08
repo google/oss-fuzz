@@ -651,7 +651,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if env_to_add:
     env += env_to_add
 
-  command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
+  command = _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project)
     if mount_path:

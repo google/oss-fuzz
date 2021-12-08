@@ -17,21 +17,10 @@ limitations under the License.
  */
 #include "fuzz_objdump.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
-int
-LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
+/* for precondition checking */
+#include "ada_objdump.h"
 
-  program_name = filename;
-
+void objdump_reset() {
   process_links = true;
   do_follow_links = true;
   dump_section_contents = true;
@@ -47,6 +36,24 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   dump_stab_section_info = true;
   disassemble_all = true;
+}
+
+int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
+int
+LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+  FILE *fp = fopen(filename, "wb");
+  if (!fp) {
+    return 0;
+  }
+  fwrite(data, size, 1, fp);
+  fclose(fp);
+
+  program_name = filename;
+
+  objdump_reset();
 
   // These flags contain a large set of calls to bfd_fatal (which calls
   // exit), so to enable fuzzing of objdump with a fuzzer that lives for
@@ -59,6 +66,14 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   //dump_dynamic_reloc_info = true;
   //dump_ctf_section_info = true;
   disassemble = true;
+#else
+  // Check preconditions are met, so the fuzzer wont exit (too often) prematurely.
+  // Reset objdump variables before and after this call, to ensure nothing no globals
+  // are carried over.
+  if (fuzz_preconditions(filename) == 0) {
+    return 0;
+  }
+  objdump_reset();
 #endif
 
   // Main fuzz entrypoint in objdump.c

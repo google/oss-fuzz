@@ -170,6 +170,38 @@ class PruneTargetRunner(BaseFuzzTargetRunner):
     fuzz_target_obj.free_disk_if_needed()
 
 
+NON_FUZZ_TARGETS_FOR_COVERAGE = {
+    'llvm-symbolizer',
+    'jazzer_agent_deploy.jar',
+    'jazzer_driver',
+    'jazzer_driver_with_sanitizer',
+}
+
+
+def is_coverage_fuzz_target(file_path):
+  """Returns whether |file_path| is a fuzz target binary for the purposes of a
+  coverage report. Inspired by infra/base-images/base-runner/coverage."""
+  if not os.path.isfile(file_path):
+    return False
+  if not utils.is_executable(file_path):
+    return False
+  filename = os.path.basename(file_path)
+  return filename not in NON_FUZZ_TARGETS_FOR_COVERAGE
+
+
+def get_coverage_fuzz_targets(out):
+  """Returns a list of fuzz targets in |out| for coverage."""
+  # We only want fuzz targets from the root because during the coverage build,
+  # a lot of the image's filesystem is copied into /out for the purpose of
+  # generating coverage reports.
+  fuzz_targets = []
+  for filename in os.listdir(out):
+    file_path = os.path.join(out, filename)
+    if is_coverage_fuzz_target(file_path):
+      fuzz_targets.append(file_path)
+  return fuzz_targets
+
+
 class CoverageTargetRunner(BaseFuzzTargetRunner):
   """Runner that runs the 'coverage' command."""
 
@@ -179,12 +211,7 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
 
   def get_fuzz_targets(self):
     """Returns fuzz targets in out directory."""
-    # We only want fuzz targets from the root because during the coverage build,
-    # a lot of the image's filesystem is copied into /out for the purpose of
-    # generating coverage reports.
-    # TOOD(metzman): Figure out if top_level_only should be the only behavior
-    # for this function.
-    return utils.get_fuzz_targets(self.workspace.out, top_level_only=True)
+    return get_coverage_fuzz_targets(self.workspace.out)
 
   def run_fuzz_targets(self):
     """Generates a coverage report. Always returns False since it never finds

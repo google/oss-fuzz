@@ -21,4 +21,4 @@ RUN git clone https://gitlab.xiph.org/xiph/opus.git
 RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
 COPY build.sh $SRC/
-COPY *.c tests/
+COPY *.cc tests/

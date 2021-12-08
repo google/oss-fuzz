@@ -14,8 +14,9 @@
 """Tests for running fuzzers."""
 import json
 import os
-import sys
 import shutil
+import stat
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -301,6 +302,31 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(runner.run_fuzz_targets())
     self.assertEqual(mock_run_fuzz_target.call_count, 2)
     self.assertEqual(mock_upload_crashes.call_count, 1)
+
+
+class GetCoverageTargetsTest(unittest.TestCase):
+  """Tests for get_coverage_fuzz_targets."""
+
+  def test_get_fuzz_targets(self):
+    """Tests that get_coverage_fuzz_targets returns expected targets."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+      # Setup.
+      fuzz_target_path = os.path.join(temp_dir, 'fuzz-target')
+      with open(fuzz_target_path, 'w') as file_handle:
+        file_handle.write('')
+      fuzz_target_st = os.stat(fuzz_target_path)
+      os.chmod(fuzz_target_path, fuzz_target_st.st_mode | stat.S_IEXEC)
+      non_fuzz_target1 = os.path.join(temp_dir, 'non-fuzz-target1')
+      with open(non_fuzz_target1, 'w') as file_handle:
+        file_handle.write('LLVMFuzzerTestOneInput')
+      subdir = os.path.join(temp_dir, 'subdir')
+      os.mkdir(subdir)
+      non_fuzz_target2 = os.path.join(subdir, 'non-fuzz-target1')
+      with open(non_fuzz_target2, 'w') as file_handle:
+        file_handle.write('LLVMFuzzerTestOneInput')
+
+      self.assertEqual(run_fuzzers.get_coverage_fuzz_targets(temp_dir),
+                       [fuzz_target_path])
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),

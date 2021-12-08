@@ -25,7 +25,7 @@ then
   export CFLAGS=""
 fi
 
-cargo fuzz build --release
+cargo-fuzz build --release --target-dir=fuzz/target
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs

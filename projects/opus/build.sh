@@ -16,7 +16,7 @@
 ##############################################################################
 set -eu
 
-FUZZERS="opus_decode_fuzzer opus_multi_fuzzer"
+FUZZERS="opus_encode_fuzzer opus_multistream_decode_fuzzer opus_multistream_encode_fuzzer opus_projection_decoder_fuzzer opus_projection_encoder_fuzzer opus_repacketizer_fuzzer"
 BUILDS=(floating fixed)
 
 tar xvf $SRC/opus_testvectors.tar.gz
@@ -43,8 +43,8 @@ for build in "${BUILDS[@]}"; do
 
   # Build all fuzzers
   for fuzzer in $FUZZERS; do
-    $CC $CFLAGS -c -Iinclude \
-      tests/$fuzzer.c \
+    $CXX $CXXFLAGS -c -Iinclude \
+      tests/$fuzzer.cc \
       -o $fuzzer.o
 
     $CXX $CXXFLAGS \

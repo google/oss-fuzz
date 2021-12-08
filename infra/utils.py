@@ -94,12 +94,11 @@ def execute(command,
   return out, err, process.returncode
 
 
-def get_fuzz_targets(path, top_level_only=False):
+def get_fuzz_targets(path):
   """Gets fuzz targets in a directory.
 
   Args:
     path: A path to search for fuzz targets in.
-    top_level_only: If True, only search |path|, do not recurse into subdirs.
 
   Returns:
     A list of paths to fuzzers or an empty list if None.
@@ -108,9 +107,6 @@ def get_fuzz_targets(path, top_level_only=False):
     return []
   fuzz_target_paths = []
   for root, _, fuzzers in os.walk(path):
-    if top_level_only and path != root:
-      continue
-
     for fuzzer in fuzzers:
       file_path = os.path.join(root, fuzzer)
       if is_fuzz_target_local(file_path):
@@ -134,6 +130,11 @@ def get_container_name():
     return file_handle.read().strip()
 
 
+def is_executable(file_path):
+  """Returns True if |file_path| is an exectuable."""
+  return os.path.exists(file_path) and os.access(file_path, os.X_OK)
+
+
 def is_fuzz_target_local(file_path):
   """Returns whether |file_path| is a fuzz target binary (local path).
   Copied from clusterfuzz src/python/bot/fuzzers/utils.py
@@ -154,7 +155,7 @@ def is_fuzz_target_local(file_path):
     # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
     return False
 
-  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
+  if not is_executable(file_path):
     return False
 
   if filename.endswith('_fuzzer'):

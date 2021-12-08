@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf autopoint zlib1g-dev zlib1g-dev:i386 flex bison gawk liblzma-dev liblzma-dev:i386 libbz2-dev libbz2-dev:i386
-RUN git clone --depth 1 -b oss-fuzz https://github.com/izzeem/elfutils elfutils
+RUN apt-get update && \
+    apt-get install -y pkg-config make autoconf autopoint zlib1g-dev flex bison gawk
+RUN git clone --depth 1 git://sourceware.org/git/elfutils.git
 WORKDIR elfutils
-COPY build.sh $SRC/
+COPY build.sh *.c *.zip $SRC/

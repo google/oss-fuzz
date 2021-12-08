@@ -45,26 +45,26 @@ then
 fi
 )"
 
+# Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
+# and not for other binaries such as protoc
+sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
+
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
 # Ignore fuzzers tagged with `no_oss` in opensource.
-declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))')
+declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
+# checkpoint_reader_fuzz seems out of date with the API
 
 # Build the fuzzer targets.
 # Pass in `--config=libc++` to link against libc++.
 # Pass in `--verbose_failures` so it is easy to debug compile crashes.
 # Pass in `--strip=never` to ensure coverage support.
-# Pass in `$LIB_FUZZING_ENGINE` to `--copt` and `--linkopt` to ensure we have a
-# `main` symbol defined (all these fuzzers build without a `main` and by default
-# `$CFLAGS` and `CXXFLAGS` compile with `-fsanitize=fuzzer-no-link`).
 # Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
 bazel build \
   --config=libc++ \
   ${EXTRA_FLAGS} \
   --verbose_failures \
   --strip=never \
-  --copt=${LIB_FUZZING_ENGINE} \
-  --linkopt=${LIB_FUZZING_ENGINE} \
   --copt='-UNDEBUG' \
   -- ${FUZZERS}
 

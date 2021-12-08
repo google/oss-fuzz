@@ -15,9 +15,17 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+  chmod +x $SRC/rustc.py
+  export RUSTC="$SRC/rustc.py"
+  export CFLAGS=""
+fi
+
+BUILD_FUZZER="cargo +nightly fuzz build "
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
-BUILD_FUZZER="cargo +nightly fuzz build "
 
 cd ${BASE}/app/inbound
 ${BUILD_FUZZER}

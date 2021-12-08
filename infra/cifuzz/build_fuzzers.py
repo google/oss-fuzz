@@ -85,14 +85,14 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
+    build_command = self.ci_system.get_build_command(self.host_repo_path,
+                                                     self.image_repo_path)
     docker_args.extend([
         docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
+        build_command,
     ])
-    build_command = self.ci_system.get_build_command(self.host_repo_path,
-                                                     self.image_repo_path)
-    docker_args.append(build_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
     # TODO(metzman): Stop using helper.docker_run so we can get rid of

@@ -8,7 +8,7 @@ auto_ccs :
   - "sapk@sapk.fr"
   - "zeripath@gmail.com"
   - "john.olheiser@gmail.com"
-  - "6543@obermui.de"
+  - "the6543dev@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer
