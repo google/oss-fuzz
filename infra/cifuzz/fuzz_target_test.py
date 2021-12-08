@@ -101,8 +101,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   # TODO(metzman): Stop using fakefs.
   @mock.patch('os.chmod')
   @unittest.skip('Skip because of weird failures.')
-  def test_repro_timed_out(self, mock_chmod,
-                           mock_get_container_name):
+  def test_repro_timed_out(self, mock_chmod, mock_get_container_name):
     """Tests that is_reproducible behaves correctly when reproduction times
     out."""
     del mock_get_container_name
