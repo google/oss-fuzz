@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget gettext automake libxml2-dev m4 pkg-config bison flex
-RUN git clone --depth 1 --single-branch --branch fuzzer https://github.com/dovecot/core dovecot
+RUN git clone --depth 1 https://github.com/dovecot/core dovecot
 WORKDIR dovecot
 COPY build.sh $SRC/
 #COPY fuzz-* $SRC/

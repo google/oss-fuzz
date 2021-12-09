@@ -9,15 +9,20 @@ auto_ccs:
   - "kaleb.himes@gmail.com"
   - "levi@wolfssl.com"
   - "testing@wolfssl.com"
+  - "dgarske80@gmail.com"
+  - "jeffelms.wolfssl@gmail.com"
+  - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
 fuzzing_engines:
   - libfuzzer
-  - afl
   - honggfuzz
   - dataflow
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  - memory
   - undefined
   - dataflow
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/wolfssl/wolfssl'

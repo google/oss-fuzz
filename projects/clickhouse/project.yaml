@@ -1,6 +1,16 @@
-homepage: "https://clickhouse.tech/"
+homepage: "https://clickhouse.com/"
 language: c++
-primary_contact: "clickhouse-feedback@yandex-team.com"
+primary_contact: "security@clickhouse.com"
 auto_ccs:
- - "security@yandex-team.com"
- - "kyprizel@gmail.com"
+ - "jakalletti@gmail.com"
+ - "man2gm@gmail.com"
+ - "kochetovnicolai@gmail.com"
+ - "hq.zero.iq@gmail.com"
+ - "milovidov@clickhouse.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
+fuzzing_engines:
+ - libfuzzer
+main_repo: 'https://github.com/ClickHouse/ClickHouse.git'

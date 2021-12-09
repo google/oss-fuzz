@@ -1,6 +1,5 @@
 homepage: "http://www.xmlsoft.org/"
 language: c++
-primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
@@ -17,3 +16,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+main_repo: 'https://gitlab.gnome.org/GNOME/libxml2.git'

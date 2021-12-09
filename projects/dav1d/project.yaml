@@ -6,8 +6,9 @@ auto_ccs:
   - "kempfjb@gmail.com"
   - "b@rr-dav.id.au"
   - "dav1d-fuzz@videolan.org"
+  - "psilokos@twoorioles.com"
+  - "gramner@twoorioles.com"
 vendor_ccs:
-  - "negge@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address
@@ -17,3 +18,4 @@ coverage_extra_args: -ignore-filename-regex=.*dump.h
 architectures:
   - i386
   - x86_64
+main_repo: 'https://code.videolan.org/videolan/dav1d.git'

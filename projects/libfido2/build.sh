@@ -20,7 +20,8 @@
 cd ${SRC}/libcbor
 patch -l -p0 < ${SRC}/libfido2/fuzz/README
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
 make -j$(nproc) VERBOSE=1
 make install
 
@@ -35,6 +36,12 @@ fi
 	 --openssldir=${WORK}/openssl ${CONFIGURE_FLAGS}
 make -j$(nproc) LDCMD="${CXX} ${CXXFLAGS}"
 make install_sw
+
+# Build zlib, taken from oss-fuzz/projects/zlib.sh
+cd ${SRC}/zlib
+./configure --prefix=${WORK}
+make -j$(nproc) all
+make install
 
 # Building libfido2 with ${LIB_FUZZING_ENGINE} and chosen sanitizer
 cd ${SRC}/libfido2
@@ -62,8 +69,11 @@ done
 
  # Prepare seed corpora
 tar xzf ${SRC}/corpus.tgz
-(set -e ; cd fuzz_assert/corpus  ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
-(set -e ; cd fuzz_bio/corpus     ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
-(set -e ; cd fuzz_cred/corpus    ; zip -r ${OUT}/fuzz_cred_seed_corpus.zip .)
-(set -e ; cd fuzz_credman/corpus ; zip -r ${OUT}/fuzz_credman_seed_corpus.zip .)
-(set -e ; cd fuzz_mgmt/corpus    ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
+(set -e ; cd fuzz_assert/corpus    ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
+(set -e ; cd fuzz_bio/corpus       ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
+(set -e ; cd fuzz_cred/corpus      ; zip -r ${OUT}/fuzz_cred_seed_corpus.zip .)
+(set -e ; cd fuzz_credman/corpus   ; zip -r ${OUT}/fuzz_credman_seed_corpus.zip .)
+(set -e ; cd fuzz_hid/corpus       ; zip -r ${OUT}/fuzz_hid_seed_corpus.zip .)
+(set -e ; cd fuzz_largeblob/corpus ; zip -r ${OUT}/fuzz_largeblob_seed_corpus.zip .)
+(set -e ; cd fuzz_mgmt/corpus      ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
+(set -e ; cd fuzz_netlink/corpus   ; zip -r ${OUT}/fuzz_netlink_seed_corpus.zip .)

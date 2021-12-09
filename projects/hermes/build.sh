@@ -15,6 +15,23 @@
 #
 ################################################################################
 
+# build ICU for linking statically.
+cd $SRC/icu/source
+./configure --disable-shared --enable-static --disable-layoutex \
+  --disable-tests --disable-samples --with-data-packaging=static
+make install -j$(nproc)
+
+# Ugly ugly hack to get static linking to work for icu.
+cd lib
+ls *.a | xargs -n1 ar x
+rm *.a
+ar r libicu.a *.{ao,o}
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
+
+cd $SRC/hermes
+
 if [ "${SANITIZER}" = address ]
 then
     CONFIGURE_FLAGS="--enable-asan"
@@ -26,6 +43,6 @@ else
 fi
 
 ./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
-                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_FUZZING=ON"
+                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON"
 cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"

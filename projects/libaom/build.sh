@@ -65,5 +65,5 @@ $CXX $CXXFLAGS -std=c++11 \
 
 # copy seed corpus.
 cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-cp $SRC/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
+cp $SRC/aom/examples/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 

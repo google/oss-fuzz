@@ -7,3 +7,4 @@ auto_ccs:
   - "i.nagata110@gmail.com"
   - "tmaesaka@gmail.com"
   - "security@fastly.com"
+main_repo: 'https://github.com/h2o/picotls'

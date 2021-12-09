@@ -1,0 +1,4 @@
+[libfuzzer]
+close_fd_mask = 3
+max_len = 16384
+dict = http.dict

@@ -7,10 +7,12 @@ vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
   - geuteneier@google.com
-  - hollyhall@google.com
-  - mikelogan@google.com
   - maverickm@google.com
   - warrenwright@google.com
+  - ailport@google.com
+  - kimtony@google.com
+  - faerber@google.com
+  - greendonald@google.com
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -19,3 +21,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - dataflow
+main_repo: 'https://android.googlesource.com/platform/external/libldac'

@@ -15,16 +15,5 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer . Fuzz fuzz_json
+compile_go_fuzzer github.com/json-iterator/go Fuzz fuzz_json

@@ -1,4 +1,5 @@
 homepage: "https://postgresql.org"
+main_repo: "https://git.postgresql.org/git/postgresql"
 primary_contact: "sfrost@snowman.net"
 language: c
 auto_ccs:
@@ -8,5 +9,6 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - afl
 sanitizers:
   - address

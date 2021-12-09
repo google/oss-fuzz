@@ -1,0 +1,57 @@
+diff --git a/Makefile.conf.template b/Makefile.conf.template
+index 5a76e0a35..2570db165 100644
+--- a/Makefile.conf.template
++++ b/Makefile.conf.template
+@@ -69,17 +69,19 @@ exclude_modules?= aaa_diameter aaa_radius auth_jwt b2b_logic_xml cachedb_cassand
+ 
+ include_modules?=
+ 
+-DEFS+= -DPKG_MALLOC #Use a faster malloc
+-DEFS+= -DSHM_MMAP #Use mmap instead of SYSV shared memory
+-DEFS+= -DUSE_MCAST #Compile in support for IP Multicast
++#DEFS+= -DPKG_MALLOC #Use a faster malloc
++#DEFS+= -DSHM_MMAP #Use mmap instead of SYSV shared memory
++#DEFS+= -DUSE_MCAST #Compile in support for IP Multicast
+ DEFS+= -DDISABLE_NAGLE #Disable the TCP NAgle Algorithm ( lower delay )
+ DEFS+= -DSTATISTICS #Enable the statistics manager
++DEFS+= -DSYSTEM_MALLOC
++DEFS+= -DSHM_MMAP
+ DEFS+= -DHAVE_RESOLV_RES #Support for changing some of the resolver parameters
+ # Specifying exactly 1 allocator will cause it to be inlined (fastest)
+-DEFS+= -DF_MALLOC #Fast memory allocator with minimal runtime overhead
+-DEFS+= -DQ_MALLOC #Quality assurance memory allocator with runtime safety checks
+-DEFS+= -DHP_MALLOC #High performance allocator with fine-grained locking
+-DEFS+= -DDBG_MALLOC #Include additional, debug-enabled allocator flavors
++#DEFS+= -DF_MALLOC #Fast memory allocator with minimal runtime overhead
++#DEFS+= -DQ_MALLOC #Quality assurance memory allocator with runtime safety checks
++#DEFS+= -DHP_MALLOC #High performance allocator with fine-grained locking
++#DEFS+= -DDBG_MALLOC #Include additional, debug-enabled allocator flavors
+ #DEFS+= -DNO_DEBUG #Compile out all debug messages
+ #DEFS+= -DNO_LOG #Compile out all logging
+ #DEFS_GROUP_START
+diff --git a/parser/msg_parser.c b/parser/msg_parser.c
+index db09aff7f..99ea58435 100644
+--- a/parser/msg_parser.c
++++ b/parser/msg_parser.c
+@@ -263,7 +263,7 @@ error_bad_hdr:
+ 	set_err_reply(400, "bad headers");
+ error:
+ 	LM_DBG("error exit\n");
+-	update_stat( bad_msg_hdr, 1);
++	//update_stat( bad_msg_hdr, 1);
+ 	hdr->type=HDR_ERROR_T;
+ 	hdr->len=tmp-hdr->name.s;
+ 	return tmp;
+diff --git a/parser/parse_uri.c b/parser/parse_uri.c
+index 364d91c1f..2f1ff1130 100644
+--- a/parser/parse_uri.c
++++ b/parser/parse_uri.c
+@@ -1628,7 +1628,7 @@ error_bug:
+ error_exit:
+ 	ser_error=E_BAD_URI;
+ 	uri->type=ERROR_URI_T;
+-	update_stat(bad_URIs, 1);
++	//update_stat(bad_URIs, 1);
+ 	return E_BAD_URI;
+ }
+ 

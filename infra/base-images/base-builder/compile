@@ -22,6 +22,36 @@ if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
   exit 1
 fi
 
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: JVM projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: Python projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
 if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
@@ -29,9 +59,10 @@ fi
 
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
-    cp -R /usr/i386/lib/* /usr/lib
+    cp -R /usr/i386/lib/* /usr/local/lib
 fi
-if [[ $FUZZING_ENGINE != "none" ]]; then
+# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi
@@ -40,15 +71,9 @@ if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then
   # Take all libraries from lib/msan and MSAN_LIBS_PATH
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
-  cp -R /usr/msan/lib/* /usr/lib/
+  cp -R /usr/msan/lib/* /usr/local/lib/
 
-  if [[ -z "${MSAN_LIBS_PATH-}" ]]; then
-    echo 'WARNING: Building without MSan instrumented libraries.'
-  else
-    # Copy all static libraries only. Don't include .so files because they can
-    # break non MSan compiled programs.
-    (cd "$MSAN_LIBS_PATH" && find . -name '*.a' -exec cp --parents '{}' / ';')
-  fi
+  echo 'Building without MSan instrumented libraries.'
 fi
 
 # Coverage flag overrides.
@@ -58,8 +83,8 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
- # Don't need coverage instrumentation for engine-less builds.
-if [ $FUZZING_ENGINE = "none" ]; then
+ # Don't need coverage instrumentation for engine-less, afl++ builds.
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ]; then
   export COVERAGE_FLAGS=
 fi
 
@@ -72,6 +97,11 @@ if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCH
 else
   export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
 fi
+if [ "$SANITIZER" = "coverage" ]
+then
+    # link to C++ from comment in f5098035eb1a14aa966c8651d88ea3d64323823d
+    export RUSTFLAGS="$RUSTFLAGS -Zinstrument-coverage -C link-arg=-lc++"
+fi
 
 # Add Rust libfuzzer flags.
 # See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
@@ -81,18 +111,64 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  sanitizer_with_fuzzer_lib_dir=`python3 -c "import atheris; import os; print(atheris.path())"`
+  sanitizer_with_fuzzer_output_lib=$OUT/sanitizer_with_fuzzer.so
+  if [ "$SANITIZER" = "address" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/asan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/ubsan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  fi
+
+  # Disable leak checking as it is unsupported.
+  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
+fi
+
+# Copy latest llvm-symbolizer in $OUT for stack symbolization.
+cp $(which llvm-symbolizer) $OUT/
+
+# Copy Jazzer to $OUT if needed.
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
+  jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
+  if [ "$SANITIZER" = "address" ]; then
+    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
+  elif [ "$SANITIZER" = "coverage" ]; then
+    # Coverage builds require no instrumentation.
+    cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
+  fi
+
+  # Disable leak checking since the JVM triggers too many false positives.
+  export CFLAGS="$CFLAGS -fno-sanitize=leak"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
+fi
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
 echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
+echo "RUSTFLAGS=$RUSTFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 
+# Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
+set +u
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
-COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $OUT"
+COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OSSFUZZ_RUSTPATH /rustc $OUT"
+set -u
+
+if [ "$FUZZING_LANGUAGE" = "rust" ]; then
+  # Copy rust std lib to its path with a hash.
+  export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
+  mkdir -p /rustc/$rustch/
+  cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
+fi
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder

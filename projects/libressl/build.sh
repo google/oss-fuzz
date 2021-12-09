@@ -16,8 +16,13 @@
 #
 ################################################################################
 
-# Prevent Boost compilation error with -std=c++17
-export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_74_0.tar.bz2
+cd boost_1_74_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
 
 mkdir -p $WORK/libressl
 cd $WORK/libressl

@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-compile_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
+chmod +x $SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh
+$SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2020 Google LLC.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Check code for common issues before submitting."""
+"""Checks code for common issues before submitting."""
 
 import argparse
 import os
@@ -22,6 +22,8 @@ import subprocess
 import sys
 import unittest
 import yaml
+
+import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -62,8 +64,8 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
 
 
 def check_lib_fuzzing_engine(paths):
-  """Call _check_one_lib_fuzzing_engine on each path in |paths|. Return True if
-  the result of every call is True."""
+  """Calls _check_one_lib_fuzzing_engine on each path in |paths|. Returns True
+  if the result of every call is True."""
   return all([_check_one_lib_fuzzing_engine(path) for path in paths])
 
 
@@ -73,9 +75,9 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-      'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
-      'architectures': {'i386', 'x86_64'},
-      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow', 'none'},
+      'sanitizers': constants.SANITIZERS,
+      'architectures': constants.ARCHITECTURES,
+      'fuzzing_engines': constants.ENGINES,
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -93,22 +95,16 @@ class ProjectYamlChecker:
       'labels',  # For internal use only, hard to lint as it uses fuzzer names.
       'main_repo',
       'primary_contact',
+      'run_tests',
       'sanitizers',
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
   ]
 
-  LANGUAGES_SUPPORTED = [
-      'c',
-      'c++',
-      'go',
-      'rust',
-  ]
-
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact']
+  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -118,7 +114,7 @@ class ProjectYamlChecker:
     self.success = True
 
   def do_checks(self):
-    """Do all project.yaml checks. Return True if they pass."""
+    """Does all project.yaml checks. Returns True if they pass."""
     if self.is_disabled():
       return True
 
@@ -128,23 +124,43 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
+        self.check_dataflow,
     ]
     for check_function in checks:
       check_function()
     return self.success
 
   def is_disabled(self):
-    """Is this project disabled."""
+    """Returns True if this project is disabled."""
     return self.data.get('disabled', False)
 
   def error(self, message):
-    """Print an error message and set self.success to False."""
+    """Prints an error message and sets self.success to False."""
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
 
+  def check_dataflow(self):
+    """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
+    specified in "sanitizers", and that if specified in "sanitizers", it is also
+    specified in "fuzzing_engines". Returns True if this condition is met."""
+    engines = self.data.get('fuzzing_engines', [])
+    dfsan_engines = 'dataflow' in engines
+    sanitizers = self.data.get('sanitizers', [])
+    dfsan_sanitizers = 'dataflow' in sanitizers
+
+    if dfsan_engines and not dfsan_sanitizers:
+      self.error('"dataflow" only specified in "fuzzing_engines" must also be '
+                 'specified in "sanitizers" or in neither.')
+      return
+
+    if dfsan_sanitizers and not dfsan_engines:
+      self.error('"dataflow" only specified in "sanitizers" must also be '
+                 'specified in "fuzzing_engines" or in neither.')
+      return
+
   def check_project_yaml_constants(self):
-    """Check that certain sections only have certain constant values."""
+    """Returns True if certain sections only have certain constant values."""
     for section, allowed_constants in self.SECTIONS_AND_CONSTANTS.items():
       if section not in self.data:
         continue
@@ -169,20 +185,20 @@ class ProjectYamlChecker:
           self.error('Not allowed value in the project.yaml: ' + str(constant))
 
   def check_valid_section_names(self):
-    """Check that only valid sections are included."""
+    """Returns True if all section names are valid."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
         self.error('{name} is not a valid section name ({valid_names})'.format(
             name=name, valid_names=self.VALID_SECTION_NAMES))
 
   def check_required_sections(self):
-    """Check that all required sections are present."""
+    """Returns True if all required sections are in |self.data|."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
         self.error(section + ' section is missing.')
 
   def check_valid_emails(self):
-    """Check that emails are valid looking."""
+    """Returns True if emails are valid looking.."""
     # Get email addresses.
     email_addresses = []
     primary_contact = self.data.get('primary_contact')
@@ -192,24 +208,24 @@ class ProjectYamlChecker:
     if auto_ccs:
       email_addresses.extend(auto_ccs)
 
-    # Sanity check them.
+    # Check that email addresses seem normal.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
         self.error(email_address + ' is an invalid email address.')
 
   def check_valid_language(self):
-    """Check that the language is specified and valid."""
+    """Returns True if the language is specified and valid."""
     language = self.data.get('language')
     if not language:
       self.error('Missing "language" attribute in project.yaml.')
-    elif language not in self.LANGUAGES_SUPPORTED:
+    elif language not in constants.LANGUAGES:
       self.error(
           '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=self.LANGUAGES_SUPPORTED))
+              language=language, supported=constants.LANGUAGES))
 
 
 def _check_one_project_yaml(project_yaml_filename):
-  """Do checks on the project.yaml file."""
+  """Does checks on the project.yaml file. Returns True on success."""
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 
@@ -218,13 +234,13 @@ def _check_one_project_yaml(project_yaml_filename):
 
 
 def check_project_yaml(paths):
-  """Call _check_one_project_yaml on each path in |paths|. Return True if
-  the result of every call is True."""
+  """Calls _check_one_project_yaml on each path in |paths|. Returns True if the
+  result of every call is True."""
   return all([_check_one_project_yaml(path) for path in paths])
 
 
 def do_checks(changed_files):
-  """Run all presubmit checks return False if any fails."""
+  """Runs all presubmit checks. Returns False if any fails."""
   checks = [
       check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
   ]
@@ -242,6 +258,7 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.cc',
     '.cpp',
     '.css',
+    '.Dockerfile',
     '.h',
     '.htm',
     '.html',
@@ -250,17 +267,21 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.py',
     '.sh',
 ]
+THIRD_PARTY_DIR_NAME = 'third_party'
 
 _LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
 
 
 def check_license(paths):
-  """Validate license header."""
+  """Validates license header."""
   if not paths:
     return True
 
   success = True
   for path in paths:
+    path_parts = str(path).split(os.sep)
+    if any(path_part == THIRD_PARTY_DIR_NAME for path_part in path_parts):
+      continue
     filename = os.path.basename(path)
     extension = os.path.splitext(path)[1]
     if (filename not in _CHECK_LICENSE_FILENAMES and
@@ -276,7 +297,7 @@ def check_license(paths):
 
 
 def bool_to_returncode(success):
-  """Return 0 if |success|. Otherwise return 1."""
+  """Returns 0 if |success|. Otherwise returns 1."""
   if success:
     print('Success.')
     return 0
@@ -285,30 +306,24 @@ def bool_to_returncode(success):
   return 1
 
 
-def is_python(path):
+def is_nonfuzzer_python(path):
   """Returns True if |path| ends in .py."""
-  return os.path.splitext(path)[1] == '.py'
+  return os.path.splitext(path)[1] == '.py' and '/projects/' not in path
 
 
-def lint(paths):
-  """Run python's linter on |paths| if it is a python file. Return False if it
-  fails linting."""
-  paths = [path for path in paths if is_python(path)]
-  if not paths:
-    return True
+def lint(_=None):
+  """Runs python's linter on infra. Returns False if it fails linting."""
 
-  command = ['python3', '-m', 'pylint', '-j', '0']
-  command.extend(paths)
-
+  command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
 
 def yapf(paths, validate=True):
-  """Do yapf on |path| if it is Python file. Only validates format if
-  |validate| otherwise, formats the file. Returns False if validation
-  or formatting fails."""
-  paths = [path for path in paths if is_python(path)]
+  """Does yapf on |path| if it is Python file. Only validates format if
+  |validate|. Otherwise, formats the file. Returns False if validation or
+  formatting fails."""
+  paths = [path for path in paths if is_nonfuzzer_python(path)]
   if not paths:
     return True
 
@@ -321,32 +336,93 @@ def yapf(paths, validate=True):
 
 
 def get_changed_files():
-  """Return a list of absolute paths of files changed in this git branch."""
-  # FIXME: This doesn't work if branch is behind master.
-  diff_command = ['git', 'diff', '--name-only', 'FETCH_HEAD']
-  return [
-      os.path.abspath(path)
-      for path in subprocess.check_output(diff_command).decode().splitlines()
-      if os.path.isfile(path)
+  """Returns a list of absolute paths of files changed in this git branch."""
+  branch_commit_hash = subprocess.check_output(
+      ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode()
+
+  diff_commands = [
+      # Return list of modified files in the commits on this branch.
+      ['git', 'diff', '--name-only', branch_commit_hash + '..'],
+      # Return list of modified files from uncommitted changes.
+      ['git', 'diff', '--name-only']
   ]
 
+  changed_files = set()
+  for command in diff_commands:
+    file_paths = subprocess.check_output(command).decode().splitlines()
+    for file_path in file_paths:
+      if not os.path.isfile(file_path):
+        continue
+      changed_files.add(file_path)
+  print('Changed files: {changed_files}'.format(
+      changed_files=' '.join(changed_files)))
+  return [os.path.abspath(f) for f in changed_files]
 
-def run_tests():
-  """Run all unit tests in directories that are different from HEAD."""
-  changed_dirs = set()
-  for file in get_changed_files():
-    changed_dirs.add(os.path.dirname(file))
 
-  # TODO(metzman): This approach for running tests is flawed since tests can
-  # fail even if their directory isn't changed. Figure out if it is needed (to
-  # save time) and remove it if it isn't.
-  suite_list = []
-  for change_dir in changed_dirs:
-    suite_list.append(unittest.TestLoader().discover(change_dir,
-                                                     pattern='*_test.py'))
+def run_build_tests():
+  """Runs build tests because they can't be run in parallel."""
+  suite_list = [
+      unittest.TestLoader().discover(os.path.join(_SRC_ROOT, 'infra', 'build'),
+                                     pattern='*_test.py'),
+  ]
   suite = unittest.TestSuite(suite_list)
+  print('Running build tests.')
   result = unittest.TextTestRunner().run(suite)
   return not result.failures and not result.errors
+
+
+def run_nonbuild_tests(parallel):
+  """Runs all tests but build tests. Does them in parallel if |parallel|. The
+  reason why we exclude build tests is because they use an emulator that
+  prevents them from being used in parallel."""
+  # We look for all project directories because otherwise pytest won't run tests
+  # that are not in valid modules (e.g. "base-images").
+  relevant_dirs = set()
+  all_files = get_all_files()
+  for file_path in all_files:
+    directory = os.path.dirname(file_path)
+    relevant_dirs.add(directory)
+
+  # Use ignore-glob because ignore doesn't seem to work properly with the way we
+  # pass directories to pytest.
+  command = [
+      'pytest',
+      '--ignore-glob=infra/build/*',
+  ]
+  if parallel:
+    command.extend(['-n', 'auto'])
+  command += list(relevant_dirs)
+  print('Running non-build tests.')
+
+  # TODO(metzman): Get rid of this once config_utils stops using it.
+  env = os.environ.copy()
+  env['CIFUZZ_TEST'] = '1'
+
+  return subprocess.run(command, check=False, env=env).returncode == 0
+
+
+def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
+  """Runs all unit tests."""
+  build_success = True
+  nonbuild_success = True
+  if nonbuild_tests:
+    nonbuild_success = run_nonbuild_tests(parallel)
+  else:
+    print('Skipping nonbuild tests as specified.')
+
+  if build_tests:
+    build_success = run_build_tests()
+  else:
+    print('Skipping build tests as specified.')
+
+  return nonbuild_success and build_success
+
+
+def get_all_files():
+  """Returns a list of absolute paths of files in this repo."""
+  get_all_files_command = ['git', 'ls-files']
+  output = subprocess.check_output(get_all_files_command).decode().splitlines()
+  return [os.path.abspath(path) for path in output if os.path.isfile(path)]
 
 
 def main():
@@ -356,30 +432,58 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
+  parser.add_argument('-a',
+                      '--all-files',
+                      action='store_true',
+                      help='Run presubmit check(s) on all files',
+                      default=False)
+  parser.add_argument('-p',
+                      '--parallel',
+                      action='store_true',
+                      help='Run tests in parallel.',
+                      default=False)
+  parser.add_argument('-s',
+                      '--skip-build-tests',
+                      action='store_true',
+                      help='Skip build tests which are slow and must run '
+                      'sequentially.',
+                      default=False)
+  parser.add_argument('-n',
+                      '--skip-nonbuild-tests',
+                      action='store_true',
+                      help='Only do build tests.',
+                      default=False)
   args = parser.parse_args()
 
-  changed_files = get_changed_files()
+  if args.all_files:
+    relevant_files = get_all_files()
+  else:
+    relevant_files = get_changed_files()
 
   os.chdir(_SRC_ROOT)
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
-    success = yapf(changed_files, False)
+    success = yapf(relevant_files, False)
     return bool_to_returncode(success)
 
   if args.command == 'lint':
-    success = lint(changed_files)
+    success = lint()
     return bool_to_returncode(success)
 
   if args.command == 'license':
-    success = check_license(changed_files)
+    success = check_license(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    return bool_to_returncode(run_tests())
+    success = run_tests(relevant_files,
+                        parallel=args.parallel,
+                        build_tests=(not args.skip_build_tests),
+                        nonbuild_tests=(not args.skip_nonbuild_tests))
+    return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
-  success = do_checks(changed_files)
+  success = do_checks(relevant_files)
 
   return bool_to_returncode(success)
 

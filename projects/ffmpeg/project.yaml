@@ -9,3 +9,4 @@ auto_ccs:
  - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
 selective_unpack: true
+main_repo: 'https://git.ffmpeg.org/ffmpeg.git'

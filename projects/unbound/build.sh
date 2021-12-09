@@ -39,7 +39,7 @@ OBJECTS_TO_LINK="dns.o infra.o rrset.o dname.o \
   rbtree.o regional.o rtt.o dnstree.o lookup3.o lruhash.o slabhash.o \
   tcp_conn_limit.o timehist.o tube.o winsock_event.o autotrust.o val_anchor.o \
   validator.o val_kcache.o val_kentry.o val_neg.o val_nsec3.o val_nsec.o \
-  val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
+  val_secalgo.o val_sigcrypt.o val_utils.o dns64.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
   libworker.o context.o rpz.o"

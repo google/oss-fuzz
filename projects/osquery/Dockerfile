@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev
+RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
 RUN git clone --depth 1 https://github.com/osquery/osquery osquery
 

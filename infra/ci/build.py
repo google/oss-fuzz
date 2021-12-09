@@ -18,27 +18,40 @@
 
 from __future__ import print_function
 
+import enum
 import os
 import re
 import sys
 import subprocess
 import yaml
 
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import constants
+
+CANARY_PROJECT = 'skcms'
+
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
-# Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+
+def get_changed_files_output():
+  """Returns the output of a git command that discovers changed files."""
+  branch_commit_hash = subprocess.check_output(
+      ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode()
+
+  return subprocess.check_output(
+      ['git', 'diff', '--name-only', branch_commit_hash + '..']).decode()
 
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
   build.sh file."""
-  output = subprocess.check_output(['git', 'diff', '--name-only',
-                                    'FETCH_HEAD']).decode()
+  git_output = get_changed_files_output()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  modified_projects = set(re.findall(projects_regex, output))
+  modified_projects = set(re.findall(projects_regex, git_output))
   projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
   # Filter out projects without Dockerfile files since new projects and reverted
   # projects frequently don't have them. In these cases we don't want Travis's
@@ -101,7 +114,7 @@ def should_build_coverage(project_yaml):
     return False
 
   language = project_yaml.get('language')
-  if language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+  if language not in constants.LANGUAGES_WITH_COVERAGE_SUPPORT:
     print(('Project is written in "{language}", '
            'coverage is not supported yet.').format(language=language))
     return False
@@ -156,9 +169,22 @@ def build_project(project):
     check_build(project, engine, sanitizer, architecture)
 
 
-def main():
-  """Build modified projects."""
+class BuildModifiedProjectsResult(enum.Enum):
+  """Enum containing the return values of build_modified_projects()."""
+  NONE_BUILT = 0
+  BUILD_SUCCESS = 1
+  BUILD_FAIL = 2
+
+
+def build_modified_projects():
+  """Build modified projects. Returns BuildModifiedProjectsResult.NONE_BUILT if
+  no builds were attempted. Returns BuildModifiedProjectsResult.BUILD_SUCCESS if
+  all attempts succeed, otherwise returns
+  BuildModifiedProjectsResult.BUILD_FAIL."""
   projects = get_modified_buildable_projects()
+  if not projects:
+    return BuildModifiedProjectsResult.NONE_BUILT
+
   failed_projects = []
   for project in projects:
     try:
@@ -168,6 +194,73 @@ def main():
 
   if failed_projects:
     print('Failed projects:', ' '.join(failed_projects))
+    return BuildModifiedProjectsResult.BUILD_FAIL
+
+  return BuildModifiedProjectsResult.BUILD_SUCCESS
+
+
+def is_infra_changed():
+  """Returns True if the infra directory was changed."""
+  git_output = get_changed_files_output()
+  infra_code_regex = '.*infra/.*\n'
+  return re.search(infra_code_regex, git_output) is not None
+
+
+def build_base_images():
+  """Builds base images."""
+  # TODO(jonathanmetzman): Investigate why caching fails so often and
+  # when we improve it, build base-clang as well. Also, move this function
+  # to a helper command when we can support base-clang.
+  execute_helper_command(['pull_images'])
+  images = [
+      'base-image',
+      'base-builder',
+      'base-builder-go',
+      'base-builder-jvm',
+      'base-builder-python',
+      'base-builder-rust',
+      'base-builder-swift',
+      'base-runner',
+  ]
+  for image in images:
+    try:
+      execute_helper_command(['build_image', image, '--no-pull', '--cache'])
+    except subprocess.CalledProcessError:
+      return 1
+
+  return 0
+
+
+def build_canary_project():
+  """Builds a specific project when infra/ is changed to verify that infra/
+  changes don't break things. Returns False if build was attempted but
+  failed."""
+
+  try:
+    build_project('skcms')
+  except subprocess.CalledProcessError:
+    return False
+
+  return True
+
+
+def main():
+  """Build modified projects or canary project."""
+  os.environ['OSS_FUZZ_CI'] = '1'
+  infra_changed = is_infra_changed()
+  if infra_changed:
+    print('Pulling and building base images first.')
+    if build_base_images():
+      return 1
+
+  result = build_modified_projects()
+  if result == BuildModifiedProjectsResult.BUILD_FAIL:
+    return 1
+
+  # It's unnecessary to build the canary if we've built any projects already.
+  no_projects_built = result == BuildModifiedProjectsResult.NONE_BUILT
+  should_build_canary = no_projects_built and infra_changed
+  if should_build_canary and not build_canary_project():
     return 1
 
   return 0

@@ -14,11 +14,9 @@
 #
 ################################################################################
 
-# TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
-# image SHA once the bug is fixed.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties
+RUN apt-get update && apt-get install -y software-properties-common
 RUN add-apt-repository ppa:webupd8team/java
 RUN apt-get update && apt-get -y install  \
 	vim             \
@@ -27,7 +25,8 @@ RUN apt-get update && apt-get -y install  \
 	make            \
         curl            \
         autoconf        \
-        libtool
+        libtool         \
+        rsync
 
 # Install dependencies
 
@@ -39,6 +38,7 @@ RUN apt-get update && apt-get install -y \
 # Install Python packages from PyPI
 RUN pip install --upgrade pip==10.0.1
 RUN pip install virtualenv
+RUN pip install incremental==16.10.1
 RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 twisted==17.5.0
 
 #========================

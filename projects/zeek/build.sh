@@ -20,6 +20,7 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --build-type=debug \
                 --generator=Ninja \
                 --enable-fuzzers \
+                --enable-mobile-ipv6 \
                 --disable-python \
                 --disable-zeekctl \
                 --disable-auxtools \
@@ -74,3 +75,11 @@ for f in ${fuzzers}; do
 
     fuzzer_count=$((fuzzer_count + 1))
 done
+
+if [ "${SANITIZER}" = "coverage" ]; then
+  # Normally, base-builder/compile copies sources for use in coverage reports,
+  # but its use of `cp -rL` omits the "zeek -> ." symlink used by #includes,
+  # causing the coverage build to fail.
+  mkdir -p $OUT/$(basename $SRC)
+  cp -r $SRC/zeek $OUT/$(basename $SRC)/zeek
+fi

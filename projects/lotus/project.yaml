@@ -1,0 +1,11 @@
+homepage: "https://github.com/filecoin-project/lotus"
+main_repo: "https://github.com/filecoin-project/lotus"
+primary_contact: "security@filecoin.org"
+auto_ccs :
+  - "Adam@adalogics.com"
+  - "kubuxu@protocol.ai"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

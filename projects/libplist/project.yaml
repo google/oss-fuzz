@@ -13,3 +13,4 @@ sanitizers:
   - memory
   - undefined
   - dataflow
+main_repo: 'https://github.com/libimobiledevice/libplist'

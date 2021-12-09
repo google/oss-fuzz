@@ -1,0 +1,10 @@
+homepage: "https://github.com/civetweb/civetweb"
+primary_contact: "bel2125@gmail.com"
+language: c
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+auto_ccs:
+  - "xt4ubq@gmail.com"
+  - "david@adalogics.com"
+main_repo: 'https://github.com/civetweb/civetweb'

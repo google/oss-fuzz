@@ -13,7 +13,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+ * We convert readelf.c into a header file to make convenient for fuzzing.
+ * We do this for several of the binutils applications when creating
+ * the binutils fuzzers.
+ */
 #include "readelf.h"
+
+#include "bfd.h"
+#include "libbfd.h"
+
+int check_architecture(char *tmpfilename, char *arch_string) {
+  bfd_cleanup cleanup = NULL;
+  bfd *file = bfd_openr(tmpfilename, arch_string);
+  if (file == NULL) {
+    remove(tmpfilename);
+    return 0;
+  }
+
+  if (!bfd_read_p(file) ||
+      (unsigned int)file->format >= (unsigned int)bfd_type_end) {
+    bfd_close(file);
+    return 0;
+  }
+
+  bool doAnalysis = false;
+  if (bfd_seek(file, (file_ptr)0, SEEK_SET) == 0) {
+    file->format = bfd_object;
+    cleanup = BFD_SEND_FMT(file, _bfd_check_format, (file));
+    if (cleanup) {
+      doAnalysis = true;
+      cleanup(file);
+    }
+    file->format = bfd_unknown;
+  }
+
+  if (file != NULL) {
+    bfd_close(file);
+  }
+
+  // return 1 if the architecture matches.
+  if (doAnalysis) {
+    return 1;
+  }
+  return 0;
+}
+
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
@@ -26,29 +71,45 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	if (!fp)
 		return 0;
 
+#ifdef READELF_TARGETED
+  if (check_architecture(filename, "pef") == 0) {
+    unlink(filename);
+		return 0;
+  }
+#endif
+
 	fwrite(data, size, 1, fp);
 	fclose(fp);
-	do_syms = TRUE;
-	do_reloc = TRUE;
-	do_unwind = TRUE;
-	do_dynamic = TRUE;
-	do_header = TRUE;
-	do_sections = TRUE;
-	do_section_groups = TRUE;
-	do_segments = TRUE;
-	do_version = TRUE;
-	do_histogram = TRUE;
-	do_arch = TRUE;
-	do_notes = TRUE;
+	do_syms = true;
+	do_reloc = true;
+	do_unwind = true;
+	do_dynamic = true;
+	do_header = true;
+	do_sections = true;
+	do_section_groups = true;
+	do_segments = true;
+	do_version = true;
+	do_histogram = true;
+	do_arch = true;
+	do_notes = true;
 
-    // Main fuzz entrypoint
+  // Enable DWARF analysis
+  // We must call both dwarf_select_sections_by_letters and dwarf_select_sections_all
+  // since dwarf_select_sections_all does not set do_debug_lines |= FLAG_DEBUG_LINES_DECODED;
+  dwarf_select_sections_by_letters("L");
+  dwarf_select_sections_all();
+
+  // Main fuzz entrypoint
 	process_file(filename);
 
 	unlink(filename);
 
 	free (dump_ctf_symtab_name);
+	dump_ctf_symtab_name = NULL;
 	free (dump_ctf_strtab_name);
+	dump_ctf_strtab_name = NULL;
 	free (dump_ctf_parent_name);
+	dump_ctf_parent_name = NULL;
 
 	return 0;
 }

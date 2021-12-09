@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN mkdir -p github.com/google
-RUN git clone --depth 1 https://github.com/google/mtail github.com/google/mtail
-WORKDIR github.com/google/mtail
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/google/mtail $GOPATH/src/github.com/google/mtail
+WORKDIR $GOPATH/src/github.com/google/mtail
 COPY build.sh $SRC/

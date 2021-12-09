@@ -38,7 +38,7 @@ the fuzz target with your build and test system, all you have to do is run this 
 $ ./fuzz_target_binary <testcase_path>
 ```
 
-For timeout bugs, add the `-timeout=25` argument. For OOM bugs, add the
+For timeout bugs, add the `-timeout=65` argument. For OOM bugs, add the
 `-rss_limit_mb=2560` argument. Read more on [how timeouts and OOMs are
 handled]({{ site.baseurl }}/faq/#how-do-you-handle-timeouts-and-ooms).
 
@@ -82,8 +82,11 @@ The `sanitizer` used in the report is the value in the
   * **memory** for MemorySanitizer.
   * **undefined** for UndefinedBehaviorSanitizer.
 
-**Note**: The `architecture` argument is only necessary if you want to specify
+**Notes**:
+   * The `architecture` argument is only necessary if you want to specify
 `i386` configuration.
+   * Some bugs (specially ones related to pointer and integer overflows) are reproducible only in 32 bit mode or only in 64 bit mode.
+If you can't reproduce a particular bug building for x86_64, try building for i386.
 
 ## Reproducing bugs
 

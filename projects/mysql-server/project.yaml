@@ -9,7 +9,7 @@ auto_ccs:
 
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/mysql/mysql-server'

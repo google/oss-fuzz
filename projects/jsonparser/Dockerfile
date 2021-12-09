@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/buger/jsonparser
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/buger/jsonparser
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/jsonparser

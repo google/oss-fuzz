@@ -19,8 +19,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   autoconf2.13 \
   libc++1 \
   libc++abi1 \
+  m4 \
   yasm \
-  python
+  python \
+  patchelf
+
+# This wrapper of cargo seems to interfere with our build system.
+RUN rm -f /usr/local/bin/cargo
 
 RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/

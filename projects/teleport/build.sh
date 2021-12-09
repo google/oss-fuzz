@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
+make update-vendor
 
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
-
-compile_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz gofuzz
+compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz gofuzz

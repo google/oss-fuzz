@@ -23,6 +23,13 @@ make -j$(nproc)
 make install
 cd ..
 
+cd json-c
+mkdir build
+cd build
+cmake -DBUILD_SHARED_LIBS=OFF ..
+make install
+cd ../..
+
 # build project
 cd ndpi
 sh autogen.sh

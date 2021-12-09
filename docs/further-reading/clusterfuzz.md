@@ -46,7 +46,7 @@ information, memory usage) on our fuzzer statistics dashboard.
 
 We provide coverage reports, where we highlight the parts of source code that
 are being reached by your fuzz target. Make sure to look at the uncovered code
-marked in red and add appropriate fuzz targets to cover those usecases.
+marked in red and add appropriate fuzz targets to cover those use cases.
 
 ![coverage_1]({{ site.baseurl }}/images/freetype_coverage_1.png?raw=true)
 ![coverage_2]({{ site.baseurl }}/images/freetype_coverage_2.png?raw=true)

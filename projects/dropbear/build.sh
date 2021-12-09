@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ make -j$(nproc) fuzz-targets FUZZLIB=$LIB_FUZZING_ENGINE
 
 TARGETS="$(make list-fuzz-targets)"
 
-make -C $SRC/dropbear/corpus
+make -C $SRC/dropbear-corpus
 
 cp -v $TARGETS $OUT/
 cp -v *.options $OUT/
-cp -v $SRC/dropbear/corpus/*.zip $OUT/
-cp -v $SRC/dropbear/corpus/*.dict $OUT/
+cp -v $SRC/dropbear-corpus/*.zip $OUT/
+cp -v $SRC/dropbear-corpus/*.dict $OUT/
