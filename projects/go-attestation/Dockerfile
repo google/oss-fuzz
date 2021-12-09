@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN go get -u -d github.com/google/go-attestation/...
+RUN git clone --depth 1 https://github.com/google/go-attestation
 
 WORKDIR go-attestation
 COPY build.sh $SRC/
