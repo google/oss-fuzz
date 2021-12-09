@@ -200,6 +200,7 @@ class RunFuzzersConfig(BaseConfig):
 
     self.report_timeouts = environment.get_bool('REPORT_TIMEOUTS', False)
     self.report_ooms = environment.get_bool('REPORT_OOMS', True)
+    self.upload_all_crashes = environment.get_bool('UPLOAD_ALL_CRASHES', False)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
