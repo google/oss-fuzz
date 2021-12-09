@@ -1,5 +1,6 @@
 homepage: "https://sourceware.org/elfutils/"
 language: c++
+builds_per_day: 4
 primary_contact: "izzeem@google.com"
 main_repo: "git://sourceware.org/git/elfutils.git"
 fuzzing_engines:
