@@ -4,7 +4,6 @@ primary_contact: "caolanm@redhat.com"
 auto_ccs:
   - "security@documentfoundation.org"
 vendor_ccs:
-  - "ehsan.akhgari@gmail.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address
