@@ -316,8 +316,6 @@ scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
 scripts/config.pl set MBEDTLS_CMAC_C
 scripts/config.pl set MBEDTLS_NIST_KW_C
 scripts/config.pl set MBEDTLS_ARIA_C
-scripts/config.pl set MBEDTLS_MD2_C
-scripts/config.pl set MBEDTLS_MD4_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
     scripts/config.pl unset MBEDTLS_HAVE_ASM
