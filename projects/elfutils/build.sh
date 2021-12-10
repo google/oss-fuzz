@@ -72,12 +72,11 @@ fi
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 
 
-ZLIB_DIR=$(pkg-config --variable=libdir zlib)
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
 	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
-	./libdw/libdw.a ./libelf/libelf.a "$ZLIB_DIR/libz.a" \
+	./libdw/libdw.a ./libelf/libelf.a -l:libz.a \
 	-o "$OUT/fuzz-dwfl-core"
 cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"
