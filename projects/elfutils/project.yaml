@@ -12,5 +12,6 @@ sanitizers:
   - undefined
 architectures:
   - x86_64
+  - i386
 auto_ccs:
   - evverx@gmail.com

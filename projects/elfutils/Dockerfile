@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y pkg-config make autoconf autopoint zlib1g-dev flex bison gawk
+    apt-get install -y pkg-config make autoconf autopoint zlib1g-dev zlib1g-dev:i386 flex bison gawk
 RUN git clone --depth 1 git://sourceware.org/git/elfutils.git
 WORKDIR elfutils
 COPY build.sh *.c *.zip $SRC/
