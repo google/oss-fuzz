@@ -144,19 +144,22 @@ for fuzzer in ${!fl[@]}; do
 done
 
 # Build GAS fuzzer. Will keep this here in case GAS fuzzer is used in the future.
-cd ../gas
-./configure
-make
-sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
-rm as.o || true
-ar r libar.a *.o
+if [ "$FUZZING_ENGINE" != "afl" ]
+then
+  cd ../gas
+  ./configure
+  make
+  sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
+  rm as.o || true
+  ar r libar.a *.o
 
-$CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
-    -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
-    libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
-    ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
-    -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
+  $CC $CFLAGS -DHAVE_CONFIG_H -I.  -I. -I. -I../bfd -I./config -I./../include -I./.. -I./../bfd \
+      -DLOCALEDIR="\"/usr/local/share/locale\"" -I./../zlib -c $SRC/fuzz_as.c -o fuzz_as.o
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
+      libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
+      ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
+      -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
+fi
 
 # Build seeds
 git clone --depth=1 https://github.com/DavidKorczynski/binary-samples $SRC/binary-samples
