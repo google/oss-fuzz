@@ -31,10 +31,11 @@ limitations under the License.
 
 static void key_ctx_update_implicit_iv(struct key_ctx *ctx, uint8_t *key,
                                        size_t key_len) {
-  const cipher_kt_t *cipher_kt = cipher_ctx_get_cipher_kt(ctx->cipher);
+  //const cipher_kt_t *cipher_kt = cipher_ctx_get_cipher_kt(ctx->cipher);
 
+  cipher_ctx_t *cipher_kt = ctx->cipher;
   /* Only use implicit IV in AEAD cipher mode, where HMAC key is not used */
-  if (cipher_kt_mode_aead(cipher_kt)) {
+  if (cipher_ctx_mode_aead(cipher_kt)) {
     size_t impl_iv_len = 0;
     ASSERT(cipher_kt_iv_size(cipher_kt) >= OPENVPN_AEAD_MIN_IV_LEN);
     impl_iv_len = cipher_kt_iv_size(cipher_kt) - sizeof(packet_id_type);
