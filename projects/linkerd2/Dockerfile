@@ -16,10 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/linkerd/linkerd2
-COPY build.sh \
-     fuzzers.go \
-     inject_fuzzer.go \
-     identity_fuzzer.go \
-     destination_fuzzer.go \
-     healthcheck_fuzzer.go $SRC/
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+COPY build.sh $SRC/
 WORKDIR $SRC/linkerd2
