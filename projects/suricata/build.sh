@@ -86,6 +86,15 @@ cp src/fuzz_* $OUT/
 
 echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
 
+echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
+echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict
+
+git grep tag rust | grep '"' | cut -d '"' -f2 | sort | uniq | awk 'length($0) > 2' | awk '{print "\""$0"\""}' > generic.dict
+cat generic.dict >> $OUT/fuzz_siginit.dict
+cat generic.dict >> $OUT/fuzz_applayerparserparse.dict
+cat generic.dict >> $OUT/fuzz_sigpcap.dict
+cat generic.dict >> $OUT/fuzz_sigpcap_aware.dict
+
 # build corpuses
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
@@ -126,7 +135,6 @@ echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpu
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
-echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
 rm -Rf corpus
 mkdir corpus
 set +x
@@ -136,4 +144,3 @@ python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i
 done
 set -x
 zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus
-echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict

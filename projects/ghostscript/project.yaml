@@ -13,3 +13,6 @@ sanitizers:
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 main_repo: 'git://git.ghostscript.com/ghostpdl.git'
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

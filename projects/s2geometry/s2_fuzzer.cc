@@ -21,8 +21,8 @@
 #include <string.h>
 
 #include "s2/s2shapeutil_range_iterator.h"
-#include "s2/third_party/absl/strings/str_split.h"
-#include "s2/third_party/absl/strings/string_view.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 
 #include "s2/mutable_s2shape_index.h"
 #include "s2/s2text_format.h"

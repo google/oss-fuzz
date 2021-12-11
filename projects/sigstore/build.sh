@@ -14,9 +14,20 @@
 # limitations under the License.
 #
 ################################################################################
+
+zip "${OUT}/FuzzLoadCertificates_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzUnmarshalCertificatesFromPEM_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzUnmarshalPEMToPublicKey_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzED25529SignerVerfier_seed_corpus.zip" corpus/ed25519/*
+
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGetPassword
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalCertificatesFromPEM FuzzUnmarshalCertificatesFromPEM
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalPEMToPublicKey FuzzUnmarshalPEMToPublicKey
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzECDSASigner FuzzECDSASigner
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeDigest FuzzComputeDigest
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeVerifying FuzzComputeVerifying
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzED25529SignerVerfier FuzzED25529SignerVerfier
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPKCS1v15SignerVerfier FuzzRSAPKCS1v15SignerVerfier
+compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPSSSignerVerfier FuzzRSAPSSSignerVerfier
+
