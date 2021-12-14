@@ -1,0 +1,12 @@
+homepage: "https://dfinity.org/"
+language: rust
+primary_contact: "venkkatesh.sekar@dfinity.org"
+auto_ccs :
+  - "raghav.sundaravaradan@dfinity.org"
+  - "robin.kunzler@dfinity.org"
+  - "andrew.lee@dfinity.org"
+main_repo: "https://github.com/dfinity/ic"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
