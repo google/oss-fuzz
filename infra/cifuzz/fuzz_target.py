@@ -184,15 +184,17 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
-      if self.is_crash_reportable(crash.input_path,
-                                  crash.reproduce_args,
-                                  batch=batch):
-        # We found a bug in the fuzz target and we will report it.
-        saved_path = self._save_crash(crash)
-        return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
+      is_reportable = self.is_crash_reportable(crash.input_path,
+                                               crash.reproduce_args,
+                                               batch=batch)
+      if is_reportable or self.config.upload_all_crashes:
+        fuzzer_logs = result.logs
+        testcase_path = self._save_crash(crash)
+      else:
+        fuzzer_logs = None
+        testcase_path = None
 
-    # We found a bug but we won't report it.
-    return FuzzResult(None, None, self.latest_corpus_path)
+    return FuzzResult(testcase_path, fuzzer_logs, self.latest_corpus_path)
 
   def free_disk_if_needed(self, delete_fuzz_target=True):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
