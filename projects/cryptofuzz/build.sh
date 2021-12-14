@@ -245,14 +245,14 @@ fi
 # Compile libgmp
 cd $SRC/libgmp/
 autoreconf -ivf
-if [[ $CFLAGS != *-m32* ]]
+if [[ $CFLAGS = *-m32* ]]
 then
-    ./configure --enable-maintainer-mode --enable-assert
-elif [[ $CFLAGS != *sanitize=memory* ]]
+    setarch i386 ./configure --enable-maintainer-mode --enable-assert
+elif [[ $CFLAGS = *sanitize=memory* ]]
 then
     ./configure --enable-maintainer-mode --enable-assert --disable-assembly
 else
-    setarch i386 ./configure --enable-maintainer-mode --enable-assert
+    ./configure --enable-maintainer-mode --enable-assert
 fi
 make -j$(nproc)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"

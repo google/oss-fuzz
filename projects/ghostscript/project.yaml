@@ -7,6 +7,7 @@ auto_ccs:
   - "sebastian.rasmussen@artifex.com"
   - "julians.artifex@gmail.com"
   - "chris.liddell@artifex.com"
+  - "ken.sharp@artifex.com"
   - "kdlee@chromium.org"
 sanitizers:
   - address

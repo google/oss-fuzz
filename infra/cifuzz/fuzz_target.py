@@ -32,6 +32,7 @@ logs.init()
 LIBFUZZER_OPTIONS_BATCH = ['-len_control=0']
 # Use a fixed seed for determinism for code change fuzzing.
 LIBFUZZER_OPTIONS_CODE_CHANGE = LIBFUZZER_OPTIONS_BATCH + ['-seed=1337']
+LIBFUZZER_OPTIONS_NO_REPORT_OOM = ['-rss_limit_mb=0']
 
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
@@ -171,6 +172,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         else:
           options.arguments.extend(LIBFUZZER_OPTIONS_CODE_CHANGE)
 
+        if not self.config.report_ooms:
+          options.arguments.extend(LIBFUZZER_OPTIONS_NO_REPORT_OOM)
+
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
 
@@ -184,15 +188,17 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       crash = result.crashes[0]
       logging.info('Fuzzer: %s. Detected bug.', self.target_name)
 
-      if self.is_crash_reportable(crash.input_path,
-                                  crash.reproduce_args,
-                                  batch=batch):
-        # We found a bug in the fuzz target and we will report it.
-        saved_path = self._save_crash(crash)
-        return FuzzResult(saved_path, result.logs, self.latest_corpus_path)
+      is_reportable = self.is_crash_reportable(crash.input_path,
+                                               crash.reproduce_args,
+                                               batch=batch)
+      if is_reportable or self.config.upload_all_crashes:
+        fuzzer_logs = result.logs
+        testcase_path = self._save_crash(crash)
+      else:
+        fuzzer_logs = None
+        testcase_path = None
 
-    # We found a bug but we won't report it.
-    return FuzzResult(None, None, self.latest_corpus_path)
+    return FuzzResult(testcase_path, fuzzer_logs, self.latest_corpus_path)
 
   def free_disk_if_needed(self, delete_fuzz_target=True):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
@@ -247,10 +253,14 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                              interactive=False):
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
-        result = engine_impl.reproduce(target_path,
-                                       testcase,
-                                       arguments=reproduce_args,
-                                       max_time=REPRODUCE_TIME_SECONDS)
+        try:
+          result = engine_impl.reproduce(target_path,
+                                         testcase,
+                                         arguments=reproduce_args,
+                                         max_time=REPRODUCE_TIME_SECONDS)
+        except TimeoutError as error:
+          logging.error('%s.', error)
+          return False
 
         if result.return_code != 0:
           logging.info('Reproduce command returned: %s. Reproducible on %s.',
