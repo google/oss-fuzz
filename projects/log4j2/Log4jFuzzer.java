@@ -36,7 +36,7 @@ public class Log4jFuzzer {
     public static void fuzzerInitialize() {
         // Install a logger that constructs the log message, but never prints it.
         // This noticeably increases the fuzzing performance
-        DefaultConfigurationBuilder configBuilder = newDefaultConfigurationBuilder();
+        DefaultConfigurationBuilder configBuilder = new DefaultConfigurationBuilder();
         AppenderComponentBuilder fuzzingAppender = configBuilder.newAppender("nullAppender", FileAppender.PLUGIN_NAME);
         fuzzingAppender.addAttribute("fileName", "/dev/null");
         configBuilder.add(fuzzingAppender);
