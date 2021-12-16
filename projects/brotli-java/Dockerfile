@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.4/bin/mvn
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.zip -o $WORK/maven.zip && \
+    unzip $WORK/maven.zip -d $WORK/maven && \
+    rm -rf $WORK/maven.zip
+ENV MVN $WORK/maven/apache-maven-3.8.4/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/brotli brotli-java
 WORKDIR brotli-java
