@@ -122,10 +122,11 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
-# TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 5f70bc54043a47c232be83ca77f53ddb6bb81908
+    git checkout 5f70bc54043a47c232be83ca77f53ddb6bb81908 && \
+    wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    chmod 755 oss.sh
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
