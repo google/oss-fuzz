@@ -150,7 +150,7 @@ def full_roundtrip(git_pull_request_id, project_names):
 
     # Run builds post PR 
     print("[+] Doing a post-pr check")
-    clear_all_projects(project_names)
+    #clear_all_projects(project_names)
     results_post_pr = run_builds_on_many(project_names)
 
     # Diff the results
