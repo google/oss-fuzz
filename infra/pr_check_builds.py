@@ -128,13 +128,21 @@ def full_roundtrip(git_pull_request_id, project_names):
     Builds projects pre and post a given PR, and does a simple
     diff on the results from build_fuzzers and check_build.
     """
+    basedir = os.getcwd()
 
     # Run builds pre PR
     print("[+] Doing a pre-pr check")
-    clear_all_projects(project_names)
+    subprocess.check_call("git clone https://github.com/google/oss-fuzz oss-fuzz", shell=True)
+    os.chdir("oss-fuzz")
+    # Clone a clean 
+    #clear_all_projects(project_names)
     results_pre_pr = run_builds_on_many(project_names)
 
     # Checkout PR and build all images
+    os.chdir(basedir)
+    subprocess.check_call("git clone https://github.com/google/oss-fuzz oss-fuzz-new-pr", shell=True)
+    os.chdir("oss-fuzz-new-pr")
+
     git_checkout_pr = "git fetch origin pull/%d/head"%(git_pull_request_id)
     subprocess.check_call(git_checkout_pr, shell=True)
     subprocess.check_call("git checkout FETCH_HEAD", shell=True)
