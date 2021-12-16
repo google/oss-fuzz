@@ -25,6 +25,7 @@ RUN dpkg --add-architecture i386 && \
         binutils-dev \
         build-essential \
         curl \
+        wget \
         git \
         jq \
         libc6-dev-i386 \
