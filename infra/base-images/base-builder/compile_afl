@@ -59,7 +59,7 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
     export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
     export AFL_ENABLE_CMPLOG=0
     # we increase the chance for LAF because we do not do CMPLOG with CTX
-    export AFL_LAF_CHANCE=30
+    export AFL_LAF_CHANCE=20
   }
 
   # 40% chance to create a dictionary.
