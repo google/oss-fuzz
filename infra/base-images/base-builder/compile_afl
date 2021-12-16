@@ -37,6 +37,73 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
 
+function afl_env1() {
+    export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+    export AFL_ENABLE_CMPLOG=0
+    # we increase the chance for LAF because we do not do CMPLOG with CTX
+    export AFL_LAF_CHANCE=30
+}
+
+function afl_env2() {
+    export AFL_ENABLE_DICTIONARY=1
+}
+
+function afl_env3() {
+    export AFL_LLVM_CMPLOG=1
+    touch "$OUT/afl_cmplog.txt"
+}
+
+function afl_env4() {
+    export AFL_LLVM_LAF_ALL=1
+}
+
+# Make it easy to explicitly explore the various 
+# combinations of AFL environments.
+function afl_set_oss_fuzz_opts() {
+  export AFL_LLVM_MODE_WORKAROUND=0
+  export AFL_ENABLE_DICTIONARY=0
+  export AFL_ENABLE_CMPLOG=1
+  export AFL_LAF_CHANCE=5
+
+  rm -f "$OUT/afl_cmplog.txt"
+
+  opt = $1
+  if [ $opt == "OPT1" ]; then
+    afl_env1
+  elif [ $opt == "OPT2" ]; then
+    afl_env2
+  elif [ $opt == "OPT3" ]; then
+    afl_env1
+    afl_env2
+  elif [ $opt == "OPT4" ]; then
+    afl_env2
+    afl_env3
+  elif [ $opt == "OPT5" ]; then
+    afl_env3    
+  elif [ $opt == "OPT6" ]; then
+    afl_env1
+    afl_env4
+  elif [ $opt == "OPT7" ]; then
+    afl_env1
+    afl_env2
+    afl_env4
+  elif [ $opt == "OPT8" ]; then
+    afl_env2
+    afl_env4
+  elif [ $opt == "OPT9" ]; then
+    afl_env4
+  fi
+
+  # Create a dictionary if one is wanted.
+  test "$AFL_ENABLE_DICTIONARY" = "1" && {
+    export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
+  }
+}
+
+if [ -z ${AFL_OSSFUZZ_OPT} ]; then
+  afl_set_oss_fuzz_opts ${AFLL_OSSFUZZ_OPT}
+fi
+
 # To analyze build failures and set specific AFL++ settings, set
 # `export AFL_SKIP_OSSFUZZ=1`
 # The 'env|grep' setup ensures we do not trigger the linter.
