@@ -37,9 +37,6 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
 
-# To not use AFL++'s afl-cc compiler but clang sancov, set this to 1:
-export AFL_LLVM_MODE_WORKAROUND=0
-
 # To analyze build failures and set specific AFL++ settings, set
 # `export AFL_SKIP_OSSFUZZ=1`
 # The 'env|grep' setup ensures we do not trigger the linter.
@@ -47,6 +44,7 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
 
   # The variables need to be set to "1" here - or before running this script.
   # AFL++ configuration options.
+  export AFL_LLVM_MODE_WORKAROUND=0
   export AFL_ENABLE_DICTIONARY=0
   export AFL_ENABLE_CMPLOG=1
   export AFL_LAF_CHANCE=5
