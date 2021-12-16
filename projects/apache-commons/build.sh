@@ -23,7 +23,7 @@ GEOMETRY_MODULE="commons-geometry-io-euclidean"
 
 for project in $PROJECTS; do
   cd $SRC/commons-$project
-  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Djdk.version=15"
+  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Djdk.version=15 --no-transfer-progress"
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
   -Dexpression=project.version -q -DforceStdout)
 

@@ -18,7 +18,7 @@
 cd java/org/brotli
 sed -i 's/1.6</1.7</g' ./pom.xml
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -X"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -X --no-transfer-progress"
 $MVN package
 find ./dec -name "dec-*.jar" -exec mv {} $OUT/dec.jar \;
 

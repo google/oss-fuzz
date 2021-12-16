@@ -29,7 +29,7 @@ export PROTOC="$SRC/protobuf-install/bin/protoc"
 # Build protobuf-java (requires protoc in source tree).
 cd $SRC/protobuf/java/
 cp $PROTOC $SRC/protobuf/src/
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --no-transfer-progress"
 $MVN package $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --no-transfer-progress"
 
 cd $SRC/jackson-dataformats-binary
 mvn package $MAVEN_ARGS
