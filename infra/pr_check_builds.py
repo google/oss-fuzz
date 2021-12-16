@@ -92,7 +92,7 @@ def clear_project(project_name):
     """
     # Do a bit of checking to make sure we're in the oss-fuzz base folder
     folders_to_check = [
-            './build/work', './projects', './infra', './projects/binutils'
+            './projects', './infra', './projects/binutils'
             ]
     for folder in folders_to_check:
         if not os.path.isdir(folder):
