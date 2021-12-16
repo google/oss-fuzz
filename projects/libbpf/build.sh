@@ -63,22 +63,27 @@ export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 rm -rf elfutils
 git clone git://sourceware.org/git/elfutils.git
 (
-cd elfutils &&
-git checkout 983e86fd89e8bf02f2d27ba5dce5bf078af4ceda &&
-git log --oneline -1 &&
+cd elfutils
+git checkout 983e86fd89e8bf02f2d27ba5dce5bf078af4ceda
+git log --oneline -1
 
 # ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
-find -name Makefile.am | xargs sed -i 's/,--no-undefined//' &&
+find -name Makefile.am | xargs sed -i 's/,--no-undefined//'
 
 # ASan isn't compatible with -Wl,-z,defs either:
 # https://clang.llvm.org/docs/AddressSanitizer.html#usage
-sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac &&
+sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac
 
 
-autoreconf -i -f &&
-./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS" &&
-make -C config -j$(nproc) V=1 &&
-make -C lib -j$(nproc) V=1 &&
+autoreconf -i -f
+if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
+	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS"; then
+    cat config.log
+    exit 1
+fi
+
+make -C config -j$(nproc) V=1
+make -C lib -j$(nproc) V=1
 make -C libelf -j$(nproc) V=1
 )
 
