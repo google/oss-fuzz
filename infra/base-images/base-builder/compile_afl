@@ -58,7 +58,8 @@ function afl_env4() {
 }
 
 # Make it easy to explicitly explore the various 
-# combinations of AFL environments.
+# combinations of AFL environments. This should exhibit the possible
+# builds from the roulette below. 
 function afl_set_oss_fuzz_opts() {
   export AFL_LLVM_MODE_WORKAROUND=0
   export AFL_ENABLE_DICTIONARY=0
@@ -67,7 +68,7 @@ function afl_set_oss_fuzz_opts() {
 
   rm -f "$OUT/afl_cmplog.txt"
 
-  opt = $1
+  opt=$1
   if [ $opt == "OPT1" ]; then
     afl_env1
   elif [ $opt == "OPT2" ]; then
@@ -100,8 +101,8 @@ function afl_set_oss_fuzz_opts() {
   }
 }
 
-if [ -z ${AFL_OSSFUZZ_OPT} ]; then
-  afl_set_oss_fuzz_opts ${AFLL_OSSFUZZ_OPT}
+if [[ ! -z ${AFL_OSSFUZZ_OPT} ]]; then
+  afl_set_oss_fuzz_opts ${AFL_OSSFUZZ_OPT}
 fi
 
 # To analyze build failures and set specific AFL++ settings, set
