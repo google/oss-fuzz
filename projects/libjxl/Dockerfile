@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y cmake ninja-build pkg-config
 RUN git clone --depth 1 https://github.com/libjxl/libjxl.git
 # We only need these sub-projects for the fuzzers.
 RUN git -C libjxl submodule update --init --recommend-shallow \
-  third_party/highway third_party/lodepng third_party/skcms third_party/brotli
+  third_party/highway third_party/skcms third_party/brotli
 
 WORKDIR libjxl
 COPY build.sh $SRC/
