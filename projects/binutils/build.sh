@@ -161,30 +161,12 @@ then
       -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
 fi
 
-# Build seeds
-git clone --depth=1 https://github.com/DavidKorczynski/binary-samples $SRC/binary-samples
-# Create an archive as seed
-ar r $SRC/seed_archive.a $SRC/binutils-gdb/binutils/rename.o \
-  $SRC/binutils-gdb/binutils/is-ranlib.o $SRC/binutils-gdb/binutils/not-strip.o
-
-# Zip the folder together as OSS-Fuzz expects the seed corpus as ZIP, and
-# then copy the folder around to various fuzzers.
-zip -r -j $OUT/fuzz_readelf_seed_corpus.zip \
-  $SRC/binary-samples/elf* \
-  $SRC/binary-samples/Mach* \
-  $SRC/binary-samples/pe* \
-  $SRC/binary-samples/lib* \
-  $SRC/seed_archive.a \
-  $SRC/binutils-gdb/binutils/*.o
-
+# Copy seeds out
 for fuzzname in readelf_pef objdump objdump_safe nm objcopy bdf windres addr2line dwarf; do
-  cp $OUT/fuzz_readelf_seed_corpus.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
+  cp $SRC/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
 done
-
 # Seed targeted the pef file format
-mkdir $SRC/bfd_ext_seeds
-echo "Joy!peffAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" >> $SRC/bfd_ext_seeds/seed1
-zip -r $OUT/fuzz_bfd_ext_seed_corpus.zip $SRC/bfd_ext_seeds/
+cp $SRC/binary-samples/oss-fuzz-binutils/fuzz_bfd_ext_seed_corpus.zip $OUT/fuzz_bfd_ext_seed_corpus.zip
 
 # Copy options files
 for ft in readelf readelf_pef objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line dwarf; do
