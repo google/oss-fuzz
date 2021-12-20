@@ -112,7 +112,10 @@ done
 # Fuzzers that need additional flags
 fuzz_compile dlltool dlltool "-DDLLTOOL_I386 -DDLLTOOL_DEFAULT_I386"
 fuzz_compile objdump objdump_safe "-DOBJDUMP_SAFE"
-fuzz_compile readelf readelf_pef "-DREADELF_TARGETED "
+fuzz_compile readelf readelf_pef "-DREADELF_TARGETED=\"pef\""
+fuzz_compile readelf readelf_elf32_bigarm "-DREADELF_TARGETED=\"elf32-bigarm\""
+fuzz_compile readelf readelf_elf32_littlearm "-DREADELF_TARGETED=\"elf32-littlearm\""
+fuzz_compile readelf readelf_elf64_mmix "-DREADELF_TARGETED=\"elf64-mmix\""
 
 #
 # Link fuzzers
@@ -127,6 +130,9 @@ OBJ3="dwarf.o prdbg.o rddbg.o unwind-ia64.o debug.o stabs.o rdcoff.o bucomm.o ve
 declare -A fl
 fl["readelf"]=${OBJ2}
 fl["readelf_pef"]=${OBJ2}
+fl["readelf_elf32_bigarm"]=${OBJ2}
+fl["readelf_elf32_littlearm"]=${OBJ2}
+fl["readelf_elf64_mmix"]=${OBJ2}
 fl["objdump"]=${OBJ3}
 fl["objdump_safe"]=${OBJ3}
 fl["dwarf"]=${OBJ3}
@@ -162,14 +168,14 @@ then
 fi
 
 # Copy seeds out
-for fuzzname in readelf_pef objdump objdump_safe nm objcopy bdf windres addr2line dwarf; do
+for fuzzname in readelf_pef readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm objcopy bdf windres addr2line dwarf; do
   cp $SRC/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
 done
 # Seed targeted the pef file format
 cp $SRC/binary-samples/oss-fuzz-binutils/fuzz_bfd_ext_seed_corpus.zip $OUT/fuzz_bfd_ext_seed_corpus.zip
 
 # Copy options files
-for ft in readelf readelf_pef objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line dwarf; do
+for ft in readelf readelf_pef readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line dwarf; do
   echo "[libfuzzer]" > $OUT/fuzz_${ft}.options
   echo "detect_leaks=0" >> $OUT/fuzz_${ft}.options
 done

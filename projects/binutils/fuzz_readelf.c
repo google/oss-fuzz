@@ -59,57 +59,71 @@ int check_architecture(char *tmpfilename, char *arch_string) {
   return 0;
 }
 
+// int gb=0;
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
-int
-LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-		return 0;
+  FILE *fp = fopen(filename, "wb");
+  if (!fp)
+    return 0;
+
+    /* Code to quickly extract target list.
+     * This is used to identify new targets but should
+     * not be in the fuzz code.
+    if (gb == 0) {
+      char **doublel = bfd_target_list();
+      while (*doublel != NULL) {
+        printf("Target: %s\n", *doublel);
+        doublel++;
+      }
+      gb=1;
+    }
+    exit(0);
+    */
 
 #ifdef READELF_TARGETED
-  if (check_architecture(filename, "pef") == 0) {
+  if (check_architecture(filename, READELF_TARGETED) == 0) {
     unlink(filename);
-		return 0;
+    return 0;
   }
 #endif
 
-	fwrite(data, size, 1, fp);
-	fclose(fp);
-	do_syms = true;
-	do_reloc = true;
-	do_unwind = true;
-	do_dynamic = true;
-	do_header = true;
-	do_sections = true;
-	do_section_groups = true;
-	do_segments = true;
-	do_version = true;
-	do_histogram = true;
-	do_arch = true;
-	do_notes = true;
+  fwrite(data, size, 1, fp);
+  fclose(fp);
+  do_syms = true;
+  do_reloc = true;
+  do_unwind = true;
+  do_dynamic = true;
+  do_header = true;
+  do_sections = true;
+  do_section_groups = true;
+  do_segments = true;
+  do_version = true;
+  do_histogram = true;
+  do_arch = true;
+  do_notes = true;
 
   // Enable DWARF analysis
-  // We must call both dwarf_select_sections_by_letters and dwarf_select_sections_all
-  // since dwarf_select_sections_all does not set do_debug_lines |= FLAG_DEBUG_LINES_DECODED;
+  // We must call both dwarf_select_sections_by_letters and
+  // dwarf_select_sections_all since dwarf_select_sections_all does not set
+  // do_debug_lines |= FLAG_DEBUG_LINES_DECODED;
   dwarf_select_sections_by_letters("L");
   dwarf_select_sections_all();
 
   // Main fuzz entrypoint
-	process_file(filename);
+  process_file(filename);
 
-	unlink(filename);
+  unlink(filename);
 
-	free (dump_ctf_symtab_name);
-	dump_ctf_symtab_name = NULL;
-	free (dump_ctf_strtab_name);
-	dump_ctf_strtab_name = NULL;
-	free (dump_ctf_parent_name);
-	dump_ctf_parent_name = NULL;
+  free(dump_ctf_symtab_name);
+  dump_ctf_symtab_name = NULL;
+  free(dump_ctf_strtab_name);
+  dump_ctf_strtab_name = NULL;
+  free(dump_ctf_parent_name);
+  dump_ctf_parent_name = NULL;
 
-	return 0;
+  return 0;
 }
