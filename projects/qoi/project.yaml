@@ -1,0 +1,9 @@
+homepage: "https://qoiformat.org/"
+language: c
+primary_contact: "dominic@phoboslab.org"
+auto_ccs:
+  - "randy440088@gmail.com"
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/phoboslab/qoi.git'
