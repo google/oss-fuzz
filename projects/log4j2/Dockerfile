@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make texinfo
-RUN apt-get install -y flex bison
-RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binary-samples
-RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
-RUN git clone --depth=1 https://github.com/DavidKorczynski/binutils-preconditions binutils-preconditions
-WORKDIR $SRC
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+RUN git clone --depth 1 https://github.com/apache/logging-log4j2
+
 COPY build.sh $SRC/
-COPY fuzz_*.c $SRC/
+COPY Log4jFuzzer.java $SRC/
+WORKDIR $SRC/logging-log4j2
