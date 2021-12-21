@@ -36,6 +36,7 @@ COVERAGE_BUILD_TYPE = 'coverage'
 
 # Where code coverage reports need to be uploaded to.
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
+INTROSPECTOR_BUCKET_NAME = 'oss-fuzz-introspector'
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
@@ -64,6 +65,28 @@ class Bucket:  # pylint: disable=too-few-public-methods
   def get_upload_url(self, upload_type):
     """Returns an upload url for |upload_type|."""
     return (f'gs://{self.coverage_bucket_name}/{self.project}'
+            f'/{upload_type}/{self.date}')
+
+
+class IntrospectorBucket:  # pylint: disable=too-few-public-methods
+  """Class representing the fuzz introspector GCS bucket."""
+
+  def __init__(self, project, date, platform, testing):
+    self.introspector_bucket_name = 'oss-fuzz-introspector'
+    if testing:
+      self.introspector_bucket_name += '-testing'
+
+    self.date = date
+    self.project = project
+    self.html_report_url = (
+        f'{build_lib.GCS_URL_BASENAME}{self.introspector_bucket_name}/{project}'
+        f'/reports/{date}/{platform}/index.html')
+    self.latest_report_info_url = (f'/{INTROSPECTOR_BUCKET_NAME}'
+                                   f'/latest_report_info/{project}.json')
+
+  def get_upload_url(self, upload_type):
+    """Returns an upload url for |upload_type|."""
+    return (f'gs://{self.introspector_bucket_name}/{self.project}'
             f'/{upload_type}/{self.date}')
 
 
@@ -121,11 +144,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
-      'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
-      'env':
-          coverage_env,
+      'name':  #   build_project.get_runner_image_name(base_images_project,
+          #                                       config.test_image_suffix),
+          # 'gcr.io/oss-fuzz-base/base-runner-customized', #TODO: hacky! to be fixed
+      'gcr.io/oss-fuzz-base/base-runner:introspector',
+      'env': coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
@@ -223,6 +246,115 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_lib.http_upload_step(latest_report_info_body,
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
+  #removes index.html from the end of url
+  coverage_url = bucket.html_report_url[:-11]
+  build_steps.extend(
+      get_fuzz_introspector_steps(project, project_name, base_images_project,
+                                  config, coverage_url))
+  return build_steps
+
+
+def get_fuzz_introspector_steps(project, project_name, base_images_project,
+                                config, coverage_url):
+  build_steps = []
+  FI_dir = '/workspace/fuzz-introspector/'
+  oss_integration_dir = 'oss_fuzz_integration/'
+
+  report_date = build_project.get_datetime_now().strftime('%Y%m%d')
+  bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
+                              config.testing)
+
+  build = build_project.Build('libfuzzer', 'instrumentor', 'x86_64')
+  env = build_project.get_env(project.fuzzing_language, build)
+
+  clone_step = {
+      'args': [
+          'clone', 'https://github.com/ossf/fuzz-introspector.git', '--depth',
+          '1'
+      ],
+      'name': 'gcr.io/cloud-builders/git',
+  }
+  build_steps.append(clone_step)
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': [
+          'bash', '-c',
+          (f'cd {FI_dir} && cd {oss_integration_dir}'
+           ' && sed -i \'s/\.\/infra\/base\-images\/all.sh/#\.\/infra\/base\-images\/all.sh/\''
+           ' build_patched_oss_fuzz.sh'
+           ' && cat build_patched_oss_fuzz.sh'
+           ' && ./build_patched_oss_fuzz.sh')
+      ]
+  })
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': [
+          'bash', '-c',
+          ('sed -i s/base-builder/base-builder:introspector/g '
+           f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}/Dockerfile'
+           f' && cat {FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}/Dockerfile'
+          )
+      ]
+  })
+
+  build_steps.append({
+      'name':
+          'gcr.io/cloud-builders/docker',
+      'args': [
+          'build',
+          '-t',
+          f'gcr.io/oss-fuzz/{project_name}',
+          '--file',
+          f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}/Dockerfile',
+          f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}',
+      ],
+  })
+
+  build_steps.append(
+      build_project.get_compile_step(project, build, env, config.parallel))
+
+  #adjust coverage url
+  cov_url_escaped = coverage_url.replace("/", "\/").replace(":", "\:")
+  set_cov_url = (
+      f'sed -i \'s/http\:\/\/localhost\:8008\/covreport\/linux/{cov_url_escaped}/\''
+      ' /src/post-processing/main.py && cat /src/post-processing/main.py && ')
+  last_build_step = build_steps[-1]
+  last_args = last_build_step['args']
+  last_bash_cmd = last_args[2]
+  last_bash_cmd = set_cov_url + last_bash_cmd
+  build_steps[-1]['args'][2] = last_bash_cmd
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': ['bash', '-c', ('du -a /workspace')]
+  })
+
+  # Upload the report.
+  upload_report_url = bucket.get_upload_url('inspector-report')
+
+  # Delete the existing report as gsutil cannot overwrite it in a useful way due
+  # to the lack of `-T` option (it creates a subdir in the destination dir).
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
+  build_steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'inspector-tmp'),
+          upload_report_url,
+      ],
+  })
+
   return build_steps
 
 

@@ -195,12 +195,19 @@ def get_env(fuzzing_language, build):
       'HOME': '/root',
       'OUT': build.out,
   }
+
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
 def get_compile_step(project, build, env, parallel):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
+  set_git_repo_env = ''  #do nothing
+  if build.sanitizer == 'instrumentor':
+    set_git_repo_env = (
+        ' && export GITHUB_REPO=$(grep -P -o "\S+github.com\S+" /workspace/oss-fuzz/projects/'
+        f'{project.name}/Dockerfile | xargs -L 1 | sed -e "s/.git$//") && set |grep GITHUB_REPO '
+    )
   failure_msg = (
       '*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
       f'python infra/helper.py build_image {project.name}\n'
@@ -218,7 +225,7 @@ def get_compile_step(project, build, env, parallel):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile || '
+           f'mkdir -p {build.out} {set_git_repo_env} && compile || '
            f'(echo "{failure_msg}" && false)'),
       ],
       'id': get_id('compile', build),
