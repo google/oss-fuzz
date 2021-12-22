@@ -70,7 +70,6 @@ for type in ${!MMLS_TEST_FILES[@]}; do
     filename=$( echo ${url} | sed 's/?[^?]*$//' )
     filename=$( basename ${filename} )
 
-    # Dont fail if some of the seed downloads fail.
     curl -L -o "test_data/${fuzz_target}/${filename}" "${url}"
   done
 
