@@ -71,7 +71,7 @@ for type in ${!MMLS_TEST_FILES[@]}; do
     filename=$( basename ${filename} )
 
     # Dont fail if some of the seed downloads fail.
-    curl -L -o "test_data/${fuzz_target}/${filename}" "${url}" || true
+    curl -L -o "test_data/${fuzz_target}/${filename}" "${url}"
   done
 
   (cd "test_data/${fuzz_target}" && zip ${OUT}/${fuzz_target}_seed_corpus.zip *)
