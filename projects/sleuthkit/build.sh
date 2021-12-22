@@ -18,7 +18,8 @@
 export CFLAGS="$CFLAGS -Wno-error=non-c-typedef-for-linkage"
 export CXXFLAGS="$CXXFLAGS -Wno-error=non-c-typedef-for-linkage"
 
-${SRC}/buildcorpus.sh
+# Dont fail if some of the seed downloads fail.
+${SRC}/buildcorpus.sh || true
 
 ./bootstrap
 ./configure --enable-static --disable-shared --disable-java --without-afflib --without-libewf --without-libvhdi --without-libvmdk
