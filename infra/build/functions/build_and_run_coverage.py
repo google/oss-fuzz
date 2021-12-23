@@ -243,11 +243,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_lib.http_upload_step(latest_report_info_body,
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
-  #removes index.html from the end of url
-  coverage_url = bucket.html_report_url[:-11]
-  build_steps.extend(
-      get_fuzz_introspector_steps(project, project_name, base_images_project,
-                                  config, coverage_url))
+
+  #currently fuzz introspector only supports c and c++
+  if project.fuzzing_language in ['c', 'c++']:
+    #removes index.html from the end of url
+    coverage_url = bucket.html_report_url[:-11]
+    build_steps.extend(
+        get_fuzz_introspector_steps(project, project_name, base_images_project,
+                                    config, coverage_url))
   return build_steps
 
 
