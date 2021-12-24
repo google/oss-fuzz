@@ -15,9 +15,13 @@
 #
 ################################################################################
 
-mkdir ./cc/fuzzing 
-cp $SRC/tink_encrypt_decrypt_fuzzer.cc ./cc/fuzzing/
-cp $SRC/fuzzing_CMake ./cc/fuzzing/CMakeLists.txt
 cd cc/fuzzing && cmake .
 make -j$(nproc)
 mv tink_encrypt_fuzzer $OUT/
+
+# Hack to get coverage to work. We need this due to /src/tink/cc/fuzzing/tink/__include_alias/tink
+# being an symbolic link. Instead, we exchange it with the actual contents.
+rm /src/tink/cc/fuzzing/tink/__include_alias/tink
+mkdir /src/tinktmp
+cp -rf /src/tink/cc/ /src/tinktmp/tink
+cp -rf /src/tinktmp/tink/ /src/tink/cc/fuzzing/tink/__include_alias/tink
