@@ -31,12 +31,12 @@ void serialise_test(const uint8_t *data, size_t size) {
     }
 
     phmap::BinaryOutputArchive ar_out("/dump.data");
-    table.dump(ar_out);
+    table.phmap_dump(ar_out);
 
     //MapType table_in;
     phmap::flat_hash_map<unsigned int, int> table_in;
     phmap::BinaryInputArchive ar_in("/dump.data");
-    table_in.load(ar_in);
+    table_in.phmap_load(ar_in);
 
     if(table == table_in) {
         unlink("/dump.data");
