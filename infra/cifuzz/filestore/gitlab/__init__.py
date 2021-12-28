@@ -34,88 +34,90 @@ class GitlabFilestore(filestore.BaseFilestore):
   def __init__(self, config):
     super().__init__(config)
     self.downloaded = set()
-    self.artifacts_dir = environment.get('CFL_ARTIFACTS_DIR', "artifacts")
-    self.download_dir = environment.get('CFL_DOWNLOAD_DIR', "download")
+    self.artifacts_dir = environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
+    self.download_dir = environment.get('CFL_DOWNLOAD_DIR', 'download')
 
-  def _copy_fromdir(self, src, name, reason):
-    destdir = os.path.join(self.config.workspace, self.artifacts_dir, reason,
-                           name)
-    logging.info('Uploading %s to artifacts to %s', reason, destdir)
-    shutil.copytree(src, destdir)
+  def _copy_from_dir(self, src, name, reason):
+    dest_dir = os.path.join(self.config.workspace, self.artifacts_dir, reason,
+                            name)
+    logging.info('Uploading %s to artifacts to %s.', reason, dest_dir)
+    shutil.copytree(src, dest_dir)
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
-    self._copy_fromdir(directory, name, "crashes")
+    self._copy_from_dir(directory, name, 'crashes')
 
   def upload_corpus(self, name, directory, replace=False):
     """Gitlab artifacts implementation of upload_corpus."""
-    self._copy_fromdir(directory, name, "corpus")
+    self._copy_from_dir(directory, name, 'corpus')
 
   def upload_build(self, name, directory):
     """Gitlab artifacts implementation of upload_build."""
-    self._copy_fromdir(directory, name, "build")
+    self._copy_from_dir(directory, name, 'build')
 
   def upload_coverage(self, name, directory):
     """Gitlab artifacts implementation of upload_coverage."""
-    # would be neat if we could save CI_JOB_ID somewhere,
-    # without needing a token with write-access
-    self._copy_fromdir(directory, name, "coverage")
+    # Would be neat if we could save CI_JOB_ID somewhere,
+    # without needing a token with write-access.
+    self._copy_from_dir(directory, name, 'coverage')
 
-  def _get_jobid(self, projpath, headers, reason):
+  def _get_job_id(self, proj_path, headers, reason):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
-    jobsurl = os.getenv('CI_API_V4_URL') + projpath + "/jobs?scope=success"
+    jobs_url = os.getenv('CI_API_V4_URL') + proj_path + '/jobs?scope=success'
     with tempfile.NamedTemporaryFile() as tmp_file:
-      if not http_utils.download_url(jobsurl, tmp_file.name, headers=headers):
-        logging.error('Failed downloading %s', jobsurl)
+      if not http_utils.download_url(jobs_url, tmp_file.name, headers=headers):
+        logging.error('Failed downloading %s.', jobs_url)
         return None
       # jq '.[] | select(.name=="clusterfuzzlite-corpus") | .id'
       with open(tmp_file.name, encoding='ascii') as json_file:
         data = json.load(json_file)
-        for j in data:
+        for job in data:
           # job names are fixed by this
-          if j["name"] == "clusterfuzzlite-" + reason:
-            logging.info('Latest job with %s is %d', reason, j["id"])
-            return j["id"]
+          if job['name'] == 'clusterfuzzlite-' + reason:
+            logging.info('Latest job with %s is %d', reason, job['id'])
+            return job['id']
     return None
 
-  def _copy_todir(self, dst, name, reason):
+  def _copy_to_dir(self, dst, name, reason):
     if reason not in self.downloaded:
       branch = os.getenv('CFL_BRANCH')
       if not branch:
         branch = os.getenv('CI_DEFAULT_BRANCH')
-      projpath = "/projects/" + os.getenv(
-          'CI_PROJECT_NAMESPACE') + "%2F" + os.getenv('CI_PROJECT_NAME')
-      # headers = {"JOB-TOKEN" : os.getenv('CI_JOB_TOKEN')}
+      proj_path = '/projects/' + os.getenv(
+          'CI_PROJECT_NAMESPACE') + '%2F' + os.getenv('CI_PROJECT_NAME')
+      # headers = {'JOB-TOKEN' : os.getenv('CI_JOB_TOKEN')}
       # is not enough to get jobid, we could just loop over them...
-      headers = {"PRIVATE-TOKEN": os.getenv('CFL_PRIVATE_TOKEN')}
-      jobid = self._get_jobid(projpath, headers, reason)
+      headers = {'PRIVATE-TOKEN': os.getenv('CFL_PRIVATE_TOKEN')}
+      jobid = self._get_job_id(proj_path, headers, reason)
       if not jobid:
         logging.error('Could not find job id for %s', reason)
       else:
-        srcurl = os.getenv('CI_API_V4_URL') + projpath + "/jobs/" + str(
-            jobid) + "/artifacts"
+        srcurl = os.getenv('CI_API_V4_URL') + proj_path + '/jobs/' + str(
+            jobid) + '/artifacts'
         logging.info('Downloading artifacts from %s', srcurl)
-        dldir = os.path.join(self.config.workspace, self.download_dir)
-        os.makedirs(dldir, exist_ok=True)
-        http_utils.download_and_unpack_zip(srcurl, dldir, headers=headers)
+        download_dir = os.path.join(self.config.workspace, self.download_dir)
+        os.makedirs(download_dir, exist_ok=True)
+        http_utils.download_and_unpack_zip(srcurl,
+                                           download_dir,
+                                           headers=headers)
         self.downloaded.add(reason)
     if reason in self.downloaded:
-      srcdir = os.path.join(self.config.workspace, self.download_dir,
-                            self.artifacts_dir, reason, name)
-      logging.info('Downloading %s to artifacts to %s', srcdir, dst)
-      shutil.copytree(srcdir, dst, dirs_exist_ok=True)
+      src_dir = os.path.join(self.config.workspace, self.download_dir,
+                             self.artifacts_dir, reason, name)
+      logging.info('Downloading %s to artifacts to %s.', src_dir, dst)
+      shutil.copytree(src_dir, dst, dirs_exist_ok=True)
       return True
     return False
 
   def download_corpus(self, name, dst_directory):
     """Gitlab artifacts implementation of download_corpus."""
-    self._copy_todir(dst_directory, name, "corpus")
+    self._copy_to_dir(dst_directory, name, 'corpus')
 
   def download_build(self, name, dst_directory):
     """Gitlab artifacts implementation of download_build."""
-    return self._copy_todir(dst_directory, name, "build")
+    return self._copy_to_dir(dst_directory, name, 'build')
 
   def download_coverage(self, name, dst_directory):
     """Gitlab artifacts implementation of download_coverage."""
-    return self._copy_todir(dst_directory, name, "coverage")
+    return self._copy_to_dir(dst_directory, name, 'coverage')
