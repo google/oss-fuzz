@@ -24,6 +24,7 @@ compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGet
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalCertificatesFromPEM FuzzUnmarshalCertificatesFromPEM
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalPEMToPublicKey FuzzUnmarshalPEMToPublicKey
+compile_go_fuzzer github.com/sigstore/sigstore/pkg/signature/dsse/fuzz Fuzz FuzzDSSE
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzECDSASigner FuzzECDSASigner
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeDigest FuzzComputeDigest
 compile_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeVerifying FuzzComputeVerifying
