@@ -77,7 +77,6 @@ then
   echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
 
 # External dependencies. Disable all instrumentation.
-  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -94,6 +93,7 @@ then
 
 # External dependency which needs to be compiled with sanitizers. Disable
 # coverage instrumentation.
+  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
 
 # All protobuf code and code in bazel-out
