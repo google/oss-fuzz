@@ -36,12 +36,17 @@ class GitlabFilestore(filestore.BaseFilestore):
     self.downloaded = set()
     self.artifacts_dir = environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
     self.download_dir = environment.get('CFL_DOWNLOAD_DIR', 'download')
+    self.cache_dir = environment.get('CFL_CACHE_DIR', 'cfl-cache')
 
   def _copy_from_dir(self, src, name, reason):
     dest_dir = os.path.join(self.config.workspace, self.artifacts_dir, reason,
                             name)
     logging.info('Uploading %s to artifacts to %s.', reason, dest_dir)
     shutil.copytree(src, dest_dir)
+    job_id = os.getenv('CI_JOB_ID')
+    cache_file_path = os.path.join(self.config.workspace, self.cache_dir, reason)
+    with open(cache_file_path, 'w') as cache_handle:
+        cache_handle.write(job_id)
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
@@ -64,6 +69,11 @@ class GitlabFilestore(filestore.BaseFilestore):
   def _get_job_id(self, proj_path, headers, reason):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
+    cache_file_path = os.path.join(self.config.workspace, self.cache_dir, reason)
+    cache_handle = open(cache_file_path, 'r')
+    if cache_handle:
+      return int(cache_handle.read())
+
     jobs_url = os.getenv('CI_API_V4_URL') + proj_path + '/jobs?scope=success'
     with tempfile.NamedTemporaryFile() as tmp_file:
       if not http_utils.download_url(jobs_url, tmp_file.name, headers=headers):
@@ -93,6 +103,7 @@ class GitlabFilestore(filestore.BaseFilestore):
       if not jobid:
         logging.error('Could not find job id for %s', reason)
       else:
+        headers = {'JOB-TOKEN' : os.getenv('CI_JOB_TOKEN')}
         srcurl = os.getenv('CI_API_V4_URL') + proj_path + '/jobs/' + str(
             jobid) + '/artifacts'
         logging.info('Downloading artifacts from %s', srcurl)
