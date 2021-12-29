@@ -15,6 +15,7 @@
 import logging
 import os
 
+import environment
 import platform_config
 
 
@@ -36,21 +37,10 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     """Returns the directory with the source of the project"""
     return os.getenv('CI_PROJECT_DIR')
 
-  #TODO ask useful
   @property
   def token(self):
     """Returns the job token"""
     return os.getenv('CI_JOB_TOKEN')
-
-  @property
-  def actor(self):
-    """Returns the commit author"""
-    return os.getenv('CI_COMMIT_AUTHOR')
-
-  @property
-  def project_repo_owner(self):
-    """Returns the project's namespace"""
-    return os.getenv('CI_PROJECT_ROOT_NAMESPACE')
 
   @property
   def project_repo_name(self):
@@ -74,5 +64,42 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def base_ref(self):
     """Returns the base commit sha for a merge request"""
-    # CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    # could also be CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     return os.getenv('CI_MERGE_REQUEST_DIFF_BASE_SHA')
+
+  @property
+  def artifacts_dir(self):
+    """Gitlab : returns the directory to put artifacts"""
+    return environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
+
+  @property
+  def download_dir(self):
+    """Gitlab : returns the directory to download artifacts"""
+    return environment.get('CFL_DOWNLOAD_DIR', 'download')
+
+  @property
+  def cache_dir(self):
+    """Gitlab : returns the directory to use as cache"""
+    return environment.get('CFL_CACHE_DIR', 'cfl-cache')
+
+  @property
+  def current_job_id(self):
+    """Gitlab : returns the current job id"""
+    return os.getenv('CI_JOB_ID')
+
+  @property
+  def api_url(self):
+    """Gitlab : returns the API url"""
+    return os.getenv('CI_API_V4_URL')
+
+  @property
+  def project_ref_encoded(self):
+    """Gitlab : returns the project reference, encoded for API use"""
+    return os.getenv('CI_PROJECT_NAMESPACE') + '%2F' + os.getenv(
+        'CI_PROJECT_NAME')
+
+  @property
+  def private_token(self):
+    """Gitlab : returns a private for API use"""
+    # This is a different token than CI_JOB_TOKEN
+    return os.getenv('CFL_PRIVATE_TOKEN')
