@@ -19,7 +19,6 @@ import os
 import json
 import tempfile
 
-import environment
 import http_utils
 import filestore
 
@@ -28,25 +27,28 @@ import filestore
 
 class GitlabFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Gitlab job artifacts. Relies on
+  using a cache to get latest job id oto get a type of artifacts.
   having a PRIVATE-TOKEN supplied to access the Gitlab API as seems
   the only way to download an artifact from another job"""
 
   def __init__(self, config):
     super().__init__(config)
     self.downloaded = set()
-    self.artifacts_dir = environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
-    self.download_dir = environment.get('CFL_DOWNLOAD_DIR', 'download')
-    self.cache_dir = environment.get('CFL_CACHE_DIR', 'cfl-cache')
+    self.artifacts_dir = self.config.platform_conf.artifacts_dir
+    self.cache_dir = self.config.platform_conf.cache_dir
+    self.download_dir = self.config.platform_conf.download_dir
+    self.api_url = self.config.platform_conf.api_url
 
   def _copy_from_dir(self, src, name, reason):
     dest_dir = os.path.join(self.config.workspace, self.artifacts_dir, reason,
                             name)
     logging.info('Uploading %s to artifacts to %s.', reason, dest_dir)
     shutil.copytree(src, dest_dir)
-    job_id = os.getenv('CI_JOB_ID')
-    cache_file_path = os.path.join(self.config.workspace, self.cache_dir, reason)
-    with open(cache_file_path, 'w') as cache_handle:
-        cache_handle.write(job_id)
+    job_id = self.config.platform_conf.current_job_id
+    cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
+                                   reason)
+    with open(cache_file_path, 'w', encoding='ascii') as cache_handle:
+      cache_handle.write(job_id)
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
@@ -66,15 +68,20 @@ class GitlabFilestore(filestore.BaseFilestore):
     # without needing a token with write-access.
     self._copy_from_dir(directory, name, 'coverage')
 
-  def _get_job_id(self, proj_path, headers, reason):
+  def _get_job_id(self, proj_path, reason):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
-    cache_file_path = os.path.join(self.config.workspace, self.cache_dir, reason)
-    cache_handle = open(cache_file_path, 'r')
-    if cache_handle:
-      return int(cache_handle.read())
+    cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
+                                   reason)
+    with open(cache_file_path, 'r', encoding='ascii') as cache_handle:
+      job_id = int(cache_handle.read())
+      logging.info('Latest job from cache with %s is %d.', reason, job_id)
+      return job_id
 
-    jobs_url = os.getenv('CI_API_V4_URL') + proj_path + '/jobs?scope=success'
+    # We could avoid PRIVATE-TOKEN and use only JOB-TOKEN
+    # by looping over all job ids until we find a relevant artifacts archive
+    headers = {'PRIVATE-TOKEN': self.config.platform_conf.private_token}
+    jobs_url = self.api_url + proj_path + '/jobs?scope=success'
     with tempfile.NamedTemporaryFile() as tmp_file:
       if not http_utils.download_url(jobs_url, tmp_file.name, headers=headers):
         logging.error('Failed downloading %s.', jobs_url)
@@ -85,28 +92,20 @@ class GitlabFilestore(filestore.BaseFilestore):
         for job in data:
           # job names are fixed by this
           if job['name'] == 'clusterfuzzlite-' + reason:
-            logging.info('Latest job with %s is %d', reason, job['id'])
+            logging.info('Latest job with %s is %d.', reason, job['id'])
             return job['id']
     return None
 
   def _copy_to_dir(self, dst, name, reason):
     if reason not in self.downloaded:
-      branch = os.getenv('CFL_BRANCH')
-      if not branch:
-        branch = os.getenv('CI_DEFAULT_BRANCH')
-      proj_path = '/projects/' + os.getenv(
-          'CI_PROJECT_NAMESPACE') + '%2F' + os.getenv('CI_PROJECT_NAME')
-      # headers = {'JOB-TOKEN' : os.getenv('CI_JOB_TOKEN')}
-      # is not enough to get jobid, we could just loop over them...
-      headers = {'PRIVATE-TOKEN': os.getenv('CFL_PRIVATE_TOKEN')}
-      jobid = self._get_job_id(proj_path, headers, reason)
+      proj_path = '/projects/' + self.config.platform_conf.project_ref_encoded
+      jobid = self._get_job_id(proj_path, reason)
       if not jobid:
-        logging.error('Could not find job id for %s', reason)
+        logging.error('Could not find job id for %s.', reason)
       else:
-        headers = {'JOB-TOKEN' : os.getenv('CI_JOB_TOKEN')}
-        srcurl = os.getenv('CI_API_V4_URL') + proj_path + '/jobs/' + str(
-            jobid) + '/artifacts'
-        logging.info('Downloading artifacts from %s', srcurl)
+        headers = {'JOB-TOKEN': self.config.token}
+        srcurl = self.api_url + proj_path + '/jobs/' + str(jobid) + '/artifacts'
+        logging.info('Downloading artifacts from %s.', srcurl)
         download_dir = os.path.join(self.config.workspace, self.download_dir)
         os.makedirs(download_dir, exist_ok=True)
         http_utils.download_and_unpack_zip(srcurl,
