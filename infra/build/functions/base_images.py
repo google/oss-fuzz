@@ -83,7 +83,8 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
       'args': [
           'bash', '-c',
           ('cd fuzz-introspector/ && cd oss_fuzz_integration/'
-           ' && sed -i \'s/\.\/infra\/base\-images\/all.sh/#\.\/infra\/base\-images\/all.sh/\''
+           ' && sed -i \'s/\.\/infra\/base\-images\/all.sh/'
+           '#\.\/infra\/base\-images\/all.sh/\''
            ' build_patched_oss_fuzz.sh'
            ' && cat build_patched_oss_fuzz.sh'
            ' && ./build_patched_oss_fuzz.sh'
