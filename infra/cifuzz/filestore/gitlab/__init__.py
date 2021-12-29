@@ -44,6 +44,7 @@ class GitlabFilestore(filestore.BaseFilestore):
                             name)
     logging.info('Uploading %s to artifacts to %s.', reason, dest_dir)
     shutil.copytree(src, dest_dir)
+    # Saves current job id in gitlab cache.
     job_id = self.config.platform_conf.current_job_id
     cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
                                    reason)
@@ -64,13 +65,12 @@ class GitlabFilestore(filestore.BaseFilestore):
 
   def upload_coverage(self, name, directory):
     """Gitlab artifacts implementation of upload_coverage."""
-    # Would be neat if we could save CI_JOB_ID somewhere,
-    # without needing a token with write-access.
     self._copy_from_dir(directory, name, 'coverage')
 
   def _get_job_id(self, proj_path, reason):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
+    # First try to get job id from the cache.
     cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
                                    reason)
     with open(cache_file_path, 'r', encoding='ascii') as cache_handle:
@@ -78,6 +78,7 @@ class GitlabFilestore(filestore.BaseFilestore):
       logging.info('Latest job from cache with %s is %d.', reason, job_id)
       return job_id
 
+    # Otherwise, get job id from api.
     # We could avoid PRIVATE-TOKEN and use only JOB-TOKEN
     # by looping over all job ids until we find a relevant artifacts archive
     headers = {'PRIVATE-TOKEN': self.config.platform_conf.private_token}
