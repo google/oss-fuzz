@@ -39,6 +39,7 @@ class GitlabFilestore(filestore.BaseFilestore):
     self.cache_dir = self.config.platform_conf.cache_dir
     self.download_dir = self.config.platform_conf.download_dir
     self.api_url = self.config.platform_conf.api_url
+    self.project_src_path = self.config.platform_conf.project_src_path
 
   def _copy_from_dir(self, src, name, reason):
     dest_dir = os.path.join(self.config.workspace, self.artifacts_dir, reason,
@@ -47,7 +48,9 @@ class GitlabFilestore(filestore.BaseFilestore):
     shutil.copytree(src, dest_dir)
     # Saves current job id in gitlab cache.
     job_id = self.config.platform_conf.current_job_id
-    cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
+    os.makedirs(os.path.join(self.project_src_path, self.cache_dir),
+                exist_ok=True)
+    cache_file_path = os.path.join(self.project_src_path, self.cache_dir,
                                    reason)
     with open(cache_file_path, 'w', encoding='ascii') as cache_handle:
       cache_handle.write(job_id)
@@ -72,7 +75,7 @@ class GitlabFilestore(filestore.BaseFilestore):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
     # First try to get job id from the cache.
-    cache_file_path = os.path.join(self.config.workspace, self.cache_dir,
+    cache_file_path = os.path.join(self.project_src_path, self.cache_dir,
                                    reason)
     with open(cache_file_path, 'r', encoding='ascii') as cache_handle:
       job_id = int(cache_handle.read())
