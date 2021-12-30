@@ -14,13 +14,13 @@
 """Empty filestore implementation for platforms that haven't implemented it."""
 import logging
 
-import shutil
-import os
 import json
+import os
+import shutil
 import tempfile
 
-import http_utils
 import filestore
+import http_utils
 
 # pylint:disable=no-self-use,unused-argument
 
@@ -33,6 +33,7 @@ class GitlabFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
+    # Set of downloaded artifacts
     self.downloaded = set()
     self.artifacts_dir = self.config.platform_conf.artifacts_dir
     self.cache_dir = self.config.platform_conf.cache_dir
@@ -84,7 +85,8 @@ class GitlabFilestore(filestore.BaseFilestore):
     headers = {'PRIVATE-TOKEN': self.config.platform_conf.private_token}
     jobs_url = self.api_url + proj_path + '/jobs?scope=success'
     with tempfile.NamedTemporaryFile() as tmp_file:
-      if not http_utils.download_url(jobs_url, tmp_file.name, headers=headers):
+      if not http_utils.get_json_from_url(
+          jobs_url, tmp_file.name, headers=headers):
         logging.error('Failed downloading %s.', jobs_url)
         return None
       # jq '.[] | select(.name=="clusterfuzzlite-corpus") | .id'
@@ -99,21 +101,25 @@ class GitlabFilestore(filestore.BaseFilestore):
 
   def _copy_to_dir(self, dst, name, reason):
     if reason not in self.downloaded:
+      # This is the first time sich an artifacts is required :
+      # it needs to be downloaded.
       proj_path = '/projects/' + self.config.platform_conf.project_ref_encoded
-      jobid = self._get_job_id(proj_path, reason)
-      if not jobid:
+      job_id = self._get_job_id(proj_path, reason)
+      if not job_id:
         logging.error('Could not find job id for %s.', reason)
       else:
         headers = {'JOB-TOKEN': self.config.token}
-        srcurl = self.api_url + proj_path + '/jobs/' + str(jobid) + '/artifacts'
-        logging.info('Downloading artifacts from %s.', srcurl)
+        src_url = self.api_url + proj_path + '/jobs/' + str(
+            job_id) + '/artifacts'
+        logging.info('Downloading artifacts from %s.', src_url)
         download_dir = os.path.join(self.config.workspace, self.download_dir)
         os.makedirs(download_dir, exist_ok=True)
-        http_utils.download_and_unpack_zip(srcurl,
+        http_utils.download_and_unpack_zip(src_url,
                                            download_dir,
                                            headers=headers)
         self.downloaded.add(reason)
     if reason in self.downloaded:
+      # There was an artifacts archive downloaded, now just use it.
       src_dir = os.path.join(self.config.workspace, self.download_dir,
                              self.artifacts_dir, reason, name)
       logging.info('Downloading %s to artifacts to %s.', src_dir, dst)
