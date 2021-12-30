@@ -25,7 +25,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def workspace(self):
     """Returns the workspace."""
-    return os.getenv('CI_PROJECT_DIR')
+    return os.getenv('CI_BUILDS_DIR')
 
   @property
   def git_sha(self):
@@ -48,17 +48,12 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     return os.getenv('CI_PROJECT_NAME')
 
   @property
-  def git_url(self):
-    """Returns the project's git url"""
-    return os.getenv('CI_PROJECT_URL')
-
-  @property
   def base_commit(self):
     """Returns the previous commit sha for commit-fuzzing"""
     base_commit = None
     if os.getenv('CI_PIPELINE_SOURCE') == 'push':
       base_commit = os.getenv('CI_COMMIT_BEFORE_SHA')
-    logging.debug('base_commit: %s', base_commit)
+    logging.debug('base_commit: %s.', base_commit)
     return base_commit
 
   @property
@@ -69,37 +64,37 @@ class PlatformConfig(platform_config.BasePlatformConfig):
 
   @property
   def artifacts_dir(self):
-    """Gitlab : returns the directory to put artifacts"""
+    """Gitlab: returns the directory to put artifacts"""
     return environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
 
   @property
   def download_dir(self):
-    """Gitlab : returns the directory to download artifacts"""
+    """Gitlab: returns the directory to download artifacts"""
     return environment.get('CFL_DOWNLOAD_DIR', 'download')
 
   @property
   def cache_dir(self):
-    """Gitlab : returns the directory to use as cache"""
+    """Gitlab: returns the directory to use as cache"""
     return environment.get('CFL_CACHE_DIR', 'cfl-cache')
 
   @property
   def current_job_id(self):
-    """Gitlab : returns the current job id"""
+    """Gitlab: returns the current job id"""
     return os.getenv('CI_JOB_ID')
 
   @property
   def api_url(self):
-    """Gitlab : returns the API url"""
+    """Gitlab: returns the API url"""
     return os.getenv('CI_API_V4_URL')
 
   @property
   def project_ref_encoded(self):
-    """Gitlab : returns the project reference, encoded for API use"""
+    """Gitlab: returns the project reference, encoded for API use"""
     return os.getenv('CI_PROJECT_NAMESPACE') + '%2F' + os.getenv(
         'CI_PROJECT_NAME')
 
   @property
   def private_token(self):
-    """Gitlab : returns a private for API use"""
+    """Gitlab: returns a private for API use"""
     # This is a different token than CI_JOB_TOKEN
     return os.getenv('CFL_PRIVATE_TOKEN')
