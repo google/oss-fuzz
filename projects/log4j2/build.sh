@@ -15,15 +15,28 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-DskipTests --no-transfer-progress"
-$MVN package -pl log4j-api,log4j-plugins,log4j-core $MAVEN_ARGS
+echo "<?xml version=\"1.0\" encoding=\"UTF8\"?>
+<toolchains>
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>15</version>
+    </provides>
+    <configuration>
+       <jdkHome>$JAVA_HOME</jdkHome>
+    </configuration>
+  </toolchain>
+</toolchains>
+" > $SRC/maven-toolchains.xml
+
+MAVEN_ARGS="-Dmaven.test.skip=true --no-transfer-progress --global-toolchains $SRC/maven-toolchains.xml"
+$MVN package -pl log4j-api,log4j-api-java9,log4j-core,log4j-core-java9 $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "log4j-core/target/log4j-core-$CURRENT_VERSION.jar" $OUT/log4j-core.jar
 cp "log4j-api/target/log4j-api-$CURRENT_VERSION.jar" $OUT/log4j-api.jar
-cp "log4j-plugins/target/log4j-plugins-$CURRENT_VERSION.jar" $OUT/log4j-plugins.jar
 
-ALL_JARS="log4j-core.jar log4j-api.jar log4j-plugins.jar"
+ALL_JARS="log4j-core.jar log4j-api.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API. Additionally, include $OUT itself to pick up
