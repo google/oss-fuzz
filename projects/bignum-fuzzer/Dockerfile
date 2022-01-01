@@ -16,6 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget
+RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig
+ENV PATH=$PATH:/usr/local/go/bin
 
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
