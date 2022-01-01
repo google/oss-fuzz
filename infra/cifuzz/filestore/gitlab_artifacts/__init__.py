@@ -96,8 +96,8 @@ class GitlabArtifactsFilestore(filestore.BaseFilestore):
       # Use the cache if any.
       src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
                                    reason, name)
-      if not os.listdir(src_dir_cache):
-        logging.info('Cache %s is empty.', src_dir_cache)
+      if not os.path.exists(src_dir_cache):
+        logging.info('Cache %s does not exist.', src_dir_cache)
         return False
       shutil.copytree(src_dir_cache, dst, dirs_exist_ok=True)
       logging.info('Copying %s from cache to %s.', src_dir_cache, dst)
