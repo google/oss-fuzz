@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
   libexpat1-dev \
   libffi-dev \
   libfftw3-dev \
+  libgflags-dev \
   libselinux1-dev \
   libtool \
   nasm \
