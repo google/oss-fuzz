@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Empty filestore implementation for platforms that haven't implemented it."""
+"""Gitlab artifacts filestore implementation."""
 import logging
 
 import json
@@ -25,11 +25,12 @@ import http_utils
 # pylint:disable=no-self-use,unused-argument
 
 
-class GitlabFilestore(filestore.BaseFilestore):
-  """Implementation of BaseFilestore using Gitlab job artifacts. Relies on
-  using a cache to get latest job id oto get a type of artifacts.
-  having a PRIVATE-TOKEN supplied to access the Gitlab API as seems
-  the only way to download an artifact from another job"""
+class GitlabArtifactsFilestore(filestore.BaseFilestore):
+  """Implementation of BaseFilestore using Gitlab job artifacts.
+  Either needs to use a cache.
+  Or needs a PRIVATE-TOKEN supplied to access the Gitlab API as it seems
+  the only way to know which job id to use to download an artifact
+  from another job"""
 
   def __init__(self, config):
     super().__init__(config)
@@ -41,18 +42,16 @@ class GitlabFilestore(filestore.BaseFilestore):
     self.api_url = self.config.platform_conf.api_url
 
   def _copy_from_dir(self, src, name, reason):
-    dest_dir = os.path.join(self.config.project_src_path, self.artifacts_dir,
-                            reason, name)
-    logging.info('Uploading %s to artifacts to %s.', reason, dest_dir)
-    shutil.copytree(src, dest_dir)
-    # Saves current job id in gitlab cache.
-    job_id = self.config.platform_conf.current_job_id
-    os.makedirs(os.path.join(self.config.project_src_path, self.cache_dir),
-                exist_ok=True)
-    cache_file_path = os.path.join(self.config.project_src_path, self.cache_dir,
-                                   reason)
-    with open(cache_file_path, 'w', encoding='ascii') as cache_handle:
-      cache_handle.write(job_id)
+    dest_dir_artifacts = os.path.join(self.config.project_src_path,
+                                      self.artifacts_dir, reason, name)
+    logging.info('Uploading %s to artifacts to %s.', reason, dest_dir_artifacts)
+    shutil.copytree(src, dest_dir_artifacts)
+    # Saves to gitlab cache if any is specified.
+    if self.cache_dir:
+      dest_dir_cache = os.path.join(self.config.project_src_path,
+                                    self.cache_dir, reason, name)
+      logging.info('Copying from %s to cache %s.', src, dest_dir_cache)
+      shutil.copytree(src, dest_dir_cache)
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
@@ -73,15 +72,6 @@ class GitlabFilestore(filestore.BaseFilestore):
   def _get_job_id(self, proj_path, reason):
     """Get a specific job id for the latest succesful pipeline
     with the specific job name."""
-    # First try to get job id from the cache.
-    cache_file_path = os.path.join(self.config.project_src_path, self.cache_dir,
-                                   reason)
-    with open(cache_file_path, 'r', encoding='ascii') as cache_handle:
-      job_id = int(cache_handle.read())
-      logging.info('Latest job from cache with %s is %d.', reason, job_id)
-      return job_id
-
-    # Otherwise, get job id from api.
     # We could avoid PRIVATE-TOKEN and use only JOB-TOKEN
     # by looping over all job ids until we find a relevant artifacts archive
     headers = {'PRIVATE-TOKEN': self.config.platform_conf.private_token}
@@ -102,6 +92,17 @@ class GitlabFilestore(filestore.BaseFilestore):
     return None
 
   def _copy_to_dir(self, dst, name, reason):
+    if self.cache_dir:
+      # Use the cache if any.
+      src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
+                                   reason, name)
+      if not os.listdir(src_dir_cache):
+        logging.info('Cache %s is empty.', src_dir_cache)
+        return False
+      shutil.copytree(src_dir_cache, dst, dirs_exist_ok=True)
+      logging.info('Copying %s from cache to %s.', src_dir_cache, dst)
+      return True
+    # Otherwise, use artifacts with gitlab API.
     if reason not in self.downloaded:
       # This is the first time sich an artifacts is required :
       # it needs to be downloaded.

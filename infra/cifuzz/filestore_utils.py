@@ -17,14 +17,14 @@ import filestore.git
 import filestore.github_actions
 import filestore.gsutil
 import filestore.no_filestore
-import filestore.gitlab
+import filestore.gitlab_artifacts
 
 FILESTORE_MAPPING = {
     'gsutil': filestore.gsutil.GSUtilFilestore,
     'github-actions': filestore.github_actions.GithubActionsFilestore,
     'git': filestore.git.GitFilestore,
     'no_filestore': filestore.no_filestore.NoFilestore,
-    'gitlab': filestore.gitlab.GitlabFilestore,
+    'gitlab-artifacts': filestore.gitlab_artifacts.GitlabArtifactsFilestore,
 }
 
 

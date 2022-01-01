@@ -75,7 +75,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def cache_dir(self):
     """Gitlab: returns the directory to use as cache"""
-    return environment.get('CFL_CACHE_DIR', 'cfl-cache')
+    return os.getenv('CFL_CACHE_DIR')
 
   @property
   def current_job_id(self):
