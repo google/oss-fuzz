@@ -78,11 +78,6 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     return os.getenv('CFL_CACHE_DIR')
 
   @property
-  def current_job_id(self):
-    """Gitlab: returns the current job id"""
-    return os.getenv('CI_JOB_ID')
-
-  @property
   def api_url(self):
     """Gitlab: returns the API url"""
     return os.getenv('CI_API_V4_URL')
