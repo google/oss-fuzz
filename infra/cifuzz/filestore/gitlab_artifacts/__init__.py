@@ -51,7 +51,7 @@ class GitlabArtifactsFilestore(filestore.BaseFilestore):
       dest_dir_cache = os.path.join(self.config.project_src_path,
                                     self.cache_dir, reason, name)
       logging.info('Copying from %s to cache %s.', src, dest_dir_cache)
-      shutil.copytree(src, dest_dir_cache)
+      shutil.copytree(src, dest_dir_cache, dirs_exist_ok=True)
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
