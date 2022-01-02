@@ -55,7 +55,8 @@ class GitlabArtifactsFilestore(filestore.BaseFilestore):
 
   def upload_crashes(self, name, directory):
     """Gitlab artifacts implementation of upload_crashes."""
-    self._copy_from_dir(directory, name, 'crashes')
+    if os.listdir(directory):
+      self._copy_from_dir(directory, name, 'crashes')
 
   def upload_corpus(self, name, directory, replace=False):
     """Gitlab artifacts implementation of upload_corpus."""
