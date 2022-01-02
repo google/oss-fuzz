@@ -25,7 +25,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def workspace(self):
     """Returns the workspace."""
-    return os.getenv('CI_BUILDS_DIR')
+    return os.path.join(os.getenv('CI_BUILDS_DIR'), 'cfl')
 
   @property
   def git_sha(self):
