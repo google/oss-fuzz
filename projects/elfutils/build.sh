@@ -38,7 +38,7 @@
 set -eux
 
 SANITIZER=${SANITIZER:-address}
-flags="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
+flags="-O1 -fno-omit-frame-pointer -g -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
 
 export CC=${CC:-clang}
 export CFLAGS=${CFLAGS:-$flags}
