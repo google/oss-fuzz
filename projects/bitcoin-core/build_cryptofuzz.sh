@@ -160,6 +160,8 @@ rm cryptofuzz
 make
 cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w15-p4
 
+# If the window size is larger than 15, this file must be deleted before proceeding
+rm $SRC/secp256k1/src/precomputed_ecmult.c
 build_libsecp256k1 "--with-ecmult-window=20" "--with-ecmult-gen-precision=8"
 cd $SRC/cryptofuzz/
 rm cryptofuzz

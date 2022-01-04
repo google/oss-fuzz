@@ -10,4 +10,5 @@ fuzzing_engines:
 sanitizers:
 - address
 - thread
+coverage_extra_args: -ignore-filename-regex=*.pb.swift
 main_repo: 'https://github.com/apple/swift-protobuf.git'

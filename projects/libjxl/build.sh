@@ -26,6 +26,7 @@ build_args=(
   -DJPEGXL_ENABLE_SJPEG=OFF
   -DJPEGXL_ENABLE_VIEWERS=OFF
   -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
 )
 
 # Build and generate a fuzzer corpus in release mode without instrumentation.
@@ -35,6 +36,7 @@ build_args=(
   unset CXXFLAGS
   export AFL_NOOPT=1
 
+  rm -rf ${WORK}/libjxl-corpus
   mkdir -p ${WORK}/libjxl-corpus
   cd ${WORK}/libjxl-corpus
   cmake \
@@ -55,6 +57,11 @@ build_args=(
 # checks.
 export CXXFLAGS="${CXXFLAGS} -DJXL_IS_DEBUG_BUILD=1"
 
+if [ "$SANITIZER" == "undefined" ]; then
+  build_args[${#build_args[@]}]="-DCXX_NO_RTTI_SUPPORTED=OFF"
+fi
+
+rm -rf ${WORK}/libjxl-fuzzer
 mkdir -p ${WORK}/libjxl-fuzzer
 cd ${WORK}/libjxl-fuzzer
 cmake \

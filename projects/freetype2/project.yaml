@@ -16,4 +16,5 @@ vendor_ccs:
 sanitizers:
   - address
   - undefined
+  - memory
 main_repo: 'https://github.com/freetype/freetype2-testing.git'

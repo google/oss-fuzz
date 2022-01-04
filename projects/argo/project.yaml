@@ -1,0 +1,13 @@
+homepage: "https://argoproj.github.io/"
+main_repo: "https://github.com/argoproj"
+primary_contact: "terrytangyuan@gmail.com"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "errytangyuan@gmail.com"
+  - "jfischer@redhat.com "
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
