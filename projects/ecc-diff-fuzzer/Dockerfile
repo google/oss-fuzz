@@ -34,7 +34,7 @@ RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git gcrypt
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp cryptopp
-ADD https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2 gmp-6.1.2.tar.bz2
+ADD https://gmplib.org/download/gmp/gmp-6.2.1.tar.bz2 gmp-6.2.1.tar.bz2
 RUN git clone --depth 1 https://github.com/gnutls/nettle.git nettle
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan
 WORKDIR $SRC/
