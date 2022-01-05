@@ -38,7 +38,7 @@
 set -eux
 
 SANITIZER=${SANITIZER:-address}
-flags="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
+flags="-O1 -fno-omit-frame-pointer -g -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=$SANITIZER -fsanitize=fuzzer-no-link"
 
 export CC=${CC:-clang}
 export CFLAGS=${CFLAGS:-$flags}
@@ -60,6 +60,17 @@ find -name Makefile.am | xargs sed -i 's/,--no-undefined//'
 # ASan isn't compatible with -Wl,-z,defs either:
 # https://clang.llvm.org/docs/AddressSanitizer.html#usage
 sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac
+
+if [[ "$SANITIZER" == undefined ]]; then
+    additional_ubsan_checks=alignment
+    UBSAN_FLAGS="-fsanitize=$additional_ubsan_checks -fno-sanitize-recover=$additional_ubsan_checks"
+    CFLAGS="$CFLAGS $UBSAN_FLAGS"
+    CXXFLAGS="$CXXFLAGS $UBSAN_FLAGS"
+
+    # That's basicaly what --enable-sanitize-undefined does to turn off unaligned access
+    # elfutils heavily relies on on i386/x86_64 but without changing compiler flags along the way
+    sed -i 's/\(check_undefined_val\)=[0-9]/\1=1/' configure.ac
+fi
 
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
