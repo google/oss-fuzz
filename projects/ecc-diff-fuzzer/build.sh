@@ -43,6 +43,9 @@ make install
 #gcrypt
 (
 cd libgpg-error
+# fix for following error
+# error: gettext infrastructure mismatch: using a Makefile.in.in from gettext version 0.19 but the autoconf macros are from gettext version 0.20
+timeout 3 gettextize -f || true
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
     ./configure -host=i386 --disable-doc --enable-static --disable-shared
