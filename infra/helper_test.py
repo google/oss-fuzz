@@ -112,7 +112,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   PROJECT_LANGUAGE = 'python'
 
   def setUp(self):
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=invalid-name
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
 
