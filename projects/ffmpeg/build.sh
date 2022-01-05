@@ -107,6 +107,14 @@ make clean
 make -j$(nproc)
 make install
 
+cd $SRC/libxml2
+./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static \
+    --without-debug --without-ftp --without-http \
+    --without-legacy --without-python
+make clean
+make -j$(nproc)
+make install
+
 # Remove shared libraries to avoid accidental linking against them.
 rm $FFMPEG_DEPS_PATH/lib/*.so
 rm $FFMPEG_DEPS_PATH/lib/*.so.*
@@ -130,6 +138,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-libtheora \
     --enable-libvorbis \
     --enable-libvpx \
+    --enable-libxml2 \
     --enable-nonfree \
     --disable-muxers \
     --disable-protocols \
@@ -212,6 +221,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --libfuzzer=$LIB_FUZZING_ENGINE \
     --optflags=-O1 \
     --enable-gpl \
+    --enable-libxml2 \
     --disable-muxers \
     --disable-protocols \
     --disable-devices \
