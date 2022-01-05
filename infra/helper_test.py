@@ -112,6 +112,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   PROJECT_LANGUAGE = 'python'
 
   def setUp(self):
+    self.maxDiff = None  # pylint: disable=invalid-name
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
 
@@ -150,7 +151,9 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
                                  build_integration_path, self.PROJECT_LANGUAGE)
 
-  def test_generate_swift_project(self):
+  @mock.patch('helper._get_current_datetime',
+              return_value=datetime.datetime(year=2021, month=1, day=1))
+  def test_generate_swift_project(self, _):
     """Tests that the swift project uses the correct base image."""
     helper._generate_impl(helper.Project(self.PROJECT_NAME), 'swift')
     self._verify_templated_files(
