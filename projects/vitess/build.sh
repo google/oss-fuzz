@@ -33,6 +33,10 @@ rm -r go/test/fuzzing/*
 
 mv $SRC/native_sql_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
 
+# compile_native_go_fuzzer will be the api used by users
+# similar to compile_go_fuzzer. The api is now placed in
+# this build script but will be moved to the base image
+# once it has reached sufficient maturity.
 function compile_native_go_fuzzer () {
         path=$1
         function=$2
