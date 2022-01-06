@@ -68,28 +68,6 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     return environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
 
   @property
-  def download_dir(self):
-    """Gitlab: returns the directory to download artifacts"""
-    return environment.get('CFL_DOWNLOAD_DIR', 'download')
-
-  @property
   def cache_dir(self):
     """Gitlab: returns the directory to use as cache"""
-    return os.getenv('CFL_CACHE_DIR')
-
-  @property
-  def api_url(self):
-    """Gitlab: returns the API url"""
-    return os.getenv('CI_API_V4_URL')
-
-  @property
-  def project_ref_encoded(self):
-    """Gitlab: returns the project reference, encoded for API use"""
-    return os.getenv('CI_PROJECT_NAMESPACE') + '%2F' + os.getenv(
-        'CI_PROJECT_NAME')
-
-  @property
-  def private_token(self):
-    """Gitlab: returns a private for API use"""
-    # This is a different token than CI_JOB_TOKEN
-    return os.getenv('CFL_PRIVATE_TOKEN')
+    return environment.get('CFL_CACHE_DIR', 'cache')
