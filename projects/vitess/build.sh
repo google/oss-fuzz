@@ -39,6 +39,7 @@ mv $SRC/tablet_manager_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
 # Disable logging for mysql conn
 # This affects the mysql fuzzers
 sed -i '/log.Errorf/c\\/\/log.Errorf' $SRC/vitess/go/mysql/conn.go
+sed -i '/log.Warningf/c\\/\/log.Warningf' $SRC/vitess/go/vt/sqlparser/parser.go
 
 mv ./go/vt/vttablet/tabletmanager/vreplication/framework_test.go \
    ./go/vt/vttablet/tabletmanager/vreplication/framework_fuzz.go
@@ -121,7 +122,7 @@ function build_go_fuzzer () {
         abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 	
         # Check if there are more than 1 function named $function
-        number_of_occurences=$(grep -s "$function" $abs_file_dir/{*,.*} | wc -l)
+        number_of_occurences=$(grep -s "func $function" $abs_file_dir/{*,.*} | wc -l)
         echo $number_of_occurences
         if [ $number_of_occurences -ne 1 ]
         then
