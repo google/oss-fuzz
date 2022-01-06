@@ -31,7 +31,43 @@ cd $SRC/vitess
 rm go/vt/vtgate/vindexes/fuzz.go
 rm -r go/test/fuzzing/*
 
-mv $SRC/native_sql_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
+mv $SRC/parser_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
+mv $SRC/ast_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
+mv $SRC/tablet_manager_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
+
+
+# Disable logging for mysql conn
+# This affects the mysql fuzzers
+sed -i '/log.Errorf/c\\/\/log.Errorf' $SRC/vitess/go/mysql/conn.go
+
+mv ./go/vt/vttablet/tabletmanager/vreplication/framework_test.go \
+   ./go/vt/vttablet/tabletmanager/vreplication/framework_fuzz.go
+
+#consistent_lookup_test.go is needed for loggingVCursor
+mv ./go/vt/vtgate/vindexes/consistent_lookup_test.go \
+   ./go/vt/vtgate/vindexes/consistent_lookup_test_fuzz.go
+
+# fake_vcursor_test.go is needed for loggingVCursor
+mv ./go/vt/vtgate/engine/fake_vcursor_test.go \
+    ./go/vt/vtgate/engine/fake_vcursor.go
+
+# plan_test.go is needed for vschemaWrapper
+mv ./go/vt/vtgate/planbuilder/plan_test.go \
+    ./go/vt/vtgate/planbuilder/plan_test_fuzz.go
+
+# tabletserver fuzzer
+mv ./go/vt/vttablet/tabletserver/testutils_test.go \
+   ./go/vt/vttablet/tabletserver/testutils_fuzz.go
+
+# collation fuzzer
+mv ./go/mysql/collations/uca_test.go \
+   ./go/mysql/collations/uca_test_fuzz.go
+
+mv $SRC/vitess/go/vt/vtgate/grpcvtgateconn/suite_test.go \
+	   $SRC/vitess/go/vt/vtgate/grpcvtgateconn/suite_test_fuzz.go
+mv $SRC/vitess/go/vt/vtgate/grpcvtgateconn/fuzz_flaky_test.go \
+	   $SRC/vitess/go/vt/vtgate/grpcvtgateconn/fuzz.go
+
 
 # compile_native_go_fuzzer will be the api used by users
 # similar to compile_go_fuzzer. The api is now placed in
@@ -76,6 +112,15 @@ function compile_native_go_fuzzer () {
 
         $SRC/go-118-fuzz-build/go-118-fuzz-build -o fuzzer.a -func $function $abs_file_dir
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.a -o $OUT/$function
+	
+	# clean up
+	rm "${fuzzer_filename}"_fuzz_.go
 }
 
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzParserWithNative
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzTabletManager_ExecuteFetchAsDba
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzParser
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzIsDML
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNormalizer
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNodeFormat
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzSplitStatementToPieces
+compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzEqualsSQLNode
