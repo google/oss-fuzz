@@ -68,32 +68,10 @@ mv $SRC/vitess/go/vt/vtgate/grpcvtgateconn/suite_test.go \
 mv $SRC/vitess/go/vt/vtgate/grpcvtgateconn/fuzz_flaky_test.go \
 	   $SRC/vitess/go/vt/vtgate/grpcvtgateconn/fuzz.go
 
-
-# compile_native_go_fuzzer will be the api used by users
-# similar to compile_go_fuzzer. The api is now placed in
-# this build script but will be moved to the base image
-# once it has reached sufficient maturity.
-function compile_native_go_fuzzer () {
-        path=$1
-        function=$2
-        tags="-tags gofuzz"
-
-        # Get absolute path
-        abs_file_dir=$(go list $tags -f {{.Dir}} $path)
-
-        # Check if there are more than 1 function named $function
-        number_of_occurences=$(grep -s "$function" $abs_file_dir/{*,.*} | wc -l)
-        echo $number_of_occurences
-        if [ $number_of_occurences -ne 1 ]
-        then
-                echo "Found multiple targets '$function' in $path"
-                exit 0
-        else
-                echo "GREAT! Only a single target was found"
-        fi
-
-        # TODO: Get rid of "-r" flag here
-        fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
+# build_go_fuzz_harness rewrites a copy of the 
+# fuzzer to allow for libFuzzer instrumentation
+function rewrite_go_fuzz_harness() {
+	fuzzer_filename=$1
 
         # Create a copy of the fuzzer to not modify the existing fuzzer
         cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
@@ -109,18 +87,74 @@ function compile_native_go_fuzzer () {
         # Install more dependencies
         gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
         gotip get google.golang.org/grpc/internal/channelz@v1.39.0
-
-        $SRC/go-118-fuzz-build/go-118-fuzz-build -o fuzzer.a -func $function $abs_file_dir
-        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.a -o $OUT/$function
-	
-	# clean up
-	rm "${fuzzer_filename}"_fuzz_.go
 }
 
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzTabletManager_ExecuteFetchAsDba
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzParser
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzIsDML
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNormalizer
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNodeFormat
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzSplitStatementToPieces
-compile_native_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzEqualsSQLNode
+function cleanup(){
+	filename=$1
+	rm $filename
+}
+
+function compile_native_go_fuzzer() {
+	fuzzer=$1
+	function=$2
+	path=$3
+	tags="-tags gofuzz"
+
+	if [[ $SANITIZER = *coverage* ]]; then
+		echo "here we perform coverage build"
+	else
+	        $SRC/go-118-fuzz-build/go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
+        	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+	fi
+}
+# build_go_fuzzer will be the api used by users
+# similar to compile_go_fuzzer. The api is now placed in
+# this build script but will be moved to the base image
+# once it has reached sufficient maturity.
+function build_go_fuzzer () {
+        path=$1
+        function=$2
+	fuzzer=$3
+        tags="-tags gofuzz"
+
+        # Get absolute path
+        abs_file_dir=$(go list $tags -f {{.Dir}} $path)
+	
+        # Check if there are more than 1 function named $function
+        number_of_occurences=$(grep -s "$function" $abs_file_dir/{*,.*} | wc -l)
+        echo $number_of_occurences
+        if [ $number_of_occurences -ne 1 ]
+        then
+                echo "Found multiple targets '$function' in $path"
+                exit 0
+        else
+                echo "GREAT! Only a single target was found"
+        fi
+
+        # TODO: Get rid of "-r" flag here
+        fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
+	
+	# test if file contains a line with "func $function" and "testing.F"
+	if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
+	then
+		# we are dealing with a native harness
+		echo "This is a native harness"
+		rewrite_go_fuzz_harness $fuzzer_filename
+		compile_native_go_fuzzer $fuzzer $function $abs_file_dir
+		# clean up
+		cleanup "${fuzzer_filename}_fuzz_.go"
+	else
+		# we are dealing with a go-fuzz harness
+		echo "This is a go-fuzz harness"
+		# here we call compile_go_fuzzer
+	fi
+	
+}
+
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzTabletManager_ExecuteFetchAsDba fuzz_tablet_manager_execute_fetch_as_dba
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzParser parser_fuzzer
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzIsDML is_dml_fuzzer
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNormalizer normalizer_fuzzer
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNodeFormat normalizer_fuzzer
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzSplitStatementToPieces fuzz_split_statement_to_pieces
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzEqualsSQLNode fuzz_equals_sql_node
