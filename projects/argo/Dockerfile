@@ -15,8 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN apt-get update && apt-get install -y wget
 RUN git clone --depth 1 https://github.com/argoproj/argo-cd
 RUN git clone --depth 1 https://github.com/argoproj/argo-workflows
+RUN git clone --depth 1 https://github.com/argoproj/argo-events
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.tar.gz && \
+    tar xzf zstd-1.4.2.tar.gz && \
+    cd zstd-1.4.2 && \
+    export CC=clang && \
+    export CXX=clang++ && \
+    export CXXFLAGS="-stdlib=libc++" && \
+    make -j$(nproc)
 COPY build.sh $SRC/
 WORKDIR $SRC/argo-cd
