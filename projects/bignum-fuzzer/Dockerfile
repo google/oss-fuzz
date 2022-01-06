@@ -19,10 +19,18 @@ RUN apt-get update && apt-get install -y software-properties-common curl sudo me
 RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig
 ENV PATH=$PATH:/usr/local/go/bin
 
+RUN apt-get update && apt-get install -y \
+    python-all-dev \
+    python3-all-dev \
+    python3-pip
+
+# Install Python packages from PyPI
+RUN pip3 install jinja2
+
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls
+RUN git clone --depth 1 -b development https://github.com/ARMmbed/mbedtls
 COPY build.sh $SRC/
