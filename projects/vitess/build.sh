@@ -16,9 +16,15 @@
 ################################################################################
 
 cd $SRC
+# Build main binary
 git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
 go build
+
+# Build addimport binary
+cd addimport
+go build
+
 cd $SRC/vitess
 
 # Remove existing non-native fuzzers to not deal with them
@@ -58,8 +64,7 @@ function compile_native_go_fuzzer () {
 
         # import https://github.com/AdamKorcz/go-118-fuzz-build
         # This changes the line numbers from the original fuzzer
-        # This sed commend is highly specific and needs to be generalized
-        sed -i '/import (/i import go118fuzzbuildutils "github.com\/AdamKorcz\/go-118-fuzz-build\/utils"' "${fuzzer_filename}"_fuzz_.go
+	$SRC/go-118-fuzz-build/addimport/addimport -path "${fuzzer_filename}"_fuzz_.go
 
         # Install more dependencies
         gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
