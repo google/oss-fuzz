@@ -28,7 +28,7 @@ import http_utils
 class GitlabFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Gitlab.
   Needs a cache to upload and downlaod builds.
-  Needs a git repository for corpus and coverage.   
+  Needs a git repository for corpus and coverage.
   """
 
   BUILD_PREFIX = 'build-'
