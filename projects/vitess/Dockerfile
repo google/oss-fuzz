@@ -19,5 +19,5 @@ RUN git clone --depth 1 https://github.com/vitessio/vitess
 RUN go install golang.org/dl/gotip@latest \
     && gotip download
 RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-COPY build.sh tablet_manager_fuzzer_test.go parser_fuzzer_test.go ast_fuzzer_test.go $SRC/
+COPY build.sh native_ossfuzz_coverage_runnger.go tablet_manager_fuzzer_test.go parser_fuzzer_test.go ast_fuzzer_test.go $SRC/
 WORKDIR $SRC/vitess

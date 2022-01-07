@@ -29,6 +29,9 @@ cd $SRC/vitess
 
 # Remove existing non-native fuzzers to not deal with them
 rm go/vt/vtgate/vindexes/fuzz.go
+
+# backup vtctl_fuzzer.go
+cp go/test/fuzzing/vtctl_fuzzer.go /tmp/
 rm -r go/test/fuzzing/*
 
 mv $SRC/parser_fuzzer_test.go $SRC/vitess/go/test/fuzzing/
@@ -76,6 +79,7 @@ function rewrite_go_fuzz_harness() {
 
         # Create a copy of the fuzzer to not modify the existing fuzzer
         cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
+	mv $fuzzer_filename /tmp/
 
         # replace *testing.F with *go118fuzzbuildutils.F
         echo "replacing *testing.F"
@@ -84,15 +88,6 @@ function rewrite_go_fuzz_harness() {
         # import https://github.com/AdamKorcz/go-118-fuzz-build
         # This changes the line numbers from the original fuzzer
 	$SRC/go-118-fuzz-build/addimport/addimport -path "${fuzzer_filename}"_fuzz_.go
-
-        # Install more dependencies
-        gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
-        gotip get google.golang.org/grpc/internal/channelz@v1.39.0
-}
-
-function cleanup(){
-	filename=$1
-	rm $filename
 }
 
 function compile_native_go_fuzzer() {
@@ -103,15 +98,34 @@ function compile_native_go_fuzzer() {
 
 	if [[ $SANITIZER = *coverage* ]]; then
 		echo "here we perform coverage build"
+		fuzzed_package=`go list $tags -f '{{.Name}}' $path`
+		abspath=`go list $tags -f {{.Dir}} $path`
+		cd $abspath
+		cp $SRC/native_ossfuzz_coverage_runnger.go ./"${function,,}"_test.go
+		sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
+		sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
+		sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
+
+		# The repo is the module path/name, which is already created above in case it doesn't exist,
+		# but not always the same as the module path. This is necessary to handle SIV properly.
+		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
+		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
+		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
+		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
+		ls
+		gotip test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+		
+		rm ./"${function,,}"_test.go
 	else
 	        $SRC/go-118-fuzz-build/go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
         	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
 }
+
 # build_go_fuzzer will be the api used by users
-# similar to compile_go_fuzzer. The api is now placed in
-# this build script but will be moved to the base image
-# once it has reached sufficient maturity.
+# The api is now placed in this build script
+# but will be moved to the base image once it
+# has reached sufficient maturity.
 function build_go_fuzzer () {
         path=$1
         function=$2
@@ -120,17 +134,6 @@ function build_go_fuzzer () {
 
         # Get absolute path
         abs_file_dir=$(go list $tags -f {{.Dir}} $path)
-	
-        # Check if there are more than 1 function named $function
-        number_of_occurences=$(grep -s "func $function" $abs_file_dir/{*,.*} | wc -l)
-        echo $number_of_occurences
-        if [ $number_of_occurences -ne 1 ]
-        then
-                echo "Found multiple targets '$function' in $path"
-                exit 0
-        else
-                echo "GREAT! Only a single target was found"
-        fi
 
         # TODO: Get rid of "-r" flag here
         fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
@@ -139,19 +142,26 @@ function build_go_fuzzer () {
 	if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 	then
 		# we are dealing with a native harness
-		echo "This is a native harness"
+
+	        # Install more dependencies
+		gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
+		gotip get google.golang.org/grpc/internal/channelz@v1.39.0
+	
+		echo "Native harness"
 		rewrite_go_fuzz_harness $fuzzer_filename
 		compile_native_go_fuzzer $fuzzer $function $abs_file_dir
 		# clean up
-		cleanup "${fuzzer_filename}_fuzz_.go"
+		rm "${fuzzer_filename}_fuzz_.go"
+		mv /tmp/$(basename $fuzzer_filename) $fuzzer_filename
 	else
 		# we are dealing with a go-fuzz harness
-		echo "This is a go-fuzz harness"
-		# here we call compile_go_fuzzer
+		echo "go-fuzz harness"
+		compile_go_fuzzer $path $function $fuzzer $tags
 	fi
 	
 }
 
+# build native fuzzers
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzTabletManager_ExecuteFetchAsDba fuzz_tablet_manager_execute_fetch_as_dba
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzParser parser_fuzzer
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzIsDML is_dml_fuzzer
@@ -159,3 +169,14 @@ build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNormalizer normalizer_fuzze
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzNodeFormat normalizer_fuzzer
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzSplitStatementToPieces fuzz_split_statement_to_pieces
 build_go_fuzzer vitess.io/vitess/go/test/fuzzing FuzzEqualsSQLNode fuzz_equals_sql_node
+
+# Delete all the native fuzzers before building the go-fuzz fuzzer(s)
+# this will not be necessary when Go 1.18 is released. The reason this
+# is needed is because go114-fuzz-build calls "go" instead of "gotip",
+# and an error will be thrown because testing.F is not recognized.
+rm $SRC/vitess/go/test/fuzzing/*_test.go
+
+# build go-fuzz fuzzers
+mv /tmp/vtctl_fuzzer.go $SRC/vitess/go/test/fuzzing/
+build_go_fuzzer vitess.io/vitess/go/test/fuzzing Fuzz vtctl_fuzzer
+
