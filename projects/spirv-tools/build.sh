@@ -32,13 +32,23 @@ fi
 cmake -G Ninja .. ${CMAKE_ARGS}
 ninja
 
-SPIRV_BINARY_FUZZERS="spvtools_binary_parser_fuzzer\
- spvtools_dis_fuzzer\
- spvtools_fuzz_fuzzer\
- spvtools_opt_legalization_fuzzer\
- spvtools_opt_performance_fuzzer\
- spvtools_opt_size_fuzzer\
- spvtools_val_fuzzer"
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # When running in the CI, restrict to a small number of fuzz targets to save
+  # time and disk space.
+  SPIRV_BINARY_FUZZERS="spvtools_binary_parser_fuzzer\
+    spvtools_dis_fuzzer\
+    spvtools_opt_performance_fuzzer\
+    spvtools_val_fuzzer"
+else
+  SPIRV_BINARY_FUZZERS="spvtools_binary_parser_fuzzer\
+    spvtools_dis_fuzzer\
+    spvtools_fuzz_fuzzer\
+    spvtools_opt_legalization_fuzzer\
+    spvtools_opt_performance_fuzzer\
+    spvtools_opt_size_fuzzer\
+    spvtools_val_fuzzer"
+fi
 
 SPIRV_ASSEMBLY_FUZZERS="spvtools_as_fuzzer"
 
