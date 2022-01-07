@@ -49,9 +49,13 @@ inputs:
     default: gh-pages
     required: false
   report-unreproducible-crashes:
-    description: 'If True, then unreproducible crashes will be reported by CIFuzz.'
+    description: 'If True, then unreproducible crashes will be reported.'
     required: false
     default: false
+  minimize-crashes:
+    description: 'If True, reportable crashes will be minimized.'
+    required: false
+    default: False
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -68,5 +72,6 @@ runs:
     GIT_STORE_BRANCH: ${{ inputs.storage-repo-branch }}
     GIT_STORE_BRANCH_COVERAGE: ${{ inputs.storage-repo-branch-coverage }}
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
+    MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
