@@ -32,7 +32,7 @@ func newFuzzDeps(cfg config.Provider) *deps.Deps {
 
 	l := langs.NewLanguage("en", cfg)
 
-	cs, _ := helpers.NewContentSpec(l, loggers.NewErrorLogger(), afero.NewMemMapFs())
+	cs, _ := helpers.NewContentSpec(l, loggers.NewErrorLogger(), afero.NewMemMapFs(), nil)
 
 	return &deps.Deps{
 		Cfg:         cfg,

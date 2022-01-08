@@ -15,9 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-#TODO change
 RUN apt-get update && apt-get install -y make cmake
-RUN git clone --recursive --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git mbedtls
+RUN apt-get update && apt-get install -y \
+    python-all-dev \
+    python3-all-dev \
+    python3-pip
+RUN pip3 install jinja2
+
+RUN git clone --recursive --depth 1 -b development https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 WORKDIR mbedtls

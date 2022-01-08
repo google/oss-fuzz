@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y ninja-build libc6-dev:i386
+RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
 RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplusplus && \
     cp -r myaflplusplus/dictionaries afldictionaries && \
     cp -r myaflplusplus/testcases afltestcases && \
