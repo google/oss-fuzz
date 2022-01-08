@@ -319,7 +319,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join('/opt', 'cifuzz', 'detect_repo.py')
+      os.path.join('/opt', 'cifuzz', 'detect_repo.py').replace("\\","/")
   ]
   if repo_name:
     command_to_run.extend(['--repo_name', repo_name])
