@@ -125,7 +125,6 @@ def copy_src_from_docker(project_name, host_dir):
   src_dir = os.path.join(host_dir, 'src')
   if os.path.exists(src_dir):
     shutil.rmtree(src_dir, ignore_errors=True)
-
   docker_args = [
       '-v',
       host_dir + ':/out',
@@ -302,7 +301,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   Returns:
     A tuple containing (the repo's origin, the repo's path).
   """
-
+  
   if not repo_name and not commit:
     logging.error(
         'Error: can not detect main repo without a repo_name or a commit.')
@@ -310,7 +309,6 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   if repo_name and commit:
     logging.info(
         'Both repo name and commit specific. Using repo name for detection.')
-
   # Change to oss-fuzz main directory so helper.py runs correctly.
   utils.chdir_to_root()
   if not _build_image_with_retries(project_name):
@@ -319,14 +317,16 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join('/opt', 'cifuzz', 'detect_repo.py')
+      os.path.join('/opt', 'cifuzz', 'detect_repo.py').replace("\\","/")
   ]
   if repo_name:
     command_to_run.extend(['--repo_name', repo_name])
   else:
     command_to_run.extend(['--example_commit', commit])
   out, _, _ = utils.execute(command_to_run)
+  
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+  
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)
 
@@ -383,9 +383,7 @@ def main():
   parser.add_argument('--architecture', default='x86_64')
 
   args = parser.parse_args()
-
   repo_url, repo_path = detect_main_repo(args.project_name, commit=args.commit)
-
   if not repo_url or not repo_path:
     raise ValueError('Main git repo can not be determined.')
 
@@ -409,3 +407,4 @@ def main():
 
 if __name__ == '__main__':
   main()
+  #print(tempfile.TemporaryDirectory())

@@ -71,7 +71,6 @@ class RepoManager:
     """
     if not commit.rstrip():
       return False
-
     _, _, err_code = self.git(['cat-file', '-e', commit])
     return not err_code
 

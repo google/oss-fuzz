@@ -1,0 +1,11 @@
+homepage: "https://github.com/n132"
+language: c
+primary_contact: "y0un9n132@gmail.com"
+auto_ccs: 
+ - "xm2146@nyu.edu"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
+main_repo: 'https://github.com/n132/example'
