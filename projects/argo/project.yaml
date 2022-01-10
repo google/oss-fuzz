@@ -5,7 +5,7 @@ auto_ccs :
   - "adam@adalogics.com"
   - "david@adalogics.com"
   - "henrik.blixt@gmail.com"
-  - "jfischer@redhat.com "
+  - "jfischer@redhat.com"
 language: go
 fuzzing_engines:
   - libfuzzer
