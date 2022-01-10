@@ -78,16 +78,17 @@ function rewrite_go_fuzz_harness() {
 	fuzzer_filename=$1
 
         # Create a copy of the fuzzer to not modify the existing fuzzer
-        cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
+	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
 	mv $fuzzer_filename /tmp/
+	fuzzer_fn="${fuzzer_filename}"_fuzz_.go
 
         # replace *testing.F with *go118fuzzbuildutils.F
         echo "replacing *testing.F"
-        sed -i 's/f \*testing\.F/f \*go118fuzzbuildutils\.F/g' "${fuzzer_filename}"_fuzz_.go
+        sed -i 's/f \*testing\.F/f \*go118fuzzbuildutils\.F/g' "${fuzzer_fn}"
 
         # import https://github.com/AdamKorcz/go-118-fuzz-build
         # This changes the line numbers from the original fuzzer
-	$SRC/go-118-fuzz-build/addimport/addimport -path "${fuzzer_filename}"_fuzz_.go
+	$SRC/go-118-fuzz-build/addimport/addimport -path "${fuzzer_fn}"
 }
 
 function compile_native_go_fuzzer() {
@@ -112,7 +113,6 @@ function compile_native_go_fuzzer() {
 		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
 		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
 		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-		ls
 		gotip test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
 		
 		rm ./"${function,,}"_test.go
@@ -151,6 +151,7 @@ function build_go_fuzzer () {
 		rewrite_go_fuzz_harness $fuzzer_filename
 		compile_native_go_fuzzer $fuzzer $function $abs_file_dir
 		# clean up
+
 		rm "${fuzzer_filename}_fuzz_.go"
 		mv /tmp/$(basename $fuzzer_filename) $fuzzer_filename
 	else

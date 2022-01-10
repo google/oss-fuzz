@@ -85,6 +85,11 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 COPY gocoverage $GOPATH/gocoverage
 RUN cd $GOPATH/gocoverage && go install ./...
 
+# TODO: Remove when OSS-fuzz upgrades Go to 1.18
+RUN apt-get update && apt-get install -y gcc
+RUN go install golang.org/dl/gotip@latest \
+    && gotip download
+
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
