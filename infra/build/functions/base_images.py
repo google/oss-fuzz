@@ -35,8 +35,8 @@ BASE_IMAGES = [
 INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder', 'base-runner']
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
-MAJOR_VERSION = 'v1'
-INTROSPECTOR_VERSION = 'introspector'
+MAJOR_TAG = 'v1'
+INTROSPECTOR_TAG = 'introspector'
 
 
 def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
@@ -57,7 +57,7 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
             '-t',
             image,
             '-t',
-            f'{image}:{MAJOR_VERSION}',
+            f'{image}:{MAJOR_TAG}',
             '.',
         ],
         'dir': 'oss-fuzz/infra/base-images/' + base_image,
@@ -80,17 +80,14 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
   steps.append({
       'name':
           'gcr.io/oss-fuzz-base/base-runner',
+      'env': 'CLOUD_BUILD_ENV=1',
       'args': [
           'bash', '-c',
           ('cd fuzz-introspector/ && cd oss_fuzz_integration/'
-           ' && sed -i \'s/\.\/infra\/base\-images\/all.sh/'
-           '#\.\/infra\/base\-images\/all.sh/\''
-           ' build_patched_oss_fuzz.sh'
-           ' && cat build_patched_oss_fuzz.sh'
            ' && ./build_patched_oss_fuzz.sh'
-           f' && sed -i s/base-clang/base-clang:{INTROSPECTOR_VERSION}/g'
+           f' && sed -i s/base-clang/base-clang:{INTROSPECTOR_TAG}/g'
            ' oss-fuzz/infra/base-images/base-builder/Dockerfile'
-           ' && cat oss-fuzz/infra/base-images/base-builder/Dockerfile')
+           )
       ]
   })
 
@@ -100,7 +97,7 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
         'args': [
             'build',
             '-t',
-            f'{image}:{INTROSPECTOR_VERSION}',
+            f'{image}:{INTROSPECTOR_TAG}',
             '.',
         ],
         'dir':
@@ -120,7 +117,7 @@ def get_logs_url(build_id, project_id='oss-fuzz-base'):
 
 
 # pylint: disable=no-member
-def run_build(steps, images, build_version=MAJOR_VERSION):
+def run_build(steps, images, build_version=MAJOR_TAG):
   """Execute the retrieved build steps in gcp."""
   credentials, _ = google.auth.default()
   build_body = {
@@ -158,4 +155,4 @@ def base_builder(event, context):
       tag_prefix + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(introspector_steps, intro_images, INTROSPECTOR_VERSION)
+  run_build(introspector_steps, intro_images, INTROSPECTOR_TAG)
