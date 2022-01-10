@@ -15,7 +15,4 @@
 #
 ################################################################################
 
-mv $SRC/wal_fuzzer.go $SRC/etcd/server/storage/wal/
-compile_go_fuzzer go.etcd.io/etcd/server/v3/storage/wal FuzzWalCreate fuzz_wal_create
-
 $SRC/cncf-fuzzing/projects/etcd/build.sh
