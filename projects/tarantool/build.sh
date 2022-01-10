@@ -26,6 +26,7 @@ esac
 
 cmake_args=(
     # Specific to Tarantool
+    -DENABLE_BACKTRACE=OFF
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
     $SANITIZERS_ARGS
