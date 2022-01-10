@@ -18,6 +18,7 @@
 cd unicorn
 mkdir build
 cd build
+
 # CC CXX should be auto retrieved by cmake.
 cmake .. -DCMAKE_BUILD_TYPE=Debug -DUNICORN_BUILD_SHARED=off -DUNICORN_FUZZ=1
 make -j12
