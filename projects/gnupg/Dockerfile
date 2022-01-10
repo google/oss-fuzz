@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg bison flex
+RUN apt-get update && apt-get install -y make autoconf automake libtool bzip2 gnupg bison flex gettext
+
 # Install automake 1.16.3 from future. See:
 # * https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=commit;h=6ca540715139899137e1f86c7e1dcbd0288f15b3
 # * https://packages.ubuntu.com/en/hirsute/automake

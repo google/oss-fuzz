@@ -4,7 +4,7 @@ language: c++
 primary_contact: "marco@chaincode.com"
 auto_ccs:
   - "fanquake@gmail.com"
-  - "john@brink.dev"
+  - "john@johnnewbery.com"
   - "jonas@chaincode.com"
   - "laanwj@gmail.com"
   - "pieter@chaincode.com"

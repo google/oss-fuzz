@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# We move the caddy folder in here rather than the Dockerfile to make CI work.
+# See here for the failure that triggered this: https://github.com/caddyserver/caddy/pull/4449
+mkdir -p $GOPATH/src/github.com/caddyserver/caddy/
+mv $SRC/caddy $GOPATH/src/github.com/caddyserver/caddy/v2
 cd "$GOPATH"/src/github.com/caddyserver/caddy/v2
 
 find . -name '*_fuzz.go' | while read -r target

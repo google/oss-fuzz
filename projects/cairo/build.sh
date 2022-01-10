@@ -28,7 +28,7 @@ rm -rf $BUILD
 mkdir -p $BUILD
 
 # Build glib
-pushd $SRC/glib-2.64.2
+pushd $SRC/glib/
 meson \
     --prefix=$PREFIX \
     --libdir=lib \

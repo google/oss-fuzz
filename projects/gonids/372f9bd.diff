@@ -1,0 +1,129 @@
+From 372f9bdd0a914945296123b51df92eed4ece3df6 Mon Sep 17 00:00:00 2001
+From: Keith Randall <khr@golang.org>
+Date: Thu, 11 Nov 2021 19:58:23 -0500
+Subject: [PATCH] [release-branch.go1.17] reflect: keep pointer in aggregate-typed args live in Call
+
+When register ABI is used, reflect.Value.Call prepares the call
+arguments in a memory representation of the argument registers.
+It has special handling to keep the pointers in arguments live.
+Currently, this handles pointer-typed arguments. But when an
+argument is an aggregate-type that contains pointers and passed
+in registers, it currently doesn't keep the pointers live. Do
+so in this CL.
+
+Fixes #49961
+
+Change-Id: I9264a8767e2a2c48573f6047144759b845dcf480
+---
+
+diff --git a/src/internal/abi/abi.go b/src/internal/abi/abi.go
+index aaff9ce..aa5083a 100644
+--- a/src/internal/abi/abi.go
++++ b/src/internal/abi/abi.go
+@@ -33,6 +33,24 @@
+ 	ReturnIsPtr IntArgRegBitmap
+ }
+ 
++func (r *RegArgs) Dump() {
++	print("Ints:")
++	for _, x := range r.Ints {
++		print(" ", x)
++	}
++	println()
++	print("Floats:")
++	for _, x := range r.Floats {
++		print(" ", x)
++	}
++	println()
++	print("Ptrs:")
++	for _, x := range r.Ptrs {
++		print(" ", x)
++	}
++	println()
++}
++
+ // IntArgRegBitmap is a bitmap large enough to hold one bit per
+ // integer argument/return register.
+ type IntArgRegBitmap [(IntArgRegs + 7) / 8]uint8
+diff --git a/src/reflect/all_test.go b/src/reflect/all_test.go
+index eac27e8..6f350af 100644
+--- a/src/reflect/all_test.go
++++ b/src/reflect/all_test.go
+@@ -6270,6 +6270,29 @@
+ 	*CallGC = false
+ }
+ 
++func TestCallArgLive(t *testing.T) {
++	type T struct{ X, Y *string } // pointerful aggregate
++
++	F := func(t T) { *t.X = "ok" }
++
++	// In reflect.Value.Call, trigger a garbage collection in reflect.call
++	// between marshaling argument and the actual call.
++	*CallGC = true
++
++	x := new(string)
++	runtime.SetFinalizer(x, func(p *string) {
++		if *p != "ok" {
++			t.Errorf("x dead prematurely")
++		}
++	})
++	v := T{x, nil}
++
++	ValueOf(F).Call([]Value{ValueOf(v)})
++
++	// Stop garbage collecting during reflect.call.
++	*CallGC = false
++}
++
+ func TestMakeFuncStackCopy(t *testing.T) {
+ 	target := func(in []Value) []Value {
+ 		runtime.GC()
+diff --git a/src/reflect/value.go b/src/reflect/value.go
+index 6f878eb..520dc69 100644
+--- a/src/reflect/value.go
++++ b/src/reflect/value.go
+@@ -352,7 +352,7 @@
+ 	return v.call("CallSlice", in)
+ }
+ 
+-var callGC bool // for testing; see TestCallMethodJump
++var callGC bool // for testing; see TestCallMethodJump and TestCallArgLive
+ 
+ const debugReflectCall = false
+ 
+@@ -509,12 +509,16 @@
+ 				// Copy values to "integer registers."
+ 				if v.flag&flagIndir != 0 {
+ 					offset := add(v.ptr, st.offset, "precomputed value offset")
+-					memmove(unsafe.Pointer(&regArgs.Ints[st.ireg]), offset, st.size)
+-				} else {
+ 					if st.kind == abiStepPointer {
+ 						// Duplicate this pointer in the pointer area of the
+ 						// register space. Otherwise, there's the potential for
+ 						// this to be the last reference to v.ptr.
++						regArgs.Ptrs[st.ireg] = *(*unsafe.Pointer)(offset)
++					}
++					memmove(unsafe.Pointer(&regArgs.Ints[st.ireg]), offset, st.size)
++				} else {
++					if st.kind == abiStepPointer {
++						// See the comment in abiStepPointer case above.
+ 						regArgs.Ptrs[st.ireg] = v.ptr
+ 					}
+ 					regArgs.Ints[st.ireg] = uintptr(v.ptr)
+@@ -539,6 +543,15 @@
+ 	// Mark pointers in registers for the return path.
+ 	regArgs.ReturnIsPtr = abi.outRegPtrs
+ 
++	if debugReflectCall {
++		regArgs.Dump()
++	}
++
++	// For testing; see TestCallArgLive.
++	if callGC {
++		runtime.GC()
++	}
++
+ 	// Call.
+ 	call(frametype, fn, stackArgs, uint32(frametype.size), uint32(abi.retOffset), uint32(frameSize), &regArgs)
+ 

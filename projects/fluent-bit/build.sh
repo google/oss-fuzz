@@ -22,6 +22,7 @@ cd build
 
 export CFLAGS="$CFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
 export CXXFLAGS="$CXXFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
+export ASAN_OPTIONS=detect_leaks=0
 
 # Commandline arguments to turn off a lot of plugins.
 INPUT_PLUGINS="-DFLB_IN_COLLECTD=OFF -DFLB_IN_CPU=OFF -DFLB_IN_DISK=OFF -DFLB_IN_DOCKER=OFF -DFLB_IN_EXEC=OFF -DFLB_IN_FORWARD=OFF -DFLB_IN_HEAD=OFF -DFLB_IN_HEALTH=OFF -DFLB_IN_KMSG=OFF -DFLB_IN_MEM=OFF -DFLB_IN_MQTT=OFF -DFLB_IN_NETIF=OFF -DFLB_IN_PROC=OFF -DFLB_IN_RANDOM=OFF -DFLB_IN_SERIAL=OFF -DFLB_IN_STDIN=OFF -DFLB_IN_SYSLOG=OFF -DFLB_IN_SYSTEMD=OFF -DFLB_IN_TAIL=OFF -DFLB_IN_TCP=OFF -DFLB_IN_THERMAL=OFF -DFLB_IN_WINLOG=OFF"
@@ -36,11 +37,5 @@ cmake -DFLB_TESTS_INTERNAL=ON \
       ${FILTER_PLUGINS} \
       ${OUTPUT_PLUGINS} ..
 make
-
-# Create options files
-for fuzz in http msgpack_parser record_ac signv4 engine; do
-    echo "[libfuzzer]" >> $OUT/flb-it-fuzz-${fuzz}_fuzzer_OSSFUZZ.options
-    echo "detect_leaks=0" >> $OUT/flb-it-fuzz-${fuzz}_fuzzer_OSSFUZZ.options
-done
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/

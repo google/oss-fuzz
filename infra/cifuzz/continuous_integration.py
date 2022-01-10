@@ -110,11 +110,14 @@ class BaseCi:
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
+  def _make_repo_storage_dir(self):
+    os.makedirs(self.workspace.repo_storage, exist_ok=True)
+
   def _clone_repo_and_checkout(self, repo_url, repo_name):
     """Helper for child classes that clones the git repo specified by |repo_url|
     to |repo_name|, checks out the specified commit, and returns the
     |manager|."""
-    os.makedirs(self.workspace.repo_storage, exist_ok=True)
+    self._make_repo_storage_dir()
     # Checkout project's repo in the shared volume.
     manager = repo_manager.clone_repo_and_get_manager(
         repo_url,
@@ -122,8 +125,11 @@ class BaseCi:
         repo_name=repo_name,
         username=self.config.actor,
         password=self.config.token)
-    checkout_specified_commit(manager, self.config.pr_ref, self.config.git_sha)
+    self._checkout_specified_commit(manager)
     return manager
+
+  def _checkout_specified_commit(self, manager):
+    checkout_specified_commit(manager, self.config.pr_ref, self.config.git_sha)
 
   def _detect_main_repo(self):
     """Helper for child classes that detects the main repo and returns a tuple
@@ -192,7 +198,7 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, git_sha):
   except (RuntimeError, ValueError):
     logging.error(
         'Can not check out requested state %s. '
-        'Using current repo state', pr_ref or git_sha)
+        'Using current repo state.', pr_ref or git_sha)
 
 
 class GithubCiMixin:
@@ -227,19 +233,35 @@ class GithubCiMixin:
 class InternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for an OSS-Fuzz project on Github Actions."""
 
+  def _copy_repo_from_image(self, image_repo_path):
+    self._make_repo_storage_dir()
+    repo_name = os.path.basename(image_repo_path)
+    host_repo_path = os.path.join(self._repo_dir, repo_name)
+    bash_command = f'cp -r {image_repo_path} {host_repo_path}'
+    docker_args, _ = docker.get_base_docker_run_args(
+        self.workspace, self.config.sanitizer, self.config.language,
+        self.config.docker_in_docker)
+    docker_args.extend([
+        docker.get_project_image_name(self.config.oss_fuzz_project_name),
+        '/bin/bash', '-c', bash_command
+    ])
+    if not helper.docker_run(docker_args):
+      raise RuntimeError('Failed to copy repo.')
+    return repo_manager.RepoManager(host_repo_path)
+
   def prepare_for_fuzzer_build(self):
     """Builds the fuzzer builder image, checks out the pull request/commit and
     returns the BuildPreparationResult."""
     logging.info('InternalGithub: preparing for fuzzer build.')
     assert self.config.pr_ref or self.config.git_sha
     # _detect_main_repo builds the image as a side effect.
-    inferred_url, image_repo_path = self._detect_main_repo()
-    if not inferred_url or not image_repo_path:
+    _, image_repo_path = self._detect_main_repo()
+    if not image_repo_path:
       return get_build_preparation_failure()
 
     # Use the same name used in the docker image so we can overwrite it.
-    image_repo_name = os.path.basename(image_repo_path)
-    manager = self._clone_repo_and_checkout(inferred_url, image_repo_name)
+    manager = self._copy_repo_from_image(image_repo_path)
+    self._checkout_specified_commit(manager)
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)

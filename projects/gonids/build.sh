@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+# Test to fix https://github.com/golang/go/issues/49075
+# with fix of https://github.com/golang/go/issues/49961
+# ie https://go-review.googlesource.com/c/go/+/369098/
+(
+cd /root/.go
+git apply $SRC/372f9bd.diff || true
+)
+
 export GODEBUG=cpu.all=off
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 

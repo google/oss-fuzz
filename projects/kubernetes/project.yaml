@@ -1,5 +1,8 @@
 homepage: "https://kubernetes.io"
 primary_contact: "mikedanese@google.com"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

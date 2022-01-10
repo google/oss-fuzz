@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Get data. We do this here to resolve CIFuzz issues
+# CC https://github.com/uclouvain/openjpeg/pull/1386
+git clone --depth 1 https://github.com/uclouvain/openjpeg-data data
+
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..

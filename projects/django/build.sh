@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,60 +15,34 @@
 #
 ################################################################################
 
-# Ignore memory leaks from python scripts invoked in the build
-export ASAN_OPTIONS="detect_leaks=0"
-export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
+# Build and install project (using current CFLAGS, CXXFLAGS). This is required
+# for projects with C extensions so that they're built with the proper flags.
+pip3 install .
 
-# Remove -pthread from CFLAGS, this trips up ./configure
-# which thinks pthreads are available without any CLI flags
-CFLAGS=${CFLAGS//"-pthread"/}
+export DJANGO_SETTINGS_MODULE=fuzzer_project.settings
 
-FLAGS=()
-case $SANITIZER in
-  address)
-    FLAGS+=("--with-address-sanitizer")
-    ;;
-  memory)
-    FLAGS+=("--with-memory-sanitizer")
-    # installing ensurepip takes a while with MSAN instrumentation, so
-    # we disable it here
-    FLAGS+=("--without-ensurepip")
-    # -msan-keep-going is needed to allow MSAN's halt_on_error to function
-    FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
-    ;;
-  undefined)
-    FLAGS+=("--with-undefined-behavior-sanitizer")
-    ;;
-esac
+# Build fuzzers into $OUT. These could be detected in other ways.
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+  fuzzer_basename=$(basename -s .py $fuzzer)
+  fuzzer_package=${fuzzer_basename}.pkg
 
-export CPYTHON_INSTALL_PATH=$SRC/cpython-install
-rm -rf $CPYTHON_INSTALL_PATH
-mkdir $CPYTHON_INSTALL_PATH
+  # To avoid issues with Python version conflicts, or changes in environment
+  # over time on the OSS-Fuzz bots, we use pyinstaller to create a standalone
+  # package. Though not necessarily required for reproducing issues, this is
+  # required to keep fuzzers working properly in OSS-Fuzz.
+  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
-tar zxf v3.8.7.tar.gz
-cd cpython-3.8.7/
-cp $SRC/django-fuzzers/python_coverage.h Python/
-
-# Patch the interpreter to record code coverage
-sed -i '1 s/^.*$/#include "python_coverage.h"/g' Python/ceval.c
-sed -i 's/case TARGET\(.*\): {/\0\nfuzzer_record_code_coverage(f->f_code, f->f_lasti);/g' Python/ceval.c
-
-./configure "${FLAGS[@]:-}" --prefix=$CPYTHON_INSTALL_PATH
-make -j$(nproc)
-make install
-
-cp -R $CPYTHON_INSTALL_PATH $OUT/
-
-rm -rf $OUT/django-dependencies
-mkdir $OUT/django-dependencies
-$CPYTHON_INSTALL_PATH/bin/pip3 install asgiref pytz sqlparse backports.zoneinfo -t $OUT/django-dependencies
-
-cd $SRC/django-fuzzers
-rm $CPYTHON_INSTALL_PATH/lib/python3.8/lib-dynload/_tkinter*.so
-make
-
-cp -R $SRC/django/* $OUT/
-
-cp $SRC/django-fuzzers/fuzzer-utils $OUT/
-cp $SRC/django-fuzzers/utils.py $OUT/
-zip -j $OUT/fuzzer-utils_seed_corpus.zip $SRC/django-fuzzers/corp-utils/*
+  # Create execution wrapper. Atheris requires that certain libraries are
+  # preloaded, so this is also done here to ensure compatibility and simplify
+  # test case reproduction. Since this helper script is what OSS-Fuzz will
+  # actually execute, it is also always required.
+  # NOTE: If you are fuzzing python-only code and do not have native C/C++
+  # extensions, then remove the LD_PRELOAD line below as preloading sanitizer
+  # library is not required and can lead to unexpected startup crashes.
+  echo "#!/bin/sh
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
+done

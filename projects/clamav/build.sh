@@ -29,7 +29,7 @@ cd ${WORK}/build
 # Run ./configure
 #
 export CLAMAV_DEPENDENCIES=/mussels/install
-cmake ${SRC}/clamav-devel \
+cmake ${SRC}/clamav \
     -DENABLE_FUZZ=ON                                                   \
     -DHAVE_MMAP=OFF                                                    \
     -DJSONC_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include/json-c"          \
@@ -61,6 +61,7 @@ cp ./fuzz/clamav_* ${OUT}/.
 # `scanfile` & `scanmap`
 # ----------
 mkdir ${WORK}/all-scantype-seeds
+git clone --depth 1 https://github.com/Cisco-Talos/clamav-fuzz-corpus.git $SRC/clamav-fuzz-corpus
 
 for type in ARCHIVE MAIL OLE2 PDF HTML PE ELF SWF XMLDOCS HWP3; do
     # Prepare seed corpus for the type-specific fuzz targets.

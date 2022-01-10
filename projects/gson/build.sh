@@ -15,8 +15,13 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -X"
-$MVN --batch-mode --update-snapshots verify ${MAVEN_ARGS}
+# Skip ProGuard because it is only needed for tests (which are skipped as well) and
+# because it would fail since `jmods` JDK folder is removed from this Docker image
+MAVEN_ARGS="-DskipTests -Dproguard.skip -X"
+# Only build 'gson' Maven module
+cd gson
+$MVN --batch-mode --update-snapshots package ${MAVEN_ARGS}
+cd ..
 find ./gson -name "gson-*.jar" -exec mv {} $OUT/gson.jar \;
 
 ALL_JARS="gson.jar"
