@@ -200,7 +200,8 @@ class RunFuzzersConfig(BaseConfig):
 
     self.minimize_crashes = environment.get_bool('MINIMIZE_CRASHES', False)
     if self.mode == 'batch':
-      logs.warning('Minimizing crashes reduces fuzzing time in batch fuzzing.')
+      logging.warning(
+          'Minimizing crashes reduces fuzzing time in batch fuzzing.')
     self.report_timeouts = environment.get_bool('REPORT_TIMEOUTS', False)
     self.report_ooms = environment.get_bool('REPORT_OOMS', True)
     self.upload_all_crashes = environment.get_bool('UPLOAD_ALL_CRASHES', False)
