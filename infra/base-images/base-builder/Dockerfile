@@ -82,6 +82,8 @@ ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
+ENV SANITIZER_FLAGS_introspector "-flto"
+
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
 
@@ -137,6 +139,10 @@ RUN cd $SRC && \
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
+
+RUN git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
+    cd fuzz-introspector && \
+    git checkout 490fa0adba9f5d78ae3ff9df1cf68c5aac30f09e
 
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz

@@ -641,6 +641,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
+      'GITHUB_REPO=',  #TODO: fix this to be loaded through main_repo property in project.yaml
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
