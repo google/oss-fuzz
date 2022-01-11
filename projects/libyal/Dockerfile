@@ -59,6 +59,7 @@ RUN git clone --depth 1 https://github.com/libyal/libvsmbr.git libvsmbr
 RUN git clone --depth 1 https://github.com/libyal/libewf.git libewf
 RUN git clone --depth 1 https://github.com/libyal/libmodi.git libmodi
 RUN git clone --depth 1 https://github.com/libyal/libodraw.git libodraw
+RUN git clone --depth 1 https://github.com/libyal/libphdi.git libphdi
 RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
 RUN git clone --depth 1 https://github.com/libyal/libsmraw.git libsmraw
 RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
