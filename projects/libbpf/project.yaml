@@ -5,6 +5,9 @@ sanitizers:
   - address
   - undefined
   - memory
+architectures:
+  - x86_64
+  - i386
 auto_ccs:
   - evverx@gmail.com
 main_repo: "https://github.com/libbpf/libbpf"
