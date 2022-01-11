@@ -25,6 +25,7 @@ RUN dpkg --add-architecture i386 && \
         binutils-dev \
         build-essential \
         curl \
+        wget \
         git \
         jq \
         libc6-dev-i386 \
@@ -122,10 +123,11 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
-# TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 5525f8c9ef8bb879dadd0eb942d524827d1b0362
+    git checkout ef77d552e9b89852b293c300a5a9a9c617945f43 && \
+    wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    chmod 755 oss.sh
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
