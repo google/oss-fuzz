@@ -8,6 +8,10 @@ export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 # which thinks pthreads are available without any CLI flags
 CFLAGS=${CFLAGS//"-pthread"/}
 
+# Ensure assert statements are enabled. It may help identify problems
+# earlier if those fire.
+CFLAGS="${CFLAGS} -UNDEBUG"
+
 FLAGS=()
 case $SANITIZER in
   address)
