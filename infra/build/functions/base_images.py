@@ -32,7 +32,7 @@ BASE_IMAGES = [
     'base-runner',
     'base-runner-debug',
 ]
-INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder', 'base-runner']
+INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder']
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
@@ -69,30 +69,24 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
 
 def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images version of introspector"""
-  steps = [{
-      'args': [
-          'clone',
-          'https://github.com/ossf/fuzz-introspector.git',
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  }]
 
-  steps.append({
+  steps = [{
       'name':
           'gcr.io/oss-fuzz-base/base-runner',
-      'env': 'CLOUD_BUILD_ENV=1',
+      'env':
+          'CLOUD_BUILD_ENV=1',
       'args': [
           'bash', '-c',
-          ('cd fuzz-introspector/ && cd oss_fuzz_integration/'
-           ' && ./build_patched_oss_fuzz.sh'
-           f' && sed -i s/base-clang/base-clang:{INTROSPECTOR_TAG}/g'
-           ' oss-fuzz/infra/base-images/base-builder/Dockerfile'
-           )
+          (f'sed -i s/base-clang/base-clang:{INTROSPECTOR_TAG}/g'
+           ' oss-fuzz/infra/base-images/base-builder/Dockerfile')
       ]
-  })
+  }]
 
   for base_image in images:
     image = tag_prefix + base_image
+    base_image_dir = base_image
+    if base_image == 'base-clang':
+      base_image_dir += '-introspector'
     steps.append({
         'args': [
             'build',
@@ -100,11 +94,8 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
             f'{image}:{INTROSPECTOR_TAG}',
             '.',
         ],
-        'dir':
-            'fuzz-introspector/oss_fuzz_integration/oss-fuzz/infra/base-images/'
-            + base_image,
-        'name':
-            'gcr.io/cloud-builders/docker',
+        'dir': 'oss-fuzz/infra/base-images/' + base_image_dir,
+        'name': 'gcr.io/cloud-builders/docker',
     })
 
   return steps
