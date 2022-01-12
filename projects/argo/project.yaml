@@ -6,6 +6,8 @@ auto_ccs :
   - "david@adalogics.com"
   - "henrik.blixt@gmail.com"
   - "jfischer@redhat.com"
+  - "alexander_matyushentsev@intuit.com"
+  - "qianbo_huai@intuit.com"
 language: go
 fuzzing_engines:
   - libfuzzer
