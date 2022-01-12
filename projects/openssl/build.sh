@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-export AFL_SKIP_OSSFUZZ=1
-
 CONFIGURE_FLAGS=""
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
