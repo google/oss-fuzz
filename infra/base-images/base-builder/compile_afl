@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# In emergencies where afl++'s own compiler fails set this to "1":
+export AFL_LLVM_MODE_WORKAROUND=0
+
 # AFL++ setup
 echo "Copying precompiled AFL++"
 
@@ -46,7 +49,6 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
 
   # The variables need to be set to "1" here - or before running this script.
   # AFL++ configuration options.
-  export AFL_LLVM_MODE_WORKAROUND=0
   export AFL_ENABLE_DICTIONARY=0
   export AFL_ENABLE_CMPLOG=1
   export AFL_LAF_CHANCE=5
