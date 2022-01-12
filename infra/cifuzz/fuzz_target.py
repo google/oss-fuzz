@@ -195,7 +195,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         fuzzer_logs = result.logs
         testcase_path = self._save_crash(crash)
         if is_reportable and self.config.minimize_crashes:
-          # TODO(metzman): We don't to minimize unreproducible crashes.
+          # TODO(metzman): We don't want to minimize unreproducible crashes.
           # Use is_reportable to decide this even though reportable crashes
           # are a subset of reproducible ones.
           self.minimize_testcase(testcase_path)
