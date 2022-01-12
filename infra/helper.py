@@ -108,6 +108,8 @@ class Project:
       return constants.DEFAULT_LANGUAGE
 
     project_yaml_path = os.path.join(self.path, 'project.yaml')
+    if not os.path.isfile(project_yaml_path):
+      project_yaml_path = os.path.join(self.path, 'project.yml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
