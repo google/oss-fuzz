@@ -46,12 +46,12 @@ class FilesystemFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    self._filestore_root_dir = self.config.filestore_root_dir
+    self._filestore_root_dir = self.config.platform_conf.filestore_root_dir
 
   def _get_filestore_path(self, name, prefix_dir):
     """Returns the filesystem path in the filestore for |name| and
     |prefix_dir|."""
-    return os.path.join(self._cloud_bucket, prefix_dir, name)
+    return os.path.join(self._filestore_root_dir, prefix_dir, name)
 
   def _upload_directory(self, name, directory, prefix, delete=False):
     filestore_path = self._get_filestore_path(name, prefix)

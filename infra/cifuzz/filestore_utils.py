@@ -13,15 +13,18 @@
 # limitations under the License.
 """External filestore interface. Cannot be depended on by filestore code."""
 import filestore
+import filestore.filesystem
 import filestore.git
 import filestore.github_actions
 import filestore.gsutil
 import filestore.no_filestore
 
 FILESTORE_MAPPING = {
+    'filesystem': filestore.filesystem.FilesystemFilestore,
     'gsutil': filestore.gsutil.GSUtilFilestore,
     'github-actions': filestore.github_actions.GithubActionsFilestore,
     'git': filestore.git.GitFilestore,
+    # TODO(metzman): Change to "no-filestore"
     'no_filestore': filestore.no_filestore.NoFilestore,
 }
 
@@ -38,5 +41,6 @@ def get_filestore(config):
 
   filestore_cls = FILESTORE_MAPPING.get(config.filestore)
   if filestore_cls is None:
-    raise filestore.FilestoreError('Filestore doesn\'t exist.')
+    raise filestore.FilestoreError(
+        f'Filestore: {config.filestore} doesn\'t exist.')
   return filestore_cls(config)

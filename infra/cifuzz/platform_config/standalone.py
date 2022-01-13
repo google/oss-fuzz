@@ -26,3 +26,8 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   def filestore(self):
     """Returns the filestore used to store persistent data."""
     return os.environ.get('FILESTORE', 'filesystem')
+
+  @property
+  def filestore_root_dir(self):
+    """Returns the filestore used to store persistent data."""
+    return os.environ['FILESTORE_ROOT_DIR']
