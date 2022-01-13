@@ -15,44 +15,7 @@
 #
 ################################################################################
 
-# Notification-controller
+PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/fluxcd"
 
-# The notification-controller needs to be built with go 1.16
-export OLD_PATH=$PATH
-export PATH=/tmp/go/bin:$PATH
-# We are now using go 1.16
-cd $SRC/notification-controller/controllers
-cp ../fuzzing/fuzz.go ./
-rm *_test.go
-compile_go_fuzzer . Fuzz notification_fuzzer
-export PATH=$OLD_PATH
-
-# Kustomize-controller:
-cd $SRC/kustomize-controller
-sed 's/filippo.io\/age v1.0.0-beta7/filippo.io\/age v1.0.0/g' -i go.mod
-mv fuzz/fuzz.go ./controllers/
-cd controllers
-rm ./*_test.go
-compile_go_fuzzer . Fuzz kustomize_fuzzer
-
-# Pkg:
-cd $SRC/pkg
-mv ./fuzz/tls_fuzzer.go runtime/tls/
-mv ./fuzz/conditions_fuzzer.go ./runtime/conditions/
-go mod init pkg
-cd fuzz
-compile_go_fuzzer . FuzzUntar fuzz_untar
-compile_go_fuzzer . FuzzLibGit2Error fuzz_libgit_2_error
-compile_go_fuzzer . FuzzEventInfof fuzz_event_infof
-cd -
-
-cd ./runtime/tls
-compile_go_fuzzer . FuzzTlsConfig fuzz_tls_config
-cd -
-
-cd ./runtime/conditions
-compile_go_fuzzer . FuzzGetterConditions fuzz_getter_conditions
-compile_go_fuzzer . FuzzConditionsMatch fuzz_conditions_match
-compile_go_fuzzer . FuzzPatchApply fuzz_patch_apply
-compile_go_fuzzer . FuzzConditionsUnstructured fuzz_conditions_unstructured
-cd $SRC
+# Build the fuzzers for all cloned sub-projects 
+find "${PROJECT_ROOT}/" -type f -name oss_fuzz_build.sh | bash -e
