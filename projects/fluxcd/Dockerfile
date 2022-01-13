@@ -15,15 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y wget zlib1g-dev pkg-config
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/kustomize-controller
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/pkg
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/notification-controller
 
-# Go 1.16 is needed to build the notification-controller
-RUN cd /tmp \
-	&& wget https://golang.org/dl/go1.16.8.linux-amd64.tar.gz \
-	&& tar -xf go1.16.8.linux-amd64.tar.gz
+ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/fluxcd"
+
+RUN mkdir -p "${PROJECT_ROOT}"
+RUN git clone --depth 1 https://github.com/fluxcd/notification-controller \
+		"${PROJECT_ROOT}/notification-controller"
+RUN git clone --depth 1 https://github.com/fluxcd/pkg \
+		"${PROJECT_ROOT}/pkg"
 
 COPY build.sh $SRC/
 WORKDIR $SRC
