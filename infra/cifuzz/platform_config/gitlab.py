@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def base_ref(self):
     """Returns the base commit sha for a merge request"""
-    # could also be CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    # Could also be CI_MERGE_REQUEST_TARGET_BRANCH_NAME.
     return os.getenv('CI_MERGE_REQUEST_DIFF_BASE_SHA')
 
   @property

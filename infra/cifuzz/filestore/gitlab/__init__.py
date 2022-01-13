@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Gitlab filestore implementation."""
+"""GitLab filestore implementation."""
 import logging
 
 import json
@@ -22,12 +22,12 @@ import tempfile
 import filestore
 import http_utils
 
-# pylint:disable=no-self-use,unused-argument
+# pylint: disable=no-self-use,unused-argument
 
 
 class GitlabFilestore(filestore.BaseFilestore):
-  """Implementation of BaseFilestore using Gitlab.
-  Needs a cache to upload and downlaod builds.
+  """Implementation of BaseFilestore using GitLab.
+  Needs a cache to upload and download builds.
   Needs a git repository for corpus and coverage.
   """
 
@@ -46,7 +46,7 @@ class GitlabFilestore(filestore.BaseFilestore):
       self.git_filestore = None
 
   def upload_crashes(self, name, directory):
-    """Gitlab artifacts implementation of upload_crashes."""
+    """GitLab artifacts implementation of upload_crashes."""
     # Upload crashes as job artifacts.
     if os.listdir(directory):
       dest_dir_artifacts = os.path.join(self.config.project_src_path,
@@ -56,19 +56,19 @@ class GitlabFilestore(filestore.BaseFilestore):
       shutil.copytree(directory, dest_dir_artifacts)
 
   def upload_corpus(self, name, directory, replace=False):
-    """Gitlab artifacts implementation of upload_corpus."""
+    """GitLab artifacts implementation of upload_corpus."""
     # Use the git filestore if any.
     if self.git_filestore:
       self.git_filestore.upload_corpus(name, directory, replace)
-    else:
-      # Fall back to cache.
-      dest_dir_cache = os.path.join(self.config.project_src_path,
-                                    self.cache_dir, self.CORPUS_PREFIX + name)
-      logging.info('Copying from %s to cache %s.', directory, dest_dir_cache)
-      shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
+      return
+    # Fall back to cache.
+    dest_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
+                                  self.CORPUS_PREFIX + name)
+    logging.info('Copying from %s to cache %s.', directory, dest_dir_cache)
+    shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
 
   def upload_build(self, name, directory):
-    """Gitlab artifacts implementation of upload_build."""
+    """GitLab artifacts implementation of upload_build."""
     # Puts build into the cache.
     dest_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
                                   self.BUILD_PREFIX + name)
@@ -76,23 +76,23 @@ class GitlabFilestore(filestore.BaseFilestore):
     shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
 
   def upload_coverage(self, name, directory):
-    """Gitlab artifacts implementation of upload_coverage."""
+    """GitLab artifacts implementation of upload_coverage."""
     # Use the git filestore.
     if self.git_filestore:
       self.git_filestore.upload_coverage(name, directory)
-    else:
-      # Fall back to cache.
-      dest_dir_cache = os.path.join(self.config.project_src_path,
-                                    self.cache_dir, self.COVERAGE_PREFIX + name)
-      logging.info('Copying from %s to cache %s.', directory, dest_dir_cache)
-      shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
-      # And also updates coverage reports as artifacts
-      # as it should not be too big.
-      dest_dir_artifacts = os.path.join(self.config.project_src_path,
-                                        self.artifacts_dir,
-                                        self.COVERAGE_PREFIX + name)
-      logging.info('Uploading artifacts to %s.', dest_dir_artifacts)
-      shutil.copytree(directory, dest_dir_artifacts)
+      return
+    # Fall back to cache.
+    dest_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
+                                  self.COVERAGE_PREFIX + name)
+    logging.info('Copying from %s to cache %s.', directory, dest_dir_cache)
+    shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
+    # And also updates coverage reports as artifacts
+    # as it should not be too big.
+    dest_dir_artifacts = os.path.join(self.config.project_src_path,
+                                      self.artifacts_dir,
+                                      self.COVERAGE_PREFIX + name)
+    logging.info('Uploading artifacts to %s.', dest_dir_artifacts)
+    shutil.copytree(directory, dest_dir_artifacts)
 
   def _copy_from_cache(self, src_dir_cache, dst_directory):
     if not os.path.exists(src_dir_cache):
@@ -103,30 +103,29 @@ class GitlabFilestore(filestore.BaseFilestore):
     return True
 
   def download_corpus(self, name, dst_directory):
-    """Gitlab artifacts implementation of download_corpus."""
+    """GitLab artifacts implementation of download_corpus."""
     # Use the git filestore if any.
     if self.git_filestore:
       self.git_filestore.download_corpus(name, dst_directory)
-    else:
-      # Fall back to cache.
-      src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
-                                   self.CORPUS_PREFIX + name)
-      self._copy_from_cache(src_dir_cache, dst_directory)
+      return
+    # Fall back to cache.
+    src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
+                                 self.CORPUS_PREFIX + name)
+    self._copy_from_cache(src_dir_cache, dst_directory)
 
   def download_build(self, name, dst_directory):
-    """Gitlab artifacts implementation of download_build."""
+    """GitLab artifacts implementation of download_build."""
     # Gets build from the cache.
     src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
                                  self.BUILD_PREFIX + name)
     return self._copy_from_cache(src_dir_cache, dst_directory)
 
   def download_coverage(self, name, dst_directory):
-    """Gitlab artifacts implementation of download_coverage."""
+    """GitLab artifacts implementation of download_coverage."""
     # Use the git filestore if any.
     if self.git_filestore:
-      self.git_filestore.download_coverage(name, dst_directory)
-    else:
-      # Fall back to cache.
-      src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
-                                   self.COVERAGE_PREFIX + name)
-      self._copy_from_cache(src_dir_cache, dst_directory)
+      return self.git_filestore.download_coverage(name, dst_directory)
+    # Fall back to cache.
+    src_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
+                                 self.COVERAGE_PREFIX + name)
+    return self._copy_from_cache(src_dir_cache, dst_directory)
