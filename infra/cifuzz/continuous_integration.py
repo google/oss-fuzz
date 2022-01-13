@@ -99,7 +99,6 @@ class BaseCi:
   def _build_external_project_docker_image(self, manager):
     """Helper for child classes that builds an external project's docker image.
     Returns a BuildPreparationResult indicating failure or success."""
-    logging.info('%s %s', manager.repo_dir, self.config.build_integration_path)
     build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
     if not build_external_project_docker_image(manager.repo_dir,
