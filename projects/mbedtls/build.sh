@@ -19,7 +19,7 @@
 perl scripts/config.pl set MBEDTLS_PLATFORM_TIME_ALT
 mkdir build
 cd build
-cmake ..
+cmake -DENABLE_TESTING=OFF ..
 # build including fuzzers
 make -j$(nproc) all
 cp programs/fuzz/fuzz_* $OUT/

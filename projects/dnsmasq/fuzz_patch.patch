@@ -125,8 +125,8 @@ index ae1f5c1..ce7397d 100644
      return;
 +  }
  
-   if ((port = relay_reply6(&from, sz, ifr.ifr_name)) != 0)
-     {
+  if (relay_reply6(&from, sz, ifr.ifr_name))
+    {
 diff --git a/src/netlink.c b/src/netlink.c
 index 7840ef9..2419897 100644
 --- a/src/netlink.c

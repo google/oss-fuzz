@@ -33,5 +33,6 @@ RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opus.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 
 COPY build.sh group_seed_corpus.py $SRC/

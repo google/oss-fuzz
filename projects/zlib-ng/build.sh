@@ -27,7 +27,7 @@ make -j$(nproc) all
 make -j$(nproc) check
 
 zip $OUT/seed_corpus.zip *.*
-for f in $(find . -name '*_fuzzer'); do
+for f in $(find . -name '*_fuzzer' -o -name 'fuzzer_*'); do
     cp -v $f $OUT
     (cd $OUT; ln -s seed_corpus.zip $(basename $f)_seed_corpus.zip)
 done

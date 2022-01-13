@@ -15,12 +15,9 @@
 #
 ################################################################################
 
-# Change Java version because Gson is currently compiled with Java 6, which is only
-# supported up to JDK 11, but Docker image uses newer JDK
-# Additionally choose >= Java 9 because tests won't compile otherwise (JDK-7196160)
 # Skip ProGuard because it is only needed for tests (which are skipped as well) and
 # because it would fail since `jmods` JDK folder is removed from this Docker image
-MAVEN_ARGS="-DskipTests -Dmaven.compiler.release=9 -Dproguard.skip -X"
+MAVEN_ARGS="-DskipTests -Dproguard.skip -X"
 # Only build 'gson' Maven module
 cd gson
 $MVN --batch-mode --update-snapshots package ${MAVEN_ARGS}
