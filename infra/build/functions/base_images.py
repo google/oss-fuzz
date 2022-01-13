@@ -73,8 +73,6 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
   steps = [{
       'name':
           'gcr.io/oss-fuzz-base/base-runner',
-      'env':
-          'CLOUD_BUILD_ENV=1',
       'args': [
           'bash', '-c',
           (f'sed -i s/base-clang/base-clang:{INTROSPECTOR_TAG}/g'
@@ -84,17 +82,18 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
 
   for base_image in images:
     image = tag_prefix + base_image
-    base_image_dir = base_image
+    build_arg = ''
     if base_image == 'base-clang':
-      base_image_dir += '-introspector'
+        build_arg = 'introspector=1'
     steps.append({
         'args': [
             'build',
+            '--build-arg': build_arg,
             '-t',
             f'{image}:{INTROSPECTOR_TAG}',
             '.',
         ],
-        'dir': 'oss-fuzz/infra/base-images/' + base_image_dir,
+        'dir': 'oss-fuzz/infra/base-images/' + base_image,
         'name': 'gcr.io/cloud-builders/docker',
     })
 
