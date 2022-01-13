@@ -112,7 +112,7 @@ function run_fuzz_target {
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
-  # For introspector
+  # For introspector.
   llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${FUZZER_STATS_DIR}/$target.covreport
   
   if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
