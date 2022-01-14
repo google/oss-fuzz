@@ -226,6 +226,10 @@ class ProjectYamlChecker:
 
 def _check_one_project_yaml(project_yaml_filename):
   """Does checks on the project.yaml file. Returns True on success."""
+  if _is_project_file(project_yaml_filename, 'project.yml'):
+    print(project_yaml_filename, 'must be named project.yaml.')
+    return False
+
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 
