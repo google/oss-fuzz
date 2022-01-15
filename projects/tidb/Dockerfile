@@ -16,5 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/pingcap/tidb
-COPY build.sh $SRC/
+COPY build.sh \
+     fuzzMarshalJSON.go \
+     fuzzNewBitLiteral.go \
+     fuzzNewHexLiteral.go \
+     $SRC/
 WORKDIR $SRC/tidb
