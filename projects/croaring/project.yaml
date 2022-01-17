@@ -2,7 +2,7 @@ homepage: "https://roaringbitmap.org"
 language: c
 primary_contact: "lemire@gmail.com"
 auto_ccs:
-	- "k2@ktwo.ca"
+  - "k2@ktwo.ca"
   - "lemire@gmail.com"
 sanitizers:
   - address
