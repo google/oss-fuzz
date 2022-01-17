@@ -90,7 +90,8 @@ def is_fuzz_target_affected(coverage, fuzz_target_path, files_changed):
     return True
 
   covered_files = [
-      os.path.normpath(covered_file) for covered_file in covered_files
+      os.path.normpath(covered_file).lstrip('/')
+      for covered_file in covered_files
   ]
   logging.info('Fuzz target %s is affected by: %s', fuzz_target, covered_files)
   for filename in files_changed:

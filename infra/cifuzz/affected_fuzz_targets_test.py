@@ -106,7 +106,7 @@ class IsFuzzTargetAffected(unittest.TestCase):
       self.assertTrue(
           affected_fuzz_targets.is_fuzz_target_affected(
               coverage, self.fuzz_target_path,
-              ['/src/systemd/src/basic/alloc-util.c']))
+              ['src/systemd/src/basic/alloc-util.c']))
 
 
 if __name__ == '__main__':
