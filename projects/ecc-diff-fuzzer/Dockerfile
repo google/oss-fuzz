@@ -28,6 +28,8 @@ RUN npm install -g browserify
 RUN npm install elliptic
 RUN git clone --depth 1 https://github.com/bellard/quickjs quickjs
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
+# needed to compile mbedtls
+RUN pip3 install jinja2
 RUN git clone --recursive --depth 1 -b development https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
