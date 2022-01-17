@@ -24,6 +24,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
     bool answer = true;
     roaring_bitmap_t* bitmap = roaring_bitmap_portable_deserialize_safe(data, size);
     if(bitmap) {
+        /*
         uint64_t card1 = roaring_bitmap_get_cardinality(bitmap);
         roaring_bitmap_statistics(bitmap, &stats);
         unsigned universe_size = stats.max_value + 1;
@@ -43,7 +44,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
                 roaring_bitmap_free(double_inverted);
             }
             roaring_bitmap_free(inverted);
-        }
+        }*/
         roaring_bitmap_free(bitmap);
     }
     return 0;
