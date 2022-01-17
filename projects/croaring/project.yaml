@@ -10,3 +10,6 @@ sanitizers:
   - memory:
       experimental: True
 main_repo: "https://github.com/RoaringBitmap/CRoaring"
+fuzzing_engines:
+  - libfuzzer
+  
