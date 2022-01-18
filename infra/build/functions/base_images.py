@@ -141,9 +141,8 @@ def base_builder(event, context):
 
   introspector_steps = _get_introspector_base_images_steps(
       INTROSPECTOR_BASE_IMAGES, tag_prefix)
-  intro_images = [
+  introspector_images = [
       tag_prefix + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(introspector_steps, intro_images, INTROSPECTOR_TAG)
-  
+  run_build(introspector_steps, introspector_images, INTROSPECTOR_TAG)
