@@ -113,20 +113,28 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_FAST_CAL=1
   export AFL_CMPLOG_ONLY_NEW=1
   export AFL_FORKSRV_INIT_TMOUT=30000
+  export AFL_IGNORE_PROBLEMS=1
+  export AFL_IGNORE_UNKNOWN_ENVS=1
+
   # If $OUT/afl_cmplog.txt is present this means the target was compiled for
   # CMPLOG. So we have to add the proper parameters to afl-fuzz.
   test -e "$OUT/afl_cmplog.txt" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -c $OUT/$FUZZER"
+
   # If $OUT/afl++.dict we load it as a dictionary for afl-fuzz.
   test -e "$OUT/afl++.dict" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -x $OUT/afl++.dict"
+
   # Ensure timeout is a bit larger than 1sec as some of the OSS-Fuzz fuzzers
   # are slower than this.
   AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -t 5000+"
+
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
+
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
+
   echo afl++ setup:
   env|grep AFL_
   cat "$OUT/afl_options.txt"
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
 
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
 

@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# In emergencies where afl++'s own compiler fails set this to "1":
+export AFL_LLVM_MODE_WORKAROUND=0
+
 # AFL++ setup
 echo "Copying precompiled AFL++"
 
@@ -34,6 +37,8 @@ export CXX="$SRC/aflplusplus/afl-clang-fast++"
 export AFL_QUIET=1
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
+# Do not abort on any problems (because this is during build where it is ok)
+export AFL_IGNORE_PROBLEMS=1
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
 
@@ -44,7 +49,6 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
 
   # The variables need to be set to "1" here - or before running this script.
   # AFL++ configuration options.
-  export AFL_LLVM_MODE_WORKAROUND=0
   export AFL_ENABLE_DICTIONARY=0
   export AFL_ENABLE_CMPLOG=1
   export AFL_LAF_CHANCE=5
