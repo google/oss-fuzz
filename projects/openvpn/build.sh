@@ -70,7 +70,7 @@ ar r libopenvpn.a *.o
 $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
-for fuzzname in dhcp misc base64 proxy buffer route packet_id mroute list verify_cert forward crypto; do
+for fuzzname in dhcp misc base64 proxy buffer route packet_id mroute list verify_cert forward; do
     $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include -I../../src/compat \
       -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\" -std=c99 $CFLAGS \
       -c $SRC/fuzz_${fuzzname}.c -o $SRC/fuzz_${fuzzname}.o

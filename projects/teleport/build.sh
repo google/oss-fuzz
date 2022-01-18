@@ -15,7 +15,5 @@
 #
 ################################################################################
 
-make update-vendor
-
 compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz gofuzz
 compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz gofuzz

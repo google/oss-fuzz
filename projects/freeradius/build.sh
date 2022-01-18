@@ -26,7 +26,7 @@ mkdir -p $OUT/lib
 
 git apply --ignore-whitespace $SRC/patch.diff
 # build project
-./configure --enable-fuzzer --enable-address-sanitizer
+./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer
 # make tries to compile regular programs as fuzz targets
 # so -i flag ignores these errors
 make -i -j$(nproc)
@@ -38,6 +38,7 @@ ls ./build/bin/local/fuzzer_* | while read i; do
     copy_lib ${i} libfreeradius
     copy_lib ${i} talloc
     copy_lib ${i} kqueue
+    copy_lib ${i} libunwind
     cp ${i} $OUT/
 done
 cp -r /usr/local/share/freeradius/dictionary $OUT/dict

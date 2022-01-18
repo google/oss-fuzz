@@ -21,8 +21,9 @@ import tempfile
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(
-    os.path.join(os.path.pardir, os.path.pardir, os.path.pardir,
-                 os.path.dirname(os.path.abspath(__file__))))
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+                     os.path.pardir)))
 
 import utils
 import http_utils

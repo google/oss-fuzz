@@ -15,12 +15,15 @@
 #
 ################################################################################
 
+# Ensure libevent can be found
+export PKG_CONFIG_PATH="/usr/local/lib/"
+
 ./autogen.sh
 ./configure \
     --enable-fuzzing \
     FUZZING_LIBS="${LIB_FUZZING_ENGINE} -lc++" \
     LIBEVENT_LIBS="-Wl,-Bstatic -levent -Wl,-Bdynamic" \
-    LIBTINFO_LIBS="-Wl,-Bstatic -ltinfo -Wl,-Bdynamic"
+    LIBTINFO_LIBS=" -l:libtinfo.a "
 
 make -j"$(nproc)" check
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer' -exec cp -v '{}' "${OUT}"/ \;
@@ -44,8 +47,3 @@ cat "${SRC}/tmux-fuzzing-corpus/iterm2"/* | \
     split -a5 -db$MAXLEN - iterm2.
 zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
     "${WORK}/fuzzing_corpus/"
-
-# Handle libevent not existing on runner.
-mkdir $OUT/lib
-cp /lib/x86_64-linux-gnu/libevent_core* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/input-fuzzer

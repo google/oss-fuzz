@@ -44,3 +44,6 @@ compile_fuzzer "yaml" "FuzzTimeStrict"
 compile_fuzzer "yaml" "FuzzYamlV2"
 compile_fuzzer "json" "FuzzStrictDecode"
 compile_fuzzer "json" "FuzzNonStrictDecode"
+
+# Build fuzzers from cncf-fuzzing:
+$SRC/cncf-fuzzing/projects/kubernetes/build.sh

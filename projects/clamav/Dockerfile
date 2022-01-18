@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y \
     flex bison \
     python3-dev \
@@ -31,8 +31,7 @@ RUN cd ${SRC}/clamav-mussels-cookbook && \
     msl build libclamav_deps -t host-static -w /mussels/work -i /mussels/install
 
 # Collect clamav source & fuzz corpus
-RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-devel.git
-RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-fuzz-corpus.git
+RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav.git
 
-WORKDIR clamav-devel
+WORKDIR clamav
 COPY build.sh $SRC/

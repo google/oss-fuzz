@@ -16,7 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake bison pkg-config \
-    libevent-dev ncurses-dev
+    ncurses-dev libtool
+
+RUN git clone https://github.com/libevent/libevent.git && \
+    cd libevent && \
+    mkdir build && \
+    cd build && \
+    cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../ && \
+    make && make install
 
 RUN git clone --depth 1 https://github.com/tmux/tmux.git
 RUN git clone --depth 1 https://github.com/tmux/tmux-fuzzing-corpus.git

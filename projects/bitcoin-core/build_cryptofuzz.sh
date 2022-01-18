@@ -133,14 +133,16 @@ make -B -j$(nproc)
 cd ../botan/
 make -B -j$(nproc)
 
-cd ../schnorr_fun/
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
-if [[ $CFLAGS != *-m32* ]]
-then
-    make
-else
-    make -f Makefile.i386
-fi
+# schnorr_fun is currently disabled because it was causing build failures
+# See: https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=39612
+#cd ../schnorr_fun/
+#export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    make
+#else
+#    make -f Makefile.i386
+#fi
 
 cd ../../
 
@@ -158,6 +160,8 @@ rm cryptofuzz
 make
 cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w15-p4
 
+# If the window size is larger than 15, this file must be deleted before proceeding
+rm $SRC/secp256k1/src/precomputed_ecmult.c
 build_libsecp256k1 "--with-ecmult-window=20" "--with-ecmult-gen-precision=8"
 cd $SRC/cryptofuzz/
 rm cryptofuzz

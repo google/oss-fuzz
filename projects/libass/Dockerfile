@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfontconfig1-dev libfreetype-dev libfribidi-dev python3-pip && \
-    pip3 install meson==0.53.0 ninja
+    pip3 install meson==0.55.0 ninja
 
 RUN git clone --depth 1 https://github.com/libass/libass.git
 RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git

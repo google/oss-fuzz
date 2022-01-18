@@ -48,7 +48,11 @@ def command_to_string(command):
   return shlex.join(command)
 
 
-def execute(command, env=None, location=None, check_result=False):
+def execute(command,
+            env=None,
+            location=None,
+            check_result=False,
+            log_command=True):
   """Runs a shell command in the specified directory location.
 
   Args:
@@ -75,21 +79,26 @@ def execute(command, env=None, location=None, check_result=False):
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')
 
-  command_str = command_to_string(command)
+  if log_command:
+    command_str = command_to_string(command)
+    display_err = err
+  else:
+    command_str = 'redacted'
+    display_err = 'redacted'
+
   if err:
-    logging.debug('Stderr of command "%s" is: %s.', command_str, err)
+    logging.debug('Stderr of command "%s" is: %s.', command_str, display_err)
   if check_result and process.returncode:
     raise RuntimeError('Executing command "{0}" failed with error: {1}.'.format(
-        command_str, err))
+        command_str, display_err))
   return out, err, process.returncode
 
 
-def get_fuzz_targets(path, top_level_only=False):
+def get_fuzz_targets(path):
   """Gets fuzz targets in a directory.
 
   Args:
     path: A path to search for fuzz targets in.
-    top_level_only: If True, only search |path|, do not recurse into subdirs.
 
   Returns:
     A list of paths to fuzzers or an empty list if None.
@@ -98,9 +107,6 @@ def get_fuzz_targets(path, top_level_only=False):
     return []
   fuzz_target_paths = []
   for root, _, fuzzers in os.walk(path):
-    if top_level_only and path != root:
-      continue
-
     for fuzzer in fuzzers:
       file_path = os.path.join(root, fuzzer)
       if is_fuzz_target_local(file_path):
@@ -124,6 +130,11 @@ def get_container_name():
     return file_handle.read().strip()
 
 
+def is_executable(file_path):
+  """Returns True if |file_path| is an exectuable."""
+  return os.path.exists(file_path) and os.access(file_path, os.X_OK)
+
+
 def is_fuzz_target_local(file_path):
   """Returns whether |file_path| is a fuzz target binary (local path).
   Copied from clusterfuzz src/python/bot/fuzzers/utils.py
@@ -144,7 +155,7 @@ def is_fuzz_target_local(file_path):
     # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
     return False
 
-  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
+  if not is_executable(file_path):
     return False
 
   if filename.endswith('_fuzzer'):

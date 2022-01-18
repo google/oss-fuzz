@@ -39,7 +39,7 @@ then
     while read i; do
         export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$fuzz_src_abspath/$i"
         # Bash while syntax so that we modify RUSTFLAGS in main shell instead of a subshell.
-    done <<< "$(ls */*.rs | cut -d/ -f1 | uniq)"
+    done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
     # we do not want to trigger debug assertions and stops
     export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
     # do not optimize with --release, leading to Malformed instrumentation profile data

@@ -31,7 +31,10 @@ RUN set -ex && \
         doxygen \
         git \
         curl \
+        libtool \
         libtool-bin \
+        flex \
+        bison \
         autoconf \
         automake \
         bzip2 \

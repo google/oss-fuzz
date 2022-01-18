@@ -100,25 +100,29 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       # called if multiple bugs are found.
       return self.workspace.clusterfuzz_build
 
-    repo_dir = self.ci_system.repo_dir()
+    repo_dir = self.ci_system.repo_dir
     if not repo_dir:
       raise RuntimeError('Repo checkout does not exist.')
 
     _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_build)
     repo = repo_manager.RepoManager(repo_dir)
 
+    diff_base = self.ci_system.get_diff_base()
+    if not diff_base:
+      diff_base = 'HEAD^'
+
     # Builds are stored by commit, so try the latest |LATEST_BUILD_WINDOW|
-    # commits before the current.
+    # commits before the current diff base.
     # TODO(ochang): If API usage becomes an issue, this can be optimized by the
     # filestore accepting a list of filenames to try.
-    for old_commit in repo.get_commit_list('HEAD^',
+    for old_commit in repo.get_commit_list(diff_base,
                                            limit=self.LATEST_BUILD_WINDOW):
       logging.info('Trying to downloading previous build %s.', old_commit)
       build_name = self._get_build_name(old_commit)
       try:
         if self.filestore.download_build(build_name,
                                          self.workspace.clusterfuzz_build):
-          logging.info('Done downloading previus build.')
+          logging.info('Done downloading previous build.')
           return self.workspace.clusterfuzz_build
 
         logging.info('Build for %s does not exist.', old_commit)
@@ -148,10 +152,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the name of the corpus artifact."""
     return target_name
 
-  def _get_crashes_artifact_name(self):  # pylint: disable=no-self-use
-    """Returns the name of the crashes artifact."""
-    return 'current'
-
   def upload_corpus(self, target_name, corpus_dir, replace=False):
     """Upload the corpus produced by |target_name|."""
     logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
@@ -177,19 +177,24 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_crashes(self):
     """Uploads crashes."""
-    if not os.listdir(self.workspace.artifacts):
+    artifact_dirs = os.listdir(self.workspace.artifacts)
+    if not artifact_dirs:
       logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
       return
 
-    crashes_artifact_name = self._get_crashes_artifact_name()
+    for crash_target in artifact_dirs:
+      artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
+      if not os.path.isdir(artifact_dir):
+        logging.warning('%s is not an expected artifact directory, skipping.',
+                        crash_target)
+        continue
 
-    logging.info('Uploading crashes in %s.', self.workspace.artifacts)
-    try:
-      self.filestore.upload_crashes(crashes_artifact_name,
-                                    self.workspace.artifacts)
-      logging.info('Done uploading crashes.')
-    except Exception as error:  # pylint: disable=broad-except
-      logging.error('Failed to upload crashes. Error: %s', error)
+      logging.info('Uploading crashes in %s.', artifact_dir)
+      try:
+        self.filestore.upload_crashes(crash_target, artifact_dir)
+        logging.info('Done uploading crashes.')
+      except Exception as error:  # pylint: disable=broad-except
+        logging.error('Failed to upload crashes. Error: %s', error)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
@@ -198,6 +203,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def get_coverage(self, repo_path):
     """Returns the project coverage object for the project."""
+    _make_empty_dir_if_nonexistent(self.workspace.clusterfuzz_coverage)
     try:
       if not self.filestore.download_coverage(
           self.COVERAGE_NAME, self.workspace.clusterfuzz_coverage):
@@ -296,6 +302,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
                   '-backup.clusterfuzz-external.appspot.com/corpus/'
                   f'libFuzzer/{project_qualified_fuzz_target_name}/'
                   f'{self.CORPUS_ZIP_NAME}')
+    logging.info('Downloading corpus from OSS-Fuzz: %s', corpus_url)
 
     if not http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
       logging.warning('Failed to download corpus for %s.', target_name)
@@ -353,20 +360,19 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
 
 
 _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING = {
-    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.INTERNAL_GITHUB:
-        OSSFuzz,
-    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI:
-        NoClusterFuzzDeployment,
-    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB:
-        ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.INTERNAL_GENERIC_CI: OSSFuzz,
+    config_utils.BaseConfig.Platform.INTERNAL_GITHUB: OSSFuzz,
+    config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_CI: ClusterFuzzLite,
+    config_utils.BaseConfig.Platform.EXTERNAL_GITHUB: ClusterFuzzLite,
 }
 
 
 def get_clusterfuzz_deployment(config, workspace):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
   deployment_cls = _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING[config.platform]
+  if config.no_clusterfuzz_deployment:
+    logging.info('Overriding ClusterFuzzDeployment. Using None.')
+    deployment_cls = NoClusterFuzzDeployment
   result = deployment_cls(config, workspace)
   logging.info('ClusterFuzzDeployment: %s.', result)
   return result

@@ -13,7 +13,6 @@
 # limitations under the License.
 """Module for a git based filestore."""
 
-from distutils import dir_util
 import logging
 import os
 import shutil
@@ -98,7 +97,7 @@ class GitFilestore(filestore.BaseFilestore):
     if replace and os.path.exists(full_repo_path):
       shutil.rmtree(full_repo_path)
 
-    dir_util.copy_tree(local_path, full_repo_path)
+    shutil.copytree(local_path, full_repo_path, dirs_exist_ok=True)
     self._git('add', '.')
     try:
       self._git('commit', '-m', message)
@@ -140,7 +139,7 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Corpus does not exist at %s.', path)
       return False
 
-    dir_util.copy_tree(path, dst_directory)
+    shutil.copytree(path, dst_directory, dirs_exist_ok=True)
     return True
 
   def download_build(self, name, dst_directory):
@@ -155,5 +154,5 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Coverage does not exist at %s.', path)
       return False
 
-    dir_util.copy_tree(path, dst_directory)
+    shutil.copytree(path, dst_directory, dirs_exist_ok=True)
     return True

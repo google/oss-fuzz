@@ -31,6 +31,7 @@ extern "C" {
 
 static char configuration[] =
 "error_log stderr emerg;\n"
+"worker_rlimit_nofile 8192;\n"
 "events {\n"
 "    use epoll;\n"
 "    worker_connections 2;\n"
@@ -261,9 +262,9 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   cln_added = 0;
 
   const char *req_string = input.request().c_str();
-  size_t req_len = strlen(req_string);
+  size_t req_len = input.request().size();
   const char *rep_string = input.reply().c_str();
-  size_t rep_len = strlen(rep_string);
+  size_t rep_len = input.reply().size();
   request.data = (const uint8_t *)req_string;
   request.data_len = req_len;
   reply.data = (const uint8_t *)rep_string;
@@ -321,8 +322,10 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   if (c->destroyed != 1) {
     if (c->read->data != NULL) {
       ngx_connection_t *c2 = (ngx_connection_t*)c->read->data;
-      ngx_http_free_request((ngx_http_request_t*)c2->data, 0);
+        ngx_http_request_t *req_tmp = (ngx_http_request_t*)c2->data;
+        req_tmp->cleanup = NULL;
+        ngx_http_finalize_request(req_tmp, NGX_DONE);
     }
-    ngx_http_close_connection(c);
+    ngx_close_connection(c);
   }
 }

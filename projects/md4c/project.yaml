@@ -1,6 +1,6 @@
 homepage: "https://github.com/mity/md4c"
 main_repo: "https://github.com/mity/md4c"
-primary_contact: "mity@morous.org"
+primary_contact: "mity.ossfuzz@gmail.com"
 language: c
 auto_ccs:
   - "david@adalogics.com"

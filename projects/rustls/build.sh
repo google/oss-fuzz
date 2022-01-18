@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+  chmod +x $SRC/rustc.py
+  export RUSTC="$SRC/rustc.py"
+  export CFLAGS=""
+fi
+
 cd $SRC/rustls
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/client $OUT/

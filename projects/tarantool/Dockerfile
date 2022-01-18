@@ -19,7 +19,12 @@ RUN apt-get update && apt-get install -y \
 	build-essential cmake make coreutils sed \
 	autoconf automake libtool zlib1g-dev \
 	libreadline-dev libncurses5-dev libssl-dev \
-	libunwind-dev libicu-dev luajit
+	libunwind-dev luajit wget
+
+RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.tar.gz && \
+    tar xzvf ./2021-08-25.tar.gz && \
+    mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
+
 RUN git clone https://github.com/tarantool/tarantool
 WORKDIR tarantool
 RUN git submodule update --init --recursive

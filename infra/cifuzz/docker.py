@@ -21,14 +21,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 import utils
+import environment
 
 BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '--cap-add', 'SYS_PTRACE', '-e',
-    'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
+    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
     'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 
@@ -80,7 +80,8 @@ def get_base_docker_run_args(workspace,
       'OUT': workspace.out
   }
   docker_args += get_docker_env_vars(env_mapping)
-  docker_container = utils.get_container_name()
+  docker_container = environment.get('CFL_CONTAINER_ID',
+                                     utils.get_container_name())
   logging.info('Docker container: %s.', docker_container)
   if docker_container and not docker_in_docker:
     # Don't map specific volumes if in a docker container, it breaks when

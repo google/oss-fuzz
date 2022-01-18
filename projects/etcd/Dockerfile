@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/etcd-io/etcd
-COPY wal_fuzzer.go build.sh $SRC/
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+COPY build.sh $SRC/
 WORKDIR $SRC/etcd

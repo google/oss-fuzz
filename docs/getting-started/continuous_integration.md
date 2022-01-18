@@ -100,7 +100,7 @@ to `c++`. This should be the same as the value you set in `project.yaml`. See
 [this explanation]({{ site.baseurl }}//getting-started/new-project-guide/#language)
 for more details.
 
-`fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
+`fuzz-seconds`: Determines how long CIFuzz spends fuzzing your project in seconds.
 The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6
 hours). This variable is only meaningful when supplied to the `run_fuzzers`
 action, not the `build_fuzzers` action.

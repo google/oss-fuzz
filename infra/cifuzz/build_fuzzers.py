@@ -23,6 +23,7 @@ import base_runner_utils
 import clusterfuzz_deployment
 import continuous_integration
 import docker
+import logs
 import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -30,9 +31,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import utils
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def check_project_src_path(project_src_path):
@@ -86,14 +85,14 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
+    build_command = self.ci_system.get_build_command(self.host_repo_path,
+                                                     self.image_repo_path)
     docker_args.extend([
         docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
+        build_command,
     ])
-    build_command = self.ci_system.get_build_command(self.host_repo_path,
-                                                     self.image_repo_path)
-    docker_args.append(build_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
     # TODO(metzman): Stop using helper.docker_run so we can get rid of
@@ -128,8 +127,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
         self.build_image_and_checkout_src,
         self.build_fuzzers,
         self.remove_unaffected_fuzz_targets,
-        self.check_fuzzer_build,
         self.upload_build,
+        self.check_fuzzer_build,
     ]
     for method in methods:
       if not method():
@@ -155,16 +154,10 @@ def build_fuzzers(config):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
-    project_name: The name of the OSS-Fuzz project being built.
-    project_repo_name: The name of the project's repo.
-    workspace: The location in a shared volume to store a git repo and build
-      artifacts.
-    pr_ref: The pull request reference to be built.
-    commit_sha: The commit sha for the project to be built at.
-    sanitizer: The sanitizer the fuzzers should be built with.
+    config: The configuration object for building fuzzers.
 
   Returns:
-    True if build succeeded or False on failure.
+    True if build succeeded.
   """
   # Do some quick validation.
   if config.project_src_path and not check_project_src_path(

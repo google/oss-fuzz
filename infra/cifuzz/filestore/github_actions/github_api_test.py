@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for github_api."""
+import os
+import sys
 import unittest
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+                     os.path.pardir)))
 
 from filestore.github_actions import github_api
 import test_helpers

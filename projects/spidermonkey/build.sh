@@ -15,7 +15,12 @@
 #
 ################################################################################
 
+# Ensure rust nightly is used
+source $HOME/.cargo/env
+rustup default nightly
+
 # Install dependencies.
+export MOZBUILD_STATE_PATH=/root/.mozbuild
 export SHELL=/bin/bash
 ../../mach --no-interactive bootstrap --application-choice browser
 

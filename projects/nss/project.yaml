@@ -1,8 +1,5 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS"
 language: c++
-primary_contact: "jjones@mozilla.com"
+primary_contact: "bbeurdouche@mozilla.com"
 auto_ccs:
-  - "bbeurdouche@mozilla.com"
-  - "tvandermerwe@mozilla.com"
   - "sledru@mozilla.com"
-  - "kjacobs@mozilla.com"

@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+
 mkdir $SRC/ClickHouse/build
 cd $SRC/ClickHouse/build
 
@@ -29,39 +30,46 @@ sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 # Enabling this manually will cause duplicate symbols at linker stage.
 CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
 
+# ClickHouse builds `protoc` from sources to be dependent only on compiler
+# but if we build ClickHouse with any kind of sanitizer, then `protoc`
+# will be built with sanitizer too...
+# Protoc will be used during ClickHouse builds to generate .cpp sources from .proto files
+# and everything works in our CI, but not here...
+# We use libprotobuf-mutator and self-written script to generate SQL-based AST from mutated .proto
+# Maybe some of proto files are too complex and this is the cause of `protoc` failures
+# So, this flag only helps to supress error from `protoc` built with any kind of sanitizer
+export MSAN_OPTIONS=exit_code=0
+
+printenv
+
 CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
     "-DCMAKE_C_COMPILER=$CC"
     "-DCMAKE_CXX_COMPILER=$CXX"
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
     "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
-    "-DENABLE_EMBEDDED_COMPILER=0"
-    "-DENABLE_THINLTO=0"
-    "-DENABLE_TESTS=0"
-    "-DENABLE_EXAMPLES=0"
-    "-DENABLE_UTILS=0"
-    "-DENABLE_JEMALLOC=0"
     "-DENABLE_FUZZING=1"
-    "-DENABLE_CLICKHOUSE_ODBC_BRIDGE=OFF"
-    "-DENABLE_LIBRARIES=0"
-    "-DENABLE_SSL=1"
-    "-DUSE_INTERNAL_SSL_LIBRARY=1"
-    "-DUSE_UNWIND=ON"
-    "-DGLIBC_COMPATIBILITY=OFF"
+    "-DWITH_COVERAGE=1"
+    "-DENABLE_PROTOBUF=1"
+    "-DUSE_INTERNAL_PROTOBUF_LIBRARY=1"
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DWITH_COVERAGE=1
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
 fi
 
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) / 2))
+NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) * 2))
 
 TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
 
 for FUZZER_TARGET in $TARGETS
 do
+    # Skip this fuzzer because of linker errors (the size of the binary is too big)
+    if [ "$FUZZER_TARGET" = "execute_query_fuzzer" ]; then
+        continue
+    fi
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
@@ -79,14 +87,17 @@ cp $SRC/ClickHouse/tests/fuzz/*.options $OUT/
 mkdir $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
 mkdir $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
 mkdir $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
+mkdir $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
 
 # prepare corpus
 cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
 cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
 cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
+cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
 cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
 cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
 cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
+cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
 
 # copy out corpus
 cd $SRC/ClickHouse/tests/fuzz

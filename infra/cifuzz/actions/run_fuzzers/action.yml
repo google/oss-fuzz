@@ -19,14 +19,15 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  run-fuzzers-mode:
+  mode:
     description: |
-      The mode to run the fuzzers with ("ci" or "batch").
-      "ci" is for fuzzing a pull request or commit.
+      The mode to run the fuzzers with ("code-change", "batch", "coverage", or "prune").
+      "code-change" is for fuzzing a pull request or commit.
       "batch" is for non-interactive fuzzing of an entire project.
-      "batch" is in alpha and should not be used in production.
+      "coverage" is for coverage generation.
+      "prune" is for corpus pruning.
     required: false
-    default: 'ci'
+    default: 'code-change'
   github-token:
     description: |
       Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
@@ -36,9 +37,13 @@ inputs:
       Document locking this down.
     required: false
   report-unreproducible-crashes:
-    description: 'If True, then unreproducible crashes will be reported by CIFuzz.'
+    description: 'If True, then unreproducible crashes will be reported.'
     required: false
-    default: false
+    default: False
+  minimize-crashes:
+    description: 'If True, reportable crashes will be minimized.'
+    required: false
+    default: False
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -48,7 +53,10 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
+    MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
+    MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
+    CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'

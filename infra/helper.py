@@ -142,6 +142,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   parser = get_parser()
   args = parse_args(parser)
 
+  # Need to do this before chdir.
+  # TODO(https://github.com/google/oss-fuzz/issues/6758): Get rid of chdir.
+  if hasattr(args, 'testcase_path'):
+    args.testcase_path = _get_absolute_path(args.testcase_path)
   # Note: this has to happen after parse_args above as parse_args needs to know
   # the original CWD for external projects.
   os.chdir(OSS_FUZZ_DIR)
@@ -298,7 +302,7 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
-                                 nargs=argparse.REMAINDER)
+                                 nargs='*')
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -344,7 +348,7 @@ def get_parser():  # pylint: disable=too-many-statements
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args',
                                 help='arguments to pass to the fuzzer',
-                                nargs=argparse.REMAINDER)
+                                nargs='*')
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
 
@@ -372,11 +376,16 @@ def is_base_image(image_name):
 
 def check_project_exists(project):
   """Checks if a project exists."""
-  if not os.path.exists(project.path):
-    logging.error('%s does not exist.', project.name)
-    return False
+  if os.path.exists(project.path):
+    return True
 
-  return True
+  if project.is_external:
+    descriptive_project_name = project.path
+  else:
+    descriptive_project_name = project.name
+
+  logging.error('"%s" does not exist.', descriptive_project_name)
+  return False
 
 
 def _check_fuzzer_exists(project, fuzzer_name):
@@ -642,7 +651,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if env_to_add:
     env += env_to_add
 
-  command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
+  command = _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project)
     if mount_path:

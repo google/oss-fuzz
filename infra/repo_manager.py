@@ -26,6 +26,8 @@ import logging
 import os
 import shutil
 
+import urllib.parse
+
 import utils
 
 
@@ -226,7 +228,11 @@ class RepoManager:
       shutil.rmtree(self.repo_dir)
 
 
-def clone_repo_and_get_manager(repo_url, base_dir, repo_name=None):
+def clone_repo_and_get_manager(repo_url,
+                               base_dir,
+                               repo_name=None,
+                               username=None,
+                               password=None):
   """Clones a repo and constructs a repo manager class.
 
     Args:
@@ -240,17 +246,23 @@ def clone_repo_and_get_manager(repo_url, base_dir, repo_name=None):
   manager = RepoManager(repo_dir)
 
   if not os.path.exists(repo_dir):
-    _clone(repo_url, base_dir, repo_name)
+    _clone(repo_url, base_dir, repo_name, username=username, password=password)
 
   return manager
 
 
-def _clone(repo_url, base_dir, repo_name):
+def _clone(repo_url, base_dir, repo_name, username=None, password=None):
   """Creates a clone of the repo in the specified directory.
 
      Raises:
        ValueError: when the repo is not able to be cloned.
   """
+  if username and password:
+    parsed_url = urllib.parse.urlparse(repo_url)
+    new_netloc = f'{username}:{password}@{parsed_url.netloc}'
+    repo_url = urllib.parse.urlunparse(parsed_url._replace(netloc=new_netloc))
+
   utils.execute(['git', 'clone', repo_url, repo_name],
                 location=base_dir,
-                check_result=True)
+                check_result=True,
+                log_command=not password)

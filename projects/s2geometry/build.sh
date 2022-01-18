@@ -15,20 +15,20 @@
 #
 ################################################################################
 
+cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
+export CXXFLAGS="${CXXFLAGS} -std=c++17"
+
+cd $SRC/
+git clone --depth=1 https://github.com/abseil/abseil-cpp
+cd abseil-cpp
 mkdir build && cd build
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
+
+cd $SRC/s2geometry
+git apply  --ignore-space-change --ignore-whitespace $SRC/project.patch
+mkdir build && cd build
+
 cmake -DBUILD_SHARED_LIBS=OFF \
-      -DABSL_MIN_LOG_LEVEL=4 \
-      -DGTEST_ROOT=/usr/src/gtest ..
+      -DABSL_MIN_LOG_LEVEL=4 ..
 make -j$(nproc)
-
-$CXX $CXXFLAGS -DABSL_MIN_LOG_LEVEL=4 \
-  -I/src/s2geometry/src \
-  -I/usr/src/gtest/include -std=c++11 \
-  -c $SRC/s2_fuzzer.cc \
-  -o s2_fuzzer.o
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-  s2_fuzzer.o -o $OUT/s2_fuzzer \
-  /src/s2geometry/build/libs2.a \
-  /src/openssl-1.1.1g/libssl.a \
-  /src/openssl-1.1.1g/libcrypto.a
+find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;

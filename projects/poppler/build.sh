@@ -67,7 +67,9 @@ if [ "$SANITIZER" != "memory" ]; then
     ninja -C _builddir install
     popd
 
-    pushd $SRC/glib-2.64.2
+    pushd $SRC/glib-2.70.0
+    # remove once there's a released glib that contains https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2324
+    sed -i s#https://ftp.pcre.org/pub/pcre/pcre-8.37.tar.bz2#https://sourceforge.net/projects/pcre/files/pcre/8.37/pcre-8.37.tar.bz2# subprojects/libpcre.wrap
     meson \
         --prefix=$PREFIX \
         --libdir=lib \
@@ -75,7 +77,6 @@ if [ "$SANITIZER" != "memory" ]; then
         -Db_lundef=false \
         -Doss_fuzz=enabled \
         -Dlibmount=disabled \
-        -Dinternal_pcre=true \
         _builddir
     ninja -C _builddir
     ninja -C _builddir install

@@ -1,0 +1,10 @@
+homepage: "https://logging.apache.org/log4j/2.x/"
+language: jvm
+primary_contact: "meumertzheim@code-intelligence.com"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/apache/logging-log4j2"
+sanitizers:
+  - address
