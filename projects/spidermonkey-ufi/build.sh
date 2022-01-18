@@ -42,13 +42,19 @@ touch ../../tools/fuzzing/libfuzzer/patches/dummy.patch
 mkdir -p build_OPT.OBJ
 cd build_OPT.OBJ
 
+if [ "$SANITIZER" = undefined ]; then
+  SAN_OPT="--enable-coverage"
+else
+  SAN_OPT="--enable-$SANITIZER-sanitizer"
+fi
+
 ../configure \
     --enable-debug \
     --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --enable-tests \
     --enable-fuzzing \
-    --enable-$SANITIZER-sanitizer
+    $SAN_OPT
 
 make "-j$(nproc)"
 
