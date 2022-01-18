@@ -42,7 +42,7 @@ touch ../../tools/fuzzing/libfuzzer/patches/dummy.patch
 mkdir -p build_OPT.OBJ
 cd build_OPT.OBJ
 
-if [ "$SANITIZER" = undefined ]; then
+if [ "$SANITIZER" = coverage ]; then
   SAN_OPT="--enable-coverage"
 else
   SAN_OPT="--enable-$SANITIZER-sanitizer"
