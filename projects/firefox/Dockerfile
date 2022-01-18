@@ -24,10 +24,20 @@ RUN apt-get update && \
       gawk \
       libstdc++6 \
       m4 \
-      python
+      python python3-pip python3-setuptools python3-wheel cmake git nasm 
+RUN pip3 install meson ninja
+
+# Install libavif ourselves
+RUN git clone --depth 1 https://github.com/AOMediaCodec/libavif.git libavif
+RUN cd $SRC/libavif && cd ext && bash dav1d_oss_fuzz.sh && cd dav1d/build && ninja install
+RUN cd $SRC/libavif && mkdir build && cd build && cmake -G Ninja -DBUILD_SHARED_LIBS=0 -DAVIF_CODEC_DAV1D=1 -DAVIF_LOCAL_DAV1D=1 .. && ninja && ninja install
 
 # This wrapper of cargo seems to interfere with our build system.
 RUN rm -f /usr/local/bin/cargo
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $SRC/rustbuild.sh && \
+    chmod +x $SRC/rustbuild.sh && \
+    $SRC/rustbuild.sh -y
 
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
