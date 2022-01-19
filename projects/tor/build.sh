@@ -21,11 +21,9 @@ mkdir -p $TOR_DEPS
 
 # Build libevent with proper instrumentation.
 cd ${SRC}/libevent
-sh autogen.sh
-./configure --prefix=${TOR_DEPS} --disable-openssl
-make -j$(nproc) clean
-make -j$(nproc) all
-make install
+mkdir build && cd build
+cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../
+make && make install
 
 # Build OpenSSL with proper instrumentation.
 cd ${SRC}/openssl
