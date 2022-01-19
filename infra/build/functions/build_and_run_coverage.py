@@ -39,6 +39,9 @@ COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 
 INTROSPECTOR_BUCKET_NAME = 'oss-fuzz-introspector'
 
+# The string to be chopped off from the end of coverage report url
+TO_SKIP = 'index.html'
+
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
@@ -250,7 +253,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
   if introspector_enabled:
-    coverage_url = bucket.html_report_url  # TODO
+    coverage_url = bucket.html_report_url[:-len(TO_SKIP)]
     build_steps.extend(
         get_fuzz_introspector_steps(project, base_images_project,
                                     config, coverage_url))
@@ -296,13 +299,6 @@ def get_fuzz_introspector_steps(project, base_images_project,
 
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
-
-  build_steps.append({
-      'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
-      'args': ['bash', '-c', ('du -a /workspace/')]
-  })
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('inspector-report')
