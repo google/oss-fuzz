@@ -34,14 +34,6 @@ PLATFORM = 'linux'
 
 COVERAGE_BUILD_TYPE = 'coverage'
 
-# Where code coverage reports need to be uploaded to.
-COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
-
-INTROSPECTOR_BUCKET_NAME = 'oss-fuzz-introspector'
-
-# The string to be chopped off from the end of coverage report url
-TO_SKIP = 'index.html'
-
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
@@ -56,6 +48,7 @@ class Bucket:  # pylint: disable=too-few-public-methods
   """Class representing the GCS bucket."""
 
   def __init__(self, project, date, platform, testing):
+    self.bucket_name = self.BUCKET_NAME
     if testing:
       self.bucket_name += '-testing'
 
@@ -63,7 +56,7 @@ class Bucket:  # pylint: disable=too-few-public-methods
     self.project = project
     self.html_report_url = (
         f'{build_lib.GCS_URL_BASENAME}{self.bucket_name}/{project}'
-        f'/reports/{date}/{platform}/index.html')
+        f'/reports/{date}/{platform}')
     self.latest_report_info_url = (f'/{self.bucket_name}'
                                    f'/latest_report_info/{project}.json')
 
@@ -75,18 +68,12 @@ class Bucket:  # pylint: disable=too-few-public-methods
 
 class CoverageBucket(Bucket):
   """Class representing the coverage GCS bucket."""
-
-  def __init__(self, project, date, platform, testing):
-    self.bucket_name = COVERAGE_BUCKET_NAME
-    super().__init__(project, date, platform, testing)
+  BUCKET_NAME = 'oss-fuzz-coverage'
 
 
 class IntrospectorBucket(Bucket):
   """Class representing the introspector GCS bucket."""
-
-  def __init__(self, project, date, platform, testing):
-    self.bucket_name = INTROSPECTOR_BUCKET_NAME
-    super().__init__(project, date, platform, testing)
+  BUCKET_NAME = 'oss-fuzz-introspector'
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
@@ -240,7 +227,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'fuzzer_stats_dir':
           upload_fuzzer_stats_url,
       'html_report_url':
-          bucket.html_report_url,
+          os.path.join(bucket.html_report_url, 'index.html'),
       'report_date':
           report_date,
       'report_summary_path':
@@ -253,15 +240,15 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
   if introspector_enabled:
-    coverage_url = bucket.html_report_url[:-len(TO_SKIP)]
+    coverage_url = bucket.html_report_url
     build_steps.extend(
-        get_fuzz_introspector_steps(project, base_images_project,
-                                    config, coverage_url))
+        get_fuzz_introspector_steps(project, base_images_project, config,
+                                    coverage_url))
   return build_steps
 
 
-def get_fuzz_introspector_steps(project, base_images_project,
-                                config, coverage_url):
+def get_fuzz_introspector_steps(project, base_images_project, config,
+                                coverage_url):
   """Return build steps of fuzz introspector for project"""
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
