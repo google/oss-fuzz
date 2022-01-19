@@ -209,6 +209,9 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get remove --purge -y texinfo bison flex
+fi
 apt-get autoremove -y
 
 # Delete unneeded parts of LLVM to reduce image size.
