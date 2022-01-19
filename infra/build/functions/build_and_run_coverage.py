@@ -272,13 +272,6 @@ def get_fuzz_introspector_steps(project, project_name, base_images_project,
       'name':
           build_project.get_runner_image_name(base_images_project,
                                               config.test_image_suffix),
-      'args': ['bash', '-c', ('find /workspace/ -name "*.covreport"')]
-  })
-
-  build_steps.append({
-      'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
       'args': [
           'bash', '-c',
           ('sed -i s/base-builder/base-builder:introspector/g '
@@ -294,13 +287,11 @@ def get_fuzz_introspector_steps(project, project_name, base_images_project,
           '-t',
           f'gcr.io/oss-fuzz/{project_name}',
           '.',
-          #   '--file',
-          #   f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}/Dockerfile',
-          #   f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}',
       ],
       'dir': f'oss-fuzz/projects/{project_name}',
   })
 
+  env.append('GIT_REPO=')
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
 
@@ -309,6 +300,24 @@ def get_fuzz_introspector_steps(project, project_name, base_images_project,
           build_project.get_runner_image_name(base_images_project,
                                               config.test_image_suffix),
       'args': ['bash', '-c', ('du -a /workspace/')]
+  })
+
+  # Upload the report.
+  upload_report_url = bucket.get_upload_url('inspector-report')
+
+  # Delete the existing report as gsutil cannot overwrite it in a useful way due
+  # to the lack of `-T` option (it creates a subdir in the destination dir).
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
+  build_steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'inspector'),
+          upload_report_url,
+      ],
   })
 
   return build_steps
