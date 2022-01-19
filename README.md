@@ -15,6 +15,8 @@ community.
 In cooperation with the [Core Infrastructure Initiative] and the [OpenSSF],
 OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques with scalable, distributed execution.
+Projects that do not qualify for OSS-Fuzz (e.g. closed source) can run their own
+instances of [ClusterFuzz] or [ClusterFuzzLite].
 
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
@@ -28,6 +30,7 @@ execution environment and reporting tool.
 [Honggfuzz]: https://github.com/google/honggfuzz
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
+[ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
 
 Currently, OSS-Fuzz supports C/C++, Rust, Go, Python and Java/JVM code. Other languages
 supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386
