@@ -24,4 +24,6 @@
 # rules_fuzzing.
 export BAZEL_EXTRA_BUILD_FLAGS="--//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine"
 
+export USE_BAZEL_VERSION="last_green"
+
 bazel_build_fuzz_tests
