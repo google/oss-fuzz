@@ -48,9 +48,10 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
 
 LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
 
+
 class Bucket:  # pylint: disable=too-few-public-methods
-  """Class representing the coverage GCS bucket."""
-  BUCKET_NAME = 'generic'
+  """Class representing the GCS bucket."""
+
   def __init__(self, project, date, platform, testing):
     if testing:
       self.bucket_name += '-testing'
@@ -68,15 +69,22 @@ class Bucket:  # pylint: disable=too-few-public-methods
     return (f'gs://{self.bucket_name}/{self.project}'
             f'/{upload_type}/{self.date}')
 
+
 class CoverageBucket(Bucket):
-    def __init__(self, project, date, platform, testing):
-        self.bucket_name = COVERAGE_BUCKET_NAME
-        super().__init__(project, date, platform, testing)
+  """Class representing the coverage GCS bucket."""
+
+  def __init__(self, project, date, platform, testing):
+    self.bucket_name = COVERAGE_BUCKET_NAME
+    super().__init__(project, date, platform, testing)
+
 
 class IntrospectorBucket(Bucket):
-    def __init__(slef, project, date, platform, testing):
-        self.bucket_name = INTROSPECTOR_BUCKET_NAME
-        super().__init__(project, date, platform, testing)
+  """Class representing the introspector GCS bucket."""
+
+  def __init__(self, project, date, platform, testing):
+    self.bucket_name = INTROSPECTOR_BUCKET_NAME
+    super().__init__(project, date, platform, testing)
+
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml_contents, dockerfile_lines, image_project,
@@ -96,7 +104,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   introspector_enabled = False
   if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-      introspector_enabled = True
+    introspector_enabled = True
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
@@ -108,7 +116,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       branch=config.branch,
       test_image_suffix=config.test_image_suffix)
 
-  build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
+  build = build_project.Build(FUZZING_ENGINE, 'coverage', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
@@ -135,16 +143,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   if 'dataflow' in project.fuzzing_engines:
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
-  runner_image_name = build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix)
+  runner_image_name = build_project.get_runner_image_name(
+      base_images_project, config.test_image_suffix)
   if introspector_enabled:
-      runner_image_name += ':introspector'
-      
+    runner_image_name += ':introspector'
+
   build_steps.append({
-      'name':
-          runner_image_name,
-      'env':
-          coverage_env,
+      'name': runner_image_name,
+      'env': coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
@@ -242,6 +248,69 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_lib.http_upload_step(latest_report_info_body,
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
+
+  if introspector_enabled:
+    coverage_url = bucket.html_report_url  # TODO
+    build_steps.extend(
+        get_fuzz_introspector_steps(project, project_name, base_images_project,
+                                    config, coverage_url))
+  return build_steps
+
+
+def get_fuzz_introspector_steps(project, project_name, base_images_project,
+                                config, coverage_url):
+  """Return build steps of fuzz introspector for project"""
+  build_steps = []
+  build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
+  env = build_project.get_env(project.fuzzing_language, build)
+
+  report_date = build_project.get_datetime_now().strftime('%Y%m%d')
+  bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
+                              config.testing)
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': ['bash', '-c', ('find /workspace/ -name "*.covreport"')]
+  })
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': [
+          'bash', '-c',
+          ('sed -i s/base-builder/base-builder:introspector/g '
+           f'oss-fuzz/projects/{project_name}/Dockerfile'
+           f' && cat oss-fuzz/projects/{project_name}/Dockerfile')
+      ]
+  })
+
+  build_steps.append({
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': [
+          'build',
+          '-t',
+          f'gcr.io/oss-fuzz/{project_name}',
+          '.',
+          #   '--file',
+          #   f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}/Dockerfile',
+          #   f'{FI_dir}{oss_integration_dir}oss-fuzz/projects/{project_name}',
+      ],
+      'dir': f'oss-fuzz/projects/{project_name}',
+  })
+
+  build_steps.append(
+      build_project.get_compile_step(project, build, env, config.parallel))
+
+  build_steps.append({
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'args': ['bash', '-c', ('du -a /workspace/')]
+  })
+
   return build_steps
 
 
