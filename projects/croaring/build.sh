@@ -15,18 +15,16 @@
 #
 ################################################################################
 
+mkdir build-dir && cd build-dir
+cmake ..
+      
+make -j$(nproc)
 
-mkdir build && cd build
-cmake ../prj/cmake \
-	-DCMAKE_BUILD_TYPE="Release"
+$CC $CFLAGS  \
+     -I$SRC/croaring/include \
+     -c $SRC/croaring_fuzzer.c -o fuzzer.o
+$CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o   \
+     -o $OUT/croaring_fuzzer $SRC/croaring/build-dir/src/libroaring.a
 
-# Force simd to only use a single core, as otherwise memory will be exhausted
-make -j1
-
-$CXX $CXXFLAGS -I/src/Simd/src -O3 -DNDEBUG -fPIC \
-        -c $SRC/simd_load_fuzzer.cpp -o simd_load_fuzzer.o \
-        -std=c++11 -ferror-limit=5 -m64  -mtune=native
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE simd_load_fuzzer.o \
-        -o $OUT/simd_load_fuzzer \
-        $(find $SRC -name "libSimd.a")
+zip $OUT/croaring_fuzzer_seed_corpus.zip $SRC/croaring/tests/testdata/*bin
+cp $SRC/croaring/tests/testdata/*bin $OUT/

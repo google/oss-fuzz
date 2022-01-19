@@ -15,15 +15,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import java.io.IOException;
-import java.util.HashMap;
 import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.common.bytesource.ByteSourceArray;
 import org.apache.commons.imaging.formats.gif.GifImageParser;
 
 public class ImagingGifFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     try {
-      new GifImageParser().getBufferedImage(new ByteSourceArray(input), new HashMap<>());
+      new GifImageParser().getBufferedImage(input, null);
     } catch (IOException | ImageReadException ignored) {
     }
   }
