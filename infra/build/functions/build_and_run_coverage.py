@@ -252,12 +252,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   if introspector_enabled:
     coverage_url = bucket.html_report_url  # TODO
     build_steps.extend(
-        get_fuzz_introspector_steps(project, project_name, base_images_project,
+        get_fuzz_introspector_steps(project, base_images_project,
                                     config, coverage_url))
   return build_steps
 
 
-def get_fuzz_introspector_steps(project, project_name, base_images_project,
+def get_fuzz_introspector_steps(project, base_images_project,
                                 config, coverage_url):
   """Return build steps of fuzz introspector for project"""
   build_steps = []
@@ -275,8 +275,8 @@ def get_fuzz_introspector_steps(project, project_name, base_images_project,
       'args': [
           'bash', '-c',
           ('sed -i s/base-builder/base-builder:introspector/g '
-           f'oss-fuzz/projects/{project_name}/Dockerfile'
-           f' && cat oss-fuzz/projects/{project_name}/Dockerfile')
+           f'oss-fuzz/projects/{project.name}/Dockerfile'
+           f' && cat oss-fuzz/projects/{project.name}/Dockerfile')
       ]
   })
 
@@ -285,13 +285,15 @@ def get_fuzz_introspector_steps(project, project_name, base_images_project,
       'args': [
           'build',
           '-t',
-          f'gcr.io/oss-fuzz/{project_name}',
+          f'gcr.io/oss-fuzz/{project.name}',
           '.',
       ],
-      'dir': f'oss-fuzz/projects/{project_name}',
+      'dir': f'oss-fuzz/projects/{project.name}',
   })
 
-  env.append('GIT_REPO=')
+  env.append(f'GIT_REPO={project.main_repo}')
+  env.append(f'COVERAGE_URL={coverage_url}')
+
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
 

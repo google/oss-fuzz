@@ -116,6 +116,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
     self.labels = project_yaml['labels']
     self.fuzzing_language = project_yaml['language']
     self.run_tests = project_yaml['run_tests']
+    self.main_repo = project_yaml['main_repo']
 
   @property
   def sanitizers(self):
