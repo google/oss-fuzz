@@ -24,8 +24,9 @@ NPROC=$(expr $(nproc) / 2)
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
+INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
 if [ -n "$INTROSPECTOR_PATCHES" ]; then
-  apt-get install -y texinfo bison flex
+  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
 fi
 
 # Checkout
@@ -210,7 +211,7 @@ rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
 if [ -n "$INTROSPECTOR_PATCHES" ]; then
-  apt-get remove --purge -y texinfo bison flex
+  apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
 fi
 apt-get autoremove -y
 

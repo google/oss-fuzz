@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y wget sudo git && \
 
 RUN git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 1515db5d103fa75b06c5ab213a53522a7eed24eb
+    git checkout 9e3393cd551b65a6bf2de6495013b415f315f74e
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
