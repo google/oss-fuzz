@@ -213,7 +213,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   find /workspace/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
   
   cd $SRC/inspector
-  python3 $SRC/fuzz-introspector/post-processing/main.py --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO
+  python3 $SRC/fuzz-introspector/post-processing/main.py --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO --coverage_url=$COVERAGE_URL
 
   cp -rf $SRC/inspector $OUT/inspector
 fi
