@@ -37,6 +37,8 @@ COVERAGE_BUILD_TYPE = 'coverage'
 # Where code coverage reports need to be uploaded to.
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 
+INTROSPECTOR_BUCKET_NAME = 'oss-fuzz-introspector'
+
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
@@ -44,28 +46,37 @@ LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 # Languages from project.yaml that have code coverage support.
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
 
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
 
 class Bucket:  # pylint: disable=too-few-public-methods
   """Class representing the coverage GCS bucket."""
-
+  BUCKET_NAME = 'generic'
   def __init__(self, project, date, platform, testing):
-    self.coverage_bucket_name = 'oss-fuzz-coverage'
     if testing:
-      self.coverage_bucket_name += '-testing'
+      self.bucket_name += '-testing'
 
     self.date = date
     self.project = project
     self.html_report_url = (
-        f'{build_lib.GCS_URL_BASENAME}{self.coverage_bucket_name}/{project}'
+        f'{build_lib.GCS_URL_BASENAME}{self.bucket_name}/{project}'
         f'/reports/{date}/{platform}/index.html')
-    self.latest_report_info_url = (f'/{COVERAGE_BUCKET_NAME}'
+    self.latest_report_info_url = (f'/{self.bucket_name}'
                                    f'/latest_report_info/{project}.json')
 
   def get_upload_url(self, upload_type):
     """Returns an upload url for |upload_type|."""
-    return (f'gs://{self.coverage_bucket_name}/{self.project}'
+    return (f'gs://{self.bucket_name}/{self.project}'
             f'/{upload_type}/{self.date}')
 
+class CoverageBucket(Bucket):
+    def __init__(self, project, date, platform, testing):
+        self.bucket_name = COVERAGE_BUCKET_NAME
+        super().__init__(project, date, platform, testing)
+
+class IntrospectorBucket(Bucket):
+    def __init__(slef, project, date, platform, testing):
+        self.bucket_name = INTROSPECTOR_BUCKET_NAME
+        super().__init__(project, date, platform, testing)
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml_contents, dockerfile_lines, image_project,
@@ -83,8 +94,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
         project.name, project.fuzzing_language)
     return []
 
+  introspector_enabled = False
+  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+      introspector_enabled = True
+
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
-  bucket = Bucket(project.name, report_date, PLATFORM, config.testing)
+  bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
   build_steps = build_lib.project_image_steps(
       project.name,
@@ -120,10 +135,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   if 'dataflow' in project.fuzzing_engines:
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
+  runner_image_name = build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix)
+  if introspector_enabled:
+      runner_image_name += ':introspector'
+      
   build_steps.append({
       'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
+          runner_image_name,
       'env':
           coverage_env,
       'args': [
