@@ -15,7 +15,11 @@
 #
 ################################################################################
 
-export RUSTFLAGS=""
+if [ "$SANITIZER" = "coverage" ]
+then
+  touch $OUT/exit
+  exit 0
+fi
 
 source $HOME/.cargo/env
 
@@ -52,14 +56,6 @@ export ASAN_OPTIONS="detect_leaks=0"
 # Install remaining dependencies.
 export SHELL=/bin/bash
 
-# Firefox might not be buildable on the latest Rust Nightly, so we should try
-# to use the same version that we use in our CI.
-#RUST_NIGHTLY_VERSION=$(sed -n 's/^.*--channel.*\(nightly-[0-9-]*\).*$/\1/p' \
-#  $SRC/mozilla-central/taskcluster/ci/toolchain/rust.yml
-#)
-
-#rustup toolchain install ${RUST_NIGHTLY_VERSION}
-#rustup default ${RUST_NIGHTLY_VERSION}-x86_64-unknown-linux-gnu
 rustup default nightly
 
 ./mach --no-interactive bootstrap --application-choice browser
@@ -103,42 +99,42 @@ done
 cp $SRC/*.options $OUT
 
 # SdpParser
-#find media/webrtc -iname "*.sdp" \
-#  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
-#cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
-#
-## StunParser
-#find media/webrtc -iname "*.stun" \
-#  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
-#cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
-#
-## ContentParentIPC
-#cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
-#
-## ImageGIF
-#zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
-#cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
-#
-## ImageICO
-#zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
+find media/webrtc -iname "*.sdp" \
+  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 
-## ImageBMP
-#zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
-#
-# MediaADTS
-#zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
+# StunParser
+find media/webrtc -iname "*.stun" \
+  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
+
+# ContentParentIPC
+cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
+
+# ImageGIF
+zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
+cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
+
+# ImageICO
+zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
+
+# ImageBMP
+zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
+
+ MediaADTS
+zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
 
 # MediaFlac
-#zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
-#
-## MediaMP3
-#zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
-#
-## MediaOgg
-#zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
+zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
+
+# MediaMP3
+zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
+
+# MediaOgg
+zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
 
 # MediaWebM
-#zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
+zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
 
 # MediaWAV
 # zip -rj $OUT/MediaWAV_seed_corpus.zip $SRC/fuzzdata/samples/wav
