@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export RUSTFLAGS=""
+
 source $HOME/.cargo/env
 
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
@@ -101,42 +103,42 @@ done
 cp $SRC/*.options $OUT
 
 # SdpParser
-find media/webrtc -iname "*.sdp" \
-  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
-cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
+#find media/webrtc -iname "*.sdp" \
+#  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
+#cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
+#
+## StunParser
+#find media/webrtc -iname "*.stun" \
+#  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
+#cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
+#
+## ContentParentIPC
+#cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
+#
+## ImageGIF
+#zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
+#cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
+#
+## ImageICO
+#zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
 
-# StunParser
-find media/webrtc -iname "*.stun" \
-  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
-cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
-
-# ContentParentIPC
-cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
-
-# ImageGIF
-zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
-cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
-
-# ImageICO
-zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
-
-# ImageBMP
-zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
-
+## ImageBMP
+#zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
+#
 # MediaADTS
-zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
+#zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
 
 # MediaFlac
-zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
-
-# MediaMP3
-zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
-
-# MediaOgg
-zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
+#zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
+#
+## MediaMP3
+#zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
+#
+## MediaOgg
+#zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
 
 # MediaWebM
-zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
+#zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
 
 # MediaWAV
 # zip -rj $OUT/MediaWAV_seed_corpus.zip $SRC/fuzzdata/samples/wav
