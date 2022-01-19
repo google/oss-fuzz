@@ -121,7 +121,7 @@ zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
 # ImageBMP
 zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
 
- MediaADTS
+# MediaADTS
 zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
 
 # MediaFlac
