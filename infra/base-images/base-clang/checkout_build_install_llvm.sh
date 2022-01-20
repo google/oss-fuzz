@@ -24,6 +24,11 @@ NPROC=$(expr $(nproc) / 2)
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
+INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
+fi
+
 # Checkout
 CHECKOUT_RETRIES=10
 function clone_with_retries {
@@ -92,6 +97,24 @@ fi
 
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
+
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  # For fuzz introspector.
+  echo "Applying introspector changes"
+  BBBASE=$PWD
+  cd $LLVM_SRC 
+  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/Inspector/ ./llvm/include/llvm/Transforms//Inspector
+  cp -rf /fuzz-introspector/llvm/lib/Transforms/Inspector ./llvm/lib/Transforms/Inspector
+
+  # LLVM currently does not support dynamically loading LTO passes. Thus,
+  # we hardcode it into Clang instead.
+  # Ref: https://reviews.llvm.org/D77704
+  sed -i 's/whole-program devirtualization and bitset lowering./whole-program devirtualization and bitset lowering.\nPM.add(createInspectorPass());/g' ./llvm/lib/Transforms/IPO/PassManagerBuilder.cpp
+  sed -i 's/using namespace/#include "llvm\/Transforms\/Inspector\/Inspector.h"\nusing namespace/g' ./llvm/lib/Transforms/IPO/PassManagerBuilder.cpp
+  echo "add_subdirectory(Inspector)" >> ./llvm/lib/Transforms/CMakeLists.txt
+  sed -i 's/Instrumentation/Instrumentation\n  Inspector/g' ./llvm/lib/Transforms/IPO/CMakeLists.txt
+  cd $BBBASE  
+fi
 
 # Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
@@ -187,6 +210,9 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
+fi
 apt-get autoremove -y
 
 # Delete unneeded parts of LLVM to reduce image size.

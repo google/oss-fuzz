@@ -146,6 +146,19 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
 fi
 
+if [ "$SANITIZER" = "introspector" ]; then
+  export LDFLAGS="-fuse-ld=gold"
+  export AR=llvm-ar
+  export RANLIB=llvm-ranlib
+
+  # Move ar and ranlib
+  mv /usr/bin/ar /usr/bin/old-ar
+  mv /usr/bin/ranlib /usr/bin/old-ranlib
+
+  ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
+  ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
+fi
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
@@ -184,6 +197,25 @@ else
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     $COPY_SOURCES_CMD 2>/dev/null || true
   fi
+fi
+
+if [ "$SANITIZER" = "introspector" ]; then
+  unset CXXFLAGS
+  unset CFLAGS
+  apt-get install -y libjpeg-dev zlib1g-dev
+  pip3 install --upgrade setuptools
+  pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve matplotlib
+  mkdir -p $SRC/inspector
+
+  find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "*.data.yaml" -exec cp {} $SRC/inspector/ \;
+  # Move coverage report.
+  find /workspace/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
+  
+  cd $SRC/inspector
+  python3 $SRC/fuzz-introspector/post-processing/main.py --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO --coverage_url=$COVERAGE_URL
+
+  cp -rf $SRC/inspector $OUT/inspector
 fi
 
 if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
