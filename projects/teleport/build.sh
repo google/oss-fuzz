@@ -15,5 +15,7 @@
 #
 ################################################################################
 
+go mod tidy
+rm /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2/internal/ini@v1.2.2/fuzz.go
 compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz gofuzz
 compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz gofuzz
