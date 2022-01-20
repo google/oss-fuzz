@@ -34,7 +34,6 @@ readonly FUZZERS=( \
   llvm-special-case-list-fuzzer \
   llvm-opt-fuzzer \
 )
-exit 0
 
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
