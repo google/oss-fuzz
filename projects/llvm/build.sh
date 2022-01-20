@@ -23,7 +23,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
     clang-fuzzer \
     llvm-opt-fuzzer \
   )
-  if [ "$SANITIZER" = coverage]; then
+  if [ "$SANITIZER" = coverage ]; then
     touch $OUT/exit
     exit 0
   fi
