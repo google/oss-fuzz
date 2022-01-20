@@ -52,7 +52,7 @@
     "url": "test_download"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:introspector",
+    "name": "gcr.io/oss-fuzz-base/base-runner",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",

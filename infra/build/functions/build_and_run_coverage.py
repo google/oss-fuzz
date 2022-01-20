@@ -92,10 +92,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
         project.name, project.fuzzing_language)
     return []
 
-  introspector_enabled = False
-  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-    introspector_enabled = True
-
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
@@ -133,14 +129,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   if 'dataflow' in project.fuzzing_engines:
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
-  runner_image_name = build_project.get_runner_image_name(
-      base_images_project, config.test_image_suffix)
-  if introspector_enabled:
-    runner_image_name += ':introspector'
-
   build_steps.append({
-      'name': runner_image_name,
-      'env': coverage_env,
+      'name':
+          build_project.get_runner_image_name(base_images_project,
+                                              config.test_image_suffix),
+      'env':
+          coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
@@ -239,7 +233,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
-  if introspector_enabled:
+  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
     coverage_url = bucket.html_report_url
     build_steps.extend(
         get_fuzz_introspector_steps(project, base_images_project, config,
