@@ -70,6 +70,12 @@ for fuzzer in "${FUZZERS[@]}"; do
 done
 ninja llvm-as
 
+# In CI we only check a single fuzzer to avoid the CI hanging and getting killed
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
+  exit 0
+fi
+
 # isel-fuzzer encodes its default flags in the name.
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
