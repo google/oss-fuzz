@@ -16,31 +16,25 @@
 #
 ################################################################################
 
-# Do limited operations in CI and dont check Coverage in CI as
-# it gets killed
-if [ -n "${OSS_FUZZ_CI-}" ]; then
-  readonly FUZZERS=( \
-    clang-fuzzer \
-    llvm-opt-fuzzer \
-  )
-  if [ "$SANITIZER" = coverage ]; then
-    touch $OUT/exit
-    exit 0
-  fi
-else
-  readonly FUZZERS=( \
-    clang-fuzzer \
-    clang-format-fuzzer \
-    clang-objc-fuzzer \
-    clangd-fuzzer \
-    llvm-itanium-demangle-fuzzer \
-    llvm-microsoft-demangle-fuzzer \
-    llvm-dwarfdump-fuzzer \
-    llvm-isel-fuzzer \
-    llvm-special-case-list-fuzzer \
-    llvm-opt-fuzzer \
-  )
+# Dont check Coverage in CI as it gets killed
+if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
+  touch $OUT/exit
+  exit 0
 fi
+
+readonly FUZZERS=( \
+  clang-fuzzer \
+  clang-format-fuzzer \
+  clang-objc-fuzzer \
+  clangd-fuzzer \
+  llvm-itanium-demangle-fuzzer \
+  llvm-microsoft-demangle-fuzzer \
+  llvm-dwarfdump-fuzzer \
+  llvm-isel-fuzzer \
+  llvm-special-case-list-fuzzer \
+  llvm-opt-fuzzer \
+)
+exit 0
 
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
