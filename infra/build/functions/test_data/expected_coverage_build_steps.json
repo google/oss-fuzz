@@ -52,7 +52,7 @@
     "url": "test_download"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "name": "gcr.io/oss-fuzz-base/base-runner:introspector",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -148,5 +148,60 @@
       "{\"fuzzer_stats_dir\": \"gs://oss-fuzz-coverage/test-project/fuzzer_stats/20200101\", \"html_report_url\": \"https://storage.googleapis.com/oss-fuzz-coverage/test-project/reports/20200101/linux/index.html\", \"report_date\": \"20200101\", \"report_summary_path\": \"gs://oss-fuzz-coverage/test-project/reports/20200101/linux/summary.json\"}",
       "test_url"
     ]
+  },
+  {
+    "args": [
+      "bash",
+      "-c",
+      "sed -i s/base-builder/base-builder:introspector/g oss-fuzz/projects/test-project/Dockerfile && cat oss-fuzz/projects/test-project/Dockerfile"
+    ],
+    "name": "gcr.io/oss-fuzz-base/base-runner"
+  },
+  {
+    "args": [
+      "build",
+      "-t",
+      "gcr.io/oss-fuzz/test-project",
+      "."
+    ],
+    "dir": "oss-fuzz/projects/test-project",
+    "name": "gcr.io/cloud-builders/docker"
+  },
+  {
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-introspector-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer introspector --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-introspector-x86_64",
+      "SANITIZER=introspector",
+      "GIT_REPO=https://github.com/google/oss-fuzz.git",
+      "COVERAGE_URL=https://storage.googleapis.com/oss-fuzz-coverage/test-project/reports/20200101/linux"
+    ],
+    "id": "compile-libfuzzer-introspector-x86_64",
+    "name": "gcr.io/oss-fuzz/test-project"
+  },
+  {
+    "args": [
+      "-c",
+      "gsutil -m rm -rf gs://oss-fuzz-introspector/test-project/inspector-report/20200101 || exit 0"
+    ],
+    "entrypoint": "sh",
+    "name": "gcr.io/cloud-builders/gsutil"
+  },
+  {
+    "args": [
+      "-m",
+      "cp",
+      "-r",
+      "/workspace/out/libfuzzer-introspector-x86_64/inspector",
+      "gs://oss-fuzz-introspector/test-project/inspector-report/20200101"
+    ],
+    "name": "gcr.io/cloud-builders/gsutil"
   }
 ]
