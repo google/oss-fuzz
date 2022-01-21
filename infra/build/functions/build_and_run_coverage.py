@@ -46,6 +46,7 @@ LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
 
 class Bucket:  # pylint: disable=too-few-public-methods
   """Class representing the GCS bucket."""
+  BUCKET_NAME = None
 
   def __init__(self, project, date, platform, testing):
     self.bucket_name = self.BUCKET_NAME
@@ -66,12 +67,12 @@ class Bucket:  # pylint: disable=too-few-public-methods
             f'/{upload_type}/{self.date}')
 
 
-class CoverageBucket(Bucket):
+class CoverageBucket(Bucket):  # pylint: disable=too-few-public-methods
   """Class representing the coverage GCS bucket."""
   BUCKET_NAME = 'oss-fuzz-coverage'
 
 
-class IntrospectorBucket(Bucket):
+class IntrospectorBucket(Bucket):  # pylint: disable=too-few-public-methods
   """Class representing the introspector GCS bucket."""
   BUCKET_NAME = 'oss-fuzz-introspector'
 
@@ -234,10 +235,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
   if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-    coverage_url = bucket.html_report_url
     build_steps.extend(
         get_fuzz_introspector_steps(project, base_images_project, config,
-                                    coverage_url))
+                                    bucket.html_report_url))
   return build_steps
 
 
@@ -259,8 +259,7 @@ def get_fuzz_introspector_steps(project, base_images_project, config,
       'args': [
           'bash', '-c',
           ('sed -i s/base-builder/base-builder:introspector/g '
-           f'oss-fuzz/projects/{project.name}/Dockerfile'
-           f' && cat oss-fuzz/projects/{project.name}/Dockerfile')
+           f'oss-fuzz/projects/{project.name}/Dockerfile')
       ]
   })
 
