@@ -1,24 +1,44 @@
 # Adapted from sksl.lex and SkSLBuiltinTypes.cpp
-"0.1"   # positive float literals
+
+# positive float literals
+"0.1"
 "1.2"
 "2.3"
-"-3.4"  # negative float literals
+
+# negative float literals
+"-3.4"
 "-4.5"
 "-5.6"
-"1e2"   # exponential float literals
+
+# exponential float literals
+"1e2"
 "2e3"
 "-3e4"
 "-4e5"
-"0"     # positive int literals
+
+# positive int literals
+"0"
 "1"
 "2"
-"3u"    # unsigned int literals
+
+# unsigned int literals
+"3u"
 "4u"
-"-5"    # negative int literals
+
+# negative int literals
+"-5"
 "-6"
-"0x"    # hexadecimal prefix
-"08"    # bad octal
-"09u"   # unsigned bad octal
+
+# hexadecimal prefix
+"0x"
+
+# bad octal
+"08"
+
+# unsigned bad octal
+"09u"
+
+# keywords
 "true "
 "false "
 "if "
@@ -62,11 +82,20 @@
 "mediump "
 "lowp "
 "$es3 "
+"main "
+"#extension "
+"disable "
+"require "
+"enable "
+"warn "
+
+# reserved words are all treated the same, and always invalidate the whole
+# program, so we only include a handful of them in the dictionary
 "attribute "
 "varying "
 "precision "
-#"invariant " # reserved words are all treated the same, and always invalidate the whole
-#"asm "       # program, so we only include a handful of them in the dictionary
+#"invariant "
+#"asm "
 #"class "
 #"union "
 #"enum "
@@ -93,7 +122,9 @@
 #"namespace "
 #"using "
 #"gl_reservedWord "
-".x "     # a selection of swizzles
+
+# a selection of swizzles
+".x "
 ".xx "
 ".xxx "
 ".xxxx "
@@ -115,7 +146,9 @@
 ".ga "
 ".xy01 "
 ".1xw0 "
-"[0]"    # array indexing
+
+# array indexing
+"[0]"
 "[1]"
 "[2]"
 "[3]"
@@ -123,12 +156,8 @@
 "[-1]"
 "[12345]"
 "[-12345]"
-"main "
-"#directive "
-"disable "
-"require "
-"enable "
-"warn "
+
+# symbol tokens
 "("
 ")"
 "{"
@@ -178,6 +207,8 @@
 "//"
 "/*"
 "*/"
+
+# types
 "void "
 "float "
 "float2 "
@@ -242,7 +273,12 @@
 "mat2x4 "
 "mat3x4 "
 "mat4x4 "
-"texture2D "            # these aren't accepted in a runtime effect; skip most of them
+"colorFilter "
+"shader "
+"blender "
+
+# types that aren't accepted in a runtime effect; skip most of them
+"texture2D "
 "sampler2D "
 "sampler "
 #"texture1D "
@@ -258,8 +294,11 @@
 #"subpassInput "
 #"subpassInputMS "
 #"subpassInputMS "
+
+# generic types shouldn't be accepted; skip most of them
 "$genType"
-#"$genHType"            # generic types shouldn't be accepted; skip most of them
+"$sk_Caps"
+#"$genHType"
 #"$genIType"
 #"$genUType"
 #"$genBType"
@@ -274,7 +313,3 @@
 #"$svec"
 #"$usvec"
 #"$bvec"
-"$sk_Caps"
-"colorFilter"
-"shader"
-"blender"
