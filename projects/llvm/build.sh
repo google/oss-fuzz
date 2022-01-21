@@ -75,9 +75,8 @@ for fuzzer in "${FUZZERS[@]}"; do
 done
 ninja llvm-as
 
-# In CI we only check a single fuzzer to avoid the CI hanging and getting killed
+# In CI we only check a single architecture to avoid CI exhaustion
 if [ -n "${OSS_FUZZ_CI-}" ]; then
-  cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
   exit 0
 fi
 
