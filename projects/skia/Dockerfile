@@ -76,6 +76,8 @@ COPY image_filter_deserialize_width.options $SRC/skia_data/image_filter_deserial
 
 COPY json.dict $SRC/skia_data/json.dict
 
+COPY sksl.dict $SRC/skia_data/sksl.dict
+
 WORKDIR $SRC/skia
 
 COPY build.sh $SRC/
