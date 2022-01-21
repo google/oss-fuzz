@@ -64,6 +64,14 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  readonly FUZZERS=(\
+    clang-fuzzer\
+    llvm-itanium-demangle-fuzzer\
+  )
+fi
+
+
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
