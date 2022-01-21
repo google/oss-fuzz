@@ -86,7 +86,7 @@ for build in $builds; do
   fi
   # older m4 iconv detection has memleaks, so switch leak detection off
   ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
-    ./configure --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
+    ./configure --enable-fuzzing --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
   make clean
   make -j
   make -j check
