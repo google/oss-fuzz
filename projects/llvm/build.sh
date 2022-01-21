@@ -22,16 +22,23 @@ if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
   exit 0
 fi
 
-readonly FUZZERS=( \
-  clang-fuzzer \
-  clang-format-fuzzer \
-  clang-objc-fuzzer \
-  clangd-fuzzer \
-  llvm-itanium-demangle-fuzzer \
-  llvm-microsoft-demangle-fuzzer \
-  llvm-dwarfdump-fuzzer \
-  llvm-special-case-list-fuzzer \
-)
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  readonly FUZZERS=(\
+    clang-fuzzer\
+    llvm-itanium-demangle-fuzzer\
+  )
+else
+  readonly FUZZERS=( \
+    clang-fuzzer \
+    clang-format-fuzzer \
+    clang-objc-fuzzer \
+    clangd-fuzzer \
+    llvm-itanium-demangle-fuzzer \
+    llvm-microsoft-demangle-fuzzer \
+    llvm-dwarfdump-fuzzer \
+    llvm-special-case-list-fuzzer \
+  )
+fi
 
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
@@ -61,14 +68,6 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
-
-if [ -n "${OSS_FUZZ_CI-}" ]; then
-  readonly FUZZERS=(\
-    clang-fuzzer\
-    llvm-itanium-demangle-fuzzer\
-  )
-fi
-
 
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
