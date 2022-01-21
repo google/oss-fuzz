@@ -30,9 +30,7 @@ readonly FUZZERS=( \
   llvm-itanium-demangle-fuzzer \
   llvm-microsoft-demangle-fuzzer \
   llvm-dwarfdump-fuzzer \
-  llvm-isel-fuzzer \
   llvm-special-case-list-fuzzer \
-  llvm-opt-fuzzer \
 )
 
 case $SANITIZER in
