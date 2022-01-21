@@ -70,6 +70,14 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
 def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images version of introspector"""
   steps = [{
+      'args': [
+          'clone',
+          'https://github.com/google/oss-fuzz.git',
+      ],
+      'name': 'gcr.io/cloud-builders/git',
+  }]
+
+  steps.extend([{
       'name':
           'gcr.io/oss-fuzz-base/base-runner',
       'args': [
@@ -77,7 +85,7 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
           (f'sed -i s/base-clang.*/base-clang:{INTROSPECTOR_TAG}/g'
            ' oss-fuzz/infra/base-images/base-builder/Dockerfile')
       ]
-  }]
+  }])
 
   for base_image in images:
     image = tag_prefix + base_image
