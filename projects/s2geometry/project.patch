@@ -1,0 +1,25 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2d2b233..6b52d22 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -418,6 +418,20 @@ install(TARGETS s2 s2testing
+         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+ 
++add_executable(s2fuzzer src/s2_fuzzer.cc)
++set_target_properties(s2fuzzer PROPERTIES LINK_FLAGS $ENV{LIB_FUZZING_ENGINE})
++target_link_libraries(
++  s2fuzzer
++  s2
++  absl::base
++  absl::btree
++  absl::core_headers
++  absl::flags_reflection
++  absl::memory
++  absl::span
++  absl::strings
++  absl::synchronization)
++
+ message("GTEST_ROOT: ${GTEST_ROOT}")
+ if (GTEST_ROOT)
+   add_subdirectory(${GTEST_ROOT} build_gtest)

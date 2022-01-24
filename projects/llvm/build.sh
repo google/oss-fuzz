@@ -16,18 +16,30 @@
 #
 ################################################################################
 
-readonly FUZZERS=( \
-  clang-fuzzer \
-  clang-format-fuzzer \
-  clang-objc-fuzzer \
-  clangd-fuzzer \
-  llvm-itanium-demangle-fuzzer \
-  llvm-microsoft-demangle-fuzzer \
-  llvm-dwarfdump-fuzzer \
-  llvm-isel-fuzzer \
-  llvm-special-case-list-fuzzer \
-  llvm-opt-fuzzer \
-)
+# Dont check Coverage in CI as it gets killed
+if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
+  touch $OUT/exit
+  exit 0
+fi
+
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  readonly FUZZERS=(\
+    clang-fuzzer\
+    llvm-itanium-demangle-fuzzer\
+  )
+else
+  readonly FUZZERS=( \
+    clang-fuzzer \
+    clang-format-fuzzer \
+    clang-objc-fuzzer \
+    clangd-fuzzer \
+    llvm-itanium-demangle-fuzzer \
+    llvm-microsoft-demangle-fuzzer \
+    llvm-dwarfdump-fuzzer \
+    llvm-special-case-list-fuzzer \
+  )
+fi
+
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
   undefined) LLVM_SANITIZER="Undefined" ;;
@@ -54,12 +66,19 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     "${CMAKE_FUZZING_CONFIG}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
-    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
+    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
+    -DCOMPILER_RT_INCLUDE_TESTS=OFF
+
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
 done
 ninja llvm-as
+
+# In CI we only check a single architecture to avoid CI exhaustion
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  exit 0
+fi
 
 # isel-fuzzer encodes its default flags in the name.
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
@@ -77,9 +96,7 @@ cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
 
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_rotate
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unroll
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
@@ -124,9 +141,7 @@ build_corpus "$LLVM/test/Transforms/LoopPredication/" "llvm-opt-fuzzer--x86_64-l
 build_corpus "$LLVM/test/Transforms/GuardWidening/" "llvm-opt-fuzzer--x86_64-guard_widening"
 build_corpus "$LLVM/test/Transforms/LoopVectorize/" "llvm-opt-fuzzer--x86_64-loop_vectorize"
 
-build_corpus "$LLVM/test/Transforms/LoopRotate/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_rotate"
 build_corpus "$LLVM/test/Transforms/LoopUnswitch/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unswitch"
-build_corpus "$LLVM/test/Transforms/LoopUnroll/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unroll"
 build_corpus "$LLVM/test/Transforms/LICM/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-licm"
 build_corpus "$LLVM/test/Transforms/IndVarSimplify/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-indvars"
 build_corpus "$LLVM/test/Transforms/LoopStrengthReduce/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-strength_reduce"

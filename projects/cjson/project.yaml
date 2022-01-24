@@ -14,3 +14,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://github.com/DaveGamble/cJSON.git'

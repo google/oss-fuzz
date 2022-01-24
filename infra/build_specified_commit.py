@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module to build a image from a specific commit, branch or pull request
+"""Module to build a image from a specific commit, branch or pull request.
 
 This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
@@ -28,10 +28,10 @@ import logging
 import re
 import shutil
 import tempfile
-import time
 
 import helper
 import repo_manager
+import retry
 import utils
 
 BuildData = collections.namedtuple(
@@ -39,7 +39,6 @@ BuildData = collections.namedtuple(
 
 _GIT_DIR_MARKER = 'gitdir: '
 _IMAGE_BUILD_TRIES = 3
-_IMAGE_BUILD_RETRY_SLEEP = 30.0
 
 
 class BaseBuilderRepo:
@@ -60,7 +59,8 @@ class BaseBuilderRepo:
     if index > 0:
       return self.digests[index - 1]
 
-    raise ValueError('Failed to find suitable base-builder.')
+    logging.error('Failed to find suitable base-builder.')
+    return None
 
 
 def _replace_gitdir(src_dir, file_path):
@@ -144,17 +144,10 @@ def copy_src_from_docker(project_name, host_dir):
   return src_dir
 
 
+@retry.wrap(_IMAGE_BUILD_TRIES, 2)
 def _build_image_with_retries(project_name):
   """Build image with retries."""
-
-  for _ in range(_IMAGE_BUILD_TRIES):
-    result = helper.build_image_impl(project_name)
-    if result:
-      return result
-
-    time.sleep(_IMAGE_BUILD_RETRY_SLEEP)
-
-  return result
+  return helper.build_image_impl(helper.Project(project_name))
 
 
 def get_required_post_checkout_steps(dockerfile_path):
@@ -200,13 +193,14 @@ def build_fuzzers_from_commit(commit,
   Returns:
     0 on successful build or error code on failure.
   """
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+  oss_fuzz_repo_manager = repo_manager.RepoManager(helper.OSS_FUZZ_DIR)
   num_retry = 1
 
   def cleanup():
     # Re-copy /src for a clean checkout every time.
     copy_src_from_docker(build_data.project_name,
                          os.path.dirname(host_src_path))
+    build_repo_manager.fetch_all_remotes()
 
   projects_dir = os.path.join('projects', build_data.project_name)
   dockerfile_path = os.path.join(projects_dir, 'Dockerfile')
@@ -229,15 +223,16 @@ def build_fuzzers_from_commit(commit,
           post_checkout_step,
       ])
 
-    result = helper.build_fuzzers_impl(project_name=build_data.project_name,
+    project = helper.Project(build_data.project_name)
+    result = helper.build_fuzzers_impl(project=project,
                                        clean=True,
                                        engine=build_data.engine,
                                        sanitizer=build_data.sanitizer,
                                        architecture=build_data.architecture,
                                        env_to_add=None,
                                        source_path=host_src_path,
-                                       mount_location='/src')
-    if result == 0 or i == num_retry:
+                                       mount_path='/src')
+    if result or i == num_retry:
       break
 
     # Retry with an OSS-Fuzz builder container that's closer to the project
@@ -253,7 +248,18 @@ def build_fuzzers_from_commit(commit,
                                                       check_result=True)
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
-      logging.warning('No suitable earlier OSS-Fuzz commit found.')
+      logging.info(
+          'Could not find first OSS-Fuzz commit prior to upstream commit. '
+          'Falling back to oldest integration commit.')
+
+      # Find the oldest commit.
+      oss_fuzz_commit, _, _ = oss_fuzz_repo_manager.git(
+          ['log', '--reverse', '--format=%H', projects_dir], check_result=True)
+
+      oss_fuzz_commit = oss_fuzz_commit.splitlines()[0].strip()
+
+    if not oss_fuzz_commit:
+      logging.error('Failed to get oldest integration commit.')
       break
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
@@ -266,17 +272,21 @@ def build_fuzzers_from_commit(commit,
     # Also use the closest base-builder we can find.
     if base_builder_repo:
       base_builder_digest = base_builder_repo.find_digest(commit_date)
+      if not base_builder_digest:
+        return False
+
       logging.info('Using base-builder with digest %s.', base_builder_digest)
       _replace_base_builder_digest(dockerfile_path, base_builder_digest)
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
     if not _build_image_with_retries(build_data.project_name):
-      raise RuntimeError('Failed to rebuild image.')
+      logging.error('Failed to rebuild image.')
+      return False
 
     cleanup()
 
   cleanup()
-  return result == 0
+  return result
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):
@@ -288,10 +298,9 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
     project_name: The name of the oss-fuzz project.
     repo_name: The name of the main repo in an OSS-Fuzz project.
     commit: A commit SHA that is associated with the main repo.
-    src_dir: The location of the projects source on the docker image.
 
   Returns:
-    The repo's origin, the repo's path.
+    A tuple containing (the repo's origin, the repo's path).
   """
 
   if not repo_name and not commit:
@@ -382,7 +391,7 @@ def main():
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     host_src_dir = copy_src_from_docker(args.project_name, tmp_dir)
-    build_repo_manager = repo_manager.BaseRepoManager(
+    build_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
     base_builder_repo = load_base_builder_repo()
 

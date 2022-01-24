@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  touch $OUT/exit
+  exit 0
+fi
+
+source $HOME/.cargo/env
+
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
   # WebRTC
@@ -42,9 +50,15 @@ FUZZ_TARGETS=(
 export MOZ_OBJDIR=$WORK/obj-fuzz
 export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
+# Without this, a host tool used during Rust part of the build will fail
+export ASAN_OPTIONS="detect_leaks=0"
+
 # Install remaining dependencies.
 export SHELL=/bin/bash
-./mach bootstrap --no-interactive --application-choice browser
+
+rustup default nightly
+
+./mach --no-interactive bootstrap --application-choice browser
 
 # Skip patches for now
 rm tools/fuzzing/libfuzzer/patches/*.patch

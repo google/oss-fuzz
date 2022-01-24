@@ -3,4 +3,4 @@ language: c++
 primary_contact: "miller.lucas@gmail.com"
 sanitizers:
   - address
-  
+main_repo: 'https://github.com/alembic/alembic'

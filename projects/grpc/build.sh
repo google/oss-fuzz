@@ -24,7 +24,7 @@ readonly FUZZER_DICTIONARIES=(
 
 readonly FUZZER_TARGETS=(
   test/core/json:json_fuzzer
-  test/core/client_channel:uri_fuzzer_test
+  test/core/uri:uri_fuzzer_test
   test/core/http:request_fuzzer
   test/core/http:response_fuzzer
   test/core/nanopb:fuzzer_response
@@ -129,7 +129,7 @@ cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
 zip "${OUT}/json_fuzzer_seed_corpus.zip" test/core/json/corpus/*
-zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/client_channel/uri_corpus/*
+zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/uri/uri_corpus/*
 zip "${OUT}/request_fuzzer_seed_corpus.zip" test/core/http/request_corpus/*
 zip "${OUT}/response_fuzzer_seed_corpus.zip" test/core/http/response_corpus/*
 zip "${OUT}/fuzzer_response_seed_corpus.zip" test/core/nanopb/corpus_response/*

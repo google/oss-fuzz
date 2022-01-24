@@ -3,8 +3,7 @@ language: c++
 primary_contact: "equinox.ib@googlemail.com"
 auto_ccs:
     - "zhichengcai@google.com"
-fuzzing_engines:
-    - libfuzzer
 sanitizers:
     - address
     - undefined
+main_repo: 'https://github.com/beltoforion/muparser.git'

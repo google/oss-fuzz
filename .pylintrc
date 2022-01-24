@@ -5,11 +5,11 @@
 # run arbitrary code.
 extension-pkg-whitelist=
 
-# Add files or directories to the blacklist. They should be base names, not
+# Add files or directories to the blocklist. They should be base names, not
 # paths.
-ignore=CVS
+ignore=CVS,base-clang,base-sanitizer-libs-builder
 
-# Add files or directories matching the regex patterns to the blacklist. The
+# Add files or directories matching the regex patterns to the blocklist. The
 # regex matches against base names, not paths.
 ignore-patterns=
 
@@ -141,7 +141,6 @@ disable=print-statement,
         comprehension-escape,
         fixme,
         import-error,
-        no-member
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -445,8 +444,8 @@ allow-global-unused-variables=yes
 callbacks=cb_,
           _cb
 
-# A regular expression matching the name of dummy variables (i.e. expected to
-# not be used).
+# A regular expression matching the name of placeholder variables (i.e. expected
+# to not be used).
 dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
 
 # Argument names that match this expression will be ignored. Default to name

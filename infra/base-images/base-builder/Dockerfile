@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ RUN dpkg --add-architecture i386 && \
         binutils-dev \
         build-essential \
         curl \
+        wget \
         git \
         jq \
         libc6-dev-i386 \
+        patchelf \
+        rsync \
         subversion \
         zip
 
@@ -44,42 +47,29 @@ RUN export PYTHON_DEPS="\
         libffi-dev \
         libbz2-dev \
         liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
-    cd /tmp/ && \
+    cd /tmp && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
-    ./configure --enable-optimizations && \
+    ./configure --enable-optimizations --enable-shared && \
     make -j install && \
+    ldconfig && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
+    rm -rf /usr/local/lib/python3.8/test && \
+    apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
-# Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
+# Install six for Bazel rules.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
+    six==1.15.0 && rm -rf /tmp/*
 
-# Set up Golang environment variables (copied from /root/.bash_profile).
-ENV GOPATH /root/go
-
-# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
-# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
-
-# Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
-RUN go get -u github.com/mdempsky/go114-fuzz-build && \
-    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
-
-# Install Rust and cargo-fuzz for libFuzzer instrumentation.
-ENV CARGO_HOME=/rust
-ENV RUSTUP_HOME=/rust/rustup
-ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-RUN cargo install cargo-fuzz
-# Needed to recompile rust std library for MSAN
-RUN rustup component add rust-src --toolchain nightly
+# Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
+ENV BAZELISK_VERSION 1.9.0
+RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
+    chmod +x /usr/local/bin/bazel
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -90,6 +80,10 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-d
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
+
+ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
+
+ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -129,24 +123,44 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
-ENV PRECOMPILED_DIR="/usr/lib/precompiled"
-RUN mkdir $PRECOMPILED_DIR
-
 WORKDIR $SRC
 
-RUN git clone -b stable https://github.com/google/AFL.git afl
+RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
+    cd aflplusplus && \
+    git checkout 550ba4d77294e61597a5259d00769c61281e0042 && \
+    wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    chmod 755 oss.sh
 
-ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
-RUN mkdir honggfuzz && \
+RUN cd $SRC && \
+    curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
+    mkdir honggfuzz && \
     cd honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
-    rm -rf $SRC/oss-fuzz.tar.gz
+    rm -rf examples $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
 
-COPY detect_repo.py /opt/cifuzz/
+RUN git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
+    cd fuzz-introspector && \
+    git checkout 9e3393cd551b65a6bf2de6495013b415f315f74e
 
+COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
+
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer debug_afl srcmap \
+    write_labels.py bazel_build_fuzz_tests \
+    # Go, java, and swift installation scripts.
+    install_go.sh \
+    install_java.sh \
+    install_python.sh \
+    install_rust.sh \
+    install_swift.sh \
+    /usr/local/bin/
+
+COPY llvmsymbol.diff $SRC
+COPY detect_repo.py /opt/cifuzz/
 
 CMD ["compile"]

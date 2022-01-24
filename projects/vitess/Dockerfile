@@ -14,14 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get 	github.com/vitessio/vitess \
-		vitess.io/vitess/go/bytes2 \
-		vitess.io/vitess/go/sqltypes \
-		vitess.io/vitess/go/vt/log \
-		vitess.io/vitess/go/vt/proto/query \
-		vitess.io/vitess/go/vt/proto/vtrpc \
-		vitess.io/vitess/go/vt/vterrors \
-		vitess.io/vitess/go/vt/vtgate/evalengine
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/vitessio/vitess
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/vitess

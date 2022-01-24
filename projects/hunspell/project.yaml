@@ -4,12 +4,13 @@ primary_contact: "caolanm@redhat.com"
 auto_ccs:
   - "security@documentfoundation.org"
 vendor_ccs:
-  - "ehsan.akhgari@gmail.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
 architectures:
  - i386
  - x86_64
+main_repo: 'https://github.com/hunspell/hunspell.git'

@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build CUPS
-pushd cups
+pushd $SRC/cups
 # Fix bad line
 sed -i '2110s/\(\s\)f->value/\1(int)f->value/' cups/ppd-cache.c
 
@@ -29,13 +29,12 @@ make -C filter libs install-libs
 install -m755 cups-config "$WORK"/cups-config
 popd
 
-cd ghostpdl
 rm -rf cups/libs || die
 rm -rf freetype || die
 rm -rf libpng || die
 rm -rf zlib || die
 
-mv ../freetype freetype
+mv $SRC/freetype freetype
 
 CUPSCONFIG="$WORK/cups-config"
 CUPS_CFLAGS=$($CUPSCONFIG --cflags)
@@ -51,7 +50,7 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
 make -j$(nproc) libgs
 
 $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
-    fuzz/gstoraster_fuzzer.cc \
+    $SRC/gstoraster_fuzzer.cc \
     -o "$OUT/gstoraster_fuzzer" \
     -Wl,-rpath='$ORIGIN' \
     $CUPS_LIBS \

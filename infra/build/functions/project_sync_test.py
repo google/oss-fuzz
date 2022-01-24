@@ -16,9 +16,14 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
+import os
+import sys
 import unittest
 
 from google.cloud import ndb
+
+sys.path.append(os.path.dirname(__file__))
+# pylint: disable=wrong-import-position
 
 from datastore_entities import Project
 from project_sync import get_github_creds
@@ -26,6 +31,8 @@ from project_sync import get_projects
 from project_sync import ProjectMetadata
 from project_sync import sync_projects
 import test_utils
+
+# pylint: disable=no-member
 
 
 # pylint: disable=too-few-public-methods
@@ -64,7 +71,7 @@ class CloudSchedulerClient:
   # pylint: disable=no-self-use
   def location_path(self, project_id, location_id):
     """Return project path."""
-    return 'projects/{}/location/{}'.format(project_id, location_id)
+    return f'projects/{project_id}/location/{location_id}'
 
   def create_job(self, parent, job):
     """Simulate create job."""
@@ -74,8 +81,7 @@ class CloudSchedulerClient:
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
     """Return job path."""
-    return 'projects/{}/location/{}/jobs/{}'.format(project_id, location_id,
-                                                    name)
+    return f'projects/{project_id}/location/{location_id}/jobs/{name}'
 
   def delete_job(self, name):
     """Simulate delete jobs."""

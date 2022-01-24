@@ -14,7 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/pingcap/tidb/store
-COPY build.sh $SRC/
-WORKDIR $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/pingcap/tidb
+COPY build.sh \
+     fuzzMarshalJSON.go \
+     fuzzNewBitLiteral.go \
+     fuzzNewHexLiteral.go \
+     $SRC/
+WORKDIR $SRC/tidb

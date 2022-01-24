@@ -3,8 +3,10 @@ language: c++
 primary_contact: tsdgeos@gmail.com
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
 auto_ccs:
   - jonathan@titanous.com
   - adam.reichold@t-online.de
+main_repo: 'https://anongit.freedesktop.org/git/poppler/poppler.git'

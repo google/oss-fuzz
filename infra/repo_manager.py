@@ -26,11 +26,13 @@ import logging
 import os
 import shutil
 
+import urllib.parse
+
 import utils
 
 
-class BaseRepoManager:
-  """Base repo manager."""
+class RepoManager:
+  """Repo manager."""
 
   def __init__(self, repo_dir):
     self.repo_dir = repo_dir
@@ -86,14 +88,16 @@ class BaseRepoManager:
                          check_result=True)
     return datetime.datetime.fromtimestamp(int(out), tz=datetime.timezone.utc)
 
-  def get_git_diff(self):
+  def get_git_diff(self, base='origin...'):
     """Gets a list of files that have changed from the repo head.
 
     Returns:
       A list of changed file paths or None on Error.
     """
     self.fetch_unshallow()
-    out, err_msg, err_code = self.git(['diff', '--name-only', 'origin...'])
+    # Add '--' so that git knows we aren't talking about files.
+    command = ['diff', '--name-only', base, '--']
+    out, err_msg, err_code = self.git(command)
     if err_code:
       logging.error('Git diff failed with error message %s.', err_msg)
       return None
@@ -125,7 +129,15 @@ class BaseRepoManager:
 
     return out.strip()
 
-  def get_commit_list(self, newest_commit, oldest_commit=None):
+  def fetch_all_remotes(self):
+    """Fetch all remotes for checkouts that track a single branch."""
+    self.git([
+        'config', 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/*'
+    ],
+             check_result=True)
+    self.git(['remote', 'update'], check_result=True)
+
+  def get_commit_list(self, newest_commit, oldest_commit=None, limit=None):
     """Gets the list of commits(inclusive) between the old and new commits.
 
     Args:
@@ -152,7 +164,11 @@ class BaseRepoManager:
     else:
       commit_range = newest_commit
 
-    out, _, err_code = self.git(['rev-list', commit_range])
+    limit_args = []
+    if limit:
+      limit_args.append(f'--max-count={limit}')
+
+    out, _, err_code = self.git(['rev-list', commit_range] + limit_args)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
     if err_code or not commits:
@@ -164,11 +180,18 @@ class BaseRepoManager:
       commits.append(oldest_commit)
     return commits
 
+  def fetch_branch(self, branch):
+    """Fetches a remote branch from origin."""
+    return self.git(
+        ['fetch', 'origin', '{branch}:{branch}'.format(branch=branch)])
+
   def fetch_unshallow(self):
     """Gets the current git repository history."""
     shallow_file = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(shallow_file):
-      self.git(['fetch', '--unshallow'], check_result=True)
+      _, err, err_code = self.git(['fetch', '--unshallow'], check_result=False)
+      if err_code:
+        logging.error('Unshallow returned non-zero code: %s', err)
 
   def checkout_pr(self, pr_ref):
     """Checks out a remote pull request.
@@ -200,51 +223,46 @@ class BaseRepoManager:
       raise RuntimeError('Error checking out commit %s' % commit)
 
   def remove_repo(self):
-    """Attempts to remove the git repo. """
+    """Removes the git repo from disk."""
     if os.path.isdir(self.repo_dir):
       shutil.rmtree(self.repo_dir)
 
 
-class RepoManager(BaseRepoManager):
-  """Class to manage git repos from python.
-
-  Attributes:
-    repo_url: The location of the git repo.
-    base_dir: The location of where the repo clone is stored locally.
-    repo_name: The name of the GitHub project.
-    repo_dir: The location of the main repo.
-  """
-
-  def __init__(self, repo_url, base_dir, repo_name=None):
-    """Constructs a repo manager class.
+def clone_repo_and_get_manager(repo_url,
+                               base_dir,
+                               repo_name=None,
+                               username=None,
+                               password=None):
+  """Clones a repo and constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone.
       base_dir: The full file-path where the git repo is located.
       repo_name: The name of the directory the repo is cloned to.
     """
-    self.repo_url = repo_url
-    self.base_dir = base_dir
-    if repo_name:
-      self.repo_name = repo_name
-    else:
-      self.repo_name = os.path.basename(self.repo_url).replace('.git', '')
-    repo_dir = os.path.join(self.base_dir, self.repo_name)
-    super(RepoManager, self).__init__(repo_dir)
+  if repo_name is None:
+    repo_name = os.path.basename(repo_url).replace('.git', '')
+  repo_dir = os.path.join(base_dir, repo_name)
+  manager = RepoManager(repo_dir)
 
-    if not os.path.exists(self.repo_dir):
-      self._clone()
+  if not os.path.exists(repo_dir):
+    _clone(repo_url, base_dir, repo_name, username=username, password=password)
 
-  def _clone(self):
-    """Creates a clone of the repo in the specified directory.
+  return manager
 
-      Raises:
-        ValueError: when the repo is not able to be cloned.
-    """
-    if not os.path.exists(self.base_dir):
-      os.makedirs(self.base_dir)
-    self.remove_repo()
-    out, _, _ = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
-                              location=self.base_dir)
-    if not self._is_git_repo():
-      raise ValueError('%s is not a git repo' % self.repo_url)
+
+def _clone(repo_url, base_dir, repo_name, username=None, password=None):
+  """Creates a clone of the repo in the specified directory.
+
+     Raises:
+       ValueError: when the repo is not able to be cloned.
+  """
+  if username and password:
+    parsed_url = urllib.parse.urlparse(repo_url)
+    new_netloc = f'{username}:{password}@{parsed_url.netloc}'
+    repo_url = urllib.parse.urlunparse(parsed_url._replace(netloc=new_netloc))
+
+  utils.execute(['git', 'clone', repo_url, repo_name],
+                location=base_dir,
+                check_result=True,
+                log_command=not password)

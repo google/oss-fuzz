@@ -1,19 +1,20 @@
 diff --git a/src/backend/tcop/postgres.c b/src/backend/tcop/postgres.c
-index c9424f167c..aa2897ec63 100644
+index 0775abe35d..f53b3580b3 100644
 --- a/src/backend/tcop/postgres.c
 +++ b/src/backend/tcop/postgres.c
-@@ -101,6 +101,10 @@ int			max_stack_depth = 100;
- /* wait N seconds to allow attach from a debugger */
- int			PostAuthDelay = 0;
+@@ -105,6 +105,11 @@ int			PostAuthDelay = 0;
+ /* Time between checks that the client is still connected. */
+ int			client_connection_check_interval = 0;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +bool        fuzzer_first_run = true;
 +#endif
 +
- 
- 
++
  /* ----------------
-@@ -505,11 +509,14 @@ static int
+  *		private typedefs etc
+  * ----------------
+@@ -471,11 +476,14 @@ static int
  ReadCommand(StringInfo inBuf)
  {
  	int			result;
@@ -29,35 +30,36 @@ index c9424f167c..aa2897ec63 100644
  	return result;
  }
  
-@@ -3784,6 +3791,10 @@ PostgresMain(int argc, char *argv[],
- 	volatile bool send_ready_for_query = true;
- 	bool		disable_idle_in_transaction_timeout = false;
+@@ -4021,6 +4029,11 @@ PostgresMain(const char *dbname, const char *username)
+ 	bool		idle_in_transaction_timeout_enabled = false;
+ 	bool		idle_session_timeout_enabled = false;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-+	if(fuzzer_first_run)
-+	{
++       if(fuzzer_first_run)
++       {
 +#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
- 	/* Initialize startup process environment if necessary. */
- 	if (!IsUnderPostmaster)
- 		InitStandaloneProcess(argv[0]);
-@@ -4151,6 +4162,11 @@ PostgresMain(int argc, char *argv[],
++
+ 	AssertArg(dbname != NULL);
+ 	AssertArg(username != NULL);
+ 
+@@ -4312,6 +4325,11 @@ PostgresMain(const char *dbname, const char *username)
  	if (!ignore_till_sync)
  		send_ready_for_query = true;	/* initially, or after error */
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-+	fuzzer_first_run=false;
-+	}
++        fuzzer_first_run=false;
++            }
 +#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 +
  	/*
  	 * Non-error queries loop here.
  	 */
 diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index d0b368530e..02a3e9066e 100644
+index 2af87ee3bd..825bb70532 100644
 --- a/src/backend/utils/error/elog.c
 +++ b/src/backend/utils/error/elog.c
-@@ -513,7 +513,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
- 		pq_endcopyout(true);
+@@ -594,7 +594,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
+ 	}
  
  	/* Emit the message to the right places */
 +#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION

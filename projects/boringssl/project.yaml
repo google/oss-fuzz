@@ -8,3 +8,4 @@ sanitizers:
 - address
 - undefined
 - memory
+main_repo: 'https://boringssl.googlesource.com/boringssl'

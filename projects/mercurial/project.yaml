@@ -6,8 +6,11 @@ auto_ccs:
   - "kbullock@ringworld.org"
   - "security@mercurial-scm.org"
   - "martinvonz@google.com"
+  - "raphael.gomes@octobus.net"
 sanitizers:
   - address
   - undefined
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*
+main_repo: "https://www.mercurial-scm.org/repo/hg"

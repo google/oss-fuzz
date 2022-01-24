@@ -15,7 +15,7 @@
 ################################################################################
 
 # google oss-fuzz stuff
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 # install other tools we might need
 RUN apt-get update && apt-get install -y cmake curl

@@ -11,8 +11,10 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - dataflow
 architectures:
   - x86_64
   - i386
+main_repo: 'git://w1.fi/srv/git/hostap.git'

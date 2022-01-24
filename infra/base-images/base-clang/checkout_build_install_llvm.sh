@@ -15,10 +15,19 @@
 #
 ################################################################################
 
-NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
+# See issue #4270. The compiler crashes on GCB instance with 32 vCPUs, so when
+# we compile on GCB we want 16 cores. But locally we want more (so use nproc /
+# 2).
+NPROC=$(expr $(nproc) / 2)
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib binutils-dev"
-apt-get install -y $LLVM_DEP_PACKAGES
+# zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
+apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
+
+INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
+fi
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -60,13 +69,13 @@ function cmake_llvm {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang
+git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
 cd clang
 
 LLVM_SRC=$SRC/llvm-project
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-12-init-5627-gf086e85e
+OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
@@ -89,11 +98,27 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-# Build & install. We build clang in two stages because gcc can't build a
-# static version of libcxxabi
-# (see https://github.com/google/oss-fuzz/issues/2164).
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  # For fuzz introspector.
+  echo "Applying introspector changes"
+  BBBASE=$PWD
+  cd $LLVM_SRC 
+  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/Inspector/ ./llvm/include/llvm/Transforms//Inspector
+  cp -rf /fuzz-introspector/llvm/lib/Transforms/Inspector ./llvm/lib/Transforms/Inspector
+
+  # LLVM currently does not support dynamically loading LTO passes. Thus,
+  # we hardcode it into Clang instead.
+  # Ref: https://reviews.llvm.org/D77704
+  sed -i 's/whole-program devirtualization and bitset lowering./whole-program devirtualization and bitset lowering.\nPM.add(createInspectorPass());/g' ./llvm/lib/Transforms/IPO/PassManagerBuilder.cpp
+  sed -i 's/using namespace/#include "llvm\/Transforms\/Inspector\/Inspector.h"\nusing namespace/g' ./llvm/lib/Transforms/IPO/PassManagerBuilder.cpp
+  echo "add_subdirectory(Inspector)" >> ./llvm/lib/Transforms/CMakeLists.txt
+  sed -i 's/Instrumentation/Instrumentation\n  Inspector/g' ./llvm/lib/Transforms/IPO/CMakeLists.txt
+  cd $BBBASE  
+fi
+
+# Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
-cd $WORK/llvm-stage1
+python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 TARGET_TO_BUILD=
 case $(uname -m) in
@@ -111,9 +136,6 @@ esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 
-cmake_llvm
-ninja -j $NPROC
-
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
 export CXX=$WORK/llvm-stage1/bin/clang++
@@ -125,10 +147,24 @@ rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 # Use the clang we just built from now on.
 CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
+function cmake_libcxx {
+  extra_args="$@"
+  cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+      $extra_args \
+      $LLVM_SRC/llvm
+}
+
 # 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
@@ -142,14 +178,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blacklist.txt
+cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx
@@ -159,7 +195,7 @@ rm -rf $WORK/msan
 mkdir -p $WORK/dfsan
 cd $WORK/dfsan
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
@@ -174,4 +210,58 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
+fi
 apt-get autoremove -y
+
+# Delete unneeded parts of LLVM to reduce image size.
+# See https://github.com/google/oss-fuzz/issues/5170
+LLVM_TOOLS_TMPDIR=/tmp/llvm-tools
+mkdir $LLVM_TOOLS_TMPDIR
+# Move binaries with llvm- prefix that we want into LLVM_TOOLS_TMPDIR
+mv \
+  /usr/local/bin/llvm-ar \
+  /usr/local/bin/llvm-as \
+  /usr/local/bin/llvm-config \
+  /usr/local/bin/llvm-cov \
+  /usr/local/bin/llvm-objcopy \
+  /usr/local/bin/llvm-profdata \
+  /usr/local/bin/llvm-ranlib \
+  /usr/local/bin/llvm-symbolizer \
+  /usr/local/bin/llvm-undname \
+  $LLVM_TOOLS_TMPDIR
+# Delete remaining llvm- binaries.
+rm -rf /usr/local/bin/llvm-*
+# Restore the llvm- binaries we want to keep.
+mv $LLVM_TOOLS_TMPDIR/* /usr/local/bin/
+rm -rf $LLVM_TOOLS_TMPDIR
+
+# Remove binaries from LLVM build that we don't need.
+rm -f \
+  /usr/local/bin/bugpoint \
+  /usr/local/bin/llc \
+  /usr/local/bin/lli \
+  /usr/local/bin/clang-check \
+  /usr/local/bin/clang-refactor \
+  /usr/local/bin/clang-offload-wrapper \
+  /usr/local/bin/clang-offload-bundler \
+  /usr/local/bin/clang-check \
+  /usr/local/bin/clang-refactor \
+  /usr/local/bin/c-index-test \
+  /usr/local/bin/clang-rename \
+  /usr/local/bin/clang-scan-deps \
+  /usr/local/bin/clang-extdef-mapping \
+  /usr/local/bin/diagtool \
+  /usr/local/bin/sanstats \
+  /usr/local/bin/dsymutil \
+  /usr/local/bin/verify-uselistorder \
+  /usr/local/bin/clang-format
+
+# Remove unneeded clang libs, CMake files from LLVM build, lld libs, and the
+# libraries.
+# Note: we need fuzzer_no_main libraries for atheris. Don't delete.
+rm -rf \
+  /usr/local/lib/libclang* \
+  /usr/local/lib/liblld* \
+  /usr/local/lib/cmake/

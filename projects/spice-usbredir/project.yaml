@@ -1,0 +1,11 @@
+homepage: "https://www.spice-space.org/usbredir.html"
+language: c++
+primary_contact: "freddy77@gmail.com"
+auto_ccs:
+  - "imsnah@gmail.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+main_repo: "https://gitlab.freedesktop.org/spice/usbredir.git"

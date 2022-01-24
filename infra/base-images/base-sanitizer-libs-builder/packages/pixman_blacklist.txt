@@ -1,1 +1,0 @@
-src:*/pixman-sse2.c

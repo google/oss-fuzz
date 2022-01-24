@@ -46,7 +46,7 @@ exec_simple_query(const char *query_string)
   StartTransactionCommand();
   oldcontext = MemoryContextSwitchTo(MessageContext);
 
-  parsetree_list = raw_parser(query_string);
+  parsetree_list = raw_parser(query_string, RAW_PARSE_TYPE_NAME);
   MemoryContextSwitchTo(oldcontext);
 
   use_implicit_block = (list_length(parsetree_list) > 1);

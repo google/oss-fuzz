@@ -11,3 +11,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://gitlab.com/gnutls/gnutls.git'

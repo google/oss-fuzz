@@ -15,18 +15,35 @@
 #
 ################################################################################
 
-# build the project
-./build/autogen.sh
-./configure
-make -j$(nproc) all
+# compile libxml2 from source so we can statically link
+DEPS=/deps
+mkdir ${DEPS}
+cd $SRC/libxml2
+./autogen.sh \
+    --without-debug \
+    --without-ftp \
+    --without-http \
+    --without-legacy \
+    --without-python
+make -j$(nproc)
+make install
+cp .libs/libxml2.a ${DEPS}/
+cd $SRC/libarchive
+
+sed -i 's/-Wall//g' ./CMakeLists.txt
+sed -i 's/-Werror//g' ./CMakeLists.txt
+
+mkdir build2
+cd build2
+cmake ../
+make
 
 # build seed
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
-       	$OUT/libarchive_fuzzer_seed_corpus.zip
+        $OUT/libarchive_fuzzer_seed_corpus.zip
 
 # build fuzzer(s)
-$CXX $CXXFLAGS -Ilibarchive \
+$CXX $CXXFLAGS -I../libarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
-    $LIB_FUZZING_ENGINE .libs/libarchive.a \
-    -Wl,-Bstatic -lbz2 -llzo2  -lxml2 -llzma -lz -lcrypto -llz4 -licuuc \
-    -licudata -Wl,-Bdynamic
+    $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
+    -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a

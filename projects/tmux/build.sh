@@ -15,12 +15,15 @@
 #
 ################################################################################
 
+# Ensure libevent can be found
+export PKG_CONFIG_PATH="/usr/local/lib/"
+
 ./autogen.sh
 ./configure \
     --enable-fuzzing \
     FUZZING_LIBS="${LIB_FUZZING_ENGINE} -lc++" \
     LIBEVENT_LIBS="-Wl,-Bstatic -levent -Wl,-Bdynamic" \
-    LIBTINFO_LIBS="-Wl,-Bstatic -ltinfo -Wl,-Bdynamic"
+    LIBTINFO_LIBS=" -l:libtinfo.a "
 
 make -j"$(nproc)" check
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer' -exec cp -v '{}' "${OUT}"/ \;

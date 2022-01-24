@@ -9,6 +9,7 @@ auto_ccs :
   - "ankitlohia@google.com"
 sanitizers:
   - address
-  - dataflow
   - undefined
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://github.com/yhirose/cpp-httplib.git'

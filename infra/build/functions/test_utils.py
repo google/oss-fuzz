@@ -24,16 +24,31 @@ import requests
 DATASTORE_READY_INDICATOR = b'is now running'
 DATASTORE_EMULATOR_PORT = 8432
 EMULATOR_TIMEOUT = 20
-TEST_PROJECT_ID = 'test-project'
+
+FUNCTIONS_DIR = os.path.dirname(__file__)
+OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.dirname(FUNCTIONS_DIR)))
+PROJECTS_DIR = os.path.join(OSS_FUZZ_DIR, 'projects')
+
+FAKE_DATETIME = datetime.datetime(2020, 1, 1, 0, 0, 0)
+IMAGE_PROJECT = 'oss-fuzz'
+BASE_IMAGES_PROJECT = 'oss-fuzz-base'
+PROJECT = 'test-project'
+PROJECT_DIR = os.path.join(PROJECTS_DIR, PROJECT)
 
 
-# pylint: disable=arguments-differ
-class SpoofedDatetime(datetime.datetime):
-  """Mocking Datetime class for now() function."""
+def create_project_data(project,
+                        project_yaml_contents,
+                        dockerfile_contents='test line'):
+  """Creates a project.yaml with |project_yaml_contents| and a Dockerfile with
+  |dockerfile_contents| for |project|."""
+  project_dir = os.path.join(PROJECTS_DIR, project)
+  project_yaml_path = os.path.join(project_dir, 'project.yaml')
+  with open(project_yaml_path, 'w') as project_yaml_handle:
+    project_yaml_handle.write(project_yaml_contents)
 
-  @classmethod
-  def now(cls):
-    return datetime.datetime(2020, 1, 1, 0, 0, 0)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
+  with open(dockerfile_path, 'w') as dockerfile_handle:
+    dockerfile_handle.write(dockerfile_contents)
 
 
 def start_datastore_emulator():
@@ -46,7 +61,7 @@ def start_datastore_emulator():
       'start',
       '--consistency=1.0',
       '--host-port=localhost:' + str(DATASTORE_EMULATOR_PORT),
-      '--project=' + TEST_PROJECT_ID,
+      '--project=' + PROJECT,
       '--no-store-on-disk',
   ],
                           stdout=subprocess.PIPE,
@@ -76,15 +91,13 @@ def wait_for_emulator_ready(proc,
   thread.daemon = True
   thread.start()
   if not ready_event.wait(timeout):
-    raise RuntimeError(
-        '{} emulator did not get ready in time.'.format(emulator))
+    raise RuntimeError(f'{emulator} emulator did not get ready in time.')
   return thread
 
 
 def reset_ds_emulator():
   """Reset ds emulator/clean all entities."""
-  req = requests.post(
-      'http://localhost:{}/reset'.format(DATASTORE_EMULATOR_PORT))
+  req = requests.post(f'http://localhost:{DATASTORE_EMULATOR_PORT}/reset')
   req.raise_for_status()
 
 
@@ -98,7 +111,12 @@ def set_gcp_environment():
   """Set environment variables for simulating in google cloud platform."""
   os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
       DATASTORE_EMULATOR_PORT)
-  os.environ['GOOGLE_CLOUD_PROJECT'] = TEST_PROJECT_ID
-  os.environ['DATASTORE_DATASET'] = TEST_PROJECT_ID
-  os.environ['GCP_PROJECT'] = TEST_PROJECT_ID
+  os.environ['GOOGLE_CLOUD_PROJECT'] = PROJECT
+  os.environ['DATASTORE_DATASET'] = PROJECT
+  os.environ['GCP_PROJECT'] = PROJECT
   os.environ['FUNCTION_REGION'] = 'us-central1'
+
+
+def get_test_data_file_path(filename):
+  """Returns the path to a test data file with name |filename|."""
+  return os.path.join(os.path.dirname(__file__), 'test_data', filename)

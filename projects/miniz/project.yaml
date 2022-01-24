@@ -13,3 +13,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://github.com/richgel999/miniz.git'

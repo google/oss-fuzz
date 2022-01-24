@@ -31,7 +31,10 @@ RUN set -ex && \
         doxygen \
         git \
         curl \
+        libtool \
         libtool-bin \
+        flex \
+        bison \
         autoconf \
         automake \
         bzip2 \
@@ -44,7 +47,8 @@ RUN set -ex && \
         libreadline-dev \
         libudev-dev \
         libprotobuf-dev \
-        protobuf-compiler
+        protobuf-compiler \
+        libexpat-dev
 
 WORKDIR monero
 
@@ -116,6 +120,9 @@ RUN set -ex \
     && ./configure --enable-static --disable-shared \
     && make \
     && make install
+
+RUN git clone https://github.com/NLnetLabs/unbound && \
+    cd unbound && ./configure && make && make install
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
 COPY build.sh $SRC/

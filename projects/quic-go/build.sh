@@ -17,35 +17,33 @@
 
 set -ex
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
-
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
+(
+cd qpack
 # Fuzz qpack
-compile_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+compile_go_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+)
 
+(
+cd quic-go
 # Fuzz quic-go
-compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
-compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
-compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
-compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fuzzer
-compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
+compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
+compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
+compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
+compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fuzzer
+compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
 
+if [ $SANITIZER == "coverage" ]; then
+    # no need for corpuses if coverage
+    exit 0
+fi
 # generate seed corpora
-go generate $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/...
+go generate ./fuzzing/...
 
-zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/header/corpus
-zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/frames/corpus
-zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/transportparameters/corpus
-zip --quiet -r $OUT/handshake_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/handshake/corpus
+zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip fuzzing/header/corpus
+zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip fuzzing/frames/corpus
+zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip fuzzing/transportparameters/corpus
+zip --quiet -r $OUT/handshake_fuzzer_seed_corpus.zip fuzzing/handshake/corpus
+)
 
 # for debugging
 ls -al $OUT

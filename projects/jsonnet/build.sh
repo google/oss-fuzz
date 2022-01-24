@@ -18,7 +18,7 @@
 mkdir jsonnet/build
 pushd jsonnet/build
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
-  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" ..
+  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_TESTS=OFF ..
 make -j$(nproc)
 popd
 
@@ -28,4 +28,5 @@ fuzzer=convert_jsonnet_fuzzer
 $CXX $CXXFLAGS -I${INSTALL_DIR}/include $LIB_FUZZING_ENGINE \
   $fuzzer.cc -o $OUT/$fuzzer \
   ${INSTALL_DIR}/build/libjsonnet.a \
-  ${INSTALL_DIR}/build/libmd5.a
+  ${INSTALL_DIR}/build/libmd5.a \
+  ${INSTALL_DIR}/build/libryml.a

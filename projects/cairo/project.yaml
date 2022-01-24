@@ -1,0 +1,14 @@
+homepage: https://gitlab.freedesktop.org/cairo/cairo
+language: c
+primary_contact: security-tps@google.com
+auto_ccs:
+  - "psychon@znc.in"
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - "jkew@mozilla.com"
+  - "jmuizelaar@mozilla.com"
+  - "twsmith@mozilla.com"
+view_restrictions: none
+main_repo: 'https://gitlab.freedesktop.org/cairo/cairo.git'

@@ -18,5 +18,5 @@ export CFLAGS="$CFLAGS -fPIC"
 cd janet
 make
 
-clang $CFLAGS -std=c99 -Isrc/include -Isrc/conf -fPIC  -o fuzz_dostring.o -c ./test/fuzzers/fuzz_dostring.c
-clang++ $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dostring.o build/libjanet.a -o $OUT/fuzz_dostring
+$CC $CFLAGS -std=c99 -Isrc/include -Isrc/conf -fPIC  -o fuzz_dostring.o -c ./test/fuzzers/fuzz_dostring.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dostring.o build/libjanet.a -o $OUT/fuzz_dostring

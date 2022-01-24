@@ -20,18 +20,7 @@ set -ex
 
 ROOTDIR="${SRC}/solidity"
 BUILDDIR="${ROOTDIR}/build"
-mkdir -p "${BUILDDIR}" && mkdir -p "$BUILDDIR/deps"
-
-ANTLRJAR="${BUILDDIR}/deps/antlr4.8.jar"
-ANTLRJAR_URI="https://www.antlr.org/download/antlr-4.8-complete.jar"
-
-download_antlr4()
-{
-  if [[ ! -e "${ANTLRJAR}" ]]
-  then
-    wget -O "${ANTLRJAR}" "${ANTLRJAR_URI}"
-  fi
-}
+mkdir -p "${BUILDDIR}"
 
 generate_protobuf_bindings()
 {
@@ -41,21 +30,6 @@ generate_protobuf_bindings()
   do
     protoc "${protoName}"Proto.proto --cpp_out .
   done
-}
-
-generate_antlr4_bindings()
-{
-  cd "${ROOTDIR}"
-  # Replace boolean with bool to suit c++ syntax
-  sed -i 's/boolean /bool /g' docs/grammar/Solidity.g4
-  # Generate antlr4 visitor/parser/lexer c++ bindings
-  java -jar "${ANTLRJAR}" -Dlanguage=Cpp \
-    -Xexact-output-dir -package solidity::test::fuzzer -o test/tools/ossfuzz \
-    -no-listener -visitor docs/grammar/SolidityLexer.g4 docs/grammar/Solidity.g4
-  # Delete unnecessary autogen files
-  rm -f "${ROOTDIR}"/test/tools/ossfuzz/Solidity*Visitor.cpp \
-    "${ROOTDIR}"/test/tools/ossfuzz/Solidity*.interp \
-    "${ROOTDIR}"/test/tools/ossfuzz/Solidity*.tokens
 }
 
 build_fuzzers()
@@ -87,9 +61,7 @@ update_corpus()
   done
 }
 
-download_antlr4
 generate_protobuf_bindings
-generate_antlr4_bindings
 build_fuzzers
 copy_fuzzers_and_config
 update_corpus

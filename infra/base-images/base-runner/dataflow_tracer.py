@@ -24,6 +24,12 @@ import os
 import subprocess
 import sys
 
+# pylint: skip-file
+
+# See https://github.com/google/oss-fuzz/pull/5024#discussion_r561313003 for why
+# we are disabling pylint for this file (we can't do it in .pylintrc, probably
+# because of weirdness with this file's package, so we do it here).
+
 # These can be controlled by the runner in order to change the values without
 # rebuilding OSS-Fuzz base images.
 FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))

@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/valyala/fastjson
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/valyala/fastjson
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/fastjson

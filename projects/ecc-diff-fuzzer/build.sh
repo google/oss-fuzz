@@ -19,8 +19,8 @@
 #nettle
 (
 cd nettle
-tar -xvf ../gmp-6.1.2.tar.bz2
-cd gmp-6.1.2
+tar -xvf ../gmp-6.2.1.tar.bz2
+cd gmp-6.2.1
 #do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
 #we could do instead --enable-fat
 ./configure --disable-shared --disable-assembly
@@ -43,6 +43,9 @@ make install
 #gcrypt
 (
 cd libgpg-error
+# fix for following error
+# error: gettext infrastructure mismatch: using a Makefile.in.in from gettext version 0.19 but the autoconf macros are from gettext version 0.20
+timeout 3 gettextize -f || true
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
     ./configure -host=i386 --disable-doc --enable-static --disable-shared
@@ -54,9 +57,9 @@ make install
 cd ../gcrypt
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 else
-    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 fi
 make -j$(nproc)
 make install
@@ -93,13 +96,14 @@ cd libecc
 #botan
 (
 cd botan
-#help it find libstdc++
-cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so
-export LDFLAGS=$CXXFLAGS
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure.py --disable-shared-library --cpu x86_32
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy --cpu x86_32
 else
-    ./configure.py --disable-shared-library
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy
 fi
 make -j$(nproc)
 make install
@@ -122,6 +126,7 @@ cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
 )
 
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
@@ -133,6 +138,7 @@ fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
+cp fuzz_ec.dict $OUT/fuzz_ec_noblocker.dict
 
 mkdir build
 cd build
@@ -144,7 +150,7 @@ if [ "$FUZZING_ENGINE" != 'afl' ]; then
     rm -Rf *
 fi
 
-#another target without cryptopp neither javascript
-cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
+#another target without javascript
+cmake -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker

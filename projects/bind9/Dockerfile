@@ -23,9 +23,10 @@ RUN apt-get -y install		\
 	autotools-dev		\
 	bison			\
 	build-essential		\
+	libnghttp2-dev		\
+	libssl-dev		\
 	libtool			\
 	libtool-bin		\
-	libssl-dev		\
 	libuv1-dev		\
 	pkg-config		\
 	zip

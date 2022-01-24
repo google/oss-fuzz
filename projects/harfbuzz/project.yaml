@@ -11,7 +11,6 @@ auto_ccs:
   - "dr.khaled.hosny@gmail.com"
   - "jfkthame@gmail.com"
   - "cchapman@adobe.com"
-  - "ariza@typekit.com"
   - "qxliu@google.com"
   - "ckitagawa@google.com"
   - "drott@chromium.org"
@@ -32,3 +31,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/harfbuzz/harfbuzz.git'

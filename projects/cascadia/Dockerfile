@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/andybalholm/cascadia
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone https://github.com/andybalholm/cascadia
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/cascadia

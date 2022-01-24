@@ -1,4 +1,4 @@
 homepage: "https://github.com/google/libprotobuf-mutator"
 language: c++
-auto_ccs:
-  - "vitalybuka@chromium.org"
+primary_contact: "vitalybuka@chromium.org"
+main_repo: 'https://github.com/google/libprotobuf-mutator.git'

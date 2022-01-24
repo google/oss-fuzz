@@ -14,13 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-ENV GOPATH /gopath
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN go get github.com/ianlancetaylor/demangle
-RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git /gopath/src/k8s.io/kubernetes
+RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
+RUN git clone --depth 1 https://github.com/google/AFL
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
+RUN git clone --depth 1 https://github.com/kubernetes/kops
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+WORKDIR $SRC/
 
-WORKDIR /gopath/src/k8s.io/kubernetes
-
-COPY build.sh $SRC/build.sh
+COPY build.sh $SRC/

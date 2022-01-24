@@ -1,0 +1,10 @@
+homepage: "https://github.com/OWASP/json-sanitizer"
+language: jvm
+primary_contact: "mikesamuel@gmail.com"
+auto_ccs:
+  - "meumertzheim@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/OWASP/json-sanitizer"
+sanitizers:
+  - address

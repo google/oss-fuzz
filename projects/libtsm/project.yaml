@@ -5,3 +5,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'git://people.freedesktop.org/~dvdhrm/libtsm'

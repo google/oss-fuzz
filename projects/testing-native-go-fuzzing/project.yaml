@@ -1,0 +1,10 @@
+homepage: "https://github.com/vitessio/vitess" 
+primary_contact: "adam@adalogics.com"
+auto_ccs :
+  - "david@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/vitessio/vitess'

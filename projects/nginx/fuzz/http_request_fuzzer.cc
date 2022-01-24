@@ -31,6 +31,7 @@ extern "C" {
 
 static char configuration[] =
 "error_log stderr emerg;\n"
+"worker_rlimit_nofile 8192;\n"
 "events {\n"
 "    use epoll;\n"
 "    worker_connections 2;\n"
@@ -230,6 +231,9 @@ extern "C" int InitializeNginx(void) {
   ngx_event_actions.init = init_event;
   ngx_io.send_chain = send_chain;
   ngx_event_flags = 1;
+  ngx_queue_init(&ngx_posted_accept_events);
+  ngx_queue_init(&ngx_posted_next_events);
+  ngx_queue_init(&ngx_posted_events);
   ngx_event_timer_init(cycle->log);
   return 0;
 }
@@ -258,9 +262,9 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   cln_added = 0;
 
   const char *req_string = input.request().c_str();
-  size_t req_len = strlen(req_string);
+  size_t req_len = input.request().size();
   const char *rep_string = input.reply().c_str();
-  size_t rep_len = strlen(rep_string);
+  size_t rep_len = input.reply().size();
   request.data = (const uint8_t *)req_string;
   request.data_len = req_len;
   reply.data = (const uint8_t *)rep_string;
@@ -286,6 +290,7 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
       255, &ngx_log); // 255 - (hopefully unused) socket descriptor
 
   c->shared = 1;
+  c->destroyed = 0;
   c->type = SOCK_STREAM;
   c->pool = ngx_create_pool(256, ngx_cycle->log);
   c->sockaddr = ls->sockaddr;
@@ -301,10 +306,26 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   c->socklen = ls->socklen;
   c->local_sockaddr = ls->sockaddr;
   c->local_socklen = ls->socklen;
+  c->data = NULL;
 
   read_event1.ready = 1;
   write_event1.ready = write_event1.delayed = 1;
 
   // Will redirect to http parser
   ngx_http_init_connection(c);
+
+  // We do not provide working timers or events, and thus we have to manually
+  // clean up the requests we created. We do this here.
+  // Cross-referencing: https://trac.nginx.org/nginx/ticket/2080#no1).I
+  // This is a fix that should be bettered in the future, by creating proper
+  // timers and events.
+  if (c->destroyed != 1) {
+    if (c->read->data != NULL) {
+      ngx_connection_t *c2 = (ngx_connection_t*)c->read->data;
+        ngx_http_request_t *req_tmp = (ngx_http_request_t*)c2->data;
+        req_tmp->cleanup = NULL;
+        ngx_http_finalize_request(req_tmp, NGX_DONE);
+    }
+    ngx_close_connection(c);
+  }
 }
