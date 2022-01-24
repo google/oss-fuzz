@@ -1,6 +1,6 @@
 homepage: "https://github.com/zip-rs/zip"
 main_repo: "https://github.com/zip-rs/zip"
-primary_contact: "david@adalogics.com"
+primary_contact: "marli@frost.red"
 sanitizers:
   - address
 fuzzing_engines:
