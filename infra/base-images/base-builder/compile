@@ -203,8 +203,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
   apt-get install -y libjpeg-dev zlib1g-dev
-  pip3 install --upgrade setuptools
-  pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve matplotlib
+  python3 -m pip install --upgrade setuptools
+  python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve matplotlib
   mkdir -p $SRC/inspector
 
   find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
