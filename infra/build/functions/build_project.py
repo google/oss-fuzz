@@ -116,7 +116,10 @@ class Project:  # pylint: disable=too-many-instance-attributes
     self.labels = project_yaml['labels']
     self.fuzzing_language = project_yaml['language']
     self.run_tests = project_yaml['run_tests']
-    self.main_repo = project_yaml['main_repo']
+    if 'main_repo' in project_yaml:
+      self.main_repo = project_yaml['main_repo']
+    else:
+      self.main_repo = ''
 
   @property
   def sanitizers(self):
@@ -179,6 +182,12 @@ def workdir_from_dockerfile(dockerfile):
 def get_datetime_now():
   """Returns datetime.datetime.now(). Used for mocking."""
   return datetime.datetime.now()
+
+
+def get_datetime_yesterday():
+  """Returns yesterdy's datetime. Used for introspector coverage download"""
+  today = get_datetime_now()
+  return today - datetime.timedelta(days=1)
 
 
 def get_env(fuzzing_language, build):
