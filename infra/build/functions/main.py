@@ -19,8 +19,8 @@ import base_images
 import project_sync
 import request_build
 import request_coverage_build
-import update_build_status
 import request_introspector_build
+
 
 
 def build_project(event, context):
@@ -48,6 +48,3 @@ def introspector_build(event, context):
   request_introspector_build.request_introspector_build(event, context)
 
 
-def builds_status(event, context):
-  """Entry point for builds status cloud function."""
-  update_build_status.update_status(event, context)

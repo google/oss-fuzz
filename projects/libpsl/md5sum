@@ -1,5 +1,6 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+#!/usr/local/bin/python3
+
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-go mod tidy
-rm /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2/internal/ini@v1.2.2/fuzz.go
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz gofuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz gofuzz
+import sys
+import hashlib
+
+BUFSIZE = 4096
+
+if __name__ == "__main__":
+    sys.stdin  = sys.stdin.detach()
+    m = hashlib.md5()
+    while True:
+        data = sys.stdin.read(BUFSIZE)
+        if not data:
+            break
+        m.update(data)
+
+    print(m.hexdigest())

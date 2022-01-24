@@ -14,6 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-chmod +x $SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh
-$SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh
+cp $SRC/cncf-fuzzing/projects/vitess/vt_schema_fuzzer.go $SRC/vitess/go/test/fuzzing/
+$SRC/cncf-fuzzing/projects/vitess/build.sh

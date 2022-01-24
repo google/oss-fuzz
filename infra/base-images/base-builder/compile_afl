@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Temporarily disable randomization and enforce a safe and sane setup
+export AFL_SKIP_OSSFUZZ=1
+export AFL_LLVM_INSTRUMENT=CLASSIC
+
 # In emergencies where afl++'s own compiler fails set this to "1":
 export AFL_LLVM_MODE_WORKAROUND=0
 
