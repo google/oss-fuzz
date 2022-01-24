@@ -16,13 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/vitessio/vitess
-RUN go install golang.org/dl/gotip@latest \
-    && gotip download
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-COPY build.sh \
-     native_ossfuzz_coverage_runnger.go \
-     fuzzers/tablet_manager_fuzzer_test.go \
-     fuzzers/parser_fuzzer_test.go \
-     fuzzers/ast_fuzzer_test.go \
-     $SRC/
+COPY build.sh $SRC/
 WORKDIR $SRC/vitess

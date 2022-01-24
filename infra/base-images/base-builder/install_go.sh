@@ -26,3 +26,6 @@ echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
 
 go get -u github.com/mdempsky/go114-fuzz-build
 ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go install github.com/AdamKorcz/go-118-fuzz-build/addimport@latest
