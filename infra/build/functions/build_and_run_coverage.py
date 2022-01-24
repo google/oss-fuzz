@@ -33,6 +33,7 @@ ARCHITECTURE = 'x86_64'
 PLATFORM = 'linux'
 
 COVERAGE_BUILD_TYPE = 'coverage'
+INTROSPECTOR_BUILD_TYPE = 'fuzz_introspector'
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
@@ -340,7 +341,7 @@ def main():
                                   get_build_steps, COVERAGE_BUILD_TYPE)
   return build_project.build_script_main(
       'Generates introspector report for project.', get_fuzz_introspector_steps,
-      'fuzzIntrospector')
+      INTROSPECTOR_BUILD_TYPE)
 
 
 if __name__ == '__main__':
