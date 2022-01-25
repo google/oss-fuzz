@@ -30,6 +30,6 @@ COPY ossfuzz_coverage_runner.go \
      native_ossfuzz_coverage_runner.go \
      $GOPATH/
 
-RUN go install golang.org/dl/gotip@latest \
-    && gotip download
+#RUN go install golang.org/dl/gotip@latest \
+#    && gotip download
 
