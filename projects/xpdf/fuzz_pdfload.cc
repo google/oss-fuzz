@@ -39,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
   try {
         xpdf_obj.initNull();
         BaseStream *stream = new MemStream(payload.data(), 0, payload.size(), &xpdf_obj);
-        /*  The following code has in memory-leaks :/ */
+        /*  The following two lines result in memory-leaks :/ */
         globalParams = new GlobalParams(NULL);
         globalParams->setErrQuiet(gTrue);
 
@@ -71,7 +71,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
           page->getResourceDict();
         }
 
-        auto textOut = new TextOutputDev(NULL, &textOutControl;);
+        auto textOut = new TextOutputDev(NULL, &textOutControl);
         if (textOut->isOk())
         {
           doc.displayPages(textOut, 0, doc.getNumPages(), hdpi, vdpi, rotate, gTrue,
