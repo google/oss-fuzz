@@ -12,53 +12,64 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <exception>
+#include <cstddef>
 #include "PDFDoc.h"
 #include "GlobalParams.h"
 #include "Zoox.h"
+#include "TextOutputDev.h"
+#include "Stream.h"
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-    char filename[256];
-    sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-    FILE *fp = fopen(filename, "wb");
-    if (!fp)
-        return 0;
-    fwrite(data, size, 1, fp);
-    fclose(fp);
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
+  try {
+        Object xpdf_obj;
+        xpdf_obj.initNull();
+        BaseStream *stream = new MemStream(const_cast<char *>(reinterpret_cast<const char *>(Data)), 0, Size, &xpdf_obj);
+        /*  The following code has in memory-leaks :/ */
+        globalParams = new GlobalParams(NULL);
+        globalParams->setErrQuiet(gTrue);
 
-    // Main fuzzing logic
-    Object info, xfa;
-    Object *acroForm;
-    globalParams = new GlobalParams(NULL);
-    globalParams->setErrQuiet(1);
-    globalParams->setupBaseFonts(NULL);
-
-    PDFDoc *doc = NULL;
-    try {
-        doc = new PDFDoc(filename, NULL, NULL);
-        if (doc->isOk() == gTrue)
-        {
-            doc->getNumPages();
-            if ((acroForm = doc->getCatalog()->getAcroForm())->isDict()) {
-                acroForm->dictLookup("XFA", &xfa);
-                xfa.free();
-            }
+        PDFDoc doc(stream);
+        if (!doc.isOk()) {
+          return 0;
         }
+
+        doc.getOutline();
+        doc.getStructTreeRoot();
+        doc.getXRef();
+        doc.readMetadata();
+        Object info;
+        doc.getDocInfo(&info);
+        if (info.isDict()) {
+          info.getDict();
+        }
+        info.free();
+
+        for (size_t i = 0; i < doc.getNumPages(); i++) {
+          doc.getLinks(i);
+          auto page = doc.getCatalog()->getPage(i);
+          if (!page->isOk()) {
+            continue;
+          }
+          page->getResourceDict();
+          page->getMetadata();
+          page->getResourceDict();
+        }
+
+
+        auto textOut = new TextOutputDev(NULL,
+                                         /*physLayout*/ gFalse, /*fixedPitch*/ gFalse,
+                                         /*rawOrder*/ gFalse);
+
+        delete textOut;
+        delete globalParams;
     } catch (...) {
 
     }
-
-    // Cleanup
-    if (doc != NULL)
-        delete doc;
-    delete globalParams;
-
-    // cleanup temporary file
-    unlink(filename);
-    return 0;
+        
+  return 0;
 }
-
