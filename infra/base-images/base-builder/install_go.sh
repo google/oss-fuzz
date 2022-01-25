@@ -30,7 +30,6 @@ ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 go install golang.org/dl/gotip@latest \
     && gotip download
 
-echo hiii
 cd /tmp
 git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
@@ -40,6 +39,3 @@ mv go-118-fuzz-build $GOPATH/bin/
 cd addimport
 gotip build
 mv addimport $GOPATH/bin/
-
-#go install github.com/AdamKorcz/go-118-fuzz-build@1a9bdd4e2d73919555d46434649c9755353e8a81
-#go install github.com/AdamKorcz/go-118-fuzz-build/addimport@latest

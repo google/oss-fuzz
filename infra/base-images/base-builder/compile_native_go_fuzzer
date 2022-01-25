@@ -32,7 +32,6 @@ function rewrite_go_fuzz_harness() {
 	# import https://github.com/AdamKorcz/go-118-fuzz-build
 	# This changes the line numbers from the original fuzzer
 	addimport -path "${fuzzer_fn}"
-	echo "added import"
 }
 
 function build_native_go_fuzzer() {
@@ -61,9 +60,7 @@ function build_native_go_fuzzer() {
 
 		rm ./"${function,,}"_test.go
 	else
-		echo "calling go-118-fuzz-build"
 	    go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
-	    echo "linking fuzzer"
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
 }
@@ -87,10 +84,8 @@ then
 	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
 	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
 
-	echo "Native harness"
 	rewrite_go_fuzz_harness $fuzzer_filename
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
-	echo "Built fuzzer"
 
 	# clean up
 	rm "${fuzzer_filename}_fuzz_.go"
