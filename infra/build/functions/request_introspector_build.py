@@ -30,12 +30,9 @@ def get_build_steps(project_name, image_project, base_images_project):
   build_config = request_build.get_empty_config()
   project_yaml_contents, dockerfile_lines = request_build.get_project_data(
       project_name)
-  return build_and_run_coverage.get_fuzz_introspector_steps(project_name,
-                                                            project_yaml_contents,
-                                                            dockerfile_lines,
-                                                            image_project,
-                                                            base_images_project,
-                                                            build_config)
+  return build_and_run_coverage.get_fuzz_introspector_steps(
+      project_name, project_yaml_contents, dockerfile_lines, image_project,
+      base_images_project, build_config)
 
 
 def request_introspector_build(event, context):
