@@ -27,6 +27,7 @@ limitations under the License.
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
   try {
+        TextOutputControl textOutControl;
         Object xpdf_obj;
         xpdf_obj.initNull();
         BaseStream *stream = new MemStream(const_cast<char *>(reinterpret_cast<const char *>(Data)), 0, Size, &xpdf_obj);
@@ -62,9 +63,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
         }
 
 
-        auto textOut = new TextOutputDev(NULL,
-                                         /*physLayout*/ gFalse, /*fixedPitch*/ gFalse,
-                                         /*rawOrder*/ gFalse);
+        auto textOut = new TextOutputDev(NULL, &textOutControl;);
         doc.displayPages(textOut, 0, doc.getNumPages(), 72, 72, 0, gTrue, gFalse, gFalse);
         delete textOut;
         delete globalParams;
