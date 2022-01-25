@@ -18,6 +18,7 @@ limitations under the License.
 #include <stdint.h>
 #include <exception>
 #include <cstddef>
+
 #include "PDFDoc.h"
 #include "GlobalParams.h"
 #include "Zoox.h"
@@ -64,7 +65,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
         auto textOut = new TextOutputDev(NULL,
                                          /*physLayout*/ gFalse, /*fixedPitch*/ gFalse,
                                          /*rawOrder*/ gFalse);
-
+        doc.displayPages(textOut, 0, doc.getNumPages(), 72, 72, 0, gTrue, gFalse, gFalse);
         delete textOut;
         delete globalParams;
     } catch (...) {
