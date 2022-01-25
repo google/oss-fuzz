@@ -22,7 +22,6 @@ import request_coverage_build
 import request_introspector_build
 
 
-
 def build_project(event, context):
   """Entry point for cloud function to requesting project builds."""
   request_build.request_build(event, context)
@@ -46,5 +45,3 @@ def coverage_build(event, context):
 def introspector_build(event, context):
   """Entry point for cloud function to build introspector reports."""
   request_introspector_build.request_introspector_build(event, context)
-
-

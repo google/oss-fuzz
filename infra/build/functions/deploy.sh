@@ -94,8 +94,6 @@ deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $INTROSPECTOR_BUILD_JOB_TOPIC $PROJECT_ID
 
-
-
 deploy_scheduler $SYNC_SCHEDULER_JOB \
 				 "$SYNC_JOB_SCHEDULE" \
 				 $SYNC_JOB_TOPIC \
@@ -134,11 +132,9 @@ deploy_cloud_function request-coverage-build \
 					  $COVERAGE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
 
-
 deploy_cloud_function request-introspector-build \
 						introspector_build \
 					  $INTROSPECTOR_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
-
 
 gcloud datastore indexes create index.yaml --project $PROJECT_ID
