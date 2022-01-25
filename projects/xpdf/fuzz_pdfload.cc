@@ -71,7 +71,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
           page->getResourceDict();
         }
 
-        auto textOut = new TextOutputDev(NULL, &textOutControl);
+        auto textOut = new TextOutputDev(NULL, &textOutControl, 0, 0);
         if (textOut->isOk())
         {
           doc.displayPages(textOut, 0, doc.getNumPages(), hdpi, vdpi, rotate, gTrue,
