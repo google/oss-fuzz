@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -26,11 +28,17 @@ limitations under the License.
 #include "Stream.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
+  FuzzedDataProvider fdp (Data, Size);
+  double hdpi = fdp.ConsumeFloatingPoint<double>();
+  double vdpi = fdp.ConsumeFloatingPoint<double>();
+  int rotate = fdp.ConsumeIntegral<int>();
+  std::vector<char> payload = fdp.ConsumeRemainingBytes<char>();
+  TextOutputControl textOutControl;
+  Object xpdf_obj;
+
   try {
-        TextOutputControl textOutControl;
-        Object xpdf_obj;
         xpdf_obj.initNull();
-        BaseStream *stream = new MemStream(const_cast<char *>(reinterpret_cast<const char *>(Data)), 0, Size, &xpdf_obj);
+        BaseStream *stream = new MemStream(payload.data(), 0, payload.size(), &xpdf_obj);
         /*  The following code has in memory-leaks :/ */
         globalParams = new GlobalParams(NULL);
         globalParams->setErrQuiet(gTrue);
@@ -44,6 +52,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
         doc.getStructTreeRoot();
         doc.getXRef();
         doc.readMetadata();
+
         Object info;
         doc.getDocInfo(&info);
         if (info.isDict()) {
@@ -62,9 +71,13 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size) {
           page->getResourceDict();
         }
 
-
         auto textOut = new TextOutputDev(NULL, &textOutControl;);
-        doc.displayPages(textOut, 0, doc.getNumPages(), 72, 72, 0, gTrue, gFalse, gFalse);
+        if (textOut->isOk())
+        {
+          doc.displayPages(textOut, 0, doc.getNumPages(), hdpi, vdpi, rotate, gTrue,
+                           gFalse, gFalse);
+        }
+
         delete textOut;
         delete globalParams;
     } catch (...) {
