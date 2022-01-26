@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import sys
+import posixpath
 
 import build_lib
 import build_project
@@ -223,7 +224,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'fuzzer_stats_dir':
           upload_fuzzer_stats_url,
       'html_report_url':
-          os.path.join(bucket.html_report_url, 'index.html'),
+          posixpath.join(bucket.html_report_url, 'index.html'),
       'report_date':
           report_date,
       'report_summary_path':
@@ -241,7 +242,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
     project_name, project_yaml_contents, dockerfile_lines, image_project,
     base_images_project, config):
-  """Return build steps of fuzz introspector for project"""
+  """Returns build steps of fuzz introspector for project"""
   project = build_project.Project(project_name, project_yaml_contents,
                                   dockerfile_lines, image_project)
   if project.disabled:
