@@ -33,12 +33,12 @@ RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
-RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git
+RUN git clone --depth 1 -b development https://github.com/ARMmbed/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
-#RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
+RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
@@ -57,5 +57,6 @@ RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
+RUN pip3 install jinja2
 
 COPY build.sh xxd.c $SRC/
