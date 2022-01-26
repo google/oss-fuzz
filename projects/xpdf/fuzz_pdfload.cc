@@ -43,9 +43,32 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         if (doc->isOk() == gTrue)
         {
             doc->getNumPages();
+            doc->getOutline();
+            doc->getStructTreeRoot();
+            doc->getXRef();
+            doc->readMetadata();
+
+            Object info;
+            doc->getDocInfo(&info);
+            if (info.isDict()) {
+              info.getDict();
+            }
+            info.free();
+
             if ((acroForm = doc->getCatalog()->getAcroForm())->isDict()) {
                 acroForm->dictLookup("XFA", &xfa);
                 xfa.free();
+            }
+
+            for (size_t i = 0; i < doc->getNumPages(); i++) {
+              doc->getLinks(i);
+              auto page = doc->getCatalog()->getPage(i);
+              if (!page->isOk()) {
+                continue;
+              }
+              page->getResourceDict();
+              page->getMetadata();
+              page->getResourceDict();
             }
         }
     } catch (...) {
