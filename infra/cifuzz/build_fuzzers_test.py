@@ -64,8 +64,8 @@ class BuildFuzzersTest(unittest.TestCase):
   @mock.patch('repo_manager._clone', return_value=None)
   @mock.patch('continuous_integration.checkout_specified_commit')
   @mock.patch('helper.docker_run', return_value=False)  # We want to quit early.
-  def test_cifuzz_env_var(self, mock_docker_run, _, __, ___):
-    """Tests that the CIFUZZ env var is set."""
+  def test_cifuzz_clusterfuzzlite_env_var(self, mock_docker_run, _, __, ___):
+    """Tests that the CIFUZZ and CLUSTERFUZZLITE env vars are set."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       build_fuzzers.build_fuzzers(
@@ -87,6 +87,8 @@ class BuildFuzzersTest(unittest.TestCase):
       return False
 
     self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
+    self.assertTrue(
+        command_has_env_var_arg(docker_run_command, 'CLUSTERFUZZLITE=True'))
 
 
 class InternalGithubBuildTest(unittest.TestCase):

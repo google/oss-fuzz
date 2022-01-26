@@ -43,6 +43,7 @@ class TestRunCoverageCommand(unittest.TestCase):
         'FUZZING_LANGUAGE': config.language,
         'OUT': workspace.out,
         'CIFUZZ': 'True',
+        'CLUSTERFUZZLITE': 'True',
         'FUZZING_ENGINE': 'libfuzzer',
         'ARCHITECTURE': 'x86_64',
         'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25',

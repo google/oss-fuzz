@@ -29,7 +29,8 @@ PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 # Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
     '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
-    'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+    'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True', '-e',
+    'CLUSTERFUZZLITE=True'
 ]
 
 EXTERNAL_PROJECT_IMAGE = 'external-project'
