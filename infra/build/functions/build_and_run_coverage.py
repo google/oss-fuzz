@@ -338,8 +338,12 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
 def main():
   """Build and run coverage for projects."""
-  build_project.build_script_main('Generates coverage report for project.',
-                                  get_build_steps, COVERAGE_BUILD_TYPE)
+  coverage_status = build_project.build_script_main(
+      'Generates coverage report for project.', get_build_steps,
+      COVERAGE_BUILD_TYPE)
+  if coverage_status != 0:
+    return coverage_status
+
   return build_project.build_script_main(
       'Generates introspector report for project.', get_fuzz_introspector_steps,
       INTROSPECTOR_BUILD_TYPE)
