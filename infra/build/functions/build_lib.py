@@ -203,7 +203,8 @@ def download_coverage_data_steps(project_name, latest, bucket_name, testing):
   for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
     download_coverage_args = []
     for target_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      bucket_path = f'/{bucket_name}/{project_name}/fuzzer_stats/{latest}/{target_name}.covreport'
+      bucket_path = (f'/{bucket_name}/{project_name}/fuzzer_stats/'
+                     f'{latest}/{target_name}.covreport')
       signed_url = get_signed_url(bucket_path, method='GET')
       coverage_data_path = os.path.join('coverage_data',
                                         target_name + '.covreport')

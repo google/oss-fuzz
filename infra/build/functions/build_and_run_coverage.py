@@ -250,9 +250,9 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
     return []
 
   if project.fuzzing_language not in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-    logging.info(
-        'Project "%s" is written in "%s", Fuzz Introspector is not supported yet.',
-        project.name, project.fuzzing_language)
+    logging.info(('Project "%s" is written in "%s", '
+                  'Fuzz Introspector is not supported yet.'), project.name,
+                 project.fuzzing_language)
     return []
 
   build_steps = []
