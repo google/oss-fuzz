@@ -1,5 +1,5 @@
-/*
-# Copyright 2021 Google Inc.
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,27 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-*/
-#include "libbpf.h"
 
-static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
-{
-	return 0;
-}
-
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	struct bpf_object *obj = NULL;
-	DECLARE_LIBBPF_OPTS(bpf_object_open_opts, opts);
-	int err;
-
-	libbpf_set_print(libbpf_print_fn);
-
-	opts.object_name = "fuzz-object";
-	obj = bpf_object__open_mem(data, size, &opts);
-	err = libbpf_get_error(obj);
-	if (err)
-		return 0;
-
-	bpf_object__close(obj);
-	return 0;
-}
+cd $SRC/zip
+cargo fuzz build -O 
+cp fuzz/target/x86_64-unknown-linux-gnu/release/from_zip $OUT/

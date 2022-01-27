@@ -190,10 +190,9 @@ export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
 cd $SRC/cryptofuzz/modules/secp256k1/
 make -B -j$(nproc)
 
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-
-    # noble-secp256k1
+#if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+#then
+# noble-secp256k1
 #    cd $SRC/noble-secp256k1/
 #    npm install && npm run build
 #    export NOBLE_SECP256K1_PATH=$(realpath lib/index.js)
@@ -202,45 +201,42 @@ then
 #    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_SECP256K1"
 #    make -B
 
-    # noble-bls12-381
-    cd $SRC/noble-bls12-381/
-    cp math.ts new_index.ts
-    $(awk '/^export/ {print "tail -n +"FNR+1" index.ts"; exit}' index.ts) >>new_index.ts
-    mv new_index.ts index.ts
-    npm install && npm run build
-    export NOBLE_BLS12_381_PATH=$(realpath index.js)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_BLS12_381"
-    cd $SRC/cryptofuzz/modules/noble-bls12-381/
-    make -B
+# noble-bls12-381
+#    cd $SRC/noble-bls12-381/
+#    cp math.ts new_index.ts
+#    $(awk '/^export/ {print "tail -n +"FNR+1" index.ts"; exit}' index.ts) >>new_index.ts
+#    mv new_index.ts index.ts
+#    npm install && npm run build
+#    export NOBLE_BLS12_381_PATH=$(realpath index.js)
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_BLS12_381"
+#    cd $SRC/cryptofuzz/modules/noble-bls12-381/
+#    make -B
 
-    # noble-ed25519
-    cd $SRC/cryptofuzz/modules/noble-ed25519/
-    export NOBLE_ED25519_PATH="$SRC/noble-ed25519/index.js"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_ED25519"
-    make -B
-fi
-
-## Compile SymCrypt
-#cd $SRC/SymCrypt/
-#if [[ $CFLAGS != *sanitize=array-bounds* ]]
-#then
-#    # Unittests don't build with clang and are not needed anyway
-#    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
-#
-#    mkdir b/
-#    cd b/
-#    cmake ../
-#    make -j$(nproc)
-#
-#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
-#    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
-#    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
-#    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
-#
-#    # Compile Cryptofuzz SymCrypt module
-#    cd $SRC/cryptofuzz/modules/symcrypt
+# noble-ed25519
+#    cd $SRC/cryptofuzz/modules/noble-ed25519/
+#    export NOBLE_ED25519_PATH="$SRC/noble-ed25519/index.js"
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_ED25519"
 #    make -B
 #fi
+
+## Compile SymCrypt
+cd $SRC/SymCrypt/
+# Unittests don't build with clang and are not needed anyway
+sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+mkdir b/
+cd b/
+cmake ../
+make symcrypt_common symcrypt_generic -j$(nproc)
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
+export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+
+# Compile Cryptofuzz SymCrypt module
+cd $SRC/cryptofuzz/modules/symcrypt
+make -B
 
 # Compile libgmp
 cd $SRC/libgmp/
@@ -316,8 +312,6 @@ scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
 scripts/config.pl set MBEDTLS_CMAC_C
 scripts/config.pl set MBEDTLS_NIST_KW_C
 scripts/config.pl set MBEDTLS_ARIA_C
-scripts/config.pl set MBEDTLS_MD2_C
-scripts/config.pl set MBEDTLS_MD4_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
     scripts/config.pl unset MBEDTLS_HAVE_ASM

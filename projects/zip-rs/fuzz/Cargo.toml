@@ -1,5 +1,4 @@
-#!/bin/bash -e
-# Copyright 2021 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,5 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-./scripts/build-fuzzers.sh
+####################
+
+[package]
+name = "zip-fuzz"
+version = "0.0.0"
+authors = ["David Korczynski <david@adalogics.com>"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.3"
+#zip = { path = ".." , version = "0.5"}
+zip = { path = ".." }
+
+[[bin]]
+name = "from_zip"
+path = "fuzz_targets/fuzz_zip.rs"
+
+# Prevent this from interfering with workspaces
+[workspace]
+

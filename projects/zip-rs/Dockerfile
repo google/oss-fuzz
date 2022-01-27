@@ -1,5 +1,4 @@
-#!/bin/bash -e
-# Copyright 2021 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-./scripts/build-fuzzers.sh
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN git clone --depth 1 https://github.com/zip-rs/zip
+COPY fuzz $SRC/zip/fuzz
+WORKDIR $SRC
+
+COPY build.sh $SRC/

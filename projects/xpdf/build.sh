@@ -16,7 +16,7 @@
 ################################################################################
 
 # Unpack the file and cd into it
-tar -zxvf xpdf-latest.tar.gz
+tar -zxf xpdf-latest.tar.gz
 dir_name=`tar -tzf xpdf-latest.tar.gz | head -1 | cut -f1 -d"/"`
 cd $dir_name
 
@@ -26,7 +26,9 @@ sed -i 's/#--- object files needed by XpdfWidget/add_library(testXpdfStatic STAT
 # Build the project
 mkdir build && cd build
 export LD=$CXX
-cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"
+cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DOPI_SUPPORT=ON -DMULTITHREADED=0 -DCMAKE_DISABLE_FIND_PACKAGE_Qt4=1 \
+  -DCMAKE_DISABLE_FIND_PACKAGE_Qt5Widgets=1 -DSPLASH_CMYK=ON
 make -i || true
 
 # Build fuzzers

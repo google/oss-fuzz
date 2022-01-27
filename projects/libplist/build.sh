@@ -20,7 +20,7 @@
 make -j$(nproc) clean
 make -j$(nproc) all
 
-for fuzzer in bplist_fuzzer xplist_fuzzer; do
+for fuzzer in bplist_fuzzer xplist_fuzzer jplist_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
       fuzz/$fuzzer.cc -o $OUT/$fuzzer \
       $LIB_FUZZING_ENGINE src/.libs/libplist-2.0.a
@@ -28,5 +28,6 @@ done
 
 zip -j $OUT/bplist_fuzzer_seed_corpus.zip test/data/*.bplist
 zip -j $OUT/xplist_fuzzer_seed_corpus.zip test/data/*.plist
+zip -j $OUT/jplist_fuzzer_seed_corpus.zip test/data/*.json
 
 cp fuzz/*.dict fuzz/*.options $OUT/
