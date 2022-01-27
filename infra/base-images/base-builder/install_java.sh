@@ -27,10 +27,9 @@ rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 # jazzer_api_deploy.jar is required only at build-time, the agent and the
 # drivers are copied to $OUT as they need to be present on the runners.
 cd $SRC/
-git clone https://github.com/CodeIntelligenceTesting/jazzer && \
-  cd jazzer && \
-  git checkout 997c203566350fa313dbd3d7119725387b190e3e
-bazel build --java_runtime_version=localjdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
+git clone --depth=1 https://github.com/CodeIntelligenceTesting/jazzer && \
+cd jazzer
+bazel build --java_runtime_version=local_jdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
   //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar
 cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/
 cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH
