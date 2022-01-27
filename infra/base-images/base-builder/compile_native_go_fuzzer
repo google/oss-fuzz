@@ -60,8 +60,8 @@ function build_native_go_fuzzer() {
 
 		rm ./"${function,,}"_test.go
 	else
-	    go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
-        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
+		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
 }
 
@@ -80,7 +80,7 @@ fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
 # test if file contains a line with "func $function" and "testing.F"
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
-    # Install more dependencies
+	# Install more dependencies
 	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
 	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
 
