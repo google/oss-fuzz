@@ -2,6 +2,7 @@ homepage: "http://www.xmlsoft.org/libxslt/"
 language: c++
 vendor_ccs:
   - "ddkilzer@apple.com"
+  - "product-security@apple.com"
   - "schenney@chromium.org"
 sanitizers:
   - address
