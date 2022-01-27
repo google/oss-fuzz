@@ -25,6 +25,7 @@ BASE_IMAGES = [
     'base-clang',
     'base-builder',
     'base-builder-go',
+    'base-builder-go-codeintelligencetesting',
     'base-builder-jvm',
     'base-builder-python',
     'base-builder-rust',
