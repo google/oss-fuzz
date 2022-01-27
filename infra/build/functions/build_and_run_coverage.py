@@ -189,6 +189,22 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   })
 
+  # Upload the text coverage reports. Delete the old ones just in case.
+  upload_textcov_reports_url = bucket.get_upload_url('textcov_reports')
+
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_textcov_reports_url))
+  build_steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'textcov_reports'),
+          upload_textcov_reports_url,
+      ],
+  })
+
   # Upload the fuzzer logs. Delete the old ones just in case
   upload_fuzzer_logs_url = bucket.get_upload_url('logs')
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
@@ -265,7 +281,8 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   coverage_report_latest = build_project.get_datetime_yesterday().strftime(
       '%Y%m%d')
-
+  # TODO: debug
+  coverage_report_latest = report_date
   build_steps.append({
       'args': [
           'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
@@ -283,7 +300,8 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   build_steps.extend(
       build_lib.download_coverage_data_steps(project.name,
                                              coverage_report_latest,
-                                             bucket_name, config.testing))
+                                             bucket_name, build.out,
+                                             config.testing))
 
   build_steps.append({
       'name': 'gcr.io/cloud-builders/docker',
