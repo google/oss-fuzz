@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# build_go_fuzz_harness rewrites a copy of the 
+# rewrite_go_fuzz_harness rewrites a copy of the 
 # fuzzer to allow for libFuzzer instrumentation
 function rewrite_go_fuzz_harness() {
 	fuzzer_filename=$1
