@@ -279,9 +279,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
                               config.testing)
 
-  coverage_report_latest = build_project.get_datetime_yesterday().strftime(
-      '%Y%m%d')
-  # TODO: debug
+  # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
   build_steps.append({
       'args': [
@@ -324,7 +322,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
           f'gcr.io/oss-fuzz/{project.name}',
           '.',
       ],
-      'dir': f'oss-fuzz/projects/{project.name}',
+      'dir': os.path.join('oss-fuzz', 'projects', project.name),
   })
 
   env.append(f'GIT_REPO={project.main_repo}')

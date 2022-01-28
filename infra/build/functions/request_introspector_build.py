@@ -25,6 +25,7 @@ import request_build
 BASE_PROJECT = 'oss-fuzz-base'
 
 
+# TODO (navidem): write test, currently tested manually.
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
   build_config = request_build.get_empty_config()

@@ -184,12 +184,6 @@ def get_datetime_now():
   return datetime.datetime.now()
 
 
-def get_datetime_yesterday():
-  """Returns yesterdy's datetime. Used for introspector coverage download"""
-  today = get_datetime_now()
-  return today - datetime.timedelta(days=1)
-
-
 def get_env(fuzzing_language, build):
   """Returns an environment for building. The environment is returned as a list
   and is suitable for use as the "env" parameter in a GCB build step. The
