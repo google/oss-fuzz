@@ -17,9 +17,9 @@
 
 # Install CodeIntelligenceTesting Go
 #  (require at least Go1.4 to boostrap)
-cd "/root"
+cd /root
 git clone https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
-cd ".go-CodeIntelligenceTesting/src"
+cd .go-CodeIntelligenceTesting/src
 git checkout dev.libfuzzer.18
 # Disable tests, which fails
 sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
@@ -27,7 +27,7 @@ sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
 
 # Remember to set env in dockerfile before this line
 echo 'Set "GOCODEINTELLIGENCETESTINGPATH=/root/go-CodeIntelligenceTesting"'
-echo 'Set "PATH="/root/.go-CodeIntelligenceTesting/bin:$GOCODEINTELLIGENCETESTINGPATH/bin:$PATH"'
+echo 'Set "PATH=/root/.go-CodeIntelligenceTesting/bin:$GOCODEINTELLIGENCETESTINGPATH/bin:$PATH"'
 
 # Get go114-fuzz-build with the new Go
 rm "$GOPATH/bin/go-fuzz"
