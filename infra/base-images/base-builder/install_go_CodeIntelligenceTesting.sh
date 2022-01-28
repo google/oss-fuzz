@@ -25,8 +25,8 @@ sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
 ./all.bash
 
 # Get go114-fuzz-build with the new Go.
-rm "$GOPATH/bin/go-fuzz"
-rm "$GOPATH/bin/go114-fuzz-build"
+rm -rf "$GOPATH/"
+mkdir -p "$GOPATH/"
 go install github.com/mdempsky/go114-fuzz-build@latest
 ln -s "$GOPATH/bin/go114-fuzz-build" "$GOPATH/bin/go-fuzz"
 
