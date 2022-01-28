@@ -15,20 +15,20 @@
 #
 ################################################################################
 
-# Install CodeIntelligenceTesting Go
-#  (require at least Go1.4 to boostrap)
+# Install CodeIntelligenceTesting Go.
+## Require at least Go1.4 to boostrap.
 cd /root
 git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
 cd .go-CodeIntelligenceTesting/src
-# Disable tests, which fails
+# Disable tests, at least one of which erroneously fails.
 sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
 ./all.bash
 
-# Remember to set env in dockerfile before this line
+# Remember to set env in dockerfile before this line.
 echo 'Set "GOCODEINTELLIGENCETESTINGPATH=/root/go-CodeIntelligenceTesting"'
 echo 'Set "PATH=/root/.go-CodeIntelligenceTesting/bin:$GOCODEINTELLIGENCETESTINGPATH/bin:$PATH"'
 
-# Get go114-fuzz-build with the new Go
+# Get go114-fuzz-build with the new Go.
 rm "$GOPATH/bin/go-fuzz"
 rm "$GOPATH/bin/go114-fuzz-build"
 go mod tidy
