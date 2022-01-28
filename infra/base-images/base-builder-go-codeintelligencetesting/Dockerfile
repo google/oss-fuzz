@@ -16,9 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-# /root/.go-CodeIntelligenceTesting/bin is for the standard Go binaries (i.e. go, gofmt, etc).
-# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH /root/.go-CodeIntelligenceTesting/bin:$PATH
-
 RUN install_go_CodeIntelligenceTesting.sh
 
