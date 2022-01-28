@@ -142,10 +142,6 @@ RUN cd $SRC && \
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
 
-RUN git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout 9e3393cd551b65a6bf2de6495013b415f315f74e
-
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
