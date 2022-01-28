@@ -24,10 +24,6 @@ cd .go-CodeIntelligenceTesting/src
 sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
 ./all.bash
 
-# Remember to set env in dockerfile before this line.
-echo 'Set "GOCODEINTELLIGENCETESTINGPATH=/root/go-CodeIntelligenceTesting"'
-echo 'Set "PATH=/root/.go-CodeIntelligenceTesting/bin:$GOCODEINTELLIGENCETESTINGPATH/bin:$PATH"'
-
 # Get go114-fuzz-build with the new Go.
 rm "$GOPATH/bin/go-fuzz"
 rm "$GOPATH/bin/go114-fuzz-build"
