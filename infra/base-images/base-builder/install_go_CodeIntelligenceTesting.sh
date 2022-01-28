@@ -18,9 +18,8 @@
 # Install CodeIntelligenceTesting Go
 #  (require at least Go1.4 to boostrap)
 cd /root
-git clone https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
+git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
 cd .go-CodeIntelligenceTesting/src
-git checkout dev.libfuzzer.18
 # Disable tests, which fails
 sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
 ./all.bash
