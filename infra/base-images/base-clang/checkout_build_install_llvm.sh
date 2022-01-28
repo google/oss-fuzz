@@ -101,9 +101,9 @@ echo "Using LLVM revision: $LLVM_REVISION"
 if [ -n "$INTROSPECTOR_PATCHES" ]; then
   # For fuzz introspector.
   echo "Applying introspector changes"
-  BBBASE=$PWD
-  cd $LLVM_SRC 
-  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/Inspector/ ./llvm/include/llvm/Transforms//Inspector
+  OLD_WORKING_DIR=$PWD
+  cd $LLVM_SRC
+  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/Inspector/ ./llvm/include/llvm/Transforms/Inspector
   cp -rf /fuzz-introspector/llvm/lib/Transforms/Inspector ./llvm/lib/Transforms/Inspector
 
   # LLVM currently does not support dynamically loading LTO passes. Thus,
@@ -113,7 +113,7 @@ if [ -n "$INTROSPECTOR_PATCHES" ]; then
   sed -i 's/using namespace/#include "llvm\/Transforms\/Inspector\/Inspector.h"\nusing namespace/g' ./llvm/lib/Transforms/IPO/PassManagerBuilder.cpp
   echo "add_subdirectory(Inspector)" >> ./llvm/lib/Transforms/CMakeLists.txt
   sed -i 's/Instrumentation/Instrumentation\n  Inspector/g' ./llvm/lib/Transforms/IPO/CMakeLists.txt
-  cd $BBBASE  
+  cd $OLD_WORKING_DIR
 fi
 
 # Build & install.

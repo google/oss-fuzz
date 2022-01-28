@@ -17,5 +17,5 @@
 
 echo "ATHERIS INSTALL"
 unset CFLAGS CXXFLAGS
-pip3 install -v --no-cache-dir atheris>=2.0.6 pyinstaller==4.1
+pip3 install -v --no-cache-dir "atheris>=2.0.6" "pyinstaller==4.1"
 rm -rf /tmp/*
