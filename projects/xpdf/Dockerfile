@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install software-properties-common -y && apt-get update && apt-add-repository ppa:rock-core/qt4 && apt-get install -y make wget cmake libqt4-dev
-RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-latest.tar.gz
+RUN apt-get update && apt-get install software-properties-common -y && apt-get update && apt-get install -y make wget cmake libpng-dev libfreetype-dev zlib1g-dev
+RUN wget https://dl.xpdfreader.com/xpdf-latest.tar.gz
 
 WORKDIR $SRC
 COPY fuzz_*.cc $SRC/

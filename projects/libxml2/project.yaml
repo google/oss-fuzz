@@ -1,9 +1,9 @@
 homepage: "http://www.xmlsoft.org/"
 language: c++
 vendor_ccs:
-  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "benl@google.com"
+  - "product-security@apple.com"
   - "simon.lewis@apple.com"
 sanitizers:
   - address

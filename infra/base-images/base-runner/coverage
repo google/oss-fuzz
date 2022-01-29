@@ -31,11 +31,12 @@ COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 
 DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
 FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
+TEXTCOV_REPORT_DIR="$COVERAGE_OUTPUT_DIR/textcov_reports"
 LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
 REPORT_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report"
 REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/linux"
 
-for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR \
+for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR $TEXTCOV_REPORT_DIR\
                  $REPORT_PLATFORM_DIR; do
   rm -rf $directory
   mkdir -p $directory
@@ -113,7 +114,7 @@ function run_fuzz_target {
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
   # For introspector.
-  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${FUZZER_STATS_DIR}/$target.covreport
+  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
   
   if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
     # This is needed for dataflow strategy analysis, can be removed later. See
