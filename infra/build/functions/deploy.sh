@@ -133,7 +133,7 @@ deploy_cloud_function request-coverage-build \
 					  $PROJECT_ID
 
 deploy_cloud_function request-introspector-build \
-						introspector_build \
+					  introspector_build \
 					  $INTROSPECTOR_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
 
