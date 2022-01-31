@@ -193,7 +193,7 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir,
   fuzz_targets = _get_targets_list(project_name, testing)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
-    return steps
+    return None
 
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
