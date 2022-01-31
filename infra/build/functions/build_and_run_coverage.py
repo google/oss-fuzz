@@ -299,7 +299,9 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
       project.name, coverage_report_latest, bucket_name, build.out,
       config.testing)
   if not download_coverage_steps:
-    logging.info('Skipping introspector build for %s.', project.name)
+    logging.warning(
+        'Skipping introspector build for %s. No coverage data found.',
+        project.name)
     return []
   build_steps.extend(download_coverage_steps)
 
