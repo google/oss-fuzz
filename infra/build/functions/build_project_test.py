@@ -45,14 +45,16 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   def test_get_build_steps(self, mock_url, mock_get_datetime_now):
     """Test for get_build_steps."""
     del mock_url, mock_get_datetime_now
-    project_yaml_contents = ('language: c++\n'
-                             'sanitizers:\n'
-                             '  - address\n'
-                             '  - memory\n'
-                             '  - undefined\n'
-                             'architectures:\n'
-                             '  - x86_64\n'
-                             '  - i386\n')
+    project_yaml_contents = (
+        'language: c++\n'
+        'sanitizers:\n'
+        '  - address\n'
+        '  - memory\n'
+        '  - undefined\n'
+        'architectures:\n'
+        '  - x86_64\n'
+        '  - i386\n'
+        'main_repo: https://github.com/google/oss-fuzz.git\n')
     self.fs.create_dir(test_utils.PROJECT_DIR)
     test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
 

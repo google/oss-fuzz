@@ -23,6 +23,7 @@ BASE_IMAGE_MESSAGE="Start base image build"
 BUILD_JOB_TOPIC=request-build
 
 COVERAGE_BUILD_JOB_TOPIC=request-coverage-build
+INTROSPECTOR_BUILD_JOB_TOPIC=request-introspector-build
 
 SYNC_JOB_TOPIC=schedule-project-sync
 SYNC_SCHEDULER_JOB=sync-scheduler
@@ -91,6 +92,7 @@ deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $INTROSPECTOR_BUILD_JOB_TOPIC $PROJECT_ID
 
 deploy_scheduler $SYNC_SCHEDULER_JOB \
 				 "$SYNC_JOB_SCHEDULE" \
@@ -103,6 +105,12 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
 				  $PROJECT_ID
+
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-introspector \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "introspector" \
+				 $PROJECT_ID
 
 deploy_cloud_function sync \
 					  sync \
@@ -122,6 +130,11 @@ deploy_cloud_function request-build \
 deploy_cloud_function request-coverage-build \
 					  coverage_build \
 					  $COVERAGE_BUILD_JOB_TOPIC \
+					  $PROJECT_ID
+
+deploy_cloud_function request-introspector-build \
+					  introspector_build \
+					  $INTROSPECTOR_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
 
 gcloud datastore indexes create index.yaml --project $PROJECT_ID
