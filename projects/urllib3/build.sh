@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-python3 setup.py install
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
