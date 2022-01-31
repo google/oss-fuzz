@@ -42,6 +42,8 @@ INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
 
+logging.basicConfig(level=logging.INFO)
+
 
 class ProjectYamlError(Exception):
   """Error in project.yaml format."""
@@ -62,7 +64,10 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
       'schedule': schedule
   }
 
-  cloud_scheduler_client.create_job(parent, job)
+  try:
+    cloud_scheduler_client.create_job(parent, job)
+  except exceptions.AlreadyExists:
+    return
 
 
 def delete_scheduler(cloud_scheduler_client, project_name, tag):
@@ -120,9 +125,6 @@ def sync_projects(cloud_scheduler_client, projects):
 
   existing_projects = {project.name for project in Project.query()}
   for project_name in projects:
-    if project_name in existing_projects:
-      continue
-
     try:
       create_scheduler(cloud_scheduler_client, project_name,
                        projects[project_name].schedule,
@@ -133,14 +135,19 @@ def sync_projects(cloud_scheduler_client, projects):
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
                        build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
                        INTROSPECTOR_BUILD_TOPIC)
-      project_metadata = projects[project_name]
-      Project(name=project_name,
-              schedule=project_metadata.schedule,
-              project_yaml_contents=project_metadata.project_yaml_contents,
-              dockerfile_contents=project_metadata.dockerfile_contents).put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
+      continue
+
+    if project_name in existing_projects:
+      continue
+
+    project_metadata = projects[project_name]
+    Project(name=project_name,
+            schedule=project_metadata.schedule,
+            project_yaml_contents=project_metadata.project_yaml_contents,
+            dockerfile_contents=project_metadata.dockerfile_contents).put()
 
   for project in Project.query():
     if project.name not in projects:
