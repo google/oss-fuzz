@@ -210,7 +210,10 @@ if [ "$SANITIZER" = "introspector" ]; then
   find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "*.data.yaml" -exec cp {} $SRC/inspector/ \;
   # Move coverage report.
-  find /workspace/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
+  if [ -d "$OUT/textcov_reports" ]
+  then
+    cp $OUT/textcov_reports/*.covreport $SRC/inspector/
+  fi  
   
   cd $SRC/inspector
   python3 $SRC/fuzz-introspector/post-processing/main.py --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO --coverage_url=$COVERAGE_URL

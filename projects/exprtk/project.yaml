@@ -10,6 +10,5 @@ fuzzing_engines:
 sanitizers:
     - address
     - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-# - memory
+    - memory
 main_repo: 'https://github.com/ArashPartow/exprtk.git'
