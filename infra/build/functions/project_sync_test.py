@@ -179,6 +179,17 @@ class TestDataSync(unittest.TestCase):
               },
               'schedule': '0 6 * * *'
           },
+          {
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test2-scheduler-introspector',
+              'pubsub_target': {
+                  'topic_name':
+                      'projects/test-project/topics/request-introspector-build',
+                  'data':
+                      b'test2'
+              },
+              'schedule': '0 6 * * *'
+          },
       ], cloud_scheduler_client.schedulers)
 
   def test_sync_projects_delete(self):

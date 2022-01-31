@@ -37,6 +37,7 @@ MAX_BUILDS_PER_DAY = 4
 COVERAGE_SCHEDULE = '0 6 * * *'
 FUZZING_BUILD_TOPIC = 'request-build'
 COVERAGE_BUILD_TOPIC = 'request-coverage-build'
+INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
 
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
@@ -95,7 +96,8 @@ def delete_project(cloud_scheduler_client, project):
   """Delete the given project."""
   logging.info('Deleting project %s', project.name)
   for tag in (build_project.FUZZING_BUILD_TYPE,
-              build_and_run_coverage.COVERAGE_BUILD_TYPE):
+              build_and_run_coverage.COVERAGE_BUILD_TYPE,
+              build_and_run_coverage.INTROSPECTOR_BUILD_TYPE):
     try:
       delete_scheduler(cloud_scheduler_client, project.name, tag)
     except exceptions.NotFound:
@@ -128,6 +130,9 @@ def sync_projects(cloud_scheduler_client, projects):
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
                        build_and_run_coverage.COVERAGE_BUILD_TYPE,
                        COVERAGE_BUILD_TOPIC)
+      create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
+                       build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
+                       INTROSPECTOR_BUILD_TOPIC)
       project_metadata = projects[project_name]
       Project(name=project_name,
               schedule=project_metadata.schedule,

@@ -106,12 +106,6 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				  "$BASE_IMAGE_MESSAGE" \
 				  $PROJECT_ID
 
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-introspector \
-				 "$UPDATE_BUILD_JOB_SCHEDULE" \
-				 $UPDATE_BUILD_JOB_TOPIC \
-				 "introspector" \
-				 $PROJECT_ID
-
 deploy_cloud_function sync \
 					  sync \
 					  $SYNC_JOB_TOPIC \
