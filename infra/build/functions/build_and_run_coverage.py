@@ -34,7 +34,7 @@ ARCHITECTURE = 'x86_64'
 PLATFORM = 'linux'
 
 COVERAGE_BUILD_TYPE = 'coverage'
-INTROSPECTOR_BUILD_TYPE = 'fuzz_introspector'
+INTROSPECTOR_BUILD_TYPE = 'introspector'
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 
