@@ -6,9 +6,10 @@ auto_ccs:
   - "cyan@fb.com"
   - "terrelln@fb.com"
   - "felixh@fb.com"
-  - "bimbashrestha@fb.com"
   - "mhl@fb.com"
-  - "reed@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
