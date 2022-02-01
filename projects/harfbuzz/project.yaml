@@ -3,7 +3,6 @@ language: c++
 primary_contact: "harfbuzz-admin@googlegroups.com"
 auto_ccs:
   - "behdad.esfahbod@gmail.com"
-  - "behdad@google.com"
   - "ebrahim@gnu.org"
   - "ebraminio@gmail.com"
   - "grieger@google.com"
