@@ -63,6 +63,11 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     return os.getenv('CI_MERGE_REQUEST_DIFF_BASE_SHA')
 
   @property
+  def filestore(self):
+    """Returns the filestore used to store persistent data."""
+    return os.environ.get('FILESTORE', 'gitlab')
+
+  @property
   def artifacts_dir(self):
     """Gitlab: returns the directory to put artifacts"""
     return environment.get('CFL_ARTIFACTS_DIR', 'artifacts')
