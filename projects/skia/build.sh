@@ -82,6 +82,8 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_gpu=true
            skia_enable_skottie=true
            skia_use_vulkan=true
+           skia_use_egl=false
+           skia_use_gl=false
            skia_use_fontconfig=false
            skia_use_freetype=true
            skia_use_system_freetype2=false
