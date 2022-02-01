@@ -31,6 +31,6 @@ mv -f /tmp/.go-CodeIntelligenceTesting /root/.go
 # Install go114-fuzz-build with the new Go.
 rm -rf "$GOPATH/"
 mkdir -p "$GOPATH/"
-go install github.com/mdempsky/go114-fuzz-build@latest
+go install github.com/CodeIntelligenceTesting/go114-fuzz-build@latest
 ln -s "$GOPATH/bin/go114-fuzz-build" "$GOPATH/bin/go-fuzz"
 
