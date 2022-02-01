@@ -6,11 +6,12 @@ auto_ccs:
   - "Yann.collet.73@gmail.com"
   - "cyan@fb.com"
   - "felixh@fb.com"
-  - "senhuang96@fb.com"
   - "dpc@fb.com"
   - "mhl@fb.com"
-  - "reed@fb.com"
   - "binhvo@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl

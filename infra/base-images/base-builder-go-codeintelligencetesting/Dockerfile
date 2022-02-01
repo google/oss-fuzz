@@ -1,4 +1,3 @@
-#!/bin/bash -eux
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
 #
 ################################################################################
 
-echo "ATHERIS INSTALL"
-unset CFLAGS CXXFLAGS
-pip3 install -v --no-cache-dir "atheris>=2.0.6" "pyinstaller==4.1"
-rm -rf /tmp/*
+FROM gcr.io/oss-fuzz-base/base-builder-go
+
+RUN install_go_CodeIntelligenceTesting.sh
+

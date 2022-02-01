@@ -22,7 +22,9 @@ rustup default nightly
 # Install dependencies.
 export MOZBUILD_STATE_PATH=/root/.mozbuild
 export SHELL=/bin/bash
-../../mach --no-interactive bootstrap --application-choice browser
+cd ../../
+./mach --no-interactive bootstrap --application-choice browser
+cd js/src/
 
 autoconf2.13
 

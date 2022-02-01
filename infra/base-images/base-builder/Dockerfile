@@ -142,10 +142,6 @@ RUN cd $SRC && \
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
 
-RUN git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout 9e3393cd551b65a6bf2de6495013b415f315f74e
-
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
@@ -154,6 +150,7 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.
     install_go.sh \
+    install_go_CodeIntelligenceTesting.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \
