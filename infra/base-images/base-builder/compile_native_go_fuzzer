@@ -19,6 +19,7 @@
 # fuzzer to allow for libFuzzer instrumentation
 function rewrite_go_fuzz_harness() {
 	fuzzer_filename=$1
+	fuzz_function=$2
 
 	# Create a copy of the fuzzer to not modify the existing fuzzer
 	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
@@ -27,7 +28,7 @@ function rewrite_go_fuzz_harness() {
 
 	# replace *testing.F with *go118fuzzbuildutils.F
 	echo "replacing *testing.F"
-	sed -i 's/f \*testing\.F/f \*go118fuzzbuildutils\.F/g' "${fuzzer_fn}"
+	sed -i "s/func $fuzz_function(\([a-zA-Z0-9]*\) \*testing\.F)/func $fuzz_function(\1 \*go118fuzzbuildutils\.F)/g" "${fuzzer_fn}"
 
 	# import https://github.com/AdamKorcz/go-118-fuzz-build
 	# This changes the line numbers from the original fuzzer
@@ -84,7 +85,7 @@ then
 	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
 	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
 
-	rewrite_go_fuzz_harness $fuzzer_filename
+	rewrite_go_fuzz_harness $fuzzer_filename $function
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
 
 	# clean up
