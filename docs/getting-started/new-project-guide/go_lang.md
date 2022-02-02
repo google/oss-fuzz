@@ -50,7 +50,6 @@ func FuzzDemo(f *testing.F) {
 ```
 
 Some requirements for native Go 1.18 fuzzers are:
-* The parameter to your fuzz function must be `f *testing.F`, ie, this is an example of an invalid function signature: `func FuzzDemo(fuzzer *testing.F`). 
 * The only `testing.F` method supported is currently `F.Fuzz()`.
 * `F.Add()` will not add seeds when fuzzing. To provide OSS-fuzz with a seed corpus, follow the documentation [here](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
 
