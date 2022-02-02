@@ -34,3 +34,6 @@ mkdir -p "$GOPATH/"
 go install github.com/mdempsky/go114-fuzz-build@latest
 ln -s "$GOPATH/bin/go114-fuzz-build" "$GOPATH/bin/go-fuzz"
 
+# Re-install ossfuzz_coverage_runner.go.
+wget -O $GOPATH/ossfuzz_coverage_runner.go https://raw.githubusercontent.com/google/oss-fuzz/898bbe41e57f841d15cb9d30bd42105460857386/infra/base-images/base-builder-go/ossfuzz_coverage_runner.go
+
