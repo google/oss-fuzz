@@ -510,9 +510,13 @@ def run_build(oss_fuzz_project,
     options = DEFAULT_GCB_OPTIONS
 
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
+  timeout_value = build_lib.BUILD_TIMEOUT
+  # TODO (navidem): this is temporary until I fix shorter failing projects
+  if build_type == 'introspector':
+    timeout_value /= 4
   build_body = {
       'steps': build_steps,
-      'timeout': str(build_lib.BUILD_TIMEOUT) + 's',
+      'timeout': str(timeout_value) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
       'tags': tags,
