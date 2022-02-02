@@ -15,23 +15,23 @@
 #
 ################################################################################
 
-# rewrite_go_fuzz_harness rewrites a copy of the 
-# fuzzer to allow for libFuzzer instrumentation
+# Rewrites a copy of the fuzzer to allow for 
+# libFuzzer instrumentation.
 function rewrite_go_fuzz_harness() {
 	fuzzer_filename=$1
 	fuzz_function=$2
 
-	# Create a copy of the fuzzer to not modify the existing fuzzer
+	# Create a copy of the fuzzer to not modify the existing fuzzer.
 	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
 	mv $fuzzer_filename /tmp/
 	fuzzer_fn="${fuzzer_filename}"_fuzz_.go
 
-	# replace *testing.F with *go118fuzzbuildutils.F
+	# Replace *testing.F with *go118fuzzbuildutils.F.
 	echo "replacing *testing.F"
 	sed -i "s/func $fuzz_function(\([a-zA-Z0-9]*\) \*testing\.F)/func $fuzz_function(\1 \*go118fuzzbuildutils\.F)/g" "${fuzzer_fn}"
 
-	# import https://github.com/AdamKorcz/go-118-fuzz-build
-	# This changes the line numbers from the original fuzzer
+	# Import https://github.com/AdamKorcz/go-118-fuzz-build.
+	# This changes the line numbers from the original fuzzer.
 	addimport -path "${fuzzer_fn}"
 }
 
@@ -51,8 +51,9 @@ function build_native_go_fuzzer() {
 		sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
 		sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
-		# The repo is the module path/name, which is already created above in case it doesn't exist,
-		# but not always the same as the module path. This is necessary to handle SIV properly.
+		# The repo is the module path/name, which is already created above
+		# in case it doesn't exist, but not always the same as the module
+		# path. This is necessary to handle SIV properly.
 		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
 		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
 		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
@@ -72,23 +73,23 @@ function=$2
 fuzzer=$3
 tags="-tags gofuzz"
 
-# Get absolute path
+# Get absolute path.
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
-# TODO: Get rid of "-r" flag here
+# TODO(adamkorcz): Get rid of "-r" flag here.
 fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
 
-# test if file contains a line with "func $function" and "testing.F"
+# Test if file contains a line with "func $function" and "testing.F".
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
-	# Install more dependencies
+	# Install more dependencies.
 	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
 	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
 
 	rewrite_go_fuzz_harness $fuzzer_filename $function
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
 
-	# clean up
+	# Clean up.
 	rm "${fuzzer_filename}_fuzz_.go"
 	mv /tmp/$(basename $fuzzer_filename) $fuzzer_filename
 else

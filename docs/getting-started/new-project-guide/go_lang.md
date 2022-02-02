@@ -27,10 +27,10 @@ only. In that mode, fuzz targets for Go use the libFuzzer engine with native Go
 coverage instrumentation. Binaries compiled in this mode provide the same
 libFuzzer command line interface as non-Go fuzz targets.
 
-## Native Go 1.18 support
+## Native Go Fuzzing support
 
 OSS-fuzz supports fuzzers written for the native Go 1.18 engine. These fuzzers are built as libFuzzer binaries in a similar fashion as fuzzers written for the go-fuzz engine. Because of that, dictionaries and seed corpora should be handled in accordance with [the OSS-fuzz documentation](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
-Any number of arguments along with all types supported by the Go 1.18 engine are also supported by OSS-fuzz. Here is an example of a valid fuzzer with multiple arguments:
+Unlike libFuzzer/go-fuzz targets which must accept one data buffer, fuzz targets written for the Native Go engine can accept any number of arguments of any type. Here is an example of a valid fuzzer with multiple arguments:
 
 ```go
 package demofuzzing
