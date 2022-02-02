@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-# Build SwiftShader
+# Build SwiftShader so we can compile in our GPU code and test it in an
+# an environment that does not have a real GPU.
 pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
 # SwiftShader already has a build/ directory, use something else
@@ -45,15 +46,11 @@ else
 fi
 # These deprecated warnings get quite noisy and mask other issues.
 CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
-  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
 
-$SRC/depot_tools/ninja libGLESv2_deprecated libEGL_deprecated
-# Skia is looking for the names w/o the _deprecated tag. The libraries themselves
-# are looking for the _deprecated suffix, so we copy them both ways into the out
-# directory.
-cp libEGL_deprecated.so $OUT/libEGL.so
-cp libGLESv2_deprecated.so $OUT/libGLESv2.so
-mv libGLESv2_deprecated.so libEGL_deprecated.so $OUT
+# Swiftshader only supports Vulkan, so we will build our fuzzers with Vulkan too.
+$SRC/depot_tools/ninja libvk_swiftshader.so
+mv libvk_swiftshader.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
 popd
@@ -61,9 +58,10 @@ popd
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2\
+export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
+ -DSK_GPU_TOOLS_VK_LIBRARY_NAME=libvk_swiftshader.so \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2\
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
@@ -74,13 +72,8 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 $SRC/skia/bin/fetch-gn
 
-set +u
+# Avoid OOMs on the CI due to lower memory constraints
 LIMITED_LINK_POOL="link_pool_depth=1"
-if [ "$CIFUZZ" = "true" ]; then
-  echo "Not restricting linking because on CIFuzz"
-  LIMITED_LINK_POOL=""
-fi
-set -u
 
 SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_directory=false
@@ -88,7 +81,9 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_empty=true
            skia_enable_gpu=true
            skia_enable_skottie=true
-           skia_use_egl=true
+           skia_use_vulkan=true
+           skia_use_egl=false
+           skia_use_gl=false
            skia_use_fontconfig=false
            skia_use_freetype=true
            skia_use_system_freetype2=false
