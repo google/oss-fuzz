@@ -189,21 +189,22 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   })
 
-  # Upload the text coverage reports. Delete the old ones just in case.
-  upload_textcov_reports_url = bucket.get_upload_url('textcov_reports')
+  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+    # Upload the text coverage reports. Delete the old ones just in case.
+    upload_textcov_reports_url = bucket.get_upload_url('textcov_reports')
 
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_textcov_reports_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'textcov_reports'),
-          upload_textcov_reports_url,
-      ],
-  })
+    build_steps.append(build_lib.gsutil_rm_rf_step(upload_textcov_reports_url))
+    build_steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'args': [
+            '-m',
+            'cp',
+            '-r',
+            os.path.join(build.out, 'textcov_reports'),
+            upload_textcov_reports_url,
+        ],
+    })
 
   # Upload the fuzzer logs. Delete the old ones just in case
   upload_fuzzer_logs_url = bucket.get_upload_url('logs')
