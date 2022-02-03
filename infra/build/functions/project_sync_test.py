@@ -78,6 +78,14 @@ class CloudSchedulerClient:
     del parent
     self.schedulers.append(job)
 
+  def get_job(self, name):
+    """Simulate get_job."""
+    for scheduler in self.schedulers:
+      if scheduler['name'] == name:
+        return scheduler
+
+    return None
+
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
     """Return job path."""
