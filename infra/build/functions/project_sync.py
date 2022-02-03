@@ -35,6 +35,7 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 COVERAGE_SCHEDULE = '0 6 * * *'
+INTROSPECTOR_SCHEDULE = '0 10 * * *'
 FUZZING_BUILD_TOPIC = 'request-build'
 COVERAGE_BUILD_TOPIC = 'request-coverage-build'
 INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
@@ -132,7 +133,8 @@ def sync_projects(cloud_scheduler_client, projects):
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
                        build_and_run_coverage.COVERAGE_BUILD_TYPE,
                        COVERAGE_BUILD_TOPIC)
-      create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
+      create_scheduler(cloud_scheduler_client, project_name,
+                       INTROSPECTOR_SCHEDULE,
                        build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
                        INTROSPECTOR_BUILD_TOPIC)
     except exceptions.GoogleAPICallError as error:
