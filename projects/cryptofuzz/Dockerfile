@@ -51,8 +51,8 @@ RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
 RUN git clone --depth 1 https://github.com/paulmillr/noble-ed25519.git
 RUN git clone --depth 1 https://github.com/paulmillr/noble-bls12-381.git
 RUN git clone --depth 1 https://github.com/paulmillr/noble-secp256k1.git
-RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
+RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
