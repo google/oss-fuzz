@@ -17,16 +17,16 @@
 
 # Install CodeIntelligenceTesting Go.
 ## Require at least Go1.4 to boostrap.
-cd /tmp
-git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
-cd .go-CodeIntelligenceTesting/src
+git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git /tmp/go-CodeIntelligenceTesting
 # Disable tests, at least one of which erroneously fails.
-sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
-./all.bash
+sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' /tmp/go-CodeIntelligenceTesting/src/run.bash
+# ./all.bash has to be run inside the src/ directory.
+(cd /tmp/go-CodeIntelligenceTesting/src/; ./all.bash)
+
 
 # Replace original Go with the one from CodeIntelligenceTesting.
 rm -rf /root/.go
-mv -f /tmp/.go-CodeIntelligenceTesting /root/.go
+mv -f /tmp/go-CodeIntelligenceTesting /root/.go
 
 # Install go114-fuzz-build with the new Go.
 rm -rf "$GOPATH/"
