@@ -1,5 +1,5 @@
 #!/bin/bash -eux
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 
 # Install CodeIntelligenceTesting Go.
 ## Require at least Go1.4 to boostrap.
-cd /tmp
-git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git .go-CodeIntelligenceTesting
-cd .go-CodeIntelligenceTesting/src
+git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git /tmp/go-CodeIntelligenceTesting
 # Disable tests, at least one of which erroneously fails.
-sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' run.bash
-./all.bash
+sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' /tmp/go-CodeIntelligenceTesting/src/run.bash
+# ./all.bash has to be run inside the src/ directory.
+(cd /tmp/go-CodeIntelligenceTesting/src/; ./all.bash)
+
 
 # Replace original Go with the one from CodeIntelligenceTesting.
 rm -rf /root/.go
-mv -f /tmp/.go-CodeIntelligenceTesting /root/.go
+mv -f /tmp/go-CodeIntelligenceTesting /root/.go
 
 # Install go114-fuzz-build with the new Go.
 rm -rf "$GOPATH/"
@@ -36,4 +36,3 @@ ln -s "$GOPATH/bin/go114-fuzz-build" "$GOPATH/bin/go-fuzz"
 
 # Re-install ossfuzz_coverage_runner.go.
 wget -O $GOPATH/ossfuzz_coverage_runner.go https://raw.githubusercontent.com/google/oss-fuzz/898bbe41e57f841d15cb9d30bd42105460857386/infra/base-images/base-builder-go/ossfuzz_coverage_runner.go
-
