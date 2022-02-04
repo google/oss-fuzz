@@ -17,4 +17,3 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN install_go_CodeIntelligenceTesting.sh
-
