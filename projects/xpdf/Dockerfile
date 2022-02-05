@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install software-properties-common -y && apt-get update && apt-get install -y make wget cmake libpng-dev libfreetype-dev zlib1g-dev
+RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y make wget cmake qtbase5-dev libcups2-dev autoconf automake autotools-dev libtool
 RUN wget https://dl.xpdfreader.com/xpdf-latest.tar.gz
 
 WORKDIR $SRC
