@@ -12,57 +12,92 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <stdlib.h>
-#include <string.h>
+#include <fuzzer/FuzzedDataProvider.h>
+
+#include <vector>
+#include <aconf.h>
+#include <stdio.h>
 #include <stdint.h>
-#include <exception>
-#include "PDFDoc.h"
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+#include <png.h>
+
+#include "gmem.h"
+#include "gmempp.h"
+#include "parseargs.h"
+#include "GString.h"
+#include "gfile.h"
 #include "GlobalParams.h"
-#include "Zoox.h"
+#include "Object.h"
+#include "PDFDoc.h"
+#include "SplashBitmap.h"
+#include "Splash.h"
+#include "SplashOutputDev.h"
+#include "Stream.h"
+#include "config.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    char filename[256];
-    sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-    FILE *fp = fopen(filename, "wb");
-    if (!fp)
-        return 0;
-    fwrite(data, size, 1, fp);
-    fclose(fp);
+    FuzzedDataProvider fdp (data, size);
+    double hdpi = fdp.ConsumeFloatingPoint<double>();
+    double vdpi = fdp.ConsumeFloatingPoint<double>();
+    int rotate = fdp.ConsumeIntegral<int>();
+    bool useMediaBox = fdp.ConsumeBool();
+    bool crop = fdp.ConsumeBool();
+    bool printing = fdp.ConsumeBool();
+    std::vector<char> payload = fdp.ConsumeRemainingBytes<char>();
 
-    // Main fuzzing logic
+    Object xpdf_obj;
+    xpdf_obj.initNull();
+    BaseStream *stream = new MemStream(payload.data(), 0, payload.size(), &xpdf_obj);
+
     Object info, xfa;
     Object *acroForm;
     globalParams = new GlobalParams(NULL);
     globalParams->setErrQuiet(1);
     globalParams->setupBaseFonts(NULL);
+    char yes[] = "yes";
+    globalParams->setEnableFreeType(yes);  // Yes, it's a string and not a bool.
+    globalParams->setErrQuiet(1);
 
     PDFDoc *doc = NULL;
     try {
-        doc = new PDFDoc(filename, NULL, NULL);
-        if (doc->isOk() == gTrue)
+      PDFDoc doc(stream);
+        if (doc.isOk() == gTrue)
         {
-            doc->getNumPages();
-            doc->getOutline();
-            doc->getStructTreeRoot();
-            doc->getXRef();
-            doc->readMetadata();
+            doc.getNumPages();
+            doc.getOutline();
+            doc.getStructTreeRoot();
+            doc.getXRef();
+            doc.okToPrint(gTrue);
+            doc.okToCopy(gTrue);
+            doc.okToChange(gTrue);
+            doc.okToAddNotes(gTrue);
+            doc.isLinearized();
+            doc.getPDFVersion();
+
+            GString *metadata;
+            if ((metadata = doc.readMetadata())) {
+              (void)metadata->getCString();
+            }
+            delete metadata;
 
             Object info;
-            doc->getDocInfo(&info);
+            doc.getDocInfo(&info);
             if (info.isDict()) {
               info.getDict();
             }
             info.free();
 
-            if ((acroForm = doc->getCatalog()->getAcroForm())->isDict()) {
+            if ((acroForm = doc.getCatalog()->getAcroForm())->isDict()) {
                 acroForm->dictLookup("XFA", &xfa);
                 xfa.free();
             }
 
-            for (size_t i = 0; i < doc->getNumPages(); i++) {
-              doc->getLinks(i);
-              auto page = doc->getCatalog()->getPage(i);
+            for (size_t i = 0; i < doc.getNumPages(); i++) {
+              doc.getLinks(i);
+              auto page = doc.getCatalog()->getPage(i);
               if (!page->isOk()) {
                 continue;
               }
@@ -70,18 +105,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
               page->getMetadata();
               page->getResourceDict();
             }
+
+            SplashColor paperColor = {0xff, 0xff, 0xff};
+            SplashOutputDev *splashOut = new SplashOutputDev(splashModeRGB8, 1, gFalse, paperColor);
+            splashOut->setNoComposite(gTrue);
+            splashOut->startDoc(doc.getXRef());
+            for (size_t i = 0; i <= doc.getNumPages(); ++i) {
+              doc.displayPage(splashOut, i, hdpi, vdpi, rotate, useMediaBox, crop, printing);
+            }
+            (void)splashOut->getBitmap();
+
+            delete splashOut;
         }
     } catch (...) {
 
     }
 
-    // Cleanup
-    if (doc != NULL)
-        delete doc;
     delete globalParams;
 
-    // cleanup temporary file
-    unlink(filename);
     return 0;
 }
 
