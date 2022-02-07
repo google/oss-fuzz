@@ -49,7 +49,9 @@ export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
 export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
 # Compile libgmp
-cd $SRC/libgmp/
+cd $SRC/
+tar --lzip -xvf gmp-6.2.1.tar.lz
+cd $SRC/gmp-6.2.1/
 autoreconf -ivf
 if [[ $CFLAGS = *-m32* ]]
 then
