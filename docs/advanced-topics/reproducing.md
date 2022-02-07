@@ -55,6 +55,15 @@ site.baseurl }}/faq/#why-do-you-use-docker)).
 
 ## Building using Docker
 
+### Cloning OSS-Fuzz
+
+To use the following `infra/helper.py` commands, you need a checkout of OSS-Fuzz:
+
+```bash
+$ git clone --depth=1 https://github.com/google/oss-fuzz.git
+$ cd oss-fuzz
+```
+
 ### Pull the latest Docker images
 
 Docker images get regularly updated with a newer version of build tools, build
