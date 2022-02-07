@@ -48,6 +48,25 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
 export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
 export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
+# Compile libgmp
+cd $SRC/
+tar --lzip -xvf gmp-6.2.1.tar.lz
+cd $SRC/gmp-6.2.1/
+autoreconf -ivf
+if [[ $CFLAGS = *-m32* ]]
+then
+    setarch i386 ./configure --enable-maintainer-mode --enable-assert
+elif [[ $CFLAGS = *sanitize=memory* ]]
+then
+    ./configure --enable-maintainer-mode --enable-assert --disable-assembly
+else
+    ./configure --enable-maintainer-mode --enable-assert
+fi
+make -j$(nproc)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"
+export LIBGMP_INCLUDE_PATH=$(realpath .)
+export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
+
 # Build Cryptofuzz
 cd $SRC/cryptofuzz
 python gen_repository.py
@@ -55,13 +74,15 @@ rm extra_options.h
 echo -n '"' >>extra_options.h
 echo -n '--force-module=libecc ' >>extra_options.h
 echo -n '--operations=Digest,HMAC,ECC_PrivateToPublic,ECDSA_Sign,ECDSA_Verify,ECGDSA_Sign,ECGDSA_Verify,ECRDSA_Sign,ECRDSA_Verify,ECC_Point_Add,ECC_Point_Mul,ECC_Point_Dbl,ECC_Point_Neg,BignumCalc ' >>extra_options.h
-echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1,secp256k1 ' >>extra_options.h
-echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256,SM3,SHAKE256_114,STREEBOG-256,STREEBOG-512 ' >>extra_options.h
-echo -n '--calcops=Add,AddMod,And,Bit,GCD,InvMod,IsOdd,IsOne,IsZero,LShift1,Mod,Mul,MulMod,NumBits,Or,RShift,Sqr,Sub,SubMod,Xor,LRot,RRot ' >>extra_options.h
+echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1,secp256k1,ed25519,ed448,x25519,x448 ' >>extra_options.h
+echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256,SM3,SHAKE256_114,STREEBOG-256,STREEBOG-512,RIPEMD160 ' >>extra_options.h
+echo -n '--calcops=Add,AddMod,And,Bit,GCD,ExtGCD_X,ExtGCD_Y,InvMod,IsOdd,IsOne,IsZero,LShift1,Mod,Mul,MulMod,NumBits,Or,RShift,Sqr,Sub,SubMod,Xor,LRot,RRot ' >>extra_options.h
 echo -n '"' >>extra_options.h
 cd modules/libecc/
 make -B -j$(nproc)
 cd ../botan/
+make -B -j$(nproc)
+cd ../libgmp/
 make -B -j$(nproc)
 cd ../../
 make -B -j$(nproc)
