@@ -1,0 +1,97 @@
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Rewrites a copy of the fuzzer to allow for 
+# libFuzzer instrumentation.
+function rewrite_go_fuzz_harness() {
+	fuzzer_filename=$1
+	fuzz_function=$2
+
+	# Create a copy of the fuzzer to not modify the existing fuzzer.
+	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
+	mv $fuzzer_filename /tmp/
+	fuzzer_fn="${fuzzer_filename}"_fuzz_.go
+
+	# Replace *testing.F with *go118fuzzbuildutils.F.
+	echo "replacing *testing.F"
+	sed -i "s/func $fuzz_function(\([a-zA-Z0-9]*\) \*testing\.F)/func $fuzz_function(\1 \*go118fuzzbuildutils\.F)/g" "${fuzzer_fn}"
+
+	# Import https://github.com/AdamKorcz/go-118-fuzz-build.
+	# This changes the line numbers from the original fuzzer.
+	addimport -path "${fuzzer_fn}"
+}
+
+function build_native_go_fuzzer() {
+	fuzzer=$1
+	function=$2
+	path=$3
+	tags="-tags gofuzz"
+
+	if [[ $SANITIZER = *coverage* ]]; then
+		echo "here we perform coverage build"
+		fuzzed_package=`go list $tags -f '{{.Name}}' $path`
+		abspath=`go list $tags -f {{.Dir}} $path`
+		cd $abspath
+		cp $GOPATH/native_ossfuzz_coverage_runner.go ./"${function,,}"_test.go
+		sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
+		sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
+		sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
+
+		# The repo is the module path/name, which is already created above
+		# in case it doesn't exist, but not always the same as the module
+		# path. This is necessary to handle SIV properly.
+		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
+		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
+		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
+		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
+		gotip test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+
+		rm ./"${function,,}"_test.go
+	else
+		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
+		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+	fi
+}
+
+
+path=$1
+function=$2
+fuzzer=$3
+tags="-tags gofuzz"
+
+# Get absolute path.
+abs_file_dir=$(go list $tags -f {{.Dir}} $path)
+
+# TODO(adamkorcz): Get rid of "-r" flag here.
+fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
+
+# Test if file contains a line with "func $function" and "testing.F".
+if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
+then
+	# Install more dependencies.
+	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
+	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
+
+	rewrite_go_fuzz_harness $fuzzer_filename $function
+	build_native_go_fuzzer $fuzzer $function $abs_file_dir
+
+	# Clean up.
+	rm "${fuzzer_filename}_fuzz_.go"
+	mv /tmp/$(basename $fuzzer_filename) $fuzzer_filename
+else
+	echo "Could not find the function: func ${function}(f *testing.F)"
+fi

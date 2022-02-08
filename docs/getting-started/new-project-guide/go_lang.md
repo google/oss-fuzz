@@ -27,10 +27,47 @@ only. In that mode, fuzz targets for Go use the libFuzzer engine with native Go
 coverage instrumentation. Binaries compiled in this mode provide the same
 libFuzzer command line interface as non-Go fuzz targets.
 
+## Native Go Fuzzing support
+
+OSS-fuzz supports fuzzers written for the native Go 1.18 engine. These fuzzers are built as libFuzzer binaries in a similar fashion as fuzzers written for the go-fuzz engine. Because of that, dictionaries and seed corpora should be handled in accordance with [the OSS-fuzz documentation](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
+Unlike libFuzzer/go-fuzz targets which must accept one data buffer, fuzz targets written for the Native Go engine can accept any number of arguments of any type. Here is an example of a valid fuzzer with multiple arguments:
+
+```go
+package demofuzzing
+
+import (
+    "fmt"
+    "testing"
+)
+
+func FuzzDemo(f *testing.F) {
+    f.Fuzz(func(t *testing.T, data1 string, data2 uint32, data3 float64) {
+        fmt.Println(data1)
+        fmt.Println(data2)
+        fmt.Println(data3)
+    })
+}
+```
+
+Some requirements for native Go 1.18 fuzzers are:
+* The only `testing.F` method supported is currently `F.Fuzz()`.
+* `F.Add()` will not add seeds when fuzzing. To provide OSS-fuzz with a seed corpus, follow the documentation [here](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
+
+### Troubleshooting
+```console
+main.1320908145.go:8:2: found packages nativefuzzing fuzzer_test.go_fuzz_.go) and main (main.1320908145.go) in /src/project/go/test/fuzzing/nativefuzzing
+```
+
+This issue occurs because the cwd is a directory with a non-main package when running `compile_native_go_fuzzer`. To solve it, create a temporary directory in your project tree and `cd` into it before running `compile_native_go_fuzzer`:
+
+```sh
+mkdir tmp && cd tmp
+compile_native_go_fuzzer $path $fuzz_function $binary_name
+```
+
 ## Project files
 
-First, you need to write a Go fuzz target that accepts a stream of bytes and
-calls the program API with that. This fuzz target should reside in your project
+First, you need to write a Go fuzz target. This fuzz target should reside in your project
 repository
 ([example](https://github.com/golang/go/blob/4ad13555184eb0697c2e92c64c1b0bdb287ccc10/src/html/fuzz.go#L13)).
 
@@ -79,8 +116,7 @@ In order to build a Go fuzz target, you need to call `go-fuzz`
 command first, and then link the resulting `.a` file against
 `$LIB_FUZZING_ENGINE` using the `$CXX $CXXFLAGS ...` command.
 
-The best way to do this is by using a `compile_go_fuzzer` script,
-as it also supports coverage builds.
+For go-fuzz fuzzers, the best way to do this is by using the `compile_go_fuzzer` script, and for native Go 1.18 fuzzers it is recommended to use the `compile_native_go_fuzzer` script. Both of these also support coverage builds.
 
 A usage example from go-dns project is
 
