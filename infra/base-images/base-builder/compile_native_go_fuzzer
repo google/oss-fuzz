@@ -82,9 +82,6 @@ fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
 # Test if file contains a line with "func $function" and "testing.F".
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
-	# Install more dependencies.
-	gotip get github.com/AdamKorcz/go-118-fuzz-build/utils
-	gotip get google.golang.org/grpc/internal/channelz@v1.42.0
 
 	rewrite_go_fuzz_harness $fuzzer_filename $function
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
