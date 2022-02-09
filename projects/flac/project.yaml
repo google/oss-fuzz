@@ -3,6 +3,7 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "erik.de.castro.lopo@gmail.com"
+ - "mvanb1@gmail.com"
 vendor_ccs:
  - "twsmith@mozilla.com"
 sanitizers:
