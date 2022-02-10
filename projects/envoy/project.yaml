@@ -23,6 +23,8 @@ auto_ccs:
   - "dominik.czarnota@trailofbits.com"
   - "luis.merino@x41-dsec.de"
   - "dasfuzzer@x41-dsec.de"
+  - "copybara-watcher-pod-watcher-git@system.gserviceaccount.com"
+  - "copybara-worker@system.gserviceaccount.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
 main_repo: 'https://github.com/envoyproxy/envoy.git'
 fuzzing_engines:
