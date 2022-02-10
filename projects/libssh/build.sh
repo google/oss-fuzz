@@ -23,12 +23,12 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DBUILD_SHARED_LIBS=OFF -DWITH_INSECURE_NONE=ON $SRC/libssh
 make "-j$(nproc)"
 
-fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.cpp")
+fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.c")
 for f in $fuzzers; do
-    fuzzerName=$(basename $f .cpp)
+    fuzzerName=$(basename $f .c)
     echo "Building fuzzer $fuzzerName"
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ -I$BUILD/include/ \
-        "$f" -o "$OUT/$fuzzerName" \
+    $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
+        "$f" -o "$OUT/$fuzzerName" -O0 -g \
         $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
 
     if [ -d "$SRC/libssh/tests/fuzz/${fuzzerName}_corpus" ]; then
