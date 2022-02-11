@@ -37,6 +37,10 @@ function compile_fuzzer {
   compile_go_fuzzer "k8s.io/kubernetes/test/fuzz/${pkg}" $function $fuzzer
 }
 
+# Build fuzzers from cncf-fuzzing:
+$SRC/cncf-fuzzing/projects/kubernetes/build.sh
+
+
 compile_fuzzer "yaml" "FuzzDurationStrict"
 compile_fuzzer "yaml" "FuzzMicroTimeStrict"
 compile_fuzzer "yaml" "FuzzSigYaml"
@@ -44,6 +48,3 @@ compile_fuzzer "yaml" "FuzzTimeStrict"
 compile_fuzzer "yaml" "FuzzYamlV2"
 compile_fuzzer "json" "FuzzStrictDecode"
 compile_fuzzer "json" "FuzzNonStrictDecode"
-
-# Build fuzzers from cncf-fuzzing:
-$SRC/cncf-fuzzing/projects/kubernetes/build.sh
