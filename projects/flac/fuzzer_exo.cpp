@@ -466,11 +466,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int buffer_size = streamInfo.max_blocksize * streamInfo.channels * 2;
   assert(buffer_size >= 0);  // Not expected
   auto buffer = new uint8_t[buffer_size];
-  int runs = 0;
-  while (parser.readBuffer(buffer, buffer_size) >= buffer_size) {
-    runs++;
-    continue;
-  }
+
+  while (parser.readBuffer(buffer, buffer_size) < ((size_t)-1));
   delete[] buffer;
 
   return 0;
