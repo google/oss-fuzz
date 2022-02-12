@@ -281,6 +281,11 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
       --classfiles $classes_dir \
       "${sourcefiles_args[@]}"
 
+  # Also serve the raw exec file and XML report, which can be useful for
+  # automated analysis.
+  cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
+  cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
+
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
 
