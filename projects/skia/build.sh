@@ -245,7 +245,7 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
 
-# These four SkSL tests use the same sksl_seed_corpus, and every SkSL test shares a dictionary.
+# All five SkSL tests share the same sksl_seed_corpus and dictionary.
 mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
 cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
@@ -260,17 +260,16 @@ cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
 
 mv out/FuzzDebug/sksl2pipeline $OUT/sksl2pipeline
 cp ../skia_data/sksl.dict $OUT/sksl2pipeline.dict
-mv ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
+mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
+mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 
 mv out/Fuzz/svg_dom $OUT/svg_dom
 mv ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
-
-
-mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
-mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
-mv ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/api_create_ddl $OUT/api_create_ddl
 
