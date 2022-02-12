@@ -20,14 +20,12 @@ mkdir build
 cd build
 
 # CC CXX should be auto retrieved by cmake.
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DUNICORN_BUILD_SHARED=off -DUNICORN_FUZZ=1
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=off -DUNICORN_FUZZ=1
 make -j12
 
 libs="libunicorn.a \
 libx86_64-softmmu.a \
-libaarch64eb-softmmu.a \
 libaarch64-softmmu.a \
-libarmeb-softmmu.a \
 libarm-softmmu.a \
 libm68k-softmmu.a \
 libmips64el-softmmu.a \
@@ -40,6 +38,7 @@ libriscv32-softmmu.a \
 libriscv64-softmmu.a \
 libsparc64-softmmu.a \
 libsparc-softmmu.a \
+libs390x-softmmu.a \
 libunicorn-common.a"
 
 
