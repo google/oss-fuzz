@@ -5,6 +5,7 @@ auto_ccs:
   - "p.antoine@catenacyber.fr"
   - "ch980501427@gmail.com"
   - "stalkr@stalkr.net"
+  - "mio@lazym.io"
 fuzzing_engines:
   - libfuzzer
   - afl
