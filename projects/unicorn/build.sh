@@ -21,7 +21,7 @@ cd build
 
 # CC CXX should be auto retrieved by cmake.
 cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=off -DUNICORN_FUZZ=1
-make -j12
+make -j4
 
 libs="libunicorn.a \
 libx86_64-softmmu.a \
