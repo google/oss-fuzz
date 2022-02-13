@@ -43,8 +43,12 @@ echo -n "BLS_G1_Add," >>extra_options.h
 echo -n "BLS_G1_Mul," >>extra_options.h
 echo -n "BLS_G1_Neg," >>extra_options.h
 echo -n "BLS_IsG1OnCurve," >>extra_options.h
+echo -n "BLS_G2_Add," >>extra_options.h
+echo -n "BLS_G2_Mul," >>extra_options.h
+echo -n "BLS_G2_Neg," >>extra_options.h
 echo -n "BLS_Compress_G1," >>extra_options.h
 echo -n "BLS_Decompress_G1," >>extra_options.h
+echo -n "BLS_Pairing," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R" >>extra_options.h
 echo -n '"' >>extra_options.h
