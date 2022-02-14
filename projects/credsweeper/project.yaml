@@ -1,0 +1,13 @@
+homepage: "https://github.com/Samsung/CredSweeper"
+language: python
+primary_contact: "babenek@gmail.com"
+auto_ccs:
+  - "babenek@gmail.com"
+  - "kmnls.kmnls@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/Samsung/CredSweeper"
+
