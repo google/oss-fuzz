@@ -79,6 +79,8 @@ OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
+# DO NOT CHANGE THIS UNTIL https://github.com/google/oss-fuzz/issues/7273 is
+# RESOLVED.
 FORCE_OUR_REVISION=1
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
