@@ -42,11 +42,14 @@ echo -n "BLS_PrivateToPublic," >>extra_options.h
 echo -n "BLS_G1_Add," >>extra_options.h
 echo -n "BLS_G1_Mul," >>extra_options.h
 echo -n "BLS_G1_Neg," >>extra_options.h
+echo -n "BLS_G1_IsEq," >>extra_options.h
 echo -n "BLS_IsG1OnCurve," >>extra_options.h
 echo -n "BLS_HashToG1," >>extra_options.h
+echo -n "BLS_PrivateToPublic_G2," >>extra_options.h
 echo -n "BLS_G2_Add," >>extra_options.h
 echo -n "BLS_G2_Mul," >>extra_options.h
 echo -n "BLS_G2_Neg," >>extra_options.h
+echo -n "BLS_G2_IsEq," >>extra_options.h
 echo -n "BLS_IsG2OnCurve," >>extra_options.h
 echo -n "BLS_HashToG2," >>extra_options.h
 echo -n "BLS_Compress_G1," >>extra_options.h
