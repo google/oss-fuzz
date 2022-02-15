@@ -18,8 +18,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   int succ = init_daemon(&data, &size);
   if (succ == 0) {
-    char *t1 = gb_get_null_terminated(&data, &size);
-    char *t2 = gb_get_null_terminated(&data, &size);
+    char *t1 = gb_get_len_null_terminated(&data, &size, MAXDNAME);
+    char *t2 = gb_get_len_null_terminated(&data, &size, MAXDNAME);
     if (t1 != NULL && t2 != NULL) {
 
       // Util logic
