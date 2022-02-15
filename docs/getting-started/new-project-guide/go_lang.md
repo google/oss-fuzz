@@ -53,18 +53,6 @@ Some requirements for native Go 1.18 fuzzers are:
 * The only `testing.F` method supported is currently `F.Fuzz()`.
 * `F.Add()` will not add seeds when fuzzing. To provide OSS-fuzz with a seed corpus, follow the documentation [here](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
 
-### Troubleshooting
-```console
-main.1320908145.go:8:2: found packages nativefuzzing fuzzer_test.go_fuzz_.go) and main (main.1320908145.go) in /src/project/go/test/fuzzing/nativefuzzing
-```
-
-This issue occurs because the cwd is a directory with a non-main package when running `compile_native_go_fuzzer`. To solve it, create a temporary directory in your project tree and `cd` into it before running `compile_native_go_fuzzer`:
-
-```sh
-mkdir tmp && cd tmp
-compile_native_go_fuzzer $path $fuzz_function $binary_name
-```
-
 ## Project files
 
 First, you need to write a Go fuzz target. This fuzz target should reside in your project
