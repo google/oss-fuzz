@@ -7,6 +7,7 @@ auto_ccs:
   - "ydelendik@mozilla.com"
   - "cfallin@gmail.com"
   - "andrew.s.brown2@gmail.com"
+  - "peterhuene@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:

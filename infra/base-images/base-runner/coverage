@@ -239,9 +239,7 @@ wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
-  # TODO(adamkorcz): Once oss-fuzz upgrades go to 1.18, 
-  # use "go" instead of "gotip":
-  gotip tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
   $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.cpu.prof
