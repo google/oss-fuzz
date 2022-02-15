@@ -16,8 +16,7 @@ vendor_ccs:
 sanitizers:
  - address
  - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-# - memory
+ - memory
 help_url: "https://skia.org/dev/testing/fuzz"
 builds_per_day: 4
 main_repo: 'https://skia.googlesource.com/skia.git'
