@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config cmake bison flex libxml2-dev
+  pkg-config cmake bison flex libxml2-dev libxml2-dev:i386 libz-dev libz-dev:i386 liblzma-dev liblzma-dev:i386
 RUN git clone --depth 1 --branch develop  https://github.com/igraph/igraph
+RUN wget https://github.com/unicode-org/icu/releases/download/release-66-1/icu4c-66_1-src.tgz && tar xzvf icu4c-66_1-src.tgz
 WORKDIR igraph
 RUN cp $SRC/igraph/fuzzing/build.sh $SRC/build.sh
 
