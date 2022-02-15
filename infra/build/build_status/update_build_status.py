@@ -213,10 +213,10 @@ def update_build_badges(project, last_build_successful,
     destination_blob_name = f'{DESTINATION_BADGE_DIR}/{project}.{extension}'
 
     status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
-    # badge_blob = status_bucket.blob(blob_name)
-    # status_bucket.copy_blob(badge_blob,
-    #                         status_bucket,
-    #                         new_name=destination_blob_name)
+    badge_blob = status_bucket.blob(blob_name)
+    status_bucket.copy_blob(badge_blob,
+                            status_bucket,
+                            new_name=destination_blob_name)
 
 
 def upload_log(build_id):
@@ -276,7 +276,7 @@ def update_badges():
 
 def main():
   """Entry point for cloudbuild"""
-  with ndb.Client(project='oss-fuzz').context():
+  with ndb.Client().context():
     configs = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
                (build_and_run_coverage.COVERAGE_BUILD_TYPE,
                 COVERAGE_STATUS_FILENAME))
