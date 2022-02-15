@@ -71,7 +71,7 @@ ENV AFL_FUZZER_ARGS="-m none"
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
 RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
+    SHELL="bash" $SRC/installer_linux -version 1.18beta2 && \
     rm $SRC/installer_linux
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
