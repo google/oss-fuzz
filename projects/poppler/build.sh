@@ -39,7 +39,39 @@ pushd $SRC/zlib
 CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
 make install -j$(nproc)
 
-pushd $SRC/freetype2
+pushd $SRC
+tar zxf nss-3.75-with-nspr-4.32.tar.gz
+cd nss-3.75
+nss_flag=""
+SAVE_CFLAGS="$CFLAGS"
+SAVE_CXXFLAGS="$CXXFLAGS"
+if [ "$SANITIZER" = "memory" ]; then
+    nss_flag="--msan"
+elif [ "$SANITIZER" = "address" ]; then
+    nss_flag="--asan"
+elif [ "$SANITIZER" = "undefined" ]; then
+    nss_flag="--ubsan"
+elif [ "$SANITIZER" = "coverage" ]; then
+    # some parts of nss don't like -fcoverage-mapping nor -fprofile-instr-generate :/
+    CFLAGS="${CFLAGS/"-fcoverage-mapping"/" "}"
+    CFLAGS="${CFLAGS/"-fprofile-instr-generate"/" "}"
+    CXXFLAGS="${CXXFLAGS/"-fcoverage-mapping"/" "}"
+    CXXFLAGS="${CXXFLAGS/"-fprofile-instr-generate"/" "}"
+fi
+
+./nss/build.sh $nss_flag --disable-tests --static -v -Dmozilla_client=1 -Dzlib_libs=$PREFIX/lib/libz.a
+
+CFLAGS="$SAVE_CFLAGS"
+CXXFLAGS="$SAVE_CXXFLAGS"
+
+# NSS has a .pc.in file but doesn't do anything with it
+cp nss/pkg/pkg-config/nss.pc.in $PREFIX/lib/pkgconfig/nss.pc
+sed -i "s#\${libdir}#${SRC}/nss-3.75/dist/Debug/lib#g" $PREFIX/lib/pkgconfig/nss.pc
+sed -i "s#\${includedir}#${SRC}/nss-3.75/dist/public/nss#g" $PREFIX/lib/pkgconfig/nss.pc
+sed -i "s#%NSS_VERSION%#3.75#g" $PREFIX/lib/pkgconfig/nss.pc
+cp dist/Debug/lib/pkgconfig/nspr.pc $PREFIX/lib/pkgconfig/
+
+pushd $SRC/freetype
 ./autogen.sh
 ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 make -j$(nproc)
@@ -153,7 +185,6 @@ cmake .. \
   -DENABLE_QT5=ON \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=$POPPLER_ENABLE_GLIB \
-  -DWITH_NSS3=OFF \
   -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 export PKG_CONFIG="`which pkg-config` --static"
@@ -169,6 +200,10 @@ if [ "$SANITIZER" != "memory" ]; then
 fi
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
+# static linking is hard ^_^
+NSS_STATIC_LIBS=`ls $SRC/nss-3.75/dist/Debug/lib/lib*.a`
+NSS_STATIC_LIBS="$NSS_STATIC_LIBS $NSS_STATIC_LIBS $NSS_STATIC_LIBS"
+BUILD_LDFLAGS="$BUILD_LDFLAGS $NSS_STATIC_LIBS"
 
 fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
 
@@ -191,6 +226,7 @@ if [ "$SANITIZER" != "memory" ]; then
     DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 cairo cairo-gobject pango fontconfig libpng"
     BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
     BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
+    BUILD_LDFLAGS="$BUILD_LDFLAGS $NSS_STATIC_LIBS"
 
     fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
     for f in $fuzzers; do
@@ -216,6 +252,7 @@ if [ "$SANITIZER" != "memory" ]; then
 fi
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
+BUILD_LDFLAGS="$BUILD_LDFLAGS $NSS_STATIC_LIBS"
 
 fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
