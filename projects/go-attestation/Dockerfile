@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
 RUN go get -u -d github.com/google/go-attestation/...
 

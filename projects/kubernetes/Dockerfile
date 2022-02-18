@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
 RUN go get github.com/ianlancetaylor/demangle
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git

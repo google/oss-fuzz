@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
 COPY build.sh text_fuzzer.go math_big_fuzzer.go $SRC/

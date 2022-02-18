@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 MAINTAINER s@sevki.org
 
 RUN go get -v -u github.com/hugelgupf/p9/...

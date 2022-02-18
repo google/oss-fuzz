@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN apt-get update && apt-get install -y wget
 RUN git clone --depth 1 https://github.com/argoproj/argo-cd
 RUN git clone --depth 1 https://github.com/argoproj/argo-workflows

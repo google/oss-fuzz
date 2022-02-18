@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
 RUN git clone --single-branch --depth=1 https://github.com/ethereum/go-ethereum $GOPATH/src/github.com/ethereum/go-ethereum 
 RUN (cd $GOPATH/src/github.com/ethereum/go-ethereum && go mod download)

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN apt-get update && apt-get install -y wget
 RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.dict -O $OUT/fuzz.dict
 

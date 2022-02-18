@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # We use compile_go_fuzzer in this set up and also go itself
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
 RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake libtool bison flex wget make \
     autoconf \
