@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-conf
 RUN pip3 install meson ninja gyp-next
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
+RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git

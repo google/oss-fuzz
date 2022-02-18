@@ -71,7 +71,7 @@ sed -i "s#\${includedir}#${SRC}/nss-3.75/dist/public/nss#g" $PREFIX/lib/pkgconfi
 sed -i "s#%NSS_VERSION%#3.75#g" $PREFIX/lib/pkgconfig/nss.pc
 cp dist/Debug/lib/pkgconfig/nspr.pc $PREFIX/lib/pkgconfig/
 
-pushd $SRC/freetype2
+pushd $SRC/freetype
 ./autogen.sh
 ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 make -j$(nproc)
