@@ -25,7 +25,10 @@ echo "OUT:$OUT"
 (
 cd CredSweeper; \
 git status; \
+patch credsweeper/app.py app.patch; \
 patch credsweeper/credentials/credential_manager.py credential_manager.patch; \
+patch credsweeper/scanner/scanner.py scanner.patch; \
+patch credsweeper/common/keyword_checklist.py keyword_checklist.patch; \
 git status; \
 git --no-pager diff; \
 )
@@ -33,25 +36,12 @@ git --no-pager diff; \
 pwd
 
 python3 -m pip install -r requirements.txt
-#(cd CredSweeper && python3 -m pip install ./)
-#rm -rf CredSweeper/credsweeper
 
 # Build fuzzers in $OUT.
-cd CredSweeper
-pwd
-ls -al
-for fuzzer in $(find . -name 'fuzz_*.py'); do
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller \
-    --distpath $OUT \
-    --onefile \
-    --name $fuzzer_package \
-    --add-data credsweeper/secret/log.yaml:credsweeper/secret \
-    --add-data credsweeper/secret/config.json:credsweeper/secret \
-    --add-data credsweeper/common/keyword_checklist.txt:credsweeper/common \
-    --add-data credsweeper/rules/config.yaml:credsweeper/rules \
-    $fuzzer
+  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   # Create execution wrapper.
   echo "#!/bin/sh
