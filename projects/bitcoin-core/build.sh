@@ -29,7 +29,7 @@ fi
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET NO_QT=1 NO_WALLET=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 boost_cxxflags="-std=c++17 -fvisibility=hidden -fPIC ${CXXFLAGS}" libevent_cflags="${CFLAGS}" -j$(nproc)
+  make HOST=$BUILD_TRIPLET NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 libevent_cflags="${CFLAGS}" sqlite_cflags="${CFLAGS}" -j$(nproc)
   # DEBUG=1 is temporarily disabled due to libc++ bugs
 )
 
