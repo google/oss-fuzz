@@ -46,6 +46,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-setuptools \
+    rsync \
     unzip \
     wget \
     zip --no-install-recommends
@@ -56,7 +57,8 @@ RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
     pip3 install -r requirements.txt && \
-    pip3 install MarkupSafe==0.23
+    pip3 install MarkupSafe==0.23 && \
+    pip3 install coverage
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and
@@ -119,4 +121,5 @@ COPY bad_build_check \
     targets_list \
     test_all.py \
     test_one.py \
+    python_coverage_runner_help.py \
     /usr/local/bin/
