@@ -33,14 +33,21 @@ git --no-pager diff; \
 pwd
 
 python3 -m pip install -r requirements.txt
-python3 -m pip install .
-rm -rf credsweeper
+#(cd CredSweeper && python3 -m pip install ./)
+#rm -rf CredSweeper/credsweeper
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
+  pyinstaller \
+    --distpath $OUT \
+    --onefile \
+    --name $fuzzer_package \
+    --add-data "${SRC}/CredSweeper/credsweeper/secret/log.yaml:credsweeper/secret/log.yaml"
+    --add-data "${SRC}/CredSweeper/credsweeper/secret/config.json:credsweeper/secret/config.json"
+    --add-data "${SRC}/CredSweeper/credsweeper/common/keyword_checklist.txt:credsweeper/secret/keyword_checklist.txt"
+    $fuzzer
 
   # Create execution wrapper.
   echo "#!/bin/sh
