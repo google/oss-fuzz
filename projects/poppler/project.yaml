@@ -3,8 +3,7 @@ language: c++
 primary_contact: tsdgeos@gmail.com
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+  - memory
   - undefined
 auto_ccs:
   - jonathan@titanous.com
