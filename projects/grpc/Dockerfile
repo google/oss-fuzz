@@ -42,4 +42,3 @@ RUN git clone --recursive https://github.com/grpc/grpc grpc && \
     git submodule update --init
 
 WORKDIR $SRC/grpc/
-COPY build.sh cmake_fuzz_patch.diff $SRC/
