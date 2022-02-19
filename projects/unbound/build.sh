@@ -85,7 +85,3 @@ $CXX $CXXFLAGS -std=c++11 \
   $LIBOBJS
 
 wget --directory-prefix $OUT https://github.com/jsha/unbound/raw/fuzzing-corpora/testdata/parse_packet_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_1_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_2_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_3_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_4_fuzzer_seed_corpus.zip
