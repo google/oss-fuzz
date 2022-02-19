@@ -111,8 +111,6 @@ for target in "${FUZZER_TARGETS[@]}"; do
   cp "bazel-bin/$fuzzer_name" "$OUT/"
 done
 
-cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
-
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
 zip "${OUT}/json_fuzzer_seed_corpus.zip" test/core/json/corpus/*
