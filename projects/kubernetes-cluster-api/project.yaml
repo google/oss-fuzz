@@ -8,6 +8,7 @@ auto_ccs :
   - "naadir@randomvariable.co.uk"
   - "buringerst@vmware.com"
   - "swamyan@vmware.com"
+  - "kmuldoon@vmware.com"
 language: go
 fuzzing_engines:
   - libfuzzer
