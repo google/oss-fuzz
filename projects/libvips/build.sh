@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-export PKG_CONFIG_PATH=/work/lib/pkgconfig
-export LDFLAGS="$CXXFLAGS"
+export PKG_CONFIG="pkg-config --static"
+export PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
 
 # libz
 pushd $SRC/zlib
@@ -31,6 +31,7 @@ autoreconf -fi
 ./configure \
   --enable-static \
   --disable-shared \
+  --disable-nls \
   --disable-docs \
   --disable-dependency-tracking \
   --prefix=$WORK
@@ -73,6 +74,8 @@ popd
 
 # libheif
 pushd $SRC/libheif
+# Ensure libvips finds heif_image_handle_get_raw_color_profile
+sed -i '/^Libs.private:/s/-lstdc++/-lc++/' libheif.pc.in
 autoreconf -fi
 ./configure \
   --disable-shared \
@@ -107,11 +110,10 @@ popd
 
 # libspng
 pushd $SRC/libspng
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DSPNG_STATIC=TRUE -DSPNG_SHARED=FALSE -DZLIB_ROOT=$WORK
-make -j$(nproc)
-make install
-# Fix pkg-config file of libspng
-sed -i'.bak' "s/-lspng/&_static/" $WORK/lib/pkgconfig/libspng.pc
+meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+  -Dstatic_zlib=true
+ninja -C build
+ninja -C build install
 popd
 
 # libwebp
@@ -147,6 +149,8 @@ popd
 
 # jpeg-xl (libjxl)
 pushd $SRC/libjxl
+# Ensure libvips finds JxlEncoderInitBasicInfo
+sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
 # FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
 # https://github.com/libjxl/libjxl/issues/858
 cmake -G "Unix Makefiles" \
@@ -155,8 +159,6 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_C_FLAGS="$CFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
   -DCMAKE_CXX_FLAGS="$CXXFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
-  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
-  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
   -DCMAKE_INSTALL_PREFIX="$WORK" \
   -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
   -DCMAKE_USE_PTHREADS_INIT=1 \
@@ -177,32 +179,25 @@ popd
 
 # libimagequant
 pushd $SRC/libimagequant
-meson setup --prefix=$WORK --libdir=lib --default-library=static build
-cd build
-ninja -j$(nproc)
-ninja install
+meson setup build --prefix=$WORK --libdir=lib --default-library=static
+ninja -C build
+ninja -C build install
 popd
 
 # cgif
 pushd $SRC/cgif
-meson setup --prefix=$WORK --libdir=lib --default-library=static build
-cd build
-ninja -j$(nproc)
-ninja install
+meson setup build --prefix=$WORK --libdir=lib --default-library=static
+ninja -C build
+ninja -C build install
 popd
 
 # libvips
-sed -i'.bak' "/test/d" Makefile.am
-sed -i'.bak' "/tools/d" Makefile.am
-PKG_CONFIG="pkg-config --static" ./autogen.sh \
-  --disable-shared \
-  --disable-modules \
-  --disable-gtk-doc \
-  --disable-gtk-doc-html \
-  --disable-dependency-tracking \
-  --prefix=$WORK
-make -j$(nproc) CCLD=$CXX
-make install
+# Disable building man pages, gettext po files, tools, and tests
+sed -i "/subdir('man')/{N;N;N;N;d;}" meson.build
+meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+  -Ddeprecated=false -Dintrospection=false -Dmodules=disabled
+ninja -C build
+ninja -C build install
 
 # Merge the seed corpus in a single directory, exclude files larger than 2k
 mkdir -p fuzz/corpus
@@ -226,7 +221,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/liblcms2.a \
     $WORK/lib/libjpeg.a \
     $WORK/lib/libpng.a \
-    $WORK/lib/libspng_static.a \
+    $WORK/lib/libspng.a \
     $WORK/lib/libz.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
@@ -242,7 +237,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
-    -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
+    -lgio-2.0 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
     -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
