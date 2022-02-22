@@ -4,6 +4,10 @@ vendor_ccs:
   - "ddkilzer@apple.com"
   - "product-security@apple.com"
   - "schenney@chromium.org"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
+  - "ebanniettis@apple.com"
 sanitizers:
   - address
   - memory
