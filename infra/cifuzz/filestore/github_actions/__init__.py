@@ -63,7 +63,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    self.github_api_http_headers = github_api.get_http_auth_headers(config)
+    self.github_api_http_headers = github_api.get_http_auth_headers()
 
   def _get_artifact_name(self, name):
     """Returns |name| prefixed with |self.ARITFACT_PREFIX| if it isn't already
