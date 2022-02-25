@@ -73,7 +73,7 @@ popd
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # SPIRV-Tools and tint repositories.
 mkdir $WORK/tint-binary-corpus
-python3 tint/fuzzers/generate_spirv_corpus.py tint/test $WORK/tint-binary-corpus standard-build/tools/spirv-as
+python3 tint/src/tint/fuzzers/generate_spirv_corpus.py tint/test $WORK/tint-binary-corpus standard-build/tools/spirv-as
 mkdir $WORK/spirv-binary-corpus-hashed-names
 tint_test_cases=`ls $WORK/tint-binary-corpus/*.spv`
 spirv_tools_test_cases=`find test/fuzzers/corpora -name "*.spv"`
