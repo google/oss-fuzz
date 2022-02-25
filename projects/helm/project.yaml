@@ -6,6 +6,7 @@ auto_ccs :
   - "david@adalogics.com"
   - "scott@r6by.com"
   - "matt.farina@gmail.com"
+  - "marc.khouzam@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer
