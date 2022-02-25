@@ -78,7 +78,7 @@ popd
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # tint repository.
 mkdir $WORK/spirv-corpus
-python3 fuzzers/generate_spirv_corpus.py test $WORK/spirv-corpus out/Standard/spirv-as
+python3 src/tint/fuzzers/generate_spirv_corpus.py test $WORK/spirv-corpus out/Standard/spirv-as
 
 mkdir $WORK/spirv-corpus-hashed-names
 for f in `ls $WORK/spirv-corpus/*.spv`
