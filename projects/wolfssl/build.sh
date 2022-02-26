@@ -238,6 +238,7 @@ then
 
     # Convert Wycheproof test vectors to Cryptofuzz corpus format
     find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+    find $SRC/wycheproof/testvectors/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Unpack corpora from other projects
     unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/
@@ -266,6 +267,15 @@ then
     mkdir $SRC/botan-bp256-corpus/
     unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/
     find $SRC/botan-bp256-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,brainpool256r1 \;
+
+    # Import OpenSSL/LibreSSL corpora
+    mkdir $SRC/openssl-expmod-corpus/
+    unzip $SRC/corpus_openssl_expmod.zip -d $SRC/openssl-expmod-corpus/
+    find $SRC/openssl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
+
+    mkdir $SRC/libressl-expmod-corpus/
+    unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/
+    find $SRC/libressl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Pack it
     cd $SRC/cryptofuzz_seed_corpus

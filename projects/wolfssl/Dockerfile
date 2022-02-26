@@ -47,6 +47,13 @@ RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzze
 RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p521/public.zip $SRC/corpus_botan_ecc_p521.zip
 RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_bp256/public.zip $SRC/corpus_botan_ecc_bp256.zip
 
+# OpenSSL/LibreSSL corpora, which require a special import procedure
+RUN gsutil cp gs://openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip $SRC/corpus_openssl_expmod.zip
+RUN gsutil cp gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libressl_bignum/public.zip $SRC/corpus_libressl_expmod.zip
+
+RUN rm -rf $SRC/cryptofuzz/
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+
 WORKDIR wolfssl
 
 COPY build.sh $SRC/
