@@ -245,7 +245,13 @@ then
     unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/
     unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/
     unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/
     unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/
     unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/
     unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/
@@ -293,6 +299,8 @@ then
     rm -rf $SRC/botan-p384-corpus/
     rm -rf $SRC/botan-p521-corpus/
     rm -rf $SRC/botan-bp256-corpus/
+    rm -rf $SRC/openssl-expmod-corpus/
+    rm -rf $SRC/libressl-expmod-corpus/
     rm -rf $SRC/cryptofuzz_seed_corpus/
     rm -rf $SRC/cryptofuzz_seed_corpus.zip
 
