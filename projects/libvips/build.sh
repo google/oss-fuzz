@@ -192,8 +192,10 @@ ninja -C build install
 popd
 
 # pdfium doesn't need fuzzing, but we want to fuzz the libvips/pdfium link
-cp pdfium-latest/lib/* $WORK/lib
-cp -r pdfium-latest/include $WORK/include
+pushd $SRC/pdfium-latest
+cp lib/* $WORK/lib
+cp -r include $WORK/include
+popd
 
 # make a pdfium.pc that libvips can use ... the version number just needs to
 # be higher than 4200 to satisfy libvips 
