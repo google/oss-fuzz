@@ -194,22 +194,22 @@ popd
 # pdfium doesn't need fuzzing, but we want to fuzz the libvips/pdfium link
 pushd $SRC/pdfium-latest
 cp lib/* $WORK/lib
-cp -R include $WORK
+cp -r include/* $WORK/include
 popd
 
 # make a pdfium.pc that libvips can use ... the version number just needs to
 # be higher than 4200 to satisfy libvips
 cat > $WORK/lib/pkgconfig/pdfium.pc << EOF
-prefix=$WORK
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-Name: pdfium
-Description: pdfium
-Version: 4901
-Requires:
-Libs: -L\${libdir} -lpdfium
-Cflags: -I\${includedir}
+  prefix=$WORK
+  exec_prefix=\${prefix}
+  libdir=\${exec_prefix}/lib
+  includedir=\${prefix}/include
+  Name: pdfium
+  Description: pdfium
+  Version: 4901
+  Requires:
+  Libs: -L\${libdir} -lpdfium
+  Cflags: -I\${includedir}
 EOF
 
 # libvips
