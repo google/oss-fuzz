@@ -191,6 +191,27 @@ ninja -C build
 ninja -C build install
 popd
 
+# pdfium doesn't need fuzzing, but we want to fuzz the libvips/pdfium link
+pushd $SRC/pdfium-latest
+cp lib/* $WORK/lib
+cp -r include/* $WORK/include
+popd
+
+# make a pdfium.pc that libvips can use ... the version number just needs to
+# be higher than 4200 to satisfy libvips
+cat > $WORK/lib/pkgconfig/pdfium.pc << EOF
+  prefix=$WORK
+  exec_prefix=\${prefix}
+  libdir=\${exec_prefix}/lib
+  includedir=\${prefix}/include
+  Name: pdfium
+  Description: pdfium
+  Version: 4901
+  Requires:
+  Libs: -L\${libdir} -lpdfium
+  Cflags: -I\${includedir}
+EOF
+
 # libvips
 # Disable building man pages, gettext po files, tools, and tests
 sed -i "/subdir('man')/{N;N;N;N;d;}" meson.build
@@ -198,6 +219,10 @@ meson setup build --prefix=$WORK --libdir=lib --default-library=static \
   -Ddeprecated=false -Dintrospection=false -Dmodules=disabled
 ninja -C build
 ninja -C build install
+
+# All shared libraries needed during fuzz target execution should be inside the $OUT/lib directory
+mkdir -p $OUT/lib
+cp $WORK/lib/*.so $OUT/lib
 
 # Merge the seed corpus in a single directory, exclude files larger than 2k
 mkdir -p fuzz/corpus
@@ -216,30 +241,17 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     -I$WORK/include \
     -I/usr/include/glib-2.0 \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    $WORK/lib/libvips.a \
-    $WORK/lib/libexif.a \
-    $WORK/lib/liblcms2.a \
-    $WORK/lib/libjpeg.a \
-    $WORK/lib/libpng.a \
-    $WORK/lib/libspng.a \
-    $WORK/lib/libz.a \
-    $WORK/lib/libwebpmux.a \
-    $WORK/lib/libwebpdemux.a \
-    $WORK/lib/libwebp.a \
-    $WORK/lib/libtiff.a \
-    $WORK/lib/libheif.a \
-    $WORK/lib/libaom.a \
-    $WORK/lib/libjxl.a \
-    $WORK/lib/libjxl_threads.a \
-    $WORK/lib/libhwy.a \
-    $WORK/lib/libimagequant.a \
-    $WORK/lib/libcgif.a \
+    -L$WORK/lib \
+    -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
+    -lwebpmux -lwebpdemux -lwebp -ltiff -lheif -laom \
+    -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
     -lgio-2.0 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
     -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
-    -Wl,-Bdynamic -pthread
+    -Wl,-Bdynamic -pthread \
+    -Wl,-rpath,'$ORIGIN/lib'
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done
 
