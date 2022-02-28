@@ -1,5 +1,6 @@
 homepage: "https://coredns.io"
 primary_contact: "security@coredns.io"
+main_repo: 'https://github.com/coredns/coredns.git'
 auto_ccs :
 - "miek@miek.nl"
 - "p.antoine@catenacyber.fr"
