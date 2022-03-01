@@ -97,7 +97,7 @@ done
 # Compile fuzzers
 #
 # compile non-persistent fuzzers
-if [ "$SANITIZER" != "coverage" ]
+if [ "$SANITIZER" != "coverage" && "$FUZZING_ENGINE" == "afl" ]
 then
   $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
     -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
