@@ -132,6 +132,8 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
 
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
 
+  # TODO: come up with a better solution for indicating when a
+  # fuzzer is not in persistent mode.
   if [[ "$FUZZER" == *"non_persistent"* ]]; then
     CMD_LINE="$CMD_LINE @@"
   fi
