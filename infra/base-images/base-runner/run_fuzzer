@@ -132,6 +132,10 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
 
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
 
+  if [[ "$FUZZER" == *"non_persistent"* ]]; then
+    CMD_LINE="$CMD_LINE @@"
+  fi
+
   echo afl++ setup:
   env|grep AFL_
   cat "$OUT/afl_options.txt"

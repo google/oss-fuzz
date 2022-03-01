@@ -96,6 +96,20 @@ done
 #
 # Compile fuzzers
 #
+# compile non-persistent fuzzers
+if [ "$SANITIZER" != "coverage" ]
+then
+  $CC $CFLAGS -DHAVE_CONFIG_H -DOBJDUMP_PRIVATE_VECTORS="" -I. -I../bfd -I./../bfd -I./../include \
+    -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" \
+    -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT \
+    fuzz_readelf_non_persistent.o -MD -MP -c -o fuzz_readelf_non_persistent.o fuzz_readelf_non_persistent.c
+
+  $CXX $CXXFLAGS -W -Wall -I./../zlib \
+    -o $OUT/fuzz_readelf_non_persistent fuzz_readelf_non_persistent.o \
+    version.o unwind-ia64.o dwarf.o elfcomm.o demanguse.o -Wl,--start-group ${LIBS} -Wl,--end-group
+fi
+
+# compile persistent fuzzers
 fuzz_compile () {
   src=$1
   dst=$2
@@ -170,7 +184,7 @@ then
 fi
 
 # Copy seeds out
-for fuzzname in readelf_pef readelf_elf32_csky readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm objcopy bdf windres addr2line dwarf; do
+for fuzzname in readelf_pef readelf_elf32_csky readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm objcopy bdf windres addr2line dwarf readelf_non_persistent; do
   cp $SRC/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
 done
 # Seed targeted the pef file format
