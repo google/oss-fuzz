@@ -14,7 +14,7 @@ limitations under the License.
 
 // Hack to satisfy OSS-Fuzz logic that looks for
 // LLVMFuzzerTestOneInput in a binary.
-char *random_string = "LLVMFuzzerTestOneInput";
+char *oss_fuzz_magic_string = "LLVMFuzzerTestOneInput";
 
 static char *my_argv[5];
 int main(int argc, char **argv) {
@@ -22,6 +22,6 @@ int main(int argc, char **argv) {
         my_argv[1] = "-a";
         my_argv[2] = argv[1];
         my_argv[3] = NULL;
-        my_argv[4] = random_string;
+        my_argv[4] = oss_fuzz_magic_string;
         return old_main(3, my_argv);
 }
