@@ -157,6 +157,8 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
+
+  export FUZZ_INTROSPECTOR=1
 fi
 
 echo "---------------------------------------------------------------"
@@ -216,7 +218,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   fi  
   
   cd $SRC/inspector
-  python3 /fuzz-introspector/post-processing/main.py --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO --coverage_url=$COVERAGE_URL
+  python3 /fuzz-introspector/post-processing/main.py correlate --binaries_dir=$OUT/
+  python3 /fuzz-introspector/post-processing/main.py report --target_dir=$SRC/inspector --git_repo_url=$GIT_REPO --coverage_url=$COVERAGE_URL --correlation_file=exe_to_fuzz_introspector_logs.yaml
 
   cp -rf $SRC/inspector $OUT/inspector
 fi
