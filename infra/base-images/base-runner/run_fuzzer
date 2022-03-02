@@ -152,7 +152,9 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
-
+  if [[ "$FUZZER" == *"netdriver"* ]]; then
+    export HFND_TCP_PORT=8000
+  fi
 elif [[ "$FUZZING_ENGINE" = centipede ]]; then
 
   # Create the work and corpus directory for Centipede.

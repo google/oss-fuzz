@@ -13,5 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 cd $SRC/mongoose
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DMG_ENABLE_LINES -DMG_ENABLE_LOG=0 mongoose.c -I. test/fuzz.c -o $OUT/fuzz
+
+
+if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
+then
+  export HONGGFUZZ_HOME=$SRC/honggfuzz
+  $HONGGFUZZ_HOME/hfuzz_cc/hfuzz-clang $CFLAGS fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http -DMG_ENABLE_LINES=1  -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK $HONGGFUZZ_HOME/libhfnetdriver/libhfnetdriver.a -pthread
+fi
