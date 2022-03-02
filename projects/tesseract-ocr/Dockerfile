@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev liblzma-dev
+RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev liblzma-dev libzstd-dev libwebp-dev
 
 RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
+#RUN mkdir tessdata
 
 COPY build.sh $SRC/
+COPY oss-fuzz-build.sh $SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh
