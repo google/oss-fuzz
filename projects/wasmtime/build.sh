@@ -58,7 +58,11 @@ build() {
               $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
       fi
 
-      cp $SRC/default.options $OUT/$dst_name.options
+      if [[ -f $SRC/$dst_name.options ]]; then
+        cp $SRC/$dst_name.options $OUT/$dst_name.options
+      else
+        cp $SRC/default.options $OUT/$dst_name.options
+      fi
   done
 }
 
