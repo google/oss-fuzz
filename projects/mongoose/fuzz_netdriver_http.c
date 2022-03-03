@@ -15,8 +15,8 @@ limitations under the License.
 static void fn(struct mg_connection *c, int ev, void *ev_data, void *fn_data) {
   struct mg_http_serve_opts opts = {.root_dir = "."};
   if (ev == MG_EV_HTTP_MSG) {
-        // Only serve static files
-        mg_http_serve_dir(c, ev_data, &opts);
+    // Only serve static files
+    mg_http_serve_dir(c, ev_data, &opts);
   }
 }
 
