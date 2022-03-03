@@ -36,4 +36,4 @@ WORKDIR wasmtime
 
 #RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
-COPY build.sh default.options $SRC/
+COPY build.sh *.options $SRC/
