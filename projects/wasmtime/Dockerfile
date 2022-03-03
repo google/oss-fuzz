@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl \
 # Install a newer version of OCaml than provided by Ubuntu 16.04 (base version for this image)
 RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh -o install.sh && \
   echo | sh install.sh && \
-  opam init --disable-sandboxing --yes && \
+  opam init --disable-sandboxing --yes --compiler=4.11.2 && \
   opam install ocamlbuild ocamlfind --yes && \
   CFLAGS= opam install zarith --yes
 

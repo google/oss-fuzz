@@ -1,5 +1,0 @@
-[asan]
-allow_user_segv_handler=1
-handle_sigill=0
-handle_segv=1
-detect_leaks=0
