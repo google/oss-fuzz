@@ -154,7 +154,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
   if [[ "$FUZZER" == *"netdriver"* ]]; then
 
-  if [[ $(grep "HonggfuzzNetDriver_main" "$FUZZER" ) ]]; then
+  if [[ $(LC_ALL=C grep -P "\x01_LIBHFUZZ_NETDRIVER_BINARY_SIGNATURE_\x02\xFF" "$FUZZER" ) ]]; then
     export HFND_TCP_PORT=8000
   fi
 elif [[ "$FUZZING_ENGINE" = centipede ]]; then
