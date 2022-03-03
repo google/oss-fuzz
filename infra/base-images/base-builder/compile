@@ -157,8 +157,6 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
-
-  export FUZZ_INTROSPECTOR=1
 fi
 
 echo "---------------------------------------------------------------"
