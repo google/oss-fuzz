@@ -30,3 +30,7 @@ main_repo: 'https://github.com/envoyproxy/envoy.git'
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+labels:
+  "*":
+    - ossfuzz-bugz-1149782
+
