@@ -150,6 +150,7 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
     compile_native_go_fuzzer \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
+    collect_bazel_extra_flags \
     # Go, java, and swift installation scripts.
     install_go.sh \
     install_go_CodeIntelligenceTesting.sh \
