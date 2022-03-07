@@ -4,6 +4,7 @@ main_repo: 'https://github.com/coredns/coredns.git'
 auto_ccs :
 - "miek@miek.nl"
 - "p.antoine@catenacyber.fr"
+- "yong.tang.github@outlook.com"
 language: go
 fuzzing_engines:
 - libfuzzer
