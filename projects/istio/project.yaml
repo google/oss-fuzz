@@ -11,3 +11,6 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/istio/istio'
+labels:
+  '*':
+  - Restrict-View-EditIssue
