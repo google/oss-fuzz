@@ -161,5 +161,6 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
+COPY bazel.bazelrc /root/.bazelrc
 
 CMD ["compile"]
