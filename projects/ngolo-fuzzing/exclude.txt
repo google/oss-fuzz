@@ -1,0 +1,3 @@
+regexp Must,Expand
+net/rpc HandleHTTP
+net/http ListenAndServe
