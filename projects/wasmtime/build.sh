@@ -72,3 +72,10 @@ eval $(opam env)
 build wasmtime "" ""
 build wasm-tools wasm-tools- ""
 build regalloc.rs regalloc- bt bt
+
+# In coverage builds copy the opam header files into the output so coverage can
+# find the source files.
+if [ "$SANITIZER" = "coverage" ]; then
+  cp --recursive --dereference --no-preserve mode,ownership --parents \
+    $HOME/.opam/4.11.2/lib/ocaml $OUT
+fi
