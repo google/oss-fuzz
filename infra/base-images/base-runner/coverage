@@ -198,6 +198,9 @@ function generate_html {
   local objects=$3
   local output_dir=$4
 
+  rm -rf "$output_dir"
+  mkdir -p "$output_dir/$PLATFORM"
+
   local llvm_cov_args="-instr-profile=$profdata $objects $LLVM_COV_COMMON_ARGS"
   llvm-cov show -format=html -output-dir=$output_dir -Xdemangler rcfilt $llvm_cov_args
 
@@ -330,8 +333,6 @@ else
     fi
 
     report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
-    rm -rf "$report_dir"
-    mkdir -p "$report_dir/$PLATFORM"
     generate_html $profdata_path "$shared_libraries" "$objects" "$report_dir"
   done
 fi
