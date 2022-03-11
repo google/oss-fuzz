@@ -1,0 +1,9 @@
+homepage: "https://github.com/slint-ui/slint"
+language: rust
+primary_contact: "tobias.hunger@slint-ui.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined
+main_repo: "https://github.com/slint-ui/slint.git"
