@@ -3,6 +3,7 @@ language: jvm
 primary_contact: "meumertzheim@code-intelligence.com"
 auto_ccs:
   - "wagner@code-intelligence.com"
+  - "norbert.schneider@code-intelligence.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/apache/logging-log4j2"
