@@ -34,10 +34,12 @@ FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
 TEXTCOV_REPORT_DIR="$COVERAGE_OUTPUT_DIR/textcov_reports"
 LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
 REPORT_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report"
-REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/linux"
+REPORT_BY_TARGET_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report_target"
+PLATFORM=linux
+REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/$PLATFORM"
 
 for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR $TEXTCOV_REPORT_DIR\
-                 $REPORT_PLATFORM_DIR; do
+                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
@@ -190,6 +192,27 @@ function run_java_fuzz_target {
   jacoco_report_converter.py $xml_report $summary_file
 }
 
+function generate_html {
+  local profdata=$1
+  local shared_libraries=$2
+  local objects=$3
+  local output_dir=$4
+
+  rm -rf "$output_dir"
+  mkdir -p "$output_dir/$PLATFORM"
+
+  local llvm_cov_args="-instr-profile=$profdata $objects $LLVM_COV_COMMON_ARGS"
+  llvm-cov show -format=html -output-dir=$output_dir -Xdemangler rcfilt $llvm_cov_args
+
+  # Export coverage summary in JSON format.
+  local summary_file=$output_dir/$PLATFORM/summary.json
+
+  llvm-cov export -summary-only $llvm_cov_args > $summary_file
+
+  coverage_helper -v post_process -src-root-dir=/ -summary-file=$summary_file \
+      -output-dir=$output_dir $PATH_EQUIVALENCE_ARGS
+}
+
 export SYSGOPATH=$GOPATH
 export GOPATH=$OUT/$GOPATH
 # Run each fuzz target, generate raw coverage dumps.
@@ -304,21 +327,19 @@ else
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
   objects="$objects $shared_libraries"
 
-  # It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
-  # positional arguments (SOURCES) that can be passed via $COVERAGE_EXTRA_ARGS.
-  LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
+  generate_html $PROFILE_FILE "$shared_libraries" "$objects" "$REPORT_ROOT_DIR"
 
-  # Generate HTML report.
-  llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
-      -Xdemangler rcfilt $LLVM_COV_ARGS
+  # Per target reports.
+  for fuzz_target in $FUZZ_TARGETS; do
+    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+    if [[ ! -f "$profdata_path" ]]; then
+      echo "WARNING: $fuzz_target has no profdata generated."
+      continue
+    fi
 
-  # Export coverage summary in JSON format.
-  llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
-
-  # Post process HTML report.
-  coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
-      -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
-
+    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    generate_html $profdata_path "$shared_libraries" "$objects" "$report_dir"
+  done
 fi
 
 # Make sure report is readable.
