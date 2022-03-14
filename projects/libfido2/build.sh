@@ -77,3 +77,4 @@ tar xzf ${SRC}/corpus.tgz
 (set -e ; cd fuzz_largeblob/corpus ; zip -r ${OUT}/fuzz_largeblob_seed_corpus.zip .)
 (set -e ; cd fuzz_mgmt/corpus      ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
 (set -e ; cd fuzz_netlink/corpus   ; zip -r ${OUT}/fuzz_netlink_seed_corpus.zip .)
+(set -e ; cd fuzz_pcsc/corpus      ; zip -r ${OUT}/fuzz_pcsc_seed_corpus.zip .)
