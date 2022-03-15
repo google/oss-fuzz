@@ -1,3 +1,5 @@
+"""Tool for testing changes to base-images in OSS-Fuzz. This script builds test
+versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
 import logging
@@ -11,28 +13,22 @@ import build_and_push_test_images
 import build_and_run_coverage
 import build_project
 
-
 IMAGE_PROJECT = 'oss-fuzz'
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 TEST_IMAGE_SUFFIX = 'testing'
 
 
-# class ProjectStatus:
-#   def __init__(self, name):
-#     self.name = name
-#     self.build_id = {'coverage': None, 'fuzzing': None}
-#     self.build_id = {'coverage': None, 'fuzzing': None}
-#     self.fuzzing_build_status = None
-#     self.fuzzing_build_id = None
-#     self.fuzzing_build_status = None
-#     self.prev_fuzzing_build_status = None
-#     self.prev_coverage_build_status = None
-
-
 def _get_production_build_statuses(build_type, statuses=None):
+  """Gets the statuses for |build_type| that is reported by build-status.
+  |statuses| is an optional dictionary mapping projects to dictionaries
+  containing the status of coverage and fuzzing builds. If provided, the
+  dictionary is appended to, otherwise a new dictionary is created and
+  returned."""
   if statuses is None:
-    statuses = collections.defaultdict(lambda: {'coverage': False,
-                                                'fuzzing': False})
+    statuses = collections.defaultdict(lambda: {
+        'coverage': False,
+        'fuzzing': False
+    })
   if build_type == 'fuzzing':
     filename = 'status.json'
   elif build_type == 'coverage':
@@ -76,21 +72,17 @@ def get_args():
 
 
 def get_production_build_statuses():
+  """Returns the status of the last build done in production for each
+  project."""
   statuses = _get_production_build_statuses('fuzzing')
   statuses = _get_production_build_statuses('coverage', statuses)
   return statuses
 
 
-def build_types_requested(specified_sanitizers):
-  coverage_requested = 'coverage' in specified_sanitizers
-  fuzzing_requested = False
-  if len(specified_sanitizers) != 1:
-    fuzzing_requested = True
-  elif specified_sanitizers[0] != 'coverage':
-    fuzzing_requested = True
-  return fuzzing_requested, coverage_requested
-
 def get_projects(specified_projects, statuses, build_type):
+  """Returns the list of projects that should be built based on the projects
+  specified by the user (|specified_projects|) the |statuses| of the last builds
+  and the |build_type|."""
   statuses = get_production_build_statuses()
   buildable_projects = []
 
@@ -106,10 +98,14 @@ def get_projects(specified_projects, statuses, build_type):
 
   return buildable_projects
 
-def _do_test_builds(args, config, credentials, build_type, builds=None):
+
+def _do_type_builds(args, config, credentials, build_type, builds=None):
+  """Does test builds of the type specified by |build_type|."""
   if builds is None:
-    builds = collections.defaultdict(lambda: {'coverage': None,
-                                              'fuzzing': None})
+    builds = collections.defaultdict(lambda: {
+        'coverage': None,
+        'fuzzing': None
+    })
   if build_type == 'fuzzing':
     get_build_steps_func = build_project.get_build_steps
     sanitizers = args.sanitizers
@@ -128,50 +124,52 @@ def _do_test_builds(args, config, credentials, build_type, builds=None):
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       continue
 
-
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(sanitizers)))
 
-    project_yaml['fuzzing_engines'] = list(set(
-        project_yaml['fuzzing_engines']).intersection(
+    project_yaml['fuzzing_engines'] = list(
+        set(project_yaml['fuzzing_engines']).intersection(
             set(args.fuzzing_engines)))
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
       continue
 
-    steps = get_build_steps_func(
-        project_name, project_yaml,
-        dockerfile_contents, IMAGE_PROJECT,
-        BASE_IMAGES_PROJECT, config)
+    steps = get_build_steps_func(project_name, project_yaml,
+                                 dockerfile_contents, IMAGE_PROJECT,
+                                 BASE_IMAGES_PROJECT, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
-    builds[project_name][build_type] = (
-        build_project.run_build(project_name, steps, credentials, build_type))
+    builds[project_name][build_type] = (build_project.run_build(
+        project_name, steps, credentials, build_type))
 
   return builds
 
 
 def get_build_status_from_gcb(cloudbuild_api, build_id):
-  build_result = cloudbuild_api.get(
-      projectId=IMAGE_PROJECT, id=build_id).execute()
+  """Returns the status of the build: |build_id| from cloudbuild_api."""
+  build_result = cloudbuild_api.get(projectId=IMAGE_PROJECT,
+                                    id=build_id).execute()
   return build_result['status']
 
+
 def wait_on_builds(builds, credentials):
-  results = collections.defaultdict(
-      lambda: {'coverage': False, 'fuzzing': False})
+  """Waits on |builds|. Returns True if all builds succeed."""
+  results = collections.defaultdict(lambda: {
+      'coverage': False,
+      'fuzzing': False
+  })
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
                            cache_discovery=False)
-  cloudbuild_api = cloudbuild.projects().builds()
-
-  wait_more = True
+  cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
   while builds:
+    logging.info('Polling')
     for project, build_ids in list(builds.items()):
       fuzzing_build_id = build_ids['fuzzing']
       if fuzzing_build_id:
@@ -182,9 +180,9 @@ def wait_on_builds(builds, credentials):
       elif 'fuzzing' in results[project]:
         del results[project]['fuzzing']
 
-      fuzzing_build_id = build_ids['coverage']
+      coverage_build_id = build_ids['coverage']
       if coverage_build_id:
-        status = get_build_status_from_gcb(cloudbuild_api, fuzzing_build_id)
+        status = get_build_status_from_gcb(cloudbuild_api, coverage_build_id)
         if status not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
           continue
         results[project]['coverage'] = status == 'SUCCESS'
@@ -193,22 +191,32 @@ def wait_on_builds(builds, credentials):
 
       if all(results[project]):
         del builds[project]
-      print('waiting', builds)
+
+  print('Printing results')
+  print('Project, Statuses')
+  for project, statuses in results.items():
+    print(project, statuses)
+
+  return all(all(statuses) for statuses in results.values())
 
 
 def do_test_builds(args):
+  """Does test coverage and fuzzing builds."""
   config = build_project.Config(True, TEST_IMAGE_SUFFIX, args.branch, False)
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
-  builds = _do_test_builds(args, config, credentials, 'fuzzing')
-  _do_test_builds(args, config, credentials, 'coverage', builds)
-  wait_on_builds(builds, credentials)
+  builds = _do_type_builds(args, config, credentials, 'fuzzing')
+  _do_type_builds(args, config, credentials, 'coverage', builds)
+  return wait_on_builds(builds, credentials)
 
 
 def main():
+  """Builds and pushes test images of the base images. Then does test coverage
+  and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
   args = get_args()
   build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
-  return do_test_builds(args)
+  return 0 if do_test_builds(args) else 1
+
 
 if __name__ == '__main__':
   main()
