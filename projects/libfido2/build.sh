@@ -60,6 +60,13 @@ for lib in `ls ${WORK}/lib/lib*.so*`; do
     cp ${lib} ${OUT}/lib;
 done
 
+# Place libpcsclite in ${OUT}; needed by fuzz_pcsc
+if [ -x fuzz/fuzz_pcsc ]; then
+    for lib in `ldd fuzz/fuzz_pcsc | awk '/libpcsclite.so.*=>/ { print $3 }'`; do
+        cp ${lib} ${OUT}/lib;
+    done
+fi
+
 # Fixup rpath in the fuzzers so they use our libs
 for f in `ls fuzz/fuzz_*`; do
     cp ${f} ${OUT}/
