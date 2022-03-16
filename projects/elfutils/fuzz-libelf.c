@@ -10,7 +10,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* Inspired by the elfgetzdata.c test */
 #include <fcntl.h>
 #include <gelf.h>
 #include <inttypes.h>
@@ -23,7 +22,6 @@ limitations under the License.
 
 
 void fuzz_logic_one(char *filename, int compression_type) {
-  // Main fuzz entrypoint in objdump.c
   (void)elf_version(EV_CURRENT);
   int fd = open(filename, O_RDONLY);
   Elf *elf = elf_begin(fd, ELF_C_READ, NULL);

@@ -29,6 +29,7 @@ static const Dwfl_Callbacks cb  = {
   (char **)&debuginfo_path,
 };
 
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
