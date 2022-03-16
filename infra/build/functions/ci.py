@@ -31,6 +31,30 @@ import build_project
 IMAGE_PROJECT = 'oss-fuzz'
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 TEST_IMAGE_SUFFIX = 'testing'
+FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
+                           'EXPIRED')
+
+
+class ProjectStatus:
+  """Class that holds info about project builds."""
+
+  def __init__(self, name):
+    self.name = name
+    self.production_build = {'coverage': None, 'fuzzing': None}
+    self.build_result = {'coverage': None, 'fuzzing': None}
+    self.build_finished = {'coverage': True, 'fuzzing': True}
+    self.build_id = {'coverage': None, 'fuzzing': None}
+
+  def set_build_id(self, build_id, build_type):
+    """Sets the build id of |build_type| to |build_id|."""
+    self.build_id[build_type] = build_id
+    if build_id:
+      self.build_finished[build_type] = False
+
+  def set_build_result(self, result, build_type):
+    """Sets the result of |build_type| to |result|."""
+    self.build_result[build_type] = result
+    self.build_finished[build_type] = True
 
 
 def _get_production_build_statuses(build_type, statuses=None):
@@ -40,10 +64,7 @@ def _get_production_build_statuses(build_type, statuses=None):
   dictionary is appended to, otherwise a new dictionary is created and
   returned."""
   if statuses is None:
-    statuses = collections.defaultdict(lambda: {
-        'coverage': False,
-        'fuzzing': False
-    })
+    statuses = {}
   if build_type == 'fuzzing':
     filename = 'status.json'
   elif build_type == 'coverage':
@@ -56,9 +77,18 @@ def _get_production_build_statuses(build_type, statuses=None):
   project_statuses = request.json()['projects']
   for project in project_statuses:
     name = project['name']
-    # !!! 0 len?
-    success = project['history'][0]['success']
-    statuses[name][build_type] = success
+    history = project['history']
+    if len(history) == 0:
+      continue
+    success = history[0]['success']
+
+    if name in statuses:
+      project_status = statuses[name]
+    else:
+      project_status = ProjectStatus(name)
+      statuses[name] = project_status
+
+    project_status.production_build[build_type] = success
   return statuses
 
 
@@ -94,18 +124,17 @@ def get_production_build_statuses():
   return statuses
 
 
-def get_projects(specified_projects, statuses, build_type):
+def get_projects(specified_projects, project_statuses, build_type):
   """Returns the list of projects that should be built based on the projects
-  specified by the user (|specified_projects|) the |statuses| of the last builds
-  and the |build_type|."""
-  statuses = get_production_build_statuses()
+  specified by the user (|specified_projects|) the |project_statuses| of the
+  last builds and the |build_type|."""
   buildable_projects = []
 
   for project in specified_projects:
-    if project not in statuses:
+    if project not in project_statuses:
       buildable_projects.append(project)
       continue
-    if statuses[project][build_type]:
+    if project_statuses[project].production_build[build_type]:
       buildable_projects.append(project)
       continue
 
@@ -114,13 +143,8 @@ def get_projects(specified_projects, statuses, build_type):
   return buildable_projects
 
 
-def _do_type_builds(args, config, credentials, build_type, builds=None):
+def _do_build(args, config, credentials, build_type, project_statuses):
   """Does test builds of the type specified by |build_type|."""
-  if builds is None:
-    builds = collections.defaultdict(lambda: {
-        'coverage': None,
-        'fuzzing': None
-    })
   if build_type == 'fuzzing':
     get_build_steps_func = build_project.get_build_steps
     sanitizers = args.sanitizers
@@ -128,8 +152,7 @@ def _do_type_builds(args, config, credentials, build_type, builds=None):
     get_build_steps_func = build_and_run_coverage.get_build_steps
     sanitizers = ['coverage']
 
-  statuses = get_production_build_statuses()
-  projects = get_projects(args.projects, statuses, build_type)
+  projects = get_projects(args.projects, project_statuses, build_type)
   for project_name in projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
@@ -157,10 +180,11 @@ def _do_type_builds(args, config, credentials, build_type, builds=None):
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
-    builds[project_name][build_type] = (build_project.run_build(
-        project_name, steps, credentials, build_type))
+    project_statuses[project_name].set_build_id(
+        build_project.run_build(project_name, steps, credentials, build_type),
+        build_type)
 
-  return builds
+  return project_statuses
 
 
 def get_build_status_from_gcb(cloudbuild_api, build_id):
@@ -170,7 +194,19 @@ def get_build_status_from_gcb(cloudbuild_api, build_id):
   return build_result['status']
 
 
-def wait_on_builds(builds, credentials):
+def check_finished(project_status, build_type, cloudbuild_api):
+  """Checks that the |build_type| build is complete. Updates |project_status|  if complete."""
+  build_id = project_status.build_id[build_type]
+  if not build_id:
+    return
+  print('build_id', build_id)
+  build_status = get_build_status_from_gcb(cloudbuild_api, build_id)
+  if build_status not in FINISHED_BUILD_STATUSES:
+    return
+  project_status.set_build_result(build_status == 'SUCCESS', build_type)
+
+
+def wait_on_builds(project_statuses, credentials):
   """Waits on |builds|. Returns True if all builds succeed."""
   results = collections.defaultdict(lambda: {
       'coverage': False,
@@ -183,34 +219,19 @@ def wait_on_builds(builds, credentials):
                            cache_discovery=False)
   cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
-  while builds:
+  wait_projects = project_statuses.copy()
+  while wait_projects:
     logging.info('Polling')
-    for project, build_ids in list(builds.items()):
-      fuzzing_build_id = build_ids['fuzzing']
-      if fuzzing_build_id:
-        status = get_build_status_from_gcb(cloudbuild_api, fuzzing_build_id)
-        if status not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
-          continue
-        results[project]['fuzzing'] = status == 'SUCCESS'
-      elif 'fuzzing' in results[project]:
-        del results[project]['fuzzing']
-
-      coverage_build_id = build_ids['coverage']
-      if coverage_build_id:
-        status = get_build_status_from_gcb(cloudbuild_api, coverage_build_id)
-        if status not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
-          continue
-        results[project]['coverage'] = status == 'SUCCESS'
-      elif 'coverage' in results[project]:
-        del results[project]['coverage']
-
-      if all(results[project]):
-        del builds[project]
+    for project, project_status in list(wait_projects.items()):
+      check_finished(project_status, 'fuzzing', cloudbuild_api)
+      check_finished(project_status, 'coverage', cloudbuild_api)
+      if all(project_status.build_finished.values()):
+        del wait_projects[project]
 
   print('Printing results')
   print('Project, Statuses')
-  for project, statuses in results.items():
-    print(project, statuses)
+  for project, project_status in project_statuses.items():
+    print(project, project_status.build_result)
 
   return all(all(statuses) for statuses in results.values())
 
@@ -219,9 +240,10 @@ def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
   config = build_project.Config(True, TEST_IMAGE_SUFFIX, args.branch, False)
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
-  builds = _do_type_builds(args, config, credentials, 'fuzzing')
-  _do_type_builds(args, config, credentials, 'coverage', builds)
-  return wait_on_builds(builds, credentials)
+  project_statuses = get_production_build_statuses()
+  _do_build(args, config, credentials, 'fuzzing', project_statuses)
+  _do_build(args, config, credentials, 'coverage', project_statuses)
+  return wait_on_builds(project_statuses, credentials)
 
 
 def main():
@@ -229,7 +251,7 @@ def main():
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
   args = get_args()
-  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
+  # build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
   return 0 if do_test_builds(args) else 1
 
 
