@@ -99,5 +99,14 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-elf-get-sections.o \
   ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a -l:libz.a \
 	-o "$OUT/fuzz-elf-get-sections"
 
+$CC $CFLAGS \
+  -D_GNU_SOURCE -DHAVE_CONFIG_H \
+  -I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+  -c "$SRC/fuzz-libdwfl.c" -o fuzz-libdwfl.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdwfl.o \
+	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
+  ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a -l:libz.a \
+	-o "$OUT/fuzz-libdwfl"
+
 # Corpus
 cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"
