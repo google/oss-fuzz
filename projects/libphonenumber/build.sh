@@ -94,5 +94,38 @@ make
 # Build our fuzzer
 $CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c $SRC/phonefuzz.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
-     ./libphonenumber.a $SRC/protobuf/src/.libs/libprotobuf.a /usr/local/lib/libabsl_synchronization.a /usr/local/lib/libabsl_graphcycles_internal.a /usr/local/lib/libabsl_stacktrace.a /usr/local/lib/libabsl_symbolize.a /usr/local/lib/libabsl_malloc_internal.a /usr/local/lib/libabsl_debugging_internal.a /usr/local/lib/libabsl_demangle_internal.a /usr/local/lib/libabsl_time.a /usr/local/lib/libabsl_strings.a /usr/local/lib/libabsl_strings_internal.a /usr/local/lib/libabsl_throw_delegate.a /usr/local/lib/libabsl_base.a /usr/local/lib/libabsl_spinlock_wait.a -lrt /usr/local/lib/libabsl_int128.a /usr/local/lib/libabsl_raw_logging_internal.a /usr/local/lib/libabsl_log_severity.a /usr/local/lib/libabsl_civil_time.a /usr/local/lib/libabsl_time_zone.a \
-     $DEPS_PATH/lib/libicu.a -lpthread
+    ./libphonenumber.a \
+    $SRC/protobuf/src/.libs/libprotobuf.a \
+    /usr/local/lib/libabsl_cord.a \
+    /usr/local/lib/libabsl_cordz_info.a \
+    /usr/local/lib/libabsl_cord_internal.a \
+    /usr/local/lib/libabsl_cordz_functions.a \
+    /usr/local/lib/libabsl_cordz_handle.a \
+    /usr/local/lib/libabsl_hash.a \
+    /usr/local/lib/libabsl_city.a \
+    /usr/local/lib/libabsl_bad_variant_access.a \
+    /usr/local/lib/libabsl_low_level_hash.a \
+    /usr/local/lib/libabsl_raw_hash_set.a \
+    /usr/local/lib/libabsl_bad_optional_access.a \
+    /usr/local/lib/libabsl_hashtablez_sampler.a \
+    /usr/local/lib/libabsl_exponential_biased.a \
+    /usr/local/lib/libabsl_synchronization.a \
+    /usr/local/lib/libabsl_graphcycles_internal.a \
+    /usr/local/lib/libabsl_stacktrace.a \
+    /usr/local/lib/libabsl_symbolize.a \
+    /usr/local/lib/libabsl_malloc_internal.a \
+    /usr/local/lib/libabsl_debugging_internal.a \
+    /usr/local/lib/libabsl_demangle_internal.a \
+    /usr/local/lib/libabsl_time.a \
+    /usr/local/lib/libabsl_strings.a \
+    /usr/local/lib/libabsl_strings_internal.a \
+    /usr/local/lib/libabsl_throw_delegate.a \
+    /usr/local/lib/libabsl_int128.a \
+    /usr/local/lib/libabsl_civil_time.a \
+    /usr/local/lib/libabsl_time_zone.a \
+    /usr/local/lib/libabsl_base.a \
+    /usr/local/lib/libabsl_raw_logging_internal.a \
+    /usr/local/lib/libabsl_log_severity.a \
+    /usr/local/lib/libabsl_spinlock_wait.a \
+    -lrt \
+    $DEPS_PATH/lib/libicu.a -lpthread
