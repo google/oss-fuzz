@@ -10,7 +10,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* Inspired by the elfgetzdata.c test */
 #include <fcntl.h>
 #include <gelf.h>
 #include <inttypes.h>
@@ -21,17 +20,8 @@ limitations under the License.
 #include <sys/types.h>
 #include <unistd.h>
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
 
-  // Main fuzz entrypoint in objdump.c
+void fuzz_logic_one(char *filename, int compression_type) {
   (void)elf_version(EV_CURRENT);
   int fd = open(filename, O_RDONLY);
   Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
@@ -50,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       // so it resembles the test code.
       // Compress and get data of the section
       if ((shdr->sh_flags & SHF_COMPRESSED) != 0) {
-        if (elf_compress(scn, 0, 0) >= 0) {
+        if (elf_compress(scn, compression_type, 0) >= 0) {
           elf_getdata(scn, NULL);
         }
       } else if (name != NULL) {
@@ -63,8 +53,38 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     elf_end(elf);
   }
-
   close(fd);
+}
+
+void fuzz_logic_twice(char *filename, int open_flags, Elf_Cmd cmd) {
+  (void)elf_version(EV_CURRENT);
+  int fd = open(filename, open_flags);
+  Elf *elf = elf_begin(fd, cmd, NULL);
+  if (elf != NULL) {
+    size_t elf_size = 0;
+    elf_rawfile(elf, &elf_size);
+    elf_end(elf);
+  }
+  close(fd);
+}
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+  FILE *fp = fopen(filename, "wb");
+  if (!fp) {
+    return 0;
+  }
+  fwrite(data, size, 1, fp);
+  fclose(fp);
+
+  fuzz_logic_one(filename, 0);
+  fuzz_logic_one(filename, 1);
+  fuzz_logic_twice(filename, O_RDONLY, ELF_C_READ);
+  fuzz_logic_twice(filename, O_RDONLY | O_WRONLY, ELF_C_RDWR);
+  fuzz_logic_twice(filename, O_RDONLY, ELF_C_READ_MMAP);
+  fuzz_logic_twice(filename, O_RDONLY | O_WRONLY, ELF_C_RDWR_MMAP);
+
   unlink(filename);
   return 0;
 }
