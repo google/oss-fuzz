@@ -82,7 +82,6 @@ fi
 
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 
-
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
@@ -90,4 +89,15 @@ $CC $CFLAGS \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
 	./libdw/libdw.a ./libelf/libelf.a -l:libz.a \
 	-o "$OUT/fuzz-dwfl-core"
+
+$CC $CFLAGS \
+  -D_GNU_SOURCE -DHAVE_CONFIG_H \
+  -I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+  -c "$SRC/fuzz-elf-get-sections.c" -o fuzz-elf-get-sections.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-elf-get-sections.o \
+	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
+  ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a -l:libz.a \
+	-o "$OUT/fuzz-elf-get-sections"
+
+# Corpus
 cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"
