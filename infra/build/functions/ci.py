@@ -195,7 +195,8 @@ def get_build_status_from_gcb(cloudbuild_api, build_id):
 
 
 def check_finished(project_status, build_type, cloudbuild_api):
-  """Checks that the |build_type| build is complete. Updates |project_status|  if complete."""
+  """Checks that the |build_type| build is complete. Updates |project_status| if
+  complete."""
   build_id = project_status.build_id[build_type]
   if not build_id:
     return
