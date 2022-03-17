@@ -57,20 +57,15 @@ class ProjectStatus:
     self.build_finished[build_type] = True
 
 
-def _get_production_build_statuses(build_type, statuses=None):
+def _update_production_build_statuses(build_type, statuses):
   """Gets the statuses for |build_type| that is reported by build-status.
-  |statuses| is an optional dictionary mapping projects to dictionaries
-  containing the status of coverage and fuzzing builds. If provided, the
-  dictionary is appended to, otherwise a new dictionary is created and
-  returned."""
-  if statuses is None:
-    statuses = {}
+  |statuses| is a dictionary mapping project names to ProjectStatus objects"""
+  assert build_type in ('fuzzing', 'coverage')
+
   if build_type == 'fuzzing':
     filename = 'status.json'
   elif build_type == 'coverage':
     filename = 'status-coverage.json'
-  else:
-    assert None
 
   request = requests.get(
       f'https://oss-fuzz-build-logs.storage.googleapis.com/{filename}')
@@ -119,8 +114,9 @@ def get_args():
 def get_production_build_statuses():
   """Returns the status of the last build done in production for each
   project."""
-  statuses = _get_production_build_statuses('fuzzing')
-  statuses = _get_production_build_statuses('coverage', statuses)
+  statuses = {}
+  _update_production_build_statuses('fuzzing', statuses)
+  _update_production_build_statuses('coverage', statuses)
   return statuses
 
 
@@ -239,7 +235,10 @@ def wait_on_builds(project_statuses, credentials):
 
 def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
-  config = build_project.Config(True, TEST_IMAGE_SUFFIX, args.branch, False)
+  config = build_project.Config(testing=True,
+                                test_image_suffix=TEST_IMAGE_SUFFIX,
+                                branch=args.branch,
+                                parallel=False)
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   project_statuses = get_production_build_statuses()
   _do_build(args, config, credentials, 'fuzzing', project_statuses)
