@@ -42,6 +42,7 @@ cd go114-fuzz-build
 go build
 )
 
+# maybe we should git clone --depth 1 https://github.com/golang/go.git
 find /root/.go/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `ls /root/.go/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue
@@ -55,6 +56,17 @@ find /root/.go/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `echo $pkg | grep testdata | wc -l` == '1' ]]; then
         continue
     fi
-    compile_package $pkg || echo "Failed for $pkg"
+    if compile_package $pkg; then
+        echo $pkg >> ok.txt
+    else
+        echo "Failed for $pkg"
+        echo $pkg >> ko.txt
+    fi
 
 done
+
+echo "Failed packages:"
+cat ko.txt
+
+echo "Succesful packages:"
+cat ok.txt
