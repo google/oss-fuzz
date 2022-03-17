@@ -18,7 +18,7 @@
 compile_package () {
     pkg=$1
     pkg_flat=`echo $pkg | sed 's/\//_/g'`
-    args=`cat $SRC/exclude.txt | grep $pkg_flat | awk '{print "-exclude", $2}'`
+    args=`cat $SRC/ngolo-fuzzing/std/exclude.txt | grep $pkg_flat | awk '{print "-exclude", $2}'`
     ./ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     (
         cd fuzz_ng_$pkg_flat

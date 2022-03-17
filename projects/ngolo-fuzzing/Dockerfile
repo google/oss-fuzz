@@ -29,5 +29,4 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 RUN git clone --depth 1 https://github.com/catenacyber/ngolo-fuzzing.git
 
 COPY build.sh $SRC/
-COPY exclude.txt $SRC/
 WORKDIR $SRC/ngolo-fuzzing
