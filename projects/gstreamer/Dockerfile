@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git && \
     make -j$(nproc) && \
     make install
 
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
+ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.72/glib-2.72.0.tar.xz $SRC
 
 # Checkout repository
 RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
