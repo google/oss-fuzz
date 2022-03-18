@@ -19,7 +19,7 @@ RUN apt-get update && \
    apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex gettext \
     libffi-dev liblzma-dev libtheora-dev libogg-dev zlib1g-dev libcairo2-dev \
     python3-pip ninja-build && \
-   pip3 install meson==0.59.0
+   pip3 install meson==0.61.3
 
 # We must install libvorbis from scratch as otherwise we will run into
 # undefined functions in Ubuntu 20.04
