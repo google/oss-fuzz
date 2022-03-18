@@ -157,7 +157,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('reports')
-  upload_report_by_target_url = bucket.get_upload_url('reports-by-target')
 
   # Delete the existing report as gsutil cannot overwrite it in a useful way due
   # to the lack of `-T` option (it creates a subdir in the destination dir).
@@ -171,19 +170,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           '-r',
           os.path.join(build.out, 'report'),
           upload_report_url,
-      ],
-  })
-
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'report_target'),
-          upload_report_by_target_url,
       ],
   })
 
