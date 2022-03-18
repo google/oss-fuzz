@@ -94,24 +94,6 @@
     ]
   },
   {
-    "args": [
-      "-c",
-      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/reports-by-target/20200101 || exit 0"
-    ],
-    "entrypoint": "sh",
-    "name": "gcr.io/cloud-builders/gsutil"
-  },
-  {
-    "args": [
-      "-m",
-      "cp",
-      "-r",
-      "/workspace/out/libfuzzer-coverage-x86_64/report_target",
-      "gs://oss-fuzz-coverage/test-project/reports-by-target/20200101"
-    ],
-    "name": "gcr.io/cloud-builders/gsutil"
-  },
-  {
     "name": "gcr.io/cloud-builders/gsutil",
     "entrypoint": "sh",
     "args": [
@@ -132,20 +114,16 @@
   {
     "name": "gcr.io/cloud-builders/gsutil",
     "entrypoint": "sh",
-    "args": [
-      "-c",
-      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/textcov_reports/20200101 || exit 0"
-    ]
+    "args": ["-c",
+      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/textcov_reports/20200101 || exit 0"]
   },
   {
     "name": "gcr.io/cloud-builders/gsutil",
-    "args": [
-      "-m",
-      "cp",
-      "-r",
-      "/workspace/out/libfuzzer-coverage-x86_64/textcov_reports",
-      "gs://oss-fuzz-coverage/test-project/textcov_reports/20200101"
-    ]
+    "args": ["-m",
+            "cp",
+            "-r",
+            "/workspace/out/libfuzzer-coverage-x86_64/textcov_reports",
+            "gs://oss-fuzz-coverage/test-project/textcov_reports/20200101"]
   },
   {
     "name": "gcr.io/cloud-builders/gsutil",
