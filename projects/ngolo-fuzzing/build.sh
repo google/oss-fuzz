@@ -61,7 +61,7 @@ find /root/.go/src/ -type d | cut -d/ -f5- | while read pkg; do
     else
         echo "Failed for $pkg"
         # hard fail if the package is meant to be supported
-        grep $pkg $SRC/ngolo-fuzzing/std/supported.txt && exit 1
+        grep ^$pkg$ $SRC/ngolo-fuzzing/std/supported.txt && exit 1
         echo $pkg >> ko.txt
     fi
 
