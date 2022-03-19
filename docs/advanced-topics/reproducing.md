@@ -105,9 +105,6 @@ After you build an image and a fuzzer, you can reproduce a bug by running the fo
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
-**Note**: The reproduce command only supports `libfuzzer` fuzzing engine. Crashes
-found with other fuzzing engines should be reproducible with `libfuzzer` too.
-
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and
 reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`,
