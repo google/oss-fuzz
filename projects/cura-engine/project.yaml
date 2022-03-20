@@ -1,0 +1,9 @@
+homepage: "https://github.com/Ultimaker/CuraEngine"
+language: c++
+primary_contact: "j.vankessel@ultimaker.com"
+auto_ccs:
+  - "artem.smotrakov@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/Ultimaker/CuraEngine.git"
