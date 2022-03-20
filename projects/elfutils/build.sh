@@ -113,6 +113,9 @@ zlib=zlib/libz.a
 # and so on. Also since a lot of bug reports coming out of the blue aren't exactly helpful
 # fuzz targets should probably be added one at a time to make it easier to keep track
 # of them.
+CFLAGS+=" -Werror -Wall -Wextra"
+CXXFLAGS+=" -Werror -Wall -Wextra"
+
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
