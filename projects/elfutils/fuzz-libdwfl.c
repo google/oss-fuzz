@@ -51,7 +51,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   dwfl_report_begin(dwfl);
 
   Dwfl_Module *mod = dwfl_report_offline(dwfl, filename, filename, -1);
-  Dwarf *res = dwfl_module_getdwarf(mod, &bias);
+  dwfl_module_getdwarf(mod, &bias);
 
   dwfl_end (dwfl);
   unlink(filename);
