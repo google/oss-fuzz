@@ -116,6 +116,8 @@ zlib=zlib/libz.a
 CFLAGS+=" -Werror -Wall -Wextra"
 CXXFLAGS+=" -Werror -Wall -Wextra"
 
+# fuzz-dwfl-core is kind of a systemd fuzz target in the sense that it resembles the
+# code systemd uses to parse coredumps. Please ping @evverx if it's changed.
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
