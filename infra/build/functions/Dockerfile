@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-image
+FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN mkdir -p /opt/oss-fuzz/infra/build_status
 COPY ${OSS_FUZZ_ROOT}/infra/build/functions/ /opt/oss-fuzz/infra/build/functions

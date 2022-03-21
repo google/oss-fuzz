@@ -91,11 +91,6 @@ def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects', help='Projects.', nargs='*')
-  parser.add_argument('--testing',
-                      action='store_true',
-                      required=False,
-                      default=False,
-                      help='Upload to testing buckets.')
   parser.add_argument('--sanitizers',
                       required=True,
                       nargs='+',
