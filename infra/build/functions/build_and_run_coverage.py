@@ -157,6 +157,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('reports')
+  upload_report_by_target_url = bucket.get_upload_url('reports-by-target')
 
   # Delete the existing report as gsutil cannot overwrite it in a useful way due
   # to the lack of `-T` option (it creates a subdir in the destination dir).
@@ -172,6 +173,20 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           upload_report_url,
       ],
   })
+
+  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+    build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
+    build_steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'args': [
+            '-m',
+            'cp',
+            '-r',
+            os.path.join(build.out, 'report_target'),
+            upload_report_by_target_url,
+        ],
+    })
 
   # Upload the fuzzer stats. Delete the old ones just in case.
   upload_fuzzer_stats_url = bucket.get_upload_url('fuzzer_stats')
