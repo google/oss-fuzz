@@ -78,19 +78,15 @@ fi
 
 # OSS-Fuzz requires a separate and self-contained binary for each fuzz target.
 # To inject the fuzz target name in the finished binary, compile the fuzz
-# executable with a "magic string" as the name of the fuzz target.
-#
-# An alternative to mocking the string in the finished binary would be to
-# replace the string in the source code and re-invoke 'make'. This is slower,
-# so use the hack.
-export MAGIC_STR="b5813eee2abc9d3358151f298b75a72264ffa119d2f71ae7fefa15c4b70b4bc5b38e87e3107a730f25891ea428b2b4fabe7a84f5bfa73c79e0479e085e4ff157"
-sed -i "s|.*std::getenv(\"FUZZ\").*|std::string fuzz_target{\"$MAGIC_STR\"};|g" "./src/test/fuzz/fuzz.cpp"
-sed -i "s|.find(fuzz_target)|.find(fuzz_target.c_str())|g"                      "./src/test/fuzz/fuzz.cpp"
-make -j$(nproc)
-
-# Replace the magic string with the actual name of each fuzz target
+# executable with the name of the fuzz target injected into the source code.
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
-  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";c=open('./src/test/fuzz/fuzz','rb').read();c=c.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(c)"
+  git checkout --                                                                       "./src/test/fuzz/fuzz.cpp"
+  sed -i "s|static std::string_view g_fuzz_target;|static std::string g_fuzz_target;|g" "./src/test/fuzz/fuzz.cpp"
+  sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g"                                   "./src/test/fuzz/fuzz.cpp"
+  sed -i "s|.find(g_fuzz_target)|.find(g_fuzz_target.c_str())|g"                        "./src/test/fuzz/fuzz.cpp"
+  make -j$(nproc)
+  mv './src/test/fuzz/fuzz' "$OUT/$fuzz_target"
+
   chmod +x "$OUT/$fuzz_target"
   (
     cd assets/fuzz_seed_corpus
