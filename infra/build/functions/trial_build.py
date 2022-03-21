@@ -17,12 +17,13 @@
 versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
+import json
 import logging
 import sys
+import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
-import requests
 
 import build_and_push_test_images
 import build_and_run_coverage
@@ -72,9 +73,10 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = requests.get('https://oss-fuzz-build-logs.storage.googleapis.com/'
-                         f'{build_type.status_filename}')
-  project_statuses = request.json()['projects']
+  request = urllib.request.get(
+      'https://oss-fuzz-build-logs.storage.googleapis.com/'
+      f'{build_type.status_filename}')
+  project_statuses = json.load(request)['projects']
   results = {}
   for project in project_statuses:
     name = project['name']

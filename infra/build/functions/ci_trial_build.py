@@ -1,7 +1,7 @@
 import sys
 import logging
-
-import requests
+import json
+import urllib.request
 
 import trial_build
 
@@ -12,8 +12,8 @@ def get_comments(pull_request_number):
   url = ('https://api.github.com/repos/google/oss-fuzz/pulls/'
          f'{pull_request_number}/comments')
   # !!! Does this handle pagination?
-  request = requests.get(url)
-  return request.json()
+  request = urllib.request.get(url)
+  return json.load(request)
 
 
 def get_latest_gcbrun_command(comments):
