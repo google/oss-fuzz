@@ -14,11 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner
+FROM gcr.io/oss-fuzz-base/base-image
 
 RUN mkdir -p /opt/oss-fuzz/infra/build_status
-COPY ${OSS_FUZZ_ROOT}/infra/build/functions/* /opt/oss-fuzz/infra/build_status/
-COPY ${OSS_FUZZ_ROOT}/infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
-RUN pip install -r /opt/oss-fuzz/infra/build_status/requirements.txt
+COPY ${OSS_FUZZ_ROOT}/infra/build/functions/ /opt/oss-fuzz/infra/build/functions
+RUN pip install -r /opt/oss-fuzz/infra/ci/requirements.txt
 
-ENTRYPOINT [ "python3", "/opt/oss-fuzz/infra/build_status/update_build_status.py" ]
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/build/functions/ci_trial_build.py"]

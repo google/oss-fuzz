@@ -87,7 +87,7 @@ def _get_production_build_statuses(build_type):
   return results
 
 
-def get_args():
+def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects', help='Projects.', nargs='*')
@@ -108,7 +108,7 @@ def get_args():
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
-  return parser.parse_args()
+  return parser.parse_args(args)
 
 
 def get_projects_to_build(specified_projects, build_type):
@@ -231,13 +231,17 @@ def do_test_builds(args):
   return wait_on_builds(build_ids, credentials)
 
 
+def trial_build_main(args=None):
+  args = get_args(args)
+  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
+  return do_test_builds(args)
+
+
 def main():
   """Builds and pushes test images of the base images. Then does test coverage
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
-  args = get_args()
-  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
-  return 0 if do_test_builds(args) else 1
+  return 0 if trial_build_main() else 1
 
 
 if __name__ == '__main__':
