@@ -34,16 +34,18 @@ TEST_IMAGE_SUFFIX = 'testing'
 FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
                            'EXPIRED')
 
-BuildType = collections.namedtuple('BuildType',
-                                   ['type_name', 'get_build_steps_func', 'status_filename']
-)
+BuildType = collections.namedtuple(
+    'BuildType', ['type_name', 'get_build_steps_func', 'status_filename'])
 
 BUILD_TYPES = {
-  'coverage': BuildType('coverage', build_project.get_build_steps,
-                        'status-coverage.json'),
-  'fuzzing': BuildType('fuzzing', build_and_run_coverage.get_build_steps,
-                        'status.json'),
+    'coverage':
+        BuildType('coverage', build_project.get_build_steps,
+                  'status-coverage.json'),
+    'fuzzing':
+        BuildType('fuzzing', build_and_run_coverage.get_build_steps,
+                  'status.json'),
 }
+
 
 class ProjectStatus:
   """Class that holds info about project builds."""
@@ -70,9 +72,8 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = requests.get(
-      'https://oss-fuzz-build-logs.storage.googleapis.com/'
-      f'{build_type.status_filename}')
+  request = requests.get('https://oss-fuzz-build-logs.storage.googleapis.com/'
+                         f'{build_type.status_filename}')
   project_statuses = request.json()['projects']
   results = {}
   for project in project_statuses:
@@ -108,7 +109,6 @@ def get_args():
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
   return parser.parse_args()
-
 
 
 def get_projects_to_build(specified_projects, build_type):
@@ -161,9 +161,9 @@ def _do_builds(args, config, credentials, build_type, projects):
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
-    build_ids[project_name] = (
-        build_project.run_build(project_name, steps, credentials,
-                                build_type.type_name))
+    build_ids[project_name] = (build_project.run_build(project_name, steps,
+                                                       credentials,
+                                                       build_type.type_name))
 
   return build_ids
 
@@ -187,7 +187,6 @@ def check_finished(build_id, project, cloudbuild_api, build_results):
 
 def wait_on_builds(build_ids, credentials):
   """Waits on |builds|. Returns True if all builds succeed."""
-  results = {}
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
@@ -228,8 +227,7 @@ def do_test_builds(args):
                                   parallel=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
-    build_ids = _do_builds(
-        args, config, credentials, build_type, projects)
+    build_ids = _do_builds(args, config, credentials, build_type, projects)
   return wait_on_builds(build_ids, credentials)
 
 
@@ -238,7 +236,7 @@ def main():
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
   args = get_args()
-  # build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
+  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
   return 0 if do_test_builds(args) else 1
 
 
