@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN mkdir -p /opt/oss-fuzz/infra/build_status
-COPY ${OSS_FUZZ_ROOT}/infra/ /opt/oss-fuzz/infra/
+COPY ${OSS_FUZZ_ROOT}/infra/ /opt/oss-fuzz/infra
 RUN pip install -r /opt/oss-fuzz/infra/ci/requirements.txt
 
 ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/build/functions/ci_trial_build.py"]
