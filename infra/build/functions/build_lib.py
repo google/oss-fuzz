@@ -338,7 +338,7 @@ def get_docker_build_step(image_names, directory, buildkit_cache_from=None):
   return {
       'name': 'docker:19.03.12',
       'args': args,
-      'dir': directory
+      'dir': directory,
       'env': ['DOCKER_BUILDKIT=1']
   }
 
