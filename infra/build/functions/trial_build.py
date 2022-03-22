@@ -133,6 +133,7 @@ def _do_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
+    print('project_name', project_name)
     logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = (
@@ -223,7 +224,7 @@ def do_test_builds(args):
     build_types.append(BUILD_TYPES['fuzzing'])
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type)
-    print('projects', projects)
+    print('projects2', projects)
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,
