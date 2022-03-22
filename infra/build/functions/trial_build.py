@@ -140,6 +140,7 @@ def _do_builds(args, config, credentials, build_type, projects):
           build_project.get_project_data(project_name))
     except FileNotFoundError:
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
+      print('can\'t get data')
       continue
 
     project_yaml['sanitizers'] = list(
