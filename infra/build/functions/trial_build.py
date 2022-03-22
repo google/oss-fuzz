@@ -223,6 +223,7 @@ def do_test_builds(args):
     build_types.append(BUILD_TYPES['fuzzing'])
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type)
+    print('projects', projects)
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,

@@ -35,7 +35,6 @@ def get_latest_gcbrun_command(comments):
 
 
 def exec_command_from_github(pull_request_number):
-  print('yo')
   comments = get_comments(pull_request_number)
   print('comments', comments)
   command = get_latest_gcbrun_command(comments)
@@ -44,6 +43,7 @@ def exec_command_from_github(pull_request_number):
     return None
   command = command.split(' ')
   logging.info('Command: %s.', command)
+  # command = ['trial_build.py', 'skcms', '--sanitizer', 'address', '--fuzzing-engine', libfuzzer
   return trial_build.trial_build_main(command)
 
 
