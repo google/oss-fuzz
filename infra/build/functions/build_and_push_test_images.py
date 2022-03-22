@@ -15,7 +15,7 @@
 #
 ################################################################################
 """Script for building and pushing base-images to gcr.io/oss-fuzz-base/ with
-"-test" suffix. This is useful for reusing the build infra to test image
+"-test" suffix. This is useful for sing the build infra to test image
 changes."""
 import logging
 import multiprocessing
