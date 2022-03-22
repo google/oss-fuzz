@@ -133,19 +133,14 @@ def _do_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
-    print('project_name', project_name)
     logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
     except FileNotFoundError:
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
-      import os
-      print('cwd', os.getcwd(), os.listdir(os.getcwd()))
-      print('can\'t get data', project_name)
       continue
 
-    print('project_yaml', project_yaml, args.sanitizers, args.fuzzing_engines)
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
 
@@ -153,17 +148,13 @@ def _do_builds(args, config, credentials, build_type, projects):
         set(project_yaml['fuzzing_engines']).intersection(
             set(args.fuzzing_engines)))
 
-    print('project_yaml', project_yaml, args.sanitizers, args.fuzzing_engines)
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
-      print('nothing to build')
       continue
 
-    print('get steps')
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, IMAGE_PROJECT,
                                             BASE_IMAGES_PROJECT, config)
-    print('steps', steps)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
@@ -188,7 +179,6 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   complete."""
   build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                            build_id)
-  print('build_status', build_status)
   if build_status not in FINISHED_BUILD_STATUSES:
     return False
   build_results[project] = build_status == 'SUCCESS'
@@ -233,7 +223,6 @@ def do_test_builds(args):
     build_types.append(BUILD_TYPES['fuzzing'])
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type)
-    print('projects2', projects)
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,
@@ -242,17 +231,14 @@ def do_test_builds(args):
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     build_ids = _do_builds(args, config, credentials, build_type, projects)
-  print('build_ids', build_ids)
   return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 
 def trial_build_main(args=None):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
-  print('args', args)
   args = get_args(args)
-  print('args', args, args.sanitizers, args.projects)
-  # build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
+  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
 

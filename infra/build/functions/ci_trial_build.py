@@ -24,7 +24,6 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
-    print('body', body)
     if not body.startswith(TRIGGER_COMMAND):
       continue
     if len(body) <= len(TRIGGER_COMMAND):
@@ -36,14 +35,12 @@ def get_latest_gcbrun_command(comments):
 
 def exec_command_from_github(pull_request_number):
   comments = get_comments(pull_request_number)
-  print('comments', comments)
   command = get_latest_gcbrun_command(comments).strip()
   if command is None:
     logging.info('Trial build not requested.')
     return None
   command = command.split(' ')
   logging.info('Command: %s.', command)
-  # command = ['trial_build.py', 'skcms', '--sanitizer', 'address', '--fuzzing-engine', 'libfuzzer']
   return trial_build.trial_build_main(command)
 
 
