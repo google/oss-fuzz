@@ -238,6 +238,7 @@ def trial_build_main(args=None):
   builds."""
   print('args', args)
   args = get_args(args)
+  print('args', args, args.sanitizers, args.projects)
   # build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
