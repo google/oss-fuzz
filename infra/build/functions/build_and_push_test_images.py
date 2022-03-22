@@ -15,7 +15,7 @@
 #
 ################################################################################
 """Script for building and pushing base-images to gcr.io/oss-fuzz-base/ with
-"-test" suffix. This is useful for sing the build infra to test image
+"-test" suffix. This is useful for using the build infra to test image
 changes."""
 import logging
 import multiprocessing
@@ -68,8 +68,7 @@ def gcb_build_and_push_images(test_image_suffix):
   """Build and push test versions of base images using GCB."""
   steps = [build_lib.get_git_clone_step()]
   test_images = []
-  images = base_images.BASE_IMAGES[:]
-  for base_image in images:
+  for base_image in base_images.BASE_IMAGES:
     image_name = TAG_PREFIX + base_image
     test_image_name = f'{image_name}-{test_image_suffix}'
     test_images.append(test_image_name)

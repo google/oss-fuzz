@@ -213,6 +213,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
 def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
+  # TODO(metzman): Make this handle concurrent builds.
   build_types = []
   if list(args.sanitizers) == ['coverage']:
     build_types.append(BUILD_TYPES['coverage'])
