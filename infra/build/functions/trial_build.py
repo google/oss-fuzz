@@ -44,8 +44,7 @@ BUILD_TYPES = {
         BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
     'fuzzing':
-        BuildType('fuzzing', build_project.get_build_steps,
-                  'status.json'),
+        BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
 
 

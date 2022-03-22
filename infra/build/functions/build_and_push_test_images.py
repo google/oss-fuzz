@@ -68,7 +68,7 @@ def gcb_build_and_push_images(test_image_suffix):
   steps = [build_lib.get_git_clone_step()]
   test_images = []
   images = base_images.BASE_IMAGES[:]
-  images.remove('base-clang') # Speed testing. !!!
+  images.remove('base-clang')  # Speed testing. !!!
   for base_image in images:
     image_name = TAG_PREFIX + base_image
     test_image_name = f'{image_name}-{test_image_suffix}'
@@ -80,9 +80,9 @@ def gcb_build_and_push_images(test_image_suffix):
 
   overrides = {'images': test_images}
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
-  build_id = build_lib.run_build(steps, credentials,
-                                 base_images.BASE_PROJECT, base_images.TIMEOUT,
-                                 overrides, ['trial-build'])
+  build_id = build_lib.run_build(steps, credentials, base_images.BASE_PROJECT,
+                                 base_images.TIMEOUT, overrides,
+                                 ['trial-build'])
   return trial_build.wait_on_builds({'base-images': build_id}, credentials,
                                     CLOUD_PROJECT)
 
@@ -91,7 +91,7 @@ def build_and_push_images(test_image_suffix, local=True):
   """Builds and pushes base-images."""
   # if not local:
   gcb_build_and_push_images(test_image_suffix)
-  return # !!!
+  return  # !!!
   images = [
       ['base-image'],
       ['base-clang'],
