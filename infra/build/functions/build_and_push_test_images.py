@@ -72,7 +72,7 @@ def gcb_build_and_push_images(test_image_suffix):
     image_name = TAG_PREFIX + base_image
     test_image_name = f'{image_name}-{test_image_suffix}'
     test_images.append(test_image_name)
-    directory = os.path.join('infra/base-images', base_image)
+    directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([image_name, test_image_name],
                                            directory)
     steps.append(step)
