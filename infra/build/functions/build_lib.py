@@ -332,12 +332,14 @@ def get_docker_build_step(image_names, directory, buildkit_cache_from=None):
         '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
         buildkit_cache_from
     ]
+
     args.extend(cache_args)
   args.append('.')
   return {
       'name': 'docker:19.03.12',
       'args': args,
       'dir': directory
+      'env': ['DOCKER_BUILDKIT=1']
   }
 
 
