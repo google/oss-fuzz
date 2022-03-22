@@ -307,6 +307,7 @@ def get_srcmap_step_id():
 
 def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
                        branch=None):
+  """Returns the git clone step."""
   clone_step = {
       'args': ['clone', repo_url, '--depth', '1'],
       'name': 'gcr.io/cloud-builders/git',
@@ -319,6 +320,7 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
 
 
 def get_docker_build_step(image_names, directory):
+  """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join('oss-fuzz', directory)
   args = ['build']
@@ -378,11 +380,12 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
 
 def run_build(  # pylint: disable=too-many-arguments
     steps,
-    credentials,
+    credentials,  # !!! Arg order!
     cloud_project,
     timeout,
     body_overrides=None,
     tags=None):
+  """Runs the build."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:

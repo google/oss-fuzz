@@ -233,11 +233,12 @@ def do_test_builds(args):
   return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 
-def trial_build_main(args=None):
+def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
+  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX,
+                                                   local=local_base_build)
   return do_test_builds(args)
 
 
