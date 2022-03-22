@@ -145,7 +145,7 @@ def _do_builds(args, config, credentials, build_type, projects):
       print('can\'t get data', project_name)
       continue
 
-    print('project_yaml', project_yaml)
+    print('project_yaml', project_yaml, args.sanitizers, args.fuzzing_engines)
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
 
@@ -153,6 +153,7 @@ def _do_builds(args, config, credentials, build_type, projects):
         set(project_yaml['fuzzing_engines']).intersection(
             set(args.fuzzing_engines)))
 
+    print('project_yaml', project_yaml, args.sanitizers, args.fuzzing_engines)
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
       print('nothing to build')
