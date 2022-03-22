@@ -145,6 +145,7 @@ def _do_builds(args, config, credentials, build_type, projects):
       print('can\'t get data', project_name)
       continue
 
+    print('project_yaml', project_yaml)
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
 
