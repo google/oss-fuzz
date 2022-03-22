@@ -1,0 +1,11 @@
+homepage: "https://bitbucket.org/snakeyaml/snakeyaml/src/master/"
+language: jvm
+primary_contact: "none"
+auto_ccs:
+  - "glendowne@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://bitbucket.org/snakeyaml/snakeyaml/src/master/"
