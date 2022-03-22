@@ -41,10 +41,10 @@ BuildType = collections.namedtuple(
 
 BUILD_TYPES = {
     'coverage':
-        BuildType('coverage', build_project.get_build_steps,
+        BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
     'fuzzing':
-        BuildType('fuzzing', build_and_run_coverage.get_build_steps,
+        BuildType('fuzzing', build_project.get_build_steps,
                   'status.json'),
 }
 
