@@ -23,6 +23,7 @@ import sys
 import time
 
 import requests
+import yaml
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
@@ -304,12 +305,10 @@ def get_srcmap_step_id():
   return 'srcmap'
 
 
-def get_git_clone_step(
-    repo_url='https://github.com/google/oss-fuzz.git', branch=None):
+def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
+                       branch=None):
   clone_step = {
-      'args': [
-          'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
-      ],
+      'args': ['clone', repo_url, '--depth', '1'],
       'name': 'gcr.io/cloud-builders/git',
   }
   if branch:
@@ -339,30 +338,31 @@ def project_image_steps(name,
                         branch=None,
                         test_image_suffix=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
-  clone_step = get_clone_step(branch=branch) # !!! url
+  clone_step = get_git_clone_step(branch=branch)  # !!! url
   steps = [clone_step]
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
 
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name) )
+                                            os.path.join('projects', name))
   srcmap_step_id = get_srcmap_step_id()
   steps += [
-      docker_build_step,
-      {
-      'name': image,
-      'args': [
-          'bash', '-c',
-          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-      ],
-      'env': [
-          'OSSFUZZ_REVISION=$REVISION_ID',
-          'FUZZING_LANGUAGE=%s' % language,
-      ],
-      'id': srcmap_step_id
-  }]
+      docker_build_step, {
+          'name': image,
+          'args': [
+              'bash', '-c',
+              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+          ],
+          'env': [
+              'OSSFUZZ_REVISION=$REVISION_ID',
+              'FUZZING_LANGUAGE=%s' % language,
+          ],
+          'id': srcmap_step_id
+      }
+  ]
 
   return steps
+
 
 def get_logs_url(build_id, project_id='oss-fuzz-base'):
   """Returns url that displays the build logs."""
@@ -376,7 +376,13 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
           f'?project={cloud_project}')
 
 
-def run_build(name, steps, credentials, cloud_project, timeout, body_overrides=None, tags=None):
+def run_build(  # pylint: disable=too-many-arguments
+    steps,
+    credentials,
+    cloud_project,
+    timeout,
+    body_overrides=None,
+    tags=None):
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:

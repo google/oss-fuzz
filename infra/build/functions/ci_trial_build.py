@@ -1,8 +1,5 @@
-import os
-import sys
 import logging
-import json
-import urllib.request
+import os
 
 import github
 
@@ -12,16 +9,6 @@ TRIGGER_COMMAND = '/gcbrun '
 
 
 def get_comments(pull_request_number):
-  # url = ('https://api.github.com/repos/google/oss-fuzz/pulls/'
-  #        f'{pull_request_number}/comments')x
-  # # !!! Does this handle pagination?
-  # request = urllib.request.urlopen(url)
-  # pull_comments = json.load(request)
-  # url = ('https://api.github.com/repos/google/oss-fuzz/issues/'
-  #        f'{pull_request_number}/comments')
-  # request = urllib.request.urlopen(url)
-  # issue_requests = json.load(request)
-  # return list(set(pull_requsts + issue_requests))
   github_obj = github.Github()
   repo = github_obj.get_repo('google/oss-fuzz')
   pull = repo.get_pull(pull_request_number)

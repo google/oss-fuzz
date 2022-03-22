@@ -65,9 +65,7 @@ def build_image(image, tags):
 
 
 def gcb_build_and_push_images(test_image_suffix):
-  steps = [
-    build_lib.get_git_clone_step()
-  ]
+  steps = [build_lib.get_git_clone_step()]
   test_images = []
   for base_image in base_images.BASE_IMAGES:
     image_name = TAG_PREFIX + base_image
@@ -78,12 +76,10 @@ def gcb_build_and_push_images(test_image_suffix):
                                            directory)
     steps.append(step)
 
-  overrides = {
-    'images': test_images
-  }
+  overrides = {'images': test_images}
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
-  build_id = build_lib.run_build('trial-build', steps, credentials,
-                                 base_images.BASE_PROJECT, base_images.TIMEOUT, overrides,
+  build_id = build_lib.run_build(steps, credentials, base_images.BASE_PROJECT,
+                                 base_images.TIMEOUT, overrides,
                                  ['trial-build'])
   return trial_build.wait_on_builds({'base-images': build_id}, credentials,
                                     CLOUD_PROJECT)
@@ -101,8 +97,11 @@ def build_and_push_images(test_image_suffix, local=True):
       # Exclude 'base-builder-swift' as it takes extremely long to build because
       # it clones LLVM.
       [
-          'base-runner-debug', 'base-builder-go', 'base-builder-jvm',
-          'base-builder-python', 'base-builder-rust',
+          'base-runner-debug',
+          'base-builder-go',
+          'base-builder-jvm',
+          'base-builder-python',
+          'base-builder-rust',
       ],
   ]
   max_parallelization = max([len(image_list) for image_list in images])

@@ -14,11 +14,11 @@
 #
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
-
 import logging
 
-import google.auth
-from googleapiclient.discovery import build
+import oauth2client.client
+
+import build_lib
 
 BASE_IMAGES = [
     'base-image',
@@ -43,15 +43,14 @@ TIMEOUT = str(6 * 3600)
 
 def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images."""
-  steps = [
-    build_lib.get_git_clone_step()
-  ]
+  steps = [build_lib.get_git_clone_step()]
 
   for base_image in images:
     image = tag_prefix + base_image
-    tagged_image =  image + ':' + MAJOR_TAG
-    steps.append(build_lib.get_docker_build_step([image, tagged_image],
-                                'infra/base-images/' + base_image))
+    tagged_image = image + ':' + MAJOR_TAG
+    steps.append(
+        build_lib.get_docker_build_step([image, tagged_image],
+                                        'infra/base-images/' + base_image))
   return steps
 
 
@@ -96,20 +95,21 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
   return steps
 
 
-
 # pylint: disable=no-member
 def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   """Execute the retrieved build steps in gcb."""
-  credentials = oauth2client.client.GoogleCredentials.get_application_default() # !!!
+  credentials = oauth2client.client.GoogleCredentials.get_application_default()
   body_overrides = {
-        'images': images + [f'{image}:{build_version}' for image in images]
+      'images': images + [f'{image}:{build_version}' for image in images]
   }
-  return build_lib.run_build('base-images', steps, credentials, BASE_PROJECT, body_overrides, tags)
+  return build_lib.run_build(steps, credentials, BASE_PROJECT, body_overrides,
+                             tags)
 
 
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
+  logging.basicConfig(level=logging.INFO)
 
   steps = get_base_image_steps(BASE_IMAGES)
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]

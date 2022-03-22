@@ -31,7 +31,6 @@ import posixpath
 import re
 import sys
 
-from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
 import six
 import yaml
@@ -478,7 +477,6 @@ def dataflow_post_build_steps(project_name, env, base_images_project, testing,
   return steps
 
 
-
 # pylint: disable=no-member
 def run_build(oss_fuzz_project,
               build_steps,
@@ -491,13 +489,19 @@ def run_build(oss_fuzz_project,
   in GCB so the build can be queried for debugging purposes."""
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
   # TODO(navidem): this is temporary until I fix shorter failing projects.
+  timeout = build_lib.BUILD_TIMEOUT
   if build_type == 'introspector':
-    timeout_value /= 4
+    timeout /= 4
   body_overrides = {
       'logsBucket': GCB_LOGS_BUCKET,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-  return get_build_body(oss_fuzz_project, build_steps, credentials, cloud_project, build_lib.BUILD_TIMEOUT, body_overrides, tags)
+  return build_lib.run_build(build_steps,
+                             credentials,
+                             cloud_project,
+                             timeout,
+                             body_overrides=body_overrides,
+                             tags=tags)
 
 
 def get_args(description):
