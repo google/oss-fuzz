@@ -238,7 +238,7 @@ def trial_build_main(args=None, local_base_build=True):
   builds."""
   args = get_args(args)
   build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX,
-                                                   local=local_base_build)
+                                                   local=local_base_build)  # pylint: disable=unexpected-keyword-arg
   return do_test_builds(args)
 
 
