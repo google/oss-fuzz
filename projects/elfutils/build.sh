@@ -72,6 +72,11 @@ if [[ "$SANITIZER" == undefined ]]; then
     sed -i 's/\(check_undefined_val\)=[0-9]/\1=1/' configure.ac
 fi
 
+if [[ "$SANITIZER" == memory ]]; then
+    CFLAGS+=" -U_FORTIFY_SOURCE"
+    CXXFLAGS+=" -U_FORTIFY_SOURCE"
+fi
+
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --without-bzlib --without-lzma --without-zstd \
