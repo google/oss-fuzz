@@ -37,7 +37,7 @@ def get_latest_gcbrun_command(comments):
 def exec_command_from_github(pull_request_number):
   comments = get_comments(pull_request_number)
   print('comments', comments)
-  command = get_latest_gcbrun_command(comments)
+  command = get_latest_gcbrun_command(comments).strip()
   if command is None:
     logging.info('Trial build not requested.')
     return None
