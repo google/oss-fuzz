@@ -12,4 +12,6 @@ steps:
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
   timeout: 21600s # 6 hours
+options:
+  logging: CLOUD_LOGGING_ONLY
 timeout: 21600s
