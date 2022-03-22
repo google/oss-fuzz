@@ -73,7 +73,7 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = urllib.request.get(
+  request = urllib.request.urlopen(
       'https://oss-fuzz-build-logs.storage.googleapis.com/'
       f'{build_type.status_filename}')
   project_statuses = json.load(request)['projects']
@@ -165,24 +165,26 @@ def _do_builds(args, config, credentials, build_type, projects):
   return build_ids
 
 
-def get_build_status_from_gcb(cloudbuild_api, build_id):
+def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   """Returns the status of the build: |build_id| from cloudbuild_api."""
-  build_result = cloudbuild_api.get(projectId=IMAGE_PROJECT,
+  build_result = cloudbuild_api.get(projectId=cloud_project,
                                     id=build_id).execute()
   return build_result['status']
 
 
-def check_finished(build_id, project, cloudbuild_api, build_results):
+def check_finished(build_id, project, cloudbuild_api, cloud_project,
+                   build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
-  build_status = get_build_status_from_gcb(cloudbuild_api, build_id)
+  build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
+                                           build_id)
   if build_status not in FINISHED_BUILD_STATUSES:
     return False
   build_results[project] = build_status == 'SUCCESS'
   return True
 
 
-def wait_on_builds(build_ids, credentials):
+def wait_on_builds(build_ids, credentials, cloud_project):
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -195,7 +197,8 @@ def wait_on_builds(build_ids, credentials):
   while wait_builds:
     logging.info('Polling')
     for project, build_id in list(wait_builds.items()):
-      if check_finished(build_id, project, cloudbuild_api, build_results):
+      if check_finished(build_id, project, cloudbuild_api, cloud_project,
+                        build_results):
         del wait_builds[project]
     print(wait_builds)
 
@@ -225,7 +228,7 @@ def do_test_builds(args):
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     build_ids = _do_builds(args, config, credentials, build_type, projects)
-  return wait_on_builds(build_ids, credentials)
+  return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 
 def trial_build_main(args=None):

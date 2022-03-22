@@ -16,6 +16,7 @@
 """Utility module for Google Cloud Build scripts."""
 import base64
 import collections
+import logging
 import os
 import six.moves.urllib.parse as urlparse
 import sys
@@ -23,8 +24,9 @@ import time
 
 import requests
 
-import google.auth
+from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
+import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
 BUILD_TIMEOUT = 12 * 60 * 60
@@ -69,6 +71,8 @@ ENGINE_INFO = {
                    supported_sanitizers=['address'],
                    supported_architectures=['x86_64']),
 }
+
+DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
 
 
 def get_targets_list_filename(sanitizer):
@@ -300,12 +304,8 @@ def get_srcmap_step_id():
   return 'srcmap'
 
 
-def project_image_steps(name,
-                        image,
-                        language,
-                        branch=None,
-                        test_image_suffix=None):
-  """Returns GCB steps to build OSS-Fuzz project image."""
+def get_git_clone_step(
+    repo_url='https://github.com/google/oss-fuzz.git', branch=None):
   clone_step = {
       'args': [
           'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
@@ -316,21 +316,40 @@ def project_image_steps(name,
     # Do this to support testing other branches.
     clone_step['args'].extend(['--branch', branch])
 
+  return clone_step
+
+
+def get_docker_build_step(image_names, directory):
+  assert len(image_names) >= 1
+  directory = os.path.join('oss-fuzz', directory)
+  args = ['build']
+  for image_name in image_names:
+    args.extend(['--tag', image_name])
+  args.append('.')
+  return {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': args,
+      'dir': directory
+  }
+
+
+def project_image_steps(name,
+                        image,
+                        language,
+                        branch=None,
+                        test_image_suffix=None):
+  """Returns GCB steps to build OSS-Fuzz project image."""
+  clone_step = get_clone_step(branch=branch) # !!! url
   steps = [clone_step]
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
 
+  docker_build_step = get_docker_build_step([image],
+                                            os.path.join('projects', name) )
   srcmap_step_id = get_srcmap_step_id()
-  steps += [{
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': [
-          'build',
-          '-t',
-          image,
-          '.',
-      ],
-      'dir': 'oss-fuzz/projects/' + name,
-  }, {
+  steps += [
+      docker_build_step,
+      {
       'name': image,
       'args': [
           'bash', '-c',
@@ -344,3 +363,47 @@ def project_image_steps(name,
   }]
 
   return steps
+
+def get_logs_url(build_id, project_id='oss-fuzz-base'):
+  """Returns url that displays the build logs."""
+  return ('https://console.developers.google.com/logs/viewer?'
+          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
+
+
+def get_gcb_url(build_id, cloud_project='oss-fuzz'):
+  """Returns url where logs are displayed for the build."""
+  return (f'https://console.cloud.google.com/cloud-build/builds/{build_id}'
+          f'?project={cloud_project}')
+
+
+def run_build(name, steps, credentials, cloud_project, timeout, body_overrides=None, tags=None):
+  if 'GCB_OPTIONS' in os.environ:
+    options = yaml.safe_load(os.environ['GCB_OPTIONS'])
+  else:
+    options = DEFAULT_GCB_OPTIONS
+
+  build_body = {
+      'steps': steps,
+      'timeout': str(timeout) + 's',
+      'options': options,
+  }
+  if tags:
+    build_body['tags'] = tags
+
+  if body_overrides is None:
+    body_overrides = {}
+  for key, value in body_overrides.items():
+    build_body[key] = value
+
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False)
+  build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
+                                                     body=build_body).execute()
+  build_id = build_info['metadata']['build']['id']
+
+  logging.info('Build ID: %s', build_id)
+  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
+  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  return build_id
