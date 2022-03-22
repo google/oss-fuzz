@@ -237,7 +237,8 @@ def do_test_builds(args):
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,
-                                  parallel=False)
+                                  parallel=False,
+                                  upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     build_ids = _do_builds(args, config, credentials, build_type, projects)

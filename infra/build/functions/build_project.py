@@ -55,7 +55,7 @@ PROJECTS_DIR = os.path.abspath(
                  os.path.pardir, 'projects'))
 
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel'])
+    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -345,9 +345,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                 ],
             }
         ])
-        upload_steps = get_upload_steps(project, build, timestamp,
-                                        base_images_project, config.testing)
-        build_steps.extend(upload_steps)
+        if config.upload:
+          upload_steps = get_upload_steps(project, build, timestamp,
+                                          base_images_project, config.testing)
+          build_steps.extend(upload_steps)
 
   return build_steps
 
@@ -544,7 +545,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
   config = Config(args.testing, args.test_image_suffix, args.branch,
-                  args.parallel)
+                  args.parallel, True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
