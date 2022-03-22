@@ -276,7 +276,7 @@ def get_pull_test_images_steps(test_image_suffix):
   for image in images:
     test_image = image + '-' + test_image_suffix
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': 'docker:19.03.12',
         'args': [
             'pull',
             test_image,
@@ -294,7 +294,7 @@ def get_pull_test_images_steps(test_image_suffix):
     # the test image with the non-test version, so that the test version is used
     # instead of pulling the real one.
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': 'docker:19.03.12',
         'args': ['tag', test_image, image],
     })
   return steps
@@ -335,7 +335,7 @@ def get_docker_build_step(image_names, directory, buildkit_cache_from=None):
     args.extend(cache_args)
   args.append('.')
   return {
-      'name': 'gcr.io/cloud-builders/docker',
+      'name': 'docker:19.03.12',
       'args': args,
       'dir': directory
   }
