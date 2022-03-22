@@ -180,6 +180,7 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   complete."""
   build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                            build_id)
+  print('build_status', build_status)
   if build_status not in FINISHED_BUILD_STATUSES:
     return False
   build_results[project] = build_status == 'SUCCESS'
@@ -232,6 +233,7 @@ def do_test_builds(args):
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     build_ids = _do_builds(args, config, credentials, build_type, projects)
+  print('build_ids', build_ids)
   return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 
