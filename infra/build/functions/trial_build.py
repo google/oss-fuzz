@@ -20,6 +20,7 @@ import collections
 import json
 import logging
 import sys
+import time
 import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
@@ -200,6 +201,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
       if check_finished(build_id, project, cloudbuild_api, cloud_project,
                         build_results):
         del wait_builds[project]
+      time.sleep(1)  # Avoid rate limiting.
     print(wait_builds)
 
   print('Printing results')
