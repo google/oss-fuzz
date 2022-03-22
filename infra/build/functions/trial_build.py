@@ -151,11 +151,14 @@ def _do_builds(args, config, credentials, build_type, projects):
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
+      print('nothing to build')
       continue
 
+    print('get steps')
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, IMAGE_PROJECT,
                                             BASE_IMAGES_PROJECT, config)
+    print('steps', steps)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
