@@ -340,7 +340,9 @@ def project_image_steps(name,
                         branch=None,
                         test_image_suffix=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
-  clone_step = get_git_clone_step(branch=branch)  # !!! url
+  # TODO(metzman): Pass the URL to clone.
+  clone_step = get_git_clone_step(branch=branch)
+
   steps = [clone_step]
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
@@ -380,7 +382,7 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
 
 def run_build(  # pylint: disable=too-many-arguments
     steps,
-    credentials,  # !!! Arg order!
+    credentials,
     cloud_project,
     timeout,
     body_overrides=None,
