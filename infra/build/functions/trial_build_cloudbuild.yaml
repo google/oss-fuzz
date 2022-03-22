@@ -10,7 +10,7 @@ steps:
 - name: 'gcr.io/oss-fuzz-base/trial-build'
   args: []
   env:
-    - 'PULL_REQUEST_NUMBER=$_PR_NUMBER'
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
   timeout: 21600s # 6 hours
 options:
   logging: CLOUD_LOGGING_ONLY
