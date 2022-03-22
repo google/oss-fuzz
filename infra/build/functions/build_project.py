@@ -489,8 +489,8 @@ def run_build(oss_fuzz_project,
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
   in GCB so the build can be queried for debugging purposes."""
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
-  # TODO(navidem): this is temporary until I fix shorter failing projects.
   timeout = build_lib.BUILD_TIMEOUT
+  # TODO(navidem): This is temporary until I fix shorter failing projects.
   if build_type == 'introspector':
     timeout /= 4
   body_overrides = {

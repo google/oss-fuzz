@@ -38,7 +38,7 @@ BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
-TIMEOUT = str(6 * 3600)
+TIMEOUT = str(6 * 60 * 60)
 
 
 def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
