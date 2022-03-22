@@ -319,7 +319,7 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def get_docker_build_step(image_names, directory, buildkit_cache_from=None):
+def get_docker_build_step(image_names, directory):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join('oss-fuzz', directory)
@@ -327,19 +327,11 @@ def get_docker_build_step(image_names, directory, buildkit_cache_from=None):
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
-  if buildkit_cache_from is not None:
-    cache_args = [
-        '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
-        buildkit_cache_from
-    ]
-
-    args.extend(cache_args)
   args.append('.')
   return {
       'name': 'gcr.io/cloud-builders/docker',
       'args': args,
       'dir': directory,
-      'env': ['DOCKER_BUILDKIT=1']
   }
 
 

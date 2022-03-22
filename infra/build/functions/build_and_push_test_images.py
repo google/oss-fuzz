@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# Copyright 2022 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,8 +74,7 @@ def gcb_build_and_push_images(test_image_suffix):
     test_images.append(test_image_name)
     directory = os.path.join('infra/base-images', base_image)
     step = build_lib.get_docker_build_step([image_name, test_image_name],
-                                           directory,
-                                           buildkit_cache_from=image_name)
+                                           directory)
     steps.append(step)
 
   overrides = {'images': test_images}
