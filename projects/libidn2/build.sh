@@ -19,7 +19,7 @@
 # switch off leak detection for ./configure run to detect iconv() correctly
 ASAN_OPTIONS=detect_leaks=0 ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings
 make clean
-make -j$(nproc) check
+make -j$(nproc) check VERBOSE=t
 
 cd fuzz
 make oss-fuzz
