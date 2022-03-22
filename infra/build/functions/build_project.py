@@ -544,8 +544,11 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing, args.test_image_suffix, args.branch,
-                  args.parallel, upload=True)
+  config = Config(args.testing,
+                  args.test_image_suffix,
+                  args.branch,
+                  args.parallel,
+                  upload=True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:

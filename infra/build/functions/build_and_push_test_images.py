@@ -74,7 +74,8 @@ def gcb_build_and_push_images(test_image_suffix):
     test_images.append(test_image_name)
     directory = os.path.join('infra/base-images', base_image)
     step = build_lib.get_docker_build_step([image_name, test_image_name],
-                                           directory)
+                                           directory,
+                                           buildkit_cache_from=image_name)
     steps.append(step)
 
   overrides = {'images': test_images}
