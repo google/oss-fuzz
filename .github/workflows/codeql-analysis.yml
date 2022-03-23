@@ -14,11 +14,11 @@ name: "CodeQL"
 on:
   push:
     branches: [ master ]
-    paths: [infra/**]
+    paths: [infra/**, .github/**]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
-    paths: [infra/**]
+    paths: [infra/**, .github/**]
 
 jobs:
   analyze:
