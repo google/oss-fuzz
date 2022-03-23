@@ -9,8 +9,7 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  - memory:
-     experimental: True
+  - memory
 architectures:
  - x86_64
  - i386
