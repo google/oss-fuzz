@@ -1,5 +1,8 @@
 name: Project tests
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
@@ -8,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     strategy:
       fail-fast: false
       matrix:
