@@ -76,17 +76,17 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
           'https://github.com/google/oss-fuzz.git',
       ],
       'name': 'gcr.io/cloud-builders/git',
-  }]
-
-  steps.extend([{
+  }, {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['pull', 'gcr.io/oss-fuzz-base/base-clang:introspector'],
+  }, {
       'name':
-          'gcr.io/oss-fuzz-base/base-runner',
+          'gcr.io/cloud-builders/docker',
       'args': [
-          'bash', '-c',
-          (f'sed -i s/base-clang.*/base-clang:{INTROSPECTOR_TAG}/g'
-           ' oss-fuzz/infra/base-images/base-builder/Dockerfile')
-      ]
-  }])
+          'tag', 'gcr.io/oss-fuzz-base/base-clang:introspector',
+          'gcr.io/oss-fuzz-base/base-clang:latest'
+      ],
+  }]
 
   for base_image in images:
     image = tag_prefix + base_image
