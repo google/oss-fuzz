@@ -9,7 +9,8 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - memory
+  - memory:
+     experimental: True
   - undefined
 architectures:
   - x86_64
