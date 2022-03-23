@@ -134,6 +134,7 @@ def should_build(project_yaml):
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
     return os.getenv(env_var) in project_yaml.get(yaml_name, defaults)
 
+  import pdb; pdb.set_trace()
   return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
           is_enabled('ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
@@ -254,6 +255,7 @@ def main():
     if build_base_images():
       return 1
 
+  import pdb; pdb.set_trace()
   result = build_modified_projects()
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
     return 1
