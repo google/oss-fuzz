@@ -274,7 +274,6 @@ def main():
   #   if build_base_images():
   #     return 1
 
-  import pdb; pdb.set_trace()
   result = build_modified_projects()
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
     return 1
