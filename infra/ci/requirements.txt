@@ -3,7 +3,7 @@ parameterized==0.7.4
 pyfakefs==4.5.6
 pylint==2.5.3
 pytest==6.2.1
-pytest-xdist==2.2.0
+pytest-xdist==2.5.0
 PyYAML==5.4
 yapf==0.30.0
 # Needed for cifuzz tests.
