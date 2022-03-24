@@ -22,7 +22,7 @@ grpcio==1.29.0
 google-auth==1.21.1
 google-cloud-datastore<2.0
 google-cloud-ndb==1.7.1
-google-cloud-scheduler==1.3.0
+google-cloud-scheduler==2.6.2
 google-cloud-storage==1.29.0
 google-api-core==1.22.2
 google-api-python-client==1.9.3
