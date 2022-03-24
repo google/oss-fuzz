@@ -7,4 +7,4 @@ pytest-xdist==2.2.0
 PyYAML==5.4
 yapf==0.30.0
 # Needed for cifuzz tests.
-Jinja2==2.11.3
+Jinja2==3.0.3
