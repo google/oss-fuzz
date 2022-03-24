@@ -122,25 +122,14 @@ def should_build_coverage(project_yaml):
   return True
 
 
-def in_list(needle, haystack):
-  """Returns True if |needle| is in |haystack| where |needle| is a
-  sanitizer/engine/architecture and |haystack| is the list specified in the
-  project.yaml.
-  This is needed because sanitizers marked experimental will be dicts and thus
-  fail a simple test: `sanitizer in list`.
-  """
-  for item in haystack:
-    if isinstance(item, str):
-      if needle == item:
-        return True
+def flatten_options(option_list):
+  for option in option_list:
+    if isinstance(option, dict):
+      keys = list(option.keys())
+      assert len(keys) == 1
+      yield keys[0]
       continue
-    if isinstance(item, dict):
-      if [needle] == list(item.keys()):
-        return True
-      continue
-    raise ValueError(f'{item} is {type(item)} not a str or dict')
-  return False
-
+    yield option
 
 def should_build(project_yaml):
   """Returns True on if the build specified is enabled in the project.yaml."""
@@ -152,7 +141,8 @@ def should_build(project_yaml):
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
-    return in_list(os.getenv(env_var), project_yaml.get(yaml_name, defaults))
+    return os.getenv(env_var) in flatten_options(
+        project_yaml.get(yaml_name, defaults))
 
   return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
