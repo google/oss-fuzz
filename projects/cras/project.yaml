@@ -13,5 +13,6 @@ auto_ccs:
   - "aaronyu@chromium.org"
   - "hunghsienchen@chromium.org"
   - "htcheong@chromium.org"
+  - "jrwu@chromium.org"
 builds_per_day: 2
 main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'
