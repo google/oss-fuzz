@@ -4,7 +4,7 @@ pyfakefs==4.5.6
 pylint==2.5.3
 pytest==6.2.1
 pytest-xdist==2.5.0
-PyYAML==5.4
+PyYAML==6.0
 yapf==0.32.0
 # Needed for cifuzz tests.
 Jinja2==3.0.3
