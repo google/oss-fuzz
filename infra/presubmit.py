@@ -100,6 +100,7 @@ class ProjectYamlChecker:
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
+      'file_github_issue',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
