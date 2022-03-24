@@ -123,6 +123,9 @@ def should_build_coverage(project_yaml):
 
 
 def flatten_options(option_list):
+  """Generator that flattens |option_list| (a list of sanitizers, architectures
+  or fuzzing engines) by yielding each element in the list that isn't a
+  dictionary. For elements that are dictionaries, the sole key is yielded."""
   for option in option_list:
     if isinstance(option, dict):
       keys = list(option.keys())
@@ -130,6 +133,7 @@ def flatten_options(option_list):
       yield keys[0]
       continue
     yield option
+
 
 def should_build(project_yaml):
   """Returns True on if the build specified is enabled in the project.yaml."""
@@ -259,10 +263,10 @@ def main():
   """Build modified projects or canary project."""
   os.environ['OSS_FUZZ_CI'] = '1'
   infra_changed = is_infra_changed()
-  if infra_changed:
-    print('Pulling and building base images first.')
-    if build_base_images():
-      return 1
+  # if infra_changed:
+  #   print('Pulling and building base images first.')
+  #   if build_base_images():
+  #     return 1
 
   result = build_modified_projects()
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
