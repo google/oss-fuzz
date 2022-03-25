@@ -6,6 +6,7 @@ auto_ccs:
     - "marissa.nishimoto@yubico.com"
     - "pedro.ossfuzz@gmail.com"
     - "ludvig.michaelsson@yubico.com"
+    - "alex.geana@yubico.com"
 sanitizers:
     - address
     - undefined

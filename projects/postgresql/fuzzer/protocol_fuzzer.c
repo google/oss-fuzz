@@ -74,7 +74,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	MemoryContextInit();
 	if(!sigsetjmp(postgre_exit, 0)){
 		postgre_started = true;
-		PostgresMain(5, av, "dbfuzz", "fuzzuser");
+		PostgresSingleUserMain(5, av, "fuzzuser");
 	}
 	pq_endmsgread();
 	return 0;
@@ -106,7 +106,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 	if(!sigsetjmp(postgre_exit, 0)){
 		postgre_started = true;
-		PostgresMain(5, av, "dbfuzz", "fuzzuser");
+		PostgresSingleUserMain(5, av, "fuzzuser");
 	}
 	pq_endmsgread();
 	postgre_started = false;

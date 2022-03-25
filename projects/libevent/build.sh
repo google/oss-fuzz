@@ -16,17 +16,17 @@
 ################################################################################
 
 # build project
-sh autogen.sh
-./configure --disable-openssl
-make -j$(nproc) clean
-make -j$(nproc) all
+mkdir build
+cd build
+cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../
+make
 make install
 
 # build fuzzer
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzers)
   $CXX $CXXFLAGS -std=c++11 -Iinclude \
-      $fuzzers $LIB_FUZZING_ENGINE ./.libs/libevent.a ./.libs/libevent_core.a  \
-      ./.libs/libevent_pthreads.a ./.libs/libevent_extra.a \
+      $fuzzers $LIB_FUZZING_ENGINE ./lib/libevent.a ./lib/libevent_core.a  \
+      ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/$fuzz_basename
 done

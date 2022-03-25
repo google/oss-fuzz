@@ -17,14 +17,13 @@ import sys
 
 import config_utils
 import docker
+import logs
 import run_fuzzers
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def delete_unneeded_docker_images(config):
@@ -33,11 +32,15 @@ def delete_unneeded_docker_images(config):
   if not config.low_disk_space:
     return
   logging.info('Deleting builder docker images to save disk space.')
-  project_image = docker.get_project_image_name(config.project_name)
+  project_image = docker.get_project_image_name(config.oss_fuzz_project_name)
   images = [
       project_image,
-      docker.BASE_RUNNER_TAG,
-      docker.MSAN_LIBS_BUILDER_TAG,
+      docker.BASE_BUILDER_TAG,
+      docker.BASE_BUILDER_TAG + '-go',
+      docker.BASE_BUILDER_TAG + '-jvm',
+      docker.BASE_BUILDER_TAG + '-python',
+      docker.BASE_BUILDER_TAG + '-rust',
+      docker.BASE_BUILDER_TAG + '-swift',
   ]
   docker.delete_images(images)
 
@@ -52,10 +55,6 @@ def run_fuzzers_entrypoint():
   if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
 
   delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.
@@ -76,7 +75,7 @@ def main():
   """Runs project's fuzzers for CI tools.
   This is the entrypoint for the run_fuzzers github action.
 
-  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
+  NOTE: libFuzzer binaries must be located in the $WORKSPACE/build-out
   directory in order for this action to be used. This action will only fuzz the
   binaries that are located in that directory. It is recommended that you add
   the build_fuzzers action preceding this one.
@@ -85,13 +84,6 @@ def main():
   ${GITHUB_WORKSPACE}/out/testcase
   This can be used in parallel with the upload-artifact action to surface the
   logs.
-
-  Required environment variables:
-    FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
-    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
-    DRY_RUN: If true, no failures will surface.
-    OSS_FUZZ_PROJECT_NAME: The name of the relevant OSS-Fuzz project.
-    SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
     0 on success or nonzero on failure.

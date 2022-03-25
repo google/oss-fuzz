@@ -15,23 +15,27 @@
 #
 ################################################################################
 
-(
-cd $SRC/llvm-project
-git apply ../llvmsymbol.diff
-cmake -G "Ninja" -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF llvm
-ninja -j$(nproc) llvm-symbolizer
-cp bin/llvm-symbolizer $OUT/
-)
 
-# build project
+. precompile_swift
 cd FuzzTesting
-swift build -c debug -Xswiftc -sanitize=address,fuzzer -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib --sanitize=address
+
+# debug build
+swift build -c debug $SWIFTFLAGS
 (
 cd .build/debug/
 find . -maxdepth 1 -type f -name "Fuzz*" -executable | while read i; do cp $i $OUT/"$i"_debug; done
 )
-swift build -c release -Xswiftc -sanitize=address,fuzzer -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib --sanitize=address
+
+# release build
+swift build -c release $SWIFTFLAGS
 (
 cd .build/release/
 find . -maxdepth 1 -type f -name "Fuzz*" -executable | while read i; do cp $i $OUT/"$i"_release; done
 )
+
+# Copy any dictionaries over.
+for fuzz_dict in Fuzz*.dict ; do
+  fuzzer_name=$(basename $fuzz_dict .dict)
+  cp $fuzz_dict $OUT/${fuzzer_name}_debug.dict
+  cp $fuzz_dict $OUT/${fuzzer_name}_release.dict
+done

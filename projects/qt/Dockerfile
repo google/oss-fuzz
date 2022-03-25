@@ -15,14 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y ninja-build libc6-dev:i386
+RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
 RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplusplus && \
     cp -r myaflplusplus/dictionaries afldictionaries && \
     cp -r myaflplusplus/testcases afltestcases && \
     rm -rf myaflplusplus
-RUN git clone --branch dev --depth 1 --shallow-submodules \
-        --recurse-submodules=qtbase \
-        --recurse-submodules=qtsvg \
-        git://code.qt.io/qt/qt5.git qt
+RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
+    cp -r qt5/cmake . && \
+    rm -rf qt5
+RUN git clone --branch dev --depth 5000 git://code.qt.io/qt/qtbase.git
+RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
+RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/

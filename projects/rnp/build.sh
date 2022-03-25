@@ -62,4 +62,4 @@ done
 mkdir -p "${OUT}/lib"
 cp src/lib/librnp.so.0 "${OUT}/lib/"
 cp /usr/lib/libbotan-2.so.16 "${OUT}/lib/"
-cp /lib/x86_64-linux-gnu/libjson-c.so.2 "${OUT}/lib/"
+cp /lib/x86_64-linux-gnu/libjson-c.so.* "${OUT}/lib/"

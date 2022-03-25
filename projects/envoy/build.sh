@@ -22,11 +22,18 @@ declare -r FUZZ_TARGET_QUERY='
 declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
 
 declare -r EXTRA_BAZEL_FLAGS="$(
+if [ -n "$CC" ]; then
+  echo "--action_env=CC=${CC}"
+fi
+if [ -n "$CXX" ]; then
+  echo "--action_env=CXX=${CXX}"
+fi
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
-  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
   echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
@@ -63,17 +70,15 @@ declare -r DI="$(
 if [ "$SANITIZER" != "coverage" ]
 then
 # Envoy code. Disable coverage instrumentation
-  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0" 
+  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*source/common/protobuf/.*\.cc\$@-fsanitize-coverage=0"
 
 # Envoy test code. Disable coverage instrumentation
   echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
 
 # External dependencies. Disable all instrumentation.
-  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -86,6 +91,11 @@ then
   echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
 
+# External dependency which needs to be compiled with sanitizers. Disable
+# coverage instrumentation.
+  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
+
 # All protobuf code and code in bazel-out
   echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -93,11 +103,13 @@ fi
 )"
 
 
-# Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
+# Asssuming we have ~32 cores and ~28.8 GiB RAM. By limiting the
+# number of CPUs (--local_cpu_resources) we limit the per-CPU mem-usage.
+# Benchmark about 3.6 GB per CPU (8 threads for 28.8 GB RAM)
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off ${DI} \
   --spawn_strategy=standalone --genrule_strategy=standalone \
-  --local_cpu_resources=HOST_CPUS*0.32 \
+  --local_cpu_resources=HOST_CPUS*0.256 \
   --//source/extensions/wasm_runtime/v8:enabled=false \
   --build_tag_filters=-no_asan --config=oss-fuzz \
   ${EXTRA_BAZEL_FLAGS} \

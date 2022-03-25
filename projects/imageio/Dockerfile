@@ -14,7 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt update && apt-get install -y zlib1g-dev libjpeg8-dev
+RUN pip3 install cython numpy
+
 RUN git clone https://github.com/imageio/imageio
 
 COPY build.sh $SRC/

@@ -19,17 +19,15 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: false
-  run-fuzzers-mode:
+  mode:
     description: |
-      The mode to run the fuzzers with ("ci" or "batch").
-      "ci" is for fuzzing a pull request or commit.
+      The mode to run the fuzzers with ("code-change", "batch", "coverage", or "prune").
+      "code-change" is for fuzzing a pull request or commit.
       "batch" is for non-interactive fuzzing of an entire project.
-      "batch" is in alpha and should not be used in production.
+      "coverage" is for coverage generation.
+      "prune" is for corpus pruning.
     required: false
-    default: 'ci'
+    default: 'code-change'
   github-token:
     description: |
       Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
@@ -38,6 +36,14 @@ inputs:
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
     required: false
+  report-unreproducible-crashes:
+    description: 'If True, then unreproducible crashes will be reported.'
+    required: false
+    default: False
+  minimize-crashes:
+    description: 'If True, reportable crashes will be minimized.'
+    required: false
+    default: False
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -47,10 +53,10 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
-    RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
-    # TODO(metzman): Even though this param is used for building, it's needed
-    # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
-    # We should do something explicit instead.
-    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
+    REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
+    MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
+    CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'

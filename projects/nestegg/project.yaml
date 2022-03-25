@@ -5,12 +5,10 @@ fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 vendor_ccs:
   - "twsmith@mozilla.com"
 main_repo: 'https://github.com/kinetiknz/nestegg.git'

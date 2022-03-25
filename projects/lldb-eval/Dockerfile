@@ -17,10 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update \
-    && apt-get install -y wget git patchelf zlib1g-dev libtinfo-dev --no-install-recommends
+    && apt-get install -y wget git patchelf zlib1g-dev python libtinfo-dev --no-install-recommends
 
 RUN git clone --depth 1 https://github.com/google/lldb-eval
 
 COPY build.sh $SRC/
+COPY lldb_vs_lldb_eval_libfuzzer_test.options $SRC/
 
 WORKDIR $SRC/lldb-eval

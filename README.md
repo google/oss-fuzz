@@ -15,6 +15,8 @@ community.
 In cooperation with the [Core Infrastructure Initiative] and the [OpenSSF],
 OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques with scalable, distributed execution.
+Projects that do not qualify for OSS-Fuzz (e.g. closed source) can run their own
+instances of [ClusterFuzz] or [ClusterFuzzLite].
 
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
@@ -28,6 +30,7 @@ execution environment and reporting tool.
 [Honggfuzz]: https://github.com/google/honggfuzz
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
+[ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
 
 Currently, OSS-Fuzz supports C/C++, Rust, Go, Python and Java/JVM code. Other languages
 supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386
@@ -44,11 +47,11 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of June 2021, OSS-Fuzz has found over [30,000] bugs in [500] open source
+As of January 2022, OSS-Fuzz has found over [36,000] bugs in [550] open source
 projects.
 
-[30,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[500]: https://github.com/google/oss-fuzz/tree/master/projects
+[36,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[550]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
 * 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]

@@ -17,6 +17,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import stat
 import subprocess
 import sys
@@ -25,7 +26,8 @@ import helper
 
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
 FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
-VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+VALID_TARGET_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
+BLOCKLISTED_TARGET_NAME_REGEX = re.compile(r'^(jazzer_driver.*)$')
 
 # Location of google cloud storage for latest OSS-Fuzz builds.
 GCS_BASE_URL = 'https://storage.googleapis.com/'
@@ -38,16 +40,29 @@ def chdir_to_root():
     os.chdir(helper.OSS_FUZZ_DIR)
 
 
-def execute(command, location=None, check_result=False):
-  """ Runs a shell command in the specified directory location.
+def command_to_string(command):
+  """Returns the stringfied version of |command| a list representing a binary to
+  run and arguments to pass to it or a string representing a binary to run."""
+  if isinstance(command, str):
+    return command
+  return shlex.join(command)
+
+
+def execute(command,
+            env=None,
+            location=None,
+            check_result=False,
+            log_command=True):
+  """Runs a shell command in the specified directory location.
 
   Args:
     command: The command as a list to be run.
-    location: The directory the command is run in.
-    check_result: Should an exception be thrown on failed command.
+    env: (optional) an environment to pass to Popen to run the command in.
+    location (optional): The directory to run command in.
+    check_result (optional): Should an exception be thrown on failure.
 
   Returns:
-    stdout, stderr, error code.
+    stdout, stderr, returncode.
 
   Raises:
     RuntimeError: running a command resulted in an error.
@@ -58,25 +73,32 @@ def execute(command, location=None, check_result=False):
   process = subprocess.Popen(command,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             cwd=location)
+                             cwd=location,
+                             env=env)
   out, err = process.communicate()
   out = out.decode('utf-8', errors='ignore')
   err = err.decode('utf-8', errors='ignore')
+
+  if log_command:
+    command_str = command_to_string(command)
+    display_err = err
+  else:
+    command_str = 'redacted'
+    display_err = 'redacted'
+
   if err:
-    logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
+    logging.debug('Stderr of command "%s" is: %s.', command_str, display_err)
   if check_result and process.returncode:
-    raise RuntimeError(
-        'Executing command \'{0}\' failed with error: {1}.'.format(
-            ' '.join(command), err))
+    raise RuntimeError('Executing command "{0}" failed with error: {1}.'.format(
+        command_str, display_err))
   return out, err, process.returncode
 
 
-def get_fuzz_targets(path, top_level_only=False):
-  """Get list of fuzz targets in a directory.
+def get_fuzz_targets(path):
+  """Gets fuzz targets in a directory.
 
   Args:
     path: A path to search for fuzz targets in.
-    top_level_only: If True, only search |path|, do not recurse into subdirs.
 
   Returns:
     A list of paths to fuzzers or an empty list if None.
@@ -85,9 +107,6 @@ def get_fuzz_targets(path, top_level_only=False):
     return []
   fuzz_target_paths = []
   for root, _, fuzzers in os.walk(path):
-    if top_level_only and path != root:
-      continue
-
     for fuzzer in fuzzers:
       file_path = os.path.join(root, fuzzer)
       if is_fuzz_target_local(file_path):
@@ -111,21 +130,32 @@ def get_container_name():
     return file_handle.read().strip()
 
 
+def is_executable(file_path):
+  """Returns True if |file_path| is an exectuable."""
+  return os.path.exists(file_path) and os.access(file_path, os.X_OK)
+
+
 def is_fuzz_target_local(file_path):
   """Returns whether |file_path| is a fuzz target binary (local path).
   Copied from clusterfuzz src/python/bot/fuzzers/utils.py
   with slight modifications.
   """
+  # pylint: disable=too-many-return-statements
   filename, file_extension = os.path.splitext(os.path.basename(file_path))
-  if not VALID_TARGET_NAME.match(filename):
+  if not VALID_TARGET_NAME_REGEX.match(filename):
     # Check fuzz target has a valid name (without any special chars).
+    return False
+
+  if BLOCKLISTED_TARGET_NAME_REGEX.match(filename):
+    # Check fuzz target an explicitly disallowed name (e.g. binaries used for
+    # jazzer-based targets).
     return False
 
   if file_extension not in ALLOWED_FUZZ_TARGET_EXTENSIONS:
     # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
     return False
 
-  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
+  if not is_executable(file_path):
     return False
 
   if filename.endswith('_fuzzer'):
@@ -139,7 +169,7 @@ def is_fuzz_target_local(file_path):
 
 
 def binary_print(string):
-  """Print that can print a binary string."""
+  """Prints string. Can print a binary string."""
   if isinstance(string, bytes):
     string += b'\n'
   else:

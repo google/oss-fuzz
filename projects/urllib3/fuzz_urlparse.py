@@ -33,5 +33,6 @@ def main():
     atheris.Fuzz()
 
 if __name__ == "__main__":
+    atheris.instrument_all()
     main()
 

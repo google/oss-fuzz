@@ -4,6 +4,9 @@ language: c
 primary_contact: "james.r.harris@intel.com"
 auto_ccs:
   - "Adam@adalogics.com"
+  - "tomasz.zawadzki@intel.com"
+  - "konrad.sztyber@intel.com"
+  - "MichalX.Berger@intel.com"
 sanitizers:
   - address
   - undefined

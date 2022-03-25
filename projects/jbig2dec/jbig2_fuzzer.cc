@@ -27,7 +27,7 @@
 #define KBYTE ((size_t) 1024)
 #define MBYTE (1024 * KBYTE)
 #define GBYTE (1024 * MBYTE)
-#define MAX_ALLOCATION (1 * GBYTE)
+#define MAX_ALLOCATION (32 * MBYTE)
 
 static size_t used;
 

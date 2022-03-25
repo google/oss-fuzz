@@ -4,10 +4,9 @@ primary_contact: "xeioexception@gmail.com"
 auto_ccs:
  - "lex.borisov@gmail.com"
  - "devrep@nginx.com"
- - "mmoroz@google.com"
 sanitizers:
   - address
   - memory
   - undefined
-coverage_extra_args: -ignore-filename-regex=.*/pcre/.*
+coverage_extra_args: -ignore-filename-regex=.*/pcre2/.*
 main_repo: 'https://github.com/nginx/njs.git'

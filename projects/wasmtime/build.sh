@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Commands migrated from Dockerfile to make CIFuzz work
+# REF: https://github.com/google/oss-fuzz/issues/6755
+git submodule update --init --recursive
+git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
+
+
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {
@@ -33,7 +39,7 @@ build() {
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
-  cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
+  cd $PROJECT_DIR/fuzz && cargo fuzz build --strip-dead-code -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 
@@ -52,12 +58,24 @@ build() {
               $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
       fi
 
-      cp $SRC/default.options $OUT/$dst_name.options
+      if [[ -f $SRC/$dst_name.options ]]; then
+        cp $SRC/$dst_name.options $OUT/$dst_name.options
+      else
+        cp $SRC/default.options $OUT/$dst_name.options
+      fi
   done
 }
 
-# Build with peepmatic in order to enable the related fuzz targets.
-build wasmtime "" "" --features "peepmatic-fuzzing experimental_x64"
+# Ensure OCaml environment is set up prior to Wasmtime build.
+eval $(opam env)
 
+build wasmtime "" ""
 build wasm-tools wasm-tools- ""
 build regalloc.rs regalloc- bt bt
+
+# In coverage builds copy the opam header files into the output so coverage can
+# find the source files.
+if [ "$SANITIZER" = "coverage" ]; then
+  cp --recursive --dereference --no-preserve mode,ownership --parents \
+    $HOME/.opam/4.11.2/lib/ocaml $OUT
+fi

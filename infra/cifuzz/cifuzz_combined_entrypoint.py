@@ -22,23 +22,10 @@ import run_fuzzers_entrypoint
 def main():
   """Builds and runs fuzzers for CI tools.
 
-  NOTE: Any crash report will be in the filepath:
-  ${GITHUB_WORKSPACE}/out/testcase
- This can be used with GitHub's upload-artifact action to surface the logs.
+  NOTE: Any crash report will be in the filepath: $WORKSPACE/out/testcase
+  This can be used with GitHub's upload-artifact action to surface the logs.
 
   Required environment variables:
-    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
-    GITHUB_REPOSITORY: The name of the Github repo that called this script.
-    GITHUB_SHA: The commit SHA that triggered this script.
-    GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
-    GITHUB_EVENT_PATH:
-      The path to the file containing the POST payload of the webhook:
-      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
-    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
-    DRY_RUN: If true, no failures will surface.
-    SANITIZER: The sanitizer to use when running fuzzers.
-    FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
-
   Returns:
     0 on success or 1 on failure.
   """

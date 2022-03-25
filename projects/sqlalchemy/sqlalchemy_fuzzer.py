@@ -17,11 +17,13 @@
 import sys
 import atheris
 
-import sqlalchemy
-from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, Integer, String, MetaData
-from sqlalchemy.sql import text
+with atheris.instrument_imports():
+  import sqlalchemy
+  from sqlalchemy import create_engine
+  from sqlalchemy import Table, Column, Integer, String, MetaData
+  from sqlalchemy.sql import text
 
+@atheris.instrument_func
 def TestOneInput(input_bytes):
     try:
         sql_string = input_bytes.decode("utf-8")

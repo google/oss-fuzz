@@ -35,11 +35,15 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 COVERAGE_SCHEDULE = '0 6 * * *'
+INTROSPECTOR_SCHEDULE = '0 10 * * *'
 FUZZING_BUILD_TOPIC = 'request-build'
 COVERAGE_BUILD_TOPIC = 'request-coverage-build'
+INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
 
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
+
+logging.basicConfig(level=logging.INFO)
 
 
 class ProjectYamlError(Exception):
@@ -61,7 +65,17 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
       'schedule': schedule
   }
 
-  cloud_scheduler_client.create_job(parent, job)
+  try:
+    existing_job = cloud_scheduler_client.get_job(job['name'])
+  except exceptions.NotFound:
+    existing_job = None
+
+  if existing_job:
+    if existing_job.schedule != schedule:
+      update_mask = {'paths': ['schedule']}
+      cloud_scheduler_client.update_job(job, update_mask)
+  else:
+    cloud_scheduler_client.create_job(parent, job)
 
 
 def delete_scheduler(cloud_scheduler_client, project_name, tag):
@@ -73,29 +87,12 @@ def delete_scheduler(cloud_scheduler_client, project_name, tag):
   cloud_scheduler_client.delete_job(name)
 
 
-def update_scheduler(cloud_scheduler_client, project, schedule, tag):
-  """Updates schedule in case schedule was changed."""
-  project_id = os.environ.get('GCP_PROJECT')
-  location_id = os.environ.get('FUNCTION_REGION')
-  parent = cloud_scheduler_client.location_path(project_id, location_id)
-  job = {
-      'name': parent + '/jobs/' + project.name + '-scheduler-' + tag,
-      'pubsub_target': {
-          'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': project.name.encode()
-      },
-      'schedule': schedule,
-  }
-
-  update_mask = {'paths': ['schedule']}
-  cloud_scheduler_client.update_job(job, update_mask)
-
-
 def delete_project(cloud_scheduler_client, project):
   """Delete the given project."""
   logging.info('Deleting project %s', project.name)
-  for tag in (build_project.FUZZING_BUILD_TAG,
-              build_and_run_coverage.COVERAGE_BUILD_TAG):
+  for tag in (build_project.FUZZING_BUILD_TYPE,
+              build_and_run_coverage.COVERAGE_BUILD_TYPE,
+              build_and_run_coverage.INTROSPECTOR_BUILD_TYPE):
     try:
       delete_scheduler(cloud_scheduler_client, project.name, tag)
     except exceptions.NotFound:
@@ -118,24 +115,30 @@ def sync_projects(cloud_scheduler_client, projects):
 
   existing_projects = {project.name for project in Project.query()}
   for project_name in projects:
-    if project_name in existing_projects:
-      continue
-
     try:
       create_scheduler(cloud_scheduler_client, project_name,
                        projects[project_name].schedule,
-                       build_project.FUZZING_BUILD_TAG, FUZZING_BUILD_TOPIC)
+                       build_project.FUZZING_BUILD_TYPE, FUZZING_BUILD_TOPIC)
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
-                       build_and_run_coverage.COVERAGE_BUILD_TAG,
+                       build_and_run_coverage.COVERAGE_BUILD_TYPE,
                        COVERAGE_BUILD_TOPIC)
-      project_metadata = projects[project_name]
-      Project(name=project_name,
-              schedule=project_metadata.schedule,
-              project_yaml_contents=project_metadata.project_yaml_contents,
-              dockerfile_contents=project_metadata.dockerfile_contents).put()
+      create_scheduler(cloud_scheduler_client, project_name,
+                       INTROSPECTOR_SCHEDULE,
+                       build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
+                       INTROSPECTOR_BUILD_TOPIC)
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
+      continue
+
+    if project_name in existing_projects:
+      continue
+
+    project_metadata = projects[project_name]
+    Project(name=project_name,
+            schedule=project_metadata.schedule,
+            project_yaml_contents=project_metadata.project_yaml_contents,
+            dockerfile_contents=project_metadata.dockerfile_contents).put()
 
   for project in Project.query():
     if project.name not in projects:
@@ -147,9 +150,6 @@ def sync_projects(cloud_scheduler_client, projects):
     if project.schedule != project_metadata.schedule:
       try:
         logging.info('Schedule changed.')
-        update_scheduler(cloud_scheduler_client, project,
-                         projects[project.name].schedule,
-                         build_project.FUZZING_BUILD_TAG)
         project.schedule = project_metadata.schedule
         project_changed = True
       except exceptions.GoogleAPICallError as error:
@@ -232,7 +232,7 @@ def get_github_creds():
 
 def sync(event, context):
   """Sync projects with cloud datastore."""
-  del event, context  #unused
+  del event, context  # Unused.
 
   with ndb.Client().context():
     git_creds = get_github_creds()

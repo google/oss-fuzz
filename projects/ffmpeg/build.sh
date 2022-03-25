@@ -29,6 +29,7 @@ export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 cd $SRC
 bzip2 -f -d alsa-lib-*
 tar xf alsa-lib-*
+rm alsa-lib-*.tar
 cd alsa-lib-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
 make clean
@@ -106,6 +107,14 @@ make clean
 make -j$(nproc)
 make install
 
+cd $SRC/libxml2
+./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static \
+    --without-debug --without-ftp --without-http \
+    --without-legacy --without-python
+make clean
+make -j$(nproc)
+make install
+
 # Remove shared libraries to avoid accidental linking against them.
 rm $FFMPEG_DEPS_PATH/lib/*.so
 rm $FFMPEG_DEPS_PATH/lib/*.so.*
@@ -129,6 +138,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-libtheora \
     --enable-libvorbis \
     --enable-libvpx \
+    --enable-libxml2 \
     --enable-nonfree \
     --disable-muxers \
     --disable-protocols \
@@ -154,7 +164,7 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
-CONDITIONALS=`grep 'BSF 1$' config.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
+CONDITIONALS=`grep 'BSF 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )
@@ -168,7 +178,7 @@ for c in $CONDITIONALS ; do
 done
 
 # Build fuzzers for decoders.
-CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
+CONDITIONALS=`grep 'DECODER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )
@@ -211,6 +221,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --libfuzzer=$LIB_FUZZING_ENGINE \
     --optflags=-O1 \
     --enable-gpl \
+    --enable-libxml2 \
     --disable-muxers \
     --disable-protocols \
     --disable-devices \
@@ -230,7 +241,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-demuxers \
     --disable-demuxer=rtp,rtsp,sdp \
 
-CONDITIONALS=`grep 'DEMUXER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/'`
+CONDITIONALS=`grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )

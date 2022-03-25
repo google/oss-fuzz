@@ -17,8 +17,8 @@
 
 # build dependencies statically
 (
-tar -xvzf pcre2-10.36.tar.gz
-cd pcre2-10.36
+tar -xvzf pcre2-10.39.tar.gz
+cd pcre2-10.39
 ./configure --disable-shared
 make -j$(nproc) clean
 make -j$(nproc) all
@@ -72,7 +72,8 @@ sh autogen.sh
 #run configure with right options
 if [ "$SANITIZER" = "address" ]
 then
-    export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth"
+    export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Ccodegen-units=1"
+    export RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions=yes"
 fi
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
@@ -86,12 +87,22 @@ cp src/fuzz_* $OUT/
 
 echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
 
+echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
+echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict
+
+git grep tag rust | grep '"' | cut -d '"' -f2 | sort | uniq | awk 'length($0) > 2' | awk '{print "\""$0"\""}' > generic.dict
+cat generic.dict >> $OUT/fuzz_siginit.dict
+cat generic.dict >> $OUT/fuzz_applayerparserparse.dict
+cat generic.dict >> $OUT/fuzz_sigpcap.dict
+cat generic.dict >> $OUT/fuzz_sigpcap_aware.dict
+
 # build corpuses
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file
 unzip ../emerging.rules.zip
 cd rules
+cat *.rules > $OUT/fuzz.rules
 i=0
 mkdir corpus
 # quiet output for commands
@@ -120,9 +131,17 @@ rm -Rf corpus
 mkdir corpus
 set +x
 ls | grep -v corpus | while read t; do
-cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+grep -v "#" $t/*.rules | head -1 | cut -d "(" -f2 | cut -d ")" -f1 > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
-echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
+rm -Rf corpus
+mkdir corpus
+set +x
+ls | grep -v corpus | while read t; do
+fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+done
+set -x
+zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus

@@ -61,6 +61,8 @@ fuzzing_engines:
 
 ### Dockerfile
 
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-rust`
+
 The OSS-Fuzz builder image has the latest nightly release of Rust as well as
 `cargo fuzz` pre-installed and in `PATH`. In the `Dockerfile` for your project
 all you'll need to do is fetch the latest copy of your code and install any

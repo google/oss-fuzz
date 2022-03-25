@@ -27,24 +27,31 @@ SANITIZER = 'coverage'
 class TestRunCoverageCommand(unittest.TestCase):
   """Tests run_coverage_command"""
 
-  @mock.patch('helper.docker_run')
-  def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
+  def setUp(self):
+    test_helpers.patch_environ(self, empty=True)
+
+  @mock.patch('utils.execute')
+  def test_run_coverage_command(self, mock_execute):  # pylint: disable=no-self-use
     """Tests that run_coverage_command works as intended."""
-    config = test_helpers.create_run_config(project_name=PROJECT,
+    config = test_helpers.create_run_config(oss_fuzz_project_name=PROJECT,
                                             sanitizer=SANITIZER)
     workspace = test_helpers.create_workspace()
-    expected_docker_args = [
-        '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
-        f'SANITIZER={SANITIZER}', '-e', 'FUZZING_LANGUAGE=c++', '-e',
-        'OUT=/workspace/build-out', '-v',
-        f'{workspace.workspace}:{workspace.workspace}', '-e',
-        'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
-        'gcr.io/oss-fuzz-base/base-runner', 'coverage'
-    ]
-
-    generate_coverage_report.run_coverage_command(workspace, config)
-    mocked_docker_run.assert_called_with(expected_docker_args)
+    generate_coverage_report.run_coverage_command(config, workspace)
+    expected_command = 'coverage'
+    expected_env = {
+        'SANITIZER': config.sanitizer,
+        'FUZZING_LANGUAGE': config.language,
+        'OUT': workspace.out,
+        'CIFUZZ': 'True',
+        'FUZZING_ENGINE': 'libfuzzer',
+        'ARCHITECTURE': 'x86_64',
+        'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25',
+        'HTTP_PORT': '',
+        'COVERAGE_EXTRA_ARGS': '',
+        'CORPUS_DIR': workspace.corpora,
+        'COVERAGE_OUTPUT_DIR': workspace.coverage_report
+    }
+    mock_execute.assert_called_with(expected_command, env=expected_env)
 
 
 class DownloadCorporaTest(unittest.TestCase):
@@ -53,8 +60,12 @@ class DownloadCorporaTest(unittest.TestCase):
   def test_download_corpora(self):  # pylint: disable=no-self-use
     """Tests that download_corpora works as intended."""
     clusterfuzz_deployment = mock.Mock()
+    clusterfuzz_deployment.workspace = test_helpers.create_workspace()
     fuzz_target_paths = ['/path/to/fuzzer1', '/path/to/fuzzer2']
-    expected_calls = [mock.call('fuzzer1'), mock.call('fuzzer2')]
+    expected_calls = [
+        mock.call('fuzzer1', '/workspace/cifuzz-corpus/fuzzer1'),
+        mock.call('fuzzer2', '/workspace/cifuzz-corpus/fuzzer2')
+    ]
     generate_coverage_report.download_corpora(fuzz_target_paths,
                                               clusterfuzz_deployment)
     clusterfuzz_deployment.download_corpus.assert_has_calls(expected_calls)

@@ -38,6 +38,10 @@ function build_libsecp256k1() {
     if test -f "Makefile"; then
         # Remove old configuration if it exists
         make clean
+
+        # Prevent the error:
+        # "configuration mismatch, invalid ECMULT_WINDOW_SIZE. Try deleting ecmult_static_pre_g.h before the build."
+        rm -f src/ecmult_static_pre_g.h
     fi
 
     SECP256K1_CONFIGURE_PARAMS="
@@ -104,6 +108,8 @@ echo -n 'ECC_PrivateToPublic,' >>extra_options.h
 echo -n 'ECC_ValidatePubkey,' >>extra_options.h
 echo -n 'ECC_Point_Add,' >>extra_options.h
 echo -n 'ECC_Point_Mul,' >>extra_options.h
+echo -n 'ECC_Point_Dbl,' >>extra_options.h
+echo -n 'ECC_Point_Neg,' >>extra_options.h
 echo -n 'ECDSA_Sign,' >>extra_options.h
 echo -n 'ECDSA_Verify,' >>extra_options.h
 echo -n 'ECDSA_Recover,' >>extra_options.h
@@ -128,14 +134,18 @@ cd ../trezor/
 make -B -j$(nproc)
 cd ../botan/
 make -B -j$(nproc)
-cd ../schnorr_fun/
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
-if [[ $CFLAGS != *-m32* ]]
-then
-    make
-else
-    make -f Makefile.i386
-fi
+
+# schnorr_fun is currently disabled because it was causing build failures
+# See: https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=39612
+#cd ../schnorr_fun/
+#export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SCHNORR_FUN"
+#if [[ $CFLAGS != *-m32* ]]
+#then
+#    make
+#else
+#    make -f Makefile.i386
+#fi
+
 cd ../../
 
 # Build with 3 configurations of libsecp256k1
@@ -152,11 +162,13 @@ rm cryptofuzz
 make
 cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w15-p4
 
-build_libsecp256k1 "--with-ecmult-window=24" "--with-ecmult-gen-precision=8"
+# If the window size is larger than 15, this file must be deleted before proceeding
+rm $SRC/secp256k1/src/precomputed_ecmult.c
+build_libsecp256k1 "--with-ecmult-window=20" "--with-ecmult-gen-precision=8"
 cd $SRC/cryptofuzz/
 rm cryptofuzz
 make
-cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w24-p8
+cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w20-p8
 
 # Convert Wycheproof test vectors to Cryptofuzz corpus format
 mkdir $SRC/corpus-cryptofuzz-wycheproof/
@@ -166,4 +178,4 @@ zip -j cryptofuzz-bitcoin-cryptography_seed_corpus.zip $SRC/corpus-cryptofuzz-wy
 # Use them as the seed corpus for each of the fuzzers
 cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w2-p2_seed_corpus.zip
 cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w15-p4_seed_corpus.zip
-cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w24-p8_seed_corpus.zip
+cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w20-p8_seed_corpus.zip

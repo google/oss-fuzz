@@ -17,7 +17,7 @@
 
 (
 cd $SRC/
-GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-12"
+GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-ubuntu-20.04"
 
 if [ "$SANITIZER" = "address" ]
 then
@@ -89,3 +89,5 @@ for target in ${TARGETS[@]}; do
   # Patch RPATH of the fuzz target
   patchelf --set-rpath '$ORIGIN/lib' $OUT/$target
 done
+
+cp $SRC/lldb_vs_lldb_eval_libfuzzer_test.options $OUT/

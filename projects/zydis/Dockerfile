@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-ADD https://github.com/zyantific/zydis/raw/master/assets/ZydisFuzz_seed_corpus.zip \
-    $SRC/ZydisFuzz_seed_corpus.zip
+ADD https://zydis.re/fuzzing-corpora/ZydisFuzzDecoder_seed_corpus.zip \
+    $SRC/ZydisFuzzDecoder_seed_corpus.zip
+ADD https://zydis.re/fuzzing-corpora/ZydisFuzzEncoder_seed_corpus.zip \
+    $SRC/ZydisFuzzEncoder_seed_corpus.zip
+ADD https://zydis.re/fuzzing-corpora/ZydisFuzzReEncoding_seed_corpus.zip \
+    $SRC/ZydisFuzzReEncoding_seed_corpus.zip
 
 COPY build.sh $SRC/
 

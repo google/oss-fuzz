@@ -25,14 +25,16 @@ import sys
 import subprocess
 import yaml
 
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import constants
+
 CANARY_PROJECT = 'skcms'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
-
-# Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 
 
 def get_changed_files_output():
@@ -112,12 +114,28 @@ def should_build_coverage(project_yaml):
     return False
 
   language = project_yaml.get('language')
-  if language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+  if language not in constants.LANGUAGES_WITH_COVERAGE_SUPPORT:
     print(('Project is written in "{language}", '
            'coverage is not supported yet.').format(language=language))
     return False
 
   return True
+
+
+def flatten_options(option_list):
+  """Generator that flattens |option_list| (a list of sanitizers, architectures
+  or fuzzing engines) by returning each element in the list that isn't a
+  dictionary. For elements that are dictionaries, the sole key is returned."""
+  result = []
+  for option in option_list:
+    if isinstance(option, dict):
+      keys = list(option.keys())
+      assert len(keys) == 1
+      result.append(keys[0])
+      continue
+    result.append(option)
+  print(result)
+  return result
 
 
 def should_build(project_yaml):
@@ -130,7 +148,8 @@ def should_build(project_yaml):
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
-    return os.getenv(env_var) in project_yaml.get(yaml_name, defaults)
+    return os.getenv(env_var) in flatten_options(
+        project_yaml.get(yaml_name, defaults))
 
   return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
@@ -213,6 +232,12 @@ def build_base_images():
   images = [
       'base-image',
       'base-builder',
+      'base-builder-go',
+      'base-builder-go-codeintelligencetesting',
+      'base-builder-jvm',
+      'base-builder-python',
+      'base-builder-rust',
+      'base-builder-swift',
       'base-runner',
   ]
   for image in images:

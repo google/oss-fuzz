@@ -10,6 +10,7 @@ auto_ccs:
   - "rsavitski@google.com"
   - "eseckler@google.com"
   - "altimin@google.com"
+  - "ddiproietto@google.com"
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
@@ -18,6 +19,8 @@ vendor_ccs:
   - warrenwright@google.com
   - ailport@google.com
   - kimtony@google.com
+  - faerber@google.com
+  - greendonald@google.com
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

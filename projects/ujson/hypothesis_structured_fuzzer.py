@@ -58,6 +58,7 @@ UJSON_ENCODE_KWARGS = {
 
 
 @given(obj=JSON_OBJECTS, kwargs=st.fixed_dictionaries(UJSON_ENCODE_KWARGS))
+@atheris.instrument_func
 def test_ujson_roundtrip(obj, kwargs):
     """Check that all JSON objects round-trip regardless of other options."""
     assert obj == ujson.decode(ujson.encode(obj, **kwargs))
@@ -68,5 +69,5 @@ if __name__ == "__main__":
     # and minimize any failures discovered by earlier runs or by OSS-Fuzz, or
     # briefly search for new failures if none are known.
     # Or, when running via OSS-Fuzz, we'll execute it via the fuzzing hook:
-    atheris.Setup(sys.argv, test_ujson_roundtrip.hypothesis.fuzz_one_input)
+    atheris.Setup(sys.argv, atheris.instrument_func(test_ujson_roundtrip.hypothesis.fuzz_one_input))
     atheris.Fuzz()

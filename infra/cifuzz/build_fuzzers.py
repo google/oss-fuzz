@@ -19,16 +19,19 @@ import os
 import sys
 
 import affected_fuzz_targets
+import base_runner_utils
+import clusterfuzz_deployment
 import continuous_integration
 import docker
+import logs
+import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
+import utils
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def check_project_src_path(project_src_path):
@@ -50,17 +53,19 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def __init__(self, config, ci_system):
     self.config = config
     self.ci_system = ci_system
-    self.workspace = docker.Workspace(config)
+    self.workspace = workspace_utils.Workspace(config)
     self.workspace.initialize_dir(self.workspace.out)
     self.workspace.initialize_dir(self.workspace.work)
+    self.clusterfuzz_deployment = (
+        clusterfuzz_deployment.get_clusterfuzz_deployment(
+            self.config, self.workspace))
     self.image_repo_path = None
     self.host_repo_path = None
     self.repo_manager = None
 
   def build_image_and_checkout_src(self):
     """Builds the project builder image and checkout source code for the patch
-    we want to fuzz (if necessary). Returns True on success.
-    Must be implemented by child classes."""
+    we want to fuzz (if necessary). Returns True on success."""
     result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False
@@ -74,26 +79,20 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        self.workspace, self.config.sanitizer, self.config.language)
+        self.workspace, self.config.sanitizer, self.config.language,
+        self.config.docker_in_docker)
     if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
-    if self.config.sanitizer == 'memory':
-      docker_args.extend(
-          _get_docker_build_fuzzers_args_msan(self.workspace.work))
-      self.handle_msan_prebuild(docker_container)
-
+    build_command = self.ci_system.get_build_command(self.host_repo_path,
+                                                     self.image_repo_path)
     docker_args.extend([
-        docker.get_project_image_name(self.config.project_name),
+        docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
+        build_command,
     ])
-    rm_path = os.path.join(self.image_repo_path, '*')
-    image_src_path = os.path.dirname(self.image_repo_path)
-    bash_command = (f'rm -rf {rm_path} && cp -r {self.host_repo_path} '
-                    f'{image_src_path} && compile')
-    docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
     # TODO(metzman): Stop using helper.docker_run so we can get rid of
@@ -103,33 +102,33 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       logging.error('Building fuzzers failed.')
       return False
 
-    if self.config.sanitizer == 'memory':
-      self.handle_msan_postbuild(docker_container)
     return True
 
-  def handle_msan_postbuild(self, container):
-    """Post-build step for MSAN builds. Patches the build to use MSAN
-    libraries."""
-    helper.docker_run([
-        '--volumes-from', container, '-e', f'WORK={self.workspace.work}',
-        docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
-    ])
+  def upload_build(self):
+    """Upload build."""
+    if self.config.upload_build:
+      self.clusterfuzz_deployment.upload_build(
+          self.repo_manager.get_current_commit())
 
-  def handle_msan_prebuild(self, container):
-    """Pre-build step for MSAN builds. Copies MSAN libs to |msan_libs_dir| and
-    returns docker arguments to use that directory for MSAN libs."""
-    logging.info('Copying MSAN libs.')
-    helper.docker_run([
-        '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        f'cp -r /msan {self.workspace.work}'
-    ])
+    return True
+
+  def check_fuzzer_build(self):
+    """Checks the fuzzer build. Returns True on success or if config specifies
+    to skip check."""
+    if not self.config.bad_build_check:
+      return True
+
+    return check_fuzzer_build(self.config)
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
     and then removes the unaffectted fuzzers. Returns True on success."""
     methods = [
-        self.build_image_and_checkout_src, self.build_fuzzers,
-        self.remove_unaffected_fuzz_targets
+        self.build_image_and_checkout_src,
+        self.build_fuzzers,
+        self.remove_unaffected_fuzz_targets,
+        self.upload_build,
+        self.check_fuzzer_build,
     ]
     for method in methods:
       if not method():
@@ -146,7 +145,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     changed_files = self.ci_system.get_changed_code_under_test(
         self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
-        self.config.project_name, self.workspace.out, changed_files,
+        self.clusterfuzz_deployment, self.workspace.out, changed_files,
         self.image_repo_path)
     return True
 
@@ -155,16 +154,10 @@ def build_fuzzers(config):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
-    project_name: The name of the OSS-Fuzz project being built.
-    project_repo_name: The name of the project's repo.
-    workspace: The location in a shared volume to store a git repo and build
-      artifacts.
-    pr_ref: The pull request reference to be built.
-    commit_sha: The commit sha for the project to be built at.
-    sanitizer: The sanitizer the fuzzers should be built with.
+    config: The configuration object for building fuzzers.
 
   Returns:
-    True if build succeeded or False on failure.
+    True if build succeeded.
   """
   # Do some quick validation.
   if config.project_src_path and not check_project_src_path(
@@ -178,19 +171,16 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def check_fuzzer_build(workspace,
-                       sanitizer,
-                       language,
-                       allowed_broken_targets_percentage=None):
+def check_fuzzer_build(config):
   """Checks the integrity of the built fuzzers.
 
   Args:
-    out_dir: The directory containing the fuzzer binaries.
-    sanitizer: The sanitizer the fuzzers are built with.
+    config: The config object.
 
   Returns:
-    True if fuzzers are correct.
+    True if fuzzers pass OSS-Fuzz's build check.
   """
+  workspace = workspace_utils.Workspace(config)
   if not os.path.exists(workspace.out):
     logging.error('Invalid out directory: %s.', workspace.out)
     return False
@@ -198,21 +188,18 @@ def check_fuzzer_build(workspace,
     logging.error('No fuzzers found in out directory: %s.', workspace.out)
     return False
 
-  docker_args, _ = docker.get_base_docker_run_args(workspace, sanitizer,
-                                                   language)
-  if allowed_broken_targets_percentage is not None:
-    docker_args += [
-        '-e',
-        ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
-         allowed_broken_targets_percentage)
-    ]
+  env = base_runner_utils.get_env(config, workspace)
+  if config.allowed_broken_targets_percentage is not None:
+    env['ALLOWED_BROKEN_TARGETS_PERCENTAGE'] = (
+        config.allowed_broken_targets_percentage)
 
-  docker_args.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  result = helper.docker_run(docker_args)
-  if not result:
-    logging.error('Check fuzzer build failed.')
-    return False
-  return True
+  stdout, stderr, retcode = utils.execute('test_all.py', env=env)
+  print(f'Build check: stdout: {stdout}\nstderr: {stderr}')
+  if retcode == 0:
+    logging.info('Build check passed.')
+    return True
+  logging.error('Build check failed.')
+  return False
 
 
 def _get_docker_build_fuzzers_args_not_container(host_repo_path):
@@ -220,11 +207,3 @@ def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   |host_repo_path| when the host of the OSS-Fuzz builder container is not
   another container."""
   return ['-v', f'{host_repo_path}:{host_repo_path}']
-
-
-def _get_docker_build_fuzzers_args_msan(work_dir):
-  """Returns arguments to the docker build command that are needed to use
-  MSAN."""
-  # TODO(metzman): MSAN is broken, fix.
-  msan_libs_path = os.path.join(work_dir, 'msan')
-  return ['-e', f'MSAN_LIBS_PATH={msan_libs_path}']

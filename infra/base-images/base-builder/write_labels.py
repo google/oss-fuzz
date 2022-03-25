@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,9 @@ def main():
   out = sys.argv[2]
 
   for target_name, labels in labels_by_target.items():
+    # Skip over wildcard value applying to all fuzz targets
+    if target_name == '*':
+      continue
     with open(os.path.join(out, target_name + '.labels'), 'w') as file_handle:
       file_handle.write('\n'.join(labels))
 

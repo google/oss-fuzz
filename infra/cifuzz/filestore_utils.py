@@ -13,13 +13,36 @@
 # limitations under the License.
 """External filestore interface. Cannot be depended on by filestore code."""
 import filestore
+import filestore.filesystem
+import filestore.git
 import filestore.github_actions
+import filestore.gsutil
+import filestore.no_filestore
+import filestore.gitlab
+
+FILESTORE_MAPPING = {
+    'filesystem': filestore.filesystem.FilesystemFilestore,
+    'gsutil': filestore.gsutil.GSUtilFilestore,
+    'github-actions': filestore.github_actions.GithubActionsFilestore,
+    'git': filestore.git.GitFilestore,
+    # TODO(metzman): Change to "no-filestore"
+    'no_filestore': filestore.no_filestore.NoFilestore,
+    'gitlab': filestore.gitlab.GitlabFilestore,
+}
 
 
 def get_filestore(config):
-  """Returns the correct filestore based on the platform in |config|.
+  """Returns the correct filestore object based on the platform in |config|.
   Raises an exception if there is no correct filestore for the platform."""
-  # TODO(metzman): Force specifying of filestore.
   if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return filestore.github_actions.GithubActionsFilestore(config)
-  raise filestore.FilestoreError('Filestore doesn\'t support platform.')
+    ci_filestore = filestore.github_actions.GithubActionsFilestore(config)
+    if not config.git_store_repo:
+      return ci_filestore
+
+    return filestore.git.GitFilestore(config, ci_filestore)
+
+  filestore_cls = FILESTORE_MAPPING.get(config.filestore)
+  if filestore_cls is None:
+    raise filestore.FilestoreError(
+        f'Filestore: {config.filestore} doesn\'t exist.')
+  return filestore_cls(config)

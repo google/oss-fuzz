@@ -18,15 +18,24 @@
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-PROJECTS="compress imaging"
+PROJECTS="compress imaging geometry"
+GEOMETRY_MODULE="commons-geometry-io-euclidean"
 
 for project in $PROJECTS; do
   cd $SRC/commons-$project
-  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Djdk.version=15"
-  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+  MAVEN_ARGS="--no-transfer-progress -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Djdk.version=15"
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
   -Dexpression=project.version -q -DforceStdout)
-  cp "target/commons-$project-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+
+  if [ $project = 'geometry' ]; then
+    # commons-geometry is a multi-module project and requires special handling in order
+    # to build and extract the proper module (commons-geometry-io-euclidean)
+    $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -am -pl $GEOMETRY_MODULE $MAVEN_ARGS
+    cp "$GEOMETRY_MODULE/target/$GEOMETRY_MODULE-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+  else
+    $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+    cp "target/commons-$project-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+  fi
 
   ALL_JARS="commons-$project.jar"
 
@@ -50,7 +59,7 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"-Xmx2048m:-Djava.awt.headless=true\" \
 \$@" > $OUT/$fuzzer_basename
     chmod +x $OUT/$fuzzer_basename
   done

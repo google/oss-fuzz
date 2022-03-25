@@ -5,6 +5,7 @@ auto_ccs:
   - "vakh@chromium.org"
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
 main_repo: 'https://github.com/aawc/unrar.git'

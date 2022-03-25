@@ -12,7 +12,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y pkg-config libssl-dev curl libcurl4-openssl-dev ninja-build
 RUN git clone --depth 1 https://github.com/danburkert/prost
 WORKDIR $SRC

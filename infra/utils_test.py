@@ -118,17 +118,33 @@ class BinaryPrintTest(unittest.TestCase):
   def test_string(self):  # pylint: disable=no-self-use
     """Tests that utils.binary_print can print a regular string."""
     # Should execute without raising any exceptions.
-    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+    with mock.patch('sys.stdout.buffer.write') as mock_write:
       utils.binary_print('hello')
-      mocked_write.assert_called_with('hello\n')
+      mock_write.assert_called_with('hello\n')
 
   @unittest.skip('Causes spurious failures because of side-effects.')
   def test_binary_string(self):  # pylint: disable=no-self-use
     """Tests that utils.binary_print can print a bianry string."""
     # Should execute without raising any exceptions.
-    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+    with mock.patch('sys.stdout.buffer.write') as mock_write:
       utils.binary_print(b'hello')
-      mocked_write.assert_called_with(b'hello\n')
+      mock_write.assert_called_with(b'hello\n')
+
+
+class CommandToStringTest(unittest.TestCase):
+  """Tests for command_to_string."""
+
+  def test_string(self):
+    """Tests that command_to_string returns the argument passed to it when it is
+    passed a string."""
+    command = 'command'
+    self.assertEqual(utils.command_to_string(command), command)
+
+  def test_list(self):
+    """Tests that command_to_string returns the correct stringwhen it is passed
+    a list."""
+    command = ['command', 'arg1', 'arg2']
+    self.assertEqual(utils.command_to_string(command), 'command arg1 arg2')
 
 
 if __name__ == '__main__':

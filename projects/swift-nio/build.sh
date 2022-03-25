@@ -15,15 +15,6 @@
 #
 ################################################################################
 
-# generic swift symbolizer
-(
-cd $SRC/llvm-project
-git apply ../llvmsymbol.diff
-cmake -G "Ninja" -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_BUILD_TESTS=OFF -DLLVM_INCLUDE_TESTS=OFF llvm
-ninja -j$(nproc) llvm-symbolizer
-cp bin/llvm-symbolizer $OUT/
-)
-
 # build project
 mkdir swift-nio-fuzz
 cd swift-nio-fuzz
@@ -32,14 +23,14 @@ rm -Rf Sources/swift-nio-fuzz
 mkdir Sources/swift-nio-http1-fuzz
 cp $SRC/fuzz_http1.swift Sources/swift-nio-http1-fuzz/main.swift
 cp $SRC/Package.swift Package.swift
-# Maybe we should have a helper script to set $SWIFT_FLAGS
-# for instance about -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION in -Xcc
-swift build -c debug -Xswiftc -sanitize=fuzzer,address -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib  --sanitize=address -Xcc="-fsanitize=fuzzer-no-link,address"
+
+. precompile_swift
+swift build -c debug $SWIFTFLAGS
 (
 cd .build/debug/
 find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-debug; done
 )
-swift build -c release -Xswiftc -sanitize=fuzzer,address -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib  --sanitize=address -Xcc="-fsanitize=fuzzer-no-link,address"
+swift build -c release $SWIFTFLAGS
 (
 cd .build/release/
 find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-release; done

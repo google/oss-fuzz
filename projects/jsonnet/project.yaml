@@ -2,12 +2,12 @@ homepage: "https://github.com/google/jsonnet"
 language: c++
 primary_contact: "dcunnin@google.com"
 auto_ccs:
-  - "wwweiwang@google.com"
   - "sparkprime@gmail.com"
 
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+# - memory
   - undefined
 
 labels:

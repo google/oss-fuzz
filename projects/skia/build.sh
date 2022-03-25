@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-# Build SwiftShader
+# Build SwiftShader so we can compile in our GPU code and test it in an
+# an environment that does not have a real GPU.
 pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
 # SwiftShader already has a build/ directory, use something else
@@ -43,10 +44,13 @@ elif [ $SANITIZER == "thread" ]; then
 else
   exit 1
 fi
-CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+# These deprecated warnings get quite noisy and mask other issues.
+CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
+  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
 
-$SRC/depot_tools/ninja libGLESv2 libEGL
-mv libGLESv2.so libEGL.so $OUT
+# Swiftshader only supports Vulkan, so we will build our fuzzers with Vulkan too.
+$SRC/depot_tools/ninja libvk_swiftshader.so
+mv libvk_swiftshader.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
 popd
@@ -54,8 +58,11 @@ popd
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
+export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
+ -DSK_GPU_TOOLS_VK_LIBRARY_NAME=libvk_swiftshader.so \
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
@@ -65,36 +72,48 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 $SRC/skia/bin/fetch-gn
 
-set +u
+# Avoid OOMs on the CI due to lower memory constraints
 LIMITED_LINK_POOL="link_pool_depth=1"
-if [ "$CIFUZZ" = "true" ]; then
-  echo "Not restricting linking because on CIFuzz"
-  LIMITED_LINK_POOL=""
-fi
-set -u
+
+SKIA_ARGS="skia_build_fuzzers=true
+           skia_enable_fontmgr_custom_directory=false
+           skia_enable_fontmgr_custom_embedded=false
+           skia_enable_fontmgr_custom_empty=true
+           skia_enable_gpu=true
+           skia_enable_skottie=true
+           skia_use_vulkan=true
+           skia_use_egl=false
+           skia_use_gl=false
+           skia_use_fontconfig=false
+           skia_use_freetype=true
+           skia_use_system_freetype2=false
+           skia_use_wuffs=true
+           skia_use_libfuzzer_defaults=false"
 
 # Even though GPU is "enabled" for all these builds, none really
-# uses the gpu except for api_mock_gpu_canvas
+# uses the gpu except for api_mock_gpu_canvas.
 $SRC/skia/bin/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      '$LIMITED_LINK_POOL'
+      '"$LIMITED_LINK_POOL"'
+      '"${SKIA_ARGS[*]}"'
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
-      extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_build_fuzzers=true
-      skia_enable_fontmgr_custom_directory=false
-      skia_enable_fontmgr_custom_embedded=false
-      skia_enable_fontmgr_custom_empty=true
-      skia_enable_gpu=true
-      skia_enable_skottie=true
-      skia_use_egl=true
-      skia_use_fontconfig=false
-      skia_use_freetype=true
-      skia_use_system_freetype2=false
-      skia_use_wuffs=true
-      skia_use_libfuzzer_defaults=false'
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]'
+
+# Some fuzz targets benefit from assertions so we enable SK_DEBUG to allow SkASSERT
+# and SkDEBUGCODE to run. We still enable optimization (via is_debug=false) because
+# faster code means more fuzz tests and deeper coverage.
+$SRC/skia/bin/gn gen out/FuzzDebug\
+    --args='cc="'$CC'"
+      cxx="'$CXX'"
+      '"$LIMITED_LINK_POOL"'
+      '"${SKIA_ARGS[*]}"'
+      is_debug=false
+      extra_cflags_c=["-DSK_DEBUG","'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/depot_tools/ninja -C out/Fuzz \
   android_codec \
@@ -126,14 +145,16 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   skjson \
   skottie_json \
   skp \
+  svg_dom \
+  textblob_deserialize \
+  webp_encoder
+
+$SRC/depot_tools/ninja -C out/FuzzDebug \
   skruntimeeffect \
   sksl2glsl \
   sksl2metal \
   sksl2pipeline \
   sksl2spirv \
-  svg_dom \
-  textblob_deserialize \
-  webp_encoder
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -224,27 +245,32 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
 
-# These 4 use the same sksl_seed_corpus.
-mv out/Fuzz/sksl2glsl $OUT/sksl2glsl
+# All five SkSL tests share the same sksl_seed_corpus and dictionary.
+mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
+cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
 
-mv out/Fuzz/sksl2spirv $OUT/sksl2spirv
+mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
+cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
 
-mv out/Fuzz/sksl2metal $OUT/sksl2metal
+mv out/FuzzDebug/sksl2metal $OUT/sksl2metal
+cp ../skia_data/sksl.dict $OUT/sksl2metal.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
 
-mv out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
-mv ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+mv out/FuzzDebug/sksl2pipeline $OUT/sksl2pipeline
+cp ../skia_data/sksl.dict $OUT/sksl2pipeline.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
+mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
+mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 mv out/Fuzz/svg_dom $OUT/svg_dom
 mv ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
-
-
-mv out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
-mv ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/api_create_ddl $OUT/api_create_ddl
 

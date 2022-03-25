@@ -1,0 +1,12 @@
+homepage: "https://developers.google.com/tink"
+language: c++
+primary_contact: "thaidn@google.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "sschmieg@google.com"
+  - "tholenst@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/google/tink"

@@ -33,6 +33,10 @@ CPPFLAGS="$CPPFLAGS -fno-sanitize=vptr" \
   --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
 # ugly hack to avoid build error
 echo '#include <locale.h>' >>i18n/digitlst.h
+
+# Hack so that upgrade to Ubuntu 20.04 works.
+ln -s /usr/include/locale.h /usr/include/xlocale.h
+
 make -j
 make install
 
@@ -82,7 +86,7 @@ for build in $builds; do
   fi
   # older m4 iconv detection has memleaks, so switch leak detection off
   ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
-    ./configure --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
+    ./configure --enable-fuzzing --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
   make clean
   make -j
   make -j check

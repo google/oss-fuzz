@@ -63,7 +63,8 @@ by running the following commands:
 ```bash
 $ cd /path/to/oss-fuzz
 $ export PROJECT_NAME=<project_name>
-$ python infra/helper.py generate $PROJECT_NAME
+$ export LANGUAGE=<project_language>
+$ python infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
 ```
 
 Once the template configuration files are created, you can modify them to fit your project.
@@ -98,6 +99,7 @@ Programming language the project is written in. Values you can specify include:
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
+* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -121,9 +123,11 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 
 [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) ("memory") is also supported
 and recommended, but is not enabled by default due to the likelihood of false positives from
-un-instrumented system dependencies. If you want to use "memory," first make sure your project's
-runtime dependencies are listed in the OSS-Fuzz
-[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+un-instrumented system dependencies.
+If you want to use "memory," please build all libraries your project needs using
+MemorySanitizer.
+This can be done by building them with the compiler flags provided during
+MemorySanitizer builds.
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -169,6 +173,12 @@ On the testcase page of each oss-fuzz issue is a list of other jobs where the cr
 Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
 For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
 
+There are [known bugs](https://github.com/google/oss-fuzz/issues/2746) in ASAN
+on i386 that cause ClusterFuzz to report unreproducible crashes for 0 length
+testcases. There are no plans to fix these bugs so be ready for slightly more
+false positives if you use i386. These false positives should be somewhat easy
+to identify since they will manifest as crashes in ASAN rather than your code.
+
 ### fuzzing_engines (optional) {#fuzzing_engines}
 The list of fuzzing engines to use.
 By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
@@ -205,10 +215,20 @@ COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzze
 ```
 In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`.
 
+Depending on your project's language, you will use a different base image,
+for instance `FROM gcr.io/oss-fuzz-base/base-builder-go` for golang.
+
 For an example, see
 [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)
 or
 [syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
+
+In the case of a project with multiple languages/toolchains needed,
+you can run installation scripts `install_lang.sh` where lang is the language needed.
+You also need to setup environment variables needed by this toolchain, for example `GOPATH` is needed by golang.
+For an example, see
+[ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
+where we use `base-builder-rust`and install golang
 
 ## build.sh {#buildsh}
 
@@ -311,6 +331,14 @@ pass them manually to the build tool.
 See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+### Static and dynamic linking of libraries
+The `build.sh` should produce fuzzers that are statically linked. This is because the
+fuzzer build environment is different to the fuzzer runtime environment and if your
+project depends on third party libraries then it is likely they will not be present
+in the execution environment. Thus, any shared libraries you may install or compile in
+`build.sh` or `Dockerfile` will not be present in the fuzzer runtime environment. There
+are exceptions to this rule, and for further information on this please see the [fuzzer environment]({{ site.baseurl }}/further-reading/fuzzer-environment/) page.
+
 ## Disk space restrictions
 
 Our builders have a disk size of 250GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
@@ -368,9 +396,8 @@ information on code coverage generation.
 
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
-configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
-that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
+configurations by default.
+MemorySanitizer is recommended, but needs to be enabled manually since you must build all runtime dependencies with MemorySanitizer.
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
@@ -389,12 +416,13 @@ following ways:
 
 ### Seed Corpus
 
-OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
+Most fuzzing engines use evolutionary fuzzing algorithms. Supplying a seed
+corpus consisting of good sample inputs is one of the best ways to improve [fuzz
+target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` command) of its contents. You can store the corpus
+archive will be used as starting inputs for mutations. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
 (example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).
@@ -403,7 +431,7 @@ Seed corpus files will be used for cross-mutations and portions of them might ap
 in bug reports or be used for further security research. It is important that corpus
 has an appropriate and consistent license.
 
-See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
+OSS-Fuzz only: See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
 
 ### Dictionaries
 

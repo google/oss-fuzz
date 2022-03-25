@@ -363,7 +363,7 @@ int init_daemon(const uint8_t **data2, size_t *size2) {
   CLEAN_IF_NULL(dr_interface)
   dr->interface = dr_interface;
   dr->next = NULL;
-  dr->current = NULL;
+  //dr->current = NULL;
   daemon->relay4 = dr;
 
   // deamon->bridges

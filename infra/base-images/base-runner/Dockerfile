@@ -50,7 +50,8 @@ RUN apt-get update && apt-get install -y \
     wget \
     zip --no-install-recommends
 
-RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
+ENV CODE_COVERAGE_SRC=/opt/code_coverage
+RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage $CODE_COVERAGE_SRC && \
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
@@ -70,7 +71,7 @@ ENV AFL_FUZZER_ARGS="-m none"
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
 RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
+    SHELL="bash" $SRC/installer_linux -version 1.18beta2 && \
     rm $SRC/installer_linux
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
@@ -96,9 +97,6 @@ RUN wget https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db
     rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
     rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
-# Install Java AWT dependencies.
-RUN apt-get install libxext-dev -y
-
 # Install JaCoCo for JVM coverage.
 RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar -O /opt/jacoco-cli.jar && \
     wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar -O /opt/jacoco-agent.jar && \
@@ -117,6 +115,7 @@ COPY bad_build_check \
     reproduce \
     run_fuzzer \
     parse_options.py \
+    profraw_update.py \
     targets_list \
     test_all.py \
     test_one.py \

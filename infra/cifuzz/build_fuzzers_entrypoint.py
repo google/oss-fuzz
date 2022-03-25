@@ -16,16 +16,13 @@ import logging
 import sys
 
 import build_fuzzers
+import logs
 import config_utils
-import docker
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def build_fuzzers_entrypoint():
@@ -39,31 +36,12 @@ def build_fuzzers_entrypoint():
     # The default return code when an error occurs.
     returncode = 1
 
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
   if not build_fuzzers.build_fuzzers(config):
-    logging.error(
-        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.project_name, config.commit_sha, config.pr_ref)
+    logging.error('Error building fuzzers for (commit: %s, pr_ref: %s).',
+                  config.git_sha, config.pr_ref)
     return returncode
 
-  if not config.bad_build_check:
-    # If we've gotten to this point and we don't need to do bad_build_check,
-    # then the build has succeeded.
-    returncode = 0
-  # yapf: disable
-  elif build_fuzzers.check_fuzzer_build(
-      docker.Workspace(config),
-      config.sanitizer,
-      config.language,
-      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
-  ):
-    # yapf: enable
-    returncode = 0
-
-  return returncode
+  return 0
 
 
 def main():
@@ -71,18 +49,6 @@ def main():
 
   Note: The resulting fuzz target binaries of this build are placed in
   the directory: ${GITHUB_WORKSPACE}/out
-
-  Required environment variables:
-    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
-    GITHUB_REPOSITORY: The name of the Github repo that called this script.
-    GITHUB_SHA: The commit SHA that triggered this script.
-    GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
-    GITHUB_EVENT_PATH:
-      The path to the file containing the POST payload of the webhook:
-      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
-    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
-    DRY_RUN: If true, no failures will surface.
-    SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
     0 on success or nonzero on failure.

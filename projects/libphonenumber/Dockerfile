@@ -15,12 +15,27 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool g++ cmake-curses-gui libgtest-dev libre2-dev libicu-dev libboost-dev libboost-thread-dev libboost-system-dev binutils ninja-build liblzma-dev libz-dev pkg-config wget openjdk-8-jdk
 
-WORKDIR $SRC/
+RUN apt-get update && apt-get install -y autoconf automake \
+      cmake cmake-curses-gui libre2-dev \
+      libicu-dev libboost-dev libboost-thread-dev libboost-system-dev \
+      libgflags-dev libgoogle-glog-dev libssl-dev \
+      protobuf-compiler libtool wget default-jre icu-devtools
+RUN apt-get install -y libgtest-dev && \
+    cd /usr/src/googletest/googletest && \
+		mkdir build && \
+		cd build && \
+		cmake .. && \
+		make && \
+		mkdir /usr/local/lib/googletest && \
+		ln -sn /usr/local/lib/googletest/libgtest.a /usr/lib/libgtest.a && \
+		ln -sn /usr/local/lib/googletest/libgtest_main.a /usr/lib/libgtest_main.a && \
+    rm /lib/x86_64-linux-gnu/libgtest.a && \
+    ln -sn /usr/local/lib/googletest/libgtest.a /lib/x86_64-linux-gnu/libgtest.a
+RUN wget https://github.com/unicode-org/icu/releases/download/release-66-rc/icu4c-66rc-src.tgz && \
+    tar xzvf icu4c-66rc-src.tgz
 RUN git clone https://github.com/google/libphonenumber
-
-RUN wget https://github.com/unicode-org/icu/releases/download/release-55-2/icu4c-55_2-src.tgz && tar xzvf icu4c-55_2-src.tgz
 
 COPY build.sh $SRC/
 COPY phonefuzz.cc $SRC/
+WORKDIR $SRC/

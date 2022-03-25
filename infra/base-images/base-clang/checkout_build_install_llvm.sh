@@ -21,8 +21,13 @@
 NPROC=$(expr $(nproc) / 2)
 
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
-apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
+apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
+
+INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
+fi
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -70,10 +75,12 @@ cd clang
 LLVM_SRC=$SRC/llvm-project
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-12-init-17251-g6de48655
+OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
+# DO NOT CHANGE THIS UNTIL https://github.com/google/oss-fuzz/issues/7273 is
+# RESOLVED.
 FORCE_OUR_REVISION=1
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
@@ -92,6 +99,21 @@ fi
 
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
+
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  # For fuzz introspector.
+  echo "Applying introspector changes"
+  OLD_WORKING_DIR=$PWD
+  cd $LLVM_SRC
+  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
+  cp -rf /fuzz-introspector/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
+
+  # LLVM currently does not support dynamically loading LTO passes. Thus,
+  # we hardcode it into Clang instead.
+  # Ref: https://reviews.llvm.org/D77704
+  /fuzz-introspector/sed_cmds.sh
+  cd $OLD_WORKING_DIR
+fi
 
 # Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
@@ -124,10 +146,24 @@ rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 # Use the clang we just built from now on.
 CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
+function cmake_libcxx {
+  extra_args="$@"
+  cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+      $extra_args \
+      $LLVM_SRC/llvm
+}
+
 # 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
@@ -145,7 +181,7 @@ cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
@@ -158,7 +194,7 @@ rm -rf $WORK/msan
 mkdir -p $WORK/dfsan
 cd $WORK/dfsan
 
-cmake_llvm $CMAKE_EXTRA_ARGS \
+cmake_libcxx $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
@@ -173,6 +209,9 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
+fi
 apt-get autoremove -y
 
 # Delete unneeded parts of LLVM to reduce image size.
@@ -197,7 +236,7 @@ rm -rf /usr/local/bin/llvm-*
 mv $LLVM_TOOLS_TMPDIR/* /usr/local/bin/
 rm -rf $LLVM_TOOLS_TMPDIR
 
-# Remove binaries from LLVM buld that we don't need.
+# Remove binaries from LLVM build that we don't need.
 rm -f \
   /usr/local/bin/bugpoint \
   /usr/local/bin/llc \

@@ -39,6 +39,10 @@ echo -n '"' >>extra_options.h
 echo -n "--force-module=blst " >>extra_options.h
 echo -n "--operations=" >>extra_options.h
 echo -n "BignumCalc," >>extra_options.h
+echo -n "BignumCalc_Fp2," >>extra_options.h
+echo -n "BignumCalc_Fp12," >>extra_options.h
+echo -n "BLS_BatchVerify," >>extra_options.h
+echo -n "BLS_FinalExp," >>extra_options.h
 echo -n "BLS_GenerateKeyPair," >>extra_options.h
 echo -n "BLS_HashToG1," >>extra_options.h
 echo -n "BLS_HashToG2," >>extra_options.h
@@ -61,6 +65,10 @@ echo -n "BLS_G2_Add," >>extra_options.h
 echo -n "BLS_G2_Mul," >>extra_options.h
 echo -n "BLS_G2_IsEq," >>extra_options.h
 echo -n "BLS_G2_Neg," >>extra_options.h
+echo -n "BLS_Aggregate_G1", >>extra_options.h
+echo -n "BLS_Aggregate_G2", >>extra_options.h
+echo -n "BLS_MapToG1", >>extra_options.h
+echo -n "BLS_MapToG2", >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
@@ -88,31 +96,49 @@ then
     export CXXFLAGS="$CXXFLAGS -I $SRC/libgmp-install/include/"
 fi
 
-# Build blst
-cd $SRC/blst/
-if [[ "$SANITIZER" == "memory" ]]
-then
-    # Patch to disable assembly
-    touch new_no_asm.h
-    echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-    echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-    echo "#else" >>new_no_asm.h
-    echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-    echo "#endif" >>new_no_asm.h
-    cat src/no_asm.h >>new_no_asm.h
-    mv new_no_asm.h src/no_asm.h
+function build_blst() {
+    if [[ "$SANITIZER" == "memory" ]]
+    then
+        # Patch to disable assembly
+        touch new_no_asm.h
+        echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+        echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+        echo "#else" >>new_no_asm.h
+        echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+        echo "#endif" >>new_no_asm.h
+        cat src/no_asm.h >>new_no_asm.h
+        mv new_no_asm.h src/no_asm.h
 
-    CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
-else
-    ./build.sh
-fi
-export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
-export BLST_INCLUDE_PATH=$(realpath bindings/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+    else
+        ./build.sh
+    fi
+
+    export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+    export BLST_INCLUDE_PATH=$(realpath bindings/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+}
+
+# Build blst (normal)
+cp -R $SRC/blst/ $SRC/blst_normal/
+cd $SRC/blst_normal/
+build_blst
 
 # Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *undefined ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
+    # Build and install libsodium
+    cd $SRC/
+    mkdir $SRC/libsodium-install
+    tar zxf libsodium-1.0.18-stable.tar.gz
+    cd $SRC/libsodium-stable/
+    autoreconf -ivf
+    ./configure --prefix="$SRC/libsodium-install/"
+    make -j$(nproc)
+    make install
+    export CXXFLAGS="$CXXFLAGS -I $SRC/libsodium-install/include/"
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libsodium-install/lib/libsodium.a"
+
     cd $SRC/bls-signatures/
     mkdir build/
     cd build/
@@ -124,10 +150,13 @@ then
     fi
     cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
     make -j$(nproc)
-    export CHIA_BLS_LIBBLS_A_PATH=$(realpath libbls.a)
+    export CHIA_BLS_LIBBLS_A_PATH=$(realpath src/libbls.a)
+    export CHIA_BLS_LIBRELIC_S_A_PATH=$(realpath _deps/relic-build/lib/librelic_s.a)
+    export CHIA_BLS_LIBSODIUM_A_PATH=$(realpath _deps/sodium-build/libsodium.a)
     export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
     export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
     export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
+    export LINK_FLAGS="$LINK_FLAGS -lgmp"
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
 fi
 
@@ -189,7 +218,7 @@ make -B
 cd $SRC/cryptofuzz/modules/blst/
 make -B
 
-if [[ "$SANITIZER" != "memory" ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/chia_bls/
     make -B
@@ -206,3 +235,18 @@ cd $SRC/cryptofuzz/
 make -B -j
 
 cp cryptofuzz $OUT/cryptofuzz-bls-signatures
+
+# Build blst (optimized for size)
+cp -R $SRC/blst/ $SRC/blst_optimize_size/
+cd $SRC/blst_optimize_size/
+export CFLAGS="$CFLAGS -D__OPTIMIZE_SIZE__"
+build_blst
+
+cd $SRC/cryptofuzz/modules/blst/
+make -B
+
+# Build Cryptofuzz
+cd $SRC/cryptofuzz/
+rm entry.o; make
+
+cp cryptofuzz $OUT/cryptofuzz-bls-signatures_optimize_size

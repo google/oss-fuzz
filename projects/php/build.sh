@@ -15,18 +15,12 @@
 #
 ################################################################################
 
-# build oniguruma and link statically
-pushd oniguruma
-autoreconf -vfi
-./configure
-make -j$(nproc)
-popd
-export ONIG_CFLAGS="-I$PWD/oniguruma/src"
-export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
-
 # PHP's zend_function union is incompatible with the object-size sanitizer
 export CFLAGS="$CFLAGS -fno-sanitize=object-size"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
+
+# Disable JIT profitability checks.
+export CFLAGS="$CFLAGS -DPROFITABILITY_CHECKS=0"
 
 # Make sure the right assembly files are picked
 BUILD_FLAG=""
@@ -42,7 +36,7 @@ fi
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
-    --enable-mbstring \
+    --enable-opcache \
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
@@ -59,7 +53,6 @@ cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
 
 FUZZERS="php-fuzz-json
 php-fuzz-exif
-php-fuzz-mbstring
 php-fuzz-unserialize
 php-fuzz-unserializehash
 php-fuzz-parser
@@ -67,6 +60,19 @@ php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 done
+
+# The JIT fuzzer is fundamentally incompatible with memory sanitizer,
+# as that would require the JIT to emit msan instrumentation itself.
+# In practice it is currently also incompatible with ubsan.
+if [ "$SANITIZER" != "memory" ] && [ "$SANITIZER" != "undefined" ]; then
+    cp sapi/fuzzer/php-fuzz-function-jit $OUT/
+    cp sapi/fuzzer/php-fuzz-tracing-jit $OUT/
+
+    # Copy opcache.so extension, which does not support static linking.
+    mkdir -p $OUT/modules
+    cp modules/opcache.so $OUT/modules
+fi
+
 # copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do
 	zip -j $OUT/php-fuzz-${fuzzerName}_seed_corpus.zip sapi/fuzzer/corpus/${fuzzerName}/*

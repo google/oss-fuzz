@@ -3,6 +3,7 @@ language: c++
 primary_contact: "luca.deri@gmail.com"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
+  - "nardi.ivan@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

@@ -20,6 +20,8 @@ import sys
 
 import requests
 
+import filestore
+
 # pylint: disable=wrong-import-position,import-error
 
 sys.path.append(
@@ -33,12 +35,16 @@ _GET_ATTEMPTS = 3
 _GET_BACKOFF = 1
 
 
-def get_http_auth_headers(config):
+def get_http_auth_headers():
   """Returns HTTP headers for authentication to the API."""
-  authorization = 'token {token}'.format(token=config.github_token)
+  # Undocumented token used for artifacts auth.
+  token = os.environ.get('ACTIONS_RUNTIME_TOKEN')
+  if not token:
+    return {}
+
+  authorization = f'Bearer {token}'
   return {
       'Authorization': authorization,
-      'Accept': 'application/vnd.github.v3+json'
   }
 
 
@@ -68,11 +74,11 @@ def _get_items(url, headers):
     params = {'per_page': _MAX_ITEMS_PER_PAGE, 'page': str(page_counter)}
     response = _do_get_request(url, params=params, headers=headers)
     response_json = response.json()
-
     if not response.status_code == 200:
       # Check that request was successful.
       logging.error('Request to %s failed. Code: %d. Response: %s',
                     response.request.url, response.status_code, response_json)
+      raise filestore.FilestoreError('Github API request failed.')
 
     if total_num_items == float('inf'):
       # Set proper total_num_items
@@ -100,7 +106,7 @@ def find_artifact(artifact_name, artifacts):
 
 
 def list_artifacts(owner, repo, headers):
-  """Returns a generator of all the artifacts for |owner/repo|."""
+  """Returns a generator of all the artifacts for |owner|/|repo|."""
   url = _get_artifacts_list_api_url(owner, repo)
   logging.debug('Getting artifacts from: %s', url)
   return _get_items(url, headers)

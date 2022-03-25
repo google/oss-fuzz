@@ -21,13 +21,14 @@ inputs:
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
-  build-integration-path:
-    description: "The path to the the project's build integration."
-    required: false
   bad-build-check:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
     default: true
+  keep-unaffected-fuzz-targets:
+    description: "Whether to keep unaffected fuzzers or delete them."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -38,6 +39,8 @@ runs:
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
-    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
+    CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'
+    KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}

@@ -19,7 +19,7 @@ RUN \
         apt-get update && \
         apt-get install -y \
         make autoconf automake libtool \
-        libstdc++-5-dev \
+        libstdc++-9-dev \
         libssl-dev libseccomp-dev pkg-config
 RUN git clone --depth 1 https://github.com/stefanberger/libtpms libtpms
 WORKDIR libtpms

@@ -15,5 +15,9 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/containerd/containerd/contrib/fuzz FuzzFiltersParse fuzz_filters_parse
-compile_go_fuzzer github.com/containerd/containerd/contrib/fuzz FuzzPlatformsParse fuzz_platforms_parse
+go mod tidy
+rm vendor/github.com/cilium/ebpf/internal/btf/fuzz.go
+rm /root/go/pkg/mod/github.com/cilium/ebpf@v0.7.0/internal/btf/fuzz.go
+
+$SRC/containerd/contrib/fuzz/oss_fuzz_build.sh
+$SRC/cncf-fuzzing/projects/containerd/build.sh

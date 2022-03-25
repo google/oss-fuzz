@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-python3 /opt/code_coverage/coverage_utils.py $@
+python3 $CODE_COVERAGE_SRC/coverage_utils.py $@

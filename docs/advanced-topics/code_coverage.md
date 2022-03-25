@@ -9,7 +9,7 @@ permalink: /advanced-topics/code-coverage/
 # Code Coverage
 {: .no_toc}
 
-For projects written in C/C++, Rust, Go, or Java and other JVM-based languages,
+For projects written in C/C++, Rust, Go, Swift or Java and other JVM-based languages,
 you can generate code coverage reports using Clang source-based code coverage.
 This page walks you through the basic steps.
 For more details on C/C++ coverage, see [Clang's documentation].

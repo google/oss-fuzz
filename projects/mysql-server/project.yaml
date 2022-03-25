@@ -9,7 +9,6 @@ auto_ccs:
 
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
   - undefined

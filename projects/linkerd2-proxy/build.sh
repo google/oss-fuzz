@@ -15,9 +15,17 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+  chmod +x $SRC/rustc.py
+  export RUSTC="$SRC/rustc.py"
+  export CFLAGS=""
+fi
+
+BUILD_FUZZER="cargo +nightly fuzz build "
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
-BUILD_FUZZER="cargo +nightly fuzz build "
 
 cd ${BASE}/app/inbound
 ${BUILD_FUZZER}
@@ -43,3 +51,6 @@ cd ${BASE}/transport-header
 ${BUILD_FUZZER}
 cp ${TARGET_PATH}/fuzz_target_raw $OUT/fuzz_transport_raw
 cp ${TARGET_PATH}/fuzz_target_structured $OUT/fuzz_transport_structured
+
+echo "[libfuzzer]" > $OUT/fuzz_transport_raw.options
+echo "detect_leaks=0" >> $OUT/fuzz_transport_raw.options

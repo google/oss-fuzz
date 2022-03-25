@@ -27,14 +27,19 @@ else
       -e 'jazzer_driver_with_sanitizer')"
 fi
 
-DUMPS_DIR="$OUT/dumps"
-FUZZER_STATS_DIR="$OUT/fuzzer_stats"
-LOGS_DIR="$OUT/logs"
-REPORT_ROOT_DIR="$OUT/report"
-REPORT_PLATFORM_DIR="$OUT/report/linux"
+COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 
-for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR \
-                 $REPORT_PLATFORM_DIR; do
+DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
+FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
+TEXTCOV_REPORT_DIR="$COVERAGE_OUTPUT_DIR/textcov_reports"
+LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
+REPORT_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report"
+REPORT_BY_TARGET_ROOT_DIR="$COVERAGE_OUTPUT_DIR/report_target"
+PLATFORM=linux
+REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/$PLATFORM"
+
+for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR $TEXTCOV_REPORT_DIR\
+                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
@@ -59,6 +64,8 @@ objects=""
 # Number of CPUs available, this is needed for running tests in parallel.
 NPROC=$(nproc)
 
+CORPUS_DIR=${CORPUS_DIR:-"/corpus"}
+
 function run_fuzz_target {
   local target=$1
 
@@ -67,7 +74,7 @@ function run_fuzz_target {
   local profraw_file="$DUMPS_DIR/$target.%1m.profraw"
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
@@ -95,6 +102,9 @@ function run_fuzz_target {
     return 0
   fi
 
+  # If necessary translate to latest profraw version.
+  profraw_update.py $OUT/$target $profraw_file_mask tmp.profraw
+  mv tmp.profraw $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
@@ -105,6 +115,9 @@ function run_fuzz_target {
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
+  # For introspector.
+  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
+  
   if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
     # This is needed for dataflow strategy analysis, can be removed later. See
     # - https://github.com/google/oss-fuzz/pull/3306
@@ -120,9 +133,17 @@ function run_go_fuzz_target {
   local target=$1
 
   echo "Running go target $target"
-  export FUZZ_CORPUS_DIR="/corpus/${target}/"
+  export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
+  
   $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
+  
+  # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
+  # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
+  # Since the copies named "*_fuzz_.go" do not exist in the file tree during
+  # the coverage build, we change the references in the .profdata files
+  # to the original file names.
+  sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS
@@ -136,7 +157,7 @@ function run_java_fuzz_target {
   local exec_file="$DUMPS_DIR/$target.exec"
   local class_dump_dir="$DUMPS_DIR/${target}_classes/"
   mkdir "$class_dump_dir"
-  local corpus_real="/corpus/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
@@ -145,7 +166,7 @@ function run_java_fuzz_target {
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
   local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*"
   local args="-merge=1 -timeout=100 --nohooks \
-      --additional_jvm_args=-javaagent:/opt/jacoco-agent.jar=$jacoco_args \
+      --additional_jvm_args=-javaagent\\:/opt/jacoco-agent.jar=$jacoco_args \
       $corpus_dummy $corpus_real"
 
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
@@ -169,6 +190,27 @@ function run_java_fuzz_target {
 
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $summary_file
+}
+
+function generate_html {
+  local profdata=$1
+  local shared_libraries=$2
+  local objects=$3
+  local output_dir=$4
+
+  rm -rf "$output_dir"
+  mkdir -p "$output_dir/$PLATFORM"
+
+  local llvm_cov_args="-instr-profile=$profdata $objects $LLVM_COV_COMMON_ARGS"
+  llvm-cov show -format=html -output-dir=$output_dir -Xdemangler rcfilt $llvm_cov_args
+
+  # Export coverage summary in JSON format.
+  local summary_file=$output_dir/$PLATFORM/summary.json
+
+  llvm-cov export -summary-only $llvm_cov_args > $summary_file
+
+  coverage_helper -v post_process -src-root-dir=/ -summary-file=$summary_file \
+      -output-dir=$output_dir $PATH_EQUIVALENCE_ARGS
 }
 
 export SYSGOPATH=$GOPATH
@@ -262,6 +304,11 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
       --classfiles $classes_dir \
       "${sourcefiles_args[@]}"
 
+  # Also serve the raw exec file and XML report, which can be useful for
+  # automated analysis.
+  cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
+  cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
+
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
 
@@ -280,22 +327,24 @@ else
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
   objects="$objects $shared_libraries"
 
-  # It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
-  # positional arguments (SOURCES) that can be passed via $COVERAGE_EXTRA_ARGS.
-  LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
+  generate_html $PROFILE_FILE "$shared_libraries" "$objects" "$REPORT_ROOT_DIR"
 
-  # Generate HTML report.
-  llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
-      -Xdemangler rcfilt $LLVM_COV_ARGS
+  # Per target reports.
+  for fuzz_target in $FUZZ_TARGETS; do
+    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+    if [[ ! -f "$profdata_path" ]]; then
+      echo "WARNING: $fuzz_target has no profdata generated."
+      continue
+    fi
 
-  # Export coverage summary in JSON format.
-  llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
-
-  # Post process HTML report.
-  coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
-      -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
-
+    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    generate_html $profdata_path "$shared_libraries" "$objects" "$report_dir"
+  done
 fi
+
+# Make sure report is readable.
+chmod -R +r $REPORT_ROOT_DIR
+find $REPORT_ROOT_DIR -type d -exec chmod +x {} +
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.

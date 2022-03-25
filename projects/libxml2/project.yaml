@@ -1,11 +1,14 @@
 homepage: "http://www.xmlsoft.org/"
 language: c++
-primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
-  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "benl@google.com"
+  - "product-security@apple.com"
   - "simon.lewis@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
+  - "ebanniettis@apple.com"
 sanitizers:
   - address
   - memory

@@ -14,27 +14,33 @@
 #
 ################################################################################
 
-# Don't bother with a slimmer base image.
-# When we pull base-builder to build project builder image we need to pull
-# ubuntu:16.04 anyway. So in the long run we probably would waste time if
-# we pulled something like alpine here instead.
-FROM ubuntu:16.04
+FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN apt-get update && \
-    apt-get install ca-certificates wget git-core --no-install-recommends -y && \
-    wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_20.10.5~3-0~ubuntu-xenial_amd64.deb -O /tmp/docker-ce.deb && \
-    dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb && \
-    apt-get remove wget -y --purge
+    apt-get install -y systemd && \
+    apt-get install -y --no-install-recommends nodejs npm && \
+    wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
+    dpkg -i /tmp/docker-ce.deb && \
+    rm /tmp/docker-ce.deb && \
+    mkdir -p /opt/gcloud && \
+    wget -qO- https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz | tar zxv -C /opt/gcloud && \
+    /opt/gcloud/google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options && \
+    apt-get -y install gcc python3-dev && \
+    pip3 install -U crcmod && \
+    apt-get autoremove -y gcc python3-dev
 
-# Install newer Python from base-builder.
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
-RUN ldconfig
 
+ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
+
+# Do this step before copying to make rebuilding faster when developing.
+COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
 ADD . ${OSS_FUZZ_ROOT}
-RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
+RUN npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
+
+ENV PYTHONUNBUFFERED=1
 
 # Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,

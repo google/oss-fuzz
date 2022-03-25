@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for github_api."""
+import os
+import sys
 import unittest
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+                     os.path.pardir)))
 
 from filestore.github_actions import github_api
 import test_helpers
@@ -23,11 +31,9 @@ class GetHttpAuthHeaders(unittest.TestCase):
 
   def test_get_http_auth_headers(self):
     """Tests that get_http_auth_headers returns the correct result."""
-    github_token = 'example githubtoken'
-    run_config = test_helpers.create_run_config(github_token=github_token)
+    test_helpers.patch_environ(self)
+    os.environ['ACTIONS_RUNTIME_TOKEN'] = 'githubtoken'
     expected_headers = {
-        'Authorization': 'token {token}'.format(token=github_token),
-        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'Bearer githubtoken',
     }
-    self.assertEqual(expected_headers,
-                     github_api.get_http_auth_headers(run_config))
+    self.assertEqual(expected_headers, github_api.get_http_auth_headers())

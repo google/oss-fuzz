@@ -10,4 +10,4 @@ sanitizers:
 - address
 
 blackbox: true  # also use a blackbox fuzzer for this project.
-main_repo: 'https://github.com/horhof/quickjs'
+main_repo: 'https://github.com/bellard/quickjs'

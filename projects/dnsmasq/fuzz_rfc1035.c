@@ -23,8 +23,8 @@ void FuzzExtractTheAddress(const uint8_t **data2, size_t *size2) {
   new_name = get_null_terminated(&data, &size);
   pointer_arr[pointer_idx++] = (void*)new_name;
 
-  int check_rebind = get_int(&data, &size);
   int is_sign = get_int(&data, &size);
+  int check_rebind = get_int(&data, &size);
   int secure =  get_int(&data, &size);
 
   if (size > (sizeof(struct dns_header) +50)) {
@@ -35,7 +35,7 @@ void FuzzExtractTheAddress(const uint8_t **data2, size_t *size2) {
     
     time_t now; 
     int doctored = 0;
-    extract_addresses((struct dns_header *)new_data, size, new_name, now, NULL, check_rebind, is_sign, 0, secure, &doctored);
+    extract_addresses((struct dns_header *)new_data, size, new_name, now, NULL, NULL, is_sign, check_rebind, 0, secure, &doctored);
   }
 }
 

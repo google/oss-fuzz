@@ -20,12 +20,12 @@ import contextlib
 import multiprocessing
 import os
 import re
-import shutil
 import subprocess
 import stat
 import sys
+import tempfile
 
-TMP_FUZZER_DIR = '/tmp/not-out'
+BASE_TMP_FUZZER_DIR = '/tmp/not-out'
 
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
@@ -35,14 +35,6 @@ IGNORED_TARGETS = [
 ]
 
 IGNORED_TARGETS_RE = re.compile('^' + r'$|^'.join(IGNORED_TARGETS) + '$')
-
-
-def recreate_directory(directory):
-  """Creates |directory|. If it already exists than deletes it first before
-  creating."""
-  if os.path.exists(directory):
-    shutil.rmtree(directory)
-  os.mkdir(directory)
 
 
 def move_directory_contents(src_directory, dst_directory):
@@ -140,28 +132,28 @@ def has_ignored_targets(out_dir):
 
 @contextlib.contextmanager
 def use_different_out_dir():
-  """Context manager that moves OUT to TMP_FUZZER_DIR. This is useful for
-  catching hardcoding. Note that this sets the environment variable OUT and
-  therefore must be run before multiprocessing.Pool is created. Resets OUT at
-  the end."""
+  """Context manager that moves OUT to subdirectory of BASE_TMP_FUZZER_DIR. This
+  is useful for catching hardcoding. Note that this sets the environment
+  variable OUT and therefore must be run before multiprocessing.Pool is created.
+  Resets OUT at the end."""
   # Use a fake OUT directory to catch path hardcoding that breaks on
   # ClusterFuzz.
-  out = os.getenv('OUT')
-  initial_out = out
-  recreate_directory(TMP_FUZZER_DIR)
-  out = TMP_FUZZER_DIR
-  # Set this so that run_fuzzer which is called by bad_build_check works
-  # properly.
-  os.environ['OUT'] = out
-  # We move the contents of the directory because we can't move the
-  # directory itself because it is a mount.
-  move_directory_contents(initial_out, out)
-  try:
-    yield out
-  finally:
-    move_directory_contents(out, initial_out)
-    shutil.rmtree(out)
-    os.environ['OUT'] = initial_out
+  initial_out = os.getenv('OUT')
+  os.makedirs(BASE_TMP_FUZZER_DIR, exist_ok=True)
+  # Use a random subdirectory of BASE_TMP_FUZZER_DIR to allow running multiple
+  # instances of test_all in parallel (useful for integration testing).
+  with tempfile.TemporaryDirectory(dir=BASE_TMP_FUZZER_DIR) as out:
+    # Set this so that run_fuzzer which is called by bad_build_check works
+    # properly.
+    os.environ['OUT'] = out
+    # We move the contents of the directory because we can't move the
+    # directory itself because it is a mount.
+    move_directory_contents(initial_out, out)
+    try:
+      yield out
+    finally:
+      move_directory_contents(out, initial_out)
+      os.environ['OUT'] = initial_out
 
 
 def test_all_outside_out(allowed_broken_targets_percentage):
