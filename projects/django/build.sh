@@ -30,7 +30,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # over time on the OSS-Fuzz bots, we use pyinstaller to create a standalone
   # package. Though not necessarily required for reproducing issues, this is
   # required to keep fuzzers working properly in OSS-Fuzz.
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
+  pyinstaller --distpath $OUT --onefile --add-data django/conf/locale/en/LC_MESSAGES:django/conf/locale/en/LC_MESSAGES --name $fuzzer_package $fuzzer
 
   # Create execution wrapper. Atheris requires that certain libraries are
   # preloaded, so this is also done here to ensure compatibility and simplify
@@ -46,3 +46,4 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod +x $OUT/$fuzzer_basename
 done
+
