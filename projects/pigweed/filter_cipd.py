@@ -43,7 +43,7 @@ def main():
 
   # Filter out args.excludes
   for exclude in args.excludes:
-    prebuilts[:] = [p for p in prebuilts if exclude not in str(p['path'])]
+    prebuilts[u'packages'] = [p for p in prebuilts[u'packages'] if exclude not in str(p['path'])]
 
   # Rename original CIPD JSON file
   try:
