@@ -35,16 +35,12 @@ _GET_ATTEMPTS = 3
 _GET_BACKOFF = 1
 
 
-def get_http_auth_headers():
+def get_http_auth_headers(config):
   """Returns HTTP headers for authentication to the API."""
-  # Undocumented token used for artifacts auth.
-  token = os.environ.get('ACTIONS_RUNTIME_TOKEN')
-  if not token:
-    return {}
-
-  authorization = f'Bearer {token}'
+  authorization = f'token {config.token}'
   return {
       'Authorization': authorization,
+      'Accept': 'application/vnd.github.v3+json'
   }
 
 
