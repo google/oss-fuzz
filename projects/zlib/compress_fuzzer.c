@@ -1,3 +1,15 @@
+/* Copyright 2022 Google LLC
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,11 +35,9 @@ static void check_compress_level(uint8_t *compr, size_t comprLen,
 
 #define put_byte(s, i, c) {s[i] = (unsigned char)(c);}
 
-static void write_zlib_header(uint8_t *s) {
-  unsigned level_flags = 0; /* compression level (0..3) */
-  unsigned w_bits = 8; /* window size log2(w_size)  (8..16) */
-  unsigned int header = (Z_DEFLATED + ((w_bits-8)<<4)) << 8;
-  header |= (level_flags << 6);
+static void write_zlib_header(uint8_t *s, unsigned compression_method, unsigned flags) {
+  unsigned int header = (Z_DEFLATED + ((flags)<<4)) << 8;
+  header |= (compression_method << 6);
 
   header += 31 - (header % 31);
 
@@ -36,43 +46,51 @@ static void write_zlib_header(uint8_t *s) {
   put_byte(s, 1, (unsigned char)(header & 0xff));
 }
 
-static void check_decompress(uint8_t *compr, size_t comprLen) {
+static void check_decompress(uint8_t *compr, size_t comprLen, unsigned compression_method, unsigned flags) {
   /* We need to write a valid zlib header of size two bytes. Copy the input data
      in a larger buffer. Do not modify the input data to avoid libFuzzer error:
      fuzz target overwrites its const input. */
   size_t copyLen = dataLen + 2;
   uint8_t *copy = (uint8_t *)malloc(copyLen);
   memcpy(copy + 2, data, dataLen);
-  write_zlib_header(copy);
+  write_zlib_header(copy, compression_method, flags);
 
   uncompress(compr, &comprLen, copy, copyLen);
   free(copy);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  /* compressBound does not provide enough space for low compression levels. */
-  size_t comprLen = 100 + 2 * compressBound(size);
+  if (size < 10 || size > 1024 * 1024)
+    return 0;
+
+  const int level = d[0] % 10;
+  d++,size--;
+  
+  //https://web.archive.org/web/20200220015003/http://www.onicos.com/staff/iz/formats/gzip.html
+  unsigned compression_method = d[0] % 5;
+  if (compression_method == 4)  //[4...7] are reserved
+    compression_method = 8;
+  d++,size--;
+  unsigned flags = d[0] & (2 << 4);
+  d++,size--;
+
+  size_t comprLen = compressBound(size);
   size_t uncomprLen = size;
   uint8_t *compr, *uncompr;
-
-  /* Discard inputs larger than 1Mb. */
-  static size_t kMaxSize = 1024 * 1024;
-
-  if (size < 1 || size > kMaxSize)
-    return 0;
 
   data = d;
   dataLen = size;
   compr = (uint8_t *)calloc(1, comprLen);
+  if (!compr)
+    goto err;
   uncompr = (uint8_t *)calloc(1, uncomprLen);
+  if (!uncompr)
+    goto err;
 
-  check_compress_level(compr, comprLen, uncompr, uncomprLen, 1);
-  check_compress_level(compr, comprLen, uncompr, uncomprLen, 3);
-  check_compress_level(compr, comprLen, uncompr, uncomprLen, 6);
-  check_compress_level(compr, comprLen, uncompr, uncomprLen, 7);
+  check_compress_level(compr, comprLen, uncompr, uncomprLen, level);
+  check_decompress(compr, comprLen, compression_method, flags);
 
-  check_decompress(compr, comprLen);
-
+err:
   free(compr);
   free(uncompr);
 
