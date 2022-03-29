@@ -92,19 +92,18 @@ ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 # https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45630,
 # https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45631 and
 # https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45633
-zlib="-l:libz.a"
-if [[ "$SANITIZER" == memory ]]; then
-    git clone https://github.com/madler/zlib
-    pushd zlib
-    git checkout v1.2.11
-    if ! ./configure --static; then
-        cat configure.log
-        exit 1
-    fi
-    make -j$(nproc) V=1
-    popd
-    zlib=zlib/libz.a
+# To make sure all the fuzz targets use the same version of zlib
+# it's also built with ASan and UBSan.
+git clone https://github.com/madler/zlib
+pushd zlib
+git checkout v1.2.12
+if ! ./configure --static; then
+    cat configure.log
+    exit 1
 fi
+make -j$(nproc) V=1
+popd
+zlib=zlib/libz.a
 
 # When new fuzz targets are added it usually makes sense to notify the maintainers of
 # the elfutils project using the mailing list: elfutils-devel@sourceware.org. There
