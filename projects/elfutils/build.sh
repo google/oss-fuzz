@@ -96,7 +96,7 @@ ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 # it's also built with ASan and UBSan.
 git clone https://github.com/madler/zlib
 pushd zlib
-git checkout v1.2.11
+git checkout v1.2.12
 if ! ./configure --static; then
     cat configure.log
     exit 1
