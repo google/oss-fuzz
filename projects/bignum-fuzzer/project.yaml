@@ -1,0 +1,21 @@
+homepage: "https://github.com/guidovranken/bignum-fuzzer"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+    - "martin.swende@ethereum.org"
+    - "cdetrio@ethereum.org"
+    - "openssl-security@openssl.org"
+    - "kurt@roeckx.be"
+    - "caswell.matt@googlemail.com"
+    - "jz.maddock@gmail.com"
+    - "jz.maddock@googlemail.com"
+    - "agl@google.com"
+    - "davidben@google.com"
+    - "svaldez@google.com"
+    - "mbed-tls-security@lists.trustedfirmware.org"
+    - "libmpdec@gmail.com"
+    - "richard@levitte.org"
+main_repo: 'https://github.com/guidovranken/bignum-fuzzer'
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

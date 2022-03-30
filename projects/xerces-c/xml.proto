@@ -1,0 +1,339 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+message Misc {
+    oneof misc_oneof {
+        string comment = 1;
+        ProcessingInstruction inst = 2;
+    }
+}
+
+message PEReference {
+    string name = 1;
+}
+
+message ElementDecl {
+    enum ContentSpec {
+        EMPTY = 0;
+        ANY = 1;
+        FUZZ = 2;
+        MIXED = 3;
+        CHILDREN = 4;
+    }
+    string name = 1;
+    ContentSpec spec = 2;
+    repeated string cdata = 3;
+}
+
+message AttrType {
+    enum Type {
+        CDATA = 0;
+        ID = 1;
+        IDREF = 2;
+        IDREFS = 3;
+        ENTITY = 4;
+        ENTITIES = 5;
+        NMTOKEN = 6;
+        NMTOKENS = 7;
+    }
+    Type ty = 1;
+}
+
+message EnumeratedType {
+    repeated string names = 1;
+}
+
+message AttrListDecl {
+    string name = 1;
+    AttrType atype = 2;
+    EnumeratedType etype = 3;
+    DefaultDecl def = 4;
+}
+
+message ExternalId {
+    enum Type {
+        SYSTEM = 0;
+        PUBLIC = 1;
+        FUZZ = 2;
+    }
+    Type type = 1;
+    string system = 2;
+    string pub = 3;
+}
+
+message AttValue {
+    enum Type {
+        ENTITY = 0;
+        CHAR = 1;
+        FUZZ = 2;
+    }
+    Type type = 1;
+    repeated string value = 2;
+}
+
+message DefaultDecl {
+    enum Type {
+        REQUIRED = 0;
+        IMPLIED = 1;
+        FIXED = 2;
+        FUZZ = 3;
+    }
+    Type type = 1;
+    AttValue att = 2;
+}
+
+message AttDef {
+    // TODO: Add enumerated type
+    enum Type {
+        CDATA = 0;
+        ID = 1;
+        IDREF = 2;
+        IDREFS = 3;
+        ENTITY = 4;
+        ENTITIES = 5;
+        NMTOKEN = 6;
+        NMTOKENS = 7;
+        FUZZ = 8;
+    }
+    string name = 1;
+    Type type = 2;
+    DefaultDecl def = 3;
+}
+
+message AttListDecl {
+    string name = 1;
+    repeated AttDef attdefs = 2;
+}
+
+message NotationDecl {
+    string name = 1;
+    oneof notation_oneof {
+        ExternalId ext = 2;
+        string pub = 3;
+        string fuzz = 4;
+    }
+}
+
+message EntityValue {
+    enum Type {
+        ENTITY = 0;
+        CHAR = 1;
+        PEREF = 2;
+        FUZZ = 3;
+    }
+    Type type = 1;
+    repeated string name = 2;
+}
+
+message NDataDecl {
+    string name = 1;
+}
+
+message EntityDef {
+    oneof entity_oneof {
+        ExternalId ext = 1;
+        EntityValue val = 2;
+    }
+    NDataDecl ndata = 3;
+}
+
+message PEDef {
+    oneof pedef_oneof {
+        EntityValue val = 1;
+        ExternalId id = 2;
+    }
+}
+
+message EntityDecl {
+    enum Type {
+        GEDECL = 0;
+        PEDECL = 1;
+    }
+    Type type = 1;
+    string name = 2;
+    EntityDef ent = 3;
+    PEDef pedef = 4;
+}
+
+message ConditionalSect {
+    enum Type {
+        INCLUDE = 0;
+        IGNORE = 1;
+        FUZZ = 2;
+    }
+    Type type = 1;
+    ExtSubsetDecl ext = 2;
+    // TODO: Make this recursive
+    // See https://www.w3.org/TR/xml/#NT-conditionalSect
+    repeated string ignores = 3;
+}
+
+message OneExtSubsetDecl {
+    oneof extsubset_oneof {
+        MarkupDecl m = 1;
+        ConditionalSect c = 2;
+    }
+}
+
+message ExtSubsetDecl {
+    repeated OneExtSubsetDecl decls = 1;
+}
+
+message MarkupDecl {
+    oneof markup_oneof {
+        ElementDecl e = 1;
+        AttListDecl a = 2;
+        NotationDecl n = 3;
+        Misc m = 4;
+        EntityDecl entity = 5;
+        ExtSubsetDecl ext = 6;
+    }
+}
+
+message DocTypeDecl {
+    string name = 1;
+    ExternalId ext = 2;
+    repeated MarkupDecl mdecl = 3;
+}
+
+message Prolog {
+    XmlDeclaration decl = 1;
+    DocTypeDecl doctype = 2;
+    repeated Misc misc = 3;
+}
+
+message KeyValue {
+    enum XmlNamespace {
+        ATTRIBUTES = 0;
+        BASE = 1;
+        CATALOG = 2;
+        ID = 3;
+        LANG = 4;
+        LINK = 5;
+        SPACE = 6;
+        SPECIAL = 7;
+        TEST = 8;
+        FUZZ = 9;
+    }
+    XmlNamespace type = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message ProcessingInstruction {
+    string name = 1;
+    repeated KeyValue kv = 2;
+}
+
+message CData {
+    string data = 1;
+}
+
+message Content {
+    // TODO: Add other content types
+    oneof content_oneof {
+        string str = 1;
+        Element e = 2;
+        CData c = 3;
+    }
+}
+
+message Element {
+    enum Type {
+        PREDEFINED = 0;
+        FUZZ = 1;
+    }
+    enum Id {
+        XIINCLUDE = 0;
+        XIFALLBACK = 1;
+        // Attributes of xinclude
+        XIHREF = 2;
+        XIPARSE = 3;
+        XIXPOINTER = 4;
+        XIENCODING = 5;
+        XIACCEPT = 6;
+        XIACCEPTLANG = 7;
+    }
+    Type type = 1;
+    Id id = 2;
+    string name = 3;
+    repeated KeyValue kv = 4;
+    Content content = 5;
+    string childprop = 6;
+}
+
+message VersionNum {
+    enum Type {
+        STANDARD = 0;
+        FUZZ = 1;
+    }
+    Type type = 1;
+    uint64 major = 2;
+    uint64 minor = 3;
+}
+
+message Encodings {
+    enum Enc {
+        BIG5 = 0;
+        EUCJP = 1;
+        EUCKR = 2;
+        GB18030 = 3;
+        ISO2022JP = 4;
+        ISO2022KR = 5;
+        ISO88591 = 6;
+        ISO88592 = 7;
+        ISO88593 = 8;
+        ISO88594 = 9;
+        ISO88595 = 10;
+        ISO88596 = 11;
+        ISO88597 = 12;
+        ISO88598 = 13;
+        ISO88599 = 14;
+        SHIFTJIS = 15;
+        TIS620 = 16;
+        USASCII = 17;
+        UTF8 = 18;
+        UTF16 = 19;
+        UTF16BE = 20;
+        UTF16LE = 21;
+        WINDOWS31J = 22;
+        WINDOWS1255 = 23;
+        WINDOWS1256 = 24;
+        FUZZ = 25;
+    }
+    Enc name = 1;
+    string fuzz = 2;
+}
+
+message XmlDeclaration {
+    VersionNum ver = 1;
+    Encodings enc = 2;
+    enum Standalone {
+        YES = 0;
+        NO = 1;
+    }
+    Standalone standalone = 3;
+    string fuzz = 4;
+}
+
+message XmlDocument {
+    Prolog p = 1;
+    repeated Element e = 2;
+}
+
+package xmlProtoFuzzer;

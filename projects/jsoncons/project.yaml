@@ -1,0 +1,6 @@
+homepage: "https://github.com/danielaparker/jsoncons"
+primary_contact: "danielaparker@gmail.com"
+language: c++
+auto_ccs :
+  - "david@adalogics.com"
+main_repo: 'https://github.com/danielaparker/jsoncons'

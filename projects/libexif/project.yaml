@@ -1,0 +1,17 @@
+homepage: "https://libexif.github.io"
+language: c++
+primary_contact: "dan@coneharvesters.com"
+auto_ccs:
+  - paul.l.kehrer@gmail.com
+  - marcus@jet.franken.de
+  - marcusmeissner@googlemail.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+  - memory
+main_repo: 'https://github.com/libexif/libexif'

@@ -15,12 +15,8 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE ..."
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-$CXX $CXXFLAGS -std=c++11 -O2 $SANITIZER_FLAGS -fno-sanitize=vptr \
-    -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
-popd > /dev/null
-rm -rf $WORK/libfuzzer
+echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
+export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
+cp /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-$ARCHITECTURE.a \
+  $LIB_FUZZING_ENGINE_DEPRECATED
 echo " done."

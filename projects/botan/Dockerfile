@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jack@randombit.net
 RUN apt-get update && apt-get install -y make python
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan
-RUN git clone --depth 1 https://github.com/randombit/crypto-corpus.git crypto-corpus
+RUN git clone --depth 1 https://github.com/randombit/crypto-corpus.git fuzzer_corpus
 WORKDIR botan
 COPY build.sh $SRC/

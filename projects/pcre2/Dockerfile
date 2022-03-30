@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcc@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool subversion
 
 RUN git clone https://github.com/PhilipHazel/pcre2 pcre2

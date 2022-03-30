@@ -1,0 +1,11 @@
+homepage: "https://github.com/facebook/rocksdb"
+primary_contact: "rocksdb.dev@gmail.com"
+language: c++
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+auto_ccs:
+  - "david@adalogics.com"
+  - "mhl@fb.com"
+sanitizers:
+  - "address"
+main_repo: 'https://github.com/facebook/rocksdb'

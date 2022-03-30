@@ -1,0 +1,9 @@
+homepage: "http://postgis.net/"
+language: c++
+primary_contact: "lr@pcorp.us"
+auto_ccs:
+  - "even.rouault@gmail.com"
+  - "pramsey@cleverelephant.ca"
+  - "mateusz@loskot.net"
+  - "komzpa@gmail.com"
+main_repo: 'https://git.osgeo.org/gitea/postgis/postgis.git'

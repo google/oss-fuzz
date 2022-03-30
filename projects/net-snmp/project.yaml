@@ -1,0 +1,10 @@
+homepage: "http://www.net-snmp.org/"
+language: c++
+primary_contact: "hardaker@users.sourceforge.net"
+auto_ccs:
+   - "rstory@freesnmp.com"
+   - "fenner@gmail.com"
+   - "bvanassche@acm.org"
+   - "magfr@lysator.liu.se"
+   - "david@adalogics.com"
+main_repo: 'git://git.code.sf.net/p/net-snmp/code'

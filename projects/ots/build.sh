@@ -15,13 +15,22 @@
 #
 ################################################################################
 
-# Build the project.
-./autogen.sh
-./configure
+# setup
+build=$WORK/build
+
+# cleanup
+rm -rf $build
+mkdir -p $build
+
+# Configure the project.
+meson -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
+      --wrap-mode=forcefallback \
+      $build \
+   || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzer.
-make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
-mv ots-fuzzer $OUT/
+ninja -v -j$(nproc) -C $build ots-fuzzer
+mv $build/ots-fuzzer $OUT/
 
 cp $SRC/ots-fuzzer.options $OUT/
 zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts

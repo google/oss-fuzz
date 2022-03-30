@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER inferno@chromium.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-
-RUN git clone --depth 1 https://github.com/madler/zlib.git
+RUN git clone --depth 1 -b develop https://github.com/madler/zlib.git
 WORKDIR zlib
-COPY build.sh zlib_uncompress_fuzzer.cc $SRC/
+COPY build.sh *_fuzzer.c* $SRC/

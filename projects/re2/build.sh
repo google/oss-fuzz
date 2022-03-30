@@ -30,4 +30,4 @@ make -j$(nproc) obj/libre2.a
 # Second, build the fuzzer (distributed with RE2).
 $CXX $CXXFLAGS -std=c++11 -I. \
 	re2/fuzzing/re2_fuzzer.cc -o $OUT/re2_fuzzer \
-	-lFuzzingEngine obj/libre2.a
+	$LIB_FUZZING_ENGINE obj/libre2.a

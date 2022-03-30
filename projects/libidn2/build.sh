@@ -16,26 +16,18 @@
 ################################################################################
 
 ./bootstrap
-./configure --enable-static --disable-doc
-make "-j$(nproc)" -C unistring
-make "-j$(nproc)" -C gl
-make "-j$(nproc)" -C lib
+# switch off leak detection for ./configure run to detect iconv() correctly
+ASAN_OPTIONS=detect_leaks=0 ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings
+make clean
+make -j$(nproc) check VERBOSE=t
 
-fuzzers=$(find fuzz/ -name "*_fuzzer.cc")
+cd fuzz
+make oss-fuzz
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-for f in $fuzzers; do
-    fuzzer=$(basename "$f" ".cc")
-    $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-        "fuzz/${fuzzer}.cc" -o "$OUT/${fuzzer}" \
-        lib/.libs/libidn2.a -lFuzzingEngine -Wl,-Bstatic \
-        -Wl,-Bdynamic
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    corpus_dir=$(basename "${fuzzer}" "_fuzzer")
-    if [ -d "fuzz/${corpus_dir}.in/" ]; then
-        zip -r "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${corpus_dir}.in/"
-    fi
+for dir in *_fuzzer.in; do
+  fuzzer=$(basename $dir .in)
+  zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done

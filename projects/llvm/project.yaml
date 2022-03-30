@@ -1,0 +1,29 @@
+homepage: "http://llvm.org/"
+language: c++
+primary_contact: "kcc@google.com"
+auto_ccs:
+  - "mascasa@google.com"
+  - "jdevlieghere@apple.com"
+  - "vsk@apple.com"
+  - "akilsrin@apple.com"
+  - "llvm-bugs@lists.llvm.org"
+  - "igmyrj@gmail.com"
+  - "mitchphillips@outlook.com"
+  - "mitchp@google.com"
+  - "xpl0re@gmail.com"
+  - "jfb@chromium.org"
+  - "eneyman@google.com"
+  - "bigcheesegs@gmail.com"
+  - "davg@google.com"
+
+sanitizers:
+  - address
+  - memory
+
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+
+# Bug reports are public by default:
+view_restrictions: none
+main_repo: 'https://github.com/llvm/llvm-project.git'

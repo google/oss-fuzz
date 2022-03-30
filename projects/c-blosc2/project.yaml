@@ -1,0 +1,11 @@
+homepage: "https://github.com/Blosc/c-blosc2"
+language: c++
+primary_contact: "blosc.oss.fuzz@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/Blosc/c-blosc2.git'

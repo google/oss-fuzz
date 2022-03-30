@@ -15,8 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER even.rouault@spatialys.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++
-RUN git clone --depth 1 https://github.com/OSGeo/proj.4 proj.4
-WORKDIR proj.4
-COPY build.sh $SRC/
+RUN apt-get update && \
+    apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config wget
+
+RUN git clone --depth 1 https://github.com/OSGeo/proj proj
+
+RUN git clone --depth 1 https://github.com/curl/curl.git proj/curl
+
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git proj/libtiff
+
+WORKDIR proj
+
+RUN cp test/fuzzers/build.sh $SRC/

@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +25,14 @@ function jq_inplace() {
   F=$(tempfile) && cat $1 | jq "$2" > $F && mv $F $1
 }
 
+PATHS_TO_SCAN="$SRC"
+
+if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  PATHS_TO_SCAN="$PATHS_TO_SCAN $GOPATH"
+fi
+
 # Git
-for DOT_GIT_DIR in $(find $SRC -name ".git" -type d); do
+for DOT_GIT_DIR in $(find $PATHS_TO_SCAN -name ".git" -type d); do
   GIT_DIR=$(dirname $DOT_GIT_DIR)
   cd $GIT_DIR
   GIT_URL=$(git config --get remote.origin.url)
@@ -35,7 +41,7 @@ for DOT_GIT_DIR in $(find $SRC -name ".git" -type d); do
 done
 
 # Subversion
-for DOT_SVN_DIR in $(find $SRC -name ".svn" -type d); do
+for DOT_SVN_DIR in $(find $PATHS_TO_SCAN -name ".svn" -type d); do
   SVN_DIR=$(dirname $DOT_SVN_DIR)
   cd $SVN_DIR
   SVN_URL=$(svn info | grep "^URL:" | sed  's/URL: //g')
@@ -44,11 +50,11 @@ for DOT_SVN_DIR in $(find $SRC -name ".svn" -type d); do
 done
 
 # Mercurial
-for DOT_HG_DIR in $(find $SRC -name ".hg" -type d); do
+for DOT_HG_DIR in $(find $PATHS_TO_SCAN -name ".hg" -type d); do
   HG_DIR=$(dirname $DOT_HG_DIR)
   cd $HG_DIR
   HG_URL=$(hg paths default)
-  HG_REV=$(hg --debug id -i)
+  HG_REV=$(hg --debug id -r. -i)
   jq_inplace $SRCMAP ".\"$HG_DIR\" = { type: \"hg\", url: \"$HG_URL\", rev: \"$HG_REV\" }"
 done
 

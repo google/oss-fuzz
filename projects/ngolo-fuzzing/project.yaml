@@ -1,0 +1,8 @@
+homepage: "'https://github.com/catenacyber/ngolo-fuzzing"
+primary_contact: "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/catenacyber/ngolo-fuzzing'

@@ -1,0 +1,11 @@
+homepage: "http://qt-project.org"
+language: c++
+primary_contact: "rlohningqt@gmail.com"
+auto_ccs:
+ - "sgaist.qt@gmail.com"
+ - "shawn.t.rutledge@gmail.com"
+main_repo: 'git://code.qt.io/qt/qt5.git'
+architectures:
+ - x86_64
+ - i386
+help_url: "https://code.qt.io/cgit/qt/qtbase.git/plain/tests/libfuzzer/README"

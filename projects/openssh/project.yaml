@@ -1,0 +1,7 @@
+homepage: https://www.openssh.com/
+language: c++
+primary_contact: "djm@mindrot.org"
+auto_ccs:
+        - "dtucker@dtucker.net"
+        - "djm@google.com"
+main_repo: 'https://github.com/openssh/openssh-portable'

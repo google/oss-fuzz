@@ -15,33 +15,44 @@
 #
 ################################################################################
 
-# configure script needs leak checking disabled to not fail
-export ASAN_OPTIONS=detect_leaks=0
-./autogen.sh
-./configure --with-perl=no --disable-shared --without-textui --with-fuzzer \
-	--with-fuzzer-lib=$LIB_FUZZING_ENGINE \
-	CC=$CC CXX=$CXX PKG_CONFIG="pkg-config --static"
-make clean
-make "-j$(nproc)" CFLAGS="-static -DSUPPRESS_PRINTF_FALLBACK $CFLAGS" CXXFLAGS="-static $CXXFLAGS"
+# setup
+BUILD=$WORK/Build
+fuzz_targets=(
+    src/fe-fuzz/irssi-fuzz
+    src/fe-fuzz/server-fuzz
+    src/fe-fuzz/irc/core/event-get-params-fuzz
+    src/fe-fuzz/fe-common/core/theme-load-fuzz
+)
 
-# now build irssi-fuzz itself
+if [ "$FUZZING_ENGINE" = honggfuzz ]; then
+    export CC="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang
+    export CXX="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang++
+fi
 
-export GLIB_CFLAGS="$(pkg-config --static --cflags glib-2.0)"
-export GLIB_LIBS="$(pkg-config --static --libs glib-2.0)"
+# cleanup
+rm -rf "$BUILD"
+mkdir -p "$BUILD"
 
-CORE_LIBS="src/core/libcore.a"
-CORE_LIBS="$CORE_LIBS src/lib-config/libirssi_config.a"
+# Configure the project.
+meson "$BUILD" -Dstatic-dependency=yes -Dinstall-glib=force \
+      -Dwith-fuzzer=yes -Dwith-fuzzer-lib=$LIB_FUZZING_ENGINE \
+      -Dfuzzer-link-language=cpp \
+    || ( cat "$BUILD"/meson-logs/meson-log.txt && false )
 
-FE_COMMON_LIBS="src/irc/libirc.a"
-FE_COMMON_LIBS="$FE_COMMON_LIBS src/irc/core/libirc_core.a"
-FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/irc/libfe_common_irc.a"
-FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/core/libfe_common_core.a"
+# now build all fuzz targets
+ninja -C "$BUILD" -v "${fuzz_targets[@]}"
+( cd "$BUILD" && mv "${fuzz_targets[@]}" "$OUT" )
 
-FE_FUZZ_CFLAGS="-I. -Isrc -Isrc/core/ -Isrc/irc/core/ -Isrc/fe-common/core/"
+git clone --depth 1 https://github.com/irssi-import/themes         theme-load-fuzz_corpus
+git clone --depth 1 https://github.com/irssi/irssi-fuzzing-corpora
 
-${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
-	src/fe-fuzz/irssi.o src/fe-fuzz/module-formats.o -lm \
-	-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
-	-Wl,-Bdynamic -o $OUT/irssi-fuzz
+find theme-load-fuzz_corpus -mindepth 1 -maxdepth 1 \( -type d -o \! -name \*.theme \) -exec rm -fr {} +
 
-cp $SRC/*.options $OUT/
+zip -q -j "$OUT"/theme-load-fuzz_seed_corpus.zip theme-load-fuzz_corpus/*
+zip -q -j "$OUT"/irssi-fuzz_seed_corpus.zip      irssi-fuzzing-corpora/irssi-fuzz-corpus/*
+zip -q -j "$OUT"/server-fuzz_seed_corpus.zip     irssi-fuzzing-corpora/server-fuzz-corpus/*
+
+# get tokens.txt dictionary from irssi/src/fe-fuzz/
+cp src/fe-fuzz/tokens.txt "$OUT"/server-fuzz.dict
+
+cp "$SRC"/*.options "$SRC"/*.dict "$OUT"/

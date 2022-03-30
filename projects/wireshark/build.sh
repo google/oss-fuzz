@@ -15,34 +15,37 @@
 #
 ################################################################################
 
-export WIRESHARK_INSTALL_PATH="$WORK/install"
-mkdir -p "$WIRESHARK_INSTALL_PATH"
+WIRESHARK_BUILD_PATH="$WORK/build"
+mkdir -p "$WIRESHARK_BUILD_PATH"
 
 # Prepare Samples directory
 export SAMPLES_DIR="$WORK/samples"
 mkdir -p "$SAMPLES_DIR"
 cp -a $SRC/wireshark-fuzzdb/samples/* "$SAMPLES_DIR"
 
+# Make sure we build fuzzshark.
+CMAKE_DEFINES="-DBUILD_fuzzshark=ON"
+
 # compile static version of libs
-# XXX, with static wireshark linking each fuzzer binary is ~240 MB (just libwireshark.a is 423 MBs).
+# XXX, with static wireshark linking each fuzzer binary is ~346 MB (just libwireshark.a is 761 MB).
 # XXX, wireshark is not ready for including static plugins into binaries.
-CONFOPTS="--disable-shared --enable-static --without-plugins"
+CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_STATIC=ON -DENABLE_PLUGINS=OFF"
 
 # disable optional dependencies
-CONFOPTS="$CONFOPTS --without-pcap --without-ssl --without-gnutls"
+CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"
 
-# need only libs, disable programs
-CONFOPTS="$CONFOPTS --disable-wireshark --disable-tshark --disable-sharkd \
-             --disable-dumpcap --disable-capinfos --disable-captype --disable-randpkt --disable-dftest \
-             --disable-editcap --disable-mergecap --disable-reordercap --disable-text2pcap \
-             --without-extcap \
-         "
+# There is no need to manually disable programs via BUILD_xxx=OFF since the
+# all-fuzzers targets builds the minimum required binaries. However we do have
+# to disable the Qt GUI or else the cmake step will fail.
+CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF"
 
-# Fortify and asan don't like each other ... :(
-sed -i '/AC_WIRESHARK_GCC_FORTIFY_SOURCE_CHECK/d' configure.ac
-./autogen.sh
-./configure --prefix="$WIRESHARK_INSTALL_PATH" $CONFOPTS --disable-warnings-as-errors
+cd "$WIRESHARK_BUILD_PATH"
 
-make "-j$(nproc)"
-make install
+cmake -GNinja \
+      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
+      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES $SRC/wireshark/
+
+ninja all-fuzzers
+
 $SRC/wireshark/tools/oss-fuzzshark/build.sh all

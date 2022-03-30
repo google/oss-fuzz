@@ -1,0 +1,28 @@
+From b0537ec9a7047d55d365a64e9ec9559cf1f28792 Mon Sep 17 00:00:00 2001
+From: David Tardon <dtardon@redhat.com>
+Date: Mon, 13 Nov 2017 16:56:23 +0100
+Subject: [PATCH] avoid target buffer overflow
+
+---
+ icu4c/source/common/ucnv_u8.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/icu4c/source/common/ucnv_u8.cpp b/icu4c/source/common/ucnv_u8.cpp
+index 951988ed9..caaf18ae3 100644
+--- a/icu4c/source/common/ucnv_u8.cpp
++++ b/icu4c/source/common/ucnv_u8.cpp
+@@ -770,6 +770,11 @@ ucnv_UTF8FromUTF8(UConverterFromUnicodeArgs *pFromUArgs,
+             oldToULength=0;
+             toULength=1;
+             toULimit=U8_COUNT_BYTES_NON_ASCII(b);
++            if (toULimit > (const uint8_t *)pFromUArgs->targetLimit - target)
++            {
++                *pErrorCode = U_BUFFER_OVERFLOW_ERROR;
++                break;
++            }
+             c=b;
+ moreBytes:
+             while(toULength<toULimit) {
+-- 
+2.14.1
+

@@ -1,0 +1,25 @@
+homepage: "http://facebook.github.io/zstd/"
+language: c++
+primary_contact: "terrelln@fb.com"
+auto_ccs:
+  - "NickRTerrell@gmail.com"
+  - "Yann.collet.73@gmail.com"
+  - "cyan@fb.com"
+  - "felixh@fb.com"
+  - "dpc@fb.com"
+  - "mhl@fb.com"
+  - "binhvo@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
+  - honggfuzz
+sanitizers:
+  - address
+  - dataflow
+  - memory
+  - undefined
+main_repo: 'https://github.com/facebook/zstd'

@@ -21,7 +21,8 @@ make V=1 all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
-     -lFuzzingEngine ./src/.libs/libmagic.a
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a
 
 cp ./magic/magic.mgc $OUT/
 
+zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile

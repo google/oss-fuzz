@@ -1,0 +1,7 @@
+homepage: "https://www.xpdfreader.com/"
+primary_contact: "xpdf@xpdfreader.com"
+language: c++
+sanitizers:
+  - address
+auto_ccs :
+  - "david@adalogics.com"

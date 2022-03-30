@@ -1,12 +1,11 @@
 homepage: "https://github.com/libass/libass"
-primary_contact: "greg@kinoho.net"
+language: c++
+primary_contact: "chortos@inbox.lv"
 auto_ccs:
-  - "rodger.combs@gmail.com"
-  - "nfxjfg@gmail.com"
-  - "chortos@inbox.lv"
+  - "greg@kinoho.net"
+  - "rcombs@rcombs.me"
   - "vabnick@gmail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined
+main_repo: 'https://github.com/libass/libass.git'

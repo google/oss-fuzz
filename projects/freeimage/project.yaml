@@ -1,0 +1,11 @@
+homepage: "http://freeimage.sourceforge.net/"
+language: c++
+primary_contact: "drolon@infonie.fr"
+
+sanitizers:
+  - address
+  - undefined
+
+labels:
+  load_from_memory_fuzzer:
+    - sundew

@@ -24,7 +24,7 @@ static teken_funcs_t tf = {
 };
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  teken_t t;
+  teken_t t = { 0 };
   teken_init(&t, &tf, NULL);
   teken_input(&t, data, size);
   return 0;

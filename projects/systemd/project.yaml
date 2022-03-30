@@ -1,0 +1,25 @@
+homepage: "https://freedesktop.org/wiki/Software/systemd/"
+language: c++
+primary_contact: "lennart@poettering.net"
+builds_per_day: 4
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - jonathan@titanous.com
+  - zbyszek@in.waw.pl
+  - dimitri.ledkov@canonical.com
+  - poettering@gmail.com
+  - watanabe.yu@gmail.com
+  - evvers@ya.ru
+  - evverx@gmail.com
+  - Tixxdz@gmail.com
+  - fsumsal@redhat.com
+  - johannbg@gmail.com
+  - ssahani@vmware.com
+  - chris@chrisdown.name
+  - the.anitazha@gmail.com
+  - daan.j.demeyer@gmail.com
+  - luca.boccassi@gmail.com
+main_repo: 'https://github.com/systemd/systemd'

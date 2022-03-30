@@ -15,41 +15,33 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool autopoint libnettle6 nettle-dev pkg-config gperf bison autogen texinfo curl
+RUN apt-get update && apt-get install -y \
+ make \
+ pkg-config \
+ autoconf \
+ automake \
+ autogen \
+ autopoint \
+ libtool \
+ gperf \
+ bison \
+ texinfo \
+ curl \
+ gettext \
+ gengetopt \
+ wget \
+ python \
+ mercurial
 
-RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
-RUN cd gnutls && git submodule update --init
+ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
+RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
+RUN hg clone https://gmplib.org/repo/gmp/ gmp
+RUN git clone https://gitlab.com/gnutls/libtasn1.git
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 
-# clone OpenSSL to get its fuzzer testcases
-RUN git clone --depth=1 https://github.com/openssl/openssl
-
-# Using the client_corpus transcripts from BoringSSL and OpenSSL, they're a
-# decent starting point.
-RUN mkdir client-testcases
-RUN cd client-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus.tar.gz | tar -zx
-RUN cd client-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus_no_fuzzer_mode.tar.gz | tar -zx
-RUN cp openssl/fuzz/corpora/client/* client-testcases/
-RUN zip gnutls_client_fuzzer_seed_corpus.zip client-testcases/*
-
-# Applies to servers as well
-RUN mkdir server-testcases
-RUN cd server-testcases && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/server_corpus.tar.gz | tar -zx
-RUN cd server-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/server_corpus_no_fuzzer_mode.tar.gz | tar -zx
-RUN cp openssl/fuzz/corpora/server/* server-testcases/
-RUN zip gnutls_server_fuzzer_seed_corpus.zip server-testcases/*
-
-# Same thing for X.509
-RUN mkdir x509-testcases
-RUN cd x509-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/cert_corpus.tar.gz | tar -zx
-RUN cp openssl/fuzz/corpora/x509/* x509-testcases/
-RUN zip gnutls_x509_parser_fuzzer_seed_corpus.zip x509-testcases/*
-
-# And private keys
-RUN mkdir private-key-testcases
-RUN cd private-key-testcases && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/privkey_corpus.tar.gz | tar -zx
-RUN cd private-key-testcases && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/pkcs8_corpus.tar.gz | tar -zx
-RUN zip gnutls_private_key_parser_fuzzer_seed_corpus.zip private-key-testcases/*
+RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/

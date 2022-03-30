@@ -1,0 +1,13 @@
+homepage: "https://www.webmproject.org"
+language: c++
+primary_contact: "jzern@google.com"
+sanitizers:
+- address
+- memory
+- undefined
+auto_ccs:
+- jzern@google.com
+- johannkoenig@google.com
+vendor_ccs:
+- twsmith@mozilla.com
+main_repo: 'https://chromium.googlesource.com/webm/libvpx'

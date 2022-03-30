@@ -1,0 +1,17 @@
+homepage: https://webkit.org/
+language: c++
+primary_contact: "ddkilzer@apple.com"
+auto_ccs:
+  - "mark.lam@apple.com"
+  - "ddkilzer@apple.com"
+  - "jfb@chromium.org"
+  - "product-security@apple.com"
+  - "sbarati@apple.com"
+  - "simon.lewis@apple.com"
+  - "ysuzuki@apple.com"
+fuzzing_engines:
+  - none
+sanitizers:
+  - address
+blackbox: true
+main_repo: 'git://git.webkit.org/WebKit.git'

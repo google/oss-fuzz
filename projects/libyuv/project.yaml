@@ -1,0 +1,16 @@
+homepage: "https://chromium.googlesource.com/libyuv/libyuv/"
+language: c++
+primary_contact: "mikhal@webrtc.org"
+auto_ccs:
+    - "fbarchard@google.com"
+    - "frkoenig@google.com"
+vendor_ccs:
+    - "ansgoel@microsoft.com"
+    - "jonorman@microsoft.com"
+fuzzing_engines:
+    - libfuzzer
+    - afl
+sanitizers:
+    - address
+    - memory
+    - undefined

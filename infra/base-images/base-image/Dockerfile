@@ -16,10 +16,12 @@
 
 # Base image for all other images.
 
-FROM ubuntu:16.04
-MAINTAINER mike.aizatsky@gmail.com
+FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y libc6-dev binutils libgcc-9-dev && \
+    apt-get autoremove -y
 
 ENV OUT=/out
 ENV SRC=/src

@@ -1,0 +1,18 @@
+homepage: "http://www.leptonica.com"
+language: c++
+primary_contact: "taking@google.com"
+auto_ccs:
+  - "kusano@google.com"
+  - "dbloomberg@google.com"
+  - "dan.bloomberg@gmail.com"
+  - "stjoweil@googlemail.com"
+  - "Adam@adalogics.com"
+  - "ballbach@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+labels:
+  pix_rotate_shear_fuzzer:
+    - sundew
+main_repo: 'https://github.com/DanBloomberg/leptonica.git'

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2016,2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,20 +17,16 @@
 
 cd $SRC/botan
 
-# This assumes $CC is set to either 'clang' or 'gcc'
-./configure.py --cc=$CC --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --unsafe-fuzzer-mode --disable-shared --disable-modules=locking_allocator
-make -j$(nproc) libbotan-2.a
+ln -s $SRC/fuzzer_corpus .
 
-jigs=$(find $SRC/botan/src/extra_tests/fuzzers/jigs -name "*.cpp")
+./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator \
+               --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
+               --without-os-features=getrandom,getentropy --with-fuzzer-lib='FuzzingEngine'
 
-for fuzzer_src in $jigs; do
-  fuzzer=$(basename $fuzzer_src .cpp)
-  $CXX $CXXFLAGS -DUSE_LLVM_FUZZER -std=c++11 -I$SRC/botan/build/include \
-       -o $OUT/$fuzzer $fuzzer_src -L$SRC/botan -lbotan-2 -lFuzzingEngine
+make -j$(nproc) libs
+make -j$(nproc) fuzzers
+make fuzzer_corpus_zip
 
-  if [ -d "$SRC/crypto-corpus/${fuzzer}" ]; then
-    zip -j $OUT/${fuzzer}_seed_corpus.zip $SRC/crypto-corpus/${fuzzer}/*
-  fi
-done
-
+# the seed corpus zips will also be in this directory
+cp build/fuzzer/* $OUT

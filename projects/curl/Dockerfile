@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dvyukov@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
 
-RUN git clone --depth 1 https://github.com/curl/curl.git
-WORKDIR curl
-COPY build.sh curl_fuzzer.cc *.options *.dict $SRC/
+RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
+RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
 
+# Use curl-fuzzer's scripts to get latest dependencies.
+RUN $SRC/curl_fuzzer/scripts/ossfuzzdeps.sh
+
+WORKDIR $SRC/curl_fuzzer
+COPY build.sh $SRC/

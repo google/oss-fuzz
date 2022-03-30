@@ -1,0 +1,6 @@
+homepage: "https://libgit2.github.com/"
+language: c++
+primary_contact: "ps@pks.im"
+auto_ccs:
+  - "nelhage@nelhage.com"
+main_repo: 'https://github.com/libgit2/libgit2'

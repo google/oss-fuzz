@@ -1,0 +1,10 @@
+homepage: "https://xerces.apache.org/"
+language: c++
+primary_contact: "vincent.ulitzsch@live.de"
+auto_ccs:
+  - "vincent.ulitzsch@live.de"
+  - "bshas3@gmail.com"
+sanitizers:
+ - address
+ - memory
+ - undefined

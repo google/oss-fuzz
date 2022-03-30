@@ -1,0 +1,7 @@
+homepage: "http://www.boost.org/"
+language: c++
+primary_contact: "mclow@boost.org"
+auto_ccs:  
+   - "jz.maddock@googlemail.com"
+   - "bshas3@gmail.com"
+main_repo: 'https://github.com/boostorg/boost.git'

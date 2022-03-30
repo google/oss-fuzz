@@ -16,18 +16,15 @@
 #
 ################################################################################
 
-./autogen.sh
-sync
-./configure
-make -j$(nproc) clean
-make -j$(nproc) all
+# Tell CMake what fuzzing engine to link:
+export CMAKE_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
 
-$CXX $CXXFLAGS -std=c++11 \
-  -I./include -I. \
-  ./src/tools/ftfuzzer/ftfuzzer.cc -o $OUT/ftfuzzer \
-  ./objs/*.o -lFuzzingEngine \
-  /usr/lib/x86_64-linux-gnu/libarchive.a \
-  ./objs/.libs/libfreetype.a
+bash "fuzzing/scripts/build-fuzzers.sh"
+bash "fuzzing/scripts/prepare-oss-fuzz.sh"
 
-zip -j $OUT/ftfuzzer_seed_corpus.zip $SRC/font-corpus/*
-cp $SRC/*.options $OUT/
+# Rename the `legacy' target to `ftfuzzer' for historical reasons:
+for f in "${OUT}/legacy"*; do
+    mv "${f}" "${f/legacy/ftfuzzer}"
+done
+
+zip -ju "${OUT}/ftfuzzer_seed_corpus.zip" "${SRC}/font-corpus/"*

@@ -1,0 +1,15 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/build-status
+  - '-f'
+  - infra/build/build_status/Dockerfile
+  - .
+- name: 'gcr.io/oss-fuzz-base/build-status'
+  args: []
+  timeout: 3600s
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 3600s

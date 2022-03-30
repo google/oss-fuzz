@@ -1,0 +1,15 @@
+homepage: "https://github.com/yhirose/cpp-httplib"
+language: c++
+primary_contact: "yuji.hirose.bug@gmail.com"
+auto_ccs :
+  - "cpp-httplib-oss-fuzz@googlegroups.com"
+  - "omkarjadhav@google.com"
+  - "hlivingstone@google.com"
+  - "kalaskar@google.com"
+  - "ankitlohia@google.com"
+sanitizers:
+  - address
+  - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://github.com/yhirose/cpp-httplib.git'

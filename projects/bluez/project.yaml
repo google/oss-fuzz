@@ -1,0 +1,7 @@
+homepage: "https://github.com/bluez/bluez"
+language: c
+primary_contact: "bluez.test.bot@gmail.com"
+main_repo: "https://github.com/bluez/bluez"
+auto_ccs:
+  - "hj.tedd.an@gmail.com"
+  - "david@adalogics.com"

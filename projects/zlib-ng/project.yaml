@@ -1,0 +1,20 @@
+homepage: "https://github.com/zlib-ng/zlib-ng"
+language: c++
+primary_contact: "zlib-ng@circlestorm.org"
+auto_ccs:
+  - "sebpop@gmail.com"
+  - "nathan.moinvaziri@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - memory
+  - undefined
+  - dataflow
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/zlib-ng/zlib-ng.git'

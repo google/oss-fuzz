@@ -1,6 +1,33 @@
-homepage: "http://www.harfbuzz.org/"
-primary_contact: "behdad@google.com"
+homepage: "https://github.com/harfbuzz/harfbuzz"
+language: c++
+primary_contact: "harfbuzz-admin@googlegroups.com"
+auto_ccs:
+  - "behdad.esfahbod@gmail.com"
+  - "ebrahim@gnu.org"
+  - "ebraminio@gmail.com"
+  - "grieger@google.com"
+  - "rsheeter@google.com"
+  - "dr.khaled.hosny@gmail.com"
+  - "jfkthame@gmail.com"
+  - "cchapman@adobe.com"
+  - "qxliu@google.com"
+  - "ckitagawa@google.com"
+  - "drott@chromium.org"
+vendor_ccs:
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
+  - dataflow
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/harfbuzz/harfbuzz.git'

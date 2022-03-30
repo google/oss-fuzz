@@ -1,0 +1,9 @@
+homepage: "http://ermig1979.github.io/Simd"
+language: c++
+primary_contact: "ermig@tut.by"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/ermig1979/Simd'

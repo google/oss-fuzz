@@ -1,0 +1,19 @@
+homepage: "https://bitbucket.org/jpommier/pffft"
+language: c++
+primary_contact: "pommier@modartt.com"
+auto_ccs:
+  - "alessiob@webrtc.org"
+  - "mbonadei@webrtc.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

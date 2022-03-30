@@ -1,5 +1,11 @@
 homepage: "http://libcxxabi.llvm.org/"
+language: c++
 primary_contact: "kcc@google.com"
+auto_ccs:
+  - "Erik.Pilkington@gmail.com"
+  - "akilsrin@apple.com"
+  - "bigcheesegs@gmail.com"
+  - "eric@efcs.ca"
 sanitizers:
   - address
   - memory

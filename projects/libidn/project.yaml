@@ -1,0 +1,7 @@
+homepage: "https://www.gnu.org/software/libidn/"
+language: c++
+primary_contact: "rockdaboot@gmail.com"
+auto_ccs:
+  - "tim.ruehsen@gmx.de"
+  - "simon@josefsson.org"
+main_repo: 'https://git.savannah.gnu.org/git/libidn.git'

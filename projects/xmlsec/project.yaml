@@ -1,0 +1,9 @@
+homepage: "https://www.aleksey.com/xmlsec/"
+language: c++
+primary_contact: "aleksey@aleksey.com"
+auto_ccs:
+  - "alekseysanin@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/lsh123/xmlsec'

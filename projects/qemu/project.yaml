@@ -1,0 +1,18 @@
+homepage: "https://www.qemu.org/"
+language: c
+primary_contact: "alxndr@bu.edu"
+auto_ccs:
+  - "bsd@redhat.com"
+  - "mcascell@redhat.com"
+  - "pbonzini@redhat.com"
+  - "stefanha@redhat.com"
+  - "darren.kenny@oracle.com"
+  - "lichenca2020@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
+main_repo: 'https://git.qemu.org/git/qemu.git'
