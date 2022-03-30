@@ -36,6 +36,7 @@ limitations under the License.
 #include "SplashOutputDev.h"
 #include "Stream.h"
 #include "config.h"
+#include "JBIG2Stream.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -116,6 +117,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             (void)splashOut->getBitmap();
 
             delete splashOut;
+
+            Object globals;
+            BaseStream *base_str = doc.getBaseStream();
+            JBIG2Stream *str = new JBIG2Stream(base_str, &globals);
+            str->reset();
+            globals.free();
+            delete str;
         }
     } catch (...) {
 
