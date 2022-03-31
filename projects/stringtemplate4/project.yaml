@@ -1,9 +1,9 @@
-
 homepage: "https://github.com/antlr/stringtemplate4"
 language: jvm
-primary_contact: "none"
+primary_contact: "parrt@antlr.org"
 auto_ccs:
   - "glendowne@code-intelligence.com"
+  - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
 fuzzing_engines:
   - "libfuzzer"
