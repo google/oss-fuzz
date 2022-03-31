@@ -52,6 +52,10 @@ inputs:
     description: 'If True, then unreproducible crashes will be reported.'
     required: false
     default: false
+  oss-fuzz:
+    description: |
+      Gets corpuses, coverage, and old builds from OSS-Fuzz.
+    default: false
   minimize-crashes:
     description: 'If True, reportable crashes will be minimized.'
     required: false
@@ -61,6 +65,7 @@ runs:
   image: '../../../run_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    OSS_FUZZ: ${{ inputs.oss-fuzz }}
     LANGUAGE: ${{ inputs.language }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}

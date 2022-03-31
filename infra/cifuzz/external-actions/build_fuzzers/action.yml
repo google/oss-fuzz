@@ -43,6 +43,10 @@ inputs:
     description: |
       If set, will upload the build.
     default: false
+  oss-fuzz:
+    description: |
+      Gets corpuses, coverage, and old builds from OSS-Fuzz.
+    default: false
   github-token:
     description: |
       Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
@@ -56,6 +60,7 @@ runs:
   image: '../../../build_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    OSS_FUZZ: ${{ inputs.oss-fuzz }}
     LANGUAGE: ${{ inputs.language }}
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
