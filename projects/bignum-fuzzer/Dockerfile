@@ -32,5 +32,5 @@ RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN git clone --depth 1 -b development https://github.com/ARMmbed/mbedtls
+RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls
 COPY build.sh $SRC/
