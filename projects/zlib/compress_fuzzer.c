@@ -76,7 +76,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   size_t comprLen = compressBound(size);
   size_t uncomprLen = size;
-  uint8_t *compr, *uncompr;
+  uint8_t *compr = NULL, *uncompr = NULL;
 
   data = d;
   dataLen = size;
