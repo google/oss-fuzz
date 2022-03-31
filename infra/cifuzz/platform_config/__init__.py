@@ -111,6 +111,12 @@ class BasePlatformConfig:
     return os.environ.get('FILESTORE')
 
   @property
+  def cfl_oss_fuzz_opt_in(self):
+    """Returns whether a ClusterFuzzLite user has opted for OSS-Fuzz
+    features."""
+    return os.environ.get('OSS_FUZZ')
+
+  @property
   def git_url(self):
     """Returns the repo URL. This is only used by GitHub users. Right now it is
     needed by external on GitHub because we need to clone a new repo because the

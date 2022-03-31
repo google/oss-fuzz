@@ -79,6 +79,27 @@ def _make_empty_dir_if_nonexistent(path):
   """Makes an empty directory at |path| if it does not exist."""
   os.makedirs(path, exist_ok=True)
 
+def _clusterfuzzlite_upload_crashes(workspace, filestore):
+  """Upload crashes on ClusterFuzzLite"""
+  artifact_dirs = os.listdir(self.workspace.artifacts)
+  if not artifact_dirs:
+    logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
+    return
+
+  for crash_target in artifact_dirs:
+    artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
+    if not os.path.isdir(artifact_dir):
+      logging.warning('%s is not an expected artifact directory, skipping.',
+                        crash_target)
+      continue
+
+    logging.info('Uploading crashes in %s.', artifact_dir)
+    try:
+      self.filestore.upload_crashes(crash_target, artifact_dir)
+      logging.info('Done uploading crashes.')
+    except Exception as err:  # pylint: disable=broad-except
+      logging.error('Failed to upload crashes. Error: %s', err)
+
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
@@ -176,24 +197,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_crashes(self):
     """Uploads crashes."""
-    artifact_dirs = os.listdir(self.workspace.artifacts)
-    if not artifact_dirs:
-      logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
-      return
-
-    for crash_target in artifact_dirs:
-      artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
-      if not os.path.isdir(artifact_dir):
-        logging.warning('%s is not an expected artifact directory, skipping.',
-                        crash_target)
-        continue
-
-      logging.info('Uploading crashes in %s.', artifact_dir)
-      try:
-        self.filestore.upload_crashes(crash_target, artifact_dir)
-        logging.info('Done uploading crashes.')
-      except Exception as err:  # pylint: disable=broad-except
-        logging.error('Failed to upload crashes. Error: %s', err)
+    _clusterfuzzlite_upload_crashes(self.workspace, self.filestore)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
@@ -320,6 +324,21 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
 
 
+class OSSFuzzClusterFuzzLite(OSSFuzz):
+  """The OSS-Fuzz ClusterFuzz deployment for ClusterFuzzLite users. This is for
+  OSS-Fuzz users of ClusterFuzzLite that want all the features of CIFuzz (except
+  repo cloning). Note that ClusterFuzzLite hides crash uploading from the user
+  (it doesn't rely on the upload-artifact github action unlike CIFuzz), so we
+  implement that ourselves."""
+
+  def __init__(self, config, workspace):
+    super().__init__(config, workspace)
+    self.filestore = filestore_utils.get_filestore(self.config)
+
+  def upload_crashes(self):
+    _clusterfuzzlite_upload_crashes(self.workspace, self.filestore)
+
+
 class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
   ClusterFuzz to use."""
@@ -372,6 +391,10 @@ def get_clusterfuzz_deployment(config, workspace):
   if config.no_clusterfuzz_deployment:
     logging.info('Overriding ClusterFuzzDeployment. Using None.')
     deployment_cls = NoClusterFuzzDeployment
+  if config.cfl_oss_fuzz_opt_in:
+    logging.info(
+        'Overriding ClusterFuzzDeployment. Using OSSFuzzClusterFuzzLite.')
+    deployment_cls = OSSFuzzClusterFuzzLite
   result = deployment_cls(config, workspace)
   logging.info('ClusterFuzzDeployment: %s.', result)
   return result

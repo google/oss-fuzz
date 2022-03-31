@@ -86,9 +86,11 @@ class BaseConfig:
     # Need to set these before calling self.platform.
     self.oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
     self.cfl_platform = os.getenv('CFL_PLATFORM')
+
     logging.debug('Is github: %s.', self.is_github)
 
     self.platform_conf = _get_platform_config(self.cfl_platform)
+    self.cfl_oss_fuzz_opt_in = self.platform_conf.cfl_oss_fuzz_opt_in
     self.base_commit = self.platform_conf.base_commit
     self.base_ref = self.platform_conf.base_ref
     self.pr_ref = self.platform_conf.pr_ref
