@@ -24,7 +24,8 @@ cd $SRC/libxml2
     --without-ftp \
     --without-http \
     --without-legacy \
-    --without-python
+    --without-python \
+    --enable-static
 make -j$(nproc)
 make install
 cp .libs/libxml2.a ${DEPS}/
