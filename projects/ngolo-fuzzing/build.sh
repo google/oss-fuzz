@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+# compile latest go from git
+(
+cd $SRC/goroot/src
+./make.bash
+)
+rm -Rf /root/.go/
+mv $SRC/goroot /root/.go
+
 compile_package () {
     pkg=$1
     pkg_flat=`echo $pkg | sed 's/\//_/g'`
@@ -35,6 +43,7 @@ compile_package () {
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
 }
 
+# in $SRC/ngolo-fuzzing
 go build
 
 (
