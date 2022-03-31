@@ -17,10 +17,11 @@
 
 cd "$SRC"
 
-declare -a PROJECTS=(amt hamt)
+declare -a PROJECTS=(amt hamt common)
 declare -A PROJECT_PATHS=(
 	[amt]="ref-fvm/ipld/amt/fuzz"
 	[hamt]="ref-fvm/ipld/hamt/fuzz"
+	[common]="ref-fvm/testing/common_fuzz/fuzz"
 )
 
 export CARGO_TARGET_DIR="$SRC/target"
@@ -34,12 +35,15 @@ for project in "${PROJECTS[@]}"; do
 
 	for f in fuzz_targets/*.rs; do
 		FUZZ_TARGET_NAME=$(basename "${f%.*}")
+		FUZZ_TARGET_LOC="$FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME"
 		FUZZ_OUT_NAME="${project}_${FUZZ_TARGET_NAME}"
 
-		cp "$FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME" "$OUT/$FUZZ_OUT_NAME"
-		CORPUS_LOC="$SRC/corpus/corpus/$FUZZ_OUT_NAME"
-		if [ -d "$CORPUS_LOC" ]; then
-    		zip -j "$OUT/${FUZZ_OUT_NAME}_seed_corpus.zip" "$CORPUS_LOC/"*
+		if [ -f "$FUZZ_TARGET_LOC" ]; then
+			cp "$FUZZ_TARGET_LOC" "$OUT/$FUZZ_OUT_NAME"
+			CORPUS_LOC="$SRC/corpus/corpus/$FUZZ_OUT_NAME"
+			if [ -d "$CORPUS_LOC" ]; then
+				zip -j "$OUT/${FUZZ_OUT_NAME}_seed_corpus.zip" "$CORPUS_LOC/"*
+			fi
 		fi
 	done
 
