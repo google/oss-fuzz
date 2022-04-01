@@ -79,23 +79,24 @@ def _make_empty_dir_if_nonexistent(path):
   """Makes an empty directory at |path| if it does not exist."""
   os.makedirs(path, exist_ok=True)
 
+
 def _clusterfuzzlite_upload_crashes(workspace, filestore):
   """Upload crashes on ClusterFuzzLite"""
-  artifact_dirs = os.listdir(self.workspace.artifacts)
+  artifact_dirs = os.listdir(workspace.artifacts)
   if not artifact_dirs:
-    logging.info('No crashes in %s. Not uploading.', self.workspace.artifacts)
+    logging.info('No crashes in %s. Not uploading.', workspace.artifacts)
     return
 
   for crash_target in artifact_dirs:
-    artifact_dir = os.path.join(self.workspace.artifacts, crash_target)
+    artifact_dir = os.path.join(workspace.artifacts, crash_target)
     if not os.path.isdir(artifact_dir):
       logging.warning('%s is not an expected artifact directory, skipping.',
-                        crash_target)
+                      crash_target)
       continue
 
     logging.info('Uploading crashes in %s.', artifact_dir)
     try:
-      self.filestore.upload_crashes(crash_target, artifact_dir)
+      filestore.upload_crashes(crash_target, artifact_dir)
       logging.info('Done uploading crashes.')
     except Exception as err:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s', err)
