@@ -46,8 +46,7 @@ EOF
 fi
 
 rm -rf $PYFUZZ_WORKPATH
-mkdir $PYFUZZ_WORKPATH
-mkdir $FUZZ_WORKPATH
+mkdir $PYFUZZ_WORKPATH $FUZZ_WORKPATH
 
 pyinstaller --distpath $OUT --workpath=$FUZZ_WORKPATH --onefile --name $fuzzer_package $fuzzer_path
 

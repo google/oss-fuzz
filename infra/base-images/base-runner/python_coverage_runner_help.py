@@ -50,11 +50,16 @@ def translate_coverage(all_file_paths):
   Translate pyinstaller-generated file paths in .coverage (produced by
   coverage.py) into local file paths. Place result in .new_coverage.
   """
-  data = CoverageData(".coverage")
-  data2 = CoverageData(".new_coverage")
-  data.read()
-  translate_lines(data, data2, all_file_paths)
-  data2.write()
+  covdata_pre_translation = CoverageData(".coverage")
+  covdata_post_translation = CoverageData(".new_coverage")
+
+  covdata_pre_translation.read()
+  translate_lines(
+    covdata_pre_translation,
+    covdata_post_translation,
+    all_file_paths
+  )
+  covdata_post_translation.write()
 
 
 def main():
@@ -72,6 +77,7 @@ def main():
     print("Done with path walk")
     translate_coverage(all_file_paths)
   else:
+    # Pass commands into coverage package
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
     sys.exit(coverage_main())
 
