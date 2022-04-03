@@ -15,6 +15,8 @@
 import os
 import sys
 import shutil
+import subprocess
+import zipfile
 
 
 # Finds all *.toc files in ./workpath and reads these files in order to
@@ -42,21 +44,25 @@ def get_all_files_from_toc(toc_file, file_path_set):
         # Check if .egg is in the path and if so we need to split it
         if os.path.isfile(word):
           file_path_set.add(word)
-        else:
-          # check if this is an egg
-          if ".egg" in word:
+        elif ".egg" in word: # check if this is an egg
             egg_path_split = word.split(".egg")
             if len(egg_path_split) != 2:
               continue
             egg_path = egg_path_split[0] + ".egg"
 
-            # unzip the egg and replace zip with contents
-            os.system("rm -rf ./zipdcontents")
-            os.system("mkdir ./zipdcontents")
-            os.system("unzip %s -d ./zipdcontents/" % (egg_path))
-            os.system("rm %s" % (egg_path))
-            os.system("mkdir %s" % (egg_path))
-            os.system("cp -rf ./zipdcontents/* %s/" % (egg_path))
+            print("Unzipping contents of %s" % egg_path)
+
+            # We have an egg. This needs to be unzipped and then replaced
+            # with the unzipped data.
+            tmp_dir_name = 'zipdcontents'
+            if os.path.isdir(tmp_dir_name):
+              shutil.rmtree(tmp_dir_name)
+
+            # unzip egg and replace path with unzipped content
+            with zipfile.ZipFile(egg_path, 'r') as zip_f:
+              zip_f.extractall(tmp_dir_name)
+            os.remove(egg_path)
+            shutil.copytree(tmp_dir_name, egg_path)
 
             # Now the lines should be accessible, so check again
             if os.path.isfile(word):
@@ -75,6 +81,7 @@ def create_file_structure_from_tocs(work_path, out_path):
   unzipped content, i.e. we will extract the archives and collect the source
   files.
   """
+  print("Extracts files from the pyinstaller workpath")
   file_path_set = set()
   for path1 in os.listdir(work_path):
     full_path = os.path.join(work_path, path1)
