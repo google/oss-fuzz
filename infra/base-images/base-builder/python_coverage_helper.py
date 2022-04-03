@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper script to extract file paths from pyinstaller-generated executables"""
+"""Extracts file paths to copy files from pyinstaller-generated executables"""
 import os
 import sys
 import shutil
@@ -63,13 +63,13 @@ def get_all_files_from_toc(toc_file, file_path_set):
               file_path_set.add(word)
 
 
-def create_file_structure_from_tocs(work_path, proxy_path):
+def create_file_structure_from_tocs(work_path, out_path):
   """
   Extract the Python files that are added as paths in the output of
   a pyinstaller operation. The files are determined by reading through
   all of the *.toc files in the workpath of pyinstaller.
 
-  The files will be copied into the proxy path using a similar file path
+  The files will be copied into the out_path using a similar file path
   as they originally are. If any archive (.egg) files are present in the
   .toc files, then unzip the archives and substitute the archive for the
   unzipped content, i.e. we will extract the archives and collect the source
@@ -90,15 +90,23 @@ def create_file_structure_from_tocs(work_path, proxy_path):
 
   for file_path in file_path_set:
     relative_src = file_path[1:] if file_path[0] == '/' else file_path
-    dst_path = os.path.join(proxy_path, relative_src)
+    dst_path = os.path.join(out_path, relative_src)
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     shutil.copy(file_path, dst_path)
 
 
-if len(sys.argv) < 2:
-  print("Error. Please give command")
-  sys.exit(0)
+def main():
+  """
+  Main handler.
+  """
+  if len(sys.argv) != 3:
+    print("Use: python3 python_coverage_helper.py pyinstaller_workpath "
+          "destination_for_output")
+    sys.exit(1)
+  work_path = sys.argv[1]
+  out_path = sys.argv[2]
+  create_file_structure_from_tocs(work_path, out_path)
 
-if sys.argv[1] == 'extract':
-  print("Extracting the ToC")
-  create_file_structure_from_tocs(sys.argv[2], sys.argv[3])
+
+if __name__ == "__main__":
+  main()
