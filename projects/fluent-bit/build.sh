@@ -14,6 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
+
+# For fuzz-introspector, cxclude all functions in the fluent-bit/lib/ directory
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+fluent-bit/lib
+EOF
+
 cd fluent-bit
 sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
 sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
