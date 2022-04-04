@@ -641,7 +641,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
-      'GIT_REPO=',  # TODO(navidem): load from main_repo in project.yaml.
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
