@@ -331,6 +331,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       # We don't need to check if the crash is novel for batch fuzzing.
       return True
 
+    if not self.config.check_crash_novelty:
+      # We don't need to check if the user opted out.
+      return True
+
     return self.is_crash_novel(testcase, reproduce_args)
 
   def is_crash_type_reportable(self, testcase):
@@ -358,7 +362,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
                                            self.target_name)
-
     try:
       reproducible_on_clusterfuzz_build = self.is_reproducible(
           testcase, clusterfuzz_target_path, reproduce_args)

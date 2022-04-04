@@ -56,6 +56,12 @@ inputs:
     description: 'If True, reportable crashes will be minimized.'
     required: false
     default: False
+  check-crash-novelty:
+    description: |
+      If set, old builds will be downloaded to check if a crash is new. Default
+      is True. Set to "False" to turn off this feature.
+    required: false
+    default: True
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -73,5 +79,6 @@ runs:
     GIT_STORE_BRANCH_COVERAGE: ${{ inputs.storage-repo-branch-coverage }}
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
     MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
+    CHECK_CRASH_NOVELTY: ${{ inputs.check-crash-novelty }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'

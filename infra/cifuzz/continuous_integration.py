@@ -143,6 +143,7 @@ class BaseCi:
 
   def _create_repo_manager_for_project_src_path(self):
     """Returns a repo manager for |project_src_path|."""
+    logging.error('self.config.project_src_path %s', self.config.project_src_path)
     return repo_manager.RepoManager(self.config.project_src_path)
 
 

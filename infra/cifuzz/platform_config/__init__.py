@@ -111,6 +111,11 @@ class BasePlatformConfig:
     return os.environ.get('FILESTORE')
 
   @property
+  def check_crash_novelty(self):
+    """Returns the filestore used to store persistent data."""
+    return os.environ.get('CHECK_CRASH_NOVELTY', True)
+
+  @property
   def git_url(self):
     """Returns the repo URL. This is only used by GitHub users. Right now it is
     needed by external on GitHub because we need to clone a new repo because the
