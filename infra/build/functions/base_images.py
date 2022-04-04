@@ -16,7 +16,7 @@
 """Cloud function to build base images on Google Cloud Builder."""
 import logging
 
-import oauth2client.client
+import google.auth
 
 import build_lib
 
@@ -98,7 +98,7 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
 # pylint: disable=no-member
 def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   """Execute the retrieved build steps in gcb."""
-  credentials = oauth2client.client.GoogleCredentials.get_application_default()
+  credentials, _ = google.auth.default()
   body_overrides = {
       'images': images + [f'{image}:{build_version}' for image in images]
   }
