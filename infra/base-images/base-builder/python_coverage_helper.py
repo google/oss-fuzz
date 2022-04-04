@@ -27,30 +27,30 @@ def get_all_files_from_toc(toc_file, file_path_set):
   """
   Extract filepaths from a .toc file and add to file_path_set
   """
-  with open(toc_file, "rb") as toc_file_fd:
+  with open(toc_file, 'rb') as toc_file_fd:
     for line in toc_file_fd:
       try:
         line = line.decode()
       except:  # pylint:disable=bare-except
         continue
-      if ".py" not in line:
+      if '.py' not in line:
         continue
 
-      split_line = line.split(" ")
+      split_line = line.split(' ')
       for word in split_line:
-        word = word.replace("'", "").replace(",", "").replace("\n", "")
-        if ".py" not in word:
+        word = word.replace('\'', '').replace(',', '').replace('\n', '')
+        if '.py' not in word:
           continue
         # Check if .egg is in the path and if so we need to split it
         if os.path.isfile(word):
           file_path_set.add(word)
-        elif ".egg" in word: # check if this is an egg
-            egg_path_split = word.split(".egg")
+        elif '.egg' in word: # check if this is an egg
+            egg_path_split = word.split('.egg')
             if len(egg_path_split) != 2:
               continue
-            egg_path = egg_path_split[0] + ".egg"
+            egg_path = egg_path_split[0] + '.egg'
 
-            print("Unzipping contents of %s" % egg_path)
+            print('Unzipping contents of %s' % egg_path)
 
             # We have an egg. This needs to be unzipped and then replaced
             # with the unzipped data.
@@ -81,7 +81,7 @@ def create_file_structure_from_tocs(work_path, out_path):
   unzipped content, i.e. we will extract the archives and collect the source
   files.
   """
-  print("Extracts files from the pyinstaller workpath")
+  print('Extracts files from the pyinstaller workpath')
   file_path_set = set()
   for path1 in os.listdir(work_path):
     full_path = os.path.join(work_path, path1)
@@ -90,7 +90,7 @@ def create_file_structure_from_tocs(work_path, out_path):
 
     # We have a directory
     for path2 in os.listdir(full_path):
-      if not ".toc" in path2:
+      if not '.toc' in path2:
         continue
       full_toc_file = os.path.join(full_path, path2)
       get_all_files_from_toc(full_toc_file, file_path_set)
@@ -107,13 +107,13 @@ def main():
   Main handler.
   """
   if len(sys.argv) != 3:
-    print("Use: python3 python_coverage_helper.py pyinstaller_workpath "
-          "destination_for_output")
+    print('Use: python3 python_coverage_helper.py pyinstaller_workpath '
+          'destination_for_output')
     sys.exit(1)
   work_path = sys.argv[1]
   out_path = sys.argv[2]
   create_file_structure_from_tocs(work_path, out_path)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

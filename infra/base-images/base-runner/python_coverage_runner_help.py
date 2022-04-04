@@ -32,10 +32,10 @@ def translate_lines(cov_data, new_cov_data, all_file_paths):
   """
   for pyinstaller_file_path in cov_data.measured_files():
     stripped_py_file_path = pyinstaller_file_path
-    if stripped_py_file_path.startswith("/tmp/_MEI"):
-      stripped_py_file_path = "/".join(stripped_py_file_path.split("/")[3:])
-    if stripped_py_file_path.startswith("/out/"):
-      stripped_py_file_path = stripped_py_file_path.replace("/out/", "")
+    if stripped_py_file_path.startswith('/tmp/_MEI'):
+      stripped_py_file_path = '/'.join(stripped_py_file_path.split('/')[3:])
+    if stripped_py_file_path.startswith('/out/'):
+      stripped_py_file_path = stripped_py_file_path.replace('/out/', '')
 
     # Check if this file exists in our file paths:
     for local_file_path in all_file_paths:
@@ -50,8 +50,8 @@ def translate_coverage(all_file_paths):
   Translate pyinstaller-generated file paths in .coverage (produced by
   coverage.py) into local file paths. Place result in .new_coverage.
   """
-  covdata_pre_translation = CoverageData(".coverage")
-  covdata_post_translation = CoverageData(".new_coverage")
+  covdata_pre_translation = CoverageData('.coverage')
+  covdata_post_translation = CoverageData('.new_coverage')
 
   covdata_pre_translation.read()
   translate_lines(
@@ -67,14 +67,14 @@ def main():
   Main handler.
   """
   if sys.argv[1] == 'translate':
-    print("Translating the coverage")
+    print('Translating the coverage')
     files_path = sys.argv[2]
     all_file_paths = list()
     for root, _, files in os.walk(files_path):
       for relative_file_path in files:
         abs_file_path = os.path.abspath(os.path.join(root, relative_file_path))
         all_file_paths.append(abs_file_path)
-    print("Done with path walk")
+    print('Done with path walk')
     translate_coverage(all_file_paths)
   else:
     # Pass commands into coverage package
@@ -82,5 +82,5 @@ def main():
     sys.exit(coverage_main())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
