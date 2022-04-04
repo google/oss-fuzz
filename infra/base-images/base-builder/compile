@@ -216,8 +216,20 @@ if [ "$SANITIZER" = "introspector" ]; then
   fi  
   
   cd $SRC/inspector
+
+  # Correlate fuzzer binaries to fuzz-introspector's raw data
   python3 /fuzz-introspector/post-processing/main.py correlate --binaries_dir=$OUT/
-  python3 /fuzz-introspector/post-processing/main.py report --target_dir=$SRC/inspector --coverage_url=$COVERAGE_URL --correlation_file=exe_to_fuzz_introspector_logs.yaml
+
+  # Generate fuzz-introspector HTML report, this generates
+  # the file exe_to_fuzz_introspector_logs.yaml
+  REPORT_ARGS="--target_dir=$SRC/inspector"
+  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+    REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+  fi
+  # Use the just-generated correlation file
+  REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
+  python3 /fuzz-introspector/post-processing/main.py report $REPORT_ARGS
 
   cp -rf $SRC/inspector $OUT/inspector
 fi
