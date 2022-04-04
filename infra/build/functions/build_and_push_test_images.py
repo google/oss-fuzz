@@ -86,7 +86,7 @@ def gcb_build_and_push_images(test_image_suffix):
                                     CLOUD_PROJECT)
 
 
-def build_and_push_images(test_image_suffix, local=True):
+def build_and_push_images(test_image_suffix):
   """Builds and pushes base-images."""
   if not local:
     gcb_build_and_push_images(test_image_suffix)
