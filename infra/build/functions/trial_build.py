@@ -17,12 +17,14 @@
 versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
+import json
 import logging
 import sys
+import time
+import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
-import requests
 
 import build_and_push_test_images
 import build_and_run_coverage
@@ -39,11 +41,10 @@ BuildType = collections.namedtuple(
 
 BUILD_TYPES = {
     'coverage':
-        BuildType('coverage', build_project.get_build_steps,
+        BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
     'fuzzing':
-        BuildType('fuzzing', build_and_run_coverage.get_build_steps,
-                  'status.json'),
+        BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
 
 
@@ -72,9 +73,10 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = requests.get('https://oss-fuzz-build-logs.storage.googleapis.com/'
-                         f'{build_type.status_filename}')
-  project_statuses = request.json()['projects']
+  request = urllib.request.urlopen(
+      'https://oss-fuzz-build-logs.storage.googleapis.com/'
+      f'{build_type.status_filename}')
+  project_statuses = json.load(request)['projects']
   results = {}
   for project in project_statuses:
     name = project['name']
@@ -87,15 +89,10 @@ def _get_production_build_statuses(build_type):
   return results
 
 
-def get_args():
+def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects', help='Projects.', nargs='*')
-  parser.add_argument('--testing',
-                      action='store_true',
-                      required=False,
-                      default=False,
-                      help='Upload to testing buckets.')
   parser.add_argument('--sanitizers',
                       required=True,
                       nargs='+',
@@ -108,7 +105,7 @@ def get_args():
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
-  return parser.parse_args()
+  return parser.parse_args(args)
 
 
 def get_projects_to_build(specified_projects, build_type):
@@ -168,24 +165,26 @@ def _do_builds(args, config, credentials, build_type, projects):
   return build_ids
 
 
-def get_build_status_from_gcb(cloudbuild_api, build_id):
+def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   """Returns the status of the build: |build_id| from cloudbuild_api."""
-  build_result = cloudbuild_api.get(projectId=IMAGE_PROJECT,
+  build_result = cloudbuild_api.get(projectId=cloud_project,
                                     id=build_id).execute()
   return build_result['status']
 
 
-def check_finished(build_id, project, cloudbuild_api, build_results):
+def check_finished(build_id, project, cloudbuild_api, cloud_project,
+                   build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
-  build_status = get_build_status_from_gcb(cloudbuild_api, build_id)
+  build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
+                                           build_id)
   if build_status not in FINISHED_BUILD_STATUSES:
     return False
   build_results[project] = build_status == 'SUCCESS'
   return True
 
 
-def wait_on_builds(build_ids, credentials):
+def wait_on_builds(build_ids, credentials, cloud_project):
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -198,8 +197,10 @@ def wait_on_builds(build_ids, credentials):
   while wait_builds:
     logging.info('Polling')
     for project, build_id in list(wait_builds.items()):
-      if check_finished(build_id, project, cloudbuild_api, build_results):
+      if check_finished(build_id, project, cloudbuild_api, cloud_project,
+                        build_results):
         del wait_builds[project]
+      time.sleep(1)  # Avoid rate limiting.
     print(wait_builds)
 
   print('Printing results')
@@ -212,6 +213,7 @@ def wait_on_builds(build_ids, credentials):
 
 def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
+  # TODO(metzman): Make this handle concurrent builds.
   build_types = []
   if list(args.sanitizers) == ['coverage']:
     build_types.append(BUILD_TYPES['coverage'])
@@ -224,20 +226,31 @@ def do_test_builds(args):
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,
-                                  parallel=False)
+                                  parallel=False,
+                                  upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     build_ids = _do_builds(args, config, credentials, build_type, projects)
-  return wait_on_builds(build_ids, credentials)
+  return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
+
+
+def trial_build_main(args=None, local_base_build=True):
+  """Main function for trial_build. Pushes test images and then does test
+  builds."""
+  args = get_args(args)
+  if local_base_build:
+    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
+        TEST_IMAGE_SUFFIX)
+  else:
+    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
+  return do_test_builds(args)
 
 
 def main():
   """Builds and pushes test images of the base images. Then does test coverage
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
-  args = get_args()
-  build_and_push_test_images.build_and_push_images(TEST_IMAGE_SUFFIX)
-  return 0 if do_test_builds(args) else 1
+  return 0 if trial_build_main() else 1
 
 
 if __name__ == '__main__':
