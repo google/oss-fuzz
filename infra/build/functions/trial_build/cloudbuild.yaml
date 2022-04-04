@@ -5,7 +5,7 @@ steps:
   - '-t'
   - gcr.io/oss-fuzz-base/trial-build
   - '-f'
-  - infra/build/functions/Dockerfile
+  - infra/build/functions/trial_build/Dockerfile
   - .
 - name: 'gcr.io/oss-fuzz-base/trial-build'
   args: []
