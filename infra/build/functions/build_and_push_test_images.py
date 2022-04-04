@@ -88,9 +88,6 @@ def gcb_build_and_push_images(test_image_suffix):
 
 def build_and_push_images(test_image_suffix):
   """Builds and pushes base-images."""
-  if not local:
-    gcb_build_and_push_images(test_image_suffix)
-    return
   images = [
       ['base-image'],
       ['base-clang'],

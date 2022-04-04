@@ -240,7 +240,7 @@ def trial_build_main(args=None, local_base_build=True):
   args = get_args(args)
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-    TEST_IMAGE_SUFFIX)
+        TEST_IMAGE_SUFFIX)
   else:
     build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
