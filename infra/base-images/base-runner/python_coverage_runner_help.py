@@ -40,7 +40,7 @@ def translate_lines(cov_data, new_cov_data, all_file_paths):
     # Check if this file exists in our file paths:
     for local_file_path in all_file_paths:
       if local_file_path.endswith(stripped_py_file_path):
-        print("Found matching: %s" % (local_file_path))
+        print('Found matching: %s' % (local_file_path))
         new_cov_data.add_lines(
             {local_file_path: cov_data.lines(pyinstaller_file_path)})
 
