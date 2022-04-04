@@ -214,6 +214,10 @@ if [ "$SANITIZER" = "introspector" ]; then
   then
     cp $OUT/textcov_reports/*.covreport $SRC/inspector/
   fi  
+
+  if [[ -z "${COVERAGE_URL}" ]]; then
+    export COVERAGE_URL="/covreport/linux"
+  fi
   
   cd $SRC/inspector
   python3 /fuzz-introspector/post-processing/main.py correlate --binaries_dir=$OUT/
