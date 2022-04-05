@@ -118,14 +118,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
             delete splashOut;
 
-            Object globals;
-            BaseStream *base_str = doc.getBaseStream();
-            if (base_str) {
-              JBIG2Stream *str = new JBIG2Stream(base_str, &globals);
-              str->reset();
-              delete str;
+            XRef *xref = doc.getXRef();
+            int objNums = xref->getNumObjects();
+            Object currentObj;
+            for (int i = 0; i < objNums; ++i) {
+              if (xref->fetch(i, 0, &currentObj)->isStream()){
+                currentObj.getStream()->reset();
+              }
             }
-            globals.free();            
+            currentObj.free();
         }
     } catch (...) {
 
