@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone --depth 1 https://github.com/lxml/lxml
 RUN apt-get install -y libxml2-dev libxslt-dev zlib1g-dev
-
 RUN pip3 install Cython
 
 COPY build.sh $SRC/

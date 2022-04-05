@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,16 +17,21 @@
 import atheris
 import sys
 
-from lxml import etree as et
+with atheris.instrument_imports():
+  from lxml import etree as et
+
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-
   try:
     root = et.XML(fdp.ConsumeUnicode(sys.maxsize))
   except et.XMLSyntaxError:
     None
-  return
 
-atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-atheris.Fuzz()
+
+def main():
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+if __name__ == "__main__":
+  main()
