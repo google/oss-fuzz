@@ -1,5 +1,6 @@
-homepage: "http://site.icu-project.org/"
+homepage: "https://icu.unicode.org"
 language: c++
+primary_contact: "nrunge@google.com"
 auto_ccs:
  - icu-security@unicode.org
  - andy.heninger@gmail.com
@@ -9,6 +10,7 @@ auto_ccs:
  - srl295@gmail.com
  - nrunge@google.com
  - ftang@google.com
+ - elango@unicode.org
 sanitizers:
  - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294

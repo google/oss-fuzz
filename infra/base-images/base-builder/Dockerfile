@@ -83,7 +83,7 @@ ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
-ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto"
+ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto -fno-inline-functions"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -163,5 +163,6 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
+COPY bazel.bazelrc /root/.bazelrc
 
 CMD ["compile"]

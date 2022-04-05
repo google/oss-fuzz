@@ -5,6 +5,10 @@ vendor_ccs:
   - "benl@google.com"
   - "product-security@apple.com"
   - "simon.lewis@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
+  - "ebanniettis@apple.com"
 sanitizers:
   - address
   - memory

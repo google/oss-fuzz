@@ -1,15 +1,15 @@
 homepage: "https://gitlab.isc.org/isc-projects/bind9"
 language: c
-primary_contact: "bind9-dev@isc.org"
+primary_contact: "ondrej@isc.org"
 auto_ccs:
   - "artem@isc.org"
-  - "dfronza@isc.org"
+  - "aram@isc.org"
   - "each@isc.org"
+  - "fanf@isc.org"
   - "marka@isc.org"
   - "matthijs@isc.org"
   - "michal@isc.org"
   - "mnowak@isc.org"
-  - "ondrej@isc.org"
   - "pspacek@isc.org"
 sanitizers:
   - address

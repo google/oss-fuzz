@@ -20,6 +20,8 @@ FROM gcr.io/oss-fuzz-base/base-image
 
 ARG introspector
 ENV INTROSPECTOR_PATCHES=$introspector
+ENV FUZZINTRO_OUTDIR=$SRC
+ENV FUZZ_INTROSPECTOR=$introspector
 
 # Install newer cmake.
 ENV CMAKE_VERSION 3.21.1
@@ -34,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 55663bff7dd6b9444a9afb7e700a687bce110021 && \
+    git checkout a5b53ca79684f206832fe3388164f66611405bfc && \
     apt-get remove --purge -y git
 
 COPY checkout_build_install_llvm.sh /root/

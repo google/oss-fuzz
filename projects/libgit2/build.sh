@@ -27,12 +27,11 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" \
 
 make -j$(nproc)
 make install
-
 for fuzzer in ../fuzzers/*_fuzzer.c
 do
     fuzzer_name=$(basename "${fuzzer%.c}")
 
-    $CC $CFLAGS -c -I"$WORK/include" -I"$SRC/libgit2/src" \
+    $CC $CFLAGS -c -I./src -I../src/libgit2 -I../src/util -I../include \
         -DLIBGIT2_NO_FEATURES_H \
         "$fuzzer" -o "$WORK/$fuzzer_name.o"
     $CXX $CXXFLAGS -std=c++11 -o "$OUT/$fuzzer_name" \

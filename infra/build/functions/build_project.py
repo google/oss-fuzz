@@ -31,7 +31,6 @@ import posixpath
 import re
 import sys
 
-from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
 import six
 import yaml
@@ -55,10 +54,8 @@ PROJECTS_DIR = os.path.abspath(
     os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
                  os.path.pardir, 'projects'))
 
-DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
-
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel'])
+    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -96,18 +93,18 @@ def get_project_data(project_name):
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
     project_yaml_contents = project_yaml_file_handle.read()
-  return project_yaml_contents, dockerfile
+  project_yaml = yaml.safe_load(project_yaml_contents)
+  set_yaml_defaults(project_yaml)
+  return project_yaml, dockerfile
 
 
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
-  def __init__(self, name, project_yaml_contents, dockerfile, image_project):
-    project_yaml = yaml.safe_load(project_yaml_contents)
+  def __init__(self, name, project_yaml, dockerfile, image_project):
     self.name = name
     self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
-    set_yaml_defaults(project_yaml)
     self._sanitizers = project_yaml['sanitizers']
     self.disabled = project_yaml['disabled']
     self.architectures = project_yaml['architectures']
@@ -248,12 +245,11 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml_contents, dockerfile, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile, image_project, base_images_project,
+    config):
   """Returns build steps for project."""
 
-  project = Project(project_name, project_yaml_contents, dockerfile,
-                    image_project)
+  project = Project(project_name, project_yaml, dockerfile, image_project)
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
@@ -349,9 +345,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                 ],
             }
         ])
-        upload_steps = get_upload_steps(project, build, timestamp,
-                                        base_images_project, config.testing)
-        build_steps.extend(upload_steps)
+        if config.upload:
+          upload_steps = get_upload_steps(project, build, timestamp,
+                                          base_images_project, config.testing)
+          build_steps.extend(upload_steps)
 
   return build_steps
 
@@ -481,18 +478,6 @@ def dataflow_post_build_steps(project_name, env, base_images_project, testing,
   return steps
 
 
-def get_logs_url(build_id, cloud_project='oss-fuzz'):
-  """Returns url where logs are displayed for the build."""
-  return ('https://console.cloud.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={cloud_project}')
-
-
-def get_gcb_url(build_id, cloud_project='oss-fuzz'):
-  """Returns url where logs are displayed for the build."""
-  return (f'https://console.cloud.google.com/cloud-build/builds/{build_id}'
-          f'?project={cloud_project}')
-
-
 # pylint: disable=no-member
 def run_build(oss_fuzz_project,
               build_steps,
@@ -503,38 +488,21 @@ def run_build(oss_fuzz_project,
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
   in GCB so the build can be queried for debugging purposes."""
-  options = {}
-  if 'GCB_OPTIONS' in os.environ:
-    options = yaml.safe_load(os.environ['GCB_OPTIONS'])
-  else:
-    options = DEFAULT_GCB_OPTIONS
-
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
-  timeout_value = build_lib.BUILD_TIMEOUT
-  # TODO (navidem): this is temporary until I fix shorter failing projects
+  timeout = build_lib.BUILD_TIMEOUT
+  # TODO(navidem): This is temporary until I fix shorter failing projects.
   if build_type == 'introspector':
-    timeout_value /= 4
-  build_body = {
-      'steps': build_steps,
-      'timeout': str(timeout_value) + 's',
-      'options': options,
+    timeout /= 4
+  body_overrides = {
       'logsBucket': GCB_LOGS_BUCKET,
-      'tags': tags,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-
-  cloudbuild = cloud_build('cloudbuild',
-                           'v1',
-                           credentials=credentials,
-                           cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
-
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
-  return build_id
+  return build_lib.run_build(build_steps,
+                             credentials,
+                             cloud_project,
+                             timeout,
+                             body_overrides=body_overrides,
+                             tags=tags)
 
 
 def get_args(description):
@@ -576,19 +544,21 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing, args.test_image_suffix, args.branch,
-                  args.parallel)
+  config = Config(args.testing,
+                  args.test_image_suffix,
+                  args.branch,
+                  args.parallel,
+                  upload=True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
-      project_yaml_contents, dockerfile_contents = get_project_data(
-          project_name)
+      project_yaml, dockerfile_contents = get_project_data(project_name)
     except FileNotFoundError:
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       error = True
       continue
 
-    steps = get_build_steps_func(project_name, project_yaml_contents,
+    steps = get_build_steps_func(project_name, project_yaml,
                                  dockerfile_contents, image_project,
                                  base_images_project, config)
     if not steps:

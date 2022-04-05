@@ -267,6 +267,7 @@ mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 mv out/Fuzz/svg_dom $OUT/svg_dom
 mv ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip

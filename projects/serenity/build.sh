@@ -16,16 +16,5 @@
 ################################################################################
 
 # Now build the content
-mkdir -p build
-cd build
-cmake -GNinja \
-    -DBUILD_LAGOM=ON \
-    -DENABLE_OSS_FUZZ=ON \
-    -DCMAKE_C_COMPILER=$CC \
-    -DCMAKE_CXX_COMPILER=$CXX \
-    -DCMAKE_CXX_FLAGS="$CXXFLAGS -DOSS_FUZZ=ON" \
-    -DLINKER_FLAGS="$LIB_FUZZING_ENGINE" \
-    ..
-ninja
-cp Fuzzers/Fuzz* $OUT/
+./BuildFuzzers.sh --oss-fuzz
 

@@ -18,6 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip
 RUN git clone https://github.com/ANSSI-FR/libecc.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone https://github.com/wolfssl/wolfssl
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2

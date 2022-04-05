@@ -173,6 +173,12 @@ On the testcase page of each oss-fuzz issue is a list of other jobs where the cr
 Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
 For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
 
+There are [known bugs](https://github.com/google/oss-fuzz/issues/2746) in ASAN
+on i386 that cause ClusterFuzz to report unreproducible crashes for 0 length
+testcases. There are no plans to fix these bugs so be ready for slightly more
+false positives if you use i386. These false positives should be somewhat easy
+to identify since they will manifest as crashes in ASAN rather than your code.
+
 ### fuzzing_engines (optional) {#fuzzing_engines}
 The list of fuzzing engines to use.
 By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
@@ -444,7 +450,7 @@ dict = dictionary_name.dict
 
 It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
-(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
+(example: [expat](https://github.com/google/oss-fuzz/blob/ad88a2e5295d91251d15f8a612758cd9e5ad92db/projects/expat/parse_fuzzer.options)).
 
 ### Input Size
 

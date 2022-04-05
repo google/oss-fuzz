@@ -14,8 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-cp $SRC/cncf-fuzzing/projects/cluster-api/yaml_fuzzer.go \
-	$SRC/cluster-api/util/yaml/
-
-compile_go_fuzzer sigs.k8s.io/cluster-api/util/yaml FuzzYamlParse fuzz_yaml_parser
+$SRC/cncf-fuzzing/projects/cluster-api/build.sh

@@ -1,5 +1,8 @@
 name: Project tests
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
@@ -8,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -43,11 +48,11 @@ jobs:
 
     steps:
       - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.8.0
+        uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ github.token }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
@@ -62,7 +67,7 @@ jobs:
           df -h
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.8
 
