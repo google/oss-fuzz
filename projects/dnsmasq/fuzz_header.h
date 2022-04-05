@@ -38,19 +38,23 @@ void gb_cleanup() {
   }
 }
 
-char *get_null_terminated(const uint8_t **data, size_t *size) {
-#define STR_SIZE 75
-  if (*size < STR_SIZE || (int)*size < 0) {
+char *get_len_null_terminated(const uint8_t **data, size_t *size, size_t to_get) {
+  if (*size < to_get || (int)*size < 0) {
     return NULL;
   }
 
-  char *new_s = malloc(STR_SIZE + 1);
-  memcpy(new_s, *data, STR_SIZE);
-  new_s[STR_SIZE] = '\0';
+  char *new_s = malloc(to_get + 1);
+  memcpy(new_s, *data, to_get);
+  new_s[to_get] = '\0';
 
-  *data = *data+STR_SIZE;
-  *size -= STR_SIZE;
+  *data = *data+to_get;
+  *size -= to_get;
   return new_s;
+}
+
+char *get_null_terminated(const uint8_t **data, size_t *size) {
+#define STR_SIZE 75
+  return get_len_null_terminated(data, size, STR_SIZE);
 }
 
 char *gb_get_random_data(const uint8_t **data, size_t *size, size_t to_get) {
@@ -76,6 +80,15 @@ char *gb_get_null_terminated(const uint8_t **data, size_t *size) {
     return NULL;
   }
   pointer_arr[pointer_idx++] = (void*)nstr;
+  return nstr;
+}
+
+char *gb_get_len_null_terminated(const uint8_t **data, size_t *size, size_t to_get) {
+
+  char *nstr = get_len_null_terminated(data, size, to_get);
+  if (nstr != NULL) {
+    pointer_arr[pointer_idx++] = (void*)nstr;
+  }
   return nstr;
 }
 
@@ -235,7 +248,7 @@ int init_daemon(const uint8_t **data2, size_t *size2) {
   daemon->min_cache_ttl = get_int(&data, &size);
 
   // daemon->namebuff.
-  char *daemon_namebuff = gb_get_null_terminated(&data, &size);
+  char *daemon_namebuff = gb_get_len_null_terminated(&data, &size, MAXDNAME);
   daemon->namebuff = daemon_namebuff;
 
   // daemon->naptr

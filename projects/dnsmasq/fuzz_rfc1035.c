@@ -20,7 +20,7 @@ void FuzzExtractTheAddress(const uint8_t **data2, size_t *size2) {
   size_t size = *size2;
 
   char *new_name = NULL;
-  new_name = get_null_terminated(&data, &size);
+  new_name = get_len_null_terminated(&data, &size, MAXDNAME);
   pointer_arr[pointer_idx++] = (void*)new_name;
 
   int is_sign = get_int(&data, &size);
@@ -110,7 +110,7 @@ void FuzzExtractRequest(const uint8_t **data2, size_t *size2) {
   size_t size = *size2;
 
   char *new_name = NULL;
-  new_name = get_null_terminated(&data, &size);
+  new_name = get_len_null_terminated(&data, &size, MAXDNAME);
 
   if (new_name == NULL) {
     return ;
@@ -187,7 +187,7 @@ void FuzzCheckForBogusWildcard(const uint8_t **data2, size_t *size2) {
   const uint8_t *data = *data2;
   size_t size = *size2;
   
-  char *nname = gb_get_null_terminated(&data, &size);
+  char *nname = gb_get_len_null_terminated(&data, &size, MAXDNAME);
   if (nname == NULL) {
     return;
   }
