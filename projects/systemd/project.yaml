@@ -23,3 +23,4 @@ auto_ccs:
   - daan.j.demeyer@gmail.com
   - luca.boccassi@gmail.com
 main_repo: 'https://github.com/systemd/systemd'
+file_github_issue: True
