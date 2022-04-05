@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+#/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,8 @@
 #
 ################################################################################
 
-path=$1
-function=$2
-tags="-tags gofuzz"
-
-# Get absolute path.
-abs_file_dir=$(go list $tags -f {{.Dir}} $path)
-
-current_dir=$PWD
-cd $abs_file_dir
-gotip test -c
-mv fuzz.test "${OUT}"/"${function}"
-cd $current_dir
-unset current_dir
+cd $SRC/test-project
+go mod init test-project
+mkdir fuzz
+cp $SRC/fuzz.go ./fuzz/fuzz_test.go
+compile_native_go_fuzzer ./fuzz Fuzz

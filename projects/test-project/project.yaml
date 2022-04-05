@@ -1,0 +1,10 @@
+homepage: ""
+main_repo: ""
+primary_contact: ""
+auto_ccs :
+  - ""
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

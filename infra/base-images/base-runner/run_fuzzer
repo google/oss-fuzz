@@ -150,6 +150,10 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 
+elif [[ "$FUZZING_ENGINE" = nativego ]]; then
+  echo fuzzer: $FUZZER
+  CMD_LINE="$OUT/$FUZZER -test.fuzz=$FUZZER -test.fuzzcachedir $CORPUS_DIR"
+
 else
 
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"

@@ -142,6 +142,7 @@ RUN cd $SRC && \
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
 
+RUN apt-get update -y
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
