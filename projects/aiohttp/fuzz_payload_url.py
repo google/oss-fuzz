@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ import sys
 import atheris
 
 # aiohttp specific
-from aiohttp import http_exceptions, payload
+with atheris.instrument_imports():
+    from aiohttp import http_exceptions, payload
+    from yarl import URL
 
-from yarl import URL
-
+@atheris.instrument_func
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
     original = fdp.ConsumeString(sys.maxsize)
@@ -29,13 +30,10 @@ def TestOneInput(data):
         p = payload.StringPayload(original)
     except UnicodeEncodeError:
         None
-
     try:
         u = URL(original)
     except ValueError:
         None
-
-    return
 
 def main():
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)

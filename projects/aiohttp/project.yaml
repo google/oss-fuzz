@@ -1,8 +1,8 @@
 homepage: "https://github.com/aio-libs/aiohttp"
 language: python
-primary_contact: ""
+primary_contact: "david@adalogics.com"
 auto_ccs :
-  - "david@adalogics.com"
+  - "adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

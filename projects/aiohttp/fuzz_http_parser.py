@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@ import atheris
 
 # aiohttp imports
 import asyncio
-import aiohttp
-from aiohttp.base_protocol import BaseProtocol
-from aiohttp import http_exceptions, streams
+with atheris.instrument_imports():
+    import aiohttp
+    from aiohttp.base_protocol import BaseProtocol
+    from aiohttp import http_exceptions, streams
 
-
+@atheris.instrument_func
 def TestOneInput(data):
     loop = asyncio.get_event_loop()
     pr = BaseProtocol(loop)
@@ -30,8 +31,7 @@ def TestOneInput(data):
     try:
         h_p.feed_data(data)
     except aiohttp.http_exceptions.HttpProcessingError:
-        return
-    return
+        None
 
 def main():
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
@@ -41,4 +41,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

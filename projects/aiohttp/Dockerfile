@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pkg-config
+
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y pkg-config zlib1g zlib1g-dev libjpeg-dev libpng-dev npm
 RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/aiohttp/
