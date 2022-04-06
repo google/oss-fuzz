@@ -28,10 +28,10 @@ def TestOneInput(input_bytes):
   with open(testfile_path, "wb") as f:
     f.write(input_bytes)
 
-  ml = test_full_pb2.TestMessSubMess()
+  pbmsg = test_full_pb2.TestMessSubMess()
   with open(testfile_path, "rb") as fd:
     try:
-      ml.ParseFromString(fd.read())
+      pbmsg.ParseFromString(fd.read())
     except DecodeError:
       None
 
