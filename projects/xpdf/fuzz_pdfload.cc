@@ -117,16 +117,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             (void)splashOut->getBitmap();
 
             delete splashOut;
-
-            XRef *xref = doc.getXRef();
-            int objNums = xref->getNumObjects();
-            Object currentObj;
-            for (int i = 0; i < objNums; ++i) {
-              if (xref->fetch(i, 0, &currentObj)->isStream()){
-                currentObj.getStream()->reset();
-              }
-            }
-            currentObj.free();
         }
     } catch (...) {
 
