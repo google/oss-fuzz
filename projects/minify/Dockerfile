@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN git clone --depth 1 https://github.com/tdewolff/minify
 RUN git clone --depth 1 https://github.com/tdewolff/parse
 COPY build.sh $SRC/
