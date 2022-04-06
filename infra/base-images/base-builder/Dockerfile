@@ -148,6 +148,8 @@ RUN precompile_honggfuzz
 COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
+    compile_python_fuzzer \
+    python_coverage_helper.py \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.

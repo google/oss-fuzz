@@ -151,6 +151,14 @@ function run_go_fuzz_target {
   $SYSGOPATH/bin/gocovsum $DUMPS_DIR/$target.profdata > $FUZZER_STATS_DIR/$target.json
 }
 
+function run_python_fuzz_target {
+  local target=$1
+  local zipped_sources="$DUMPS_DIR/$target.deps.zip"
+  local corpus_real="$CORPUS_DIR/${target}"
+  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l)
+  mv .coverage $OUT/.coverage_$target
+}
+
 function run_java_fuzz_target {
   local target=$1
 
@@ -224,6 +232,9 @@ for fuzz_target in $FUZZ_TARGETS; do
       grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
     fi
     run_go_fuzz_target $fuzz_target &
+  elif [[ $FUZZING_LANGUAGE == "python" ]]; then
+    echo "Entering python fuzzing"
+    run_python_fuzz_target $fuzz_target
   elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
@@ -271,6 +282,27 @@ if [[ $FUZZING_LANGUAGE == "go" ]]; then
   mv merged.data $REPORT_ROOT_DIR/heap.prof
   #TODO some proxy for go tool pprof -http=127.0.0.1:8001 $DUMPS_DIR/cpu.prof
   echo "Finished generating code coverage report for Go fuzz targets."
+elif [[ $FUZZING_LANGUAGE == "python" ]]; then
+  # Extract source files from all dependency zip folders
+  mkdir -p /pythoncovmergedfiles/medio
+  PYCOVDIR=/pycovdir/
+  mkdir $PYCOVDIR
+  for fuzzer in $FUZZ_TARGETS; do
+    unzip $OUT/$fuzzer.deps.zip
+    rsync -r ./medio /pythoncovmergedfiles/medio
+    rm -rf ./medio
+
+    # Translate paths in unzipped folders to paths that we can use
+    mv $OUT/.coverage_$fuzzer .coverage
+    python3 /usr/local/bin/python_coverage_runner_help.py translate /pythoncovmergedfiles/medio
+    cp .new_coverage $PYCOVDIR/.coverage_$fuzzer
+  done
+
+  # Combine coverage
+  cd $PYCOVDIR
+  python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
+  python3 /usr/local/bin/python_coverage_runner_help.py html
+  mv htmlcov $REPORT_ROOT_DIR/
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # From this point on the script does not tolerate any errors.
