@@ -21,7 +21,8 @@ import sys
 import time
 import threading
 
-import requests
+with atheris.instrument_imports():
+    import requests
 
 fuzzed_input = b""
 
