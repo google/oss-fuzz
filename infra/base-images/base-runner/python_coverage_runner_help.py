@@ -54,8 +54,7 @@ def translate_coverage(all_file_paths):
   covdata_post_translation = CoverageData('.new_coverage')
 
   covdata_pre_translation.read()
-  translate_lines(covdata_pre_translation,
-                  covdata_post_translation,
+  translate_lines(covdata_pre_translation, covdata_post_translation,
                   all_file_paths)
   covdata_post_translation.write()
 

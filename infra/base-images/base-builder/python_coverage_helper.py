@@ -43,7 +43,7 @@ def get_all_files_from_toc(toc_file, file_path_set):
         # Check if .egg is in the path and if so we need to split it
         if os.path.isfile(word):
           file_path_set.add(word)
-        elif '.egg' in word: # check if this is an egg
+        elif '.egg' in word:  # check if this is an egg
           egg_path_split = word.split('.egg')
           if len(egg_path_split) != 2:
             continue
