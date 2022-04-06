@@ -1,0 +1,8 @@
+homepage: "https://stuvel.eu/software/rsa/"
+main_repo: "https://github.com/sybrenstuvel/python-rsa"
+language: python
+primary_contact: "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
