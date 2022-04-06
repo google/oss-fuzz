@@ -15,7 +15,6 @@
 import os
 import sys
 import shutil
-import subprocess
 import zipfile
 
 
@@ -45,28 +44,28 @@ def get_all_files_from_toc(toc_file, file_path_set):
         if os.path.isfile(word):
           file_path_set.add(word)
         elif '.egg' in word: # check if this is an egg
-            egg_path_split = word.split('.egg')
-            if len(egg_path_split) != 2:
-              continue
-            egg_path = egg_path_split[0] + '.egg'
+          egg_path_split = word.split('.egg')
+          if len(egg_path_split) != 2:
+            continue
+          egg_path = egg_path_split[0] + '.egg'
 
-            print('Unzipping contents of %s' % egg_path)
+          print('Unzipping contents of %s' % egg_path)
 
-            # We have an egg. This needs to be unzipped and then replaced
-            # with the unzipped data.
-            tmp_dir_name = 'zipdcontents'
-            if os.path.isdir(tmp_dir_name):
-              shutil.rmtree(tmp_dir_name)
+          # We have an egg. This needs to be unzipped and then replaced
+          # with the unzipped data.
+          tmp_dir_name = 'zipdcontents'
+          if os.path.isdir(tmp_dir_name):
+            shutil.rmtree(tmp_dir_name)
 
-            # unzip egg and replace path with unzipped content
-            with zipfile.ZipFile(egg_path, 'r') as zip_f:
-              zip_f.extractall(tmp_dir_name)
-            os.remove(egg_path)
-            shutil.copytree(tmp_dir_name, egg_path)
+          # unzip egg and replace path with unzipped content
+          with zipfile.ZipFile(egg_path, 'r') as zip_f:
+            zip_f.extractall(tmp_dir_name)
+          os.remove(egg_path)
+          shutil.copytree(tmp_dir_name, egg_path)
 
-            # Now the lines should be accessible, so check again
-            if os.path.isfile(word):
-              file_path_set.add(word)
+          # Now the lines should be accessible, so check again
+          if os.path.isfile(word):
+            file_path_set.add(word)
 
 
 def create_file_structure_from_tocs(work_path, out_path):
