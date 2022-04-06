@@ -1,6 +1,6 @@
 homepage: "https://github.com/JodaOrg/joda-time"
 language: jvm
-primary_contact: "scolebourne@joda.org""
+primary_contact: "scolebourne@joda.org"
 auto_css:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
