@@ -19,6 +19,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import java.io.ByteArrayInputStream;
 import javax.xml.stream.*;
 import com.ctc.wstx.stax.WstxInputFactory;
+import com.ctc.wstx.exc.WstxLazyException;
 
 public class XmlFuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -27,7 +28,7 @@ public class XmlFuzzer {
             XMLStreamReader sr = STAX_F.createXMLStreamReader(new ByteArrayInputStream(data.consumeRemainingAsBytes()));
             streamThrough(sr);
             sr.close();
-        } catch (XMLStreamException e) {
+        } catch (XMLStreamException | WstxLazyException e) {
         }
     }
 
