@@ -18,13 +18,18 @@
 path=$1
 function=$2
 tags="-tags gofuzz"
+if [[ $#  -eq 3 ]]; then
+  tags="-tags $3"
+fi
 
 # Get absolute path.
+echo abs_file_dir
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
 current_dir=$PWD
 cd $abs_file_dir
-gotip test -c
+echo running gotip test -c -tags=$tags
+gotip test -c -tags=$tags
 mv fuzz.test "${OUT}"/"${function}"
 cd $current_dir
 unset current_dir
