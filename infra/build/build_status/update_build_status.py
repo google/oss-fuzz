@@ -192,8 +192,7 @@ def update_build_status(build_tag, status_filename):
 
 
 def update_build_badges(project, last_build_successful,
-                        last_coverage_build_successful,
-                        last_introspector_build_successful):
+                        last_coverage_build_successful):
   """Upload badges of given project."""
   badge = 'building'
   # last_coverage_build_successful is False if there was an unsuccessful build
@@ -201,10 +200,6 @@ def update_build_badges(project, last_build_successful,
   # targets).
   if last_coverage_build_successful is False:
     badge = 'coverage_failing'
-  # last_introspector_build_successful is False if the build was unsuccessful
-  # and None, if the target does not have introspector build.
-  if last_introspector_build_successful is False:
-    badge = 'introspector_failing'
   if not last_build_successful:
     badge = 'failing'
 
@@ -261,8 +256,6 @@ def update_badges():
   """Update badges."""
   project_build_statuses = load_status_from_gcs(FUZZING_STATUS_FILENAME)
   coverage_build_statuses = load_status_from_gcs(COVERAGE_STATUS_FILENAME)
-  introspector_build_statuses = load_status_from_gcs(
-      INTROSPECTOR_STATUS_FILENAME)
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
     futures = []
@@ -275,16 +268,10 @@ def update_badges():
       if project.name in coverage_build_statuses:
         coverage_build_status = coverage_build_statuses[project.name]
 
-      # Certain projects (non-C/C++) currently do not have introspector
-      # builds, but should still receive a badge.
-      introspector_build_status = None
-      if project.name in introspector_build_statuses:
-        introspector_build_status = introspector_build_statuses[project.name]
-
       futures.append(
           executor.submit(update_build_badges, project.name,
                           project_build_statuses[project.name],
-                          coverage_build_status, introspector_build_status))
+                          coverage_build_status))
     concurrent.futures.wait(futures)
 
 
