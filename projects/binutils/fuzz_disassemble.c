@@ -60,7 +60,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         return 0;
     }
 
-    init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf);
+    init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf, NULL);
     disasm_info.fprintf_func = objdump_sprintf;
     disasm_info.print_address_func = generic_print_address;
     disasm_info.display_endian = disasm_info.endian = BFD_ENDIAN_LITTLE;
@@ -68,6 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     disasm_info.buffer_vma = 0x1000;
     disasm_info.buffer_length = Size-10;
     disasm_info.insn_info_valid = 0;
+    disasm_info.created_styled_output = false;
     s.buffer = AssemblyText;
     s.pos = 0;
     disasm_info.stream = &s;

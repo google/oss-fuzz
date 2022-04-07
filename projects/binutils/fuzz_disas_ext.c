@@ -65,7 +65,7 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
   struct disassemble_info disasm_info;
   SFILE s;
 
-  init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf);
+  init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf, NULL);
   disasm_info.fprintf_func = objdump_sprintf;
   disasm_info.print_address_func = generic_print_address;
   disasm_info.display_endian = disasm_info.endian = BFD_ENDIAN_LITTLE;
@@ -74,6 +74,7 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
   disasm_info.buffer_length = Size-10;
   disasm_info.insn_info_valid = 0;
   disasm_info.disassembler_options = options;
+  disasm_info.created_styled_output = false;
 
   if (arch == bfd_arch_arm) {
     disasm_info.private_data = private_data;
