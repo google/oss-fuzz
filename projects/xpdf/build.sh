@@ -46,7 +46,7 @@ cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
 make
 
 # Build fuzzers
-for fuzzer in zxdoc pdfload; do
+for fuzzer in zxdoc pdfload JBIG2; do
     cp ../../fuzz_$fuzzer.cc .
     $CXX fuzz_$fuzzer.cc -o $OUT/fuzz_$fuzzer $CXXFLAGS $LIB_FUZZING_ENGINE \
       ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a ./splash/libsplash.a ./xpdf/libtestXpdfWidgetStatic.a /work/prefix/lib/libfreetype.a \
