@@ -28,6 +28,14 @@ typedef struct
     size_t pos;
 } SFILE;
 
+static int
+fuzz_disasm_null_styled_printf (void *stream,
+			       enum disassembler_style style,
+			       const char *format, ...)
+{
+  return 0;
+}
+
 static int objdump_sprintf (void *vf, const char *format, ...)
 {
     SFILE *f = (SFILE *) vf;
@@ -60,7 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         return 0;
     }
 
-    init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf, NULL);
+    init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf, fuzz_disasm_null_styled_printf);
     disasm_info.fprintf_func = objdump_sprintf;
     disasm_info.print_address_func = generic_print_address;
     disasm_info.display_endian = disasm_info.endian = BFD_ENDIAN_LITTLE;
