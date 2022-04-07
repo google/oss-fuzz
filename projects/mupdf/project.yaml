@@ -1,3 +1,4 @@
+main_repo: git://git.ghostscript.com/mupdf.git
 homepage: "https://www.mupdf.com"
 language: c++
 primary_contact: tor.andersson@artifex.com
