@@ -25,6 +25,10 @@ inputs:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
     default: true
+  keep-unaffected-fuzz-targets:
+    description: "Whether to keep unaffected fuzzers or delete them."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -39,3 +43,4 @@ runs:
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
+    KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}

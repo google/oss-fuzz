@@ -238,7 +238,7 @@ class BuildFuzzersConfig(BaseConfig):
     self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', True)
 
     self.keep_unaffected_fuzz_targets = environment.get_bool(
-        'KEEP_UNAFFECTED_FUZZERS')
+        'KEEP_UNAFFECTED_FUZZ_TARGETS')
 
     self.upload_build = environment.get_bool('UPLOAD_BUILD', False)
     if not self.keep_unaffected_fuzz_targets:

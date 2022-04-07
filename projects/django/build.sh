@@ -23,6 +23,7 @@ export DJANGO_SETTINGS_MODULE=fuzzer_project.settings
 
 # Build fuzzers into $OUT. These could be detected in other ways.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
 
@@ -30,7 +31,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # over time on the OSS-Fuzz bots, we use pyinstaller to create a standalone
   # package. Though not necessarily required for reproducing issues, this is
   # required to keep fuzzers working properly in OSS-Fuzz.
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
+  pyinstaller --distpath $OUT --onefile --add-data django/conf/locale/en/LC_MESSAGES:django/conf/locale/en/LC_MESSAGES --name $fuzzer_package $fuzzer
 
   # Create execution wrapper. Atheris requires that certain libraries are
   # preloaded, so this is also done here to ensure compatibility and simplify

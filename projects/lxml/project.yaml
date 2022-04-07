@@ -1,0 +1,11 @@
+homepage: "https://lxml.de/"
+main_repo: 'https://github.com/lxml/lxml/'
+language: python
+primary_contact: "david@adalogics.com"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

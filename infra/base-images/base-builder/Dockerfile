@@ -83,7 +83,7 @@ ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
-ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto"
+ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto -fno-inline-functions"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -146,7 +146,11 @@ COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
 COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    compile_go_fuzzer debug_afl srcmap \
+    compile_go_fuzzer \
+    compile_native_go_fuzzer \
+    compile_python_fuzzer \
+    python_coverage_helper.py \
+    debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.
     install_go.sh \
@@ -159,5 +163,6 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
+COPY bazel.bazelrc /root/.bazelrc
 
 CMD ["compile"]

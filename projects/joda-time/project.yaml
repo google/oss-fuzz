@@ -1,0 +1,13 @@
+homepage: "https://github.com/JodaOrg/joda-time"
+language: jvm
+primary_contact: "scolebourne@joda.org"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/JodaOrg/joda-time.git"
+sanitizers:
+  - address

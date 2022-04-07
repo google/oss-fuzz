@@ -1,3 +1,4 @@
+main_repo: git://git.ghostscript.com/mupdf.git
 homepage: "https://www.mupdf.com"
 language: c++
 primary_contact: tor.andersson@artifex.com
@@ -14,3 +15,4 @@ auto_ccs:
   - jonathan@titanous.com
   - sebastian.rasmussen@artifex.com
   - julians.artifex@gmail.com
+  - ken.sharp@artifex.com

@@ -23,6 +23,7 @@ RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplus
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
     cp -r qt5/cmake . && \
     rm -rf qt5
+RUN git clone --branch dev --depth 5000 git://code.qt.io/qt/qtbase.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
 RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git

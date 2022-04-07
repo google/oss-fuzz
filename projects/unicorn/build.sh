@@ -16,17 +16,35 @@
 ################################################################################
 
 cd unicorn
-./make.sh
-# we could test with make fuzz
+mkdir build
+cd build
 
-# build fuzz target
-cd tests/fuzz
-ls fuzz_*.c | cut -d_ -f2-4 | cut -d. -f1 | while read target
+# CC CXX should be auto retrieved by cmake.
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=off -DUNICORN_FUZZ=1
+make -j4
+
+libs="libunicorn.a \
+libx86_64-softmmu.a \
+libaarch64-softmmu.a \
+libarm-softmmu.a \
+libm68k-softmmu.a \
+libmips64el-softmmu.a \
+libmips64-softmmu.a \
+libmipsel-softmmu.a \
+libmips-softmmu.a \
+libppc64-softmmu.a \
+libppc-softmmu.a \
+libriscv32-softmmu.a \
+libriscv64-softmmu.a \
+libsparc64-softmmu.a \
+libsparc-softmmu.a \
+libs390x-softmmu.a \
+libunicorn-common.a"
+
+
+ls ../tests/fuzz/fuzz_*.c | cut -d_ -f2-4 | cut -d. -f1 | while read target
 do
-    $CC $CFLAGS -I../../include -c fuzz_$target.c -o fuzz_$target.o
-
-    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target ../../libunicorn.a $LIB_FUZZING_ENGINE
-
-    # TODO corpuses
-    cp fuzz_emu.options $OUT/fuzz_$target.options
+    FUZZO=CMakeFiles/fuzz_$target.dir/tests/fuzz/fuzz_$target.c.o 
+    $CXX $CXXFLAGS $FUZZO $libs -lpthread -lrt -lm -o $OUT/fuzz_$target $LIB_FUZZING_ENGINE
+    cp ../tests/fuzz/fuzz_emu.options $OUT/fuzz_$target.options
 done

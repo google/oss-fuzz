@@ -18,7 +18,7 @@
 cd /tmp
 curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
-SHELL="bash" ./installer_linux
+SHELL="bash" ./installer_linux -version=1.17
 rm -rf ./installer_linux
 
 echo 'Set "GOPATH=/root/go"'
@@ -26,3 +26,16 @@ echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
 
 go get -u github.com/mdempsky/go114-fuzz-build
 ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+
+go install golang.org/dl/gotip@latest \
+    && gotip download
+
+cd /tmp
+git clone https://github.com/AdamKorcz/go-118-fuzz-build
+cd go-118-fuzz-build
+gotip build
+mv go-118-fuzz-build $GOPATH/bin/
+
+cd addimport
+gotip build
+mv addimport $GOPATH/bin/

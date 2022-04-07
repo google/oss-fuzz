@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/flatbuffers"
 language: c++
-primary_contact: "wvo@google.com"
+primary_contact: "derekbailey@google.com"
 auto_ccs:
   - "Adam@adalogics.com"
   - "vglavnyy@gmail.com"

@@ -1,6 +1,8 @@
 homepage: "https://www.exiv2.org"
 language: c++
 primary_contact: "kevinbackhouse@github.com"
+auto_ccs:
+  - "piponazo@gmail.com"
 sanitizers:
   - address
   - undefined

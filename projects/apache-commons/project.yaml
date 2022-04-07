@@ -6,6 +6,7 @@ auto_ccs:
   - "brunodepaulak@gmail.com"
   - "meumertzheim@code-intelligence.com"
   - "peteralfredlee@gmail.com"
+  - "norbert.schneider@code-intelligence.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://gitbox.apache.org/repos/asf/commons-compress.git"

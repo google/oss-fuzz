@@ -1,5 +1,5 @@
 diff --git a/Makefile.conf.template b/Makefile.conf.template
-index 5a76e0a35..2570db165 100644
+index fcbc65ca1..1fd52ab7e 100644
 --- a/Makefile.conf.template
 +++ b/Makefile.conf.template
 @@ -69,17 +69,19 @@ exclude_modules?= aaa_diameter aaa_radius auth_jwt b2b_logic_xml cachedb_cassand
@@ -29,11 +29,19 @@ index 5a76e0a35..2570db165 100644
  #DEFS+= -DNO_DEBUG #Compile out all debug messages
  #DEFS+= -DNO_LOG #Compile out all logging
  #DEFS_GROUP_START
+@@ -100,6 +102,6 @@ DEFS+= -DCC_O0 #Zero compiler optimizations (FAST compile, SLOW code. For devs)
+ #DEFS+= -DORACLE_USRLOC #Use Oracle compatible queries for USRLOC
+ #DEFS+= -DSHM_EXTRA_STATS #Provide tools to get extra statistics for the shared memory used
+ #DEFS+= -DUNIT_TESTS #Include unit testing code into opensips and modules
+-#DEFS+= -DFUZZ_BUILD #Add extra runtime checks to prevent false-positive crashes
++DEFS+= -DFUZZ_BUILD #Add extra runtime checks to prevent false-positive crashes
+ 
+ PREFIX ?= /usr/local/
 diff --git a/parser/msg_parser.c b/parser/msg_parser.c
-index db09aff7f..99ea58435 100644
+index e85a94561..fbe914f59 100644
 --- a/parser/msg_parser.c
 +++ b/parser/msg_parser.c
-@@ -263,7 +263,7 @@ error_bad_hdr:
+@@ -271,7 +271,7 @@ error_bad_hdr:
  	set_err_reply(400, "bad headers");
  error:
  	LM_DBG("error exit\n");
@@ -43,10 +51,10 @@ index db09aff7f..99ea58435 100644
  	hdr->len=tmp-hdr->name.s;
  	return tmp;
 diff --git a/parser/parse_uri.c b/parser/parse_uri.c
-index 364d91c1f..2f1ff1130 100644
+index c1d4bf0bc..17dd023ea 100644
 --- a/parser/parse_uri.c
 +++ b/parser/parse_uri.c
-@@ -1628,7 +1628,7 @@ error_bug:
+@@ -1630,7 +1630,7 @@ error_bug:
  error_exit:
  	ser_error=E_BAD_URI;
  	uri->type=ERROR_URI_T;

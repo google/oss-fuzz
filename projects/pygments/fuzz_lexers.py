@@ -15,11 +15,11 @@
 # limitations under the License.
 
 import atheris
-with atheris.instrument_imports():
-  import sys
-  import pygments
-  import pygments.formatters.html
-  import pygments.lexers
+
+import sys
+import pygments
+import pygments.formatters.html
+import pygments.lexers
 
 formatter = pygments.formatters.html.HtmlFormatter()
 # pygments.LEXERS.values() is a list of tuples like this, with some of then empty:
@@ -36,5 +36,6 @@ def TestOneInput(data: bytes) -> int:
   return 0
 
 
+atheris.instrument_all()
 atheris.Setup(sys.argv, TestOneInput)
 atheris.Fuzz()

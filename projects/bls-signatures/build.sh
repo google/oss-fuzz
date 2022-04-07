@@ -67,6 +67,8 @@ echo -n "BLS_G2_IsEq," >>extra_options.h
 echo -n "BLS_G2_Neg," >>extra_options.h
 echo -n "BLS_Aggregate_G1", >>extra_options.h
 echo -n "BLS_Aggregate_G2", >>extra_options.h
+echo -n "BLS_MapToG1", >>extra_options.h
+echo -n "BLS_MapToG2", >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h

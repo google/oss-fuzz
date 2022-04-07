@@ -17,6 +17,7 @@ limitations under the License.
 #include <stdint.h>
 
 #include <string>
+#include <fuzzer/FuzzedDataProvider.h>
 
 #include <libraw.h>
 
@@ -29,6 +30,7 @@ enum InterpolationOptions {
   Dht = 11,
   AhdModified = 12
 };
+static const InterpolationOptions options[] = {Linear, Vng, Ppg, Ahd, Dcb, Dht, AhdModified};
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Input less than 15mb
@@ -36,10 +38,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  FuzzedDataProvider fdp(data, size);
   LibRaw lib_raw;
+  for(int i =0; i < 4; i++)
+    lib_raw.output_params_ptr()->aber[i] = fdp.ConsumeFloatingPoint<double>();
+  for(int i =0; i < 4; i++)
+    lib_raw.output_params_ptr()->user_mul[i] = fdp.ConsumeFloatingPoint<float>();
+  for(int i =0; i < 2; i++)
+    lib_raw.output_params_ptr()->gamm[i] = fdp.ConsumeFloatingPoint<double>();
+  lib_raw.output_params_ptr()->bright = fdp.ConsumeFloatingPoint<float>();
+  lib_raw.output_params_ptr()->threshold = fdp.ConsumeFloatingPoint<float>();
+  lib_raw.output_params_ptr()->use_auto_wb = fdp.ConsumeIntegral<int>();
+  lib_raw.output_params_ptr()->output_color = fdp.ConsumeIntegralInRange<int>(0, 6);
+  lib_raw.output_params_ptr()->user_flip = fdp.ConsumeIntegralInRange<int>(0, 7);
+  lib_raw.output_params_ptr()->user_black = fdp.ConsumeIntegral<int>();
+  lib_raw.output_params_ptr()->user_sat = fdp.ConsumeIntegral<int>();
+  lib_raw.output_params_ptr()->auto_bright_thr = fdp.ConsumeFloatingPoint<float>();
+  lib_raw.output_params_ptr()->adjust_maximum_thr = fdp.ConsumeFloatingPointInRange<float>(0.f, 1.f);
+  lib_raw.output_params_ptr()->fbdd_noiserd = fdp.ConsumeIntegralInRange<int>(0, 5);
 
-  int result = lib_raw.open_buffer(
-      const_cast<char*>(reinterpret_cast<const char*>(data)), size);
+  std::vector<char> payload = fdp.ConsumeRemainingBytes<char>();
+  int result = lib_raw.open_buffer(payload.data(), payload.size());
   if (result != LIBRAW_SUCCESS) {
     return 0;
   }
@@ -49,7 +68,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  InterpolationOptions options[] = {Linear, Vng, Ppg, Ahd, Dcb, Dht, AhdModified};
 
   for (int i = 0; i < sizeof(options)/sizeof(*options); i++) {
     lib_raw.output_params_ptr()->user_qual = static_cast<int>(options[i]);

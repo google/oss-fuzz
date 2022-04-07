@@ -35,6 +35,7 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 COVERAGE_SCHEDULE = '0 6 * * *'
+INTROSPECTOR_SCHEDULE = '0 10 * * *'
 FUZZING_BUILD_TOPIC = 'request-build'
 COVERAGE_BUILD_TOPIC = 'request-coverage-build'
 INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
@@ -65,9 +66,16 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
   }
 
   try:
+    existing_job = cloud_scheduler_client.get_job(job['name'])
+  except exceptions.NotFound:
+    existing_job = None
+
+  if existing_job:
+    if existing_job.schedule != schedule:
+      update_mask = {'paths': ['schedule']}
+      cloud_scheduler_client.update_job(job, update_mask)
+  else:
     cloud_scheduler_client.create_job(parent, job)
-  except exceptions.AlreadyExists:
-    return
 
 
 def delete_scheduler(cloud_scheduler_client, project_name, tag):
@@ -77,24 +85,6 @@ def delete_scheduler(cloud_scheduler_client, project_name, tag):
   name = cloud_scheduler_client.job_path(project_id, location_id,
                                          project_name + '-scheduler-' + tag)
   cloud_scheduler_client.delete_job(name)
-
-
-def update_scheduler(cloud_scheduler_client, project, schedule, tag):
-  """Updates schedule in case schedule was changed."""
-  project_id = os.environ.get('GCP_PROJECT')
-  location_id = os.environ.get('FUNCTION_REGION')
-  parent = cloud_scheduler_client.location_path(project_id, location_id)
-  job = {
-      'name': parent + '/jobs/' + project.name + '-scheduler-' + tag,
-      'pubsub_target': {
-          'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': project.name.encode()
-      },
-      'schedule': schedule,
-  }
-
-  update_mask = {'paths': ['schedule']}
-  cloud_scheduler_client.update_job(job, update_mask)
 
 
 def delete_project(cloud_scheduler_client, project):
@@ -132,7 +122,8 @@ def sync_projects(cloud_scheduler_client, projects):
       create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
                        build_and_run_coverage.COVERAGE_BUILD_TYPE,
                        COVERAGE_BUILD_TOPIC)
-      create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
+      create_scheduler(cloud_scheduler_client, project_name,
+                       INTROSPECTOR_SCHEDULE,
                        build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
                        INTROSPECTOR_BUILD_TOPIC)
     except exceptions.GoogleAPICallError as error:
@@ -159,9 +150,6 @@ def sync_projects(cloud_scheduler_client, projects):
     if project.schedule != project_metadata.schedule:
       try:
         logging.info('Schedule changed.')
-        update_scheduler(cloud_scheduler_client, project,
-                         projects[project.name].schedule,
-                         build_project.FUZZING_BUILD_TYPE)
         project.schedule = project_metadata.schedule
         project_changed = True
       except exceptions.GoogleAPICallError as error:

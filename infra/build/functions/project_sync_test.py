@@ -78,6 +78,14 @@ class CloudSchedulerClient:
     del parent
     self.schedulers.append(job)
 
+  def get_job(self, name):
+    """Simulate get_job."""
+    for scheduler in self.schedulers:
+      if scheduler['name'] == name:
+        return scheduler
+
+    return None
+
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
     """Return job path."""
@@ -188,7 +196,7 @@ class TestDataSync(unittest.TestCase):
                   'data':
                       b'test1'
               },
-              'schedule': '0 6 * * *'
+              'schedule': '0 10 * * *'
           },
           {
               'name': 'projects/test-project/location/us-central1/jobs/'
@@ -219,7 +227,7 @@ class TestDataSync(unittest.TestCase):
                   'data':
                       b'test2'
               },
-              'schedule': '0 6 * * *'
+              'schedule': '0 10 * * *'
           },
       ], cloud_scheduler_client.schedulers)
 

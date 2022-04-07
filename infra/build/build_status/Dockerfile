@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN mkdir -p /opt/oss-fuzz/infra/build_status
-COPY ${OSS_FUZZ_ROOT}/infra/build/functions/* /opt/oss-fuzz/infra/build_status/
-COPY ${OSS_FUZZ_ROOT}/infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
+COPY infra/build/functions/* /opt/oss-fuzz/infra/build_status/
+COPY infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
 RUN pip install -r /opt/oss-fuzz/infra/build_status/requirements.txt
 
 ENTRYPOINT [ "python3", "/opt/oss-fuzz/infra/build_status/update_build_status.py" ]

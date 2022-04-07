@@ -33,7 +33,7 @@ export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
 mkdir $SRC/libogg-install
 cd $SRC/ogg
 ./autogen.sh
-./configure --prefix="$SRC/libogg-install"
+./configure --disable-crc --prefix="$SRC/libogg-install"
 make -j$(nproc)
 make install
 
