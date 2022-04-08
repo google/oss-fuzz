@@ -24,13 +24,5 @@ make install-dev
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
-
-  # Create execution wrapper.
-  echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-\$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  compile_python_fuzzer $fuzzer
 done
