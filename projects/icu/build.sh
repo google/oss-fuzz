@@ -16,6 +16,12 @@
 #
 ################################################################################
 
+# Fuzz introspector uses LDFLAGS, so ensure LDFLAGS
+# is always set for other sanitizer options.
+if [ "$SANITIZER" != "introspector" ]; then
+  export LDFLAGS=""
+fi
+
 mkdir $WORK/icu
 cd $WORK/icu
 
@@ -33,7 +39,7 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
+$CXX $CXXFLAGS $LDFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
      -I$SRC/icu4c/source/test/fuzzer
 
 FUZZER_PATH=$SRC/icu/icu4c/source/test/fuzzer
@@ -42,7 +48,7 @@ FUZZERS=$FUZZER_PATH/*_fuzzer.cpp
 
 for fuzzer in $FUZZERS; do
   file=${fuzzer:${#FUZZER_PATH}+1}
-  $CXX $CXXFLAGS -std=c++11 \
+  $CXX $CXXFLAGS $LDFLAGS -std=c++11 \
     $fuzzer -o $OUT/${file/.cpp/} locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
     $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata
