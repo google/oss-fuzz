@@ -1,0 +1,12 @@
+homepage: "https://github.com/jettison-json/jettison"
+language: jvm
+primary_contact: "glendowne@code-intelligence.com"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://github.com/jettison-json/jettison.git"
