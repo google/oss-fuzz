@@ -36,6 +36,7 @@ def TestOneInput(input_bytes):
     return
 
   decrypted = rsa.decrypt(encrypted, priv)
+  assert(decrypted == message)
 
 def main():
   atheris.instrument_all()
