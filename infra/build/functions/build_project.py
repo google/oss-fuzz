@@ -478,17 +478,21 @@ def dataflow_post_build_steps(project_name, env, base_images_project, testing,
   return steps
 
 
-# pylint: disable=no-member
+# pylint: disable=no-member,too-many-arguments
 def run_build(oss_fuzz_project,
               build_steps,
               credentials,
               build_type,
-              cloud_project='oss-fuzz'):
+              cloud_project='oss-fuzz',
+              extra_tags=None):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
   in GCB so the build can be queried for debugging purposes."""
+  if extra_tags is None:
+    extra_tags = []
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
+  tags.extend(extra_tags)
   timeout = build_lib.BUILD_TIMEOUT
   # TODO(navidem): This is temporary until I fix shorter failing projects.
   if build_type == 'introspector':
