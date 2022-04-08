@@ -59,8 +59,9 @@ def build_image(image, tags, cache_from_tag):
   for tag in tags:
     command.extend(['--tag', tag])
     path = os.path.join(IMAGES_DIR, image)
-  command.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
-                  cache_from_tag])
+  command.extend([
+      '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from', cache_from_tag
+  ])
   command.append(path)
   subprocess.run(command, check=True)
   logging.info('Built: %s', image)

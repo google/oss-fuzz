@@ -338,13 +338,14 @@ def get_docker_build_step(image_names, directory, buildkit_cache_image=None):
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
     assert buildkit_cache_image in args
-    additional_args = ['--build-arg', 'BUILDKIT_INLINE_CACHE=1',
-                       '--cache-from', buildkit_cache_image]
+    additional_args = [
+        '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
+        buildkit_cache_image
+    ]
     args.extend(additional_args)
   args.append('.')
 
   return step
-
 
 
 def project_image_steps(name,
