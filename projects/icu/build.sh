@@ -16,6 +16,12 @@
 #
 ################################################################################
 
+# Fuzz introspector uses LDFLAGS, so ensure LDFLAGS
+# is always set for other sanitizer options.
+if [ "$SANITIZER" != "introspector" ]; then
+  export LDFLAGS=""
+fi
+
 mkdir $WORK/icu
 cd $WORK/icu
 
