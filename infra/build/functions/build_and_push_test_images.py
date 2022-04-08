@@ -48,18 +48,19 @@ def build_and_push_image(image, test_image_suffix):
   main_tag = TAG_PREFIX + image
   testing_tag = main_tag + '-' + test_image_suffix
   tags = [main_tag, testing_tag]
-  build_image(image, tags)
+  build_image(image, tags, testing_tag)
   push_image(testing_tag)
 
 
-def build_image(image, tags):
+def build_image(image, tags, cache_from_tag):
   """Builds |image| and tags it with |tags|."""
   logging.info('Building: %s', image)
   command = ['docker', 'build']
   for tag in tags:
     command.extend(['--tag', tag])
     path = os.path.join(IMAGES_DIR, image)
-  command.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
+  command.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
+                  cache_from_tag])
   command.append(path)
   subprocess.run(command, check=True)
   logging.info('Built: %s', image)
