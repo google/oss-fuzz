@@ -158,9 +158,12 @@ def _do_builds(args, config, credentials, build_type, projects):
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
-    build_ids[project_name] = (build_project.run_build(project_name, steps,
-                                                       credentials,
-                                                       build_type.type_name))
+    build_ids[project_name] = (build_project.run_build(
+        project_name,
+        steps,
+        credentials,
+        build_type.type_name,
+        extra_tags=['trial-build']))
 
   return build_ids
 
