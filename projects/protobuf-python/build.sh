@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +14,27 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf \
-    python3-pip ninja-build && \
-   pip3 install meson==0.61.3
+# Build protoc with default options.
+unset CFLAGS CXXFLAGS
+mkdir $SRC/protobuf-install/
+cd $SRC/protobuf/
+./autogen.sh
+./configure --prefix=$SRC/protobuf-install
+make -j$(nproc)
+make install
+export PROTOC="$SRC/protobuf-install/bin/protoc"
 
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git vorbis
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git ogg
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git theora
+ldconfig
+cd python
+python3 setup.py build --cpp_implementation
+pip3 install .
 
-# Checkout repository
-RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
+# Compile test protos with protoc.
+cd $SRC/
+$PROTOC --python_out=. --proto_path=. test-full.proto
 
-WORKDIR gstreamer
-COPY build.sh $SRC/
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

@@ -38,6 +38,7 @@ STATUS_BUCKET = 'oss-fuzz-build-logs'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
+INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
 
 # pylint: disable=invalid-name
 _client = None
@@ -279,7 +280,9 @@ def main():
   with ndb.Client().context():
     configs = ((build_project.FUZZING_BUILD_TYPE, FUZZING_STATUS_FILENAME),
                (build_and_run_coverage.COVERAGE_BUILD_TYPE,
-                COVERAGE_STATUS_FILENAME))
+                COVERAGE_STATUS_FILENAME),
+               (build_and_run_coverage.INTROSPECTOR_BUILD_TYPE,
+                INTROSPECTOR_STATUS_FILENAME))
 
     for tag, filename in configs:
       update_build_status(tag, filename)

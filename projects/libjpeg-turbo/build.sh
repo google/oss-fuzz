@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2022 D. R. Commander
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,19 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf \
-    python3-pip ninja-build && \
-   pip3 install meson==0.61.3
+set -e
+set -u
 
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git vorbis
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git ogg
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git theora
-
-# Checkout repository
-RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
-
-WORKDIR gstreamer
-COPY build.sh $SRC/
+for branch in main 2.0.x dev; do
+	if [ "$branch" = "dev" -a ! -d libjpeg-turbo.$branch ]; then
+		continue
+	fi
+	pushd libjpeg-turbo.$branch
+	if [ "$branch" = "main" ]; then
+		sh fuzz/build.sh
+	else
+		sh fuzz/build.sh _$branch
+	fi
+	popd
+done

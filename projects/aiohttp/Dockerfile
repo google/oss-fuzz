@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf \
-    python3-pip ninja-build && \
-   pip3 install meson==0.61.3
-
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git vorbis
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git ogg
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git theora
-
-# Checkout repository
-RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
-
-WORKDIR gstreamer
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y pkg-config zlib1g zlib1g-dev libjpeg-dev libpng-dev npm
+RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/
+COPY fuzz_* $SRC/aiohttp/
+
+WORKDIR $SRC/aiohttp

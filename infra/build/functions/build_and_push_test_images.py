@@ -48,17 +48,20 @@ def build_and_push_image(image, test_image_suffix):
   main_tag = TAG_PREFIX + image
   testing_tag = main_tag + '-' + test_image_suffix
   tags = [main_tag, testing_tag]
-  build_image(image, tags)
+  build_image(image, tags, testing_tag)
   push_image(testing_tag)
 
 
-def build_image(image, tags):
+def build_image(image, tags, cache_from_tag):
   """Builds |image| and tags it with |tags|."""
   logging.info('Building: %s', image)
   command = ['docker', 'build']
   for tag in tags:
     command.extend(['--tag', tag])
     path = os.path.join(IMAGES_DIR, image)
+  command.extend([
+      '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from', cache_from_tag
+  ])
   command.append(path)
   subprocess.run(command, check=True)
   logging.info('Built: %s', image)
@@ -74,7 +77,8 @@ def gcb_build_and_push_images(test_image_suffix):
     test_images.append(test_image_name)
     directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([image_name, test_image_name],
-                                           directory)
+                                           directory,
+                                           buildkit_cache_image=test_image_name)
     steps.append(step)
 
   overrides = {'images': test_images}
@@ -103,13 +107,14 @@ def build_and_push_images(test_image_suffix):
           'base-builder-rust',
       ],
   ]
+  os.environ['DOCKER_BUILDKIT'] = '1'
   max_parallelization = max([len(image_list) for image_list in images])
   proc_count = min(multiprocessing.cpu_count(), max_parallelization)
   logging.info('Using %d parallel processes.', proc_count)
-  pool = multiprocessing.Pool(proc_count)
-  for image_list in images:
-    args_list = [(image, test_image_suffix) for image in image_list]
-    pool.starmap(build_and_push_image, args_list)
+  with multiprocessing.Pool(proc_count) as pool:
+    for image_list in images:
+      args_list = [(image, test_image_suffix) for image in image_list]
+      pool.starmap(build_and_push_image, args_list)
 
 
 def main():
