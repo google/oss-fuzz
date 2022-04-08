@@ -127,7 +127,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 9933a6f3ab6c5b02c9f108dded6eb93ed59d2941 && \
+    git checkout c208dcf9c573e3d85990c7dea777646f7fa4961c && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
 
