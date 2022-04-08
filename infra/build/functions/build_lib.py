@@ -29,6 +29,7 @@ from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
+from google.cloud.devtools import cloudbuild_v1
 
 BUILD_TIMEOUT = 12 * 60 * 60
 
@@ -73,7 +74,11 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
+DEFAULT_GCB_OPTIONS = {#' machineType': 'N1_HIGHCPU_32',
+                       'pool': {
+    'name': 'projects/oss-fuzz/locations/us-central1/workerPools/buildpool'
+}
+                       }
 
 
 def get_targets_list_filename(sanitizer):
@@ -330,7 +335,7 @@ def get_docker_build_step(image_names, directory, buildkit_cache_image=None):
   step = {
       'name': 'gcr.io/cloud-builders/docker',
       'args': args,
-      'dir': directory,
+      # 'dir': directory,
   }
   # Note that we mutate "args" after making it a value in step.
 
@@ -420,15 +425,30 @@ def run_build(  # pylint: disable=too-many-arguments
   for key, value in body_overrides.items():
     build_body[key] = value
 
+  from google.api_core.client_options import ClientOptions
+  client_options = ClientOptions(
+        api_endpoint='us-central1-cloudbuild.googleapis.com'
+    )
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
-                           cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
+                           cache_discovery=False,
+                           client_options=client_options)
+  client = cloudbuild_v1.services.cloud_build.CloudBuildClient(client_options=client_options)
+  # # pip freeze | grep google-cloud-build
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  # import pdb; pdb.set_trace()
+  b = cloudbuild_v1.Build()
+  b.steps = build_body['steps']
+  b.options = build_body['options']
+  response = client.create_build(project_id='oss-fuzz', build=b)
+  import pdb; pdb.set_trace()
+
+  # build_info = cloudbuild.projects().builds().create(projectId=cloud_project, body=build_body).execute()
+
+  # build_id = build_info['metadata']['build']['id']
+
+  # logging.info('Build ID: %s', build_id)
+  # logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
+  # logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
   return build_id
