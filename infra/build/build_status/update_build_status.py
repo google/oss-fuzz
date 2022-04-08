@@ -17,6 +17,7 @@
 import concurrent.futures
 import json
 import sys
+import os
 
 import google.auth
 from googleapiclient.discovery import build
@@ -35,10 +36,20 @@ DESTINATION_BADGE_DIR = 'badges'
 MAX_BUILD_LOGS = 7
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
+INTROSPECTOR_BUCKET = 'oss-fuzz-introspector'
+INTROSPECTOR_BUCKET_URL = 'https://storage.googleapis.com/oss-fuzz-introspector'
+INTROSPECTOR_INDEX_JSON = 'build_status.json'
+INTROSPECTOR_INDEX_HTML = 'index.html'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
 INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
+
+HTML_PREFIX_STRING = (
+    '<!DOCTYPE html>\n<html>\n'
+    '\t<head><h2>Index of Fuzz-Introspector reports for OSS-Fuzz projects</h2></head>\n'
+    '\t<body>\n\t<font size="4">\n')
+HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 
 # pylint: disable=invalid-name
 _client = None
@@ -275,6 +286,58 @@ def update_badges():
     concurrent.futures.wait(futures)
 
 
+def upload_index(json_index, html_string):
+  """Upload json and html file to introspector bucket."""
+  introspector_bucket = get_storage_client().get_bucket(INTROSPECTOR_BUCKET)
+  json_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
+  html_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_HTML)
+
+  json_blob.cache_control = 'no-cache'
+  json_blob.upload_from_string(json.dumps(json_index),
+                               content_type='application/json')
+
+  html_blob.cache_control = 'no-cache'
+  html_blob.upload_from_string(html_string, content_type='text/html')
+
+
+def generate_html_string(content):
+  """Generate html body for introspector index"""
+  html_body = HTML_PREFIX_STRING
+  for project, url in content.items():
+    html_body += f'\t<li><a href="{url}"> {project} </a></li>\n'
+
+  html_body += HTML_SUFFIX_STRING
+  return html_body
+
+
+def generate_introspector_index():
+  """Generate index.html for successful Fuzz Introspector projects"""
+  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+  status = json.loads(
+      status_bucket.blob(INTROSPECTOR_STATUS_FILENAME).download_as_string())
+
+  introspector_bucket = get_storage_client().get_bucket(INTROSPECTOR_BUCKET)
+  index_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
+  if index_blob.exists():
+    introspector_index = json.loads(index_blob.download_as_string())
+  else:
+    introspector_index = {}
+
+  for project in status['projects']:
+    if project['history'] and project['history'][0]['success']:
+      project_name = project['name']
+      build_date = project['history'][0]['finish_time'].split('T')[0].replace(
+          '-', '')
+      introspector_index[project_name] = os.path.join(INTROSPECTOR_BUCKET_URL,
+                                                      project_name,
+                                                      'inspector-report',
+                                                      build_date,
+                                                      'fuzz_report.html')
+
+  html_string = generate_html_string(introspector_index)
+  upload_index(introspector_index, html_string)
+
+
 def main():
   """Entry point for cloudbuild"""
   with ndb.Client().context():
@@ -288,6 +351,7 @@ def main():
       update_build_status(tag, filename)
 
     update_badges()
+    generate_introspector_index()
 
 
 if __name__ == '__main__':
