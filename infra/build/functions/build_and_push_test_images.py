@@ -59,6 +59,7 @@ def build_image(image, tags):
   for tag in tags:
     command.extend(['--tag', tag])
     path = os.path.join(IMAGES_DIR, image)
+  command.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
   command.append(path)
   subprocess.run(command, check=True)
   logging.info('Built: %s', image)
@@ -103,13 +104,14 @@ def build_and_push_images(test_image_suffix):
           'base-builder-rust',
       ],
   ]
+  os.environ['DOCKER_BUILDKIT'] = '1'
   max_parallelization = max([len(image_list) for image_list in images])
   proc_count = min(multiprocessing.cpu_count(), max_parallelization)
   logging.info('Using %d parallel processes.', proc_count)
-  pool = multiprocessing.Pool(proc_count)
-  for image_list in images:
-    args_list = [(image, test_image_suffix) for image in image_list]
-    pool.starmap(build_and_push_image, args_list)
+  with multiprocessing.Pool(proc_count) as pool:
+    for image_list in images:
+      args_list = [(image, test_image_suffix) for image in image_list]
+      pool.starmap(build_and_push_image, args_list)
 
 
 def main():
