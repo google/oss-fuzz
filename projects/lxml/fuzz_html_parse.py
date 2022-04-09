@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/usr/bin/python3
+
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-python3 ./setup.py install
+import atheris
+import sys
 
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
-done
+with atheris.instrument_imports():
+  from lxml import etree as et
+
+
+def TestOneInput(data):
+  try:
+    root = et.HTML(data)
+    if root != None:
+      et.tostring(root)
+  except et.XMLSyntaxError:
+    None
+
+
+def main():
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+if __name__ == "__main__":
+  main()
