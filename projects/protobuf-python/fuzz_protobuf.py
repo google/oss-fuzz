@@ -19,23 +19,21 @@ import atheris
 
 with atheris.instrument_imports():
   import test_full_pb2
-  from google.protobuf.message import DecodeError
+  from google.protobuf.message import DecodeError, EncodeError
 
 @atheris.instrument_func
 def TestOneInput(input_bytes):
-  # We need to make the file an absolute path
-  testfile_path = os.path.join(os.getcwd(), "serialized.bin")
-  with open(testfile_path, "wb") as f:
-    f.write(input_bytes)
-
+  """Test ParseFromString with bytes string"""
   pbmsg = test_full_pb2.TestMessSubMess()
-  with open(testfile_path, "rb") as fd:
-    try:
-      pbmsg.ParseFromString(fd.read())
-    except DecodeError:
-      None
+  try:
+    pbmsg.ParseFromString(input_bytes)
+  except DecodeError:
+    None
 
-  os.remove(testfile_path)
+  try:
+    pbmsg.SerializeToString()
+  except EncodeError:
+    None
 
 
 def main():
