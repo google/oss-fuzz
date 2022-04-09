@@ -30,8 +30,6 @@ ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
 
-cd $SRC
-
 if [ "${SANITIZER}" = address ]
 then
     CONFIGURE_FLAGS="-DHERMES_ENABLE_ADDRESS_SANITIZER=ON"
@@ -42,7 +40,7 @@ else
     CONFIGURE_FLAGS=""
 fi
 
-cmake -S hermes -B "${OUT}/build" ${CONFIGURE_FLAGS} -DHERMES_USE_STATIC_ICU=ON \
+cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DHERMES_USE_STATIC_ICU=ON \
                  -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON
 cmake --build "$OUT/build" --target fuzzer-jsi-entry -j 4
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"
