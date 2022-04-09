@@ -147,7 +147,7 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
 fi
 
 if [ "$SANITIZER" = "introspector" ]; then
-  export LDFLAGS="-fuse-ld=gold"
+  export LDFLAGS="-fuse-ld=gold -flto"
   export AR=llvm-ar
   export RANLIB=llvm-ranlib
 
