@@ -1,5 +1,4 @@
-#/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,7 @@
 #
 ################################################################################
 
-cd $SRC/test-project
-go mod init test-project
-mkdir fuzz
-cp $SRC/fuzz.go ./fuzz/fuzz_test.go
-compile_native_go_fuzzer ./fuzz Fuzz
+FROM gcr.io/oss-fuzz-base/base-builder-go
+COPY build.sh fuzz.go $SRC/
+RUN mkdir $SRC/test-project
+WORKDIR $SRC/test-project

@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/vitessio/vitess
-RUN go install golang.org/dl/gotip@latest \
-    && gotip download
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-COPY build.sh \
-     native_ossfuzz_coverage_runnger.go \
-     fuzzers/tablet_manager_fuzzer_test.go \
-     fuzzers/parser_fuzzer_test.go \
-     fuzzers/ast_fuzzer_test.go \
-     $SRC/
-WORKDIR $SRC/vitess
+cd $SRC/test-project
+go mod init test-project
+mkdir fuzz
+cp $SRC/fuzz.go ./fuzz/fuzz_test.go
+compile_native_go_fuzzer ./fuzz Fuzz
