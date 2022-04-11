@@ -26,7 +26,7 @@ def TestOneInput(data):
     root = et.HTML(data)
     if root != None:
       et.tostring(root)
-  except et.XMLSyntaxError:
+  except et.LxmlError:
     None
 
 

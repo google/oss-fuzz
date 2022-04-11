@@ -30,7 +30,7 @@ def TestOneInput(data):
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except et.XMLSyntaxError:
+  except et.LxmlError:
     None
 
 def main():
