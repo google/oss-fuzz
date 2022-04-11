@@ -13,3 +13,5 @@ auto_ccs:
   - evverx@gmail.com
 main_repo: "https://github.com/libbpf/libbpf"
 builds_per_day: 4
+view_restrictions: none
+file_github_issue: True
