@@ -149,13 +149,16 @@ fi
 if [ "$SANITIZER" = "introspector" ]; then
   export LDFLAGS="-fuse-ld=gold -flto"
   export AR=llvm-ar
+  export NM=llvm-nm
   export RANLIB=llvm-ranlib
 
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
+  mv /usr/bin/nm /usr/bin/old-nm
   mv /usr/bin/ranlib /usr/bin/old-ranlib
 
   ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
+  ln -sf /usr/local/bin/llvm-nm /usr/bin/nm
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
 fi
 

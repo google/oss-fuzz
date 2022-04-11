@@ -225,6 +225,7 @@ mv \
   /usr/local/bin/llvm-config \
   /usr/local/bin/llvm-cov \
   /usr/local/bin/llvm-objcopy \
+  /usr/local/bin/llvm-nm \
   /usr/local/bin/llvm-profdata \
   /usr/local/bin/llvm-ranlib \
   /usr/local/bin/llvm-symbolizer \
