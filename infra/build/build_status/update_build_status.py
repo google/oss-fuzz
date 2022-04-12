@@ -15,6 +15,7 @@
 ################################################################################
 """Cloud function to request builds."""
 import concurrent.futures
+import logging
 import json
 import sys
 import os
@@ -54,9 +55,7 @@ HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 # pylint: disable=invalid-name
 _client = None
 
-
-class MissingBuildLogError(Exception):
-  """Missing build log file in cloud storage."""
+logging.basicConfig(level=logging.INFO)
 
 
 # pylint: disable=global-statement
@@ -157,7 +156,8 @@ def get_build_history(build_ids):
 
     if not upload_log(build_id):
       log_name = f'log-{build_id}'
-      raise MissingBuildLogError(f'Missing build log file {log_name}')
+      logging.error('Missing build log file %s', log_name)
+      continue
 
     history.append({
         'build_id': build_id,
