@@ -1,0 +1,9 @@
+homepage: "https://skale.network/"
+language: c++
+primary_contact: "chadwick@skalelabs.com"
+auto_ccs:
+  - "stan@skalelabs.com"
+  - "dima.stebaev@skalelabs.com"
+  - "artem.payvin@skalelabs.com"
+  - "vadim@skalelabs.com"
+main_repo: "https://github.com/skalenetwork/skale-manager.git"
