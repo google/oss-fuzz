@@ -74,9 +74,12 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-DEFAULT_GCB_OPTIONS = {  #' machineType': 'N1_HIGHCPU_32',
+BUILDPOOL_NAME = os.getenv('GCB_BUILDPOOL_NAME':
+                           'projects/oss-fuzz/locations/us-central1/'
+                           'workerPools/buildpool')
+DEFAULT_GCB_OPTIONS = {
     'pool': {
-        'name': 'projects/oss-fuzz/locations/us-central1/workerPools/buildpool'
+        'name': BUILDPOOL_NAME
     }
 }
 
