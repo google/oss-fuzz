@@ -74,14 +74,10 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-BUILDPOOL_NAME = os.getenv('GCB_BUILDPOOL_NAME':
-                           'projects/oss-fuzz/locations/us-central1/'
-                           'workerPools/buildpool')
-DEFAULT_GCB_OPTIONS = {
-    'pool': {
-        'name': BUILDPOOL_NAME
-    }
-}
+BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool')
+DEFAULT_GCB_OPTIONS = {'pool': {'name': BUILDPOOL_NAME}}
 
 
 def get_targets_list_filename(sanitizer):
