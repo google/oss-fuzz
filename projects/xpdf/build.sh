@@ -54,4 +54,4 @@ for fuzzer in zxdoc pdfload JBIG2; do
 done
 
 # Copy over options files
-cp $SRC/fuzz_pdfload.options $OUT/
+cp $SRC/fuzz_*.options $OUT/
