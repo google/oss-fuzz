@@ -572,9 +572,8 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
 def main():
   """Build and run projects."""
-  build_script_main('Builds a project on GCB.', get_build_steps,
-                    FUZZING_BUILD_TYPE)
-  return 0
+  return build_script_main('Builds a project on GCB.', get_build_steps,
+                           FUZZING_BUILD_TYPE)
 
 
 if __name__ == '__main__':
