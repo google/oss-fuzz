@@ -335,7 +335,7 @@ def get_docker_build_step(image_names, directory, buildkit_cache_image=None):
   step = {
       'name': 'gcr.io/cloud-builders/docker',
       'args': args,
-      # 'dir': directory,
+      'dir': directory,
   }
   # Note that we mutate "args" after making it a value in step.
 
@@ -427,28 +427,19 @@ def run_build(  # pylint: disable=too-many-arguments
 
   from google.api_core.client_options import ClientOptions
   client_options = ClientOptions(
-        api_endpoint='us-central1-cloudbuild.googleapis.com'
+        api_endpoint='https://us-central1-cloudbuild.googleapis.com/'
     )
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
                            client_options=client_options)
-  client = cloudbuild_v1.services.cloud_build.CloudBuildClient(client_options=client_options)
-  # # pip freeze | grep google-cloud-build
 
-  # import pdb; pdb.set_trace()
-  b = cloudbuild_v1.Build()
-  b.steps = build_body['steps']
-  b.options = build_body['options']
-  response = client.create_build(project_id='oss-fuzz', build=b)
-  import pdb; pdb.set_trace()
+  build_info = cloudbuild.projects().builds().create(projectId=cloud_project, body=build_body).execute()
 
-  # build_info = cloudbuild.projects().builds().create(projectId=cloud_project, body=build_body).execute()
+  build_id = build_info['metadata']['build']['id']
 
-  # build_id = build_info['metadata']['build']['id']
-
-  # logging.info('Build ID: %s', build_id)
-  # logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  # logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info('Build ID: %s', build_id)
+  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
+  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
   return build_id
