@@ -157,6 +157,7 @@ def get_build_history(build_ids):
     if not upload_log(build_id):
       log_name = f'log-{build_id}'
       logging.error('Missing build log file %s', log_name)
+      continue
 
     history.append({
         'build_id': build_id,
