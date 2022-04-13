@@ -9,6 +9,7 @@ architectures:
   - x86_64
   - i386
 auto_ccs:
+  - hengqi.chen@gmail.com
   - yulia.kartseva@gmail.com
   - evverx@gmail.com
 main_repo: "https://github.com/libbpf/libbpf"
