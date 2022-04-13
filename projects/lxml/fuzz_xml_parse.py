@@ -22,16 +22,24 @@ with atheris.instrument_imports():
 
 
 def TestOneInput(data):
+  tree = None
+  success = False
   try:
     root = et.XML(data)
     if root != None:
       et.indent(root)
 
       tree = et.ElementTree(root)
-      a = et.Element("a")
-      tree.getelementpath(a)
+      success = True
   except et.XMLSyntaxError:
     None
+
+  if success:
+    try:
+      a = et.Element("a")
+      tree.getelementpath(a)
+    except ValueError:
+      None
 
 
 def main():
