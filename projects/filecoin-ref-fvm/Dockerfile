@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone -b feat/corpus --depth 1 https://github.com/filecoin-project/ref-fvm ./ref-fvm && \
+RUN git clone --depth 1 https://github.com/filecoin-project/ref-fvm ./ref-fvm && \
 	git clone --depth 1 https://github.com/filecoin-project/ref-fvm-fuzz-corpora ./corpus
 COPY build.sh $SRC/
 WORKDIR $SRC
