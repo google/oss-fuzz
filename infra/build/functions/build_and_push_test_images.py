@@ -24,6 +24,7 @@ import subprocess
 import sys
 
 import oauth2client.client
+import yaml
 
 import base_images
 import build_lib
@@ -33,6 +34,7 @@ CLOUD_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{CLOUD_PROJECT}/'
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 IMAGES_DIR = os.path.join(INFRA_DIR, 'base-images')
+OSS_FUZZ_ROOT = os.path.dirname(INFRA_DIR)
 
 
 def push_image(tag):
@@ -78,16 +80,24 @@ def gcb_build_and_push_images(test_image_suffix):
     directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([image_name, test_image_name],
                                            directory,
-                                           buildkit_cache_image=test_image_name)
+                                           buildkit_cache_image=test_image_name,
+                                           src_root='.')
     steps.append(step)
 
   overrides = {'images': test_images}
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
-  build_id = build_lib.run_build(steps, credentials, base_images.BASE_PROJECT,
-                                 base_images.TIMEOUT, overrides,
-                                 ['trial-build'])
-  return trial_build.wait_on_builds({'base-images': build_id}, credentials,
-                                    CLOUD_PROJECT)
+  build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
+                                        ['trial-build'])
+  # build_id = build_lib.run_build(steps, credentials, base_images.BASE_PROJECT,
+  #                                base_images.TIMEOUT, overrides,
+  #                                ['trial-build'])
+  yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
+  with open(yaml_file, 'w') as yaml_file_handle:
+    yaml.dump(build_body, yaml_file_handle)
+
+  subprocess.run(
+      ['gcloud', 'builds', 'submit', '--project=oss-fuzz-base', f'--config={yaml_file}'],
+      cwd=OSS_FUZZ_ROOT)
 
 
 def build_and_push_images(test_image_suffix):
