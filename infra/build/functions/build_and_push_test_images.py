@@ -69,7 +69,7 @@ def build_image(image, tags, cache_from_tag):
 
 def gcb_build_and_push_images(test_image_suffix):
   """Build and push test versions of base images using GCB."""
-  steps = [build_lib.get_git_clone_step()]
+  steps = []
   test_images = []
   for base_image in base_images.BASE_IMAGES:
     image_name = TAG_PREFIX + base_image
