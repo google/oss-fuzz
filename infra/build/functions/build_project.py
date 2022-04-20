@@ -79,9 +79,9 @@ class Build:  # pylint: disable=too-few-public-methods
 
 
 def get_project_data(project_name):
-  """Returns a tuple containing the contents of the project.yaml and Dockerfile
-  of |project_name|. Raises a FileNotFoundError if there is no Dockerfile for
-  |project_name|."""
+  """(Local only) Returns a tuple containing the contents of the project.yaml
+  and Dockerfile of |project_name|. Raises a FileNotFoundError if there is no
+  Dockerfile for |project_name|."""
   project_dir = os.path.join(PROJECTS_DIR, project_name)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   try:
@@ -94,7 +94,6 @@ def get_project_data(project_name):
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
     project_yaml_contents = project_yaml_file_handle.read()
   project_yaml = yaml.safe_load(project_yaml_contents)
-  set_yaml_defaults(project_yaml)
   return project_yaml, dockerfile
 
 
@@ -102,6 +101,9 @@ class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
   def __init__(self, name, project_yaml, dockerfile, image_project):
+    project_yaml = project_yaml.copy()
+    set_yaml_defaults(project_yaml)
+
     self.name = name
     self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
