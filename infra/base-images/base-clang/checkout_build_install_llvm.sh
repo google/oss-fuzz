@@ -19,6 +19,7 @@
 # we compile on GCB we want 16 cores. But locally we want more (so use nproc /
 # 2).
 NPROC=$(expr $(nproc) / 2)
+exit 1
 
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
