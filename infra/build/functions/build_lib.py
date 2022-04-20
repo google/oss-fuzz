@@ -319,7 +319,9 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def get_docker_build_step(image_names, directory, buildkit_cache_image=None,
+def get_docker_build_step(image_names,
+                          directory,
+                          buildkit_cache_image=None,
                           src_root='oss-fuzz'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
@@ -414,6 +416,7 @@ def get_build_body(steps, timeout, body_overrides, tags):
   for key, value in body_overrides.items():
     build_body[key] = value
   return build_body
+
 
 def run_build(  # pylint: disable=too-many-arguments
     steps,

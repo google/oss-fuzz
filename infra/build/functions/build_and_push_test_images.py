@@ -23,12 +23,10 @@ import os
 import subprocess
 import sys
 
-import oauth2client.client
 import yaml
 
 import base_images
 import build_lib
-import trial_build
 
 CLOUD_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{CLOUD_PROJECT}/'
@@ -85,19 +83,18 @@ def gcb_build_and_push_images(test_image_suffix):
     steps.append(step)
 
   overrides = {'images': test_images}
-  credentials = oauth2client.client.GoogleCredentials.get_application_default()
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
                                         ['trial-build'])
-  # build_id = build_lib.run_build(steps, credentials, base_images.BASE_PROJECT,
-  #                                base_images.TIMEOUT, overrides,
-  #                                ['trial-build'])
   yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
   with open(yaml_file, 'w') as yaml_file_handle:
     yaml.dump(build_body, yaml_file_handle)
 
-  subprocess.run(
-      ['gcloud', 'builds', 'submit', '--project=oss-fuzz-base', f'--config={yaml_file}'],
-      cwd=OSS_FUZZ_ROOT)
+  subprocess.run([
+      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
+      f'--config={yaml_file}'
+  ],
+                 cwd=OSS_FUZZ_ROOT,
+                 check=True)
 
 
 def build_and_push_images(test_image_suffix):
