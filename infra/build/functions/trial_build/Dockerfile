@@ -16,6 +16,7 @@
 
 FROM gcr.io/cloud-builders/gcloud
 
+RUN apt-get update && apt-get install python3-pip -y
 COPY . /opt/oss-fuzz
 RUN pip install -r /opt/oss-fuzz/infra/build/functions/requirements.txt
 

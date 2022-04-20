@@ -125,7 +125,7 @@ def build_and_push_images(test_image_suffix):
 
 
 def main():
-  """"Builds base-images tags them with "-testing" suffix (in addition to normal
+  """Builds base-images tags them with "-testing" suffix (in addition to normal
   tag) and pushes testing suffixed images to docker registry."""
   test_image_suffix = sys.argv[1]
   logging.basicConfig(level=logging.DEBUG)
