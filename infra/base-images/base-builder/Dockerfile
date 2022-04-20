@@ -83,7 +83,7 @@ ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
-ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto -fno-inline-functions -Wl,-fuse-ld=gold,-flto -Wno-unused-command-line-argument"
+ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
