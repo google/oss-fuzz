@@ -59,7 +59,7 @@ def get_project_data(project_name):
 
 def get_empty_config():
   """Returns an empty build config."""
-  return build_project.Config(False, None, None, False)
+  return build_project.Config(False, None, None, False, True)
 
 
 def get_build_steps(project_name, image_project, base_images_project):
