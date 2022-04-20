@@ -319,10 +319,13 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def get_docker_build_step(image_names, directory, buildkit_cache_image=None):
+def get_docker_build_step(image_names,
+                          directory,
+                          buildkit_cache_image=None,
+                          src_root='oss-fuzz'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
-  directory = os.path.join('oss-fuzz', directory)
+  directory = os.path.join(src_root, directory)
   args = ['build']
   for image_name in image_names:
     args.extend(['--tag', image_name])
@@ -394,14 +397,8 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
           f'?project={cloud_project}')
 
 
-def run_build(  # pylint: disable=too-many-arguments
-    steps,
-    credentials,
-    cloud_project,
-    timeout,
-    body_overrides=None,
-    tags=None):
-  """Runs the build."""
+def get_build_body(steps, timeout, body_overrides, tags):
+  """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:
@@ -419,6 +416,19 @@ def run_build(  # pylint: disable=too-many-arguments
     body_overrides = {}
   for key, value in body_overrides.items():
     build_body[key] = value
+  return build_body
+
+
+def run_build(  # pylint: disable=too-many-arguments
+    steps,
+    credentials,
+    cloud_project,
+    timeout,
+    body_overrides=None,
+    tags=None):
+  """Runs the build."""
+
+  build_body = get_build_body(steps, timeout, body_overrides, tags)
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
