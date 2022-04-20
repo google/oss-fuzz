@@ -23,13 +23,15 @@ RUN apt-get update && apt-get install -y \
  bison \
  gettext \
  gperf \
+ gtk-doc-tools \
+ libev-dev \
+ libev4 \
+ libtasn1-bin \
  libtool \
  make \
  pkg-config \
  texinfo \
- wget \
- libev4 \
- libev-dev
+ wget
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
