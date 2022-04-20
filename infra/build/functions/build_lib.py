@@ -398,6 +398,7 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
 
 
 def get_build_body(steps, timeout, body_overrides, tags):
+  """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:
