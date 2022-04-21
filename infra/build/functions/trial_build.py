@@ -195,7 +195,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           build_lib.US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=build_lib.US_CENTRAL_CLIENT_OPTIONS)
   cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
   wait_builds = build_ids.copy()
