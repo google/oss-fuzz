@@ -164,7 +164,6 @@ class BuildGetter:  # pylint: disable=too-few-public-methods
         return cloudbuild.projects().builds().get(projectId=self._image_project,
                                                   id=build_id).execute()
       except googleapiclient.errors.HttpError:
-        print('swap')
         self._swap_cloudbuild_order_once()
         continue
     assert None
