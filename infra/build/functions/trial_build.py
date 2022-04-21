@@ -118,12 +118,13 @@ def get_args(args=None):
 
 
 def get_all_projects():
+  """Returns a list of all OSS-Fuzz projects."""
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
                               'projects')
-  return [
+  return sorted([
       project for project in os.listdir(projects_dir)
       if os.path.isdir(os.path.join(projects_dir, project))
-  ]
+  ])
 
 
 def get_projects_to_build(specified_projects, build_type):
@@ -187,7 +188,8 @@ def _do_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build']))
-    except:  # Handle flake.
+    except Exception:  # pylint: disable=broad-except
+      # Handle flake.
       print('Failed to start build', project_name)
 
   return build_ids

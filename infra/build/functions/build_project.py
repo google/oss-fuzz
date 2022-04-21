@@ -98,6 +98,8 @@ def get_project_data(project_name):
 
 
 def get_sanitizer_strings(sanitizers):
+  """Accepts the sanitizers field from project.yaml where some sanitizers can be
+  defined as experimental. Returns a list of sanitizers."""
   processed_sanitizers = []
   for sanitizer in sanitizers:
     if isinstance(sanitizer, six.string_types):
