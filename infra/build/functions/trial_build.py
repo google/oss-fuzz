@@ -19,6 +19,7 @@ import argparse
 import collections
 import json
 import logging
+import os
 import sys
 import time
 import urllib.request
@@ -113,6 +114,8 @@ def get_args(args=None):
   parsed_args = parser.parse_args(args)
   if 'all' in parsed_args.projects:  # Explicit opt-in for all.
     parsed_args.projects = get_all_projects()
+  import pdb
+  pdb.set_trace()
   return parsed_args
 
 
