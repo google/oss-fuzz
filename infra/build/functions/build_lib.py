@@ -79,6 +79,9 @@ BUILDPOOL_NAME = os.getenv(
     'workerPools/buildpool')
 DEFAULT_GCB_OPTIONS = {'pool': {'name': BUILDPOOL_NAME}}
 
+US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
+    api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
+
 
 def get_targets_list_filename(sanitizer):
   """Returns target list filename."""
@@ -434,13 +437,11 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_body = get_build_body(steps, timeout, body_overrides, tags)
 
-  client_options = ClientOptions(
-      api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=client_options)
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
 
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()

@@ -22,10 +22,12 @@ import os
 
 import google.auth
 from googleapiclient.discovery import build
+import googleapiclient.errors
 from google.cloud import ndb
 from google.cloud import storage
 
 import build_and_run_coverage
+import build_lib
 import build_project
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
@@ -98,12 +100,6 @@ def sort_projects(projects):
   projects.sort(key=key_func)
 
 
-def get_build(cloudbuild, image_project, build_id):
-  """Get build object from cloudbuild."""
-  return cloudbuild.projects().builds().get(projectId=image_project,
-                                            id=build_id).execute()
-
-
 def update_last_successful_build(project, build_tag):
   """Update last successful build."""
   last_successful_build = ndb.Key(LastSuccessfulBuild,
@@ -131,20 +127,59 @@ def update_last_successful_build(project, build_tag):
     last_successful_build.put()
 
 
+class BuildGetter:  # pylint: disable=too-few-public-methods
+  """Class for getting builds. This is a hack because builds were previously run
+  in the global region while builds going forward have been run in us-central1.
+  This class will try looking for the build from the global region, until that
+  fails, at which point it will look for builds in the us-central1 region."""
+
+  def __init__(self):
+    self._credentials, self._image_project = google.auth.default()
+    self._global_cloudbuild = build('cloudbuild',
+                                    'v1',
+                                    credentials=self._credentials,
+                                    cache_discovery=False)
+    self._central_cloudbuild = build(
+        'cloudbuild',
+        'v1',
+        credentials=self._credentials,
+        cache_discovery=False,
+        client_options=build_lib.US_CENTRAL_CLIENT_OPTIONS)
+    self._cloudbuilds = [self._global_cloudbuild, self._central_cloudbuild]
+    self._swapped = False
+
+  def _swap_cloudbuild_order_once(self):
+    """Swap the region order after one failure since the global build region was
+    first used before being switched to us-central1."""
+    if self._swapped:
+      return
+    new_last, new_first = self._cloudbuilds
+    self._cloudbuilds = [new_first, new_last]
+    self._swapped = True
+
+  def get_build(self, build_id):
+    """Get the build from global or us-central1 region."""
+    for cloudbuild in self._cloudbuilds[:]:
+      try:
+        return cloudbuild.projects().builds().get(projectId=self._image_project,
+                                                  id=build_id).execute()
+      except googleapiclient.errors.HttpError:
+        self._swap_cloudbuild_order_once()
+        continue
+    assert None
+
+
 # pylint: disable=no-member
 def get_build_history(build_ids):
   """Returns build object for the last finished build of project."""
-  credentials, image_project = google.auth.default()
-  cloudbuild = build('cloudbuild',
-                     'v1',
-                     credentials=credentials,
-                     cache_discovery=False)
+
+  build_getter = BuildGetter()
 
   history = []
   last_successful_build = None
 
   for build_id in reversed(build_ids):
-    project_build = get_build(cloudbuild, image_project, build_id)
+    project_build = build_getter.get_build(build_id)
     if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
