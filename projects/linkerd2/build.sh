@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-$SRC/cncf-fuzzing/projects/linkerd2/build.sh
+$SRC/linkerd2/test/fuzzing/build.sh
