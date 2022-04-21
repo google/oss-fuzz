@@ -27,6 +27,7 @@ import yaml
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
+from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -73,7 +74,10 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
+BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool')
+DEFAULT_GCB_OPTIONS = {'pool': {'name': BUILDPOOL_NAME}}
 
 
 def get_targets_list_filename(sanitizer):
@@ -430,12 +434,17 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_body = get_build_body(steps, timeout, body_overrides, tags)
 
+  client_options = ClientOptions(
+      api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
-                           cache_discovery=False)
+                           cache_discovery=False,
+                           client_options=client_options)
+
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
+
   build_id = build_info['metadata']['build']['id']
 
   logging.info('Build ID: %s', build_id)
