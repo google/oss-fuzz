@@ -108,6 +108,7 @@ def get_sanitizer_strings(sanitizers):
 
   return processed_sanitizers
 
+
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
