@@ -113,7 +113,7 @@ def get_args(args=None):
                       help='Use specified OSS-Fuzz branch.')
   parsed_args = parser.parse_args(args)
   if 'all' in parsed_args.projects:  # Explicit opt-in for all.
-    parsed_args.projects = get_all_projects()[:100]
+    parsed_args.projects = get_all_projects()
   return parsed_args
 
 
