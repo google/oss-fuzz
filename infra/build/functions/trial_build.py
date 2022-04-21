@@ -159,6 +159,7 @@ def _do_builds(args, config, credentials, build_type, projects):
       continue
 
     build_project.set_yaml_defaults(project_yaml)
+    print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
 
