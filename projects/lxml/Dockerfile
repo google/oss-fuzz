@@ -20,6 +20,6 @@ RUN apt-get install -y libxml2-dev libxslt-dev zlib1g-dev
 RUN pip3 install Cython
 
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/lxml
+COPY fuzz_* $SRC/lxml/
 
 WORKDIR $SRC/lxml

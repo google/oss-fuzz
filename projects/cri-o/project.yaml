@@ -1,0 +1,13 @@
+homepage: "https://cri-o.io/"
+main_repo: "https://github.com/cri-o/cri-o"
+primary_contact: "cncf-crio-security@lists.cncf.io"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "pehunt@redhat.com"
+  - "sgrunert@redhat.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

@@ -9,3 +9,4 @@ sanitizers:
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 main_repo: 'https://github.com/google/leveldb.git'
+file_github_issue: True
