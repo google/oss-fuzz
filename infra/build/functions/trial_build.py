@@ -93,20 +93,34 @@ def _get_production_build_statuses(build_type):
 def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
-  parser.add_argument('projects', help='Projects.', nargs='*')
+  parser.add_argument('projects',
+                      help='Projects. "All" for all projects', nargs='+')
   parser.add_argument('--sanitizers',
-                      required=True,
+                      required=False,
+                      default=['address', 'memory', 'undefined', 'coverage'],
                       nargs='+',
                       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
-                      required=True,
+                      required=False,
+                      default=['afl', 'libfuzzer', 'honggfuzz'],
                       nargs='+',
                       help='Fuzzing engines.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
-  return parser.parse_args(args)
+  parsed_args = parser.parse_args(args)
+  if 'all' in parsed_args.projects:  # Explicit opt-in for all.
+    parsed_args.projects = get_all_projects()
+  return parsed_args
+
+
+def get_all_projects():
+  projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                              'projects')
+  return [project for project in os.listdir(projects_dir)
+          if os.path.isdir(os.path.join(projects_dir, project)]
+
 
 
 def get_projects_to_build(specified_projects, build_type):
