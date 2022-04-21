@@ -28,6 +28,7 @@ import oauth2client.client
 
 import build_and_push_test_images
 import build_and_run_coverage
+import build_lib
 import build_project
 
 IMAGE_PROJECT = 'oss-fuzz'
@@ -193,7 +194,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
-                           cache_discovery=False)
+                           cache_discovery=False,
+                           build_lib.US_CENTRAL_CLIENT_OPTIONS)
   cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
   wait_builds = build_ids.copy()
