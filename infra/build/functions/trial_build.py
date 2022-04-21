@@ -94,7 +94,8 @@ def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects',
-                      help='Projects. "All" for all projects', nargs='+')
+                      help='Projects. "All" for all projects',
+                      nargs='+')
   parser.add_argument('--sanitizers',
                       required=False,
                       default=['address', 'memory', 'undefined', 'coverage'],
@@ -118,9 +119,10 @@ def get_args(args=None):
 def get_all_projects():
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
                               'projects')
-  return [project for project in os.listdir(projects_dir)
-          if os.path.isdir(os.path.join(projects_dir, project)]
-
+  return [
+      project for project in os.listdir(projects_dir)
+      if os.path.isdir(os.path.join(projects_dir, project))
+  ]
 
 
 def get_projects_to_build(specified_projects, build_type):
