@@ -160,8 +160,10 @@ def _do_builds(args, config, credentials, build_type, projects):
 
     build_project.set_yaml_defaults(project_yaml)
     print(project_yaml['sanitizers'], args.sanitizers)
+    project_yaml_sanitizers = build_project.get_sanitizer_strings(
+        project_yaml['sanitizers'])
     project_yaml['sanitizers'] = list(
-        set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
+        set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
     project_yaml['fuzzing_engines'] = list(
         set(project_yaml['fuzzing_engines']).intersection(
