@@ -15,9 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y build-essential cmake
 RUN git clone --depth 1 https://github.com/google/jsonnet.git jsonnet
+RUN git clone --depth 1 https://github.com/google/go-jsonnet.git go-jsonnet
 WORKDIR $SRC/
 
 COPY build.sh $SRC/
 COPY *.cc $SRC/
+COPY fuzz.go $SRC/
