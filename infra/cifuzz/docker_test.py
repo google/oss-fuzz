@@ -73,6 +73,8 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
         '-e',
         'CIFUZZ=True',
         '-e',
+        'CLUSTERFUZZLITE=True',
+        '-e',
         f'SANITIZER={SANITIZER}',
         '-e',
         f'FUZZING_LANGUAGE={LANGUAGE}',
@@ -92,8 +94,9 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
     self.assertEqual(docker_container, None)
     expected_docker_args = [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
-        'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
-        f'FUZZING_LANGUAGE={LANGUAGE}', '-e', f'OUT={WORKSPACE.out}', '-v',
+        'CIFUZZ=True', '-e', 'CLUSTERFUZZLITE=True',
+        '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}',
+        '-e', f'OUT={WORKSPACE.out}', '-v',
         f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_args)
@@ -112,8 +115,9 @@ class GetBaseDockerRunCommandTest(unittest.TestCase):
     expected_docker_command = [
         'docker', 'run', '--rm', '--privileged', '-e',
         'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
-        'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
-        f'FUZZING_LANGUAGE={LANGUAGE}', '-e', f'OUT={WORKSPACE.out}', '-v',
+        'CIFUZZ=True', '-e', 'CLUSTERFUZZLITE=True', '-e',
+        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-e',
+        f'OUT={WORKSPACE.out}', '-v',
         f'{WORKSPACE.workspace}:{WORKSPACE.workspace}'
     ]
     self.assertEqual(docker_args, expected_docker_command)

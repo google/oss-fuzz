@@ -26,6 +26,7 @@ def get_env(config, workspace):
   env['FUZZING_LANGUAGE'] = config.language
   env['OUT'] = workspace.out
   env['CIFUZZ'] = 'True'
+  env['CLUSTERFUZZLITE'] = 'True'
   env['FUZZING_ENGINE'] = config_utils.DEFAULT_ENGINE
   env['ARCHITECTURE'] = config_utils.DEFAULT_ARCHITECTURE
   # Do this so we don't fail in tests.
