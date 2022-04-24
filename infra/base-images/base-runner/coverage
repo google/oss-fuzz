@@ -302,7 +302,7 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   cd $PYCOVDIR
   python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
   python3 /usr/local/bin/python_coverage_runner_help.py html
-  mv htmlcov $REPORT_ROOT_DIR/
+  mv htmlcov/* $REPORT_PLATFORM_DIR/
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # From this point on the script does not tolerate any errors.
