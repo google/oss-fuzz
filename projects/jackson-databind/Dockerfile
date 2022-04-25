@@ -28,7 +28,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -q $SRC/ObjectReaderFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
-RUN git clone --depth 1 https://github.com/FasterXML/jackson-databind
+RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
