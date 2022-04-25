@@ -39,7 +39,7 @@ find . -name "*.a"
 for F in $fuzzerFiles; do
   fuzzerName=$(basename $F .cc)
   echo "Building fuzzer $fuzzerName"
-  $CXX $CXXFLAGS -std=c++11 \
+  $CXX $CXXFLAGS \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
       -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
 
