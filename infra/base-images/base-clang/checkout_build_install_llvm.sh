@@ -69,8 +69,10 @@ function cmake_llvm {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
+git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
+# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
+git checkout 946a41a51f44207941b3729a0733dfc1e236644e
 
 LLVM_SRC=$SRC/llvm-project
 
