@@ -21,20 +21,38 @@ export XMLSEC_DEPS_PATH=$SRC/xmlsec_deps
 mkdir -p $XMLSEC_DEPS_PATH
 
 cd $SRC/libxml2
-./autogen.sh
-./configure --prefix="$XMLSEC_DEPS_PATH"
-make clean
+./autogen.sh \
+    --without-legacy \
+    --without-push \
+    --without-python \
+    --without-zlib \
+    --without-lzma \
+    --enable-static \
+    --prefix="$XMLSEC_DEPS_PATH"
 make -j$(nproc) all
 make install
 
 cd $SRC/libxslt
-./autogen.sh --prefix="$XMLSEC_DEPS_PATH" --with-libxml-src=${SRC}/libxml2
+cd ../libxslt
+./autogen.sh \
+    --with-libxml-src=../libxml2 \
+    --without-python \
+    --without-debug \
+    --without-debugger \
+    --without-profiler \
+    --enable-static \
+    --prefix="$XMLSEC_DEPS_PATH"
+
 make -j$(nproc)
 make install
 
 cd $SRC/xmlsec
 autoreconf -vfi
-./configure --with-libxml="$XMLSEC_DEPS_PATH" --with-libxslt="$XMLSEC_DEPS_PATH"
+./configure \
+  --enable-static-linking \
+  --enable-development \
+  --with-libxml="$XMLSEC_DEPS_PATH" \
+  --with-libxslt="$XMLSEC_DEPS_PATH"
 make -j$(nproc) clean
 make -j$(nproc) all
 
