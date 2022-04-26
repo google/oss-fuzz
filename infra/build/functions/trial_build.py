@@ -19,6 +19,7 @@ import argparse
 import collections
 import json
 import logging
+import os
 import sys
 import time
 import urllib.request
@@ -28,6 +29,7 @@ import oauth2client.client
 
 import build_and_push_test_images
 import build_and_run_coverage
+import build_lib
 import build_project
 
 IMAGE_PROJECT = 'oss-fuzz'
@@ -92,20 +94,37 @@ def _get_production_build_statuses(build_type):
 def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
-  parser.add_argument('projects', help='Projects.', nargs='*')
+  parser.add_argument('projects',
+                      help='Projects. "All" for all projects',
+                      nargs='+')
   parser.add_argument('--sanitizers',
-                      required=True,
+                      required=False,
+                      default=['address', 'memory', 'undefined', 'coverage'],
                       nargs='+',
                       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
-                      required=True,
+                      required=False,
+                      default=['afl', 'libfuzzer', 'honggfuzz'],
                       nargs='+',
                       help='Fuzzing engines.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
-  return parser.parse_args(args)
+  parsed_args = parser.parse_args(args)
+  if 'all' in parsed_args.projects:  # Explicit opt-in for all.
+    parsed_args.projects = get_all_projects()
+  return parsed_args
+
+
+def get_all_projects():
+  """Returns a list of all OSS-Fuzz projects."""
+  projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                              'projects')
+  return sorted([
+      project for project in os.listdir(projects_dir)
+      if os.path.isdir(os.path.join(projects_dir, project))
+  ])
 
 
 def get_projects_to_build(specified_projects, build_type):
@@ -141,8 +160,11 @@ def _do_builds(args, config, credentials, build_type, projects):
       continue
 
     build_project.set_yaml_defaults(project_yaml)
+    print(project_yaml['sanitizers'], args.sanitizers)
+    project_yaml_sanitizers = build_project.get_sanitizer_strings(
+        project_yaml['sanitizers'])
     project_yaml['sanitizers'] = list(
-        set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
+        set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
     project_yaml['fuzzing_engines'] = list(
         set(project_yaml['fuzzing_engines']).intersection(
@@ -159,12 +181,16 @@ def _do_builds(args, config, credentials, build_type, projects):
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
-    build_ids[project_name] = (build_project.run_build(
-        project_name,
-        steps,
-        credentials,
-        build_type.type_name,
-        extra_tags=['trial-build']))
+    try:
+      build_ids[project_name] = (build_project.run_build(
+          project_name,
+          steps,
+          credentials,
+          build_type.type_name,
+          extra_tags=['trial-build']))
+    except Exception:  # pylint: disable=broad-except
+      # Handle flake.
+      print('Failed to start build', project_name)
 
   return build_ids
 
@@ -193,7 +219,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
-                           cache_discovery=False)
+                           cache_discovery=False,
+                           client_options=build_lib.US_CENTRAL_CLIENT_OPTIONS)
   cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
   wait_builds = build_ids.copy()
@@ -246,7 +273,9 @@ def trial_build_main(args=None, local_base_build=True):
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         TEST_IMAGE_SUFFIX)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
+    # !!!
+    pass
+    # build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
 

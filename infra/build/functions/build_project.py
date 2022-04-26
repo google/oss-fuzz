@@ -97,6 +97,19 @@ def get_project_data(project_name):
   return project_yaml, dockerfile
 
 
+def get_sanitizer_strings(sanitizers):
+  """Accepts the sanitizers field from project.yaml where some sanitizers can be
+  defined as experimental. Returns a list of sanitizers."""
+  processed_sanitizers = []
+  for sanitizer in sanitizers:
+    if isinstance(sanitizer, six.string_types):
+      processed_sanitizers.append(sanitizer)
+    elif isinstance(sanitizer, dict):
+      processed_sanitizers.extend(sanitizer.keys())
+
+  return processed_sanitizers
+
+
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
@@ -124,15 +137,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
   def sanitizers(self):
     """Returns processed sanitizers."""
     assert isinstance(self._sanitizers, list)
-    processed_sanitizers = []
-    for sanitizer in self._sanitizers:
-      if isinstance(sanitizer, six.string_types):
-        processed_sanitizers.append(sanitizer)
-      elif isinstance(sanitizer, dict):
-        for key in sanitizer.keys():
-          processed_sanitizers.append(key)
-
-    return processed_sanitizers
+    return get_sanitizer_strings(self._sanitizers)
 
   @property
   def image(self):
