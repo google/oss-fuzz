@@ -105,8 +105,7 @@ def get_sanitizer_strings(sanitizers):
     if isinstance(sanitizer, six.string_types):
       processed_sanitizers.append(sanitizer)
     elif isinstance(sanitizer, dict):
-      for key in sanitizer.keys():
-        processed_sanitizers.append(key)
+      processed_sanitizers.extend(sanitizer.keys())
 
   return processed_sanitizers
 
