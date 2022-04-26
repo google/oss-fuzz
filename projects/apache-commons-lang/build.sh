@@ -16,6 +16,7 @@
 #
 ################################################################################
 
+mv $SRC/{*.zip,*.dict} $OUT
 
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests -Drat.ignoreErrors=true"
 $MVN package $MAVEN_ARGS

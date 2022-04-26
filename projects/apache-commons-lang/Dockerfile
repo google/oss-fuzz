@@ -20,6 +20,17 @@ RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-mav
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
+RUN git clone --depth 1 https://github.com/google/fuzzing
+RUN cat fuzzing/dictionaries/json.dict \
+    fuzzing/dictionaries/xml.dict \
+    > $SRC/StringEscapeUtilsFuzzer.dict
+
+RUN mv fuzzing/dictionaries/html.dict $SRC/EscapeHtmlFuzzer.dict
+
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
+    zip -q $SRC/EscapeHtmlFuzzer_seed_corpus.zip go-fuzz-corpus/htmltemplate/corpus/* && \
+    zip -q $SRC/StringEscapeUtilsFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* go-fuzz-corpus/csv/corpus/*
+
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone --depth 1 https://github.com/apache/commons-lang commons-lang
