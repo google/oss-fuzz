@@ -1,0 +1,13 @@
+homepage: "https://github.com/apache/commons-jxpath.git"
+language: jvm
+primary_contact: "wagner@code-intelligence.com"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/apache/commons-jxpath.git"
+sanitizers:
+  - address

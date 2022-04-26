@@ -124,9 +124,10 @@ then
   # the profiler.
   declare -r REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
-  # For .cc, we only really care about source/ today.
+  # Copy the cc and header files that will be covered.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/envoy "${REMAP_PATH}"
   # Remove filesystem loop manually.
   rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.

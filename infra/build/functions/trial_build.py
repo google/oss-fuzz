@@ -140,6 +140,7 @@ def _do_builds(args, config, credentials, build_type, projects):
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       continue
 
+    build_project.set_yaml_defaults(project_yaml)
     project_yaml['sanitizers'] = list(
         set(project_yaml['sanitizers']).intersection(set(args.sanitizers)))
 
