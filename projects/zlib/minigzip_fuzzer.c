@@ -268,7 +268,7 @@ int  main             (int argc, char *argv[]);
 int error(const char *msg)
 {
     fprintf(stderr, "%s: %s\n", prog, msg);
-    return 1;
+    return 0;
 }
 
 /* ===========================================================================
@@ -294,7 +294,7 @@ int gz_compress(FILE   *in, gzFile out)
         len = (int)fread(buf, 1, sizeof(buf), in);
         if (ferror(in)) {
             perror("fread");
-            return 1;
+            return 0;
         }
         if (len == 0) break;
 
@@ -376,7 +376,7 @@ int file_compress(char  *file, char  *mode)
 
     if (strlen(file) + strlen(GZ_SUFFIX) >= sizeof(outfile)) {
         fprintf(stderr, "%s: filename too long\n", prog);
-        return 1;
+        return 0;
     }
 
     snprintf(outfile, sizeof(outfile), "%s%s", file, GZ_SUFFIX);
@@ -384,12 +384,12 @@ int file_compress(char  *file, char  *mode)
     in = fopen(file, "rb");
     if (in == NULL) {
         perror(file);
-        return 1;
+        return 0;
     }
     out = gzopen(outfile, mode);
     if (out == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, outfile);
-        return 1;
+        return 0;
     }
     gz_compress(in, out);
 
@@ -411,7 +411,7 @@ int file_uncompress(char  *file)
 
     if (len + strlen(GZ_SUFFIX) >= sizeof(buf)) {
         fprintf(stderr, "%s: filename too long\n", prog);
-        return 1;
+        return 0;
     }
 
     snprintf(buf, sizeof(buf), "%s", file);
@@ -428,12 +428,12 @@ int file_uncompress(char  *file)
     in = gzopen(infile, "rb");
     if (in == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, infile);
-        return 1;
+        return 0;
     }
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
-        return 1;
+        return 0;
     }
 
     gz_uncompress(in, out);
@@ -493,7 +493,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   in = fopen(inFileName, "rb");
   if (in == NULL) {
     perror(inFileName);
-    return 1;
+    return 0;
   }
 
   memset(buf, 0, sizeof(buf));
@@ -501,7 +501,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     int len = (int)fread(buf, 1, sizeof(buf), in);
     if (ferror(in)) {
       perror("fread");
-      return 1;
+      return 0;
     }
     if (len == 0)
       break;

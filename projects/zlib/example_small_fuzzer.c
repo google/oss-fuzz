@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        return 1; \
+        return 0; \
     } \
 }
 
@@ -88,7 +88,7 @@ int test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
 
   if (memcmp(uncompr, data, dataLen)) {
     fprintf(stderr, "bad inflate\n");
-    return 1;
+    return 0;
   }
   return 0;
 }

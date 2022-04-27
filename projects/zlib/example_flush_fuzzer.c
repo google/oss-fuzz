@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        return 1; \
+        return 0; \
     } \
 }
 
@@ -88,7 +88,7 @@ int test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   if (err != Z_DATA_ERROR) {
     fprintf(stderr, "inflate should report DATA_ERROR\n");
     /* Because of incorrect adler32 */
-    return 1;
+    return 0;
   }
   err = inflateEnd(&d_stream);
   CHECK_ERR(err, "inflateEnd");

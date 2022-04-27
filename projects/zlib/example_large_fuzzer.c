@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        return 1; \
+        return 0; \
     } \
 }
 
@@ -47,7 +47,7 @@ int test_large_deflate(unsigned char *compr, size_t comprLen,
   CHECK_ERR(err, "deflate large 1");
   if (c_stream.avail_in != 0) {
     fprintf(stderr, "deflate not greedy\n");
-    return 1;
+    return 0;
   }
 
   /* Feed in already compressed data and switch to no compression: */
@@ -68,7 +68,7 @@ int test_large_deflate(unsigned char *compr, size_t comprLen,
   err = deflate(&c_stream, Z_FINISH);
   if (err != Z_STREAM_END) {
     fprintf(stderr, "deflate large should report Z_STREAM_END\n");
-    return 1;
+    return 0;
   }
   err = deflateEnd(&c_stream);
   CHECK_ERR(err, "deflateEnd");
@@ -107,7 +107,7 @@ int test_large_inflate(unsigned char *compr, size_t comprLen,
 
   if (d_stream.total_out != 2 * uncomprLen + diff) {
     fprintf(stderr, "bad large inflate: %zu\n", d_stream.total_out);
-    return 1;
+    return 0;
   }
   return 0;
 }

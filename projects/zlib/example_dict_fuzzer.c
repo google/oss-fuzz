@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        return 1; \
+        return 0; \
     } \
 }
 
@@ -79,7 +79,7 @@ int test_dict_deflate(unsigned char **compr, size_t *comprLen)
     err = deflate(&c_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
         fprintf(stderr, "deflate dict should report Z_STREAM_END\n");
-        return 1;
+        return 0;
     }
     err = deflateEnd(&c_stream);
     CHECK_ERR(err, "deflateEnd");
@@ -115,7 +115,7 @@ int test_dict_inflate(unsigned char *compr, size_t comprLen) {
     if (err == Z_NEED_DICT) {
       if (d_stream.adler != dictId) {
         fprintf(stderr, "unexpected dictionary");
-        return 1;
+        return 0;
       }
       err = inflateSetDictionary(
           &d_stream, (const unsigned char *)data, dictionaryLen);
@@ -128,7 +128,7 @@ int test_dict_inflate(unsigned char *compr, size_t comprLen) {
 
   if (memcmp(uncompr, data, dataLen)) {
     fprintf(stderr, "bad inflate with dict\n");
-    return 1;
+    return 0;
   }
 
   free(uncompr);
