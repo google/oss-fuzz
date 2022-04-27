@@ -23,3 +23,6 @@ pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+# Copy dictionaries out
+cp $SRC/fuzzing/dictionaries/http.dict $OUT/fuzz_werkzeug_http.dict

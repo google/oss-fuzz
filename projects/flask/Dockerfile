@@ -16,4 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/pallets/flask
+RUN git clone --depth=1 https://github.com/google/fuzzing/
 COPY build.sh fuzz_* $SRC/
