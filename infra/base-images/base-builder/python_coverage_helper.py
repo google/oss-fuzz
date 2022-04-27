@@ -48,6 +48,8 @@ def get_all_files_from_toc(toc_file, file_path_set):
           if len(egg_path_split) != 2:
             continue
           egg_path = egg_path_split[0] + '.egg'
+          if not os.path.isfile(egg_path):
+            continue
 
           print('Unzipping contents of %s' % egg_path)
 
