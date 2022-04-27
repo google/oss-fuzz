@@ -87,6 +87,6 @@ for f in $fuzzers; do
     $BUILD_LDFLAGS \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
-  ln -sf $SRC/cairo_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-  ln -sf $SRC/cairo.dict $OUT/${fuzzer_name}.dict
+  cd $OUT; ln -sf cairo_seed_corpus.zip ${fuzzer_name}_seed_corpus.zip
+  cd $OUT; ln -sf cairo.dict ${fuzzer_name}.dict
 done
