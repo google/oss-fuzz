@@ -20,18 +20,10 @@ RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-mav
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/xml.dict $SRC/JoranFuzzer.dict && \
-    rm -rf fuzzing
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -q $SRC/JoranFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
-    rm -rf go-fuzz-corpus
-
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone --depth 1 https://github.com/xmlpull-org/xmlpull-api-v1 xmlpull
 
 COPY build.sh $SRC/
-COPY XmlFuzzer.java $SRC/
+COPY *.java $SRC/
 WORKDIR $SRC/xmlpull
