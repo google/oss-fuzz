@@ -308,6 +308,9 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
   python3 /usr/local/bin/python_coverage_runner_help.py html
   mv htmlcov/* $REPORT_PLATFORM_DIR/
+
+  # Create an empty summary file for now
+  echo "{}" >> $SUMMARY_FILE
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # From this point on the script does not tolerate any errors.
