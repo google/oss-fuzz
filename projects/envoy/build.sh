@@ -128,6 +128,11 @@ then
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/envoy "${REMAP_PATH}"
+  # Envoy currently uses a modified version of http_parser (see:
+  # https://github.com/envoyproxy/envoy/issues/19749).
+  declare -r BAZEL_EXTERNAL_REMAP_PATH="${REMAP_PATH}/external/envoy/bazel/external"
+  mkdir -p "${BAZEL_EXTERNAL_REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/bazel/external/http_parser "${BAZEL_EXTERNAL_REMAP_PATH}"
   # Remove filesystem loop manually.
   rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.
