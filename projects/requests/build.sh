@@ -23,15 +23,5 @@ cp ../fuzz_server.py tests/fuzz/
 
 # Build fuzzers in $OUT.
 for fuzzer in $(ls tests/fuzz/fuzz*.py); do
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
-
-  # Create execution wrapper.
-  echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
-\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  compile_python_fuzzer $fuzzer
 done
