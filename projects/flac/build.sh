@@ -50,7 +50,7 @@ make -j$(nproc)
 
 # Build fuzzer_exo, copy other fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_encoder fuzzer_decoder $OUT
+cp fuzzer_encoder fuzzer_encoder_v2 fuzzer_decoder $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 $CXX $CXXFLAGS -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
