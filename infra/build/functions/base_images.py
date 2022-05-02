@@ -129,4 +129,7 @@ def base_builder(event, context):
       TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(introspector_steps, introspector_images, INTROSPECTOR_TAG)
+  run_build(introspector_steps,
+            introspector_images,
+            tags=INTROSPECTOR_TAG,
+            build_version=INTROSPECTOR_TAG)
