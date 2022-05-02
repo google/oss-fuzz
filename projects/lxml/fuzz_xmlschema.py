@@ -26,9 +26,9 @@ def TestOneInput(data):
   """Targets XML schema validation. More APIs should be added"""
   try:
     schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO('<a><b></b></a>'))
+    valid_tree = et.parse(io.BytesIO(b'<a><b></b></a>'))
     
-    schema = etree.XMLSchema(schema_raw)
+    schema = et.XMLSchema(schema_raw)
     schame.validate(valid_tree)
   except et.LxmlError:
     None
