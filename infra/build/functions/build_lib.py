@@ -74,10 +74,9 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-BUILDPOOL_NAME = os.getenv(
+OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
-DEFAULT_GCB_OPTIONS = {'pool': {'name': BUILDPOOL_NAME}}
 
 US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
@@ -404,12 +403,15 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
           f'?project={cloud_project}')
 
 
-def get_build_body(steps, timeout, body_overrides, tags):
+def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:
-    options = DEFAULT_GCB_OPTIONS
+    options = {}
+
+  if use_build_pool:
+    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
 
   build_body = {
       'steps': steps,
@@ -432,10 +434,15 @@ def run_build(  # pylint: disable=too-many-arguments
     cloud_project,
     timeout,
     body_overrides=None,
-    tags=None):
+    tags=None,
+    use_build_pool=True):
   """Runs the build."""
 
-  build_body = get_build_body(steps, timeout, body_overrides, tags)
+  build_body = get_build_body(steps,
+                              timeout,
+                              body_overrides,
+                              tags,
+                              use_build_pool=use_build_pool)
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
