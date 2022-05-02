@@ -102,8 +102,13 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   body_overrides = {
       'images': images + [f'{image}:{build_version}' for image in images]
   }
-  return build_lib.run_build(steps, credentials, BASE_PROJECT, body_overrides,
-                             tags)
+  return build_lib.run_build(steps,
+                             credentials,
+                             BASE_PROJECT,
+                             TIMEOUT,
+                             body_overrides,
+                             tags,
+                             use_build_pool=False)
 
 
 def base_builder(event, context):
