@@ -22,7 +22,14 @@ public class JoranFuzzer {
     }
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-        InputStream xmlcontent = new ByteArrayInputStream(data.consumeString(1000).getBytes());
+        String content = data.consumeString(1000);
+
+        // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=47102
+        if (content.contains("class=\"")) {
+            return;
+        }
+
+        InputStream xmlcontent = new ByteArrayInputStream(content.getBytes());
         try {
             configurator.doConfigure(xmlcontent);
             logger.debug(data.consumeRemainingAsString());
