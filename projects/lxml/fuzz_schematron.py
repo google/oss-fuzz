@@ -16,24 +16,24 @@
 
 import atheris
 import sys
-import io
 
-with atheris.instrument_imports():
-  from lxml import etree as et
+import io
+from lxml import etree as et
 
 
 def TestOneInput(data):
   """Targets Schematron. Currently validates, but we should add more APIs"""
   try:
     schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO('<AAA><BBB/><CCC/></AAA>'))
+    valid_tree = et.parse(io.BytesIO(b'<AAA><BBB/><CCC/></AAA>'))
     
-    schema = etree.Schematron(schema_raw)
+    schema = et.Schematron(schema_raw)
     schame.validate(valid_tree)
   except et.LxmlError:
     None
 
 def main():
+  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.Fuzz()
 

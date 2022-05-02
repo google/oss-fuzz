@@ -25,9 +25,9 @@ def TestOneInput(data):
   """Targets XSLT. More APIs on the st object should be added"""
   try:
     style = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO('<a><b>B</b><c>C</c></a>'))
+    valid_tree = et.parse(io.BytesIO(b'<a><b>B</b><c>C</c></a>'))
     
-    st = etree.XSLT(style)
+    st = et.XSLT(style)
     res = st(valid_tree)
   except et.LxmlError:
     None
