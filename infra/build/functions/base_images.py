@@ -101,7 +101,9 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   credentials, _ = google.auth.default()
   body_overrides = {
       'images': images + [f'{image}:{build_version}' for image in images],
-      'options': {'machineType': 'E2_HIGHCPU_32'},
+      'options': {
+          'machineType': 'E2_HIGHCPU_32'
+      },
   }
   return build_lib.run_build(steps,
                              credentials,
