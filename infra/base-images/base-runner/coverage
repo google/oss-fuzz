@@ -155,7 +155,11 @@ function run_python_fuzz_target {
   local target=$1
   local zipped_sources="$DUMPS_DIR/$target.deps.zip"
   local corpus_real="$CORPUS_DIR/${target}"
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l)
+  # Write dummy stats file
+  echo "{}" > "$FUZZER_STATS_DIR/$target.json"
+
+  # Run fuzzer
+  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
