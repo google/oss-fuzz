@@ -159,7 +159,7 @@ function run_python_fuzz_target {
   echo "{}" > "$FUZZER_STATS_DIR/$target.json"
 
   # Run fuzzer
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log
+  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
