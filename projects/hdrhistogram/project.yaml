@@ -1,6 +1,6 @@
 homepage: "https://github.com/HdrHistogram/HdrHistogram.git"
 language: jvm
-primary_contact: "wagner@code-intelligence.com"
+primary_contact: "gil@azul.com"
 auto_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
