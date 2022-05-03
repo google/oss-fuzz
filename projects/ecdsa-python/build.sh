@@ -20,5 +20,5 @@ python3 ./setup.py install
 
 # Build fuzzers
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzer $fuzzer
+  compile_python_fuzzer $fuzzer
 done
