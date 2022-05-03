@@ -36,7 +36,6 @@ python $SRC/filter_cipd.py \
   --excludes \
       infra/cmake \
       fuchsia/third_party/bazel \
-      pigweed/third_party/bloaty-embedded \
       fuchsia/third_party/clang \
       infra/go \
       pigweed/third_party/protoc-gen-go \
