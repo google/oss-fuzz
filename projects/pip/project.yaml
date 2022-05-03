@@ -1,0 +1,8 @@
+homepage: "https://github.com/pypa/pip"
+language: python
+primary_contact: "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/pypa/pip"
