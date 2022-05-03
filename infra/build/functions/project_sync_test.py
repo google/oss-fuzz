@@ -196,7 +196,7 @@ class TestDataSync(unittest.TestCase):
                   'data':
                       b'test1'
               },
-              'schedule': '0 0 * * *'
+              'schedule': '0 10 * * *'
           },
           {
               'name': 'projects/test-project/location/us-central1/jobs/'
@@ -227,7 +227,7 @@ class TestDataSync(unittest.TestCase):
                   'data':
                       b'test2'
               },
-              'schedule': '0 0 * * *'
+              'schedule': '0 10 * * *'
           },
       ], cloud_scheduler_client.schedulers)
 
