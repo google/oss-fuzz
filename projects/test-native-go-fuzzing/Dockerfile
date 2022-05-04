@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,21 +14,7 @@
 #
 ################################################################################
 
-path=$1
-function=$2
-tags="-tags gofuzz"
-if [[ $#  -eq 3 ]]; then
-  tags="-tags $3"
-fi
-
-# Get absolute path.
-echo abs_file_dir
-abs_file_dir=$(go list $tags -f {{.Dir}} $path)
-
-current_dir=$PWD
-cd $abs_file_dir
-echo running gotip test -c $tags
-gotip test -c -test.fuzz=$function $tags
-mv fuzz.test "${OUT}"/"${function}"
-cd $current_dir
-unset current_dir
+FROM gcr.io/oss-fuzz-base/base-builder-go
+COPY build.sh fuzz.go $SRC/
+RUN mkdir $SRC/test-project
+WORKDIR $SRC/test-project

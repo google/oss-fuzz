@@ -1,0 +1,11 @@
+homepage: ""
+main_repo: ""
+primary_contact: ""
+auto_ccs :
+  - ""
+language: go
+fuzzing_engines:
+  - nativego
+sanitizers:
+  - address
+disabled: true
