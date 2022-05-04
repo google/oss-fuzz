@@ -14,20 +14,26 @@
 # limitations under the License.
 
 import atheris
+import io
 import sys
 
 with atheris.instrument_imports():
-  import werkzeug.http as whttp
-
+  from werkzeug.formparser import FormDataParser
+  from werkzeug.formparser import MultiPartParser
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  whttp.parse_content_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_set_header(fdp.ConsumeUnicode(100))
-  whttp.parse_etags(fdp.ConsumeUnicode(100))
-  whttp.parse_if_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_dict_header(fdp.ConsumeUnicode(100))
+  parser = FormDataParser()
+  parser.parse(io.BytesIO(data), "multipart/form-data", 0)
+  parser.parse(io.BytesIO(data), "application/x-url-encoded", 0)
+  parser.parse(io.BytesIO(data), "application/x-www-form-urlencoded", 0)
+
+  multiparser = MultiPartParser(len(data))
+  try:
+    multiparser.parse(io.BytesIO(data), b"", len(data)) 
+  except ValueError as e:
+    if "Invalid form-data" in str(e):
+      return
+    raise e
 
 
 def main():
