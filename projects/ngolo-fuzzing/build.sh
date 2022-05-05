@@ -26,7 +26,7 @@ mv $SRC/goroot /root/.go
 compile_package () {
     pkg=$1
     pkg_flat=`echo $pkg | sed 's/\//_/g'`
-    args=`cat $SRC/ngolo-fuzzing/std/args.txt | grep "$pkg_flat " | cut -d" " -f2-`
+    args=`cat $SRC/ngolo-fuzzing/std/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
     ./ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     (
         cd fuzz_ng_$pkg_flat
@@ -36,11 +36,18 @@ compile_package () {
         $CXX -stdlib=libc++ -c -I . -I $SRC/LPM/external.protobuf/include cpp/ngolofuzz.pb.cc
         $CXX $CXXFLAGS -c -Icpp -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/ngolo-fuzzing/lpm/ngolofuzz.cc
     )
-    compile_go_fuzzer ./fuzz_ng_$pkg_flat FuzzNG_unsure fuzz_ngo_$pkg_flat
+    if [ "$SANITIZER" != "coverage" ]
+    then
+        (
+        cd fuzz_ng_$pkg_flat
+        compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        )
+    else
+        compile_go_fuzzer ./fuzz_ng_$pkg_flat FuzzNG_unsure fuzz_ngo_$pkg_flat
+        ./go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
 
-    ./go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
-
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
+        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
+    fi
 }
 
 # in $SRC/ngolo-fuzzing
