@@ -17,7 +17,7 @@
 
 cp $SRC/*.dict $OUT/
 
-git clone RUN git clone --depth 1 https://github.com/lxml/lxml
+git clone --depth 1 https://github.com/lxml/lxml
 cd lxml/
 python3 ./setup.py install
 
