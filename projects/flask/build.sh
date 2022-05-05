@@ -14,11 +14,23 @@
 # limitations under the License.
 #
 ################################################################################
-cd flask
+
+# Build flask
+cd $SRC/flask
 python3 -m pip install importlib_metadata
 pip3 install -r ./requirements/tests-pallets-min.in
 pip3 install .
 
+# Build flask-cors
+cd $SRC/flask-cors
+pip3 install requests
+pip3 install .
+
+# Build flask-cors fuzzers
+cd $SRC/flask-cors
+compile_python_fuzzer $SRC/cors_fuzz_flask.py
+
+# Build flask fuzzers
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
