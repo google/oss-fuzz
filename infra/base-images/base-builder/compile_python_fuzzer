@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,8 @@
 ################################################################################
 
 fuzzer_path=$1
+shift 1
+
 fuzzer_basename=$(basename -s .py $fuzzer_path)
 fuzzer_package=${fuzzer_basename}.pkg
 
@@ -48,7 +50,7 @@ fi
 rm -rf $PYFUZZ_WORKPATH
 mkdir $PYFUZZ_WORKPATH $FUZZ_WORKPATH
 
-pyinstaller --distpath $OUT --workpath=$FUZZ_WORKPATH --onefile --name $fuzzer_package $fuzzer_path
+pyinstaller --distpath $OUT --workpath=$FUZZ_WORKPATH --onefile --name $fuzzer_package "$@" $fuzzer_path
 
 # In coverage mode save source files of dependencies in pyinstalled binary
 if [[ $SANITIZER = *coverage* ]]; then

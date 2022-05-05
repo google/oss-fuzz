@@ -20,11 +20,9 @@
 if [ "$SANITIZER" != "introspector" ]; then
   export LDFLAGS=""
 else
-  # We need to add -flto flags because the makefile in unrar does not
+  # We need to add -flto LDFLAGS because the makefile in unrar does not
   # pass cxxflags, which holds the -flto flag from fuzz-introspector.
-  # This should probably be updated in the future, namely, including
-  # -flto into LDFLAGS in OSS-Fuzz fuzz-introspector builds.
-  export LDFLAGS="${LDFLAGS} -flto"
+  export LDFLAGS="-flto"
 fi
 
 UNRAR_DEFINES="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL -DSILENT -DNOVOLUME"
@@ -37,7 +35,7 @@ CXXFLAGS="$CXXFLAGS -fno-sanitize=enum"
 
 # build 'lib'. This builds libunrar.a and libunrar.so
 # -fPIC is required for successful compilation.
-make CXX=$CXX LDFLAGS="$LDFLAGS" CXXFLAGS="$CXXFLAGS -fPIC $UNRAR_DEFINES $UNRAR_WNOS" \
+make CXX=$CXX LDFLAGS="${LDFLAGS}" CXXFLAGS="$CXXFLAGS -fPIC $UNRAR_DEFINES $UNRAR_WNOS" \
   -C $UNRAR_SRC_DIR lib
 
 # remove the .so file so that the linker links unrar statically.

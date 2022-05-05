@@ -15,13 +15,9 @@
 #
 ################################################################################
 
-mv $SRC/{*.zip,*.dict} $OUT
-
 cat > patch.diff <<- EOM
-diff --git a/pom.xml b/pom.xml
-index 3e29db9..c79e086 100644
---- a/pom.xml	2022-04-14 17:14:14.830692400 +0200
-+++ b/pom.xml	2022-04-14 17:33:25.535451222 +0200
+--- pom2.xml	2022-04-26 14:46:24.060195186 +0200
++++ pom.xml	2022-04-26 14:47:28.479389378 +0200
 @@ -30,6 +30,8 @@
  
   <properties>
@@ -31,29 +27,18 @@ index 3e29db9..c79e086 100644
   </properties>
  
   <dependencies>
-@@ -56,19 +58,6 @@
-       </goals>
-      </execution>
-     </executions>
--   </plugin>
--   <plugin>
--    <groupId>org.apache.maven.plugins</groupId>
--    <artifactId>maven-javadoc-plugin</artifactId>
--    <version>2.9.1</version>
--    <executions>
--     <execution>
--      <id>attach-javadocs</id>
--      <goals>
--       <goal>jar</goal>
--      </goals>
--     </execution>
--    </executions>
-    </plugin>
-   </plugins>
-  </build>
+@@ -61,6 +63,9 @@
+     <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-javadoc-plugin</artifactId>
+     <version>2.9.1</version>
++    <configuration>
++     <sourcepath>src/main/java/api/org/xmlpull/v1/*</sourcepath>
++    </configuration>
+     <executions>
+      <execution>
+       <id>attach-javadocs</id>
 
 EOM
-
 git apply patch.diff
 
 
