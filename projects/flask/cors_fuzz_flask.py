@@ -21,7 +21,7 @@ def internal_error(error):
   return str(error), 500
 
 @app.route("/")
-def helloWorld():
+def fuzz_echo():
   global output
   return output
 
