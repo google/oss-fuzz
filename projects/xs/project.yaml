@@ -1,0 +1,9 @@
+homepage: "https://github.com/Moddable-OpenSource/moddable"
+language: c
+primary_contact: "peter.hoddie@gmail.com"
+auto_ccs:
+  - peter@moddable.com
+  - ari@agoric.com
+sanitizers:
+  - address
+main_repo: 'https://github.com/Moddable-OpenSource/moddable.git'
