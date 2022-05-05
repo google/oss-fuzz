@@ -71,7 +71,7 @@ def TestOneInput(data):
         raise Exception(r.text)
   except requests.exceptions.ConnectionError:
     None
-  except Exception  as e:
+  except Exception as e:
     # Every other exception is raised, but we need to shutdown
     # the server before raising it.
     requests.get('http://127.0.0.1:5000/shutdown', timeout=1.02)
