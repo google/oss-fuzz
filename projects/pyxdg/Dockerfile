@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get install -y libxml2-dev libxslt-dev zlib1g-dev
 RUN pip3 install Cython
-
+RUN git clone --depth 1 https://github.com/lxml/lxml
 RUN git clone https://github.com/takluyver/pyxdg
 WORKDIR $SRC
 COPY build.sh $SRC/

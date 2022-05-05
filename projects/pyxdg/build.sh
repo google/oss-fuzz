@@ -17,14 +17,16 @@
 
 cp $SRC/*.dict $OUT/
 
-git clone --depth 1 https://github.com/lxml/lxml
-cd lxml/
+cd $SRC/lxml/
 python3 ./setup.py install
 
 cd $SRC/pyxdg
 python3 ./setup.py install
 
 # Build fuzzers in $OUT.
+# Remove fuzzers in lxml
+find $SRC/lxml -name fuzz*.py -exec rm {} \;
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
   corpus_name="$(basename -s .py $fuzzer)_seed_corpus.zip"
