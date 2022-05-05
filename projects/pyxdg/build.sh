@@ -17,7 +17,7 @@
 
 cp $SRC/*.dict $OUT/
 
-cd $SRC/lxml/
+cd $SRC/davlxml/
 python3 ./setup.py install
 
 cd $SRC/pyxdg
