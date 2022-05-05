@@ -15,7 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get install -y libxml2-dev libxslt-dev zlib1g-dev
+RUN git clone --depth 1 https://github.com/lxml/lxml
+RUN pip3 install Cython
+
 RUN git clone https://github.com/takluyver/pyxdg
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
+COPY fuzz_* *.dict $SRC/
+COPY seeds $SRC/seeds
