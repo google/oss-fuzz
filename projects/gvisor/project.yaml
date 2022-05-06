@@ -9,3 +9,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+file_github_issue: True

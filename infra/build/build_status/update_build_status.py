@@ -15,15 +15,19 @@
 ################################################################################
 """Cloud function to request builds."""
 import concurrent.futures
+import logging
 import json
 import sys
+import os
 
 import google.auth
 from googleapiclient.discovery import build
+import googleapiclient.errors
 from google.cloud import ndb
 from google.cloud import storage
 
 import build_and_run_coverage
+import build_lib
 import build_project
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
@@ -35,17 +39,25 @@ DESTINATION_BADGE_DIR = 'badges'
 MAX_BUILD_LOGS = 7
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
+INTROSPECTOR_BUCKET = 'oss-fuzz-introspector'
+INTROSPECTOR_BUCKET_URL = 'https://storage.googleapis.com/oss-fuzz-introspector'
+INTROSPECTOR_INDEX_JSON = 'build_status.json'
+INTROSPECTOR_INDEX_HTML = 'index.html'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
 INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
 
+HTML_PREFIX_STRING = (
+    '<!DOCTYPE html>\n<html>\n'
+    '\t<head><h2>Index of Fuzz-Introspector reports for OSS-Fuzz projects</h2></head>\n'
+    '\t<body>\n\t<font size="4">\n')
+HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
+
 # pylint: disable=invalid-name
 _client = None
 
-
-class MissingBuildLogError(Exception):
-  """Missing build log file in cloud storage."""
+logging.basicConfig(level=logging.INFO)
 
 
 # pylint: disable=global-statement
@@ -88,12 +100,6 @@ def sort_projects(projects):
   projects.sort(key=key_func)
 
 
-def get_build(cloudbuild, image_project, build_id):
-  """Get build object from cloudbuild."""
-  return cloudbuild.projects().builds().get(projectId=image_project,
-                                            id=build_id).execute()
-
-
 def update_last_successful_build(project, build_tag):
   """Update last successful build."""
   last_successful_build = ndb.Key(LastSuccessfulBuild,
@@ -121,20 +127,59 @@ def update_last_successful_build(project, build_tag):
     last_successful_build.put()
 
 
+class BuildGetter:  # pylint: disable=too-few-public-methods
+  """Class for getting builds. This is a hack because builds were previously run
+  in the global region while builds going forward have been run in us-central1.
+  This class will try looking for the build from the global region, until that
+  fails, at which point it will look for builds in the us-central1 region."""
+
+  def __init__(self):
+    self._credentials, self._image_project = google.auth.default()
+    self._global_cloudbuild = build('cloudbuild',
+                                    'v1',
+                                    credentials=self._credentials,
+                                    cache_discovery=False)
+    self._central_cloudbuild = build(
+        'cloudbuild',
+        'v1',
+        credentials=self._credentials,
+        cache_discovery=False,
+        client_options=build_lib.US_CENTRAL_CLIENT_OPTIONS)
+    self._cloudbuilds = [self._global_cloudbuild, self._central_cloudbuild]
+    self._swapped = False
+
+  def _swap_cloudbuild_order_once(self):
+    """Swap the region order after one failure since the global build region was
+    first used before being switched to us-central1."""
+    if self._swapped:
+      return
+    new_last, new_first = self._cloudbuilds
+    self._cloudbuilds = [new_first, new_last]
+    self._swapped = True
+
+  def get_build(self, build_id):
+    """Get the build from global or us-central1 region."""
+    for cloudbuild in self._cloudbuilds[:]:
+      try:
+        return cloudbuild.projects().builds().get(projectId=self._image_project,
+                                                  id=build_id).execute()
+      except googleapiclient.errors.HttpError:
+        self._swap_cloudbuild_order_once()
+        continue
+    assert None
+
+
 # pylint: disable=no-member
 def get_build_history(build_ids):
   """Returns build object for the last finished build of project."""
-  credentials, image_project = google.auth.default()
-  cloudbuild = build('cloudbuild',
-                     'v1',
-                     credentials=credentials,
-                     cache_discovery=False)
+
+  build_getter = BuildGetter()
 
   history = []
   last_successful_build = None
 
   for build_id in reversed(build_ids):
-    project_build = get_build(cloudbuild, image_project, build_id)
+    project_build = build_getter.get_build(build_id)
     if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
@@ -146,7 +191,8 @@ def get_build_history(build_ids):
 
     if not upload_log(build_id):
       log_name = f'log-{build_id}'
-      raise MissingBuildLogError(f'Missing build log file {log_name}')
+      logging.error('Missing build log file %s', log_name)
+      continue
 
     history.append({
         'build_id': build_id,
@@ -275,6 +321,58 @@ def update_badges():
     concurrent.futures.wait(futures)
 
 
+def upload_index(json_index, html_string):
+  """Upload json and html file to introspector bucket."""
+  introspector_bucket = get_storage_client().get_bucket(INTROSPECTOR_BUCKET)
+  json_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
+  html_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_HTML)
+
+  json_blob.cache_control = 'no-cache'
+  json_blob.upload_from_string(json.dumps(json_index),
+                               content_type='application/json')
+
+  html_blob.cache_control = 'no-cache'
+  html_blob.upload_from_string(html_string, content_type='text/html')
+
+
+def generate_html_string(content):
+  """Generate html body for introspector index"""
+  html_body = HTML_PREFIX_STRING
+  for project, url in content.items():
+    html_body += f'\t<li><a href="{url}"> {project} </a></li>\n'
+
+  html_body += HTML_SUFFIX_STRING
+  return html_body
+
+
+def generate_introspector_index():
+  """Generate index.html for successful Fuzz Introspector projects"""
+  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+  status = json.loads(
+      status_bucket.blob(INTROSPECTOR_STATUS_FILENAME).download_as_string())
+
+  introspector_bucket = get_storage_client().get_bucket(INTROSPECTOR_BUCKET)
+  index_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
+  if index_blob.exists():
+    introspector_index = json.loads(index_blob.download_as_string())
+  else:
+    introspector_index = {}
+
+  for project in status['projects']:
+    if project['history'] and project['history'][0]['success']:
+      project_name = project['name']
+      build_date = project['history'][0]['finish_time'].split('T')[0].replace(
+          '-', '')
+      introspector_index[project_name] = os.path.join(INTROSPECTOR_BUCKET_URL,
+                                                      project_name,
+                                                      'inspector-report',
+                                                      build_date,
+                                                      'fuzz_report.html')
+
+  html_string = generate_html_string(introspector_index)
+  upload_index(introspector_index, html_string)
+
+
 def main():
   """Entry point for cloudbuild"""
   with ndb.Client().context():
@@ -288,6 +386,7 @@ def main():
       update_build_status(tag, filename)
 
     update_badges()
+    generate_introspector_index()
 
 
 if __name__ == '__main__':

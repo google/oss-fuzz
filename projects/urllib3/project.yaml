@@ -1,9 +1,6 @@
 homepage: "https://github.com/urllib3/urllib3"
 language: python
-primary_contact: "sethmichaellarson@gmail.com"
-auto_ccs:
-  - "quentin.pradet@gmail.com"
-  - "david@adalogics.com"
+primary_contact: "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

@@ -6,3 +6,4 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/catenacyber/ngolo-fuzzing'
+file_github_issue: True

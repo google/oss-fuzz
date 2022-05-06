@@ -22,11 +22,24 @@ with atheris.instrument_imports():
 
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
+  tree = None
+  success = False
   try:
-    root = et.XML(fdp.ConsumeUnicode(sys.maxsize))
+    root = et.XML(data)
+    if root != None:
+      et.indent(root)
+
+      tree = et.ElementTree(root)
+      success = True
   except et.XMLSyntaxError:
     None
+
+  if success:
+    try:
+      a = et.Element("a")
+      tree.getelementpath(a)
+    except ValueError:
+      None
 
 
 def main():

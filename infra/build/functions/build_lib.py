@@ -27,6 +27,7 @@ import yaml
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
+from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -73,7 +74,12 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
+OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool')
+
+US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
+    api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
 
 def get_targets_list_filename(sanitizer):
@@ -319,10 +325,13 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def get_docker_build_step(image_names, directory, buildkit_cache_image=None):
+def get_docker_build_step(image_names,
+                          directory,
+                          buildkit_cache_image=None,
+                          src_root='oss-fuzz'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
-  directory = os.path.join('oss-fuzz', directory)
+  directory = os.path.join(src_root, directory)
   args = ['build']
   for image_name in image_names:
     args.extend(['--tag', image_name])
@@ -394,18 +403,15 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
           f'?project={cloud_project}')
 
 
-def run_build(  # pylint: disable=too-many-arguments
-    steps,
-    credentials,
-    cloud_project,
-    timeout,
-    body_overrides=None,
-    tags=None):
-  """Runs the build."""
+def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
+  """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
   else:
-    options = DEFAULT_GCB_OPTIONS
+    options = {}
+
+  if use_build_pool:
+    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
 
   build_body = {
       'steps': steps,
@@ -419,13 +425,34 @@ def run_build(  # pylint: disable=too-many-arguments
     body_overrides = {}
   for key, value in body_overrides.items():
     build_body[key] = value
+  return build_body
+
+
+def run_build(  # pylint: disable=too-many-arguments
+    steps,
+    credentials,
+    cloud_project,
+    timeout,
+    body_overrides=None,
+    tags=None,
+    use_build_pool=True):
+  """Runs the build."""
+
+  build_body = get_build_body(steps,
+                              timeout,
+                              body_overrides,
+                              tags,
+                              use_build_pool=use_build_pool)
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
-                           cache_discovery=False)
+                           cache_discovery=False,
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
+
   build_id = build_info['metadata']['build']['id']
 
   logging.info('Build ID: %s', build_id)

@@ -15,10 +15,20 @@
 #
 ################################################################################
 
-cd pyxdg
+cp $SRC/*.dict $OUT/
+
+cd $SRC/lxml/
+python3 ./setup.py install
+
+cd $SRC/pyxdg
 python3 ./setup.py install
 
 # Build fuzzers in $OUT.
+# Remove fuzzers in lxml
+find $SRC/lxml -name fuzz*.py -exec rm {} \;
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
+  corpus_name="$(basename -s .py $fuzzer)_seed_corpus.zip"
+  zip -r $OUT/$corpus_name $SRC/seeds/*
 done

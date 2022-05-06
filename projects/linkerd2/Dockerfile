@@ -16,6 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN git clone --depth 1 https://github.com/linkerd/linkerd2
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 COPY build.sh $SRC/
 WORKDIR $SRC/linkerd2

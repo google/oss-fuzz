@@ -79,9 +79,9 @@ class Build:  # pylint: disable=too-few-public-methods
 
 
 def get_project_data(project_name):
-  """Returns a tuple containing the contents of the project.yaml and Dockerfile
-  of |project_name|. Raises a FileNotFoundError if there is no Dockerfile for
-  |project_name|."""
+  """(Local only) Returns a tuple containing the contents of the project.yaml
+  and Dockerfile of |project_name|. Raises a FileNotFoundError if there is no
+  Dockerfile for |project_name|."""
   project_dir = os.path.join(PROJECTS_DIR, project_name)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   try:
@@ -94,14 +94,29 @@ def get_project_data(project_name):
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
     project_yaml_contents = project_yaml_file_handle.read()
   project_yaml = yaml.safe_load(project_yaml_contents)
-  set_yaml_defaults(project_yaml)
   return project_yaml, dockerfile
+
+
+def get_sanitizer_strings(sanitizers):
+  """Accepts the sanitizers field from project.yaml where some sanitizers can be
+  defined as experimental. Returns a list of sanitizers."""
+  processed_sanitizers = []
+  for sanitizer in sanitizers:
+    if isinstance(sanitizer, six.string_types):
+      processed_sanitizers.append(sanitizer)
+    elif isinstance(sanitizer, dict):
+      processed_sanitizers.extend(sanitizer.keys())
+
+  return processed_sanitizers
 
 
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
   def __init__(self, name, project_yaml, dockerfile, image_project):
+    project_yaml = project_yaml.copy()
+    set_yaml_defaults(project_yaml)
+
     self.name = name
     self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
@@ -122,15 +137,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
   def sanitizers(self):
     """Returns processed sanitizers."""
     assert isinstance(self._sanitizers, list)
-    processed_sanitizers = []
-    for sanitizer in self._sanitizers:
-      if isinstance(sanitizer, six.string_types):
-        processed_sanitizers.append(sanitizer)
-      elif isinstance(sanitizer, dict):
-        for key in sanitizer.keys():
-          processed_sanitizers.append(key)
-
-    return processed_sanitizers
+    return get_sanitizer_strings(self._sanitizers)
 
   @property
   def image(self):
@@ -478,17 +485,21 @@ def dataflow_post_build_steps(project_name, env, base_images_project, testing,
   return steps
 
 
-# pylint: disable=no-member
+# pylint: disable=no-member,too-many-arguments
 def run_build(oss_fuzz_project,
               build_steps,
               credentials,
               build_type,
-              cloud_project='oss-fuzz'):
+              cloud_project='oss-fuzz',
+              extra_tags=None):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
   in GCB so the build can be queried for debugging purposes."""
+  if extra_tags is None:
+    extra_tags = []
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
+  tags.extend(extra_tags)
   timeout = build_lib.BUILD_TIMEOUT
   # TODO(navidem): This is temporary until I fix shorter failing projects.
   if build_type == 'introspector':

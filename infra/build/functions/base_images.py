@@ -100,10 +100,18 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   """Execute the retrieved build steps in gcb."""
   credentials, _ = google.auth.default()
   body_overrides = {
-      'images': images + [f'{image}:{build_version}' for image in images]
+      'images': images + [f'{image}:{build_version}' for image in images],
+      'options': {
+          'machineType': 'E2_HIGHCPU_32'
+      },
   }
-  return build_lib.run_build(steps, credentials, BASE_PROJECT, body_overrides,
-                             tags)
+  return build_lib.run_build(steps,
+                             credentials,
+                             BASE_PROJECT,
+                             TIMEOUT,
+                             body_overrides,
+                             tags,
+                             use_build_pool=False)
 
 
 def base_builder(event, context):
@@ -121,4 +129,7 @@ def base_builder(event, context):
       TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(introspector_steps, introspector_images, INTROSPECTOR_TAG)
+  run_build(introspector_steps,
+            introspector_images,
+            tags=INTROSPECTOR_TAG,
+            build_version=INTROSPECTOR_TAG)

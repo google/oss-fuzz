@@ -14,9 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner
+FROM gcr.io/cloud-builders/gcloud
 
-COPY ${OSS_FUZZ_ROOT} /opt/oss-fuzz
+RUN apt-get update && apt-get install python3-pip -y
+COPY . /opt/oss-fuzz
 RUN pip install -r /opt/oss-fuzz/infra/build/functions/requirements.txt
 
 WORKDIR /opt/oss-fuzz/infra/build/functions/
