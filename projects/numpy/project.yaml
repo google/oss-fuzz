@@ -1,0 +1,8 @@
+homepage: "numpy.org"
+main_repo: "https://github.com/numpy/numpy"
+language: python
+primary_contact: "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
