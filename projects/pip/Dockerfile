@@ -19,3 +19,4 @@ RUN git clone https://github.com/pypa/pip/
 WORKDIR $SRC/pip
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/
+COPY requirement_seeds $SRC/requirement_seeds

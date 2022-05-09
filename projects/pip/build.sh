@@ -15,9 +15,16 @@
 #
 ################################################################################
 
+cd $SRC/pip
 pip3 install .
+python3 setup.py install
+
+cd $SRC/pip/src
 
 # Build fuzzers
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+# Create seeds
+zip -r $OUT/fuzz_requirements_seed_corpus.zip $SRC/requirement_seeds/*

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,34 +15,33 @@
 import sys
 import atheris
 
-with atheris.instrument_imports():
-  import json
-  from pip._internal.models.direct_url import (
-    ArchiveInfo,
-    DirectUrl,
-    DirectUrlValidationError
-  )
+import pip._internal.req.req_file as pipreq
+from pip._internal.exceptions import RequirementsFileParseError
+from pip._internal.network.session import PipSession
 
 
 @atheris.instrument_func
 def TestOneInput(input_bytes):
-  fdp = atheris.FuzzedDataProvider(input_bytes)
-
-  s1 = fdp.ConsumeUnicode(200)
+  with open("temp.req", "wb") as fd:
+      fd.write(input_bytes)
   try:
-    json_string = json.loads(s1)
-    if not type(json_string) is dict:
-      return
-  except json.JSONDecodeError:
-    return
-
-  try: 
-    direct_url = DirectUrl.from_json(s1)
-  except DirectUrlValidationError as e:
+    [_ for _ in pipreq.parse_requirements(
+      "temp.req",
+      PipSession(),
+      finder=None,
+      options=None,
+      constraint=None
+    )]
+  except UnicodeDecodeError:
+    # Catch this because I think it's a user issue if Unicode exceptions happen
+    None
+  except RequirementsFileParseError:
+    # Exception thrown by the requirements reader
     None
 
 
 def main():
+  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.Fuzz()
 
