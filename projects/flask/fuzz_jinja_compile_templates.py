@@ -25,10 +25,8 @@ def TestOneInput(data):
 
     tmp_path = "/tmp/mytemplates"
     temp_file = os.path.join(tmp_path, "template.jinja2")
-
     if not os.path.isdir(tmp_path):
         os.mkdir(tmp_path)
-
     if os.path.isfile(temp_file):
         os.remove(temp_file)
     with open(temp_file, "wb") as fd:
