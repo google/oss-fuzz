@@ -36,7 +36,7 @@ compile_package () {
         $CXX -stdlib=libc++ -c -I . -I $SRC/LPM/external.protobuf/include cpp/ngolofuzz.pb.cc
         $CXX $CXXFLAGS -c -Icpp -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/ngolo-fuzzing/lpm/ngolofuzz.cc
     )
-    if [ "$SANITIZER" != "coverage" ]
+    if [ "$SANITIZER" = "coverage" ]
     then
         (
         cd fuzz_ng_$pkg_flat
