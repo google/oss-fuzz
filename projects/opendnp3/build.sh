@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export ASAN_OPTIONS=detect_leaks=0
+
 # build project
 cmake -DDNP3_FUZZING=ON -DDNP3_STATIC_LIBS=ON .
 make all
