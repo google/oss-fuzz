@@ -25,6 +25,7 @@ TARGETS="fuzzdecoder \
   fuzzoutstation \
   fuzzmaster"
 
+echo "detect_leaks=0" >> fuzzdnp3.options
 for target in $TARGETS; do
   # build corpus
   zip -r ${target}_seed_corpus.zip corpus/*.dnp
