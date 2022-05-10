@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y pkg-config
 RUN git clone https://github.com/dask/dask
-COPY build.sh fuzz_*.py $SRC/
+COPY build.sh fuzz_fuse.py $SRC/
 WORKDIR $SRC/dask
 
