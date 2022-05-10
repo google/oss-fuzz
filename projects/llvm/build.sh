@@ -33,6 +33,7 @@ else
     clang-format-fuzzer \
     clang-objc-fuzzer \
     clangd-fuzzer \
+    clang-pseudo-fuzzer \
     llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
