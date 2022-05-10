@@ -12,7 +12,6 @@ fuzzing_engines:
   - honggfuzz
 builds_per_day: 2
 auto_ccs:
-  - "officesecurity@lists.freedesktop.org"
   - "damjan.jov@gmail.com"
   - "noelgrandin@gmail.com"
   - "sbergman@redhat.com"
