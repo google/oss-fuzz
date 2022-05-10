@@ -40,6 +40,13 @@ else
     llvm-special-case-list-fuzzer \
   )
 fi
+# Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
+readonly CLANG_DICT_FUZZERS=( \
+  clang-fuzzer \
+  clang-format-fuzzer \
+  clang-objc-fuzzer \
+  clang-pseudo-fuzzer \
+)
 
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
@@ -73,6 +80,11 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
+done
+
+ninja clang-fuzzer-dictionary
+for fuzzer in "${CLANG_DICT_FUZZERS[@]}"; do
+  bin/clang-fuzzer-dictionary > $OUT/$fuzzer.dict
 done
 
 zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang/tools/clang-fuzzer/corpus_examples/objc/*
