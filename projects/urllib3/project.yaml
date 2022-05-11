@@ -1,9 +1,10 @@
-homepage: "https://github.com/urllib3/urllib3"
-language: python
-primary_contact: "david@adalogics.com"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/urllib3/urllib3
+language: python
+main_repo: https://github.com/urllib3/urllib3
 sanitizers:
-  - address
-  - undefined
-main_repo: 'https://github.com/urllib3/urllib3'
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
