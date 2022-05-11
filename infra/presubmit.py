@@ -103,9 +103,7 @@ class ProjectYamlChecker:
       'file_github_issue',
   ]
 
-  # Note that some projects like boost only have auto-ccs. However, forgetting
-  # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
+  REQUIRED_SECTIONS = ['main_repo']
 
   def __init__(self, filename):
     self.filename = filename

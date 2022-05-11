@@ -1,12 +1,12 @@
-homepage: "https://bitbucket.org/snakeyaml/snakeyaml/src/master/"
-language: jvm
-primary_contact: "glendowne@code-intelligence.com"
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
 fuzzing_engines:
-  - "libfuzzer"
+- libfuzzer
+homepage: https://bitbucket.org/snakeyaml/snakeyaml/src/master/
+language: jvm
+main_repo: https://bitbucket.org/snakeyaml/snakeyaml.git
 sanitizers:
-  - "address"
-main_repo: "https://bitbucket.org/snakeyaml/snakeyaml.git"
+- address
+vendor_ccs:
+- glendowne@code-intelligence.com
+- wagner@code-intelligence.com
+- patrice.salathe@code-intelligence.com
+- yakdan@code-intelligence.com
