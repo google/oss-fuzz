@@ -103,11 +103,9 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    if self.is_external:
-      # TODO(metzman): Handle this properly.
-      return constants.DEFAULT_LANGUAGE
+    project_yaml_path = os.path.join(
+        self.build_integration_path, 'project.yaml')
 
-    project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
