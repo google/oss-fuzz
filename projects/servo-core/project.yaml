@@ -1,13 +1,12 @@
 homepage: "https://github.com/Netflix/servo"
 language: jvm
-primary_contact: "patrice.salathe@code-intelligence.com"
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
+main_repo: "https://github.com/Netflix/servo.git"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-main_repo: "https://github.com/Netflix/servo.git"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
