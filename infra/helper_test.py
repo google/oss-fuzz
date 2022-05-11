@@ -54,7 +54,6 @@ class BuildImageImplTest(unittest.TestCase):
     helper.build_image_impl(helper.Project(image_name), cache=False)
     self.assertIn('--no-cache', mock_docker_build.call_args_list[0][0][0])
 
-
   @mock.patch('helper.docker_build')
   @mock.patch('helper.pull_images')
   def test_pull(self, mock_pull_images, _):

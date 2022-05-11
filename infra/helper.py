@@ -103,8 +103,8 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    project_yaml_path = os.path.join(
-        self.build_integration_path, 'project.yaml')
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
     if not os.path.exists(project_yaml_path):
       logging.warning('No project.yaml. Assuming c++.')
       return constants.DEFAULT_LANGUAGE
