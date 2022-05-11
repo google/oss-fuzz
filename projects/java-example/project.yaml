@@ -1,12 +1,12 @@
-homepage: "https://github.com/CodeIntelligenceTesting/jazzer"
 disabled: true
-language: jvm
-primary_contact: "meumertzheim@code-intelligence.com"
-auto_ccs:
-  - "norbert.schneider@code-intelligence.com"
 fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/CodeIntelligenceTesting/jazzer"
+- libfuzzer
+homepage: https://github.com/CodeIntelligenceTesting/jazzer
+language: jvm
+main_repo: https://github.com/CodeIntelligenceTesting/jazzer
 sanitizers:
-  - address
-  - undefined
+- address
+- undefined
+vendor_ccs:
+- meumertzheim@code-intelligence.com
+- norbert.schneider@code-intelligence.com
