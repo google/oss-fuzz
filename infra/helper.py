@@ -103,8 +103,11 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    project_yaml_path = os.path.join(self.build_integration_path,
-                                     'project.yaml')
+    project_yaml_path = os.path.join(
+        self.build_integration_path, 'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logging.warning('No project.yaml. Assuming c++.')
+      return 'c++'
 
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
@@ -113,8 +116,8 @@ class Project:
         if match:
           return match.group(1)
 
-    logging.warning('Language not specified in project.yaml.')
-    return None
+    logging.warning('Language not specified in project.yaml. Assuming c++.')
+    return 'c++'
 
   @property
   def out(self):
