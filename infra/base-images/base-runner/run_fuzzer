@@ -158,7 +158,7 @@ else
     CMD_LINE="$CMD_LINE $CORPUS_DIR"
   fi
 
-  if [ ! -z $CUSTOM_LIBFUZZER_OPTIONS ]; then
+  if [[ ! -z ${CUSTOM_LIBFUZZER_OPTIONS} ]]; then
     CMD_LINE="$CMD_LINE $CUSTOM_LIBFUZZER_OPTIONS"
   fi
 
