@@ -1,0 +1,12 @@
+homepage: "https://github.com/Netflix/archaius"
+language: jvm
+main_repo: "https://github.com/Netflix/archaius.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
