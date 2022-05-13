@@ -22,8 +22,8 @@ $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
     $LIB_FUZZING_ENGINE ./libz.a
 
 
-# The latest two examples won't work for coverage build, bail out.
-if [[ $SANITIZER = *coverage* ]]; then
+# The latest two examples won't work for coverage or introspector, bail out.
+if [[ $SANITIZER = *coverage* || $SANITIZER = *introspector* ]]; then
   exit 0
 fi
 
@@ -35,7 +35,8 @@ export CFLAGS="-O1"
 export CXXFLAGS_ORIG="$CXXFLAGS"
 export CXXFLAGS="-O1 -stdlib=libc++"
 
-./configure
+# We need to pass static as zlib fails to build shared lib in OSS-Fuzz env.
+./configure --static
 make -j$(nproc) clean
 make -j$(nproc) all
 
@@ -46,7 +47,8 @@ $CXX -fsanitize=$SANITIZER $CXXFLAGS_ORIG -std=c++11 -I. \
 
 # Testcase 4. Completely ignore the flags provided by OSS-Fuzz.
 ################################################################################
-./configure
+# We need to pass static as zlib fails to build shared lib in OSS-Fuzz env.
+./configure --static
 make -j$(nproc) clean
 make -j$(nproc) all
 
