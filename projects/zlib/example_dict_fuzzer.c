@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
+        return 0; \
     } \
 }
 
@@ -24,7 +24,7 @@ static unsigned long dictId; /* Adler32 value of the dictionary */
 /* ===========================================================================
  * Test deflate() with preset dictionary
  */
-void test_dict_deflate(unsigned char **compr, size_t *comprLen)
+int test_dict_deflate(unsigned char **compr, size_t *comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
@@ -79,16 +79,17 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
     err = deflate(&c_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
         fprintf(stderr, "deflate dict should report Z_STREAM_END\n");
-        exit(1);
+        return 0;
     }
     err = deflateEnd(&c_stream);
     CHECK_ERR(err, "deflateEnd");
+    return 0;
 }
 
 /* ===========================================================================
  * Test inflate() with a preset dictionary
  */
-void test_dict_inflate(unsigned char *compr, size_t comprLen) {
+int test_dict_inflate(unsigned char *compr, size_t comprLen) {
   int err;
   z_stream d_stream; /* decompression stream */
   unsigned char *uncompr;
@@ -114,7 +115,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen) {
     if (err == Z_NEED_DICT) {
       if (d_stream.adler != dictId) {
         fprintf(stderr, "unexpected dictionary");
-        exit(1);
+        return 0;
       }
       err = inflateSetDictionary(
           &d_stream, (const unsigned char *)data, dictionaryLen);
@@ -127,10 +128,11 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen) {
 
   if (memcmp(uncompr, data, dataLen)) {
     fprintf(stderr, "bad inflate with dict\n");
-    exit(1);
+    return 0;
   }
 
   free(uncompr);
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {

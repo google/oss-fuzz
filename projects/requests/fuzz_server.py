@@ -34,40 +34,43 @@ def SetFuzzedInput(input_bytes):
 class ServerThread(threading.Thread):
 
     def __init__(self):
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind(("127.0.0.1", 8001))
+        self.s.listen(1)
+
         threading.Thread.__init__(self)
 
     def run(self):
         global fuzzed_input
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("127.0.0.1", 8001))
-        s.listen(1)
-        while 1:
-            conn, addr = s.accept()
-            conn.recv(1024)
-            conn.send(fuzzed_input)
-            time.sleep(0.005)
-            conn.close()
+        conn, addr = self.s.accept()
+        conn.recv(1024)
+        conn.send(fuzzed_input)
+        time.sleep(0.005)
+        conn.close()
+        self.s.shutdown(1)
+        self.s.close()
+        time.sleep(0.01)
 
 def TestOneInput(input_bytes):
+  t1 = ServerThread()
+  # Launch threads
+  t1.start()
   SetFuzzedInput(input_bytes)
   try:
-    r = requests.get('http://127.0.0.1:8001/', timeout=0.01)
+    r = requests.get('http://127.0.0.1:8001/', timeout=2.0)
     r.status_code
     r.headers
     r.text
   except requests.exceptions.RequestException as e:
     pass
+  t1.join()
 
 
 def main():
+  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  t1 = ServerThread()
-  # Launch threads
-  t1.start()
-
   atheris.Fuzz()
-  # Wait for threads to finish
-  t1.join()
 
 
 if __name__ == "__main__":

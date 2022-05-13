@@ -48,10 +48,23 @@ else
 fi
 make -j$(nproc)
 
-# Build fuzzer_exo, copy other fuzzers
+# Copy encoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_encoder fuzzer_encoder_v2 fuzzer_decoder $OUT
+cp fuzzer_encoder fuzzer_encoder_v2 $OUT
+
+# Build libflac again for decoder fuzzers, but now with addition CFLAG
+export CFLAGS="$CFLAGS -DFUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW"
+
+cd $SRC/flac/
+make clean
+make -j$(nproc)
+
+# Copy decoder fuzzers
+cd $SRC/flac/oss-fuzz
+cp fuzzer_decoder $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
+
+# Build fuzzer_exo
 $CXX $CXXFLAGS -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
     $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_exo
