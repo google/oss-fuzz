@@ -151,6 +151,9 @@ if [ "$SANITIZER" = "introspector" ]; then
   export NM=llvm-nm
   export RANLIB=llvm-ranlib
 
+  export CFLAGS="$CFLAGS -g"
+  export CXXFLAGS="$CXXFLAGS -g"
+
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
   mv /usr/bin/nm /usr/bin/old-nm
@@ -216,8 +219,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   if [ -d "$OUT/textcov_reports" ]
   then
     cp $OUT/textcov_reports/*.covreport $SRC/inspector/
-  fi  
-  
+  fi
+
   cd $SRC/inspector
 
   # Correlate fuzzer binaries to fuzz-introspector's raw data
