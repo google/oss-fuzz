@@ -153,6 +153,7 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   export CFLAGS="$CFLAGS -g"
   export CXXFLAGS="$CXXFLAGS -g"
+  export FI_BRANCH_PROFILE=1
 
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
