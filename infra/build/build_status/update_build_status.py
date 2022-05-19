@@ -50,7 +50,9 @@ INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
 
 HTML_PREFIX_STRING = (
     '<!DOCTYPE html>\n<html>\n'
-    '\t<head><h2>Index of Fuzz-Introspector reports for OSS-Fuzz projects</h2></head>\n'
+    '\t<head><h2>'
+    'Index of Fuzz-Introspector reports for OSS-Fuzz projects'
+    '</h2></head>\n'
     '\t<body>\n\t<font size="4">\n')
 HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 
