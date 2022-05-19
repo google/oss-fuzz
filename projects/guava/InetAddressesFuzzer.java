@@ -1,7 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
-
-import com.google.common.net.*;
+import com.google.common.net.InetAddresses;
 import java.lang.IllegalArgumentException;
 import java.net.InetAddress;
 

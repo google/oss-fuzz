@@ -1,13 +1,13 @@
 homepage: "https://github.com/google/guava"
 language: jvm
-primary_contact: ""
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
+main_repo: "https://github.com/google/guava.git"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-main_repo: "https://github.com/google/guava.git"
+primary_contact: "emcmanus@google.com"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
