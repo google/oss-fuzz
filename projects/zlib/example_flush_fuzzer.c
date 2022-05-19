@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
+        return 0; \
     } \
 }
 
@@ -22,7 +22,7 @@ static free_func zfree = NULL;
 /* ===========================================================================
  * Test deflate() with full flush
  */
-void test_flush(unsigned char *compr, z_size_t *comprLen) {
+int test_flush(unsigned char *compr, z_size_t *comprLen) {
   z_stream c_stream; /* compression stream */
   int err;
   unsigned int len = dataLen;
@@ -52,12 +52,14 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
   CHECK_ERR(err, "deflateEnd");
 
   *comprLen = (z_size_t)c_stream.total_out;
+
+  return 0;
 }
 
 /* ===========================================================================
  * Test inflateSync()
  */
-void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
+int test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
                size_t uncomprLen) {
   int err;
   z_stream d_stream; /* decompression stream */
@@ -86,10 +88,11 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   if (err != Z_DATA_ERROR) {
     fprintf(stderr, "inflate should report DATA_ERROR\n");
     /* Because of incorrect adler32 */
-    exit(1);
+    return 0;
   }
   err = inflateEnd(&d_stream);
   CHECK_ERR(err, "inflateEnd");
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {

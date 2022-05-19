@@ -30,6 +30,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     OS_XML xml;
     if (OS_ReadXML(filename, &xml) < 0) {
+        OS_ClearXML(&xml);
         unlink(filename);
         return 0;
     }
@@ -39,8 +40,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         OS_ClearXML(&xml);
         return 0;
     }
-    int i = 0;
 
+    int i = 0;
     while (node[i]) {
         int j = 0;
         XML_NODE cnode;

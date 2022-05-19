@@ -43,6 +43,10 @@ if [ "$SANITIZER" = "undefined" ]
 then
   echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
 fi
+if [ "$SANITIZER" = "address" ]
+then
+  echo "--action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0"
+fi
 )"
 
 # Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
@@ -52,7 +56,7 @@ sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensor
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
 # Ignore fuzzers tagged with `no_oss` in opensource.
-declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
+declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
 # checkpoint_reader_fuzz seems out of date with the API
 
 # Build the fuzzer targets.
@@ -77,6 +81,70 @@ for bazel_target in ${FUZZERS}; do
   cp ${bazel_location} ${OUT}/$fuzz_name
 done
 
+echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
+yes "" | ./configure
+
+declare FUZZERS=$(grep '^tf_ops_fuzz_target' tensorflow/core/kernels/fuzzing/BUILD | cut -d'"' -f2 | grep -v decode_base64)
+
+cat >> tensorflow/core/kernels/fuzzing/tf_ops_fuzz_target_lib.bzl << END
+
+def cc_tf(name):
+    native.cc_test(
+        name = name + "_fuzz",
+        deps = [
+            "//tensorflow/core/kernels/fuzzing:fuzz_session",
+            "//tensorflow/core/kernels/fuzzing:" + name + "_fuzz_lib",
+            "//tensorflow/cc:cc_ops",
+            "//tensorflow/cc:scope",
+            "//tensorflow/core:core_cpu",
+        ],
+
+	linkopts = ["-fsanitize=fuzzer"]
+    )
+END
+
+cat >> tensorflow/core/kernels/fuzzing/BUILD << END
+
+load("//tensorflow/core/kernels/fuzzing:tf_ops_fuzz_target_lib.bzl", "cc_tf")
+
+END
+
+for fuzzer in ${FUZZERS}; do
+    echo cc_tf\(\"${fuzzer}\"\) >> tensorflow/core/kernels/fuzzing/BUILD
+done
+
+declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
+
+bazel build \
+  --spawn_strategy=sandboxed \
+  --jobs=$(nproc) \
+  --config=monolithic \
+  --dynamic_mode=off \
+  ${EXTRA_FLAGS} \
+  --verbose_failures \
+  --strip=never \
+  --define=framework_shared_object=false \
+  -- //tensorflow/core/kernels/fuzzing:all
+
+# The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
+# in `$OUT`, so move them accordingly.
+for bazel_target in ${FUZZERS}; do
+  colon_index=$(expr index "${bazel_target}" ":")
+  fuzz_name="${bazel_target:$colon_index}"
+  bazel_location="bazel-bin/${bazel_target/:/\/}"
+  cp ${bazel_location} ${OUT}/$fuzz_name
+  corpus_location=tensorflow/core/kernels/fuzzing/corpus/$(basename ${fuzz_name} _fuzz)
+  if [[ -d ${corpus_location} ]]
+  then
+    find ${corpus_location} -type f | xargs zip -j ${OUT}/${fuzz_name}_seed_corpus.zip
+  fi
+  dict_location=tensorflow/core/kernels/fuzzing/dictionaries/$(basename ${fuzz_name} _fuzz).dict
+  if [[ -f ${dict_location} ]]
+  then
+    cp ${dict_location} $OUT/${fuzz_name}.dict
+  fi
+done
+
 # For coverage, we need to remap source files to correspond to the Bazel build
 # paths. We also need to resolve all symlinks that Bazel creates.
 if [ "$SANITIZER" = "coverage" ]
@@ -89,7 +157,9 @@ then
   ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
 
   # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/core/protobuf ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
 
   # Sync external dependencies. We don't need to include `bazel-tensorflow`.
   # Also, remove `external/org_tensorflow` which is a copy of the entire source

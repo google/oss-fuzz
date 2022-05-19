@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
+        return 0; \
     } \
 }
 
@@ -22,7 +22,7 @@ static free_func zfree = NULL;
 /* ===========================================================================
  * Test deflate() with small buffers
  */
-void test_deflate(unsigned char *compr, size_t comprLen) {
+int test_deflate(unsigned char *compr, size_t comprLen) {
   z_stream c_stream; /* compression stream */
   int err;
   unsigned long len = dataLen;
@@ -53,12 +53,13 @@ void test_deflate(unsigned char *compr, size_t comprLen) {
 
   err = deflateEnd(&c_stream);
   CHECK_ERR(err, "deflateEnd");
+  return 0;
 }
 
 /* ===========================================================================
  * Test inflate() with small buffers
  */
-void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
+int test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
                   size_t uncomprLen) {
   int err;
   z_stream d_stream; /* decompression stream */
@@ -87,8 +88,9 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
 
   if (memcmp(uncompr, data, dataLen)) {
     fprintf(stderr, "bad inflate\n");
-    exit(1);
+    return 0;
   }
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
