@@ -1,5 +1,5 @@
-homepage: "https://python.org/"
-language: c++
+homepage: "https://www.python.org/"
+language: c
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "gps@google.com"
