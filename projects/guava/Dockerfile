@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt-get update && apt-get install -y autoconf zlibc libtool liblcms2-dev libpng-dev
-RUN git clone --branch branch-2.2 --single-branch --depth 1 https://github.com/apple/cups.git cups
-RUN git clone --branch VER-2-12-1 --single-branch --depth 1 https://git.savannah.gnu.org/git/freetype/freetype2.git freetype
-RUN git clone --single-branch --depth 1 git://git.ghostscript.com/ghostpdl.git ghostpdl
-RUN mkdir ghostpdl/fuzz
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-WORKDIR ghostpdl
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
-COPY gstoraster_fuzzer.cc $SRC/
+RUN git clone --depth 1 https://github.com/google/guava
+
 COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/guava

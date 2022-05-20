@@ -26,7 +26,7 @@ FUZZ_WORKPATH=$PYFUZZ_WORKPATH/$fuzzer_basename
 
 # In coverage mode prepend coverage logic to the fuzzer source
 if [[ $SANITIZER = *coverage* ]]; then
-  cat <<EOF >> coverage_wrapper.py
+  cat <<EOF > coverage_wrapper.py
 ###### Coverage stub
 import atexit
 import coverage
