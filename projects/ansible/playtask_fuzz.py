@@ -15,7 +15,7 @@
 # limitations under the License.
 import atheris
 with atheris.instrument_imports():
-   from ansible.errors import AnsibleError, AnsibleParserError
+   from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
    from ansible.playbook.play import Play
    from ansible.playbook.task import Task
 
@@ -28,7 +28,7 @@ def TestInput(input_bytes):
       task3 = Task.load({'action': fdp.ConsumeString(10)})
 
       Play.load(dict(name=fdp.ConsumeString(10),hosts=[fdp.ConsumeString(5)],gather_facts=fdp.ConsumeBool(),tasks=[task1,task2,task3]))
-   except Exception:
+   except (AnsibleError, AnsibleParserError, AnsibleUndefinedVariable) as e:
       pass
 def main():
    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
