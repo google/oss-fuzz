@@ -26,4 +26,4 @@ RUN rustup install nightly
 RUN rustup default nightly
 WORKDIR cryptography
 
-COPY build.sh fuzzer.py $SRC/
+COPY build.sh symenc_fuzz.py $SRC/
