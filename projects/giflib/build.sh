@@ -21,12 +21,12 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code egif_fuzz_common.c
 
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc gif_fuzz_proto.proto --cpp_out=genfiles
 
-$CXX $CXXFLAGS -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
+$CXX $CXXFLAGS -DNDEBUG -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
 -I genfiles \
 -I LPM/external.protobuf/include \
  -o dgif_protobuf_target.o
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DNDEBUG -std=c++11 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
 ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
 -I genfiles \
