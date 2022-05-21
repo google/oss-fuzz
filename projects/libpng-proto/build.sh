@@ -32,7 +32,7 @@ rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc png_fuzz_p
 $CXX $CXXFLAGS -c -DLLVMFuzzerTestOneInput=FuzzPNG libpng/contrib/oss-fuzz/libpng_read_fuzzer.cc -I libpng
 
 # compile & link the rest
-$CXX $CXXFLAGS png_proto_fuzzer_example.cc libpng_read_fuzzer.o genfiles/png_fuzz_proto.pb.cc \
+$CXX $CXXFLAGS -DNDEBUG png_proto_fuzzer_example.cc libpng_read_fuzzer.o genfiles/png_fuzz_proto.pb.cc \
   -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
   -lz \
   LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
@@ -43,7 +43,7 @@ $CXX $CXXFLAGS png_proto_fuzzer_example.cc libpng_read_fuzzer.o genfiles/png_fuz
   -o $OUT/png_proto_fuzzer_example
 
 # custom png proto mutator
-$CXX $CXXFLAGS png_proto_fuzzer_example.cc png_proto_mutator.cc libpng_read_fuzzer.o genfiles/png_fuzz_proto.pb.cc \
+$CXX $CXXFLAGS -DNDEBUG png_proto_fuzzer_example.cc png_proto_mutator.cc libpng_read_fuzzer.o genfiles/png_fuzz_proto.pb.cc \
   -I genfiles -I.  -I libprotobuf-mutator/  -I LPM/external.protobuf/include \
   -lz \
   LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
