@@ -24,7 +24,20 @@ else
       -e 'llvm-symbolizer' \
       -e 'jazzer_agent_deploy.jar' \
       -e 'jazzer_driver' \
-      -e 'jazzer_driver_with_sanitizer')"
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
+  if [[ $FUZZING_LANGUAGE == "python" ]]; then
+    # In python we want to exclude all .pkg binaries. We avoid using
+    # the grep above because technically fuzzer binaries can be labelled
+    # .pkg in other languages.
+    FUZZ_TARGETS_NEW=""
+    for fuzz_target in $FUZZ_TARGETS; do
+      if ! [[ $fuzz_target == *".pkg"* ]]; then
+        FUZZ_TARGETS_NEW="$fuzz_target $FUZZ_TARGETS_NEW"
+      fi
+    done
+    FUZZ_TARGETS=$FUZZ_TARGETS_NEW
+  fi
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
@@ -297,7 +310,8 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   PYCOVDIR=/pycovdir/
   mkdir $PYCOVDIR
   for fuzzer in $FUZZ_TARGETS; do
-    unzip $OUT/$fuzzer.deps.zip
+    fuzzer_deps=${fuzzer}.pkg.deps.zip
+    unzip $OUT/${fuzzer_deps}
     rsync -r ./medio /pythoncovmergedfiles/medio
     rm -rf ./medio
 
