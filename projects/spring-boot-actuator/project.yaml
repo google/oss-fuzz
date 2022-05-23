@@ -1,15 +1,25 @@
 homepage: "https://github.com/spring-projects/spring-boot"
 language: jvm
 main_repo: "https://github.com/spring-projects/spring-boot.git"
+<<<<<<< HEAD
 primary_contact: "pwebb@vmware.com"
+=======
+>>>>>>> 0d4261be (Initial integration)
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
 vendor_ccs:
+<<<<<<< HEAD
   - "wilkinsona@vmware.com"
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
+=======
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+>>>>>>> 0d4261be (Initial integration)
