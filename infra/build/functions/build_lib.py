@@ -39,7 +39,8 @@ GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 
 # Where corpus backups can be downloaded from.
-CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
+CORPUS_BACKUP_URL = (GCS_URL_BASENAME +
+                     '/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
