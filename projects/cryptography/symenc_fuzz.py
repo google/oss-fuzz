@@ -23,10 +23,12 @@ with atheris.instrument_imports():
 
 def TestInput(input_bytes):
    fdp = atheris.FuzzedDataProvider(input_bytes)
+   plaintext = fdp.ConsumeBytes(32)
 
    key = Fernet(Fernet.generate_key())
-   token = key.encrypt(fdp.ConsumeBytes(32))
+   token = key.encrypt(plaintext)
    text = key.decrypt(token)
+   assert (plaintext == text), "Encryption/Decrption error!"
 
    password = fdp.ConsumeBytes(8)
    salt = fdp.ConsumeBytes(16)
@@ -34,11 +36,12 @@ def TestInput(input_bytes):
       algorithm=hashes.SHA256(),
       length=32,
       salt=salt,
-      iterations=390000,
+      iterations=1,
    )
    key = Fernet(base64.urlsafe_b64encode(kdf.derive(password)))
-   token = key.encrypt(fdp.ConsumeBytes(32))
+   token = key.encrypt(plaintext)
    text = key.decrypt(token)
+   assert (plaintext == text), "Encryption/Decrption error!"
 
 def main():
    atheris.Setup(sys.argv, TestInput, enable_python_coverage=False)
