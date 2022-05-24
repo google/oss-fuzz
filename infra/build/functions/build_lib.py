@@ -177,9 +177,8 @@ def download_corpora_steps(project_name, testing):
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
 
-      url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
-                                                    fuzzer=qualified_name),
-                           method='GET')
+      url = CORPUS_BACKUP_URL.format(project=project_name,
+                                     fuzzer=qualified_name)
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
