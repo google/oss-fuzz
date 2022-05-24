@@ -22,4 +22,5 @@ RUN pip3 install --upgrade pip
 RUN git clone https://github.com/ansible/ansible
 WORKDIR ansible
 
-COPY build.sh playtask_fuzz.py $SRC/
+#COPY build.sh task_fuzz.py parse_fuzz.py $SRC/
+COPY build.sh parse_fuzz.py $SRC/

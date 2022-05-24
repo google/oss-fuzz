@@ -16,22 +16,23 @@
 import atheris
 with atheris.instrument_imports():
    from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
-   from ansible.playbook.play import Play
    from ansible.playbook.task import Task
 
 def TestInput(input_bytes):
    #for temp passing CI only
-   if len(input_bytes) < 20:
+   if len(input_bytes) < 5:
       return
 
    fdp = atheris.FuzzedDataProvider(input_bytes)
 
    try:
-      task1 = Task.load({'name': fdp.ConsumeString(10), 'shell': fdp.ConsumeString(10), 'action': fdp.ConsumeString(10)})
-      task2 = Task.load({'name': fdp.ConsumeString(10), 'shell': fdp.ConsumeString(10), 'action': fdp.ConsumeString(10)})
-      task3 = Task.load({'action': fdp.ConsumeString(10)})
+      task = Task.load({'name': fdp.ConsumeString(10), 'shell': fdp.ConsumeString(10), 'action': fdp.ConsumeString(10), 'debug': fdp.ConsumeString(10)})
 
-      Play.load(dict(name=fdp.ConsumeString(10),hosts=[fdp.ConsumeString(5)],gather_facts=fdp.ConsumeBool(),tasks=[task1,task2,task3]))
+      task.get_vars()
+      task.get_include_params()
+      task.copy()
+      data = task.serialize()
+      task.deserialize(data)
    except (AnsibleError, AnsibleParserError, AnsibleUndefinedVariable) as e:
       pass
 def main():
