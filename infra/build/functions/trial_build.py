@@ -182,7 +182,6 @@ def _do_builds(args, config, credentials, build_type, projects):
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, IMAGE_PROJECT,
                                             BASE_IMAGES_PROJECT, config)
-    logging.info('steps: %s', steps)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
@@ -212,6 +211,8 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
                    build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
+  build_results[project] = False
+  return True
   build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                            build_id)
   if build_status not in FINISHED_BUILD_STATUSES:
@@ -244,6 +245,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   print('Project, Statuses')
   for project, build_result in build_results.items():
     print(project, build_result)
+
+  print('all', all(build_results.values()))
 
   return all(build_results.values())
 
@@ -281,8 +284,8 @@ def trial_build_main(args=None, local_base_build=True):
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         TEST_IMAGE_SUFFIX)
-  # else:
-  #   build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
+  else:
+    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
 
