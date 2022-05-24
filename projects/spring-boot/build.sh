@@ -49,6 +49,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
