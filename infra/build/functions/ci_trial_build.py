@@ -20,6 +20,7 @@ images."""
 
 import logging
 import os
+import sys
 
 import github
 
@@ -76,4 +77,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

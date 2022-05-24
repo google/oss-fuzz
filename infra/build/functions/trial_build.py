@@ -246,8 +246,6 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   for project, build_result in build_results.items():
     print(project, build_result)
 
-  print('all', all(build_results.values()))
-
   return all(build_results.values())
 
 
@@ -284,8 +282,8 @@ def trial_build_main(args=None, local_base_build=True):
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         TEST_IMAGE_SUFFIX)
-  # else:
-  #   build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
+  else:
+    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
 
@@ -297,4 +295,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
