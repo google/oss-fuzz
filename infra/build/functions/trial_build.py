@@ -182,6 +182,7 @@ def _do_builds(args, config, credentials, build_type, projects):
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, IMAGE_PROJECT,
                                             BASE_IMAGES_PROJECT, config)
+    logging.info('steps: %s', steps)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
