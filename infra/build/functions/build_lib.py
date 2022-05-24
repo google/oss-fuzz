@@ -39,8 +39,7 @@ GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 
 # Where corpus backups can be downloaded from.
-CORPUS_BACKUP_URL = (GCS_URL_BASENAME +
-                     '/{project}-backup.clusterfuzz-external.appspot.com/'
+CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
@@ -178,8 +177,9 @@ def download_corpora_steps(project_name, testing):
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
 
-      url = CORPUS_BACKUP_URL.format(project=project_name,
-                                     fuzzer=qualified_name)
+      url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
+                                                    fuzzer=qualified_name),
+                           method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
