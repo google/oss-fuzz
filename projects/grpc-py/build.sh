@@ -21,4 +21,6 @@ pip3 install -r ./requirements.txt
 GRPC_PYTHON_CFLAGS="${CFLAGS}" GRPC_PYTHON_BUILD_SYSTEM_RE2=true GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true pip3 install -v . 
 
 cd $SRC
-compile_python_fuzzer grpc_fuzz.py
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
