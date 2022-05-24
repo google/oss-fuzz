@@ -6,6 +6,8 @@ main_repo: https://github.com/pyca/cryptography
 sanitizers:
 - address
 primary_contact: "alex.gaynor@gmail.com"
+auto_ccs: 
+- "paul.l.kehrer@gmail.com"
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
