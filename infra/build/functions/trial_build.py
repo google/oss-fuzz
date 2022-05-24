@@ -245,7 +245,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   for project, build_result in build_results.items():
     print(project, build_result)
 
-  return all(build_results.items())
+  return all(build_results.values())
 
 
 def do_test_builds(args):
