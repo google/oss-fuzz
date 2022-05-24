@@ -252,7 +252,7 @@ def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
   # TODO(metzman): Make this handle concurrent builds.
   build_types = []
-  sanitizers = list(args.saitizers)
+  sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
     sanitizers.pop(sanitizers.index('coverage'))
     build_types.append(BUILD_TYPES['coverage'])
