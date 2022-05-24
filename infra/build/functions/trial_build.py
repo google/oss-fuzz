@@ -211,8 +211,6 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
                    build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
-  build_results[project] = False
-  return True
   build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                            build_id)
   if build_status not in FINISHED_BUILD_STATUSES:
