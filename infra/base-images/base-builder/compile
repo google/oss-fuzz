@@ -151,6 +151,10 @@ if [ "$SANITIZER" = "introspector" ]; then
   export NM=llvm-nm
   export RANLIB=llvm-ranlib
 
+  export CFLAGS="$CFLAGS -g"
+  export CXXFLAGS="$CXXFLAGS -g"
+  export FI_BRANCH_PROFILE=1
+
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
   mv /usr/bin/nm /usr/bin/old-nm
@@ -211,12 +215,13 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "*.data.yaml" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "*branchProfile.yaml" -exec cp {} $SRC/inspector/ \;
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]
   then
     cp $OUT/textcov_reports/*.covreport $SRC/inspector/
-  fi  
-  
+  fi
+
   cd $SRC/inspector
 
   # Correlate fuzzer binaries to fuzz-introspector's raw data
