@@ -22,3 +22,11 @@ This should end with the following line:
 > ===BUG DETECTED: Shell injection===
 
 which indicates the detection of shell injections
+
+
+## TODOs
+1. Trace the `execve` syscalls of child processes of the target, not the `clone` and
+   `wait4` of the target
+2. Flag syntax errors of shell commands, as they are suspicious even without
+   seeing the proof of error
+
