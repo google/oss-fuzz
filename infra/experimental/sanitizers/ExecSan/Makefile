@@ -18,4 +18,4 @@ test:  detector bomb target vuln.dict
 	./$< ./target -dict=vuln.dict
 
 clean:
-	rm -f detector target /tmp/bomb /tmp/bombfile
+	find . -type f -not \( -name "*c" -or -name "*cpp" -or -name 'Makefile' -or -name 'README.md' -or -name 'vuln.dict' \) -delete
