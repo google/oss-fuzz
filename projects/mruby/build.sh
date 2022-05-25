@@ -36,7 +36,6 @@ rm -f $OUT/${name}.o
 cat > $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options <<EOF
 [libfuzzer]
 dict = mruby.dict
-fork = 1
 only_ascii = 1
 EOF
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options
