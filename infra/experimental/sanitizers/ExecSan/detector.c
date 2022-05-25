@@ -68,9 +68,9 @@ void sync_syscall(pid_t pid) {
 }
 
 void inspect(pid_t pid) {
-  // Check for bombfile upon exec
+  // Check for pearl upon each execve and every wait4 after clone
   struct stat stat_buf;
-  if (!stat("/tmp/bombfile", &stat_buf)) {
+  if (!stat("/tmp/pearl", &stat_buf)) {
     ptrace(PTRACE_KILL, pid, NULL, NULL);
     printf("===BUG DETECTED: Shell injection===\n");
     exit(1);

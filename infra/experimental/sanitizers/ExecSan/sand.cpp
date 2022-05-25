@@ -14,11 +14,12 @@
  * limitations under the License.
 */
 
-/* Generates the proof of error when executed */
+/* Generates the proof of error (i.e. pearl) when executed */
+
 #include <fstream>
 int main() {
-  std::ofstream bombfile("/tmp/bombfile");
-  bombfile << "bomb!" << std::endl;
-  bombfile.close();
+  std::ofstream pearlfile("/tmp/pearl");
+  pearlfile << "Shining!" << std::endl;
+  pearlfile.close();
   return 0;
 }
