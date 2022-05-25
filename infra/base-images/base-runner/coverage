@@ -26,18 +26,6 @@ else
       -e 'jazzer_driver' \
       -e 'jazzer_driver_with_sanitizer' \
       -e 'sanitizer_with_fuzzer.so')"
-  if [[ $FUZZING_LANGUAGE == "python" ]]; then
-    # In python we want to exclude all .pkg binaries. We avoid using
-    # the grep above because technically fuzzer binaries can be labelled
-    # .pkg in other languages.
-    FUZZ_TARGETS_NEW=""
-    for fuzz_target in $FUZZ_TARGETS; do
-      if ! [[ $fuzz_target == *".pkg"* ]]; then
-        FUZZ_TARGETS_NEW="$fuzz_target $FUZZ_TARGETS_NEW"
-      fi
-    done
-    FUZZ_TARGETS=$FUZZ_TARGETS_NEW
-  fi
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
@@ -172,7 +160,7 @@ function run_python_fuzz_target {
   echo "{}" > "$FUZZER_STATS_DIR/$target.json"
 
   # Run fuzzer
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
+  $OUT/$target $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
