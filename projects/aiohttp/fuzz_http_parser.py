@@ -13,6 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import os
+AIOHTTP_VAL=0
+os.environ["AIOHTTP_NO_EXTENSIONS"] = str(AIOHTTP_VAL)
+
 import sys
 import atheris
 
@@ -30,6 +35,7 @@ def TestOneInput(data):
     h_p = aiohttp.http_parser.HttpRequestParser(pr, loop, 32768)
     try:
         h_p.feed_data(data)
+        h_p.feed_eof()
     except aiohttp.http_exceptions.HttpProcessingError:
         None
 
