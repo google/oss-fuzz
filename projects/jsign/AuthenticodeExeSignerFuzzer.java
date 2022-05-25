@@ -31,7 +31,7 @@ public class AuthenticodeExeSignerFuzzer {
         Files.write(file.toPath(), data);
 
         KeyStore keystore = KeyStore.getInstance("JKS");
-        keystore.load(new FileInputStream("keystore.jks"), "password".toCharArray());
+        keystore.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("keystore.jks"), "password".toCharArray());
 
         try {
             AuthenticodeSigner signer = new AuthenticodeSigner(keystore, "test", "password").withTimestamping(false);
