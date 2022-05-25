@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+AIOHTTP_VAL=0
+os.environ["AIOHTTP_NO_EXTENSIONS"] = str(AIOHTTP_VAL)
+
 import sys
 import atheris
 
