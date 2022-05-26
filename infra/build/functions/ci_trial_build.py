@@ -48,7 +48,7 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
-    command_str = f'{TRIGGER_COMMAND} {sys.argv[0]} '
+    command_str = f'{TRIGGER_COMMAND} trial_build.py '
     if not body.startswith(command_str):
       continue
     if len(body) == len(command_str):
@@ -62,6 +62,7 @@ def exec_command_from_github(pull_request_number, branch):
   on |pull_request_number|."""
   comments = get_comments(pull_request_number)
   command = get_latest_gcbrun_command(comments)
+  logging.info('Command: %s.', command)
   if command is None:
     logging.info('Trial build not requested.')
     return None
