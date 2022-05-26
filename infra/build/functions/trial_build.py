@@ -145,8 +145,8 @@ def get_projects_to_build(specified_projects, build_type, force_build):
 
   project_statuses = _get_production_build_statuses(build_type)
   for project in specified_projects:
-    if (project not in project_statuses or project_statuses[project]
-        or force_build):
+    if (project not in project_statuses or project_statuses[project] or
+        force_build):
       buildable_projects.append(project)
       continue
 
@@ -265,7 +265,8 @@ def _do_test_builds(args):
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = []
   for build_type in build_types:
-    projects = get_projects_to_build(list(args.projects), build_type)
+    projects = get_projects_to_build(list(args.projects), build_type,
+                                     args.force_build)
     config = build_project.Config(testing=True,
                                   test_image_suffix=TEST_IMAGE_SUFFIX,
                                   branch=args.branch,
