@@ -16,7 +16,10 @@
 
 import os
 AIOHTTP_VAL=0
-os.environ["AIOHTTP_NO_EXTENSIONS"] = str(AIOHTTP_VAL)
+if AIOHTTP_VAL == 0:
+  os.environ["AIOHTTP_NO_EXTENSIONS"] = ""
+else:
+  os.environ["AIOHTTP_NO_EXTENSIONS"] = "1"
 
 import sys
 import atheris
