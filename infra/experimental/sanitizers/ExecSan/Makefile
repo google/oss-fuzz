@@ -2,20 +2,19 @@
 CC     = cc
 CFLAGS = -std=c99 -Wall -Wextra -O3 -g3
 
-all: clean detector pearl oyster
+all: clean execSan tripwire target
 
-detector: detector.c
+execSan: execSan.c
 	$(CC) $(CFLAGS) -o $@ $^
 
-sand: sand.cpp
+tripwire: tripwire.cpp
 	clang++ -o /tmp/$@ $^
 
-oyster: oyster.cpp
+target: target.cpp
 	clang -fsanitize=fuzzer -o $@ $^
 
-test:  detector sand oyster vuln.dict
-	rm -f /tmp/pearl
-	./$< ./oyster -dict=vuln.dict
+test:  all vuln.dict
+	./execSan ./target -dict=vuln.dict
 
 clean:
-	rm -f detector /tmp/sand osyster /tmp/pearl
+	rm -f execSan /tmp/tripwire target /tmp/injected

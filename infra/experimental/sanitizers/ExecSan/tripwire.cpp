@@ -18,8 +18,8 @@
 
 #include <fstream>
 int main() {
-  std::ofstream pearlfile("/tmp/pearl");
-  pearlfile << "Shining!" << std::endl;
+  std::ofstream pearlfile("/tmp/injected");
+  pearlfile << "Injected!" << std::endl;
   pearlfile.close();
   return 0;
 }

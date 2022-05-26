@@ -1,23 +1,23 @@
 # Shell Injection Detection with `ptrace`
 
-We use `ptrace` to instrument system calls made by the target program to detect if our `sand` command was injected into the *shell* of the target `oyster` program and executed by the program to produce of a `pearl` file.
-Our instrumentation verifies the existence of `/tmp/pearl` after every `execve` or each process spawned via `clone`, which proves the existence of shell injection vulnerabilities.
+We use `ptrace` to instrument system calls made by the target program to detect if our `/tmp/tripwire` command in `vuln.dict` was injected into the shell of the testing target program and executed by the program to produce of a `/tmp/injected` file.
+Our instrumentation verifies the existence of `/tmp/injected` after every `execve` or each process spawned via `clone`, which proves the existence of shell injection vulnerabilities.
 
 ## Quick test
 
 ### Cleanup
-Note this will delete /tmp/sand and /tmp/pearl if they exist
+Note this will delete /tmp/tripwire and /tmp/injected if they exist
 ```shell
 make clean
 ```
 
 ### Run test
-Note this will overwrite /tmp/sand and /tmp/pearl if they exist
+Note this will overwrite /tmp/tripwire and /tmp/injected if they exist
 ```shell
-make harvest
+make test
 ```
 
-This should end with the following line:
+Look for the following line:
 
 > ===BUG DETECTED: Shell injection===
 
