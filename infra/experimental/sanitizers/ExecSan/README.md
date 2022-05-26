@@ -25,8 +25,9 @@ which indicates the detection of shell injections
 
 
 ## TODOs
-1. Trace the `execve` syscalls of child processes of the target, not the `clone` and
-   `wait4` of the target
-2. Flag syntax errors of shell commands, as they are suspicious even without
-   seeing the proof of error
+1. Trace the `execve` syscalls in child processes of the target, not the `clone`
+   and `wait4` in the target;
+2. Flag syntax errors of shell commands, as they are suspicious enough even without
+   seeing the proof of error (i.e. `/tmp/injected`);
+3. Suffix the injected file with the corresponding PID (e.g. `/tmp/injected_{PID}`).
 
