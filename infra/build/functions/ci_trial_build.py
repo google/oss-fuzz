@@ -51,7 +51,7 @@ def get_latest_gcbrun_command(comments):
     command_str = f'{TRIGGER_COMMAND} {sys.argv[0]} '
     if not body.startswith(command_str):
       continue
-    if len(body) <= len(command_str):
+    if len(body) == len(command_str):
       return None
     return body[len(command_str):].strip().split(' ')
   return None
