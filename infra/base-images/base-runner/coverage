@@ -24,7 +24,8 @@ else
       -e 'llvm-symbolizer' \
       -e 'jazzer_agent_deploy.jar' \
       -e 'jazzer_driver' \
-      -e 'jazzer_driver_with_sanitizer')"
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
@@ -162,7 +163,7 @@ function run_python_fuzz_target {
   echo "{}" > "$FUZZER_STATS_DIR/$target.json"
 
   # Run fuzzer
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
+  $OUT/$target $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
@@ -300,7 +301,8 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   PYCOVDIR=/pycovdir/
   mkdir $PYCOVDIR
   for fuzzer in $FUZZ_TARGETS; do
-    unzip $OUT/$fuzzer.deps.zip
+    fuzzer_deps=${fuzzer}.pkg.deps.zip
+    unzip $OUT/${fuzzer_deps}
     rsync -r ./medio /pythoncovmergedfiles/medio
     rm -rf ./medio
 
