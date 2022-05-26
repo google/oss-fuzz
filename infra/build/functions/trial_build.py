@@ -116,6 +116,11 @@ def get_args(args=None):
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
+  parser.add_argument('--force-build',
+                      required=False,
+                      default=False,
+                      help='Build projects that failed to build on OSS-Fuzz\'s '
+                      'production builder.')
   parsed_args = parser.parse_args(args)
   if 'all' in parsed_args.projects:  # Explicit opt-in for all.
     parsed_args.projects = get_all_projects()
@@ -152,7 +157,7 @@ def get_projects_to_build(specified_projects, build_type):
   return buildable_projects
 
 
-def _do_builds(args, config, credentials, build_type, projects):
+def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
@@ -247,7 +252,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   return all(build_results.values())
 
 
-def do_test_builds(args):
+def _do_test_builds(args):
   """Does test coverage and fuzzing builds."""
   # TODO(metzman): Make this handle concurrent builds.
   build_types = []
@@ -260,6 +265,7 @@ def do_test_builds(args):
     build_types.append(BUILD_TYPES['introspector'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
+  build_ids = []
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type)
     config = build_project.Config(testing=True,
@@ -269,7 +275,8 @@ def do_test_builds(args):
                                   upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
-    build_ids = _do_builds(args, config, credentials, build_type, projects)
+    build_ids.extend(
+        _do_build_type_builds(args, config, credentials, build_type, projects))
   return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 
@@ -282,7 +289,7 @@ def trial_build_main(args=None, local_base_build=True):
         TEST_IMAGE_SUFFIX)
   else:
     build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
-  return do_test_builds(args)
+  return _do_test_builds(args)
 
 
 def main():

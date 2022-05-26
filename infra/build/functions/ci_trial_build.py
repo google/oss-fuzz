@@ -57,7 +57,7 @@ def get_latest_gcbrun_command(comments):
   return None
 
 
-def exec_command_from_github(pull_request_number):
+def exec_command_from_github(pull_request_number, branch):
   """Executes the gcbrun command for trial_build.py in the most recent command
   on |pull_request_number|."""
   comments = get_comments(pull_request_number)
@@ -65,6 +65,9 @@ def exec_command_from_github(pull_request_number):
   if command is None:
     logging.info('Trial build not requested.')
     return None
+  # Set the branch so that the trial build builds the projects from the PR
+  # branch.
+  command += f' --branch {branch}'
   logging.info('Command: %s.', command)
   return trial_build.trial_build_main(command, local_base_build=False)
 
@@ -73,7 +76,8 @@ def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
   pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
-  return 0 if exec_command_from_github(pull_request_number) else 1
+  branch = os.environ['BRANCH']
+  return 0 if exec_command_from_github(pull_request_number, branch) else 1
 
 
 if __name__ == '__main__':
