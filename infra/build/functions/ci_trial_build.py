@@ -65,9 +65,15 @@ def exec_command_from_github(pull_request_number, branch):
   if command is None:
     logging.info('Trial build not requested.')
     return None
-  # Set the branch so that the trial build builds the projects from the PR
+
+  # Remove trial_build.py from the front of the command or else
+  # trial_build.get_args will think it is a project.
+  command = ' '.join(command.split(' ')[1:])
+
+  # Set the branch so that the trial_build builds the projects from the PR
   # branch.
   command += f' --branch {branch}'
+
   logging.info('Command: %s.', command)
   return trial_build.trial_build_main(command, local_base_build=False)
 

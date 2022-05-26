@@ -137,7 +137,7 @@ def get_all_projects():
   ])
 
 
-def get_projects_to_build(specified_projects, build_type):
+def get_projects_to_build(specified_projects, build_type, force_build):
   """Returns the list of projects that should be built based on the projects
   specified by the user (|specified_projects|) the |project_statuses| of the
   last builds and the |build_type|."""
@@ -145,10 +145,8 @@ def get_projects_to_build(specified_projects, build_type):
 
   project_statuses = _get_production_build_statuses(build_type)
   for project in specified_projects:
-    if project not in project_statuses:
-      buildable_projects.append(project)
-      continue
-    if project_statuses[project]:
+    if (project not in project_statuses or project_statuses[project]
+        or force_build):
       buildable_projects.append(project)
       continue
 
