@@ -13,7 +13,7 @@ sand: sand.cpp
 oyster: oyster.cpp
 	clang -fsanitize=fuzzer -o $@ $^
 
-harvest:  detector sand oyster vuln.dict
+test:  detector sand oyster vuln.dict
 	rm -f /tmp/pearl
 	./$< ./oyster -dict=vuln.dict
 
