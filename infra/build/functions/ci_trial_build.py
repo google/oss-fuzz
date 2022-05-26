@@ -26,7 +26,7 @@ import github
 
 import trial_build
 
-TRIGGER_COMMAND = '/gcbrun '
+TRIGGER_COMMAND = '/gcbrun'
 
 
 def get_comments(pull_request_number):
@@ -48,12 +48,12 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
-    if not body.startswith(TRIGGER_COMMAND):
+    command_str = f'{TRIGGER_COMMAND} {sys.argv[0]} '
+    if not body.startswith(command_str):
       continue
-    if len(body) <= len(TRIGGER_COMMAND):
+    if len(body) <= len(command_str):
       return None
-    # Add an extra for white space.
-    return body[len(TRIGGER_COMMAND):].strip().split(' ')
+    return body[len(command_str):].strip().split(' ')
   return None
 
 
@@ -66,13 +66,9 @@ def exec_command_from_github(pull_request_number, branch):
     logging.info('Trial build not requested.')
     return None
 
-  # Remove trial_build.py from the front of the command or else
-  # trial_build.get_args will think it is a project.
-  command = ' '.join(command.split(' ')[1:])
-
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.
-  command += f' --branch {branch}'
+  command.append(f' --branch {branch}')
 
   logging.info('Command: %s.', command)
   return trial_build.trial_build_main(command, local_base_build=False)
