@@ -26,8 +26,15 @@ def TestInput(data):
 
     try:
         wb2 = openpyxl.load_workbook(temp_file)
-    except (zipfile.BadZipFile,KeyError,OSError) as e:
+    except (zipfile.BadZipFile ,OSError) as e:
         pass
+    except KeyError as e:
+        if "There is no item named '[Content_Types].xml' in the archive" in str(e):
+            #Not related to this fuzzing
+            pass
+        else:
+            raise(e)
+
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
