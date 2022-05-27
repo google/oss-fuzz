@@ -16,24 +16,18 @@
 import atheris
 import sys
 with atheris.instrument_imports():
+    import zipfile
     import openpyxl
 
 def TestInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    wb = openpyxl.Workbook()
-    ws = wb.active
+    temp_file = "test.xlsx"
+    with open(temp_file, "wb") as fd:
+        fd.write(data)
 
-    ws['A%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeInt(10)
-    ws.append(fdp.ConsumeIntList(3,5))
-
-    ws['B%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeUnicode(10)
-    ws['C%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBytes(10)
-    ws['D%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeString(10)
-    ws['E%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeFloat()
-    ws['F%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBool()
-
-    wb.save('%s.xlsx'%fdp.ConsumeString(10))
-
+    try:
+        wb2 = openpyxl.load_workbook(temp_file)
+    except (zipfile.BadZipFile) as e:
+        pass
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
