@@ -147,6 +147,8 @@ def get_projects_to_build(specified_projects, build_type, force_build):
   for project in specified_projects:
     if (project not in project_statuses or project_statuses[project] or
         force_build):
+      # If we don't have data on the project, then we have no reason not to
+      # build it.
       buildable_projects.append(project)
       continue
 
