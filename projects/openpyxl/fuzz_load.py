@@ -30,7 +30,8 @@ def TestInput(data):
         pass
     except KeyError as e:
         if "There is no item named '[Content_Types].xml' in the archive" in str(e):
-            #Not related to this fuzzing
+            #Not related to this fuzzing - possibly caused by known issue of wrong exception type as below
+            #https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1061
             pass
         else:
             raise(e)
