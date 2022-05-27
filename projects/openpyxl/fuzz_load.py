@@ -26,7 +26,7 @@ def TestInput(data):
 
     try:
         wb2 = openpyxl.load_workbook(temp_file)
-    except (zipfile.BadZipFile) as e:
+    except (zipfile.BadZipFile,KeyError,OSError) as e:
         pass
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
