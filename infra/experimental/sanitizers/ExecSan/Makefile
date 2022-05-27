@@ -1,20 +1,17 @@
 .POSIX:
-CC     = cc
-CFLAGS = -std=c99 -Wall -Wextra -O3 -g3
+CXX     = clang++
+CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3
 
 all: clean execSan tripwire target
 
-execSan: execSan.c
-	$(CC) $(CFLAGS) -o $@ $^
-
-tripwire: tripwire.cpp
-	clang++ -o /tmp/$@ $^
+execSan: execSan.cpp
+	$(CXX) $(CFLAGS) -lpthread -o $@ $^
 
 target: target.cpp
-	clang -fsanitize=fuzzer -o $@ $^
+	$(CXX) $(CFLAGS) -fsanitize=fuzzer -o $@ $^
 
 test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
 
 clean:
-	rm -f execSan /tmp/tripwire target /tmp/injected
+	rm -f execSan /tmp/tripwire target 
