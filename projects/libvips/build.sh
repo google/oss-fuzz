@@ -17,6 +17,8 @@
 
 export PKG_CONFIG="pkg-config --static"
 export PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+export CPPFLAGS="-I$WORK/include"
+export LDFLAGS="-L$WORK/lib"
 
 # libz
 pushd $SRC/zlib
@@ -61,6 +63,7 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
   -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
   -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+  -DENABLE_TOOLS=0 \
   -DCONFIG_SIZE_LIMIT=1 \
   -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
   -DDO_RANGE_CHECK_CLAMP=1 \
@@ -82,8 +85,7 @@ autoreconf -fi
   --enable-static \
   --disable-examples \
   --disable-go \
-  --prefix=$WORK \
-  CPPFLAGS=-I$WORK/include
+  --prefix=$WORK
 make clean
 make -j$(nproc)
 make install
@@ -238,12 +240,12 @@ zip -jrq $OUT/seed_corpus.zip fuzz/corpus
 for fuzzer in fuzz/*_fuzzer.cc; do
   target=$(basename "$fuzzer" .cc)
   $CXX $CXXFLAGS -std=c++11 "$fuzzer" -o "$OUT/$target" \
-    -I$WORK/include \
+    $CPPFLAGS \
     -I/usr/include/glib-2.0 \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    -L$WORK/lib \
+    $LDFLAGS \
     -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
-    -lwebpmux -lwebpdemux -lwebp -ltiff -lheif -laom \
+    -ltiff -lwebpmux -lwebpdemux -lwebp -lheif -laom \
     -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
