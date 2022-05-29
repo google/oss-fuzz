@@ -31,7 +31,6 @@ SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
 DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
 
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
@@ -43,6 +42,10 @@ DEFAULT_ARCHITECTURE = 'x86_64'
 
 def _get_sanitizer():
   return os.getenv('SANITIZER', constants.DEFAULT_SANITIZER).lower()
+
+
+def _get_architecture():
+  return os.getenv('ARCHITECTURE', constants.DEFAULT_ARCHITECTURE).lower()
 
 
 def _is_dry_run():
@@ -106,6 +109,7 @@ class BaseConfig:
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
+    self.architecture = _get_architecture()
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
 
@@ -128,6 +132,7 @@ class BaseConfig:
     """Returns False if the configuration is invalid."""
     # Do validation here so that unittests don't need to make a fully-valid
     # config.
+    # pylint: disable=too-many-return-statements
     if not self.workspace:
       logging.error('Must set WORKSPACE.')
       return False
@@ -135,6 +140,16 @@ class BaseConfig:
     if self.sanitizer not in SANITIZERS:
       logging.error('Invalid SANITIZER: %s. Must be one of: %s.',
                     self.sanitizer, SANITIZERS)
+      return False
+
+    if self.architecture not in constants.ARCHITECTURES:
+      logging.error('Invalid ARCHITECTURE: %s. Must be one of: %s.',
+                    self.architecture, constants.ARCHITECTURES)
+      return False
+
+    if self.architecture == 'i386' and self.sanitizer != 'address':
+      logging.error(
+          'ARCHITECTURE=i386 can be used with SANITIZER=address only.')
       return False
 
     if self.language not in constants.LANGUAGES:
