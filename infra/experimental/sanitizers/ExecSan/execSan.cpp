@@ -98,9 +98,9 @@ void inspect(pid_t pid, const user_regs_struct &regs) {
   debug_log("inspecting");
   if (path == kTripWire) {
     kill(pid, SIGKILL);
-    printf("===BUG DETECTED: Shell injection===\n");
+    fprintf(stderr, "===BUG DETECTED: Shell injection===\n");
     // TODO: Get/print stacktrace.
-    exit(1);
+    _exit(1);
   }
 }
 
@@ -133,6 +133,7 @@ void trace(std::set<pid_t> pids) {
         continue;
       }
 
+      // ptrace sets 0x80 for syscalls (with PTRACE_O_TRACESYSGOOD set).
       bool is_syscall = WIFSTOPPED(status) && WSTOPSIG(status) == (SIGTRAP | 0x80);
       int sig = 0;
       if (!is_syscall) {
@@ -172,6 +173,9 @@ void trace(std::set<pid_t> pids) {
         }
         // TODO: Check for commands with invalid syntax passed to /bin/sh and
         // other shells.
+        // TODO: It's possible the process we're fuzzing can communicate with
+        // another process to execute code. Our check wouldn't catch this
+        // currently.
       }
 
       debug_log("tracing %d %d", pid, sig);

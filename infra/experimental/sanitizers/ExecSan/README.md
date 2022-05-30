@@ -17,7 +17,7 @@ make clean
 ```
 
 ### Run test
-Note this will overwrite /tmp/tripwire and if they exist.
+Note this will overwrite /tmp/tripwire if it exists.
 ```shell
 make test
 ```
