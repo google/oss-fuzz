@@ -24,7 +24,7 @@ with atheris.instrument_imports():
    from airflow.operators.python_operator import PythonOperator
 
 def py_func():
-   print("Empty Function")
+   return
 
 def TestInput(input_bytes):
    fdp = atheris.FuzzedDataProvider(input_bytes)
