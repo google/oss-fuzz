@@ -8,7 +8,7 @@ execSan: execSan.cpp
 	$(CXX) $(CFLAGS) -lpthread -o $@ $^
 
 target: target.cpp
-	$(CXX) $(CFLAGS) -fsanitize=fuzzer -o $@ $^
+	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
 
 test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
