@@ -33,10 +33,8 @@
 
 #include <fstream>
 #include <string>
+#include <map>
 #include <vector>
-#include <set>
-
-const std::string kTripWire = "/tmp/tripwire";
 
 #define DEBUG_LOGS 0
 
@@ -57,6 +55,19 @@ const std::string kTripWire = "/tmp/tripwire";
     exit(EXIT_FAILURE); \
   } while (0)
 
+// The magic string that we'll use to detect full control over the command
+// executed.
+const std::string kTripWire = "/tmp/tripwire";
+// The PID of the root process we're fuzzing.
+pid_t g_root_pid;
+
+struct Tracee {
+  pid_t pid;
+  bool syscall_enter = true;
+
+  Tracee(pid_t pid) : pid(pid) {}
+};
+
 pid_t run_child(char **argv) {
   // Run the program under test with its args as a child process
   pid_t pid = fork();
@@ -65,7 +76,7 @@ pid_t run_child(char **argv) {
       fatal_log("Fork failed: %s", strerror(errno));
     case 0:
       raise(SIGSTOP);
-      execv(argv[1], argv + 1);
+      execv(argv[0], argv);
       fatal_log("execv: %s", strerror(errno));
   }
   return pid;
@@ -97,20 +108,25 @@ void inspect(pid_t pid, const user_regs_struct &regs) {
         memory.data()), std::min(memory.size(), kTripWire.length()));
   debug_log("inspecting");
   if (path == kTripWire) {
-    kill(pid, SIGKILL);
     fprintf(stderr, "===BUG DETECTED: Shell injection===\n");
-    // TODO: Get/print stacktrace.
-    _exit(1);
+    // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
+    // to the root process.
+    // Note: this may not be reliable or consistent if shell injection happens
+    // in an async way.
+    kill(g_root_pid, SIGABRT);
+    _exit(0);
   }
 }
 
-void trace(std::set<pid_t> pids) {
+void trace(std::map<pid_t, Tracee> pids) {
   while (!pids.empty()) {
     std::vector<pid_t> new_pids;
 
     auto it = pids.begin();
+
     while (it != pids.end()) {
-      auto pid = *it;
+      auto pid = it->first;
+      auto &tracee = it->second;
       int status = 0;
 
       int result = waitpid(pid, &status, __WALL | WNOHANG);
@@ -161,21 +177,24 @@ void trace(std::set<pid_t> pids) {
       }
 
       if (is_syscall) {
-        // TODO: distinguish between syscall enter and exit.
         user_regs_struct regs;
         if (ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1) {
           debug_log("ptrace(PTRACE_GETREGS, %d): %s", pid, strerror(errno));
           continue;
         }
 
-        if (regs.orig_rax == __NR_execve) {
-          inspect(pid, regs);
+        if (tracee.syscall_enter) {
+          if (regs.orig_rax == __NR_execve) {
+            inspect(pid, regs);
+          }
         }
+
         // TODO: Check for commands with invalid syntax passed to /bin/sh and
         // other shells.
         // TODO: It's possible the process we're fuzzing can communicate with
         // another process to execute code. Our check wouldn't catch this
         // currently.
+        tracee.syscall_enter = !tracee.syscall_enter;
       }
 
       debug_log("tracing %d %d", pid, sig);
@@ -187,7 +206,9 @@ void trace(std::set<pid_t> pids) {
       ++it;
     }
 
-    pids.insert(new_pids.begin(), new_pids.end());
+    for (const auto &pid : new_pids) {
+      pids.emplace(pid, Tracee(pid));
+    }
   }
 }
 
@@ -202,11 +223,10 @@ int main(int argc, char **argv) {
   tripwire.close();
   chmod(kTripWire.c_str(), 0755);
 
-  pid_t pid = run_child(argv);
+  pid_t pid = run_child(argv + 1);
 
   long options = 
-    PTRACE_O_EXITKILL
-    | PTRACE_O_TRACESYSGOOD
+    PTRACE_O_TRACESYSGOOD
     | PTRACE_O_TRACEFORK
     | PTRACE_O_TRACEVFORK
     | PTRACE_O_TRACECLONE;
@@ -223,7 +243,8 @@ int main(int argc, char **argv) {
     fatal_log("ptrace(PTRACE_SYSCALL): %s", strerror(errno));
   }
 
-  std::set<pid_t> pids;
-  pids.insert(pid);
+  g_root_pid = pid;
+  std::map<pid_t, Tracee> pids;
+  pids.emplace(pid, Tracee(pid));
   trace(pids);
 }
