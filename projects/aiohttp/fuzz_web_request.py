@@ -39,7 +39,7 @@ async def fuzz_run_one_async(data):
     )
     req = make_mocked_request("GET", url_s, headers=headers)
 
-    req.forwarded()
+    l1 = len(req.forwarded)
     ret = await req.post()
 
 @atheris.instrument_func
