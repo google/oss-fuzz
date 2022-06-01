@@ -33,7 +33,7 @@ compile_package () {
         $SRC/LPM/external.protobuf/bin/protoc --go_out=./ ngolofuzz.proto
         mkdir cpp
         $SRC/LPM/external.protobuf/bin/protoc --cpp_out=./cpp ngolofuzz.proto
-        $CXX -stdlib=libc++ -c -I . -I $SRC/LPM/external.protobuf/include cpp/ngolofuzz.pb.cc
+        $CXX -DNDEBUG -stdlib=libc++ -c -I . -I $SRC/LPM/external.protobuf/include cpp/ngolofuzz.pb.cc
         $CXX $CXXFLAGS -c -Icpp -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/ngolo-fuzzing/lpm/ngolofuzz.cc
     )
     if [ "$SANITIZER" = "coverage" ]
