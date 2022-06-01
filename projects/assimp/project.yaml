@@ -1,0 +1,10 @@
+homepage: "https://github.com/assimp/assimp"
+language: c++
+primary_contact: "kim.kulling@googlemail.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+#     experimental: True
+  - undefined
+main_repo: 'https://github.com/assimp/assimp.git'

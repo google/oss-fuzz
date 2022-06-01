@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jhaberman@gmail.com
-RUN apt-get update && apt-get install -y cmake ninja-build g++
+RUN apt-get update && apt-get install -y cmake ninja-build g++ libz-dev
 RUN git clone --depth 1 https://github.com/google/bloaty.git bloaty
 WORKDIR bloaty
 COPY build.sh $SRC/

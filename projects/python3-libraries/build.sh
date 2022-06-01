@@ -59,7 +59,6 @@ make install
 cp -R $CPYTHON_INSTALL_PATH $OUT/
 
 cd $SRC/python-library-fuzzers
-rm $CPYTHON_INSTALL_PATH/lib/python3.9/lib-dynload/_tkinter*.so
 make
 
 cp $SRC/python-library-fuzzers/fuzzer-html $OUT/
@@ -90,3 +89,10 @@ cp $SRC/python-library-fuzzers/fuzzer-decode $OUT/
 cp $SRC/python-library-fuzzers/decode.py $OUT/
 zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
 cp $SRC/python-library-fuzzers/fuzzer-decode.dict $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-ast $OUT/
+cp $SRC/python-library-fuzzers/ast.py $OUT/
+# Use CPython source code as seed corpus
+mkdir corp-ast/
+find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
+zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*

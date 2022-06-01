@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER joseph.bisch@gmail.com
 RUN apt-get update && apt-get install -y pkg-config libncurses5-dev libssl-dev python3-pip
 RUN pip3 install -U meson ninja
 RUN git clone https://github.com/irssi/irssi

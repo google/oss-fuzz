@@ -19,12 +19,12 @@ with a new `projects/<project_name>/project.yaml` file
     **Note:** `project_name` can only contain alphanumeric characters,
     underscores(_) or dashes(-).
 2. In the file, provide the following information:
-  - Your project's homepage.
-  - An email address for the engineering contact to be CCed on new issues, satisfying the following:
-        - The address belongs to an established project committer (according to VCS logs).
+  * Your project's homepage.
+  * An email address for the engineering contact to be CCed on new issues, satisfying the following:
+       * The address belongs to an established project committer (according to VCS logs).
         If the address isn't you, or if the address differs from VCS, we'll require an informal
         email verification.
-        - The address is associated with a Google account
+       * The address is associated with a Google account
         ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
         If you use an alternate email address
         [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en),

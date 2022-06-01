@@ -1,0 +1,10 @@
+homepage: "https://github.com/containerd/containerd"
+main_repo: "https://github.com/containerd/containerd"
+primary_contact: "security@containerd.io"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

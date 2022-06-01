@@ -1,0 +1,7 @@
+homepage: "https://thekelleys.org.uk/dnsmasq/doc.html"
+language: c
+primary_contact: "simon@thekelleys.org.uk"
+main_repo: "git://thekelleys.org.uk/dnsmasq.git"
+auto_ccs:
+ - "david@adalogics.com"
+ - "pemensik@redhat.com"

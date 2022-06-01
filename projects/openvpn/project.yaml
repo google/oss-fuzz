@@ -1,0 +1,6 @@
+homepage: "http://community.openvpn.net"
+language: c
+primary_contact: "arne@rfc2549.org"
+main_repo: "https://github.com/OpenVPN/openvpn"
+auto_ccs:
+ - "david@adalogics.com"

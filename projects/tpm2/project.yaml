@@ -1,4 +1,5 @@
 homepage: "https://chromium.googlesource.com/chromiumos/third_party/tpm2"
+language: c++
 # todo: delete Dockerfile from tpm2 repo.
 # Docker files change too much, it was moved to oss-fuzz repository.
 #
@@ -13,3 +14,4 @@ auto_ccs:
   - "apronin@google.com"
   - "cfir@google.com"
   - "mruthven@google.com"
+main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/tpm2'

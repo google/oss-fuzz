@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER john.s.andersen@intel.com
 ARG SIM_DL_URL=https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz
 RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev curl tar g++
 RUN mkdir ibmswtpm2 && \

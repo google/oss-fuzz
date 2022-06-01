@@ -1,0 +1,12 @@
+homepage: "https://pygments.org/"
+main_repo: "https://github.com/pygments/pygments"
+language: python
+primary_contact: "georg.brandl@gmail.com"
+auto_ccs:
+  - "jvoisin@google.com"
+  - "ipudney@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

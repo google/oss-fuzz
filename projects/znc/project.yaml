@@ -1,0 +1,12 @@
+homepage: "https://znc.in"
+language: c++
+primary_contact: "alexey+znc@asokolov.org"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "ktonibud@gmail.com"
+sanitizers:
+  - address
+  - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: "https://github.com/znc/znc"

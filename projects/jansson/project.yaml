@@ -1,4 +1,5 @@
 homepage: "https://github.com/akheron/jansson"
+language: c++
 primary_contact: "git@cfware.com"
 auto_ccs:
   - "cmeister2@gmail.com"
@@ -9,3 +10,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/akheron/jansson.git'

@@ -1,4 +1,5 @@
 homepage: "https://android.googlesource.com/platform/external/libmpeg2/"
+language: c++
 primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
   - address
@@ -11,8 +12,13 @@ vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
   - geuteneier@google.com
-  - hollyhall@google.com
-  - mikelogan@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
+  - ailport@google.com
+  - kimtony@google.com
+  - faerber@google.com
+  - greendonald@google.com
 architectures:
   - x86_64
   - i386
+main_repo: 'https://android.googlesource.com/platform/external/libmpeg2'

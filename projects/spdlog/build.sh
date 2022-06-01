@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,3 +25,6 @@ for f in $(find $SRC -name '*_fuzzer.cc'); do
     $f $LIB_FUZZING_ENGINE ./libspdlog.a \
     -o $OUT/$b
 done
+
+cp $SRC/spdlog_fuzzer_seed_corpus.zip $OUT/
+cp $SRC/*.dict $SRC/*.options $OUT/

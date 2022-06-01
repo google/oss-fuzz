@@ -1,16 +1,23 @@
 homepage: "http://www.xmlsoft.org/"
-primary_contact: "wellnhofer@aevum.de"
+language: c++
 vendor_ccs:
-  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "benl@google.com"
+  - "product-security@apple.com"
+  - "simon.lewis@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
+  - "ebanniettis@apple.com"
 sanitizers:
   - address
   - memory
   - undefined
-labels:
-  libxml2_xml_reader_for_file_fuzzer:
-    - sundew
 architectures:
   - x86_64
   - i386
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+main_repo: 'https://gitlab.gnome.org/GNOME/libxml2.git'

@@ -1,0 +1,13 @@
+homepage: "https://arrow.apache.org/"
+language: c++
+primary_contact: "antoine@python.org"
+auto_ccs:
+  - "bengilgit@gmail.com"
+  - "emkornfield@gmail.com"
+  - "fsaintjacques@gmail.com"
+  - "micahk@google.com"
+  - "muraken@gmail.com"
+  - "szucs.krisztian@gmail.com"
+  - "wesmckinn@gmail.com"
+  - "xhochy@gmail.com"
+main_repo: 'https://github.com/apache/arrow.git'

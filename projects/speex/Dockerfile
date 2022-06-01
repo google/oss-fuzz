@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER tmatth@videolan.org
 RUN apt-get update && apt-get install -y make autoconf libtool pkg-config wget
-RUN git clone https://git.xiph.org/ogg.git
-RUN git clone https://git.xiph.org/speex.git speex
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/speex.git speex
 WORKDIR speex
 COPY build.sh $SRC/

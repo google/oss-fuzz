@@ -1,0 +1,52 @@
+# TODO(metzman): Get rid of cifuzz-build-fuzzers and cifuzz-run-fuzzers.
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-base
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-base:v1
+  - '-f'
+  - infra/cifuzz/cifuzz-base/Dockerfile
+  - .
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
+  - '-f'
+  - infra/build_fuzzers.Dockerfile
+  - infra
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
+  - '-f'
+  - infra/run_fuzzers.Dockerfile
+  - infra
+images:
+- gcr.io/oss-fuzz-base/cifuzz-base
+- gcr.io/oss-fuzz-base/cifuzz-base:v1
+- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers
+- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1
+- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers
+- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1
+- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers
+- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
+- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
+- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
+timeout: 1800s

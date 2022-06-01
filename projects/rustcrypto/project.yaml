@@ -1,0 +1,12 @@
+homepage: "https://github.com/RustCrypto"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+main_repo: "https://github.com/RustCrypto/hashes.git"
+auto_ccs:
+    - "newpavlov@gmail.com"
+    - "bascule@gmail.com"
+sanitizers:
+ - address
+architectures:
+ - x86_64
+ - i386

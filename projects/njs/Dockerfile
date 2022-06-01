@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mmoroz@chromium.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    mercurial libpcre3-dev libreadline-dev subversion
+    mercurial git libpcre2-dev
 RUN hg clone http://hg.nginx.org/njs
-RUN svn co svn://vcs.exim.org/pcre/code/trunk pcre
+RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
 
 WORKDIR njs
-COPY build.sh njs_process_script_fuzzer.c $SRC/
+COPY build.sh $SRC/

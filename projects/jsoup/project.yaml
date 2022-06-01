@@ -1,0 +1,11 @@
+homepage: "https://github.com/jhy/jsoup/"
+language: jvm
+primary_contact: "jonathan@hedley.net"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "ffrr33aakk@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jhy/jsoup/"
+sanitizers:
+  - address

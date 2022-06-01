@@ -1,0 +1,11 @@
+homepage: "https://www.libraw.org/"
+language: c++
+primary_contact: "jesteele@google.com"
+auto_ccs:
+    - "nchusid@google.com"
+    - "pinheirojamie@google.com"
+sanitizers:
+    - address
+    - memory
+    - undefined
+main_repo: 'https://github.com/libraw/libraw'

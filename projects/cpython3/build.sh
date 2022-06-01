@@ -1,4 +1,19 @@
 #!/bin/bash
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
 
 # Ignore memory leaks from python scripts invoked in the build
 export ASAN_OPTIONS="detect_leaks=0"
@@ -7,6 +22,10 @@ export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 # Remove -pthread from CFLAGS, this trips up ./configure
 # which thinks pthreads are available without any CLI flags
 CFLAGS=${CFLAGS//"-pthread"/}
+
+# Ensure assert statements are enabled. It may help identify problems
+# earlier if those fire.
+CFLAGS="${CFLAGS} -UNDEBUG"
 
 FLAGS=()
 case $SANITIZER in

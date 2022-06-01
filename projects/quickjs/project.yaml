@@ -1,0 +1,14 @@
+homepage: "https://bellard.org/quickjs/"
+language: c
+primary_contact: "fabrice.bellard@gmail.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+vendor_ccs :
+- "apascovici@google.com"
+
+sanitizers:
+- address
+- memory
+
+blackbox: true  # also use a blackbox fuzzer for this project.
+main_repo: 'https://github.com/bellard/quickjs'

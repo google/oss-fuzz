@@ -1,4 +1,5 @@
 homepage: "https://boringssl.googlesource.com/boringssl/"
+language: c++
 primary_contact: "agl@google.com"
 auto_ccs:
  - "davidben@google.com"
@@ -7,3 +8,4 @@ sanitizers:
 - address
 - undefined
 - memory
+main_repo: 'https://boringssl.googlesource.com/boringssl'

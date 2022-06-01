@@ -1,4 +1,5 @@
 homepage: "https://github.com/GNUAspell/aspell"
+language: c++
 primary_contact: "kevina@gnu.org"
 auto_ccs:
   - "kevinatkn@gmail.com"
@@ -8,3 +9,4 @@ sanitizers:
   - undefined
   - memory:
       experimental: true
+main_repo: 'https://github.com/gnuaspell/aspell.git'

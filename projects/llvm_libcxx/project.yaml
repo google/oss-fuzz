@@ -1,6 +1,9 @@
 homepage: "https://libcxx.llvm.org/"
+language: c++
 primary_contact: "mclow.lists@gmail.com"
 auto_ccs:
   - "timshen91@gmail.com"
   - "jfb@chromium.org"
   - "bigcheesegs@gmail.com"
+  - "eric@efcs.ca"
+  - "ldionne.2@gmail.com"

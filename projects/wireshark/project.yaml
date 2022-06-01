@@ -1,4 +1,5 @@
 homepage: "https://www.wireshark.org"
+language: c++
 primary_contact: "gerald@wireshark.org"
 auto_ccs:
  - "security@wireshark.org"
@@ -9,3 +10,8 @@ auto_ccs:
  - "rknall@gmail.com"
  - "jbwzawadzki@gmail.com"
  - "gerald.combs@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+main_repo: 'https://gitlab.com/wireshark/wireshark'

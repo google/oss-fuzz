@@ -1,0 +1,22 @@
+MemorySanitizer: use-of-uninitialized-value
+#0 0x52675f in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:13:7
+#1 0x45a431 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:599:15
+#2 0x45ba46 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:792:3
+#3 0x45bed9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:845:3
+#4 0x44a4bc in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:906:6
+#5 0x474432 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+#6 0x7eff5562683f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)
+#7 0x41eab8 in _start (out/do_stuff_fuzzer+0x41eab8)
+
+DEDUP_TOKEN: LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&)
+Uninitialized value was created by a heap allocation
+#0 0x4d57ad in malloc /src/llvm-project/compiler-rt/lib/msan/msan_interceptors.cpp:901:3
+#1 0x437c07 in operator new(unsigned long) (out/do_stuff_fuzzer+0x437c07)
+#2 0x45ba46 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:792:3
+#3 0x45bed9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:845:3
+#4 0x44a4bc in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:906:6
+#5 0x474432 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+#6 0x7eff5562683f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)
+DEDUP_TOKEN: malloc--operator new(unsigned long)--fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&)
+
+SUMMARY:

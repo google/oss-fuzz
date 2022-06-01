@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool subversion
 RUN svn checkout http://svn.xvid.org/trunk --username anonymous --password "" --non-interactive --no-auth-cache
 RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git

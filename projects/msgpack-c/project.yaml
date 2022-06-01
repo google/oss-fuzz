@@ -1,4 +1,5 @@
 homepage: "https://msgpack.org/"
+language: c++
 primary_contact: "redboltz@gmail.com"
 auto_ccs:
   - nobu.k.jp@gmail.com
@@ -7,3 +8,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/msgpack/msgpack-c.git'

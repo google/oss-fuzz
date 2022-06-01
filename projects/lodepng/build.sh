@@ -19,3 +19,9 @@
 # allocate more than 100MB memory, which prevents OOM with the 2GB limit.
 $CXX $CXXFLAGS -DLODEPNG_MAX_ALLOC=100000000 lodepng.cpp lodepng_fuzzer.cpp -o\
  $OUT/lodepng_fuzzer $LIB_FUZZING_ENGINE
+
+# copy seed corpus
+cp $SRC/lodepng_fuzzer_seed_corpus.zip $OUT/
+
+# copy dictionary file
+cp $SRC/*.dict $OUT/

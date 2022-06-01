@@ -1,4 +1,5 @@
 homepage: "https://python.org/"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "gps@google.com"
@@ -6,6 +7,7 @@ auto_ccs:
  - "ammar@ammaraskar.com"
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
  - address
  - undefined

@@ -1,5 +1,5 @@
 # base-builder
-> Abstract base image for libfuzzer builders.
+> Abstract base image for project builders.
 
 Every project image supports multiple commands that can be invoked through docker after the image is built:
 
@@ -43,7 +43,7 @@ docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> gcr.io/oss-fuzz/sqlite3
 | `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
 | `/src/` | `$SRC`         | Directory to checkout source files |
 | `/work/`| `$WORK`        | Directory for storing intermediate files |
-| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer ) that needs to be linked with all fuzz targets.
+| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer) that needs to be linked with all fuzz targets.
 
 While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.

@@ -1,9 +1,11 @@
 homepage: "https://python.org/"
+language: c++
 primary_contact: "gps@google.com"
 auto_ccs:
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
 sanitizers:
  - address
- - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
  - undefined

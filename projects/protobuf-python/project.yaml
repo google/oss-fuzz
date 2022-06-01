@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://developers.google.com/protocol-buffers/
+language: python
+main_repo: https://github.com/protocolbuffers/protobuf
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER cmeister2@gmail.com
 
 RUN git clone --depth 1 https://github.com/lz4/lz4.git /src/lz4
 

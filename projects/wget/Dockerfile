@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rockdaboot@gmail.com
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -23,6 +22,7 @@ RUN apt-get update && apt-get install -y \
  autogen \
  autopoint \
  autoconf \
+ autoconf-archive \
  automake \
  libtool \
  texinfo \
@@ -34,17 +34,19 @@ RUN apt-get update && apt-get install -y \
  gperf \
  wget \
  python \
- rsync
+ rsync \
+ gtk-doc-tools \
+ libtasn1-bin
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
+RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 
-RUN git clone --recursive https://git.savannah.gnu.org/git/wget.git
+RUN git clone https://git.savannah.gnu.org/git/wget.git
 
 WORKDIR wget
 COPY build.sh $SRC/

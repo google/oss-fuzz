@@ -1,0 +1,10 @@
+homepage: "https://github.com/cfengine/core"
+main_repo: "https://github.com/cfengine/core"
+language: c++
+primary_contact: "vratislav.podzimek@northern.tech"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory

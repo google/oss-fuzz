@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone https://github.com/guidovranken/piex.git piex
 WORKDIR piex

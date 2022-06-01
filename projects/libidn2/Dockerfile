@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rockdaboot@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf
+RUN apt-get update && apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf rsync wget
 
-RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
+RUN git clone --recursive https://gitlab.com/libidn/libidn2.git
 
 WORKDIR libidn2
 COPY build.sh $SRC/

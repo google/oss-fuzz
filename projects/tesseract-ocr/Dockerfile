@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev
-RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
-RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
-RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
-RUN git clone https://github.com/guidovranken/tesseract-ocr-fuzzers
+RUN apt-get update && apt-get install -y automake libtool pkg-config libtiff-dev libwebp-dev libzstd-dev
+
+RUN git clone --depth 1 https://github.com/DanBloomberg/leptonica.git
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
+
 COPY build.sh $SRC/

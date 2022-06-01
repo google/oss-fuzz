@@ -15,9 +15,12 @@
 #
 ################################################################################
 
+# Build boost
+CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" \
+    ./bootstrap.sh --with-toolset=clang --prefix=/usr;
+./b2 toolset=clang cxxflags="$CXXFLAGS -stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers;
 
 # Very simple build rule, but sufficient here.
-
 #boost regexp
 $CXX $CXXFLAGS -I . ../boost_regex_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_fuzzer
 

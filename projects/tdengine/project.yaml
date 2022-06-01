@@ -1,0 +1,6 @@
+homepage: "https://www.taosdata.com/en/documentation/"
+language: c
+primary_contact: "sangshuduo@gmail.com"
+main_repo: "https://github.com/taosdata/TDengine"
+auto_ccs:
+ - "david@adalogics.com"

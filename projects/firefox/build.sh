@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  touch $OUT/exit
+  exit 0
+fi
+
+source $HOME/.cargo/env
+
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
   # WebRTC
@@ -24,6 +32,7 @@ FUZZ_TARGETS=(
   ContentParentIPC
   CompositorManagerParentIPC
   ContentSecurityPolicyParser
+  FeaturePolicyParser
   # Image
   ImageGIF
   ImageICO
@@ -41,13 +50,19 @@ FUZZ_TARGETS=(
 export MOZ_OBJDIR=$WORK/obj-fuzz
 export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
-# Install dependencies. Note that bootstrap installs cargo, which must be added
-# to PATH via source. In a successive run (for a different sanitizer), the
-# cargo installation carries over, but bootstrap fails if cargo is not in PATH.
+# Without this, a host tool used during Rust part of the build will fail
+export ASAN_OPTIONS="detect_leaks=0"
+
+# Install remaining dependencies.
 export SHELL=/bin/bash
-[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
-./mach bootstrap --no-interactive --application-choice browser
-source $HOME/.cargo/env
+
+rustup default nightly
+
+./mach --no-interactive bootstrap --application-choice browser
+
+# Skip patches for now
+rm tools/fuzzing/libfuzzer/patches/*.patch
+touch tools/fuzzing/libfuzzer/patches/dummy.patch
 
 # Update internal libFuzzer.
 (cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)

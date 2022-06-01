@@ -1,7 +1,8 @@
 homepage: "https://skia.googlesource.com/skcms/+/master"
+language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
-  - "mtklein@chromium.org"
+  - "mtklein@google.com"
   - "brianosman@google.com"
 sanitizers:
  - address
@@ -10,3 +11,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://skia.googlesource.com/skcms.git'

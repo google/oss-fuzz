@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rockdaboot@gmail.com
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -35,7 +34,10 @@ RUN apt-get update && apt-get install -y \
  wget \
  python \
  lzip \
- rsync
+ rsync \
+ libmicrohttpd-dev \
+ gtk-doc-tools \
+ libtasn1-bin
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git

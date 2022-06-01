@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
-    apt-get install -y -t xenial-backports ninja-build && \
-    apt-get install -y pkg-config zlib1g-dev python3-pip && \
-    pip3 install meson
+    apt-get install -y wget tar cmake
 
-RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
+RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
-RUN cp libspng/tests/build.sh $SRC
+RUN wget -O $WORK/zlib.tar.gz http://www.zlib.net/zlib-1.2.12.tar.gz
+RUN tar xzvf $WORK/zlib.tar.gz --directory $SRC/
+RUN mv $SRC/zlib-1.2.12 $SRC/zlib
+
 WORKDIR libspng
+COPY build.sh $SRC/

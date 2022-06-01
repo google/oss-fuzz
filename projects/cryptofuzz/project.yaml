@@ -1,4 +1,5 @@
 homepage: "https://github.com/guidovranken/cryptofuzz"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "openssl-security@openssl.org"
@@ -19,10 +20,19 @@ auto_ccs:
     - "ppzgs1@gmail.com"
     - "jack.lloyd@gmail.com"
     - "shane.lontis@hotmail.com"
+    - "david@wolfssl.com"
+    - "kaleb@wolfssl.com"
+    - "jacob@wolfssl.com"
+    - "sledru@mozilla.com"
+    - "bbeurdouche@mozilla.com"
+    - "matthias.st.pierre@gmail.com"
+    - "kaleb.himes@gmail.com"
+    - "polubelovam@gmail.com"
+    - "mbed-tls-security@lists.trustedfirmware.org"
 sanitizers:
  - address
  - undefined
  - memory
 architectures:
  - x86_64
- - i386
+main_repo: 'https://github.com/guidovranken/cryptofuzz'

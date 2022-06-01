@@ -14,18 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-mkdir build
-cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DBUILD_TOOLS=OFF ..
-make -j$(nproc)
-
-$CXX $CXXFLAGS -std=c++11 -I. -I../lib \
-    $SRC/libzip/regress/zip_read_fuzzer.cc \
-    -o $OUT/zip_read_fuzzer \
-    $LIB_FUZZING_ENGINE $SRC/libzip/build/lib/libzip.a -lz
-
-find $SRC/libzip/regress -name "*.zip" | \
-     xargs zip $OUT/zip_read_fuzzer_seed_corpus.zip
-
-cp $SRC/libzip/regress/zip_read_fuzzer.dict $OUT/
+# Run the OSS-Fuzz script in the project
+$SRC/libzip/regress/ossfuzz.sh

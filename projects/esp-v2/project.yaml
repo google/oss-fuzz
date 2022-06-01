@@ -1,0 +1,11 @@
+homepage: "https://github.com/GoogleCloudPlatform/esp-v2"
+language: c++
+primary_contact: "nareddyt@google.com"
+auto_ccs:
+- "taoxuy@google.com"
+- "qiwzhang@google.com"
+sanitizers:
+- address
+- undefined
+coverage_extra_args: -ignore-filename-regex=.*\.cache.* -ignore-filename-regex=.*bazel-out.*
+main_repo: 'https://github.com/GoogleCloudPlatform/esp-v2.git'

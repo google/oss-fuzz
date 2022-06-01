@@ -1,4 +1,5 @@
 homepage: "https://github.com/irssi/irssi"
+language: c++
 primary_contact: "ahf@irssi.org"
 auto_ccs:
   - "dx@dxzone.com.ar"
@@ -8,3 +9,4 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/irssi/irssi'

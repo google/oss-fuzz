@@ -1,10 +1,12 @@
-homepage: "https://www.ffmpeg.org/"
+homepage: "https://www.ffmpeg.org"
+language: c++
 primary_contact: "ffmpeg-security@ffmpeg.org"
 auto_ccs:
  - "michaelni@gmx.at"
  - "michael@niedermayer.cc"
  - "jrummell@google.com"
  - "tfoucu@google.com"
- - "cdiehl@mozilla.com"
+ - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
 selective_unpack: true
+main_repo: 'https://git.ffmpeg.org/ffmpeg.git'

@@ -21,15 +21,22 @@ FUZZ_TARGETS=(
   Wasm
 )
 
-# Install dependencies. Note that bootstrap installs cargo, which must be added
-# to PATH via source. In a successive run (for a different sanitizer), the
-# cargo installation carries over, but bootstrap fails if cargo is not in PATH.
-export SHELL=/bin/bash
-[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
-../../mach bootstrap --no-interactive --application-choice browser
+# Ensure rust nightly is used
 source $HOME/.cargo/env
+rustup default nightly
+
+# Install dependencies.
+export MOZBUILD_STATE_PATH=/root/.mozbuild
+export SHELL=/bin/bash
+cd ../../
+./mach --no-interactive bootstrap --application-choice browser
+cd js/src/
 
 autoconf2.13
+
+# Skip patches for now
+rm ../../tools/fuzzing/libfuzzer/patches/*.patch
+touch ../../tools/fuzzing/libfuzzer/patches/dummy.patch
 
 # Update internal libFuzzer.
 (cd ../../tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
@@ -37,13 +44,19 @@ autoconf2.13
 mkdir -p build_OPT.OBJ
 cd build_OPT.OBJ
 
+if [ "$SANITIZER" = coverage ]; then
+  SAN_OPT="--enable-coverage"
+else
+  SAN_OPT="--enable-$SANITIZER-sanitizer"
+fi
+
 ../configure \
-    --enable-optimize \
-    --disable-shared-js \
+    --enable-debug \
+    --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --enable-tests \
     --enable-fuzzing \
-    --enable-$SANITIZER-sanitizer
+    $SAN_OPT
 
 make "-j$(nproc)"
 
@@ -61,4 +74,3 @@ done
 mkdir -p $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib
-

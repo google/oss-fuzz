@@ -46,7 +46,7 @@ cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
 (cd ${WORK}/tmp && zip -q -m -r -0 ${WORK}/tmp/seed_corpus.zip testdata)
 
 # copy fuzzers and link testdata
-for fuzzer in $(find ${build} -name 'dav1d_fuzzer*'); do
+for fuzzer in $(find ${build}/tests/libfuzzer -maxdepth 1 -type f -executable -name 'dav1d_fuzzer*'); do
 	cp "${fuzzer}" $OUT/
 	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
 done

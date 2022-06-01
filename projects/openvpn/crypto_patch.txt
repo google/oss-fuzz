@@ -1,0 +1,110 @@
+diff --git a/src/openvpn/crypto.c b/src/openvpn/crypto.c
+index dc7ba542..68e42fea 100644
+--- a/src/openvpn/crypto.c
++++ b/src/openvpn/crypto.c
+@@ -131,7 +131,10 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work,
+     ASSERT(buf_inc_len(&work, outlen));
+ 
+     /* Flush the encryption buffer */
+-    ASSERT(cipher_ctx_final(ctx->cipher, BEND(&work), &outlen));
++    //ASSERT(cipher_ctx_final(ctx->cipher, BEND(&work), &outlen));
++    if (!(cipher_ctx_final(ctx->cipher, BEND(&work), &outlen))) {
++        goto err;
++    }
+     ASSERT(buf_inc_len(&work, outlen));
+ 
+     /* Write authentication tag */
+@@ -726,6 +729,8 @@ warn_insecure_key_type(const char *ciphername)
+     }
+ }
+ 
++extern int fuzz_success;
++
+ /*
+  * Build a struct key_type.
+  */
+@@ -744,6 +749,7 @@ init_key_type(struct key_type *kt, const char *ciphername,
+     {
+         if (!cipher_valid(ciphername))
+         {
++            fuzz_success = 0;
+             msg(M_FATAL, "Cipher %s not supported", ciphername);
+         }
+ 
+@@ -756,11 +762,13 @@ init_key_type(struct key_type *kt, const char *ciphername,
+ #endif
+               ))
+         {
++            fuzz_success = 0;
+             msg(M_FATAL, "Cipher '%s' mode not supported", ciphername);
+         }
+ 
+         if (OPENVPN_MAX_CIPHER_BLOCK_SIZE < cipher_kt_block_size(kt->cipher))
+         {
++            fuzz_success = 0;
+             msg(M_FATAL, "Cipher '%s' not allowed: block size too big.", ciphername);
+         }
+         if (warn)
+@@ -772,6 +780,7 @@ init_key_type(struct key_type *kt, const char *ciphername,
+     {
+         if (warn)
+         {
++            fuzz_success = 0;
+             msg(M_WARN, "******* WARNING *******: '--cipher none' was specified. "
+                 "This means NO encryption will be performed and tunnelled "
+                 "data WILL be transmitted in clear text over the network! "
+@@ -791,6 +800,7 @@ init_key_type(struct key_type *kt, const char *ciphername,
+ 
+             if (OPENVPN_MAX_HMAC_SIZE < hmac_length)
+             {
++                fuzz_success = 0;
+                 msg(M_FATAL, "HMAC '%s' not allowed: digest size too big.", authname);
+             }
+         }
+@@ -799,6 +809,7 @@ init_key_type(struct key_type *kt, const char *ciphername,
+     {
+         if (warn)
+         {
++            fuzz_success = 0;
+             msg(M_WARN, "******* WARNING *******: '--auth none' was specified. "
+                 "This means no authentication will be performed on received "
+                 "packets, meaning you CANNOT trust that the data received by "
+@@ -806,6 +817,7 @@ init_key_type(struct key_type *kt, const char *ciphername,
+                 "PLEASE DO RECONSIDER THIS SETTING!");
+         }
+     }
++    fuzz_success = 1;
+ }
+ 
+ /* given a key and key_type, build a key_ctx */
+@@ -973,6 +985,7 @@ generate_key_random(struct key *key, const struct key_type *kt)
+         if (!rand_bytes(key->cipher, cipher_len)
+             || !rand_bytes(key->hmac, hmac_len))
+         {
++            fuzz_success = 0;
+             msg(M_FATAL, "ERROR: Random number generator cannot obtain entropy for key generation");
+         }
+ 
+@@ -982,6 +995,7 @@ generate_key_random(struct key *key, const struct key_type *kt)
+     } while (kt && !check_key(key, kt));
+ 
+     gc_free(&gc);
++    fuzz_success = 1;
+ }
+ 
+ /*
+@@ -1320,10 +1334,14 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
+ 
+         if (state != PARSE_FINISHED)
+         {
++            fuzz_success = 0;
+             msg(M_FATAL, "Footer text not found in file '%s' (%d/%d/%d bytes found/min/max)",
+                 print_key_filename(file, flags & RKF_INLINE), count, onekeylen,
+                 keylen);
+         }
++	else {
++            fuzz_success = 1;
++	}
+     }
+ 
+     /* zero file read buffer if not an inline file */

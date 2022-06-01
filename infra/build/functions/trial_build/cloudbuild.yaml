@@ -1,0 +1,17 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/trial-build
+  - '-f'
+  - infra/build/functions/trial_build/Dockerfile
+  - .
+- name: 'gcr.io/oss-fuzz-base/trial-build'
+  args: []
+  env:
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+  timeout: 21600s # 6 hours
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 21600s

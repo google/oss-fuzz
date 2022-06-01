@@ -1,0 +1,10 @@
+homepage: "https://github.com/dragonflyoss/Dragonfly"
+primary_contact: "zj3142063@gmail.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/dragonflyoss/Dragonfly'

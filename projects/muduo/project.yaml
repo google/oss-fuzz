@@ -1,0 +1,10 @@
+homepage: "https://github.com/chenshuo/muduo"
+language: c++
+primary_contact: "chenshuo@chenshuo.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/chenshuo/muduo"

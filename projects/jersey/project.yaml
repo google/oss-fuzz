@@ -1,0 +1,12 @@
+homepage: "https://github.com/eclipse-ee4j/jersey"
+language: jvm
+main_repo: "https://github.com/eclipse-ee4j/jersey.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

@@ -16,16 +16,7 @@
 ################################################################################
 
 echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-
-# Use -fPIC to allow preloading (LD_PRELOAD).
-$CXX $CXXFLAGS -std=c++11 -O2 -fPIC $SANITIZER_FLAGS -fno-sanitize=vptr \
-    -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE_DEPRECATED $WORK/libfuzzer/*.o
-popd > /dev/null
-rm -rf $WORK/libfuzzer
-# Override variable as libFuzzer builds do not link directly against an
-# engine library, but use -fsanitize=fuzzer to instruct clang to do so.
 export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
+cp /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-$ARCHITECTURE.a \
+  $LIB_FUZZING_ENGINE_DEPRECATED
 echo " done."

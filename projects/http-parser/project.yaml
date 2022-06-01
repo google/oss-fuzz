@@ -1,0 +1,6 @@
+homepage: "https://github.com/nodejs/http-parser"
+primary_contact: "info@bnoordhuis.nl"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+main_repo: 'https://github.com/nodejs/http-parser'
