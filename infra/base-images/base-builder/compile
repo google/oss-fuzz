@@ -215,7 +215,6 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "*.data.yaml" -exec cp {} $SRC/inspector/ \;
-  find $SRC/ -name "*branchProfile.yaml" -exec cp {} $SRC/inspector/ \;
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]
   then
