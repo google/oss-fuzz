@@ -35,6 +35,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
+#include <sstream>
 
 #define DEBUG_LOGS 0
 
@@ -60,6 +62,86 @@
 const std::string kTripWire = "/tmp/tripwire";
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
+// Assuming the longest pathname is "/bin/bash".
+const int kShellPathnameLength = 10;
+// Assuming the syntax error pattern is
+//   within the first 100 chars of the write buffer.
+const int kErrorMessageLength = 100;
+// Shell injection bug confirmed with /tmp/tripwire.
+const int kShellInjection = 1;
+// Shell corruption bug speculated based on syntax error.
+const int kShellCorruption = 2;
+// Shells used by Processes.
+std::map<pid_t, std::string> pidShellMap;
+
+// Two kinds of bugs to detect.
+std::map<int, std::string> kBugMessageMap = {
+  {kShellInjection,  "Shell injection"},
+  {kShellCorruption, "Shell corruption"},
+};
+
+// Shells to inspect.
+std::set <std::string> kShellSet = {
+  "sh",
+  "bash",
+  "csh",
+  "dash",
+  "zsh"
+};
+
+// Syntax error messages of each shell.
+std::map<std::string, std::set<std::string>> kShellSytaxErrorMap = {
+  {
+    "sh",
+    {
+      " command not found",  // General
+      " syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+      " event not found",    // ! leads large numbers
+      " no such file",       // Leading < or /
+    }
+  },
+  {
+    "bash",
+    {
+      " command not found",  // General
+      " syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+      " event not found",    // ! leads large numbers
+      " no such file",       // Leading < or /
+    }
+  },
+  {
+    "csh",
+    {
+      " command not found",    // General
+      " unmatched",            // Unfinished " or ' or `, leading ;
+      " missing",              // Unfinished {
+      "invalid null command",  // Leading | or < or >
+      " no match",             // Leading ? or [ or *
+      "modifier failed",       // Leading ^
+      " no such job",          // Leading %
+      " undefined variable",   // Containing $
+      " event not found",      // ! leads large numbers
+    }
+  },
+  {
+    "dash",
+    {
+      " not found",     // General
+      " syntax error",  // Unfinished " or ' or ` or if, leading | or ;
+      " no such file",  // Leading <
+    }
+  },
+  {
+    "zsh",
+    {
+      " command not found",               // General
+      " syntax error",                    // Unfinished " or ' or `
+      " no such file or directory",       // Leading < or /
+      " parse error",                     // Leading |
+      " no such user or named directory", // Leading ~
+    }
+  },
+};
 
 struct Tracee {
   pid_t pid;
@@ -98,24 +180,101 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address, size_t
   return memory;
 }
 
-void inspect(pid_t pid, const user_regs_struct &regs) {
-  auto memory = read_memory(pid, regs.rdi, kTripWire.length());
-  if (memory.size() == 0) {
-    return;
+// Construct a string with the memory specified in a register.
+std::string read_register_string(pid_t pid, unsigned long reg, unsigned long length) {
+  auto memory = read_memory(pid, reg, length);
+  if (!memory.size()) {
+    return "";
   }
 
-  std::string path(reinterpret_cast<char*>(
-        memory.data()), std::min(memory.size(), kTripWire.length()));
+  std::string content(reinterpret_cast<char*>(
+        memory.data()), std::min(memory.size(), length));
+  return content;
+}
+
+void report_bug(int bug_code) {
+  // Report the bug found based on the bug code.
+  fprintf(stderr, "===BUG DETECTED: %s===\n", kBugMessageMap[bug_code].c_str());
+  // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
+  // to the root process.
+  // Note: this may not be reliable or consistent if shell injection happens
+  // in an async way.
+  kill(g_root_pid, SIGABRT);
+  _exit(0);
+}
+
+void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
+  // Inspect a PID's registers for the sign of shell injection.
+  std::string path = read_register_string(pid, regs.rdi, kTripWire.length());
+  if (!path.length()) {
+    return;
+  }
   debug_log("inspecting");
   if (path == kTripWire) {
-    fprintf(stderr, "===BUG DETECTED: Shell injection===\n");
-    // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
-    // to the root process.
-    // Note: this may not be reliable or consistent if shell injection happens
-    // in an async way.
-    kill(g_root_pid, SIGABRT);
-    _exit(0);
+    report_bug(kShellInjection);
   }
+}
+
+std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
+  // Parse the pathname from the memory specified in the ROI register.
+  std::string raw_content = read_register_string(pid, regs.rdi, kShellPathnameLength);
+
+  std::string pathname = raw_content.substr(0, raw_content.find(" "));
+  debug_log("Pathname is %s (len %lu)\n", pathname.c_str(), pathname.length());
+  return pathname;
+  }
+
+std::string match_shell(std::string shell_pathname) {
+  // Identify the name of the shell used in the pathname.
+  for (std::string known_shell : kShellSet) {
+    if (shell_pathname.length() < known_shell.length()) {
+      continue;
+    }
+    std::string shell = shell_pathname.substr(shell_pathname.find_last_of("/")+1, known_shell.length());
+    if (!shell.compare(known_shell)) {
+      debug_log("Matched %s\n", shell.c_str());
+      return shell;
+    }
+  }
+  return "";
+}
+
+std::string get_shell(pid_t pid, const user_regs_struct &regs) {
+  // Get shell name used in a PID.
+  std::string shell_pathname = get_pathname(pid, regs);
+  if (shell_pathname.length()) {
+    return match_shell(shell_pathname);
+  } else {
+    return "";
+  }
+}
+
+void match_error_pattern(std::string buffer, std::string shell) {
+  // Identify the error pattern in the write buffer and report a bug if matched.
+  std::istringstream ss{buffer};
+  std::string token;
+  while (std::getline(ss, token, ':')) {
+    if (token.empty()) {
+      continue;
+    }
+    auto error_patterns = kShellSytaxErrorMap[shell];
+    for(auto it = error_patterns.begin(); it != error_patterns.end(); ++it) {
+      if(!strncasecmp(token.c_str(),it->c_str(), std::min(token.length(), it->length()))) {
+        buffer = buffer.substr(0, buffer.find("\n"));
+        printf("--- Found a sign of shell corruption ---\n"
+               "%s\n"
+               "----------------------------------------\n", buffer.c_str());
+        report_bug(kShellCorruption);
+      }
+    }
+  }
+}
+
+void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
+  // Inspect a PID's registers for shell corruption.
+  std::string buffer = read_register_string(pid, regs.rsi, kErrorMessageLength);
+  debug_log("Write buffer: %s\n", buffer.c_str());
+  match_error_pattern(buffer, pidShellMap[pid]);
 }
 
 void trace(std::map<pid_t, Tracee> pids) {
@@ -146,6 +305,8 @@ void trace(std::map<pid_t, Tracee> pids) {
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         debug_log("%d exited", pid); 
         it = pids.erase(it);
+        // Remove pid from the watchlist when it exits
+        pidShellMap.erase(pid);
         continue;
       }
 
@@ -185,7 +346,17 @@ void trace(std::map<pid_t, Tracee> pids) {
 
         if (tracee.syscall_enter) {
           if (regs.orig_rax == __NR_execve) {
-            inspect(pid, regs);
+            inspect_for_injection(pid, regs);
+            std::string shell = get_shell(pid, regs);
+            debug_log("Shell parsed: %s", shell.c_str());
+            if (shell.compare("")) {
+              pidShellMap.insert(std::make_pair(pid, shell));
+            }
+          }
+
+          if (regs.orig_rax == __NR_write && pidShellMap.find(pid) != pidShellMap.end()) {
+            debug_log("Inspect the buffer of write after execve.");
+            inspect_for_corruption(pid, regs);
           }
         }
 
