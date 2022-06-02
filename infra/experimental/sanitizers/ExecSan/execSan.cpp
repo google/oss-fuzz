@@ -79,51 +79,58 @@ const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
   {
     "sh",
     {
-      " command not found",  // General
-      " syntax error",       // Unfinished " or ' or ` or if, leading | or ;
-      " event not found",    // ! leads large numbers
-      " no such file",       // Leading < or /
+      ": command not found",  // General
+      ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+      ": missing"             // Unfinished [
+      ": event not found",    // ! leads large numbers
+      ": No such file",       // Leading < or /
     }
   },
   {
     "bash",
     {
-      " command not found",  // General
-      " syntax error",       // Unfinished " or ' or ` or if, leading | or ;
-      " event not found",    // ! leads large numbers
-      " no such file",       // Leading < or /
+      ": command not found",  // General
+      ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+      ": missing"             // Unfinished [
+      ": event not found",    // ! leads large numbers
+      ": No such file",       // Leading < or /
     }
   },
   {
     "csh",
     {
-      " command not found",    // General
-      " unmatched",            // Unfinished " or ' or `, leading ;
-      " missing",              // Unfinished {
-      "invalid null command",  // Leading | or < or >
-      " no match",             // Leading ? or [ or *
-      "modifier failed",       // Leading ^
-      " no such job",          // Leading %
-      " undefined variable",   // Containing $
-      " event not found",      // ! leads large numbers
+      ": Command not found",        // General
+      "Unmatched",                  // Unfinished " or ' or `, leading ;
+      ": Missing",                  // Unfinished {
+      "Too many",                   // Unfinished (
+      "No match",                   // Leading [
+      "Invalid null command",       // Leading | or < or >
+      "Missing name for redirect"   // Single < or >
+      ": No match",                 // Leading ? or [ or *
+      "Modifier failed",            // Leading ^
+      ": No such job",              // Leading %
+      ": Undefined variable",       // Containing $
+      ": Event not found",          // ! leads large numbers
     }
   },
   {
     "dash",
     {
-      " not found",     // General
-      " syntax error",  // Unfinished " or ' or ` or if, leading | or ;
-      " no such file",  // Leading <
+      ": not found",     // General
+      ": Syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &
+      ": missing"        // Unfinished [
+      ": No such file",  // Leading <
     }
   },
   {
     "zsh",
     {
-      " command not found",               // General
-      " syntax error",                    // Unfinished " or ' or `
-      " no such file or directory",       // Leading < or /
-      " parse error",                     // Leading |
-      " no such user or named directory", // Leading ~
+      ": command not found",               // General
+      ": syntax error",                    // Unfinished " or ' or `
+      " expected"                          // Unfinished [
+      ": no such file or directory",       // Leading < or /
+      ": parse error",                     // Leading |, or &
+      ": no such user or named directory", // Leading ~
     }
   },
 };
@@ -235,22 +242,16 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 }
 
 void match_error_pattern(std::string buffer, std::string shell) {
-  // Identify the error pattern in the write buffer and report a bug if matched.
-  std::istringstream ss{buffer};
-  std::string token;
-  while (std::getline(ss, token, ':')) {
-    if (token.empty()) {
-      continue;
-    }
-    auto error_patterns = kShellSytaxErrorMap[shell];
-    for(auto it = error_patterns.begin(); it != error_patterns.end(); ++it) {
-      if(!strncasecmp(token.c_str(),it->c_str(), std::min(token.length(), it->length()))) {
-        buffer = buffer.substr(0, buffer.find("\n"));
-        printf("--- Found a sign of shell corruption ---\n"
-               "%s\n"
-               "----------------------------------------\n", buffer.c_str());
-        report_bug(kShellCorruption);
-      }
+  auto error_patterns = kShellSyntaxErrors.at(shell);
+  for(auto it = error_patterns.begin(); it != error_patterns.end(); ++it) {
+    debug_log("Pattern : %s\n", it->c_str());
+    debug_log("Found at: %lu\n", buffer.find(*it));
+    if(buffer.find(*it) != std::string::npos) {
+      buffer = buffer.substr(0, buffer.find("\n"));
+      printf("--- Found a sign of shell corruption ---\n"
+             "%s\n"
+             "----------------------------------------\n", buffer.c_str());
+      report_bug(kCorruptionError);
     }
   }
 }
