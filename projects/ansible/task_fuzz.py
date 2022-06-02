@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import atheris
+import sys
 with atheris.instrument_imports():
    from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable
    from ansible.playbook.task import Task
@@ -36,6 +37,7 @@ def TestInput(input_bytes):
       pass
 def main():
    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
+   atheris.instrument_all()
    atheris.Fuzz()
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import atheris
+import sys
 with atheris.instrument_imports():
    from ansible.errors import AnsibleError, AnsibleParserError
    from ansible.parsing import splitter
