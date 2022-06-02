@@ -36,7 +36,6 @@ meson \
     -Db_lundef=false \
     -Doss_fuzz=enabled \
     -Dlibmount=disabled \
-    -Dinternal_pcre=true \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install

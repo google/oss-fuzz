@@ -1,11 +1,11 @@
-homepage: "https://logging.apache.org/log4j/2.x/"
-language: jvm
-primary_contact: "meumertzheim@code-intelligence.com"
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "norbert.schneider@code-intelligence.com"
 fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/apache/logging-log4j2"
+- libfuzzer
+homepage: https://logging.apache.org/log4j/2.x/
+language: jvm
+main_repo: https://github.com/apache/logging-log4j2
 sanitizers:
-  - address
+- address
+vendor_ccs:
+- meumertzheim@code-intelligence.com
+- wagner@code-intelligence.com
+- norbert.schneider@code-intelligence.com

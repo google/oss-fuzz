@@ -1,13 +1,13 @@
-homepage: "https://github.com/xmlpull-org/xmlpull-api-v1"
-language: jvm
-primary_contact: "patrice.salathe@code-intelligence.com"
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/xmlpull-org/xmlpull-api-v1
+language: jvm
+main_repo: https://github.com/xmlpull-org/xmlpull-api-v1.git
 sanitizers:
-  - address
-main_repo: "https://github.com/xmlpull-org/xmlpull-api-v1.git"
+- address
+vendor_ccs:
+- patrice.salathe@code-intelligence.com
+- wagner@code-intelligence.com
+- yakdan@code-intelligence.com
+- glendowne@code-intelligence.com
+- patrice.salathe@code-intelligence.com

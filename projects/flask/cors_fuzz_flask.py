@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import requests
 import threading
 import time
@@ -26,6 +27,7 @@ with atheris.instrument_imports():
 app = Flask(__name__)
 CORS(app)
 output = ""
+runs_left = None
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -62,8 +64,21 @@ class ServerThread(threading.Thread):
     app.run()
 
 def TestOneInput(data):
-  global output
+  global output, runs_left
   output = data
+
+  # We use runs_left to ensure proper exit in coverage.
+  if runs_left != None:
+      runs_left -= 1
+      # 5 may be too much here, as we will cut off some inputs. However,
+      # this is to guarantee exit for now.
+      if runs_left < 5:
+        try:
+          requests.get('http://127.0.0.1:5000/shutdown', timeout=1.02)
+        except Exception:
+          None
+        return
+
 
   try:
     r = requests.get('http://127.0.0.1:5000', timeout=0.5)
@@ -77,12 +92,28 @@ def TestOneInput(data):
     requests.get('http://127.0.0.1:5000/shutdown', timeout=1.02)
     raise e
 
+
+def get_run_count_if_there():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-atheris_runs", required=False, default=None)
+  args, _ = parser.parse_known_args()
+  if args.atheris_runs is None:
+    print("None args")
+    return None
+  print(f"Got a fixed set of runs {args.atheris_runs}")
+  return args.atheris_runs
+
+
 def main():
+  global runs_left
+  max_runs = get_run_count_if_there()
+  if max_runs is not None:
+    runs_left = int(max_runs)
+
   t1 = ServerThread()
   t1.start()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.Fuzz()
-  t1.join()
 
 if __name__ == "__main__":
   main()

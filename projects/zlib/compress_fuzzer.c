@@ -65,7 +65,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   const int level = d[0] % 10;
   d++,size--;
-  
+
   //https://web.archive.org/web/20200220015003/http://www.onicos.com/staff/iz/formats/gzip.html
   unsigned compression_method = d[0] % 5;
   if (compression_method == 4)  //[4...7] are reserved

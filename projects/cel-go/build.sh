@@ -18,8 +18,8 @@
 mkdir fuzzlpm
 $SRC/LPM/external.protobuf/bin/protoc --cpp_out=fuzzlpm/ -I$SRC/ $SRC/cel-go-lpm.proto
 
-$CXX $CXXFLAGS -c -I fuzzlpm/ -I $SRC/LPM/external.protobuf/include fuzzlpm/cel-go-lpm.pb.cc
-$CXX $CXXFLAGS -c -I. -I ../libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
+$CXX $CXXFLAGS -DNDEBUG -c -I fuzzlpm/ -I $SRC/LPM/external.protobuf/include fuzzlpm/cel-go-lpm.pb.cc
+$CXX $CXXFLAGS -DNDEBUG -c -I. -I ../libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
 
 (
 cd $SRC/go114-fuzz-build

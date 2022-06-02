@@ -45,6 +45,10 @@ BUILD_TYPES = {
     'coverage':
         BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
+    'introspector':
+        BuildType('introspector',
+                  build_and_run_coverage.get_fuzz_introspector_steps,
+                  'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -97,11 +101,12 @@ def get_args(args=None):
   parser.add_argument('projects',
                       help='Projects. "All" for all projects',
                       nargs='+')
-  parser.add_argument('--sanitizers',
-                      required=False,
-                      default=['address', 'memory', 'undefined', 'coverage'],
-                      nargs='+',
-                      help='Sanitizers.')
+  parser.add_argument(
+      '--sanitizers',
+      required=False,
+      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
+      nargs='+',
+      help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
                       default=['afl', 'libfuzzer', 'honggfuzz'],
@@ -162,7 +167,7 @@ def _do_builds(args, config, credentials, build_type, projects):
     build_project.set_yaml_defaults(project_yaml)
     print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers'])
+        project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
@@ -239,18 +244,21 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   for project, build_result in build_results.items():
     print(project, build_result)
 
-  return all(build_results.items())
+  return all(build_results.values())
 
 
 def do_test_builds(args):
   """Does test coverage and fuzzing builds."""
   # TODO(metzman): Make this handle concurrent builds.
   build_types = []
-  if list(args.sanitizers) == ['coverage']:
+  sanitizers = list(args.sanitizers)
+  if 'coverage' in sanitizers:
+    sanitizers.pop(sanitizers.index('coverage'))
     build_types.append(BUILD_TYPES['coverage'])
-    if len(build_types) > 1:
-      build_types.append(BUILD_TYPES['fuzzing'])
-  else:
+  if 'introspector' in sanitizers:
+    sanitizers.pop(sanitizers.index('introspector'))
+    build_types.append(BUILD_TYPES['introspector'])
+  if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type)
@@ -273,9 +281,7 @@ def trial_build_main(args=None, local_base_build=True):
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         TEST_IMAGE_SUFFIX)
   else:
-    # !!!
-    pass
-    # build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
+    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
   return do_test_builds(args)
 
 
@@ -287,4 +293,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

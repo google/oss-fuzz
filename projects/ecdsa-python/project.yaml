@@ -1,8 +1,9 @@
-homepage: "https://github.com/starkbank/ecdsa-python"
-language: python
-primary_contact: "david@adalogics.com"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/starkbank/ecdsa-python
+language: python
+main_repo: https://github.com/starkbank/ecdsa-python/
 sanitizers:
-  - address
-main_repo: "https://github.com/starkbank/ecdsa-python/"
+- address
+vendor_ccs:
+- david@adalogics.com

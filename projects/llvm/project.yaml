@@ -15,6 +15,7 @@ auto_ccs:
   - "eneyman@google.com"
   - "bigcheesegs@gmail.com"
   - "davg@google.com"
+  - "sammccall@google.com"
 
 sanitizers:
   - address

@@ -1,8 +1,9 @@
-homepage: "ipython.readthedocs.org"
-main_repo: "https://github.com/ipython/ipython"
-language: python
-primary_contact: "david@adalogics.com"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: ipython.readthedocs.org
+language: python
+main_repo: https://github.com/ipython/ipython
 sanitizers:
-  - address
+- address
+vendor_ccs:
+- david@adalogics.com

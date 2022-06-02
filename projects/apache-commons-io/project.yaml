@@ -1,12 +1,12 @@
-homepage: "https://commons.apache.org/proper/commons-io/"
-language: jvm
-primary_contact: "glendowne@code-intelligence.com"
-auto_ccs:
-  - "wagner@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
 fuzzing_engines:
-  - "libfuzzer"
+- libfuzzer
+homepage: https://commons.apache.org/proper/commons-io/
+language: jvm
+main_repo: https://gitbox.apache.org/repos/asf/commons-io.git
 sanitizers:
-  - "address"
-main_repo: "https://gitbox.apache.org/repos/asf/commons-io.git"
+- address
+vendor_ccs:
+- glendowne@code-intelligence.com
+- wagner@code-intelligence.com
+- patrice.salathe@code-intelligence.com
+- yakdan@code-intelligence.com

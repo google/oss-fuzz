@@ -103,11 +103,12 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    if self.is_external:
-      # TODO(metzman): Handle this properly.
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logging.warning('No project.yaml. Assuming c++.')
       return constants.DEFAULT_LANGUAGE
 
-    project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
@@ -115,8 +116,8 @@ class Project:
         if match:
           return match.group(1)
 
-    logging.warning('Language not specified in project.yaml.')
-    return None
+    logging.warning('Language not specified in project.yaml. Assuming c++.')
+    return constants.DEFAULT_LANGUAGE
 
   @property
   def out(self):
@@ -712,17 +713,11 @@ def check_build(args):
       not _check_fuzzer_exists(args.project, args.fuzzer_name)):
     return False
 
-  fuzzing_language = args.project.language
-  if not fuzzing_language:
-    fuzzing_language = constants.DEFAULT_LANGUAGE
-    logging.warning('Language not specified in project.yaml. Defaulting to %s.',
-                    fuzzing_language)
-
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + fuzzing_language,
+      'FUZZING_LANGUAGE=' + args.project.language,
   ]
   _add_oss_fuzz_ci_if_needed(env)
   if args.e:
