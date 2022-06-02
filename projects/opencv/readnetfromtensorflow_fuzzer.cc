@@ -34,8 +34,6 @@ bool saveFile(std::string Path, std::string Content) {
 
 static inline void fuzz(FuzzedDataProvider &Provider) {
   auto Input1 = Provider.ConsumeRandomLengthString();
-  std::string Input1Path = "input1";
-  if (!saveFile(Input1Path, Input1)) return;
   int Input2 = Provider.ConsumeIntegral<int>();
   auto Input3 = Provider.ConsumeRandomLengthString();
   std::string Input3Path = "input3";
@@ -47,7 +45,7 @@ static inline void fuzz(FuzzedDataProvider &Provider) {
   auto Input8 = Provider.ConsumeRandomLengthString();
 
   Net net;
-  net = readNetFromTensorflow(Input1Path);
+  net = readNetFromTensorflow(Input1.c_str(), Input1.size());
   if (net.empty())
     return;
   net.setPreferableBackend(Input2);
