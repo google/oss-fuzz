@@ -33,9 +33,9 @@ go install golang.org/dl/gotip@latest \
 cd /tmp
 git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
-gotip build
+go build
 mv go-118-fuzz-build $GOPATH/bin/
 
 cd addimport
-gotip build
+go build
 mv addimport $GOPATH/bin/
