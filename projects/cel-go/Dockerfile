@@ -27,7 +27,7 @@ RUN mkdir LPM; \
 
 RUN git clone --depth 1 https://github.com/mdempsky/go114-fuzz-build.git
 
-RUN go get google.golang.org/protobuf/cmd/protoc-gen-go
+RUN git clone https://github.com/protocolbuffers/protobuf-go.git
 
 COPY go-lpm.cc $SRC/
 

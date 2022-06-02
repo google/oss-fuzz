@@ -51,10 +51,7 @@ export INCLUDE_PATH_FLAGS=""
 cd $SRC/cryptofuzz
 python gen_repository.py
 
-go get golang.org/x/crypto/blake2b
-go get golang.org/x/crypto/blake2s
-go get golang.org/x/crypto/md4
-go get golang.org/x/crypto/ripemd160
+git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"

@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 ENV GO111MODULE="on"
 ENV GOFUZZ111MODULE="on"
 
-RUN go get google.golang.org/protobuf/proto
+RUN git clone https://github.com/protocolbuffers/protobuf-go.git
 RUN git clone https://go.googlesource.com/protobuf $GOPATH/src/google.golang.org/protobuf
 COPY build.sh $SRC/
 WORKDIR $GOPATH/src/google.golang.org/protobuf
