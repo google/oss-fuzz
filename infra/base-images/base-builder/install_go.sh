@@ -27,9 +27,6 @@ echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
 go install github.com/mdempsky/go114-fuzz-build@latest
 ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
-go install golang.org/dl/gotip@latest \
-    && gotip download
-
 cd /tmp
 git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
