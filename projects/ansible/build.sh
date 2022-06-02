@@ -23,4 +23,4 @@ pip3 install .
 # Build fuzzers in $OUT.
 cd $SRC
 compile_python_fuzzer parse_fuzz.py --add-data ansible/lib/ansible/config:ansible/config
-#compile_python_fuzzer task_fuzz.py --add-data ansible/lib/ansible/config:ansible/config
+compile_python_fuzzer task_fuzz.py --add-data ansible/lib/ansible/config:ansible/config
