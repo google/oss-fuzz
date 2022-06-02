@@ -18,6 +18,11 @@
 # compile latest go from git
 (
 cd $SRC/goroot/src
+(
+# temporary workaround for https://github.com/golang/go/issues/53190
+cd runtime
+grep nosplit libfuzzer.go || sed -i 's/func libfuzzerTraceConstCmp/\n\/\/go:nosplit\nfunc libfuzzerTraceConstCmp/' libfuzzer.go
+)
 ./make.bash
 )
 rm -Rf /root/.go/
