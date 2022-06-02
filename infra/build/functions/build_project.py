@@ -501,9 +501,6 @@ def run_build(oss_fuzz_project,
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
   tags.extend(extra_tags)
   timeout = build_lib.BUILD_TIMEOUT
-  # TODO(navidem): This is temporary until I fix shorter failing projects.
-  if build_type == 'introspector':
-    timeout /= 4
   body_overrides = {
       'logsBucket': GCB_LOGS_BUCKET,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
