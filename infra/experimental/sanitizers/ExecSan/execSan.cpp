@@ -70,10 +70,7 @@ const std::string kCorruptionError = "Shell corruption";
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
 // Assuming the longest pathname is "/bin/bash".
-constexpr int kShellPathnameLength = 10;
-// Assuming the syntax error pattern is
-// within the first 100 chars of the write buffer.
-constexpr int kErrorMessageLength = 100;
+constexpr int kShellPathnameLength = 20;
 
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
