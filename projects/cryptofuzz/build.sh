@@ -52,6 +52,7 @@ cd $SRC/cryptofuzz
 python gen_repository.py
 
 git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
+git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
