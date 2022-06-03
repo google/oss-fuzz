@@ -213,9 +213,11 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 
 std::string match_shell(std::string binary_pathname) {
   // Identify the name of the shell used in the pathname.
-  for (auto it = kShellSyntaxErrors.begin(); it != kShellSyntaxErrors.end();
-       ++it) {
-    std::string known_shell = it->first;
+  if (!binary_pathname.length()) {
+    return "";
+  }
+  for (const auto& item : kShellSyntaxErrors) {
+    std::string known_shell = item.first;
     std::string binary_name = binary_pathname.substr(
         binary_pathname.find_last_of("/") + 1, known_shell.length());
     if (binary_name == known_shell) {
@@ -229,18 +231,15 @@ std::string match_shell(std::string binary_pathname) {
 std::string get_shell(pid_t pid, const user_regs_struct &regs) {
   // Get shell name used in a process.
   std::string binary_pathname = get_pathname(pid, regs);
-  if (binary_pathname.length()) {
-    return match_shell(binary_pathname);
-  }
-  return "";
+  return match_shell(binary_pathname);
 }
 
 void match_error_pattern(std::string buffer, std::string shell) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
-  for (auto it = error_patterns.begin(); it != error_patterns.end(); ++it) {
-    debug_log("Pattern : %s\n", it->c_str());
-    debug_log("Found at: %lu\n", buffer.find(*it));
-    if (buffer.find(*it) != std::string::npos) {
+  for (const auto& pattern : error_patterns) {
+    debug_log("Pattern : %s\n", pattern->c_str());
+    debug_log("Found at: %lu\n", buffer.find(pattern));
+    if (buffer.find(pattern) != std::string::npos) {
       buffer = buffer.substr(0, buffer.find("\n"));
       printf(
           "--- Found a sign of shell corruption ---\n"
