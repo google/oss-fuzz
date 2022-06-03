@@ -76,49 +76,51 @@ constexpr int kShellPathnameLength = 20;
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
     {"sh",
      {
-         ": command not found",  // General
-         ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
-         ": missing"             // Unfinished [
-         ": event not found",    // ! leads large numbers
-         ": No such file",       // Leading < or /
+         ": command not found",          // General
+         ": syntax error",               // Unfinished " or ' or ` or if, leading | or ;
+         ": missing `]'",                // Unfinished [
+         ": event not found",            // ! leads large numbers
+         ": No such file or directory",  // Leading < or /
      }},
     {"bash",
      {
-         ": command not found",  // General
-         ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
-         ": missing"             // Unfinished [
-         ": event not found",    // ! leads large numbers
-         ": No such file",       // Leading < or /
+         ": command not found",          // General
+         ": syntax error",               // Unfinished " or ' or ` or if, leading | or ;
+         ": missing `]'",                // Unfinished [
+         ": event not found",            // ! leads large numbers
+         ": No such file or directory",  // Leading < or /
      }},
     {"csh",
      {
-         ": Command not found",       // General
-         "Unmatched",                 // Unfinished " or ' or `, leading ;
-         ": Missing",                 // Unfinished {
-         "Too many",                  // Unfinished (
-         "No match",                  // Leading [
-         "Invalid null command",      // Leading | or < or >
-         "Missing name for redirect"  // Single < or >
-         ": No match",                // Leading ? or [ or *
-         "Modifier failed",           // Leading ^
-         ": No such job",             // Leading %
-         ": Undefined variable",      // Containing $
-         ": Event not found",         // ! leads large numbers
+         ": Command not found.",         // General
+         ": Missing }.",                 // Unfinished {
+         "Too many ('s.",                // Unfinished (
+         "Invalid null command.",        // Leading | or < or >
+         "Missing name for redirect.",   // Single < or >
+         ": No match.",                  // Leading ? or [ or *
+         "Modifier failed.",             // Leading ^
+         "No previous left hand side.",  // A ^
+         ": No such job.",               // Leading %
+         ": No current job.",            // A %
+         ": Undefined variable.",        // Containing $
+         ": Event not found.",           // ! leads large numbers
+         // TODO: Make this more specific.
+         "Unmatched",                    // Unfinished " or ' or `, leading ;
      }},
     {"dash",
      {
          ": not found",     // General
          ": Syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &
-         ": missing"        // Unfinished [
+         ": missing ]",     // Unfinished [
          ": No such file",  // Leading <
      }},
     {"zsh",
      {
          ": command not found",                // General
          ": syntax error",                     // Unfinished " or ' or `
-         " expected"                           // Unfinished [
+         ": ']' expected",                     // Unfinished [
          ": no such file or directory",        // Leading < or /
-         ": parse error",                      // Leading |, or &
+         ": parse error near",                 // Leading |, or &
          ": no such user or named directory",  // Leading ~
      }},
 };
