@@ -201,9 +201,7 @@ void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
 
 std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
   // Parse the pathname from the memory specified in the RDI register.
-  std::string raw_content = read_string(pid, regs.rdi, kShellPathnameLength);
-
-  std::string pathname = raw_content.substr(0, raw_content.find(" "));
+  std::string pathname = read_string(pid, regs.rdi, kShellPathnameLength);
   debug_log("Pathname is %s (len %lu)\n", pathname.c_str(), pathname.length());
   return pathname;
 }
@@ -250,7 +248,7 @@ void match_error_pattern(std::string buffer, std::string shell) {
 
 void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
-  std::string buffer = read_string(pid, regs.rsi, kErrorMessageLength);
+  std::string buffer = read_string(pid, regs.rsi, regs.rdx);
   debug_log("Write buffer: %s\n", buffer.c_str());
   match_error_pattern(buffer, g_shell_pids[pid]);
 }
