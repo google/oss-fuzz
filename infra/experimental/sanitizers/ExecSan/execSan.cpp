@@ -258,11 +258,9 @@ void match_error_pattern(std::string buffer, std::string shell) {
     debug_log("Pattern : %s\n", pattern.c_str());
     debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
-      printf(
-          "--- Found a sign of shell corruption ---\n"
-          "%s\n"
-          "----------------------------------------\n",
-          buffer.c_str());
+      std::cerr << "--- Found a sign of shell corruption ---\n"
+                << buffer.c_str()
+                << "\n----------------------------------------\n";
       report_bug(kCorruptionError);
     }
   }
@@ -271,7 +269,7 @@ void match_error_pattern(std::string buffer, std::string shell) {
 void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
   std::string buffer = read_string(pid, regs.rsi, regs.rdx);
-  printf("Write buffer: %s\n", buffer.c_str());
+  debug_log("Write buffer: %s\n", buffer.c_str());
   match_error_pattern(buffer, g_shell_pids[pid]);
 }
 
