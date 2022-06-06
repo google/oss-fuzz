@@ -15,59 +15,13 @@
  * (UTopia Project: https://github.com/Samsung/UTopia)
  */
 #include <opencv2/dnn/dnn.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <fuzzer/FuzzedDataProvider.h>
-#include <fstream>
 
 using namespace cv;
 using namespace dnn;
 
-bool saveFile(std::string Path, std::string Content) {
-  std::ofstream OFS(Path);
-  if (!OFS.is_open())
-    return false;
-
-  OFS << Content;
-  return true;
-}
-
-static inline void fuzz(FuzzedDataProvider &Provider) {
-  auto Input1 = Provider.ConsumeRandomLengthString();
-  int Input2 = Provider.ConsumeIntegral<int>();
-  auto Input3 = Provider.ConsumeRandomLengthString();
-  std::string Input3Path = "input3";
-  if (!saveFile(Input3Path, Input3)) return;
-  int Input4 = Provider.ConsumeIntegralInRange<int>(0, 256);
-  int Input5 = Provider.ConsumeIntegralInRange<int>(0, 256);
-  int Input6 = Provider.ConsumeIntegralInRange<int>(0, 256);
-  auto Input7 = Provider.ConsumeRandomLengthString();
-  auto Input8 = Provider.ConsumeRandomLengthString();
-
-  Net net;
-  net = readNetFromTensorflow(Input1.c_str(), Input1.size());
-  if (net.empty())
-    return;
-  net.setPreferableBackend(Input2);
-
-  Mat sample = imread(Input3Path);
-  if (sample.empty())
-    return;
-
-  Mat input;
-  resize(sample, input, Size(Input4, Input5));
-  input -= Scalar::all(Input6);
-
-  Mat inputBlob = blobFromImage(input);
-
-  net.setInput(inputBlob, Input7);
-  Mat out = net.forward(Input8);
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  FuzzedDataProvider Provider(data, size);
   try {
-    fuzz(Provider);
-  } catch (std::exception &E) {}
+    readNetFromTensorflow((const char*)data, size);
+  } catch (std::exception &e) {}
   return 0;
 }
