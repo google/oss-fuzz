@@ -205,7 +205,8 @@ std::string match_shell(std::string binary_pathname);
 // Identify the exact shell behind sh
 std::string identify_sh(std::string binary_name) {
   char shell_pathname[kShellPathnameLength];
-  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) == -1) {
+  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
+      -1) {
     std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
     std::cerr << "Assuming the shell is dash\n";
     return "dash";
