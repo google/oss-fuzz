@@ -78,10 +78,10 @@ constexpr int kFileStdOutLength = 100;
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
     {"bash",
      {
-         ": command not found",          // General
-         ": syntax error",               // Unfinished " or ' or ` or if, leading | or ;
-         ": missing `]'",                // Unfinished [
-         ": event not found",            // ! leads large numbers
+         ": command not found",  // General
+         ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+         ": missing `]'",        // Unfinished [
+         ": event not found",    // ! leads large numbers
          ": No such file or directory",  // Leading < or /
      }},
     {"csh",
@@ -99,7 +99,7 @@ const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
          ": Undefined variable.",        // Containing $
          ": Event not found.",           // ! leads large numbers
          // TODO: Make this more specific.
-         "Unmatched",                    // Unfinished " or ' or `, leading ;
+         "Unmatched",  // Unfinished " or ' or `, leading ;
      }},
     {"dash",
      {
@@ -216,7 +216,8 @@ std::string identify_sh(std::string binary_name) {
   }
   std::string file_stdout(file_stdout_raw);
 
-  std::string binary_pathname = file_stdout.substr(file_stdout.find_last_of(" ") + 1, kShellPathnameLength);
+  std::string binary_pathname = file_stdout.substr(
+      file_stdout.find_last_of(" ") + 1, kShellPathnameLength);
   debug_log("sh links to %s\n", binary_pathname.c_str());
 
   return match_shell(binary_pathname);
@@ -227,11 +228,12 @@ std::string match_shell(std::string binary_pathname) {
   if (!binary_pathname.length()) {
     return "";
   }
-  for (const auto& item : kShellSyntaxErrors) {
+  for (const auto &item : kShellSyntaxErrors) {
     std::string known_shell = item.first;
     std::string binary_name = binary_pathname.substr(
         binary_pathname.find_last_of("/") + 1, known_shell.length());
-    debug_log("Binary is %s (%lu)\n", binary_name.c_str(), binary_name.length());
+    debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
+              binary_name.length());
     if (!binary_name.compare(0, 2, "sh")) {
       debug_log("Matched sh: Needs to identify which specific shell it is.\n");
       return identify_sh(binary_pathname);
@@ -252,7 +254,7 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 
 void match_error_pattern(std::string buffer, std::string shell) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
-  for (const auto& pattern : error_patterns) {
+  for (const auto &pattern : error_patterns) {
     debug_log("Pattern : %s\n", pattern.c_str());
     debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
