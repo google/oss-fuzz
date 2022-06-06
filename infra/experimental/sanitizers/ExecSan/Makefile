@@ -2,7 +2,7 @@
 CXX     = clang++
 CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3
 
-all: clean execSan tripwire target
+all: clean execSan target
 
 execSan: execSan.cpp
 	$(CXX) $(CFLAGS) -lpthread -o $@ $^
@@ -14,4 +14,4 @@ test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
 
 clean:
-	rm -f execSan /tmp/tripwire target 
+	rm -f execSan /tmp/tripwire target
