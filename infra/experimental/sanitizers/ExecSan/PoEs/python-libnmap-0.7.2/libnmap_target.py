@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Invoking the target program under test,with the inputs injected into its parameters."""
+"""Invoking the target with the inputs from fuzzers as its parameters."""
 
 import sys
 
