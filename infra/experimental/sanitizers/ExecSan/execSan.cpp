@@ -256,7 +256,6 @@ void match_error_pattern(std::string buffer, std::string shell) {
     debug_log("Pattern : %s\n", pattern.c_str());
     debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
-      buffer = buffer.substr(0, buffer.find("\n"));
       printf(
           "--- Found a sign of shell corruption ---\n"
           "%s\n"
