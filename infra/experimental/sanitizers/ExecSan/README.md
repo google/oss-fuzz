@@ -35,6 +35,5 @@ which indicates the detection of executing a syntactic erroneous command.
 
 
 ## TODOs
-1. ~~[x] Flag syntax errors of shell commands by hooking write() calls from shell.~~
-2. Find real examples of past shell injection vulnerabilities using this.
+1. Find real examples of past shell injection vulnerabilities using this.
 
