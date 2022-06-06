@@ -101,10 +101,10 @@ const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
      }},
     {"dash",
      {
-         ": not found",     // General
-         ": Syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &
-         ": missing ]",     // Unfinished [
-         ": No such file",  // Leading <
+         "not found",     // General
+         "Syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &
+         "missing ]",     // Unfinished [
+         "No such file",  // Leading <
      }},
     {"zsh",
      {
