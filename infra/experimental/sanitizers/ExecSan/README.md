@@ -34,6 +34,13 @@ which indicates the detection of executing the planted `/tmp/tripwire`.
 which indicates the detection of executing a syntactic erroneous command.
 
 
+### Run Proof of Error in python-libnmap
+```shell
+make libnmap
+```
+Look for the same messages as in Sec. Run test.
+
 ## TODOs
 1. Find real examples of past shell injection vulnerabilities using this.
+  1. [x] `python-libnmap-0.7.2`
 

@@ -13,5 +13,14 @@ target: target.cpp
 test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
 
+libnmap:  PoEs/python-libnmap-0.7.2/
+	cp ./execSan.cpp ./vuln.dict ./PoEs/python-libnmap-0.7.2/
+	(cd PoEs/python-libnmap-0.7.2/; \
+	docker build . --tag python-libnmap; \
+	docker run -t python-libnmap:latest)
+
+
 clean:
 	rm -f execSan /tmp/tripwire target
+	(cd PoEs/python-libnmap-0.7.2/; \
+	rm -rf execSan.cpp vuln.dict)
