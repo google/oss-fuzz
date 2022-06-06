@@ -71,8 +71,6 @@ const std::string kCorruptionError = "Shell corruption";
 pid_t g_root_pid;
 // Assuming the longest pathname is "/bin/bash".
 constexpr int kShellPathnameLength = 20;
-// Assuming the longest stdout length of `file` is less than 100 chars.
-constexpr int kFileStdOutLength = 100;
 
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
@@ -204,23 +202,18 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 
 std::string match_shell(std::string binary_pathname);
 
+// Identify the exact shell behind sh
 std::string identify_sh(std::string binary_name) {
-  FILE *fp;
-  char file_stdout_raw[kFileStdOutLength];
-
-  fp = popen(("file " + binary_name).c_str(), "r");
-  if (fp == NULL || fgets(file_stdout_raw, kFileStdOutLength, fp) == NULL) {
-    std::cerr << "Cannot query which shell is behind sh: Popen failed\n";
+  char shell_pathname[kShellPathnameLength];
+  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) == -1) {
+    std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
     std::cerr << "Assuming the shell is dash\n";
     return "dash";
   }
-  std::string file_stdout(file_stdout_raw);
+  debug_log("sh links to %s\n", shell_pathname);
+  std::string shell_pathname_str(shell_pathname);
 
-  std::string binary_pathname = file_stdout.substr(
-      file_stdout.find_last_of(" ") + 1, kShellPathnameLength);
-  debug_log("sh links to %s\n", binary_pathname.c_str());
-
-  return match_shell(binary_pathname);
+  return match_shell(shell_pathname_str);
 }
 
 std::string match_shell(std::string binary_pathname) {
