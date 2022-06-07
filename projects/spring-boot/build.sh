@@ -17,7 +17,7 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-cp -r "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+cp -r "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME"
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
