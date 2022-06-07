@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,26 +18,32 @@ import atheris
 import sys
 
 with atheris.instrument_imports():
-  from Crypto.Protocol import AllOrNothing
-  from Crypto.Cipher import AES
+    import crypt
+    from ansible.plugins.filter.core import get_encrypted_password
+    from ansible.utils import encrypt
+    from ansible import errors
 
 
 @atheris.instrument_func
-def TestOneInput(data):
-  if len(data) < 10:
-    return
-  for i in range(50):
-    a1 = AllOrNothing.AllOrNothing(AES)
-    msgblocks = a1.digest(data)
-    a2 = AllOrNothing.AllOrNothing(AES)
-    round_tripped = a2.undigest(msgblocks)
-    assert data == round_tripped
+def TestInput(input_bytes):
+    if len(input_bytes) < 50:
+        return
+
+    fdp = atheris.FuzzedDataProvider(input_bytes)
+    try:
+        for h in [ "md5", "sha512", "pbkdf2_sha256", "crypt16" ]:
+            get_encrypted_password(
+                fdp.ConsumeString(20),
+                h,
+                salt=fdp.ConsumeString(20)
+            )
+    except errors.AnsibleFilterError as e:
+        pass
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
+    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
+    atheris.Fuzz()
 
 if __name__ == "__main__":
-  main()
+    main()

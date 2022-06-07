@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,24 +15,18 @@
 #
 ################################################################################
 
-cd /tmp
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.18
-rm -rf ./installer_linux
+pip3 install .
 
-echo 'Set "GOPATH=/root/go"'
-echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
+cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 /out/libcrypt.so
+cd $SRC
 
-go install github.com/mdempsky/go114-fuzz-build@latest
-ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+# Build parse and task fuzzers
+compile_python_fuzzer fuzz_parse.py --add-data ansible/lib/ansible/config:ansible/config
+compile_python_fuzzer fuzz_task.py --add-data ansible/lib/ansible/config:ansible/config
 
-cd /tmp
-git clone https://github.com/AdamKorcz/go-118-fuzz-build
-cd go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/
-
-cd addimport
-go build
-mv addimport $GOPATH/bin/
+# Build fuzz_encrypt with a specific wrapper only in non-coverage
+if [ "$SANITIZER" != "coverage" ]; then
+  compile_python_fuzzer fuzz_encrypt.py --add-data ansible/lib/ansible/config:ansible/config
+  cp $SRC/fuzz_encrypt.sh $OUT/fuzz_encrypt
+  chmod +x $OUT/fuzz_encrypt
+fi

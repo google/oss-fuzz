@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,14 @@
 #
 ################################################################################
 
-mv $SRC/{*.zip,*.dict} $OUT
+cp -r "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-cp -r "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME"
+$ANT
 
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+cp "output/build/lib/tomcat-coyote.jar" "$OUT/tomcat-coyote.jar"
+cp "output/build/lib/tomcat-util.jar" "$OUT/tomcat-util.jar"
 
-./gradlew publishToMavenLocal -x test -x intTest -i -x asciidoctor -x javadoc -x asciidoctorPdf -x :spring-boot-project:spring-boot-docs:zip -x :spring-boot-project:spring-boot-docs:publishMavenPublicationToMavenLocal
-cp "/root/.m2/repository/org/springframework/boot/spring-boot/$CURRENT_VERSION/spring-boot-$CURRENT_VERSION.jar" "$OUT/spring-boot.jar"
-cp "/root/.m2/repository/org/springframework/boot/spring-boot-loader/$CURRENT_VERSION/spring-boot-loader-$CURRENT_VERSION.jar" "$OUT/spring-boot-loader.jar"
-cp "/root/.m2/repository/org/springframework/boot/spring-boot-starter-web/$CURRENT_VERSION/spring-boot-starter-web-$CURRENT_VERSION.jar" "$OUT/spring-boot-starter-web.jar"
-
-# Spring core
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain --build-file=spring-framework/build.gradle | sed -nr "s/^version:\ (.*)/\1/p")
-./gradlew build --build-file=spring-framework/spring-core/spring-core.gradle -x test -x javadoc -x :checkstyleNohttp
-cp "spring-framework/spring-core/build/libs/spring-core-$CURRENT_VERSION.jar" "$OUT/spring-core.jar"
-
-ALL_JARS="spring-boot.jar spring-boot-loader.jar spring-core.jar spring-boot-starter-web.jar"
+ALL_JARS="tomcat-coyote.jar tomcat-util.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -57,4 +48,4 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --jvm_args=\"-Xmx2048m\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
-done 
+done

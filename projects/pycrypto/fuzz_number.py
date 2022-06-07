@@ -17,55 +17,28 @@ import atheris
 import sys
 
 with atheris.instrument_imports():
-  from Crypto.Hash import (
-    CMAC,
-    HMAC,
-    SHA224,
-    SHA256,
-    SHA384,
-    SHA512,
-    MD2,
-    MD4,
-    MD5,
-    RIPEMD160
-  )
-  from Crypto.Cipher import AES
-
+  from Crypto.Util import number
 
 
 @atheris.instrument_func
 def TestOneInput(data):
+  if len(data) < 30:
+    return
+
   fdp = atheris.FuzzedDataProvider(data)
-
-  hashes = [
-    SHA224,
-    SHA256,
-    SHA384,
-    SHA512,
-    MD2,
-    MD4,
-    MD5,
-    RIPEMD160
-  ]
-  for f in hashes:
-    h = f.new()
-    h.update(data)
-    h.digest
-
-  h = HMAC.new(fdp.ConsumeBytes(9))
-  h.update(data)
-  h.digest
-
   try:
-    cobj = CMAC.new(fdp.ConsumeBytes(16), ciphermod=AES)
-    cobj.update(data)
+    x = number.getStrongPrime(
+      N=fdp.ConsumeIntInRange(0, 9999),
+      e=fdp.ConsumeIntInRange(0, 99999999999),
+      false_positive_prob=fdp.ConsumeFloat(),
+    )
   except ValueError as e:
-    if "Key cannot be the null string" not in str(e):
-      raise e
+    pass
 
 
 
 def main():
+  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.Fuzz()
 

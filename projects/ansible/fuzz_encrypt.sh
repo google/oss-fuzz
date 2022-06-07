@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+#!/bin/sh
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,24 +15,7 @@
 #
 ################################################################################
 
-cd /tmp
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.18
-rm -rf ./installer_linux
-
-echo 'Set "GOPATH=/root/go"'
-echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
-
-go install github.com/mdempsky/go114-fuzz-build@latest
-ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
-
-cd /tmp
-git clone https://github.com/AdamKorcz/go-118-fuzz-build
-cd go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/
-
-cd addimport
-go build
-mv addimport $GOPATH/bin/
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=$(dirname "$0")
+chmod +x $this_dir/fuzz_encrypt.pkg
+LD_PRELOAD="$this_dir/sanitizer_with_fuzzer.so $this_dir/libcrypt.so" ASAN_OPTIONS=$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=$this_dir/llvm-symbolizer:detect_leaks=0 $this_dir/fuzz_encrypt.pkg $@

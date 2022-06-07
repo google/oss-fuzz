@@ -22,14 +22,21 @@ Note this will overwrite /tmp/tripwire if it exists.
 make test
 ```
 
-Look for the following line:
+Look for one of the following lines:
 
 > ===BUG DETECTED: Shell injection===
 
-which indicates the detection of shell injection.
+which indicates the detection of executing the planted `/tmp/tripwire`.
+
+
+> ===BUG DETECTED: Shell corruption===
+
+which indicates the detection of executing a syntactic erroneous command.
 
 
 ## TODOs
-1. Flag syntax errors of shell commands by hooking write() calls from shell.
-2. Find real examples of past shell injection vulnerabilities using this.
+1. Find real examples of past shell injection vulnerabilities using this.
+2. More specific patterns of error messages (to avoid false postives/negatives)
+  * e.g. cache and concatenate the buffer of consecutive `write` syscalls
+  * e.g. define the RegEx of patterns and pattern-match with buffers
 
