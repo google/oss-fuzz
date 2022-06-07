@@ -23,8 +23,8 @@ declare -r FUZZ_TARGET_QUERY='
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
   # CI has fewer resources so restricting to a small number of fuzz targets.
-  # Choosing the header_parser, header_map_impl, and utility.
-  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | grep ':header\|http:utility' | sed 's/$/_oss_fuzz/')"
+  # Choosing the header_parser, and header_map_impl.
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | grep ':header' | sed 's/$/_oss_fuzz/')"
 else
   declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
 fi
