@@ -13,36 +13,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests lib/ansible/parsing/"""
 
 import atheris
 import sys
+
 with atheris.instrument_imports():
-    from ansible.errors import AnsibleError, AnsibleParserError
-    from ansible.parsing import splitter
-    from ansible.parsing import quoting
+    import crypt
+    from ansible.plugins.filter.core import get_encrypted_password
+    from ansible.utils import encrypt
+    from ansible import errors
 
 
 @atheris.instrument_func
 def TestInput(input_bytes):
+    if len(input_bytes) < 50:
+        return
+
     fdp = atheris.FuzzedDataProvider(input_bytes)
-
     try:
-        # Test splitter module
-        args = splitter.split_args(fdp.ConsumeString(50))
-        splitter.join_args(args)
-
-        # Test quoting module
-        quoting.is_quoted(fdp.ConsumeString(10))
-        quoting.unquote(fdp.ConsumeString(10))
-    except (AnsibleError, AnsibleParserError) as e:
+        for h in [ "md5", "sha512", "pbkdf2_sha256", "crypt16" ]:
+            get_encrypted_password(
+                fdp.ConsumeString(20),
+                h,
+                salt=fdp.ConsumeString(20)
+            )
+    except errors.AnsibleFilterError as e:
         pass
 
 
 def main():
-   atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
-   atheris.Fuzz()
-
+    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
+    atheris.Fuzz()
 
 if __name__ == "__main__":
-   main()
+    main()
