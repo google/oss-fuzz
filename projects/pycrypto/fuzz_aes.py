@@ -20,22 +20,43 @@ with atheris.instrument_imports():
   from Crypto.Cipher import AES
 
 
+@atheris.instrument_func
 def TestOneInput(data):
-  if len(data) < 20:
+  if len(data) < 40:
     return
   fdp = atheris.FuzzedDataProvider(data)
-  try:
-    obj = AES.new(fdp.ConsumeBytes(16), AES.MODE_CBC, 'This is an IV456')
-  except ValueError as e:
-    if not "Key cannot be the null string" in str(e):
-      raise e
-    return
+  key = fdp.ConsumeBytes(16)
+  IV = fdp.ConsumeBytes(16)
+  enc_data = fdp.ConsumeBytes(atheris.ALL_REMAINING)
 
-  try:
-    ciphertext = obj.encrypt(data)
-  except ValueError as e:
-    if not "Input strings must be a multiple of 16 in length" in str(e):
-      raise e
+  # All modes: https://github.com/pycrypto/pycrypto/blob/7acba5f3a6ff10f1424c309d0d34d2b713233019/lib/Crypto/Cipher/AES.py#L183
+  # minus CTR, ECB, PGP (not supported)
+  modes = [
+    AES.MODE_CBC,
+    AES.MODE_CFB,
+    AES.MODE_OFB,
+    AES.MODE_OPENPGP,
+    AES.MODE_CCM,
+    AES.MODE_EAX,
+    AES.MODE_SIV,
+    AES.MODE_GCM
+  ]
+  for mode in modes:
+    try:
+      obj = AES.new(key, mode, IV)
+    except ValueError as e:
+      if not (
+        "Key cannot be the null string" in str(e) or
+        "Length of parameter" in str(e)
+      ):
+        raise e
+      return
+
+    try:
+      ciphertext = obj.encrypt(enc_data)
+    except ValueError as e:
+      if not "Input strings must be a multiple of 16 in length" in str(e):
+        raise e
 
 
 def main():
