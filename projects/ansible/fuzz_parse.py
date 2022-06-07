@@ -13,27 +13,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tests lib/ansible/parsing/"""
+
 import atheris
 import sys
 with atheris.instrument_imports():
-   from ansible.errors import AnsibleError, AnsibleParserError
-   from ansible.parsing import splitter
-   from ansible.parsing import quoting
+    from ansible.errors import AnsibleError, AnsibleParserError
+    from ansible.parsing import splitter
+    from ansible.parsing import quoting
 
+
+@atheris.instrument_func
 def TestInput(input_bytes):
-   fdp = atheris.FuzzedDataProvider(input_bytes)
+    fdp = atheris.FuzzedDataProvider(input_bytes)
 
-   try:
-      args = splitter.split_args(fdp.ConsumeString(50))
-      splitter.join_args(args)
+    try:
+        # Test splitter module
+        args = splitter.split_args(fdp.ConsumeString(50))
+        splitter.join_args(args)
 
-      quoting.is_quoted(fdp.ConsumeString(10))
-      quoting.unquote(fdp.ConsumeString(10))
-   except (AnsibleError, AnsibleParserError) as e:
-      pass
+        # Test quoting module
+        quoting.is_quoted(fdp.ConsumeString(10))
+        quoting.unquote(fdp.ConsumeString(10))
+    except (AnsibleError, AnsibleParserError) as e:
+        pass
+
+
 def main():
    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
    atheris.Fuzz()
+
 
 if __name__ == "__main__":
    main()

@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +15,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN apt-get update && apt-get install -y make autoconf automake build-essential
-RUN pip3 install --upgrade pip
-
-RUN git clone https://github.com/ansible/ansible
-RUN pip3 install --upgrade pip && \
-    pip3 install cython cryptography
-
-RUN cd ansible && \
-    pip3 install -r ./requirements.txt
-
-WORKDIR ansible
-
-COPY build.sh fuzz_encrypt.sh *.py $SRC/
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=$(dirname "$0")
+chmod +x $this_dir/fuzz_encrypt.pkg
+LD_PRELOAD="$this_dir/sanitizer_with_fuzzer.so $this_dir/libcrypt.so" ASAN_OPTIONS=$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=$this_dir/llvm-symbolizer:detect_leaks=0 $this_dir/fuzz_encrypt.pkg $@
