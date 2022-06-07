@@ -21,8 +21,8 @@ cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 /out/libcrypt.so
 cd $SRC
 
 # Build parse and task fuzzers
-compile_python_fuzzer parse_fuzz.py --add-data ansible/lib/ansible/config:ansible/config
-compile_python_fuzzer task_fuzz.py --add-data ansible/lib/ansible/config:ansible/config
+compile_python_fuzzer fuzz_parse.py --add-data ansible/lib/ansible/config:ansible/config
+compile_python_fuzzer fuzz_task.py --add-data ansible/lib/ansible/config:ansible/config
 
 # Build fuzz_encrypt with a specific wrapper only in non-coverage
 if [ "$SANITIZER" != "coverage" ]; then
