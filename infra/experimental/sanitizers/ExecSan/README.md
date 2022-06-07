@@ -36,4 +36,7 @@ which indicates the detection of executing a syntactic erroneous command.
 
 ## TODOs
 1. Find real examples of past shell injection vulnerabilities using this.
+2. More specific patterns of error messages (to avoid false postives/negatives)
+  * e.g. cache and concatenate the buffer of consecutive `write` syscalls
+  * e.g. define the RegEx of patterns and pattern-match with buffers
 
