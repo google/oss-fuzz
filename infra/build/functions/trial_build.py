@@ -236,7 +236,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   wait_builds = build_ids.copy()
   build_results = {}
   while wait_builds:
-    logging.info('Polling', wait_builds)
+    logging.info('Polling: %s', wait_builds)
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
         if check_finished(build_id, project, cloudbuild_api, cloud_project,
