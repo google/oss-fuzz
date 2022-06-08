@@ -51,14 +51,18 @@ class GetProjectsToBuild(unittest.TestCase):
         self.PROJECTS, 'fuzzing', True)
     self.assertEqual(self.PROJECTS, buildable_projects)
 
+  @mock.patch('oauth2client.client.GoogleCredentials.get_application_default',
+              return_value=None)
   @mock.patch('trial_build.check_finished')
   @mock.patch('build_project.run_build')
   @mock.patch('build_and_push_test_images.build_and_push_images')
   def test_build_steps_correct(self, mock_gcb_build_and_push_images,
-                               mock_run_build, mock_check_finished):
+                               mock_run_build, mock_check_finished,
+                               mock_get_application_default):
     """Tests that the correct build steps for building a project are passed to
     GCB."""
     del mock_gcb_build_and_push_images
+    del mock_get_application_default
     self.maxDiff = None  # pylint: disable=invalid-name
     build_id = 1
     mock_run_build.return_value = build_id
