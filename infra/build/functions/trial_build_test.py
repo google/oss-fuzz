@@ -73,8 +73,6 @@ class GetProjectsToBuild(unittest.TestCase):
         'expected_trial_build_steps.json')
     with open(expected_build_steps_path, 'r') as file_handle:
       expected_build_steps = json.load(file_handle)
-    if mock_run_build.call_args_list[0][0][1] != expected_build_steps:
-      import pdb; pdb.set_trace()
     self.assertEqual(mock_run_build.call_args_list[0][0][1],
                      expected_build_steps)
     expected_check_finished_args = (build_id, project)
