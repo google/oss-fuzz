@@ -51,18 +51,19 @@ class GetProjectsToBuild(unittest.TestCase):
         self.PROJECTS, 'fuzzing', True)
     self.assertEqual(self.PROJECTS, buildable_projects)
 
+  @mock.patch('trial_build.wait_on_builds', return_value=True)
   @mock.patch('oauth2client.client.GoogleCredentials.get_application_default',
               return_value=None)
-  @mock.patch('trial_build.check_finished')
   @mock.patch('build_project.run_build')
   @mock.patch('build_and_push_test_images.build_and_push_images')
   def test_build_steps_correct(self, mock_gcb_build_and_push_images,
-                               mock_run_build, mock_check_finished,
-                               mock_get_application_default):
+                               mock_run_build, mock_get_application_default,
+                               mock_wait_on_builds):
     """Tests that the correct build steps for building a project are passed to
     GCB."""
     del mock_gcb_build_and_push_images
     del mock_get_application_default
+    del mock_wait_on_builds
     self.maxDiff = None  # pylint: disable=invalid-name
     build_id = 1
     mock_run_build.return_value = build_id
@@ -79,6 +80,3 @@ class GetProjectsToBuild(unittest.TestCase):
       expected_build_steps = json.load(file_handle)
     self.assertEqual(mock_run_build.call_args_list[0][0][1],
                      expected_build_steps)
-    expected_check_finished_args = (build_id, project)
-    self.assertEqual(mock_check_finished.call_args_list[0][0][:2],
-                     expected_check_finished_args)
