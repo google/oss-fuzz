@@ -1,7 +1,8 @@
 homepage: "https://www.tensorflow.org"
 language: python
-primary_contact: "amitpatankar@google.com"
+primary_contact: "lpak@google.com"
 auto_ccs:
+ - "itaiz@google.com"
  - "mihaimaruseac@google.com"
  - "lpak@google.com"
 fuzzing_engines:
