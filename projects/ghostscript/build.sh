@@ -91,7 +91,9 @@ for f in examples/*.{ps,pdf}; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/seeds/$s"
 done
-zip -j "$OUT/gstoraster_fuzzer.zip" "$WORK"/seeds/*
+
+# Create corpus for gstoraster_fuzzer
+zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
 
 # Copy out options
 cp $SRC/*.options $OUT/
