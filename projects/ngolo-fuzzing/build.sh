@@ -33,6 +33,11 @@ compile_package () {
     pkg_flat=`echo $pkg | sed 's/\//_/g'`
     args=`cat $SRC/ngolo-fuzzing/std/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
     ./ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
+    # applies special python patcher if any
+    ls $SRC/ngolo-fuzzing/std/$pkg_flat.py && (
+        python $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
+        mv fuzz_ng_$pkg_flat/fuzz_ngp.go fuzz_ng_$pkg_flat/fuzz_ng.go
+    )
     (
         cd fuzz_ng_$pkg_flat
         $SRC/LPM/external.protobuf/bin/protoc --go_out=./ ngolofuzz.proto
