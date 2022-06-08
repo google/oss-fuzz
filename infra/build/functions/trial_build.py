@@ -117,8 +117,7 @@ def get_args(args=None):
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
   parser.add_argument('--force-build',
-                      required=False,
-                      default=False,
+                      action='store_true',
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
   parsed_args = parser.parse_args(args)
@@ -219,6 +218,7 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                            build_id)
   if build_status not in FINISHED_BUILD_STATUSES:
+    logging.debug('build: %d not finished.', build_id)
     return False
   build_results[project] = build_status == 'SUCCESS'
   return True
@@ -237,11 +237,16 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   build_results = {}
   while wait_builds:
     logging.info('Polling')
-    for project, build_id in list(wait_builds.items()):
-      if check_finished(build_id, project, cloudbuild_api, cloud_project,
-                        build_results):
-        del wait_builds[project]
-      time.sleep(1)  # Avoid rate limiting.
+    for project, project_build_ids in list(wait_builds.items()):
+      for build_id in project_build_ids[:]:
+        if check_finished(build_id, project, cloudbuild_api, cloud_project,
+                          build_results):
+
+          wait_builds[project].remove(build_id)
+          if not wait_builds[project]:
+            del wait_builds[project]
+
+        time.sleep(1)  # Avoid rate limiting.
     print(wait_builds)
 
   print('Printing results')
@@ -265,7 +270,7 @@ def _do_test_builds(args):
     build_types.append(BUILD_TYPES['introspector'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
-  build_ids = []
+  build_ids = collections.defaultdict(list)
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type,
                                      args.force_build)
@@ -276,8 +281,11 @@ def _do_test_builds(args):
                                   upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
-    build_ids.extend(
-        _do_build_type_builds(args, config, credentials, build_type, projects))
+    project_builds = _do_build_type_builds(args, config, credentials,
+                                           build_type, projects)
+    for project, project_build_id in project_builds.items():
+      build_ids[project].append(project_build_id)
+
   return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
 
 

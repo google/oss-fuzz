@@ -14,10 +14,13 @@
 #
 ################################################################################
 """Tests for trial_build.py."""
+import json
 import unittest
 from unittest import mock
 
+import test_utils
 import trial_build
+
 
 
 class GetProjectsToBuild(unittest.TestCase):
@@ -26,7 +29,10 @@ class GetProjectsToBuild(unittest.TestCase):
   PROJECTS = ['myproject', 'myfailingproject']
 
   @mock.patch('trial_build._get_production_build_statuses',
-              return_value={'myproject': True, 'myfailingproject': False})
+              return_value={
+                  'myproject': True,
+                  'myfailingproject': False
+              })
   def test_force_build(self, mock_get_production_build_statuses):
     """Tests force build works."""
     del mock_get_production_build_statuses
@@ -35,10 +41,36 @@ class GetProjectsToBuild(unittest.TestCase):
     self.assertEqual(self.PROJECTS, buildable_projects)
 
   @mock.patch('trial_build._get_production_build_statuses',
-              return_value={'myproject': True, 'myfailingproject': False})
+              return_value={
+                  'myproject': True,
+                  'myfailingproject': False
+              })
   def test_get_projects_to_build(self, mock_get_production_build_statuses):
     """Tests get_projects_to_build works."""
     del mock_get_production_build_statuses
     buildable_projects = trial_build.get_projects_to_build(
         self.PROJECTS, 'fuzzing', True)
     self.assertEqual(self.PROJECTS, buildable_projects)
+
+  @mock.patch('trial_build.check_finished')
+  @mock.patch('build_project.run_build')
+  @mock.patch('build_and_push_test_images.build_and_push_images')
+  def test_build_config_correct(self, mock_gcb_build_and_push_images,
+                                mock_run_build, mock_check_finished):
+    del mock_gcb_build_and_push_images
+    build_id = 1
+    mock_run_build.return_value = build_id
+    branch_name = 'mybranch'
+    project = 'skcms'
+    args = [
+        '--sanitizers', 'address', 'undefined', '--fuzzing-engines', 'afl',
+        'libfuzzer', '--branch', branch_name, '--force-build', project
+    ]
+    self.assertTrue(trial_build.trial_build_main(args))
+    expected_build_steps_path = test_utils.get_test_data_file_path(
+        'expected_trial_build_steps.json')
+    with open(expected_build_steps_path, 'r') as fp:
+      expected_build_steps = json.load(fp)
+    mock_run_build.call_args_list[0][0][1] == expected_build_steps
+    expected_check_finished_args = [build_id, project]
+    mock_check_finished.call_args_list[0][0][:2] == expected_check_finished_args
