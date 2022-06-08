@@ -22,7 +22,6 @@ import test_utils
 import trial_build
 
 
-
 class GetProjectsToBuild(unittest.TestCase):
   """Tests for get_projects_to_build."""
 
@@ -55,9 +54,12 @@ class GetProjectsToBuild(unittest.TestCase):
   @mock.patch('trial_build.check_finished')
   @mock.patch('build_project.run_build')
   @mock.patch('build_and_push_test_images.build_and_push_images')
-  def test_build_config_correct(self, mock_gcb_build_and_push_images,
-                                mock_run_build, mock_check_finished):
+  def test_build_steps_correct(self, mock_gcb_build_and_push_images,
+                               mock_run_build, mock_check_finished):
+    """Tests that the correct build steps for building a project are passed to
+    GCB."""
     del mock_gcb_build_and_push_images
+    self.maxDiff = None
     build_id = 1
     mock_run_build.return_value = build_id
     branch_name = 'mybranch'
@@ -69,8 +71,12 @@ class GetProjectsToBuild(unittest.TestCase):
     self.assertTrue(trial_build.trial_build_main(args))
     expected_build_steps_path = test_utils.get_test_data_file_path(
         'expected_trial_build_steps.json')
-    with open(expected_build_steps_path, 'r') as fp:
-      expected_build_steps = json.load(fp)
-    mock_run_build.call_args_list[0][0][1] == expected_build_steps
-    expected_check_finished_args = [build_id, project]
-    mock_check_finished.call_args_list[0][0][:2] == expected_check_finished_args
+    with open(expected_build_steps_path, 'r') as file_handle:
+      expected_build_steps = json.load(file_handle)
+    if mock_run_build.call_args_list[0][0][1] != expected_build_steps:
+      import pdb; pdb.set_trace()
+    self.assertEqual(mock_run_build.call_args_list[0][0][1],
+                     expected_build_steps)
+    expected_check_finished_args = (build_id, project)
+    self.assertEqual(mock_check_finished.call_args_list[0][0][:2],
+                     expected_check_finished_args)
