@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+# this is a temporary fix: this project cannot be built with LLVM14 new pass
+# manager, so have to fall back to old pass manager.
+export CFLAGS=$(echo "$CFLAGS" | sed -e 's/-O0//')
+export CXXFLAGS=$(echo "$CXXFLAGS" | sed -e 's/-O0//')
+export CFLAGS=$(echo "$CFLAGS" | sed -e 's/-flto/-flegacy-pass-manager -flto/')
+export CXXFLAGS=$(echo "$CXXFLAGS" | sed -e 's/-flto/-flegacy-pass-manager -flto/')
+
 export DEPS_PATH=$SRC/deps
 export PKG_CONFIG_PATH=$DEPS_PATH/lib64/pkgconfig:$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"

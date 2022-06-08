@@ -14,6 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
+
+# this is a temporary fix: this project cannot be built with LLVM14 new pass
+# manager, so have to fall back to old pass manager.
+export CFLAGS=$(echo "$CFLAGS" | sed -e 's/-O0//')
+export CXXFLAGS=$(echo "$CXXFLAGS" | sed -e 's/-O0//')
+export CFLAGS=$(echo "$CFLAGS" | sed -e 's/-flto/-flegacy-pass-manager -flto/')
+export CXXFLAGS=$(echo "$CXXFLAGS" | sed -e 's/-flto/-flegacy-pass-manager -flto/')
+
 # Ensure libqb can be found by pkgconfig
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig/
 
