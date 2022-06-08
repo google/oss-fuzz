@@ -52,8 +52,8 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size, int color_sc
 {
 	int ret;
 	void *gs = NULL;
-  char color_space[50];
-  sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
+	char color_space[50];
+	sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
 		"gs",
@@ -96,9 +96,9 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size, int color_sc
 	}
 
 	ret = gsapi_init_with_args(gs, argc, args);
-	  if (ret && ret != gs_error_Quit)
-		  /* Just keep going, to cleanup. */
-		  fprintf(stderr, "gsapi_init_with_args: error %d\n", ret);
+	if (ret && ret != gs_error_Quit)
+		/* Just keep going, to cleanup. */
+		fprintf(stderr, "gsapi_init_with_args: error %d\n", ret);
 
 	ret = gsapi_exit(gs);
 	if (ret < 0 && ret != gs_error_Quit) {
@@ -114,33 +114,34 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size, int color_sc
 #ifdef PDF_TARGET
 // Returns 1 if this has a valid PDF header and 0 otherwise
 static int quick_check_pdf(const uint8_t *data, size_t size) {
-  // PDF checks. Exit early if we don't have a valid PDF signature.
-  if (size < 5) {
-    return 0;
-  }
+	// PDF checks. Exit early if we don't have a valid PDF signature.
+	if (size < 5) {
+		return 0;
+	}
 
-  // Check PDF tag. We do this because we want to use seeds
-  if (data[0] != 0x25 || data[1] != 0x50 || data[2] != 0x44 || data[3] != 0x46 || data[4] != 0x2d) {
-    return 0;
-  }
-  return 1;
+	// Check PDF tag. We do this because we want to use seeds
+	if (data[0] != 0x25 || data[1] != 0x50 || data[2] != 0x44 || data[3] != 0x46 || data[4] != 0x2d) {
+		return 0;
+	}
+	return 1;
 }
 #endif
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #ifdef MULTIPLE_COLORS
-  if (size == 0) {
-    return 0;
-  }
-  int c = ((int)data[0] % 65);
+	if (size == 0) {
+		return 0;
+	}
+	// Module the possibilities: https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
+	int c = ((int)data[0] % 63);
 #else
-  int c = 1;
+	int c = 1;
 #endif
 
 #ifdef PDF_TARGET
-  if (quick_check_pdf(data, size) != 1) {
-    return 0;
-  }
+	if (quick_check_pdf(data, size) != 1) {
+		return 0;
+	}
 #endif
 
 	gs_to_raster_fuzz(data, size, c);
