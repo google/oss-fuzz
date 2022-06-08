@@ -56,9 +56,45 @@ $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
     $CUPS_LIBS \
     $LIB_FUZZING_ENGINE bin/gs.a
 
+$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
+    -DMULTIPLE_COLORS \
+    $SRC/gstoraster_fuzzer.cc \
+    -o "$OUT/gstoraster_fuzzer_all_colors" \
+    -Wl,-rpath='$ORIGIN' \
+    $CUPS_LIBS \
+    $LIB_FUZZING_ENGINE bin/gs.a
+
+$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
+    -DPDF_TARGET \
+    $SRC/gstoraster_fuzzer.cc \
+    -o "$OUT/pdf_fuzzer" \
+    -Wl,-rpath='$ORIGIN' \
+    $CUPS_LIBS \
+    $LIB_FUZZING_ENGINE bin/gs.a
+
+# Create PDF seed corpus
+zip -j "$OUT/pdf_fuzzer_seed_corpus.zip" $SRC/pdf_seeds/*
+
+# Create corpus for all_color_fuzzer. Only use seeds of a few KB in size.
+mkdir -p "$WORK/all_color_seeds"
+for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
+  printf "\x01" | cat - "$f" > tmp_file.txt
+  mv tmp_file.txt $f
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/all_color_seeds/$s"
+done
+zip -j "$OUT/gstoraster_fuzzer_all_colors_seed_corpus.zip" "$WORK"/all_color_seeds/*
+
+# Create seeds for gstoraster_fuzzer
 mkdir -p "$WORK/seeds"
 for f in examples/*.{ps,pdf}; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/seeds/$s"
 done
-zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
+zip -j "$OUT/gstoraster_fuzzer.zip" "$WORK"/seeds/*
+
+# Copy out options
+cp $SRC/*.options $OUT/
+
+# Copy out dictionary
+cp $SRC/pdf.dict $OUT/pdf_fuzzer.dict
