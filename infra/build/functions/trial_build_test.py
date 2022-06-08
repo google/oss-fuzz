@@ -59,7 +59,7 @@ class GetProjectsToBuild(unittest.TestCase):
     """Tests that the correct build steps for building a project are passed to
     GCB."""
     del mock_gcb_build_and_push_images
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=invalid-name
     build_id = 1
     mock_run_build.return_value = build_id
     branch_name = 'mybranch'
