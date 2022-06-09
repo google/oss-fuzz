@@ -105,11 +105,13 @@ def get_upload_bucket(engine, architecture, testing):
   return bucket
 
 
-def _get_targets_list(project_name, testing):
+def _get_targets_list(project_name):
   """Returns target list."""
   # libFuzzer ASan 'x86_84' is the default configuration, get list of targets
   # from it.
-  bucket = get_upload_bucket('libfuzzer', 'x86_64', testing)
+  # We never want the target list from the testing bucket, the testing bucket is
+  # only for uploading.
+  bucket = get_upload_bucket('libfuzzer', 'x86_64', testing=None)
   url = get_targets_list_url(bucket, project_name, 'address')
 
   url = urlparse.urljoin(GCS_URL_BASENAME, url)
@@ -159,10 +161,10 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
-def download_corpora_steps(project_name, testing):
+def download_corpora_steps(project_name):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
-  fuzz_targets = _get_targets_list(project_name, testing)
+  fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None
@@ -197,11 +199,10 @@ def download_corpora_steps(project_name, testing):
   return steps
 
 
-def download_coverage_data_steps(project_name, latest, bucket_name, out_dir,
-                                 testing):
+def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
   """Returns GCB steps to download coverage data for the given project"""
   steps = []
-  fuzz_targets = _get_targets_list(project_name, testing)
+  fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None

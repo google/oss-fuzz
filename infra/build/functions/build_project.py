@@ -274,8 +274,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
-    for sanitizer in project.sanitizers:
-      for architecture in project.architectures:
+    # Sort sanitizers and architectures so order is determinisitic (good for
+    # tests).
+    for sanitizer in sorted(project.sanitizers):
+      # Build x86_64 before i386.
+      for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)
         if not is_supported_configuration(build):
           continue

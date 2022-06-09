@@ -314,8 +314,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
                   f'/reports/{coverage_report_latest}/linux')
 
   download_coverage_steps = build_lib.download_coverage_data_steps(
-      project.name, coverage_report_latest, bucket_name, build.out,
-      config.testing)
+      project.name, coverage_report_latest, bucket_name, build.out)
   if not download_coverage_steps:
     logging.warning(
         'Skipping introspector build for %s. No coverage data found.',
