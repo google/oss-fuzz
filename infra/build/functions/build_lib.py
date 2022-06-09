@@ -107,12 +107,11 @@ def get_upload_bucket(engine, architecture, testing):
 
 def _get_targets_list(project_name):
   """Returns target list."""
-  # We never want the target list from the testing bucket, the testing bucket is
-  # only for uploading.
-  testing = None
   # libFuzzer ASan 'x86_84' is the default configuration, get list of targets
   # from it.
-  bucket = get_upload_bucket('libfuzzer', 'x86_64', testing)
+  # We never want the target list from the testing bucket, the testing bucket is
+  # only for uploading.
+  bucket = get_upload_bucket('libfuzzer', 'x86_64', testing=None)
   url = get_targets_list_url(bucket, project_name, 'address')
 
   url = urlparse.urljoin(GCS_URL_BASENAME, url)
