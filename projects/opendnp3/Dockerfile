@@ -20,4 +20,5 @@ RUN apt-get update && apt-get install -y make wget tshark
 RUN git clone --recursive -b release --depth 1 https://github.com/dnp3/opendnp3.git opendnp3
 WORKDIR opendnp3
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

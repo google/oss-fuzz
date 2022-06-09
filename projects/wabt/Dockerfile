@@ -21,4 +21,5 @@ WORKDIR wabt
 RUN git submodule init
 RUN git submodule update
 COPY build.sh wasm2wat_fuzzer.cc $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

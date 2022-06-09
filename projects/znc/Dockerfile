@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/znc/znc
 WORKDIR $SRC/znc
 COPY build.sh msg_parse_fuzzer.cpp $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

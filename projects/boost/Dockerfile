@@ -21,4 +21,5 @@ RUN git clone --recursive https://github.com/boostorg/boost.git
 WORKDIR boost
 # Preferably, move boost_regex_fuzzer.cc to the boost repository.
 COPY build.sh *.cc $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

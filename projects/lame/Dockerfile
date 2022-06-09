@@ -25,4 +25,5 @@ RUN mv mpg123* mpg123
 RUN git clone --depth 1 https://github.com/guidovranken/LAME-fuzzers
 RUN svn checkout https://svn.code.sf.net/p/lame/svn/trunk/lame $SRC/lame
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

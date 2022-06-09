@@ -21,4 +21,5 @@ WORKDIR $SRC/
 
 COPY build.sh $SRC/
 COPY *.cc $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

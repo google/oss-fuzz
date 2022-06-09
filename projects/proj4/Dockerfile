@@ -27,4 +27,5 @@ RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git proj/libtiff
 WORKDIR proj
 
 RUN cp test/fuzzers/build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

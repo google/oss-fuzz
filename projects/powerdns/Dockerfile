@@ -30,4 +30,5 @@ WORKDIR pdns
 
 # copy build script and other fuzzer files in src dir
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

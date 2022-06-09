@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/c-ares/c-ares.git
 WORKDIR c-ares
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

@@ -23,4 +23,5 @@ RUN git clone --depth 1 https://github.com/mozilla/nss-fuzzing-corpus.git nss-co
 
 WORKDIR nss
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

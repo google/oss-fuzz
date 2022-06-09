@@ -28,4 +28,5 @@ RUN git clone --depth 1 https://github.com/eclipse-cyclonedds/cyclonedds
 
 COPY build.sh $SRC
 WORKDIR $SRC/cyclonedds
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

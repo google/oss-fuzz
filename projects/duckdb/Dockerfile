@@ -18,4 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth=1 https://github.com/duckdb/duckdb duckdb
 WORKDIR duckdb
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

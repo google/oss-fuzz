@@ -25,4 +25,5 @@ RUN $SRC/perfetto/infra/oss-fuzz/init_container
 
 WORKDIR $SRC/perfetto
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

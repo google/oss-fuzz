@@ -19,4 +19,5 @@ RUN apt-get update && apt install -y cmake
 RUN git clone --depth 1 https://github.com/openbabel/openbabel.git
 COPY build.sh $SRC
 WORKDIR $SRC/openbabel
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

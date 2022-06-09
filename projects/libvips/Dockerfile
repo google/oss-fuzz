@@ -53,4 +53,5 @@ RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 
 WORKDIR libvips
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

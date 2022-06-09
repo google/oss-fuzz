@@ -26,4 +26,5 @@ RUN cat WORKSPACE >> $SRC/cel-cpp/WORKSPACE
 RUN cat .bazelrc >> $SRC/cel-cpp/.bazelrc
 RUN echo "4.1.0" > $SRC/cel-cpp/.bazelversion
 WORKDIR $SRC/cel-cpp
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

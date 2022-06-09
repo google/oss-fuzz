@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone https://github.com/guidovranken/piex.git piex
 WORKDIR piex
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

@@ -21,4 +21,5 @@ RUN git clone https://github.com/danmar/cppcheck.git
 WORKDIR cppcheck
 COPY build.sh $SRC/
 
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

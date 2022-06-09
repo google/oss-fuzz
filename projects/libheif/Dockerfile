@@ -54,4 +54,5 @@ RUN git clone \
 WORKDIR libheif
 
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

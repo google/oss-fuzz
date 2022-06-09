@@ -29,4 +29,5 @@ RUN git clone --depth 1 https://gitlab.freedesktop.org/spice/usbredir.git $SRC/s
 
 WORKDIR $SRC/spice-usbredir
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

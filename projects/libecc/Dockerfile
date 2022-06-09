@@ -23,4 +23,5 @@ RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

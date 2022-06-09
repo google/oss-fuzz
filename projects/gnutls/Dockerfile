@@ -47,4 +47,5 @@ RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

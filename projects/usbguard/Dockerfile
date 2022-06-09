@@ -42,4 +42,5 @@ RUN git clone --recurse-submodules --depth 1 \
   https://github.com/USBGuard/usbguard usbguard
 WORKDIR usbguard
 COPY build.sh $SRC
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

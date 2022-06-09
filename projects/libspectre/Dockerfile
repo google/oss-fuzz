@@ -28,4 +28,5 @@ RUN mv $SRC/libspectre/ghostscript-9.53.3 $SRC/libspectre/ghostscript
 
 WORKDIR $SRC/libspectre/
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

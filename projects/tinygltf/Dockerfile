@@ -19,4 +19,5 @@ RUN pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/syoyo/tinygltf.git
 WORKDIR $SRC/tinygltf
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

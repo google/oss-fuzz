@@ -27,4 +27,5 @@ RUN git clone -b v2.4.2 --depth 1 https://github.com/AcademySoftwareFoundation/o
 
 COPY build.sh *.h *.cc $SRC/
 WORKDIR $WORK/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

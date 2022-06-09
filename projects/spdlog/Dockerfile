@@ -22,4 +22,5 @@ RUN zip spdlog_fuzzer_seed_corpus.zip spdlog/example/*
 WORKDIR spdlog
 COPY build.sh spdlog_fuzzer.dict $SRC/
 COPY fuzz/* $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

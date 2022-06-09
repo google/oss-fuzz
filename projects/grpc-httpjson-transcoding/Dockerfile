@@ -21,4 +21,5 @@ RUN apt-get update && apt-get install python -y
 RUN git clone https://github.com/grpc-ecosystem/grpc-httpjson-transcoding.git
 WORKDIR $SRC/grpc-httpjson-transcoding/
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

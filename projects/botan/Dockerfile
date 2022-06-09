@@ -20,4 +20,5 @@ RUN git clone --depth 1 https://github.com/randombit/botan.git botan
 RUN git clone --depth 1 https://github.com/randombit/crypto-corpus.git fuzzer_corpus
 WORKDIR botan
 COPY build.sh $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1

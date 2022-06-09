@@ -24,4 +24,5 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_
 WORKDIR libressl
 RUN ./update.sh
 COPY build.sh *.options $SRC/
+# To use LLVM old pass manager.
 ENV OLD_LLVMPASS 1
