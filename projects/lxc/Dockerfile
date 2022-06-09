@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/lxc/lxc
+RUN git  clone --depth 1 https://github.com/lxc/lxc
 WORKDIR lxc
 COPY build.sh $SRC/
