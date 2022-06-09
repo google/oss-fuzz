@@ -135,8 +135,8 @@ pid_t run_child(char **argv) {
       fatal_log("Fork failed: %s", strerror(errno));
     case 0:
       raise(SIGSTOP);
-      execv(argv[0], argv);
-      fatal_log("execv: %s", strerror(errno));
+      execvp(argv[0], argv);
+      fatal_log("execvp: %s", strerror(errno));
   }
   return pid;
 }
