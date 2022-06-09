@@ -17,4 +17,3 @@
 
 cp $SRC/persistence_fuzzer.go ./core/chaincode/persistence/mock/
 compile_go_fuzzer github.com/hyperledger/fabric/core/chaincode/persistence/mock FuzzPersistence fuzz_persistence
-
