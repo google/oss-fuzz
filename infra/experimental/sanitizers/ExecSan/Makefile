@@ -13,5 +13,11 @@ target: target.cpp
 test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
 
+pytorch-lightning-1.5.10:
+	cp execSan.cpp PoEs/pytorch-lightning-1.5.10/; \
+	cd PoEs/pytorch-lightning-1.5.10/; \
+	docker build . --tag execsan_pytorch-lightning; \
+	docker run -t execsan_pytorch-lightning:latest;
+
 clean:
 	rm -f execSan /tmp/tripwire target
