@@ -30,5 +30,6 @@ WORKDIR pdns
 
 # copy build script and other fuzzer files in src dir
 COPY build.sh $SRC/
-# To use LLVM old pass manager.
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
 ENV OLD_LLVMPASS 1
