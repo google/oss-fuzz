@@ -24,8 +24,6 @@ we show a way to achieve the same exploit with an arbitrary env variable.
 """
 
 import os
-import random
-import string
 import sys
 import atheris
 
@@ -34,21 +32,10 @@ with atheris.instrument_imports():
   from pytorch_lightning.utilities.argparse import parse_env_variables
 
 
-def random_env_name(length):
-  """Generate a valid random name of environment variables"""
-  valid_env_head_chars = string.ascii_uppercase + string.ascii_lowercase + '_'
-  valid_env_tail_chars = valid_env_head_chars + string.digits
-
-  env_head = random.choice(valid_env_head_chars)
-  env_tail = ''.join(random.choice(valid_env_tail_chars) \
-                     for _ in range(random.randint(0, length)))
-  return env_head + env_tail
-
-
 def prepare_fuzzing_input(data):
   """Prepare the data needed by the exploit with input data from fuzzers."""
   data = data.replace(b'\0', b'')
-  env_name = random_env_name(len(data))
+  env_name = 'AN_ARBITRARY_ENV_NAME'
   return data, env_name
 
 
