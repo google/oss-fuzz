@@ -18,7 +18,7 @@
 echo "---------------------------------------------------------------"
 
 # This is a temporary fix: fall back to LLVM14's old pass manager
-if [ -n "$OLD_LLVMPASS" ]; then
+if [ -n "${OLD_LLVMPASS-}" ]; then
   export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
 fi
 
