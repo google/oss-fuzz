@@ -15,4 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-runner
-RUN apt-get update && apt-get install -y gdb valgrind zip
+RUN apt-get update && apt-get install -y build-essential libgmp-dev valgrind zip
+
+RUN wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
+    tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
+    make && make install && rm -rf gdb-12.1
