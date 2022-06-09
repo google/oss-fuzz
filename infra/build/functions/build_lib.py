@@ -31,7 +31,7 @@ from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
-BUILD_TIMEOUT = 12 * 60 * 60
+BUILD_TIMEOUT = 16 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
