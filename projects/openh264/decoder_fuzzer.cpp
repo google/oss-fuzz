@@ -18,7 +18,7 @@
 /*
  * To build locally:
  * CC=clang CXX=clang++ CFLAGS="-fsanitize=address,fuzzer-no-link -g" CXXFLAGS="-fsanitize=address,fuzzer-no-link -g" LDFLAGS="-fsanitize=address,fuzzer-no-link" make -j$(nproc) USE_ASM=No BUILDTYPE=Debug libraries
- * clang++ -o decoder_fuzzer -fsanitize=address -g -O1 -I./codec/api/svc -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzer -lstdc++ decoder_fuzzer.cpp libopenh264.a
+ * clang++ -o decoder_fuzzer -fsanitize=address -g -O1 -I./codec/api/wels -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzer -lstdc++ decoder_fuzzer.cpp libopenh264.a
  */
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
