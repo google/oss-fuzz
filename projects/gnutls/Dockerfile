@@ -47,3 +47,6 @@ RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

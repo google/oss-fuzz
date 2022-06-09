@@ -25,3 +25,6 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_
 RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 RUN wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

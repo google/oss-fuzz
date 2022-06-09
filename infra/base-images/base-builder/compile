@@ -17,6 +17,11 @@
 
 echo "---------------------------------------------------------------"
 
+# This is a temporary fix: fall back to LLVM14's old pass manager
+if [ -n "$OLD_LLVMPASS" ]; then
+  export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
+fi
+
 if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
   echo "ERROR: 'dataflow' sanitizer can be used with 'dataflow' engine only."
   exit 1
