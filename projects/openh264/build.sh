@@ -20,4 +20,4 @@ zip -q0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./res/
 
 # build 
 make -j$(nproc) USE_ASM=No BUILDTYPE=Debug libraries
-$CXX $CXXFLAGS -o $OUT/decoder_fuzzer -I./codec/api/svc -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzingEngine $SRC/decoder_fuzzer.cpp libopenh264.a
+$CXX $CXXFLAGS -o $OUT/decoder_fuzzer -I./codec/api/wels -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzingEngine $SRC/decoder_fuzzer.cpp libopenh264.a
