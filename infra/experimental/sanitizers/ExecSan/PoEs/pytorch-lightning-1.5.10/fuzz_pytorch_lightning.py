@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
-
-# Copyright 2022 Google Inc.
+#
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ https://github.com/advisories/GHSA-r5qj-cvf9-p85h
 The original report documents an exploit using a specific environment variable,
 we show a way to achieve the same exploit with an arbitrary env variable.
 """
-
 
 import os
 import random
@@ -54,26 +53,26 @@ def prepare_fuzzing_input(data):
 
 
 def exploit_target(env_value, env_name):
-  """This target is based on a snippet from
-  the official documentation of `parse_env_variables`:
-  https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.utilities.argparse.html
+  """This target is based on a snippet from the official documentation of
+  `parse_env_variables`:
+  https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.utilities.argparse.html  # pylint: disable=line-too-long
   It might not be the most realistic example,
-  but serves as a PoC to show that execSan works for Python"""
+  but serves as a PoC to show that execSan works for Python."""
   os.environb[env_name.encode()] = env_value
   parse_env_variables(Trainer, template=env_name)
 
 
 def TestOneInput(data):  # pylint: disable=invalid-name
-  """Exploit the target only with input data from fuzzers"""
+  """Exploit the target only with input data from fuzzers."""
   env_value, env_name = prepare_fuzzing_input(data)
   exploit_target(env_value, env_name)
 
 
 def main():
-  """Fuzz target with atheris"""
+  """Fuzz target with atheris."""
   atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
