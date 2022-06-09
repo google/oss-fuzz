@@ -21,3 +21,4 @@ RUN git clone https://github.com/danmar/cppcheck.git
 WORKDIR cppcheck
 COPY build.sh $SRC/
 
+ENV OLD_LLVMPASS 1

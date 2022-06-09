@@ -21,3 +21,4 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo libjpeg-turbo
 WORKDIR qpdf
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

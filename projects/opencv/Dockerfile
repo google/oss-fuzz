@@ -21,3 +21,4 @@ WORKDIR opencv/
 
 COPY build.sh $SRC/
 COPY *.cc *.h $SRC/
+ENV OLD_LLVMPASS 1

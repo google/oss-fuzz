@@ -22,3 +22,4 @@ RUN zip spdlog_fuzzer_seed_corpus.zip spdlog/example/*
 WORKDIR spdlog
 COPY build.sh spdlog_fuzzer.dict $SRC/
 COPY fuzz/* $SRC/
+ENV OLD_LLVMPASS 1

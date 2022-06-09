@@ -20,3 +20,4 @@ RUN git clone https://github.com/janet-lang/janet
 
 WORKDIR $SRC
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

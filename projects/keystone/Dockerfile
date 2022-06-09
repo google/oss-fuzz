@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/keystone-engine/keystone.git
 WORKDIR $SRC
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

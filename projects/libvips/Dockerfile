@@ -53,3 +53,4 @@ RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 
 WORKDIR libvips
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

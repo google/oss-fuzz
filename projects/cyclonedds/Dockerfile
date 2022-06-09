@@ -28,3 +28,4 @@ RUN git clone --depth 1 https://github.com/eclipse-cyclonedds/cyclonedds
 
 COPY build.sh $SRC
 WORKDIR $SRC/cyclonedds
+ENV OLD_LLVMPASS 1

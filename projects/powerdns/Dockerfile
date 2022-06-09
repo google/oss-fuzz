@@ -30,3 +30,4 @@ WORKDIR pdns
 
 # copy build script and other fuzzer files in src dir
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

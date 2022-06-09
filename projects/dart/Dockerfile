@@ -23,3 +23,4 @@ RUN mkdir dart-sdk && cd dart-sdk && fetch dart
 COPY build.sh $SRC
 COPY patch.diff $SRC
 WORKDIR $SRC/dart-sdk/sdk
+ENV OLD_LLVMPASS 1

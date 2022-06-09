@@ -35,3 +35,4 @@ WORKDIR gnupg
 COPY fuzzgnupg.diff $SRC/fuzz.diff
 COPY fuzz_* $SRC/
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

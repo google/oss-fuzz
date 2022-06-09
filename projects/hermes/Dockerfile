@@ -29,3 +29,4 @@ RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.ta
 RUN git clone https://github.com/facebook/hermes.git
 WORKDIR $SRC
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

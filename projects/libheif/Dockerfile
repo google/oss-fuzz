@@ -54,3 +54,4 @@ RUN git clone \
 WORKDIR libheif
 
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

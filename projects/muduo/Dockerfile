@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y make libboost-dev
 RUN git clone --depth 1 https://github.com/chenshuo/muduo
 WORKDIR muduo
 COPY build.sh muduo_http_fuzzer.cpp $SRC/
+ENV OLD_LLVMPASS 1

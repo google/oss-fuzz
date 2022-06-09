@@ -21,3 +21,4 @@ WORKDIR wabt
 RUN git submodule init
 RUN git submodule update
 COPY build.sh wasm2wat_fuzzer.cc $SRC/
+ENV OLD_LLVMPASS 1

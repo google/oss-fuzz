@@ -28,3 +28,4 @@ RUN mv $SRC/libspectre/ghostscript-9.53.3 $SRC/libspectre/ghostscript
 
 WORKDIR $SRC/libspectre/
 COPY build.sh $SRC/
+ENV OLD_LLVMPASS 1

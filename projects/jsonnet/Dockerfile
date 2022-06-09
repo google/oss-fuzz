@@ -21,3 +21,4 @@ WORKDIR $SRC/
 
 COPY build.sh $SRC/
 COPY *.cc $SRC/
+ENV OLD_LLVMPASS 1

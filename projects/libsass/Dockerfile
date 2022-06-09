@@ -20,3 +20,4 @@ RUN git clone --depth 1 https://github.com/sass/libsass.git libsass
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY data_context_fuzzer.cc $SRC/
+ENV OLD_LLVMPASS 1
