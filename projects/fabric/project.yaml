@@ -1,9 +1,9 @@
 homepage: "https://www.hyperledger.org"
 main_repo: "https://github.com/hyperledger/fabric"
 primary_contact: "ale.linux@sopit.net"
-auto_ccs :
+auto_ccs:
   - "gari.r.singh@gmail.com"
-vendor_ccs :
+vendor_ccs:
   - "adam@adalogics.com"
   - "david@adalogics.com"
 language: go
