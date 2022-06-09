@@ -14,8 +14,8 @@
 #
 ################################################################################
 
+
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER htuch@google.com
 
 RUN apt-get update && apt-get -y install  \
 	build-essential \
@@ -25,15 +25,9 @@ RUN apt-get update && apt-get -y install  \
     curl            \
     autoconf        \
     libtool         \
-    cmake           \
     wget            \
     golang          \
-    python
-
-# Install Bazel
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
+    rsync
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

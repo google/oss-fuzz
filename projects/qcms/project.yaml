@@ -1,8 +1,10 @@
 homepage: "https://hg.mozilla.org/mozilla-central/file/tip/gfx/qcms/"
-primary_contact: "agaynor@mozilla.com"
-sanitizers:
-- address
-- undefined
-- memory
+language: rust
+primary_contact: "twsmith@mozilla.com"
 auto_ccs:
-- "twsmith@mozilla.com"
+  - "aosmond@mozilla.com"
+  - "jmuizelaar@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

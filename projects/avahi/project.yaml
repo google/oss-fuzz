@@ -1,0 +1,13 @@
+homepage: "https://avahi.org/"
+language: c++
+primary_contact: trent@lloyd.id.au
+auto_ccs:
+  - alex.gaynor@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/lathiat/avahi'

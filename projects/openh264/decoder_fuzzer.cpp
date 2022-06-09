@@ -26,6 +26,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   int32_t i;
   int32_t iBufPos = 0;
   int32_t iEndOfStreamFlag;
+  int iLevelSetting = (int) WELS_LOG_QUIET; // disable logging while fuzzing
   int32_t iSliceSize;
   ISVCDecoder *pDecoder;
   SDecodingParam sDecParam = {0};
@@ -40,11 +41,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   // TODO: is this the best/fastest ERROR_CON to use?
   sDecParam.eEcActiveIdc = ERROR_CON_SLICE_COPY;
-  // TODO: should we also fuzz VIDEO_BITSTREAM_SVC
+  // TODO: should we also fuzz VIDEO_BITSTREAM_SVC?
   sDecParam.sVideoProperty.eVideoBsType = VIDEO_BITSTREAM_AVC;
   
   WelsCreateDecoder (&pDecoder);
   pDecoder->Initialize (&sDecParam);
+  pDecoder->SetOption (DECODER_OPTION_TRACE_LEVEL, &iLevelSetting);
 
   while (1) {
     if (iBufPos >= size) {

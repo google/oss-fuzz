@@ -1,0 +1,50 @@
+diff --git a/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt b/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
+index acfb3bd0e..a499ee2e0 100644
+--- a/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
++++ b/llvm/lib/DebugInfo/Symbolize/CMakeLists.txt
+@@ -12,4 +12,11 @@ add_llvm_component_library(LLVMSymbolize
+   Object
+   Support
+   Demangle
+-  )
++
++  LINK_LIBS
++  /usr/lib/swift_static/linux/libswiftCore.a
++  /usr/lib/swift_static/linux/libicui18nswift.a
++  /usr/lib/swift_static/linux/libicuucswift.a
++  /usr/lib/swift_static/linux/libicudataswift.a
++  /usr/lib/x86_64-linux-gnu/libstdc++.so.6
++)
+diff --git a/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp b/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
+index fb4875f79..0030769ee 100644
+--- a/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
++++ b/llvm/lib/DebugInfo/Symbolize/Symbolize.cpp
+@@ -36,6 +36,13 @@
+ #include <cassert>
+ #include <cstring>
+ 
++
++extern "C" char *swift_demangle(const char *mangledName,
++                     size_t mangledNameLength,
++                     char *outputBuffer,
++                     size_t *outputBufferSize,
++                     uint32_t flags);
++
+ namespace llvm {
+ namespace symbolize {
+ 
+@@ -678,6 +685,14 @@ LLVMSymbolizer::DemangleName(const std::string &Name,
+     free(DemangledName);
+     return Result;
+   }
++  if (!Name.empty() && Name.front() == '$') {
++    char *DemangledName = swift_demangle(Name.c_str(), Name.length(), 0, 0, 0);
++    if (DemangledName) {
++      std::string Result = DemangledName;
++      free(DemangledName);
++      return Result;
++    }
++  }
+ 
+   if (DbiModuleDescriptor && DbiModuleDescriptor->isWin32Module())
+     return std::string(demanglePE32ExternCFunc(Name));

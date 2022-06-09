@@ -1,0 +1,18 @@
+homepage: "https://github.com/bazelbuild/rules_fuzzing"
+language: c++
+primary_contact: "test@example.com"
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
+
+# This is a test project.
+disabled: true

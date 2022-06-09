@@ -1,0 +1,80 @@
+name: Project tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        engine:
+          - libfuzzer
+        sanitizer:
+          - address
+          - memory
+          - undefined
+          - coverage
+        architecture:
+          - x86_64
+        include:
+          - engine: afl
+            sanitizer: address
+            architecture: x86_64
+          - engine: honggfuzz
+            sanitizer: address
+            architecture: x86_64
+          - engine: libfuzzer
+            sanitizer: address
+            architecture: i386
+          - engine: none
+            sanitizer: address
+            architecture: x86_64
+          - engine: dataflow
+            sanitizer: dataflow
+            architecture: x86_64
+    env:
+      ENGINE: ${{ matrix.engine }}
+      SANITIZER: ${{ matrix.sanitizer }}
+      ARCHITECTURE: ${{ matrix.architecture }}
+
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v3
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Clear unnecessary files
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker images -a -q)
+          df -h
+
+      - name: Setup python environment
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r infra/ci/requirements.txt
+
+      - name: Run project tests
+        run: python infra/ci/build.py

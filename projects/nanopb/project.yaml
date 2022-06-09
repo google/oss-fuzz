@@ -1,0 +1,14 @@
+homepage: "https://jpa.kapsi.fi/nanopb/"
+language: c++
+primary_contact: "jpa@npb.mail.kapsi.fi"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
+main_repo: 'https://github.com/nanopb/nanopb'

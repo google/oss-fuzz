@@ -1,0 +1,11 @@
+homepage: "https://requests.readthedocs.io/en/master/"
+main_repo: "https://github.com/psf/requests.git"
+language: python
+primary_contact: "p.antoine@catenacyber.fr"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

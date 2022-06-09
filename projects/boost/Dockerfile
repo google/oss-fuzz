@@ -15,12 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y g++
+RUN apt-get update && apt-get install -y g++ python
 
 RUN git clone --recursive https://github.com/boostorg/boost.git
 WORKDIR boost
-# This bootstrap boost with the g++ toolchain.
-# The actual build will need to use CXX/CXXFLAGS provided by OSS-Fuzz.
-RUN ./bootstrap.sh && ./b2 headers
 # Preferably, move boost_regex_fuzzer.cc to the boost repository.
 COPY build.sh *.cc $SRC/

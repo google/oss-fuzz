@@ -1,0 +1,6 @@
+homepage: "https://github.com/spotify/spotify-json"
+main_repo: 'https://github.com/spotify/spotify-json'
+primary_contact: "johanl@spotify.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"

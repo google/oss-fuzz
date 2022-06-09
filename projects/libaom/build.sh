@@ -43,8 +43,7 @@ if [[ $CFLAGS = *sanitize=memory* ]]; then
 fi
 
 cmake $SRC/aom -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE='-O3 -g' \
-  -DCMAKE_CXX_FLAGS_RELEASE='-O3 -g' -DCMAKE_LD_FLAGS_RELEASE='-O3 -g' \
-  -DCONFIG_PIC=1 -DCONFIG_SCALABILITY=0 -DCONFIG_LOWBITDEPTH=1 \
+  -DCMAKE_CXX_FLAGS_RELEASE='-O3 -g' -DCONFIG_PIC=1 -DCONFIG_LOWBITDEPTH=1 \
   -DCONFIG_AV1_ENCODER=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
   -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
   -DAOM_EXTRA_C_FLAGS="${extra_c_flags}" \
@@ -52,35 +51,19 @@ cmake $SRC/aom -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE='-O3 -g' \
 make -j$(nproc)
 popd
 
-# Build some libaom utils that are not part of the core lib.
-$CC $CFLAGS -std=c99 -c \
-  -I$SRC/aom \
-  -I${build_dir} \
-  $SRC/aom/common/ivfdec.c -o ${build_dir}/ivfdec.o
-
-$CC $CFLAGS -std=c99 -c \
-  -I$SRC/aom \
-  -I${build_dir} \
-  $SRC/aom/common/tools_common.c -o ${build_dir}/tools_common.o
-
 # build fuzzers
 fuzzer_src_name=av1_dec_fuzzer
-fuzzer_modes=( '' '_threaded' )
+fuzzer_name=${fuzzer_src_name}
 
-for mode in "${fuzzer_modes[@]}"; do
-  fuzzer_name=${fuzzer_src_name}${mode}
+$CXX $CXXFLAGS -std=c++11 \
+  -I$SRC/aom \
+  -I${build_dir} \
+  -Wl,--start-group \
+  $LIB_FUZZING_ENGINE \
+  $SRC/aom/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
+  ${build_dir}/libaom.a -Wl,--end-group
 
-  $CXX $CXXFLAGS -std=c++11 \
-    -DDECODE_MODE${mode} \
-    -I$SRC/aom \
-    -I${build_dir} \
-    -Wl,--start-group \
-    -lFuzzingEngine \
-    $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
-    ${build_dir}/libaom.a ${build_dir}/ivfdec.o ${build_dir}/tools_common.o \
-    -Wl,--end-group
+# copy seed corpus.
+cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+cp $SRC/aom/examples/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 
-  # copy seed corpus.
-  cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-  cp $SRC/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
-done

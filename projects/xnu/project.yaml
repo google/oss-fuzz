@@ -1,0 +1,19 @@
+homepage: "https://opensource.apple.com/"
+language: "c"
+primary_contact: "nedwill@google.com"
+main_repo: "https://github.com/googleprojectzero/SockFuzzer"
+auto_ccs:
+  - "ddkilzer@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "lglovin@apple.com"
+  - "Product-Security@apple.com"
+  - "vlubet@apple.com"
+  - "iang@apple.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+file_github_issue: True

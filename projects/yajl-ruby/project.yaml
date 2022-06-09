@@ -1,5 +1,10 @@
 homepage: https://github.com/brianmario/yajl-ruby
+language: c++
 primary_contact: seniorlopez@gmail.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
 sanitizers:
   - address
   - undefined
@@ -7,3 +12,4 @@ sanitizers:
 auto_ccs:
   - aaron.patterson@gmail.com
   - jonathan@titanous.com
+main_repo: 'https://github.com/brianmario/yajl-ruby'

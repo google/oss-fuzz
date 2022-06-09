@@ -1,0 +1,10 @@
+homepage: "https://libigl.github.io"
+language: c++
+primary_contact: "github@jdumas.org"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/libigl/libigl"

@@ -1,0 +1,11 @@
+homepage: "https://github.com/ultrajson/ultrajson"
+language: python
+# TODO(mbarbella): Reach out to project maintainers for a better primary contact.
+primary_contact: "mbarbella@google.com"
+auto_ccs:
+  - "ipudney@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

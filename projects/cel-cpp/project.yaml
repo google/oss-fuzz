@@ -1,0 +1,13 @@
+homepage: "https://opensource.google/projects/cel"
+language: c++
+primary_contact: "kyessenov@gmail.com"
+auto_ccs :
+- "tswadell@google.com"
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+# - memory
+main_repo: 'https://github.com/google/cel-cpp'
+file_github_issue: True

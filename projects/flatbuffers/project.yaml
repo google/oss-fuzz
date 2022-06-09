@@ -1,0 +1,12 @@
+homepage: "https://github.com/google/flatbuffers"
+language: c++
+primary_contact: "derekbailey@google.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "vglavnyy@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/google/flatbuffers'
+file_github_issue: True

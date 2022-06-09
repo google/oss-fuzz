@@ -1,0 +1,13 @@
+homepage: "https://github.com/casync/casync"
+language: c++
+primary_contact: "lennart@poettering.net"
+sanitizers:
+  - address
+  - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+auto_ccs:
+  - zbyszek@in.waw.pl
+  - poettering@gmail.com
+  - fsumsal@redhat.com
+main_repo: 'https://github.com/systemd/casync'

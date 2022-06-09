@@ -15,12 +15,16 @@
 #
 ################################################################################
 
-# Install dependencies.
-export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
-
-# Set environment for rustc.
+# Ensure rust nightly is used
 source $HOME/.cargo/env
+rustup default nightly
+
+# Install dependencies.
+export MOZBUILD_STATE_PATH=/root/.mozbuild
+export SHELL=/bin/bash
+cd ../../
+./mach --no-interactive bootstrap --application-choice browser
+cd js/src/
 
 autoconf2.13
 
@@ -30,8 +34,7 @@ cd build_DBG.OBJ
 # Temporarily disable cranelift (see bug 1497570)
 ../configure \
     --enable-debug \
-    --enable-optimize \
-    --disable-shared-js \
+    --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --disable-tests \
     --enable-address-sanitizer \
@@ -40,3 +43,11 @@ cd build_DBG.OBJ
 make "-j$(nproc)"
 
 cp dist/bin/js $OUT
+
+# Copy libraries.
+mkdir -p $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib
+
+# Make sure libs are resolved properly
+patchelf --set-rpath '$ORIGIN/lib'  $OUT/js

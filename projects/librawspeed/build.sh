@@ -26,13 +26,15 @@ cd "$WORK"
 mkdir build
 cd build
 
+# Temporarily use gold for linking because of BFD breakage (see
+# https://github.com/google/oss-fuzz/pull/2781).
+ln -f -s /usr/bin/gold /usr/bin/ld
 cmake \
-  -G"Unix Makefiles" -DBINARY_PACKAGE_BUILD=ON \
-  -DWITH_PTHREADS=OFF -DWITH_OPENMP=OFF \
+  -G"Unix Makefiles" -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=OFF \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \
   -DBUILD_TESTING=OFF -DBUILD_TOOLS=OFF -DBUILD_BENCHMARKING=OFF \
   -DCMAKE_BUILD_TYPE=FUZZ -DBUILD_FUZZERS=ON \
-  -DLIB_FUZZING_ENGINE:FILEPATH="$LIB_FUZZING_ENGINE" \
+  -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
   -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT" \
   "$SRC/librawspeed/"
 

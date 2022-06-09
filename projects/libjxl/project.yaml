@@ -1,0 +1,13 @@
+homepage: "https://github.com/libjxl/libjxl"
+language: c++
+primary_contact: "libjxl-security@google.com"
+auto_ccs:
+  - "eustas@google.com"
+  - "jyrki@google.com"
+  - "veluca@google.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+main_repo: 'https://github.com/libjxl/libjxl.git'

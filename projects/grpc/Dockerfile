@@ -15,38 +15,31 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER yangg@google.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties
-RUN add-apt-repository ppa:webupd8team/java
+RUN apt-get update && apt-get install -y software-properties-common
 RUN apt-get update && apt-get -y install  \
 	vim             \
 	build-essential \
-	openjdk-8-jdk   \
+	openjdk-11-jre-headless   \
 	make            \
         curl            \
         autoconf        \
-        libtool
+        libtool         \
+        rsync
 
 # Install dependencies
-
 RUN apt-get update && apt-get install -y \
     python-all-dev \
-    python3-all-dev \
-    python-pip
+    python3-all-dev
 
 # Install Python packages from PyPI
-RUN pip install --upgrade pip==10.0.1
-RUN pip install virtualenv
-RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 twisted==17.5.0
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install virtualenv
+RUN python3 -m pip install incremental futures enum34 protobuf six twisted
 
-#========================
-# Bazel installation
+RUN git clone --recursive https://github.com/grpc/grpc grpc && \
+    cd grpc && \
+    git submodule update --init
 
-RUN apt-get update && apt-get install -y wget && apt-get clean
-RUN wget -q https://github.com/bazelbuild/bazel/releases/download/0.17.1/bazel-0.17.1-linux-x86_64 -O /usr/local/bin/bazel
-RUN chmod 755 /usr/local/bin/bazel
-
-RUN git clone --recursive https://github.com/grpc/grpc grpc
 WORKDIR $SRC/grpc/
 COPY build.sh $SRC/

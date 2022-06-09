@@ -63,7 +63,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   int error;
   mpg123_handle* handle = mpg123_new(NULL, &error);
-  if (handle == NULL) {
+  if (handle == NULL || mpg123_param(handle,
+      MPG123_ADD_FLAGS, MPG123_QUIET, 0.) != MPG123_OK) {
     free(outmemory);
     fuzzer_release_tmpfile(filename);
     return 0;
@@ -74,7 +75,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     do {
       size_t decoded_size;
       read_error = mpg123_read(handle, outmemory, outmemorysize, &decoded_size);
-    } while (read_error == MPG123_OK);
+    } while (read_error == MPG123_OK && mpg123_tellframe(handle) <= 10000
+          && mpg123_tell_stream(handle) <= 1<<20);
   }
 
   mpg123_close(handle);

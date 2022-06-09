@@ -1,0 +1,9 @@
+homepage: "https://beltoforion.de/article.php?a=muparser"
+language: c++
+primary_contact: "equinox.ib@googlemail.com"
+auto_ccs:
+    - "zhichengcai@google.com"
+sanitizers:
+    - address
+    - undefined
+main_repo: 'https://github.com/beltoforion/muparser.git'

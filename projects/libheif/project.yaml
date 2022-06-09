@@ -1,0 +1,9 @@
+homepage: "https://github.com/strukturag/libheif"
+language: c++
+primary_contact: "dirk.farin@gmail.com"
+auto_ccs:
+  - "mail@joachim-bauch.de"
+architectures:
+  - i386
+  - x86_64
+main_repo: 'https://github.com/strukturag/libheif.git'

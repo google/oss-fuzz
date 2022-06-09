@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER sebpop@gmail.com
 RUN apt-get update && apt-get install -y make
 
-RUN git clone --depth 1 -b develop https://github.com/Dead2/zlib-ng.git
+RUN git clone --depth 1 -b develop https://github.com/zlib-ng/zlib-ng.git
 WORKDIR zlib-ng
 COPY build.sh $SRC/

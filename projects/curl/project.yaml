@@ -1,4 +1,5 @@
 homepage: "https://curl.haxx.se/"
+language: c++
 primary_contact: "daniel@haxx.se"
 auto_ccs:
   - "daniel.haxx@gmail.com"
@@ -6,3 +7,8 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/curl/curl.git'

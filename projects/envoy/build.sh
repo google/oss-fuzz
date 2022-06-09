@@ -15,61 +15,113 @@
 #
 ################################################################################
 
-# Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+declare -r FUZZ_TARGET_QUERY='
+  let all_fuzz_tests = attr(tags, "fuzz_target", "...") in
+  $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
+'
 
-declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
-declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # CI has fewer resources so restricting to a small number of fuzz targets.
+  # Choosing the header_parser, and header_map_impl.
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | grep ':header' | sed 's/$/_oss_fuzz/')"
+else
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
+fi
 
-FUZZER_DICTIONARIES="\
-"
-
-# Skip gperftools, ASAN runs don't use tcmalloc.
-export DISABLE_GPERFTOOLS_BUILD=1
-sed -i 's#envoy_dependencies()#envoy_dependencies(skip_targets=["tcmalloc_and_profiler"])#' WORKSPACE
-
-# Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
-# compilation and linking.
-#
-# Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
-# file. Since the build runs with `-Werror` this will cause it to break, so we
-# use `--conlyopt` and `--cxxopt` instead of `--copt`.
 declare -r EXTRA_BAZEL_FLAGS="$(
-for f in ${CFLAGS}; do
-  echo "--conlyopt=${f}" "--linkopt=${f}"
-done
-for f in ${CXXFLAGS}; do
-  echo "--cxxopt=${f}" "--linkopt=${f}"
-done
+if [ -n "$CC" ]; then
+  echo "--action_env=CC=${CC}"
+fi
+if [ -n "$CXX" ]; then
+  echo "--action_env=CXX=${CXX}"
+fi
+if [ "$SANITIZER" = "undefined" ]
+then
+  # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
+  # See issue: https://github.com/bazelbuild/bazel/issues/8777
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  echo "--linkopt=-fsanitize=undefined"
+elif [ "$SANITIZER" = "address" ]
+then
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
+fi
 )"
 
-declare BAZEL_BUILD_TARGETS=""
-declare BAZEL_CORPUS_TARGETS=""
-declare FILTERED_FUZZER_TARGETS=""
-for t in ${FUZZER_TARGETS}
-do
-  declare BAZEL_PATH="//"$(dirname "$t")":"$(basename "$t")
-  declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${BAZEL_PATH})")
-  if [ -z "${TAGGED}" ]
-  then
-    FILTERED_FUZZER_TARGETS+="$t "
-    BAZEL_BUILD_TARGETS+="${BAZEL_PATH}_driverless "
-    BAZEL_CORPUS_TARGETS+="${BAZEL_PATH}_corpus_tar "
-  fi
-done
+# The Envoy build configuration may clobber CFLAGS/CXXFLAGS, so we use separate
+# environment variables that are understood by rules_fuzzing.
+export FUZZING_CFLAGS="$CFLAGS"
+export FUZZING_CXXFLAGS="$CXXFLAGS"
 
-# Build driverless libraries.
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
-  --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
-  --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
-  --define force_libcpp=enabled \
-  --build_tag_filters=-no_asan \
+# Disable instrumentation in various external libraries. These 
+# are fuzzed elsewhere.
+# The following disables both coverage-instrumentation and other sanitizer instrumentation.
+# We disable instrumentation in:
+#  antlr4
+#  google_protobuf
+#  absl
+#  googltest
+#  grpc
+#  boringssl
+#  re2
+#  upb
+#  brotli
+#  cel_cpp
+#  yaml_cpp
+#  wasm_cpp_host
+#  libprotobuf-mutator
+#  google_url (gurl)
+#  lightstep_tracer
+# In addition to this, we disable instrumentation in all *.pb.cc (protobuf-generated files)
+# and everything in the bazel-out directory.
+declare -r DI="$(
+if [ "$SANITIZER" != "coverage" ]
+then
+# Envoy code. Disable coverage instrumentation
+  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*source/common/protobuf/.*\.cc\$@-fsanitize-coverage=0"
+
+# Envoy test code. Disable coverage instrumentation
+  echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
+
+# External dependencies. Disable all instrumentation.
+  echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*upb.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*org_brotli.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_google_cel_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_jbeder_yaml_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*proxy_wasm_cpp_host/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+
+# External dependency which needs to be compiled with sanitizers. Disable
+# coverage instrumentation.
+  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
+
+# All protobuf code and code in bazel-out
+  echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+fi
+)"
+
+
+# Asssuming we have ~32 cores and ~28.8 GiB RAM. By limiting the
+# number of CPUs (--local_cpu_resources) we limit the per-CPU mem-usage.
+# Benchmark about 3.6 GB per CPU (8 threads for 28.8 GB RAM)
+# TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
+bazel build --verbose_failures --dynamic_mode=off ${DI} \
+  --spawn_strategy=standalone --genrule_strategy=standalone \
+  --local_cpu_resources=HOST_CPUS*0.256 \
+  --//source/extensions/wasm_runtime/v8:enabled=false \
+  --build_tag_filters=-no_asan --config=oss-fuzz \
   ${EXTRA_BAZEL_FLAGS} \
-  --linkopt="-lFuzzingEngine" \
-  ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
+  ${OSS_FUZZ_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -80,58 +132,32 @@ then
   # the profiler.
   declare -r REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
-  # For .cc, we only really care about source/ today.
+  # Copy the cc and header files that will be covered.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/envoy "${REMAP_PATH}"
+  # Envoy currently uses a modified version of http_parser (see:
+  # https://github.com/envoyproxy/envoy/issues/19749).
+  declare -r BAZEL_EXTERNAL_REMAP_PATH="${REMAP_PATH}/external/envoy/bazel/external"
+  mkdir -p "${BAZEL_EXTERNAL_REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/bazel/external/http_parser "${BAZEL_EXTERNAL_REMAP_PATH}"
+  # Remove filesystem loop manually.
+  rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.
   find "${SRC}"/envoy/bazel-envoy/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
   rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
   # since they don't make sense outside the build container.
-  rsync -avLk --include '*.h' --include '*.cc' --include '*.hpp' \
-    --include '*/' --exclude '*' \
-    "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
-  # As above, but for /root/.cache.
-  # TODO(htuch): disabled for now, this would mostly be useful for .build
-  # artifact, e.g.
-  # /builder/home/.cache/bazel/_bazel_root/4e9824db8e7d11820cfa25090ed4ed10/external/envoy_deps_cache_b22e04bff96538ea37e715942da6315c/yaml-cpp.dep.build/yaml-cpp-0f9a586ca1dc29c2ecb8dd715a315b93e3f40f79/src/parse.cpp
-  # but, we don't know how to recover them today, as they are gone by this
-  # phase.
-  #
-  # rsync -avLk --relative --include '*.h' --include '*.cc' --include '*.c' \
-  #   --include '*/' --exclude '*' \
-  #   /root/.cache "${OUT}"
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
-# Copy out test driverless binaries from bazel-bin/.
-for t in ${FILTERED_FUZZER_TARGETS}
-do
-  TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  TARGET_DRIVERLESS=bazel-bin/"${t}"_driverless
-  echo "Copying fuzzer $t"
-  cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
-done
-
-# Zip up related test corpuses.
-# TODO(htuch): just use the .tar directly when
-# https://github.com/google/oss-fuzz/issues/1918 is fixed.
-CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
-for t in ${FILTERED_FUZZER_TARGETS}
-do
-  echo "Extracting and zipping fuzzer $t corpus"
-  rm -rf "${CORPUS_UNTAR_PATH}"
-  mkdir -p "${CORPUS_UNTAR_PATH}"
-  tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
-  TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "${CORPUS_UNTAR_PATH}"/*
-done
-rm -rf "${CORPUS_UNTAR_PATH}"
-
-# Copy dictionaries and options files to $OUT/
-for d in $FUZZER_DICTIONARIES; do
-  cp "$d" "${OUT}"/
+for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
+    tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build

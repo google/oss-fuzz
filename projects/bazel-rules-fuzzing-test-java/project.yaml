@@ -1,0 +1,13 @@
+homepage: "https://github.com/bazelbuild/rules_fuzzing"
+language: jvm
+primary_contact: "test@example.com"
+
+fuzzing_engines:
+  - libfuzzer
+
+sanitizers:
+  - address
+  - undefined
+
+# This is a test project.
+disabled: true

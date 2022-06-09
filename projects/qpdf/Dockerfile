@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER taking@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
 RUN git clone --depth 1 https://github.com/qpdf/qpdf.git qpdf
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo libjpeg-turbo
 WORKDIR qpdf
-COPY build.sh qpdf_read_memory_fuzzer.cc $SRC/
+COPY build.sh $SRC/

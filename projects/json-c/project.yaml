@@ -1,4 +1,18 @@
 homepage: "https://json-c.github.io/json-c/"
+language: c++
 primary_contact: "erh+git@nimenees.com"
 auto_ccs:
   - "chriswwolfe@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - dataflow
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/json-c/json-c.git'

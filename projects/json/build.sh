@@ -15,11 +15,12 @@
 #
 ################################################################################
 
-make FUZZER_ENGINE="-lFuzzingEngine" fuzzers -Ctest
+make FUZZER_ENGINE="$LIB_FUZZING_ENGINE" fuzzers -Ctests
 
-FUZZER_FILES=$(find test/ -maxdepth 1 -executable -type f)
+FUZZER_FILES=$(find tests/ -maxdepth 1 -executable -type f)
 for F in $FUZZER_FILES; do
     cp $F $OUT/
     FUZZER=$(basename $F .cpp)
     cp $SRC/fuzzer-parse.options $OUT/$FUZZER.options
 done
+cp $SRC/parse_afl_fuzzer.dict $OUT/

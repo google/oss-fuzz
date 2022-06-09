@@ -1,0 +1,11 @@
+homepage: "https://github.com/hugelgupf/p9"
+language: go
+primary_contact: "harvey@googlegroups.com"
+auto_ccs:
+  - "s@sevki.org"
+  - "c@chrisko.ch"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: 'https://github.com/hugelgupf/p9'

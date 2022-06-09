@@ -1,6 +1,8 @@
 homepage: "https://www.gnu.org/software/wget/"
+language: c++
 primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "tim.ruehsen@gmx.de"
   - "darnir@gmail.com"
   - "gscrivan@redhat.com"
+main_repo: 'https://git.savannah.gnu.org/git/wget.git'

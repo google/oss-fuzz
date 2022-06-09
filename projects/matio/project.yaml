@@ -1,0 +1,10 @@
+homepage: "https://github.com/tbeu/matio"
+language: c++
+primary_contact: "t-beu@users.sourceforge.net"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: 'git://git.code.sf.net/p/matio/matio'

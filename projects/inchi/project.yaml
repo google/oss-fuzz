@@ -1,0 +1,5 @@
+homepage: "https://www.inchi-trust.org/"
+language: c
+primary_contact: "member-info@inchi-trust.org"
+sanitizers:
+  - address

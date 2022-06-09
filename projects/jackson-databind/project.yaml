@@ -1,0 +1,13 @@
+homepage: "https://github.com/FasterXML/jackson-databind"
+language: jvm
+primary_contact: "tatu@fasterxml.com"
+auto_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/FasterXML/jackson-databind.git"

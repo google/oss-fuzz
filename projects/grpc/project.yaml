@@ -1,13 +1,14 @@
 homepage: "http://www.grpc.io/"
-primary_contact: "yangg@google.com"
+language: c++
+primary_contact: "nnoble@google.com"
 auto_ccs:
-  - "guantaol@google.com"
-  - "hcaseyal@google.com"
-  - "juanlishen@google.com"
-  - "mhaidry@google.com"
+  - "donnadionne@google.com"
+  - "veblush@google.com"
   - "roth@google.com"
-  - "nnoble@google.com"
-  - "sheenaqotj@google.com"
-  - "vpai@google.com"
+  - "karthikrs@google.com"
   - "yashkt@google.com"
+  - "jiangtao@google.com"
+fuzzing_engines:
+  - libfuzzer
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*
+main_repo: 'https://github.com/grpc/grpc'

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./boot.sh && ./configure && make -j$(nproc) && make oss-fuzz-targets
+./boot.sh && HAVE_UNWIND=no ./configure --enable-ndebug && make -j$(nproc) && make oss-fuzz-targets
 
 cp $SRC/openvswitch/tests/oss-fuzz/config/*.options $OUT/
 cp $SRC/openvswitch/tests/oss-fuzz/config/*.dict $OUT/
@@ -28,6 +28,6 @@ do
        corp_name=$(basename $file _target)
        corp_dir=$SRC/ovs-fuzzing-corpus/${corp_name}_seed_corpus
        if [ -d ${corp_dir} ]; then
-           zip -j $OUT/${name}_seed_corpus.zip ${corp_dir}/*
+           zip -rq $OUT/${name}_seed_corpus ${corp_dir}
        fi
 done

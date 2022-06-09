@@ -1,0 +1,10 @@
+homepage: https://www.mruby.org/
+language: c++
+primary_contact: "yukihiro@gmail.com"
+auto_ccs:
+  - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/mruby/mruby'

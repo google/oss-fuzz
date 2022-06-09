@@ -1,0 +1,10 @@
+disabled: true
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/libra/libra
+language: rust
+main_repo: https://github.com/libra/libra
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

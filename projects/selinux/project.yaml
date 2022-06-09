@@ -1,0 +1,15 @@
+homepage: "https://github.com/SELinuxProject/selinux"
+language: c
+primary_contact: "nicolas.iooss_ossfuzzselinux@m4x.org"
+builds_per_day: 4
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - evverx@gmail.com
+  - nicolas.iooss.ossfuzz@gmail.com
+  - omosnacek@gmail.com
+  - jwcart2@gmail.com
+  - cgzones@googlemail.com
+main_repo: 'https://github.com/SELinuxProject/selinux'

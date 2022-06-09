@@ -21,9 +21,10 @@ rm -rf $BUILD
 mkdir $BUILD
 
 meson $BUILD \
+  -Doss_fuzz=enabled \
   -Db_lundef=false \
   -Ddefault_library=static \
-  -Dlibmount=false
+  -Dlibmount=disabled
 
 ninja -C $BUILD
 

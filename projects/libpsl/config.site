@@ -1,5 +1,5 @@
 if test "$cache_file" = /dev/null; then
   hash=`echo $LIBS $CPPFLAGS CXXFLAGS $CFLAGS $LDFLAGS $build_alias $host_alias $target_alias \
-    | md5sum | cut -d' ' -f1`
+    | $SRC/md5sum`
   cache_file=$SRC/config.cache.$CC.$hash
 fi

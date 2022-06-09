@@ -1,4 +1,5 @@
 homepage: "https://gstreamer.freedesktop.org/"
+language: c++
 primary_contact: "gstreamer-security@lists.freedesktop.org"
 auto_ccs:
  - "bilboed@bilboed.com"
@@ -8,3 +9,4 @@ auto_ccs:
  - "saunierthibault@gmail.com"
  - "ystreet00@gmail.com"
  - "thaytan@noraisin.net"
+main_repo: 'https://gitlab.freedesktop.org/gstreamer/gstreamer.git'

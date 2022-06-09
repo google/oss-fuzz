@@ -16,18 +16,28 @@
 ################################################################################
 
 # build project
-cmake -DDNP3_DECODER=ON -DSTATICLIBS=ON .
-make -j$(nproc) all
+cmake -DDNP3_FUZZING=ON -DDNP3_STATIC_LIBS=ON .
+make all
 
 cd cpp/tests/fuzz
-# build corpus
-zip -r fuzz_dnp3_seed_corpus.zip corpus/*.dnp
-cp fuzz_dnp3_seed_corpus.zip $OUT/
-# export other associated stuff
-cp *.options $OUT/
 
-# build fuzz target
-$CXX $CXXFLAGS -I. -I ../../libs/include/ -c fuzzdnp3.cpp -o fuzzdnp3.o
+TARGETS="fuzzdecoder \
+  fuzzoutstation \
+  fuzzmaster"
 
-$CXX $CXXFLAGS -std=c++14 fuzzdnp3.o -o $OUT/fuzz_dnp3 ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a -lFuzzingEngine
+echo "detect_leaks=0" >> fuzzdnp3.options
+for target in $TARGETS; do
+  # build corpus
+  zip -r ${target}_seed_corpus.zip corpus/*.dnp
+  cp ${target}_seed_corpus.zip $OUT/
 
+  # export other associated stuff
+  cp fuzzdnp3.options $OUT/${target}.options
+
+  # build fuzz target
+  $CXX $CXXFLAGS -I. -I ../../lib/include/ -I ../../tests/lib/src/ \
+    -I ../../lib/src/ -I ../../../_deps/exe4cpp-src/src/ -I ../dnp3mocks/include/ \
+    -I ../../../_deps/ser4cpp-src/src/ -I ../../../_deps/asio-src/asio/include \
+    -c ${target}.cpp -o ${target}.o
+  $CXX $CXXFLAGS -std=c++14 ${target}.o -o $OUT/${target} ../dnp3mocks/libdnp3mocks.a ../../lib/libopendnp3.a $LIB_FUZZING_ENGINE
+done

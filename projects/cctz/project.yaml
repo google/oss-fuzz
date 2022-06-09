@@ -1,0 +1,4 @@
+homepage: https://github.com/google/cctz
+language: c++
+vendor_ccs:
+- david@adalogics.com

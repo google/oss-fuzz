@@ -1,0 +1,55 @@
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# This is a wrapper around calling cargo
+# This just expands RUSTFLAGS in case of a coverage build
+# We need this until https://github.com/rust-lang/cargo/issues/5450 is merged
+# because cargo uses relative paths for the current crate
+# and absolute paths for its dependencies
+#
+################################################################################
+
+if [ "$SANITIZER" = "coverage" ] && [ $1 = "build" ]
+then
+    crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
+    export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix src=$crate_src_abspath/src"
+fi
+
+if [ "$SANITIZER" = "coverage" ] && [ $1 = "fuzz" ] && [ $2 = "build" ]
+then
+    # hack to turn cargo fuzz build into cargo build so as to get coverage
+    # cargo fuzz adds "--target" "x86_64-unknown-linux-gnu"
+    (
+    # go into fuzz directory if not already the case
+    cd fuzz || true
+    fuzz_src_abspath=`pwd`
+    # Default directory is fuzz_targets, but some projects like image-rs use fuzzers.
+    while read i; do
+        export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$fuzz_src_abspath/$i"
+        # Bash while syntax so that we modify RUSTFLAGS in main shell instead of a subshell.
+    done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
+    # we do not want to trigger debug assertions and stops
+    export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+    # do not optimize with --release, leading to Malformed instrumentation profile data
+    cargo build --bins
+    # copies the build output in the expected target directory
+    cd `cargo metadata --format-version 1 --no-deps | jq -r '.target_directory'`
+    mkdir -p x86_64-unknown-linux-gnu/release
+    cp -r debug/* x86_64-unknown-linux-gnu/release/
+    )
+    exit 0
+fi
+
+/rust/bin/cargo "$@"

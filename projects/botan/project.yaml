@@ -1,4 +1,5 @@
 homepage: "https://botan.randombit.net"
+language: c++
 primary_contact: "jack.lloyd@gmail.com"
 auto_ccs:
   - "r.korthaus@sirrix.com"
@@ -6,5 +7,7 @@ auto_ccs:
   - "norritt@bytefortress.de"
 sanitizers:
   - address
-  - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
   - undefined
+main_repo: 'https://github.com/randombit/botan.git'

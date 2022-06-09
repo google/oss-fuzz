@@ -1,0 +1,12 @@
+homepage: "https://github.com/google/leveldb"
+language: c++
+primary_contact: "costan@google.com"
+auto_ccs :
+  - "cmumford@google.com"
+  - "david@adalogics.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://github.com/google/leveldb.git'
+file_github_issue: True

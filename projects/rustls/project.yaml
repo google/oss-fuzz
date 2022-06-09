@@ -1,0 +1,12 @@
+homepage: "https://github.com/ctz/rustls"
+main_repo: "https://github.com/ctz/rustls"
+primary_contact: "jpixton@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
+  - "dirkjan@ochtman.nl"
+  - "brian@briansmith.org"

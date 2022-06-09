@@ -33,19 +33,26 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
-FUZZERS="break_iterator_fuzzer \
-  break_iterator_utf32_fuzzer \
-  converter_fuzzer \
-  number_format_fuzzer \
-  ucasemap_fuzzer \
-  unicode_string_codepage_create_fuzzer \
-  uregex_open_fuzzer
-  "
+$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
+     -I$SRC/icu4c/source/test/fuzzer
+
+FUZZER_PATH=$SRC/icu/icu4c/source/test/fuzzer
+# Assumes that all fuzzers files end with'_fuzzer.cpp'.
+FUZZERS=$FUZZER_PATH/*_fuzzer.cpp
+
 for fuzzer in $FUZZERS; do
+  file=${fuzzer:${#FUZZER_PATH}+1}
   $CXX $CXXFLAGS -std=c++11 \
-    $SRC/icu/icu4c/source/test/fuzzer/$fuzzer.cc -o $OUT/$fuzzer \
+    $fuzzer -o $OUT/${file/.cpp/} locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
-    -lFuzzingEngine -licui18n -licuuc -licutu -licudata
+    $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata
+done
+
+# Assumes that all seed files end with '*_fuzzer_seed_corpus.txt'.
+CORPUS=$SRC/icu/icu4c/source/test/fuzzer/*_fuzzer_seed_corpus.txt
+for corpus in $CORPUS; do
+    zipfile=${corpus:${#FUZZER_PATH}+1}
+    zip $OUT/${zipfile/.txt/.zip} $corpus
 done
 
 cp $SRC/icu/icu4c/source/test/fuzzer/*.dict  $OUT/

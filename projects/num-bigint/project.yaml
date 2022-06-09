@@ -1,0 +1,11 @@
+homepage: "https://crates.io/crates/num-bigint"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+main_repo: "https://github.com/rust-num/num-bigint.git"
+auto_ccs:
+    - "cuviper@gmail.com"
+sanitizers:
+ - address
+architectures:
+ - x86_64
+ - i386
