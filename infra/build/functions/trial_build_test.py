@@ -51,6 +51,10 @@ class GetProjectsToBuild(unittest.TestCase):
         self.PROJECTS, 'fuzzing', True)
     self.assertEqual(self.PROJECTS, buildable_projects)
 
+
+class TrialBuildMainTest(unittest.TestCase):
+  """Tests for trial_build_main."""
+
   @mock.patch('trial_build.wait_on_builds', return_value=True)
   @mock.patch('oauth2client.client.GoogleCredentials.get_application_default',
               return_value=None)
