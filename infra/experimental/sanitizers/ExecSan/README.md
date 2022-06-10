@@ -34,13 +34,13 @@ which indicates the detection of executing the planted `/tmp/tripwire`.
 which indicates the detection of executing a syntactic erroneous command.
 
 
-### PoC in Python with `pytorch-lightning`
-With `execSan`, [`Artheris`](https://github.com/google/atheris) can detect a shell injection bug in [version v1.5.10) of `pytorch-lightning`](https://github.com/PyTorchLightning/pytorch-lightning/tree/1.5.0).
+## PoC in Python with `pytorch-lightning`
+With `execSan`, [`Artheris`](https://github.com/google/atheris) can detect a shell injection bug in [version v1.5.10 of `pytorch-lightning`](https://github.com/PyTorchLightning/pytorch-lightning/tree/1.5.0).
 ```shell
 make pytorch-lightning-1.5.10
 ```
 
-### PoC in JavaScript with `shell-quote`
+## PoC in JavaScript with `shell-quote`
 With `execSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corrpution bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/substack/node-shell-quote) without any seed.
 ```shell
 make node-shell-quote-v1.7.3
