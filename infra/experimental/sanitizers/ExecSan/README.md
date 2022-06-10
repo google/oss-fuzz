@@ -45,6 +45,12 @@ With `execSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analy
 ```shell
 make node-shell-quote-v1.7.3
 ```
+This is based on [a shell injection exploit report](https://wh0.github.io/2021/10/28/shell-quote-rce-exploiting.html) of [version v1.7.2 of `shell-quote`](https://github.com/substack/node-shell-quote/tree/v1.7.2).
+`execSan` can also discover the same shell injection bug with a corpus file containing:
+```
+`:`/tmp/tripwire``:`
+```
+
 
 ## TODOs
 1. Find real examples of past shell injection vulnerabilities using this.
