@@ -18,8 +18,9 @@ import sys
 
 with atheris.instrument_imports():
    import sqlalchemy
-   from sqlalchemy import create_engine
-   from sqlalchemy import Table, Column, Integer, String, MetaData
+   from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
+   from sqlalchemy.sql import text
+   from sqlalchemy.exc import SQLAlchemyError
    import sqlalchemy_jsonfield
    from sqlalchemy_jsonfield import JSONField
 
@@ -39,8 +40,15 @@ def TestInput(data):
 
     engine = create_engine('sqlite:///fuzz.db')
     metadata.create_all(engine)
-    with engine.connect() as conn:            
-        pass
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(fdp.ConsumeString(100))) 
+    except (SQLAlchemyError, UnicodeEncodeError) as e:
+       pass
+    except ValueError as e:
+      if "the query contains a null character" not in str(e):
+         raise e
+
 def main():
   atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
   atheris.Fuzz()
