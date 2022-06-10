@@ -34,7 +34,7 @@ cp $SRC/*.dict $OUT/
 mkdir -p corpus
 find $SRC/hoextdown/test -type f -name '*.text' | while read in_file
 do
-  # Genreate unique name for each input...
+  # Generate unique name for each input...
   out_file=$(sha1sum "$in_file" | cut -c 1-32)
   cat "$in_file" >> "corpus/$out_file"
 done

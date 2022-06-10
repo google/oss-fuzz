@@ -44,7 +44,7 @@ declare -A TSK_VS_TYPES=(
   ["sun"]="TSK_VS_TYPE_SUN"
 )
 
-# The fls APFS fuzz target has a seperate source file since it uses the libtsk
+# The fls APFS fuzz target has a separate source file since it uses the libtsk
 # pool layer.
 $CXX $CXXFLAGS -std=c++14 -I.. -I. -Itsk \
     $SRC/sleuthkit_fls_apfs_fuzzer.cc -o $OUT/sleuthkit_fls_apfs_fuzzer \

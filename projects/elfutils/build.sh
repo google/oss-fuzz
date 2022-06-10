@@ -67,7 +67,7 @@ if [[ "$SANITIZER" == undefined ]]; then
     CFLAGS="$CFLAGS $UBSAN_FLAGS"
     CXXFLAGS="$CXXFLAGS $UBSAN_FLAGS"
 
-    # That's basicaly what --enable-sanitize-undefined does to turn off unaligned access
+    # That's basically what --enable-sanitize-undefined does to turn off unaligned access
     # elfutils heavily relies on on i386/x86_64 but without changing compiler flags along the way
     sed -i 's/\(check_undefined_val\)=[0-9]/\1=1/' configure.ac
 fi

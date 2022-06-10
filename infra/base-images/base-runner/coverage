@@ -95,7 +95,7 @@ function run_fuzz_target {
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
-    echo "Error occured while running $target:"
+    echo "Error occurred while running $target:"
     cat $LOGS_DIR/$target.log
   fi
 
@@ -143,7 +143,7 @@ function run_go_fuzz_target {
   $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
-  # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
+  # They are are therefore referred to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during
   # the coverage build, we change the references in the .profdata files
   # to the original file names.
@@ -192,7 +192,7 @@ function run_java_fuzz_target {
 
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
-    echo "Error occured while running $target:"
+    echo "Error occurred while running $target:"
     cat $LOGS_DIR/$target.log
   fi
 

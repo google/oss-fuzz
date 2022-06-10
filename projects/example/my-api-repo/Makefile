@@ -29,7 +29,7 @@ all: do_stuff_unittest do_stuff_fuzzer
 clean:
 	rm -fv *.a *.o *unittest *_fuzzer *_seed_corpus.zip crash-* *.zip
 
-# Continuos integration system should run "make clean && make check"
+# Continuous integration system should run "make clean && make check"
 check: all
 	./do_stuff_unittest
 	./do_stuff_fuzzer do_stuff_test_data/*

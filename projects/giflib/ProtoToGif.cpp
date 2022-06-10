@@ -127,7 +127,7 @@ void ProtoConverter::visit(LocalColorTable const &lct)
 
 void ProtoConverter::visit(ImageDescriptor const &descriptor)
 {
-	// TODO: Remove seperator from proto since it is always 2C
+	// TODO: Remove separator from proto since it is always 2C
 	writeByte(0x2C);
 	writeWord(extractWordFromUInt32(descriptor.left()));
 	writeWord(extractWordFromUInt32(descriptor.top()));

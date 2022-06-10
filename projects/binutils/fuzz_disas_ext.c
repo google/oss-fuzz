@@ -11,12 +11,12 @@ limitations under the License.
 */
 
 /*
- * This disassemble fuzzer can be used for targetting specific architectures
- * and also initilises the target architecture with a random options string.
+ * This disassemble fuzzer can be used for targeting specific architectures
+ * and also initialises the target architecture with a random options string.
  * This is useful, for example, to hit architectures the general disassembly
  * fuzzer may not be hitting, and also to fuzz disassemblers in different
  * settings. This fuzzer also targets both big and small endianness. Down
- * the line this fuzzer can be expanded on, e.g. to include symobls and data
+ * the line this fuzzer can be expanded on, e.g. to include symbols and data
  * in the memory that is to be disassembled.
  */
 #include "sysdep.h"

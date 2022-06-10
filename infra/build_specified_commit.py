@@ -15,7 +15,7 @@
 
 This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
-like continuious integration fuzzing and bisection to find errors
+like continuous integration fuzzing and bisection to find errors
 """
 import argparse
 import bisect

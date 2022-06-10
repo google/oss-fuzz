@@ -24,7 +24,7 @@ limitations under the License.
  * with the caveat that windres will fatally exit and the fuzzer simply returns, i.e.
  * fuzzing continues. The purpose is to enable further analysis.
  *
- * Down the line, perhaps it makes sense to chage binutils to have less fatals and
+ * Down the line, perhaps it makes sense to change binutils to have less fatals and
  * more graceful exits. This would be useful for the fuzzing.
  */
 

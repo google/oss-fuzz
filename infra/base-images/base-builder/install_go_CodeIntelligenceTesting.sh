@@ -16,7 +16,7 @@
 ################################################################################
 
 # Install CodeIntelligenceTesting Go.
-## Require at least Go1.4 to boostrap.
+## Require at least Go1.4 to bootstrap.
 git clone --depth=1 -b dev.libfuzzer.18 https://github.com/CodeIntelligenceTesting/go.git /tmp/go-CodeIntelligenceTesting
 # Disable tests, at least one of which erroneously fails.
 sed -i '/^exec .* tool dist test -rebuild "$@"/ s/./#&/' /tmp/go-CodeIntelligenceTesting/src/run.bash

@@ -56,7 +56,7 @@ for b in arm-none-eabi-gcc bazel bloaty ; do
   fi
 done
 
-# Setup the Pigweed build environemnt
+# Setup the Pigweed build environment
 set +u
 PW_ENVSETUP_QUIET=1 source "$PW_ROOT/bootstrap.sh"
 set -u

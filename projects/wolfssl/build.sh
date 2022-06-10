@@ -329,7 +329,7 @@ then
     export LDFLAGS="${LDFLAGS-""}"
     export LDLIBS="${LDLIBS-""} -lwolfssl $LIB_FUZZING_ENGINE"
 
-    # make and export targets to $OUT; environment overridding internal variables
+    # make and export targets to $OUT; environment overriding internal variables
     cd "${target_dir}"
     make -e all
     make -e export prefix="$OUT"

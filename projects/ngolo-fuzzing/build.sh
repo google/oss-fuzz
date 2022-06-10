@@ -102,5 +102,5 @@ done
 echo "Failed packages:"
 cat ko.txt
 
-echo "Succesful packages:"
+echo "Successful packages:"
 cat ok.txt

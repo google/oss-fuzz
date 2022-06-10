@@ -18,7 +18,7 @@ message GlobalColorTable {
 }
 
 message ImageDescriptor {
-  required uint32 Seperator =1;
+  required uint32 Separator =1;
   required uint32 Left =2;
   required uint32 Top = 3;
   required uint32 Width = 4;

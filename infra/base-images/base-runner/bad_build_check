@@ -32,7 +32,7 @@ ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD=1000
 ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD=0
 
 # The value below can definitely be higher (like 500-1000), but avoid being too
-# agressive here while still evaluating the DFT-based fuzzing approach.
+# aggressive here while still evaluating the DFT-based fuzzing approach.
 DFSAN_CALLS_THRESHOLD_FOR_DFSAN_BUILD=100
 DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD=0
 

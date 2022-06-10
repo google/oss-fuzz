@@ -33,7 +33,7 @@ but it will happily parse "-80888888888888888888", a significantly more negative
 number. However, it parses it as -9223372036854775808. The JSON spec
 (https://tools.ietf.org/html/rfc7159#section-6) "allows implementations to set
 limits on the range and precision of numbers accepted", so failing to parse
-values that are too big or too small is techincally fine; however,
+values that are too big or too small is technically fine; however,
 misinterpreting them is not.
 """
 

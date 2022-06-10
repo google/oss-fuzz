@@ -42,7 +42,7 @@ function run_one_target {
 
   timeout $COLLECT_DFT_TIMEOUT dataflow_tracer.py $OUT/$target $corpus $traces &> $log
   if (( $? != 0 )); then
-    echo "Error occured while collecting data flow traces for $target:"
+    echo "Error occurred while collecting data flow traces for $target:"
     cat $log
   fi
 }

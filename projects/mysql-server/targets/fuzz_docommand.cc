@@ -55,7 +55,7 @@ extern "C" int LLVMFuzzerInitialize(const int* argc, char*** argv) {
 }
 
 
-// FIXME: Fix this buffer with succesful authenticated connection for mysql 8.21.
+// FIXME: Fix this buffer with successful authenticated connection for mysql 8.21.
 const uint8_t startConn[] =
 "\xa6\x00\x00\x01\x85\xa6\xff\x01\x00\x00\x00\x01\x2d\x00\x00\x00" \
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \

@@ -244,7 +244,7 @@ index 0000000..74be306
 +        return 2;
 +    }
 +
-+    //lauch fuzzer
++    //launch fuzzer
 +    LLVMFuzzerTestOneInput(Data, Size);
 +    free(Data);
 +    fclose(fp);
