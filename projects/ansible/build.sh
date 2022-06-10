@@ -17,7 +17,6 @@
 
 pip3 install .
 
-cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 /out/libcrypt.so
 cd $SRC
 
 # Build parse and task fuzzers
@@ -30,3 +29,5 @@ if [ "$SANITIZER" != "coverage" ]; then
   cp $SRC/fuzz_encrypt.sh $OUT/fuzz_encrypt
   chmod +x $OUT/fuzz_encrypt
 fi
+
+cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 $OUT/libcrypt.so
