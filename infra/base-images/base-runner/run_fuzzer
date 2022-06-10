@@ -141,6 +141,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
   # --exit_upon_crash: exit whith a first crash seen
+  # -V: verify crashes
   # -R (report): save report file to this location
   # -W (working dir): where the crashes go
   # -v (verbose): don't use VTE UI, just stderr
@@ -148,7 +149,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 
 else
 
