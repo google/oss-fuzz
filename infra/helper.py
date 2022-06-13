@@ -642,6 +642,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
+      'PROJECT_NAME=' + project.name
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
