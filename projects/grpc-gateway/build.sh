@@ -17,7 +17,7 @@
 
 if [ "$SANITIZER" = "coverage" ]
 then
-	go get github.com/grpc-ecosystem/grpc-gateway/...
+	git clone https://github.com/grpc-ecosystem/grpc-gateway.git
 	compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule Fuzz fuzz gofuzz
 else
 	compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule Fuzz fuzz gofuzz

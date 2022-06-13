@@ -20,11 +20,11 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --build-type=debug \
                 --generator=Ninja \
                 --enable-fuzzers \
-                --enable-mobile-ipv6 \
                 --disable-python \
                 --disable-zeekctl \
                 --disable-auxtools \
-                --disable-broker-tests
+                --disable-broker-tests \
+		--disable-spicy
 
 cd build
 ninja install

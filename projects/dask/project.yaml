@@ -1,0 +1,11 @@
+homepage: "https://github.com/dask/dask"
+main_repo: "https://github.com/dask/dask"
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - david@adalogics.com
+  - adam@adalogics.com

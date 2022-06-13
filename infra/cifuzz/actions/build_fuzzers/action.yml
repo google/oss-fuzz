@@ -18,6 +18,9 @@ inputs:
   sanitizer:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
+  architecture:
+    description: 'The architecture used to build the fuzzers.'
+    default: 'x86_64'
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
@@ -38,6 +41,7 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
+    ARCHITECTURE: ${{ inputs.architecture }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}

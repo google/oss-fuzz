@@ -1,0 +1,8 @@
+homepage: "https://github.com/imdario/mergo"
+language: go
+primary_contact: "d@rio.hn"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/imdario/mergo.git'

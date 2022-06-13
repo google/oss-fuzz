@@ -19,7 +19,15 @@ declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
 '
-declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
+
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # CI has fewer resources so restricting to a small number of fuzz targets.
+  # Choosing the header_parser, and header_map_impl.
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | grep ':header' | sed 's/$/_oss_fuzz/')"
+else
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
+fi
 
 declare -r EXTRA_BAZEL_FLAGS="$(
 if [ -n "$CC" ]; then
