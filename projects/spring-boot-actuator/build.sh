@@ -18,19 +18,15 @@
 mkdir -p $JAVA_HOME
 cp -rL "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
 
-./gradlew build -x test -x intTest -i -x asciidoctor -x javadoc -x asciidoctorPdf \
--x :spring-boot-project:spring-boot-docs:zip -x :spring-boot-project:spring-boot-docs:publishMavenPublicationToMavenLocal \
--x :checkstyleNohttp
+./gradlew clean build -p spring-boot-project/spring-boot-actuator/
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-cp "spring-boot-project/spring-boot-starters/spring-boot-starter-actuator/build/libs/spring-boot-starter-actuator-$CURRENT_VERSION.jar" "$OUT/spring-boot-starter-actuator.jar"
 cp "spring-boot-project/spring-boot-actuator/build/libs/spring-boot-actuator-$CURRENT_VERSION.jar" "$OUT/spring-boot-actuator.jar"
-cp "spring-boot-project/spring-boot/build/libs/spring-boot-$CURRENT_VERSION.jar" "$OUT/spring-boot.jar"
 
 # Spring core
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain --build-file=spring-framework/build.gradle | sed -nr "s/^version:\ (.*)/\1/p")
-./gradlew build --build-file=spring-framework/spring-core/spring-core.gradle -x test -x javadoc -x :checkstyleNohttp
-cp "spring-framework/spring-core/build/libs/spring-core-$CURRENT_VERSION.jar" "$OUT/spring-core.jar"
+CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain --build-file=../spring-framework/build.gradle | sed -nr "s/^version:\ (.*)/\1/p")
+./gradlew build -p ../spring-framework/spring-core/ -x test -x javadoc -x :checkstyleNohttp
+cp "../spring-framework/spring-core/build/libs/spring-core-$CURRENT_VERSION.jar" "$OUT/spring-core.jar"
 
 ALL_JARS="spring-boot-starter-actuator.jar spring-boot.jar spring-boot-actuator.jar spring-core.jar"
 
