@@ -17,7 +17,7 @@
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
 pip3 install --upgrade pip
-pip3 install sqlalchemy
+pip3 install sqlalchemy arrow colour babel
 pip3 install -e .
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
