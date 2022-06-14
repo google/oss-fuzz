@@ -4,7 +4,7 @@ primary_contact: "lpak@google.com"
 auto_ccs:
  - "itaiz@google.com"
  - "mihaimaruseac@google.com"
- - "lpak@google.com"
+ - "rostam@google.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
