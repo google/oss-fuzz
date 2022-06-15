@@ -21,7 +21,7 @@ cd $SRC/goroot/src
 ./make.bash
 )
 rm -Rf /root/.go/
-mv $SRC/goroot /root/.go
+export PATH=$PATH:$SRC/goroot/bin/
 
 compile_package () {
     pkg=$1
@@ -70,8 +70,8 @@ go build
 )
 
 # maybe we should git clone --depth 1 https://github.com/golang/go.git
-find /root/.go/src/ -type d | cut -d/ -f5- | while read pkg; do
-    if [[ `ls /root/.go/src/$pkg/*.go | wc -l` == '0' ]]; then
+find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
+    if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue
     fi
     if [[ `echo $pkg | grep internal | wc -l` == '1' ]]; then
