@@ -72,18 +72,15 @@ RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_
     chmod +x /usr/local/bin/bazel
 
 # Default build flags for various sanitizers.
-ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+# Regarding SANITIZER_FLAGS_undefined, set of '-fsanitize' flags matches
+# '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 
-# Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
-ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
-
-ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
-
-ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
-
-ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
-
-ENV SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
+ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope" \
+    SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr" \
+    SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins" \
+    SANITIZER_FLAGS_dataflow "-fsanitize=dataflow" \
+    SANITIZER_FLAGS_thread "-fsanitize=thread" \
+    SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -106,9 +103,9 @@ ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthrea
 ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,bb,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
-ENV SANITIZER="address"
-ENV FUZZING_ENGINE="libfuzzer"
-ENV ARCHITECTURE="x86_64"
+ENV SANITIZER="address" \
+    FUZZING_ENGINE="libfuzzer" \
+    ARCHITECTURE="x86_64"
 
 # DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
 # LIB_FUZZING_ENGINE instead.
