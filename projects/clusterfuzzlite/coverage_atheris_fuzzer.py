@@ -18,7 +18,7 @@ with atheris.instrument_imports():
 
 REPO_PATH = '/src/curl'
 PROJECT_NAME = 'curl'
-oss_fuzz_coverage = cifuzz.get_coverage.OSSFuzzCoverage(
+oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(
     REPO_PATH, PROJECT_NAME)
 
 def TestOneInput(data):
@@ -29,7 +29,7 @@ def TestOneInput(data):
     return oss_fuzz_coverage.get_files_covered_by_target(
           'fuzz-target')
 
-  with mock.patch('cifuzz.get_coverage.OSSFuzzCoverage.get_target_coverage',
+  with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
                   return_value=decoded_json):
     oss_fuzz_coverage.get_files_covered_by_target(
           'fuzz-target')

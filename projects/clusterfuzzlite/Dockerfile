@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/google/oss-fuzz clusterfuzzlite
-WORKDIR clusterfuzzlite/infra/cifuzz
-RUN pip3 install -r requirements.txt
+WORKDIR clusterfuzzlite/infra
+RUN pip3 install -r cifuzz/requirements.txt
 COPY build.sh $SRC/
 COPY coverage_atheris_fuzzer.py .
+RUN cp -r cifuzz/* .
