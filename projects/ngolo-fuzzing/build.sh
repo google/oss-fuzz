@@ -48,7 +48,7 @@ compile_package () {
             continue
         fi
         cd fuzz_ng_$pkg_flat
-        compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        GO_COV_ADD_PKG=$pkg compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
         )
     else
         (
