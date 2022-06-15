@@ -7,11 +7,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cifuzz'))
 
-for _ in range(10):
-  print(sys.path)
-
-import pdb; pdb.set_trace()
-
 
 with atheris.instrument_imports():
   import get_coverage
