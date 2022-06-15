@@ -132,7 +132,6 @@ class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
   @parameterized.parameterized.expand([({'data':[]},), ({'data':[[]]},), ({'data':[{}]},)])
   def test_malformed_cov_data(self, coverage_data):
     """Tests that covered files can be retrieved from a coverage report."""
-    import pdb; pdb.set_trace()
     with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
                     return_value=coverage_data):
       file_list = self.oss_fuzz_coverage.get_files_covered_by_target(
