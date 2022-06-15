@@ -21,7 +21,6 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 import pytest
 
-
 import get_coverage
 
 # pylint: disable=protected-access
@@ -129,14 +128,18 @@ class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
       self.oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(
           REPO_PATH, PROJECT_NAME)
 
-  @parameterized.parameterized.expand([({'data':[]},), ({'data':[[]]},), ({'data':[{}]},)])
+  @parameterized.parameterized.expand([({
+      'data': []
+  },), ({
+      'data': [[]]
+  },), ({
+      'data': [{}]
+  },)])
   def test_malformed_cov_data(self, coverage_data):
     """Tests that covered files can be retrieved from a coverage report."""
     with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
                     return_value=coverage_data):
-      file_list = self.oss_fuzz_coverage.get_files_covered_by_target(
-          FUZZ_TARGET)
-
+      self.oss_fuzz_coverage.get_files_covered_by_target(FUZZ_TARGET)
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
