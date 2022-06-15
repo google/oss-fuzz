@@ -16,14 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
+ARG java_home="/out/open-jdk-17"
+RUN mkdir -p $java_home
 
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+RUN apt update && apt install -y openjdk-17-jdk
+ENV JAVA_HOME $java_home
+ENV PATH "${java_home}:${PATH}"
+ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
 
-RUN git clone --depth 1 https://github.com/qos-ch/slf4j.git slf4j
+RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
-WORKDIR $SRC/slf4j
+WORKDIR $SRC/spring-framework 
