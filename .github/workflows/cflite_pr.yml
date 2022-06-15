@@ -23,7 +23,7 @@ jobs:
       id: build
       uses: google/clusterfuzzlite/actions/build_fuzzers@v1
       with:
-        language: c++
+        language: python
         github-token: ${{ secrets.GITHUB_TOKEN }}
         sanitizer: ${{ matrix.sanitizer }}
         # Optional but recommended: used to only run fuzzers that are affected
