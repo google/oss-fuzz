@@ -131,6 +131,7 @@ RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
 
+# fake change
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
     mkdir honggfuzz && \
