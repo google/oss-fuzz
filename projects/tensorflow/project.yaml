@@ -4,6 +4,7 @@ primary_contact: "lpak@google.com"
 auto_ccs:
  - "itaiz@google.com"
  - "mihaimaruseac@google.com"
+ - "rostam@google.com"
 sanitizers:
   - address
   - undefined

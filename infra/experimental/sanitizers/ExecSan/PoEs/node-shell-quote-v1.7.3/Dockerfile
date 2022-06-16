@@ -12,17 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+# Build and run the proof of error in shell-quote v1.7.3.
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 https://android.googlesource.com/platform/external/cbor-java cbor-java
+RUN apt update && \
+  apt install -y \
+  vim \
+  npm && \
+  git clone \
+    --depth 1 \
+    https://github.com/substack/node-shell-quote.git && \
+  npm config set @gitlab-org:registry \
+    https://gitlab.com/api/v4/packages/npm/
 
-WORKDIR cbor-java
-COPY build.sh $SRC/
-COPY *.java $SRC/
+COPY ./build.sh $SRC
+RUN  ./build.sh
+
+COPY . $SRC
+RUN make execSan
+
+CMD ["make", "run"]

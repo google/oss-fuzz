@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 https://github.com/google/brotli brotli-java
-WORKDIR brotli-java
+RUN apt-get update -y && \
+    apt-get install -y libssl-dev libyaml-dev libreadline6-dev \
+                       zlib1g-dev libncurses5-dev libffi-dev \
+                       bison autoconf ruby pkg-config
+
+RUN git clone https://github.com/ruby/ruby.git
+WORKDIR ruby
+
 COPY build.sh $SRC/
-COPY *.java $SRC/
+RUN mkdir $SRC/fuzz
+COPY *.rb *.c *.options $SRC/fuzz/

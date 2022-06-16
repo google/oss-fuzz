@@ -26,6 +26,7 @@ with atheris.instrument_imports():
   )
 
 
+@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   base = datetime(2012, 4, 6, 13, 26, 10)
@@ -45,6 +46,7 @@ def TestOneInput(data):
 
 
 def main():
+  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.Fuzz()
 

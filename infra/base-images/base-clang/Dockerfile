@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 2335ba4cb52a81c2c05ed075d725ef5f1d98137b && \
+    git checkout 38e75235115a478fa924535f94ccbc8883f166f9 && \
     apt-get remove --purge -y git
 
 COPY checkout_build_install_llvm.sh /root/

@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
 
-RUN git clone --depth 1 https://github.com/google/brotli brotli-java
-WORKDIR brotli-java
+ARG java_home="/out/open-jdk-17"
+RUN mkdir -p $java_home
+
+RUN apt update && apt install -y openjdk-17-jdk
+ENV JAVA_HOME $java_home
+ENV PATH "${java_home}:${PATH}"
+ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-boot
+RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
+
 COPY build.sh $SRC/
-COPY *.java $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/spring-boot

@@ -16,22 +16,25 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
-
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/json.dict $SRC/JsonFuzzer.dict && \
+    mv fuzzing/dictionaries/json.dict $SRC/BasicJsonParserFuzzer.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
+    zip -j $SRC/BasicJsonParserFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
-RUN git clone --depth 1 https://github.com/jettison-json/jettison.git jettison
+ARG java_home="/out/open-jdk-17"
+RUN mkdir -p $java_home
+
+RUN apt update && apt install -y openjdk-17-jdk
+ENV JAVA_HOME $java_home
+ENV PATH "${java_home}:${PATH}"
+ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-security
+RUN git clone --depth 1 https://github.com/spring-projects/spring-ldap spring-ldap
 
 COPY build.sh $SRC/
-COPY JsonFuzzer.java $SRC/
-WORKDIR $SRC/jettison
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/spring-security
