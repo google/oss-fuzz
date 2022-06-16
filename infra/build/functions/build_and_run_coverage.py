@@ -111,8 +111,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
-  download_corpora_steps = build_lib.download_corpora_steps(
-      project.name, testing=config.testing)
+  download_corpora_steps = build_lib.download_corpora_steps(project.name)
   if not download_corpora_steps:
     logging.info('Skipping code coverage build for %s.', project.name)
     return []
@@ -348,6 +347,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
+  env.append(f'PROJECT_NAME={project.name}')
 
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
