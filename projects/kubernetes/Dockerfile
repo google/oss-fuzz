@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN git clone https://github.com/ianlancetaylor/demangle.git
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
 RUN git clone --depth 1 https://github.com/google/AFL
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
