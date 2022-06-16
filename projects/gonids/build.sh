@@ -15,15 +15,20 @@
 #
 ################################################################################
 
-# Test to fix https://github.com/golang/go/issues/49075
-# with fix of https://github.com/golang/go/issues/49961
-# ie https://go-review.googlesource.com/c/go/+/369098/
+# recompile go from git
 (
-cd /root/.go
-git apply $SRC/372f9bd.diff || true
+cd $SRC/goroot/src
+export bisect_good=`cat $SRC/gobughunt/good`
+export bisect_bad=`cat $SRC/gobughunt/bad`
+git log $bisect_good..$bisect_bad --oneline --reverse > gitlog.txt
+# take one commit in the range good..bad based on the day of the month
+expr `date +"%d"` '*' `wc -l gitlog.txt | cut -d' ' -f1` / 31 > logline.txt
+cat gitlog.txt | sed -n `cat logline.txt`p | cut -d' ' -f1 | xargs git checkout
+./make.bash
 )
+rm -Rf /root/.go/
+mv $SRC/goroot /root/.go
 
-export GODEBUG=cpu.all=off
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 
 cd $SRC
