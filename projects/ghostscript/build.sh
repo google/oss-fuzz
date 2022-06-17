@@ -51,12 +51,12 @@ make -j$(nproc) libgs
 
 
 for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors; do
-	$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
-	    $SRC/${fuzzer}.cc \
-	    -o "$OUT/${fuzzer}" \
-	    -Wl,-rpath='$ORIGIN' \
-	    $CUPS_LIBS \
-	    $LIB_FUZZING_ENGINE bin/gs.a
+  $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
+    $SRC/${fuzzer}.cc \
+    -o "$OUT/${fuzzer}" \
+    -Wl,-rpath='$ORIGIN' \
+    $CUPS_LIBS \
+    $LIB_FUZZING_ENGINE bin/gs.a
 done
 
 # Create PDF seed corpus
