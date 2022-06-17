@@ -18,7 +18,7 @@ import sys
 
 with atheris.instrument_imports():
    import sqlalchemy
-   from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
+   from sqlalchemy import create_engine, Table, Column, Integer, MetaData
    from sqlalchemy.sql import text
    from sqlalchemy.exc import SQLAlchemyError
    import sqlalchemy_jsonfield
@@ -31,10 +31,8 @@ def TestInput(data):
     metadata = MetaData()
     fuzz_table = Table('fuzz_table', metadata,
         Column('id', Integer, primary_key=True),
-        Column('Col1', String),
-        Column('Col2',
-           JSONField(enforce_string=fdp.ConsumeBool(),enforce_unicode=False),
-           nullable=False
+        Column('Col1',
+           JSONField(enforce_string=fdp.ConsumeBool(),enforce_unicode=fdp.ConsumeBool())
        )
     )
 
