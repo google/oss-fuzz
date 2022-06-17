@@ -27,12 +27,7 @@ RUN apt-get update && apt-get -y install  \
     libtool         \
     wget            \
     golang          \
-    python	    \
     rsync
-
-# Install Bazelisk
-RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
-RUN chmod +x /usr/local/bin/bazel
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

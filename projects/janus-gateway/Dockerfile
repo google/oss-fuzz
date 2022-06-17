@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 	gtk-doc-tools \
 	libconfig-dev \
 	libglib2.0-dev \
-	libgnutls-dev \
+	libgnutls28-dev \
 	libini-config-dev \
 	libjansson-dev \
 	libnice-dev \

@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y \
   libtool \
   pkg-config \
   libxml2-utils \
+  libxml2-dev \
   xsltproc \
-  libqb-dev \
   libprotobuf-dev \
   protobuf-compiler \
   libdbus-1-dev \
@@ -35,7 +35,13 @@ RUN apt-get update && apt-get install -y \
   libseccomp-dev \
   libcap-ng-dev
 
+RUN git clone https://github.com/ClusterLabs/libqb && cd libqb && \
+    ./autogen.sh && ./configure && make && make install
+
 RUN git clone --recurse-submodules --depth 1 \
   https://github.com/USBGuard/usbguard usbguard
 WORKDIR usbguard
 COPY build.sh $SRC
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

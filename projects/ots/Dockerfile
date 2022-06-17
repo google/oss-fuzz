@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip pkg-config zlib1g-dev && \
-    pip3 install meson==0.52.0 ninja
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip3 install meson==0.55.2 ninja
 RUN git clone --depth 1 https://github.com/khaledhosny/ots.git
 WORKDIR ots
-RUN git submodule update --init --recursive
 COPY build.sh ots-fuzzer.* $SRC/

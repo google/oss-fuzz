@@ -7,3 +7,5 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/google/guetzli'
+file_github_issue: True

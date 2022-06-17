@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
+# Ensure libqb can be found by pkgconfig
+export PKG_CONFIG_PATH=/usr/lib64/pkgconfig/
 
 autoreconf -fi
 
-libqb=`find /usr/lib/ -name libqb.a -print -quit`
+libqb=`find /usr/lib64/ -name libqb.a -print -quit`
 protobuf=`find /usr/lib/ -name libprotobuf.a -print -quit`
 
 qb_LIBS="${libqb}" \

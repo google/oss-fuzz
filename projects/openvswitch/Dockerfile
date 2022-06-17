@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake \
     libtool python python3-pip \
-    libz-dev libssl-dev libssl1.0.0 wget
+    libz-dev libssl-dev libssl1.1 wget
 RUN pip3 install six
 RUN git clone --depth 1 https://github.com/openvswitch/ovs.git openvswitch
 RUN git clone --depth 1 https://github.com/openvswitch/ovs-fuzzing-corpus.git \

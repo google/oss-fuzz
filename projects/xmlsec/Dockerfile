@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config \
-    libssl-dev libxslt-dev wget liblzma-dev
+    libssl-dev wget liblzma-dev python-dev python3-dev
 
 RUN git clone --depth 1 https://github.com/lsh123/xmlsec
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git

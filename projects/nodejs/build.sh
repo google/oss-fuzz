@@ -19,7 +19,7 @@ cd $SRC/node
 # Build node
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
-./configure --experimental-quic --with-ossfuzz
+./configure --with-ossfuzz
 make -j$(nproc)
 
 # Copy all fuzzers to OUT folder 

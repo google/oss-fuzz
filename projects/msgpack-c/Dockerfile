@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake wget bzip2
 RUN git clone --depth 1 --single-branch --branch cpp_master https://github.com/msgpack/msgpack-c.git msgpack-c
 
-RUN wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.bz2 && \
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.70.0/source/boost_1_70_0.tar.bz2 && \
     tar xf boost_1_70_0.tar.bz2 && \
     cd boost_1_70_0 && \
     ./bootstrap.sh --with-toolset=clang --prefix=/usr && \

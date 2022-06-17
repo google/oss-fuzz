@@ -21,11 +21,9 @@ mkdir -p $TOR_DEPS
 
 # Build libevent with proper instrumentation.
 cd ${SRC}/libevent
-sh autogen.sh
-./configure --prefix=${TOR_DEPS} --disable-openssl
-make -j$(nproc) clean
-make -j$(nproc) all
-make install
+mkdir build && cd build
+cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../
+make && make install
 
 # Build OpenSSL with proper instrumentation.
 cd ${SRC}/openssl
@@ -63,13 +61,15 @@ export ASAN_OPTIONS=detect_leaks=0
     --with-libevent-dir=${SRC}/deps \
     --with-openssl-dir=${SRC}/deps \
     --with-zlib-dir=${SRC}/deps \
-    --disable-gcc-hardening
+    --disable-gcc-hardening \
+    LDFLAGS="-L${TOR_DEPS}/lib64"
 
 make clean
+make micro-revision.i  # Workaround from https://gitlab.torproject.org/tpo/core/tor/-/issues/29520#note_2749427
 make -j$(nproc) oss-fuzz-fuzzers
 
 TORLIBS="`make show-testing-libs`"
-TORLIBS="$TORLIBS -lm -Wl,-Bstatic -lssl -lcrypto -levent -lz -L${TOR_DEPS}/lib"
+TORLIBS="$TORLIBS -lm -Wl,-Bstatic -lssl -lcrypto -levent -lz -L${TOR_DEPS}/lib -L${TOR_DEPS}/lib64"
 TORLIBS="$TORLIBS -Wl,-Bdynamic"
 
 for fuzzer in src/test/fuzz/*.a; do

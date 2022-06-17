@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 MAINTAINER s@sevki.org
 
-RUN go get -v -u github.com/hugelgupf/p9/...
+RUN git clone --depth 1 https://github.com/hugelgupf/p9
 
-WORKDIR /root/go/src/github.com/hugelgupf/p9
+WORKDIR $SRC/p9
 
 COPY build.sh $SRC/

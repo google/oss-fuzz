@@ -1,9 +1,0 @@
-homepage: "https://github.com/google/zetasql"
-language: c++
-primary_contact: "evmaus@google.com"
-auto_ccs:
- - "zdwho@google.com"
- - "shumway@google.com"
-sanitizers:
- - address
- - undefined

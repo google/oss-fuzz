@@ -16,3 +16,4 @@ sanitizers:
 architectures:
  - i386
  - x86_64
+main_repo: 'https://github.com/cisco/openh264.git'

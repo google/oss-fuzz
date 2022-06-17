@@ -21,29 +21,31 @@
 #include "libusb/libusbi.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  struct libusb_transfer *transfer;
+  struct libusb_transfer *transfer = NULL;
   FuzzedDataProvider stream(data, size);
   uint8_t bmRequestType = stream.ConsumeIntegral<uint8_t>();
   uint8_t bRequest = stream.ConsumeIntegral<uint8_t>();
   uint16_t wValue = stream.ConsumeIntegral<uint16_t>();
   uint16_t wIndex = stream.ConsumeIntegral<uint16_t>();
   uint16_t wLength = stream.ConsumeIntegral<uint16_t>();
-  std::vector<char> data_ = stream.ConsumeRemainingBytes<char>();
-  unsigned char* buffer = reinterpret_cast<unsigned char*>(data_.data());
+  std::string input = stream.ConsumeRandomLengthString();
+  const char *d = input.c_str();
 
   transfer = libusb_alloc_transfer(0);
   if (!transfer) {
     return LIBUSB_ERROR_NO_MEM;
   }
 
-  if (!buffer) {
-    libusb_free_transfer(transfer);
-    return LIBUSB_ERROR_NO_MEM;
-  }
+  libusb_fill_control_setup((unsigned char *)d, bmRequestType, bRequest, wValue, wIndex, wLength);
 
-  libusb_fill_control_setup(
-    buffer, bmRequestType, bRequest, wValue, wIndex, wLength);
+  // Cleanup. 
+  // We cannot call libusb_free_transfer as no callbacks has occurred. Calling
+  // libusb_free_transfer without this will trigger false positive errors.
+  struct usbi_transfer *itransfer = LIBUSB_TRANSFER_TO_USBI_TRANSFER(transfer);
+  usbi_mutex_destroy(&itransfer->lock);
+  size_t priv_size = PTR_ALIGN(usbi_backend.transfer_priv_size);
+  unsigned char *ptr = (unsigned char *)itransfer - priv_size;
+  free(ptr);
 
-  libusb_free_transfer(transfer);
   return 0;
 }

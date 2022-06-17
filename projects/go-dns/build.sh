@@ -15,18 +15,7 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
-
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -tags fuzz -func $function -o $fuzzer.a $path
-
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
 
 # Same as usual except for added -tags fuzz.
-compile_fuzzer github.com/miekg/dns FuzzNewRR fuzz_newrr
-compile_fuzzer github.com/miekg/dns Fuzz fuzz_msg_unpack
+compile_go_fuzzer github.com/miekg/dns FuzzNewRR fuzz_newrr fuzz
+compile_go_fuzzer github.com/miekg/dns Fuzz fuzz_msg_unpack fuzz

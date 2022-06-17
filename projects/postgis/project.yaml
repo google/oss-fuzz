@@ -6,3 +6,4 @@ auto_ccs:
   - "pramsey@cleverelephant.ca"
   - "mateusz@loskot.net"
   - "komzpa@gmail.com"
+main_repo: 'https://git.osgeo.org/gitea/postgis/postgis.git'

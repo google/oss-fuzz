@@ -112,9 +112,9 @@ Examples:
 
 For some input types, a simple dictionary of tokens used by the input language
 can have a dramatic impact on fuzzing efficiency.  For example, when fuzzing an
-XML parser, a dictionary of XML tokens is helpful. AFL has a
-[collection](https://github.com/google/AFL/tree/master/dictionaries) of
-dictionaries for popular data formats. Ideally, a dictionary should be
+XML parser, a dictionary of XML tokens is helpful. AFL++ has a
+[collection](https://github.com/AFLplusplus/AFLplusplus/tree/master/dictionaries)
+of dictionaries for popular data formats. Ideally, a dictionary should be
 maintained alongside the fuzz target, and it must use [correct
 syntax](http://libfuzzer.info/#dictionaries).
 

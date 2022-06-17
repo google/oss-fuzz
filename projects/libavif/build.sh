@@ -26,7 +26,7 @@ ninja
 
 # build fuzzer
 $CXX $CXXFLAGS -std=c++11 -I../include \
-    $SRC/avif_decode_fuzzer.cc -o $OUT/avif_decode_fuzzer \
+    ../tests/oss-fuzz/avif_decode_fuzzer.cc -o $OUT/avif_decode_fuzzer \
     $LIB_FUZZING_ENGINE libavif.a ../ext/dav1d/build/src/libdav1d.a
 
 # copy seed corpus

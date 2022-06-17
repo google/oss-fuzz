@@ -37,10 +37,11 @@ def patch_environ(testcase_obj):
   patcher.start()
 
 
-class BisectClangTestMixin:
+class BisectClangTestMixin:  # pylint: disable=too-few-public-methods
   """Useful mixin for bisect_clang unittests."""
 
-  def setUp(self):
+  def setUp(self):  # pylint: disable=invalid-name
+    """Initialization method for unittests."""
     patch_environ(self)
     os.environ['SRC'] = '/src'
     os.environ['WORK'] = '/work'
@@ -68,8 +69,9 @@ class GetClangBuildEnvTest(BisectClangTestMixin, unittest.TestCase):
 
 
 def read_test_data(filename):
-  with open(os.path.join(FILE_DIRECTORY, 'test_data', filename)) as f:
-    return f.read()
+  """Returns data from |filename| in the test_data directory."""
+  with open(os.path.join(FILE_DIRECTORY, 'test_data', filename)) as file_handle:
+    return file_handle.read()
 
 
 class SearchBisectOutputTest(BisectClangTestMixin, unittest.TestCase):
@@ -125,7 +127,8 @@ def create_mock_popen(
   return MockPopen
 
 
-def mock_prepare_build(llvm_project_path):  # pylint: disable=unused-argument
+def mock_prepare_build_impl(llvm_project_path):  # pylint: disable=unused-argument
+  """Mocked prepare_build function."""
   return '/work/llvm-build'
 
 
@@ -135,7 +138,7 @@ class BuildClangTest(BisectClangTestMixin, unittest.TestCase):
   def test_build_clang_test(self):
     """Tests that build_clang works as intended."""
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
-      with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
+      with mock.patch('bisect_clang.prepare_build', mock_prepare_build_impl):
         llvm_src_dir = '/src/llvm-project'
         bisect_clang.build_clang(llvm_src_dir)
         self.assertEqual([['ninja', '-C', '/work/llvm-build', 'install']],
@@ -167,13 +170,13 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     """Tests test_start_commit works as intended when the test returns an
     unexpected value."""
 
-    def mock_execute(command, *args, **kwargs):  # pylint: disable=unused-argument
+    def mock_execute_impl(command, *args, **kwargs):  # pylint: disable=unused-argument
       if command == self.test_command:
         return returncode, '', ''
       return 0, '', ''
 
-    with mock.patch('bisect_clang.execute', mock_execute):
-      with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
+    with mock.patch('bisect_clang.execute', mock_execute_impl):
+      with mock.patch('bisect_clang.prepare_build', mock_prepare_build_impl):
         with self.assertRaises(bisect_clang.BisectError):
           self.git.test_start_commit(commit, label, self.test_command)
 
@@ -199,13 +202,13 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     expected value."""
     command_args = []
 
-    def mock_execute(command, *args, **kwargs):  # pylint: disable=unused-argument
+    def mock_execute_impl(command, *args, **kwargs):  # pylint: disable=unused-argument
       command_args.append(command)
       if command == self.test_command:
         return returncode, '', ''
       return 0, '', ''
 
-    with mock.patch('bisect_clang.execute', mock_execute):
+    with mock.patch('bisect_clang.execute', mock_execute_impl):
       self.git.test_start_commit(commit, label, self.test_command)
       self.assertEqual([
           get_git_command('checkout', commit), self.test_command,
@@ -224,8 +227,8 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.bisect_start(self.good_commit, self.bad_commit,
                             self.test_command)
-      self.assertEqual(
-          get_git_command('bisect', 'start'), mock_popen.commands[0])
+      self.assertEqual(get_git_command('bisect', 'start'),
+                       mock_popen.commands[0])
       mock_test_start_commit.assert_has_calls([
           mock.call('bad_commit', 'bad', 'testcommand'),
           mock.call('good_commit', 'good', 'testcommand')
@@ -244,13 +247,13 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     """Test test_commit works as intended."""
     command_args = []
 
-    def mock_execute(command, *args, **kwargs):  # pylint: disable=unused-argument
+    def mock_execute_impl(command, *args, **kwargs):  # pylint: disable=unused-argument
       command_args.append(command)
       if command == self.test_command:
         return returncode, output, ''
       return 0, output, ''
 
-    with mock.patch('bisect_clang.execute', mock_execute):
+    with mock.patch('bisect_clang.execute', mock_execute_impl):
       result = self.git.test_commit(self.test_command)
       self.assertEqual([self.test_command,
                         get_git_command('bisect', label)], command_args)

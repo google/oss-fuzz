@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+# Dont build tests we do not care about
+echo "" > ./proxygen/httpclient/samples/CMakeLists.txt
+echo "" > ./proxygen/httpserver/tests/CMakeLists.txt
+echo "" > ./proxygen/lib/http/structuredheaders/test/CMakeLists.txt
+echo "" > ./proxygen/httpserver/filters/tests/CMakeLists.txt
+echo "" > ./proxygen/lib/http/session/test/CMakeLists.txt
+echo "" > ./proxygen/lib/http/codec/compress/test/CMakeLists.txt
+echo "" > ./proxygen/lib/services/test/CMakeLists.txt
+
 cd proxygen
 
 # Link to, and copy over, libunwind

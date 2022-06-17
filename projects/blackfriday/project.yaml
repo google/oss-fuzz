@@ -1,0 +1,11 @@
+homepage: "https://github.com/russross/blackfriday"
+main_repo: "https://github.com/russross/blackfriday"
+primary_contact: "security-tps@google.com"
+auto_ccs :
+  - "jvoisin@google.com"
+  - "Adam@adalogics.com"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

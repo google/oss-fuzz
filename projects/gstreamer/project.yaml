@@ -9,3 +9,4 @@ auto_ccs:
  - "saunierthibault@gmail.com"
  - "ystreet00@gmail.com"
  - "thaytan@noraisin.net"
+main_repo: 'https://gitlab.freedesktop.org/gstreamer/gstreamer.git'

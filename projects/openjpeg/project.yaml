@@ -13,3 +13,4 @@ sanitizers:
   - memory
   - dataflow
   - undefined
+main_repo: 'https://github.com/uclouvain/openjpeg'

@@ -1,3 +1,4 @@
 homepage: "https://sleuthkit.org"
 language: c++
 primary_contact: "carrier@sleuthkit.org"
+main_repo: 'https://github.com/sleuthkit/sleuthkit'

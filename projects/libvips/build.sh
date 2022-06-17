@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-export PKG_CONFIG_PATH=/work/lib/pkgconfig
-export LDFLAGS="$CXXFLAGS"
+export PKG_CONFIG="pkg-config --static"
+export PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+export CPPFLAGS="-I$WORK/include"
+export LDFLAGS="-L$WORK/lib"
 
 # libz
 pushd $SRC/zlib
@@ -29,8 +31,22 @@ popd
 pushd $SRC/libexif
 autoreconf -fi
 ./configure \
-  --enable-shared=no \
+  --enable-static \
+  --disable-shared \
+  --disable-nls \
   --disable-docs \
+  --disable-dependency-tracking \
+  --prefix=$WORK
+make -j$(nproc)
+make install
+popd
+
+# lcms
+pushd $SRC/lcms
+./autogen.sh
+./configure \
+  --enable-static \
+  --disable-shared \
   --disable-dependency-tracking \
   --prefix=$WORK
 make -j$(nproc)
@@ -45,8 +61,9 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
   -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_SHARED:bool=off -DCONFIG_PIC=1 \
+  -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
   -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+  -DENABLE_TOOLS=0 \
   -DCONFIG_SIZE_LIMIT=1 \
   -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
   -DDO_RANGE_CHECK_CLAMP=1 \
@@ -60,6 +77,8 @@ popd
 
 # libheif
 pushd $SRC/libheif
+# Ensure libvips finds heif_image_handle_get_raw_color_profile
+sed -i '/^Libs.private:/s/-lstdc++/-lc++/' libheif.pc.in
 autoreconf -fi
 ./configure \
   --disable-shared \
@@ -74,14 +93,14 @@ popd
 
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC:bool=on
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_TURBOJPEG=FALSE
 make -j$(nproc)
 make install
 popd
 
 # libpng
 pushd $SRC/libpng
-sed -ie "s/option WARNING /option WARNING disabled/" scripts/pnglibconf.dfa
+sed -ie "s/option WARNING /& disabled/" scripts/pnglibconf.dfa
 autoreconf -fi
 ./configure \
   --prefix=$WORK \
@@ -91,9 +110,12 @@ make -j$(nproc)
 make install
 popd
 
-# libgif
-pushd $SRC/libgif
-make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
+# libspng
+pushd $SRC/libspng
+meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+  -Dstatic_zlib=true
+ninja -C build
+ninja -C build install
 popd
 
 # libwebp
@@ -127,15 +149,82 @@ make -j$(nproc)
 make install
 popd
 
-# libvips
-./autogen.sh \
-  --disable-shared \
-  --disable-gtk-doc \
-  --disable-gtk-doc-html \
-  --disable-dependency-tracking \
-  --prefix=$WORK
-make -j$(nproc) CCLD=$CXX
+# jpeg-xl (libjxl)
+pushd $SRC/libjxl
+# Ensure libvips finds JxlEncoderInitBasicInfo
+sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
+# FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
+# https://github.com/libjxl/libjxl/issues/858
+cmake -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=$CC \
+  -DCMAKE_CXX_COMPILER=$CXX \
+  -DCMAKE_C_FLAGS="$CFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
+  -DCMAKE_INSTALL_PREFIX="$WORK" \
+  -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
+  -DCMAKE_USE_PTHREADS_INIT=1 \
+  -DBUILD_SHARED_LIBS=0 \
+  -DBUILD_TESTING=0 \
+  -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
+  -DJPEGXL_ENABLE_FUZZERS=0 \
+  -DJPEGXL_ENABLE_TOOLS=0 \
+  -DJPEGXL_ENABLE_MANPAGES=0 \
+  -DJPEGXL_ENABLE_BENCHMARK=0 \
+  -DJPEGXL_ENABLE_EXAMPLES=0 \
+  -DJPEGXL_ENABLE_SKCMS=0 \
+  -DJPEGXL_ENABLE_SJPEG=0 \
+  .
+make -j$(nproc)
 make install
+popd
+
+# libimagequant
+pushd $SRC/libimagequant
+meson setup build --prefix=$WORK --libdir=lib --default-library=static
+ninja -C build
+ninja -C build install
+popd
+
+# cgif
+pushd $SRC/cgif
+meson setup build --prefix=$WORK --libdir=lib --default-library=static
+ninja -C build
+ninja -C build install
+popd
+
+# pdfium doesn't need fuzzing, but we want to fuzz the libvips/pdfium link
+pushd $SRC/pdfium-latest
+cp lib/* $WORK/lib
+cp -r include/* $WORK/include
+popd
+
+# make a pdfium.pc that libvips can use ... the version number just needs to
+# be higher than 4200 to satisfy libvips
+cat > $WORK/lib/pkgconfig/pdfium.pc << EOF
+  prefix=$WORK
+  exec_prefix=\${prefix}
+  libdir=\${exec_prefix}/lib
+  includedir=\${prefix}/include
+  Name: pdfium
+  Description: pdfium
+  Version: 4901
+  Requires:
+  Libs: -L\${libdir} -lpdfium
+  Cflags: -I\${includedir}
+EOF
+
+# libvips
+# Disable building man pages, gettext po files, tools, and tests
+sed -i "/subdir('man')/{N;N;N;N;d;}" meson.build
+meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+  -Ddeprecated=false -Dintrospection=false -Dmodules=disabled
+ninja -C build
+ninja -C build install
+
+# All shared libraries needed during fuzz target execution should be inside the $OUT/lib directory
+mkdir -p $OUT/lib
+cp $WORK/lib/*.so $OUT/lib
 
 # Merge the seed corpus in a single directory, exclude files larger than 2k
 mkdir -p fuzz/corpus
@@ -151,25 +240,20 @@ zip -jrq $OUT/seed_corpus.zip fuzz/corpus
 for fuzzer in fuzz/*_fuzzer.cc; do
   target=$(basename "$fuzzer" .cc)
   $CXX $CXXFLAGS -std=c++11 "$fuzzer" -o "$OUT/$target" \
-    -I$WORK/include \
+    $CPPFLAGS \
     -I/usr/include/glib-2.0 \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    $WORK/lib/libvips.a \
-    $WORK/lib/libexif.a \
-    $WORK/lib/libturbojpeg.a \
-    $WORK/lib/libpng.a \
-    $WORK/lib/libz.a \
-    $WORK/lib/libgif.a \
-    $WORK/lib/libwebpmux.a \
-    $WORK/lib/libwebpdemux.a \
-    $WORK/lib/libwebp.a \
-    $WORK/lib/libtiff.a \
-    $WORK/lib/libheif.a \
-    $WORK/lib/libaom.a \
+    $LDFLAGS \
+    -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
+    -ltiff -lwebpmux -lwebpdemux -lwebp -lheif -laom \
+    -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
-    -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
-    -Wl,-Bdynamic -pthread
+    -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
+    -lgio-2.0 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
+    -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
+    -Wl,-Bdynamic -pthread \
+    -Wl,-rpath,'$ORIGIN/lib'
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done
 

@@ -1,0 +1,12 @@
+homepage: "https://www.nfstream.org/"
+language: python
+primary_contact: "aouinizied@gmail.com"
+auto_ccs:
+  - "aouinizied@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/nfstream/nfstream'

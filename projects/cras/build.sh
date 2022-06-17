@@ -23,7 +23,7 @@
 
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
-./configure
+./configure --disable-featured
 make -j$(nproc)
 cp ${SRC}/adhd/cras/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 
@@ -44,3 +44,5 @@ done
 
 zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*
 cp "${SRC}/adhd/cras/src/fuzz/cras_hfp_slc.dict" "${OUT}/cras_hfp_slc.dict"
+# Add *.rs soft link for coverage build
+ln -s ${SRC}/adhd/cras/src/server/rust/src/* ${SRC}

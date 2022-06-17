@@ -16,11 +16,11 @@
 
 # Base image for all other images.
 
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
+    apt-get install -y libc6-dev binutils libgcc-9-dev && \
     apt-get autoremove -y
 
 ENV OUT=/out

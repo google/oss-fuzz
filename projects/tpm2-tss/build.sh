@@ -23,8 +23,8 @@ export GEN_FUZZ=1
 
 ./bootstrap
 ./configure \
-  CC=clang \
-  CXX=clang++ \
+  CC=$CC \
+  CXX=$CXX \
   --enable-debug \
   --with-fuzzing=ossfuzz \
   --enable-tcti-fuzzing \
@@ -33,7 +33,8 @@ export GEN_FUZZ=1
   --disable-tcti-swtpm \
   --disable-doxygen-doc \
   --disable-shared \
-  --disable-fapi
+  --disable-fapi \
+  --disable-policy
 
 sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
 make -j $(nproc) fuzz-targets

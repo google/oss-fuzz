@@ -1,0 +1,12 @@
+disabled: true
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/CodeIntelligenceTesting/jazzer
+language: jvm
+main_repo: https://github.com/CodeIntelligenceTesting/jazzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- meumertzheim@code-intelligence.com
+- norbert.schneider@code-intelligence.com

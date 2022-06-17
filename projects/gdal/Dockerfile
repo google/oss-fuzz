@@ -20,7 +20,7 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
 
-RUN cp gdal/gdal/fuzzers/build.sh $SRC/
+RUN cp gdal/fuzzers/build.sh $SRC/
 
 WORKDIR gdal
 

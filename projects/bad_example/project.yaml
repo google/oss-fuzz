@@ -1,7 +1,8 @@
-homepage: "http://www.zlib.net/"
+disabled: true
+homepage: http://www.zlib.net/
 language: c++
 sanitizers:
-  - address
-  - memory
-  - undefined
-disabled: True
+- address
+- memory
+- undefined
+vendor_ccs: []

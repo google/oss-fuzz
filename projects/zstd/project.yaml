@@ -7,9 +7,11 @@ auto_ccs:
   - "cyan@fb.com"
   - "felixh@fb.com"
   - "dpc@fb.com"
-  - "bimbashrestha@fb.com"
   - "mhl@fb.com"
-  - "reed@fb.com"
+  - "binhvo@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -20,3 +22,4 @@ sanitizers:
   - dataflow
   - memory
   - undefined
+main_repo: 'https://github.com/facebook/zstd'

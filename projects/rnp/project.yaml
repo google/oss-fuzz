@@ -12,3 +12,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+main_repo: 'https://github.com/rnpgp/rnp.git'

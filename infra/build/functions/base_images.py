@@ -14,29 +14,48 @@
 #
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
-
-import datetime
 import logging
 
 import google.auth
-from googleapiclient.discovery import build
+
+import build_lib
 
 BASE_IMAGES = [
     'base-image',
     'base-clang',
     'base-builder',
+    'base-builder-go',
+    'base-builder-go-codeintelligencetesting',
+    'base-builder-jvm',
+    'base-builder-python',
+    'base-builder-rust',
+    'base-builder-swift',
     'base-runner',
     'base-runner-debug',
 ]
+INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder']
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
+MAJOR_TAG = 'v1'
+INTROSPECTOR_TAG = 'introspector'
+TIMEOUT = str(6 * 60 * 60)
 
-BASE_SANITIZER_LIBS_IMAGE = TAG_PREFIX + 'base-sanitizer-libs-builder'
-MSAN_LIBS_IMAGE = TAG_PREFIX + 'msan-libs-builder'
 
-
-def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
+def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images."""
+  steps = [build_lib.get_git_clone_step()]
+
+  for base_image in images:
+    image = tag_prefix + base_image
+    tagged_image = image + ':' + MAJOR_TAG
+    steps.append(
+        build_lib.get_docker_build_step([image, tagged_image],
+                                        'infra/base-images/' + base_image))
+  return steps
+
+
+def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
+  """Returns build steps for given images version of introspector"""
   steps = [{
       'args': [
           'clone',
@@ -46,13 +65,28 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   }]
 
   for base_image in images:
+    image = tag_prefix + base_image
+    args_list = ['build']
+
+    if base_image == 'base-clang':
+      args_list.extend(['--build-arg', 'introspector=1'])
+    elif base_image == 'base-builder':
+      steps.append({
+          'name':
+              'gcr.io/cloud-builders/docker',
+          'args': [
+              'tag', 'gcr.io/oss-fuzz-base/base-clang:introspector',
+              'gcr.io/oss-fuzz-base/base-clang:latest'
+          ]
+      })
+
+    args_list.extend([
+        '-t',
+        f'{image}:{INTROSPECTOR_TAG}',
+        '.',
+    ])
     steps.append({
-        'args': [
-            'build',
-            '-t',
-            tag_prefix + base_image,
-            '.',
-        ],
+        'args': args_list,
         'dir': 'oss-fuzz/infra/base-images/' + base_image,
         'name': 'gcr.io/cloud-builders/docker',
     })
@@ -60,82 +94,41 @@ def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
-  """Returns url that displays the build logs."""
-  url_format = ('https://console.developers.google.com/logs/viewer?'
-                'resource=build%2Fbuild_id%2F{0}&project={1}')
-  return url_format.format(build_id, project_id)
-
-
 # pylint: disable=no-member
-def run_build(steps, images):
-  """Execute the retrieved build steps in gcp."""
+def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
+  """Execute the retrieved build steps in gcb."""
   credentials, _ = google.auth.default()
-  build_body = {
-      'steps': steps,
-      'timeout': str(6 * 3600) + 's',
+  body_overrides = {
+      'images': images + [f'{image}:{build_version}' for image in images],
       'options': {
-          'machineType': 'N1_HIGHCPU_32'
+          'machineType': 'E2_HIGHCPU_32'
       },
-      'images': images
   }
-  cloudbuild = build('cloudbuild',
-                     'v1',
-                     credentials=credentials,
-                     cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=BASE_PROJECT,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, BASE_PROJECT))
+  return build_lib.run_build(steps,
+                             credentials,
+                             BASE_PROJECT,
+                             TIMEOUT,
+                             body_overrides,
+                             tags,
+                             use_build_pool=False)
 
 
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
+  logging.basicConfig(level=logging.INFO)
 
-  tag_prefix = f'gcr.io/{BASE_PROJECT}/'
-  steps = _get_base_image_steps(BASE_IMAGES, tag_prefix)
-  images = [tag_prefix + base_image for base_image in BASE_IMAGES]
-
+  steps = get_base_image_steps(BASE_IMAGES)
+  images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-
-def _get_msan_steps(image):
-  """Get build steps for msan-libs-builder."""
-  timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
-  upload_name = 'msan-libs-' + timestamp + '.zip'
-
-  steps = _get_base_image_steps([
-      'base-sanitizer-libs-builder',
-      'msan-libs-builder',
-  ])
-  steps.extend([{
-      'name': image,
-      'args': [
-          'bash',
-          '-c',
-          'cd /msan && zip -r /workspace/libs.zip .',
-      ],
-  }, {
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          'cp',
-          '/workspace/libs.zip',
-          'gs://oss-fuzz-msan-libs/' + upload_name,
-      ],
-  }])
-  return steps
-
-
-def base_msan_builder(event, context):
-  """Cloud function to build base images."""
-  del event, context
-  steps = _get_msan_steps(MSAN_LIBS_IMAGE)
-  images = [
-      BASE_SANITIZER_LIBS_IMAGE,
-      MSAN_LIBS_IMAGE,
+  introspector_steps = _get_introspector_base_images_steps(
+      INTROSPECTOR_BASE_IMAGES)
+  introspector_images = [
+      TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(steps, images)
+  run_build(introspector_steps,
+            introspector_images,
+            tags=INTROSPECTOR_TAG,
+            build_version=INTROSPECTOR_TAG)

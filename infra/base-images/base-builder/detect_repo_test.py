@@ -23,6 +23,7 @@ import re
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import detect_repo
 
@@ -36,6 +37,35 @@ import test_repos
 # pylint: enable=wrong-import-position
 
 
+class TestCheckForRepoName(unittest.TestCase):
+  """Tests for check_for_repo_name."""
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller/', None))
+  def test_go_get_style_url(self, _, __):
+    """Tests that check_for_repo_name works on repos that were downloaded using
+    go get."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller', None))
+  def test_missing_git_and_slash_url(self, _, __):
+    """Tests that check_for_repo_name works on repos who's URLs do not end in
+    ".git" or "/"."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller.git', None))
+  def test_normal_style_repo_url(self, _, __):
+    """Tests that check_for_repo_name works on normally cloned repos."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
+
+
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class DetectRepoIntegrationTest(unittest.TestCase):
   """Class to test the functionality of the detect_repo module."""
 
@@ -44,20 +74,19 @@ class DetectRepoIntegrationTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       # Construct example repo's to check for commits.
-      for example_repo in test_repos.TEST_REPOS:
-        repo_manager.RepoManager(example_repo.git_url, tmp_dir)
-        self.check_with_repo(example_repo.git_url,
-                             example_repo.git_repo_name,
+      for test_repo in test_repos.TEST_REPOS:
+        repo_manager.clone_repo_and_get_manager(test_repo.git_url, tmp_dir)
+        self.check_with_repo(test_repo.git_url,
+                             test_repo.git_repo_name,
                              tmp_dir,
-                             commit=example_repo.old_commit)
+                             commit=test_repo.old_commit)
 
   def test_infer_main_repo_from_name(self):
     """Tests that the main project repo can be inferred from a repo name."""
-
     with tempfile.TemporaryDirectory() as tmp_dir:
-      for example_repo in test_repos.TEST_REPOS:
-        repo_manager.RepoManager(example_repo.git_url, tmp_dir)
-        self.check_with_repo(example_repo.git_url, example_repo.git_repo_name,
+      for test_repo in test_repos.TEST_REPOS:
+        repo_manager.clone_repo_and_get_manager(test_repo.git_url, tmp_dir)
+        self.check_with_repo(test_repo.git_url, test_repo.git_repo_name,
                              tmp_dir)
 
   def check_with_repo(self, repo_origin, repo_name, tmp_dir, commit=None):

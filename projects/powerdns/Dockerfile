@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # maintainer for this file
 
 # install required packages to build your project
-RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libboost-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
+RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex boost1.71-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
 
 # checkout all sources needed to build your project
 RUN git clone https://github.com/PowerDNS/pdns.git pdns
@@ -30,3 +30,6 @@ WORKDIR pdns
 
 # copy build script and other fuzzer files in src dir
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

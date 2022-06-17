@@ -3,3 +3,4 @@ language: c++
 primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "tim.ruehsen@gmx.de"
+main_repo: 'https://github.com/rockdaboot/libpsl.git'

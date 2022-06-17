@@ -2,7 +2,6 @@ homepage: "http://commonmark.org"
 language: c++
 primary_contact: "jgm@berkeley.edu"
 auto_ccs:
-  - "kivikakk@github.com"
   - "wellnhofer@aevum.de"
 fuzzing_engines:
   - libfuzzer
@@ -17,3 +16,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/commonmark/cmark.git'

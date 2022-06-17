@@ -1,7 +1,0 @@
-Package: *
-Pin: release n=eoan
-Pin-Priority: 1
-
-Package: nasm
-Pin: release n=eoan
-Pin-Priority: 555

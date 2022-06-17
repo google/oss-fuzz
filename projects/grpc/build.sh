@@ -18,13 +18,9 @@
 set -o errexit
 set -o nounset
 
-readonly FUZZER_DICTIONARIES=(
-  test/core/end2end/fuzzers/hpack.dictionary
-)
-
 readonly FUZZER_TARGETS=(
   test/core/json:json_fuzzer
-  test/core/client_channel:uri_fuzzer_test
+  test/core/uri:uri_fuzzer_test
   test/core/http:request_fuzzer
   test/core/http:response_fuzzer
   test/core/nanopb:fuzzer_response
@@ -33,8 +29,6 @@ readonly FUZZER_TARGETS=(
   test/core/slice:percent_encode_fuzzer
   test/core/transport/chttp2:hpack_parser_fuzzer
   test/core/end2end/fuzzers:client_fuzzer
-  test/core/end2end/fuzzers:server_fuzzer
-  test/core/security:ssl_server_fuzzer
   test/core/security:alts_credentials_fuzzer
 )
 
@@ -67,8 +61,6 @@ fi
 
 tools/bazel build \
   --dynamic_mode=off \
-  --spawn_strategy=standalone \
-  --genrule_strategy=standalone \
   ${NO_VPTR} \
   --strip=never \
   --linkopt=-lc++ \
@@ -77,7 +69,7 @@ tools/bazel build \
   --linkopt=${LIB_FUZZING_ENGINE} \
   ${EXTRA_BAZEL_FLAGS} \
   ${FUZZER_TARGETS[@]} \
-  --verbose_failures
+  --verbose_failures -s
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -119,17 +111,10 @@ for target in "${FUZZER_TARGETS[@]}"; do
   cp "bazel-bin/$fuzzer_name" "$OUT/"
 done
 
-# Copy dictionaries and options files to $OUT/
-for dict in "${FUZZER_DICTIONARIES[@]}"; do
-  cp "${dict}" "${OUT}/"
-done
-
-cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
-
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
 zip "${OUT}/json_fuzzer_seed_corpus.zip" test/core/json/corpus/*
-zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/client_channel/uri_corpus/*
+zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/uri/uri_corpus/*
 zip "${OUT}/request_fuzzer_seed_corpus.zip" test/core/http/request_corpus/*
 zip "${OUT}/response_fuzzer_seed_corpus.zip" test/core/http/response_corpus/*
 zip "${OUT}/fuzzer_response_seed_corpus.zip" test/core/nanopb/corpus_response/*

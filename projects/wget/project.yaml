@@ -5,3 +5,4 @@ auto_ccs:
   - "tim.ruehsen@gmx.de"
   - "darnir@gmail.com"
   - "gscrivan@redhat.com"
+main_repo: 'https://git.savannah.gnu.org/git/wget.git'

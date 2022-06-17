@@ -61,6 +61,8 @@ fuzzing_engines:
 
 ### Dockerfile
 
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-rust`
+
 The OSS-Fuzz builder image has the latest nightly release of Rust as well as
 `cargo fuzz` pre-installed and in `PATH`. In the `Dockerfile` for your project
 all you'll need to do is fetch the latest copy of your code and install any
@@ -100,3 +102,47 @@ do
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
 done
 ```
+
+## Writing fuzzers using a test-style strategy
+
+In Rust you will often have tests written in a way so they are only 
+compiled into the final binary when build in test-mode. This is, achieved by
+wrapping your test code in `cfg(test)`, e.g.
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    ...
+```
+
+Cargo-fuzz automatically enables the `fuzzing` feature, which means you can
+follow a similar strategy to writing fuzzers as you do when writing tests.
+Specifically, you can create modules wrapped in the `fuzzing` feature:
+```rust
+#[cfg(fuzzing)]
+pub mod fuzz_logic {
+    use super::*;
+
+    ...
+```
+and then call the logic within `fuzz_logic` from your fuzzer. 
+
+Furthermore, within your `.toml` files, you can then specify fuzzing-specific
+depedencies by wrapping them as follows:
+```
+[target.'cfg(fuzzing)'.dependencies]
+```
+similar to how you wrap test-dependencies as follows:
+```
+[dev-dependencies]
+```
+
+Finally, you can also combine the testing logic you have and the fuzz logic. This
+can be achieved simply by using 
+```rust
+#[cfg(any(test, fuzzing))]
+```
+
+A project that follows this structure is Linkerd2-proxy and the project files can be
+seen [here](https://github.com/google/oss-fuzz/tree/master/projects/linkerd2-proxy).

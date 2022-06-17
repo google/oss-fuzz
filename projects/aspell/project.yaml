@@ -9,3 +9,4 @@ sanitizers:
   - undefined
   - memory:
       experimental: true
+main_repo: 'https://github.com/gnuaspell/aspell.git'

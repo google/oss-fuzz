@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
+mv $SRC/fuzzMarshalJSON.go $SRC/tidb/types/
+mv $SRC/fuzzNewBitLiteral.go $SRC/tidb/types/
+mv $SRC/fuzzNewHexLiteral.go $SRC/tidb/types/
 
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-compile_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
-compile_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
-compile_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral

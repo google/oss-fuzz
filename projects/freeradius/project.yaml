@@ -1,0 +1,11 @@
+homepage: "https://freeradius.org"
+language: c++
+primary_contact: "a.cudbardb@gmail.com"
+auto_ccs:
+- "adekok@gmail.com"
+- "p.antoine@catenacyber.fr"
+main_repo: 'https://github.com/FreeRADIUS/freeradius-server.git'
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

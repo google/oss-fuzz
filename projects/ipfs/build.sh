@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd $GOPATH/src/github.com/ipfs/go-datastore/fuzz
+cd fuzz
 
 function compile_ds_fuzzer {
   fuzzer=$1
@@ -25,19 +25,7 @@ function compile_ds_fuzzer {
     DS_PROVIDERS="$2" go generate
   fi
 
-  # vendor dependencies since go-fuzz doesn't play nicely with go mod.
-  rm -rf vendor .gopath || true
-  go mod vendor
-  mkdir .gopath
-  cd .gopath
-  ln -s ../vendor src
-  cd ..
-
-  # Compile and instrument all Go files relevant to this fuzz target.
-  GO111MODULE=off GOPATH=$PWD/.gopath go-fuzz -o $fuzzer.a .
-
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+  compile_go_fuzzer github.com/ipfs/go-datastore/fuzz Fuzz $fuzzer
 }
 
 compile_ds_fuzzer ipfs_ds_flatfs

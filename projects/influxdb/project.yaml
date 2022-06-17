@@ -8,3 +8,5 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+disabled: true
+main_repo: 'https://github.com/influxdata/influxdb'

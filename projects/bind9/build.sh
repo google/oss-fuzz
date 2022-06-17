@@ -18,13 +18,12 @@
 # build the project
 autoreconf -fi
 ./configure --disable-shared --enable-static --enable-developer --without-cmocka --without-zlib --disable-linux-caps --prefix="$WORK" --enable-fuzzing=ossfuzz
-(cd libltdl && make -j"$(nproc)" all V=1)
 (cd lib/isc && make -j"$(nproc)" all V=1)
 (cd lib/dns && make -j"$(nproc)" all V=1)
 
 LIBISC_CFLAGS="-Ilib/isc/unix/include -Ilib/isc/pthreads/include -Ilib/isc/include"
 LIBDNS_CFLAGS="-Ilib/dns/include"
-LIBISC_LIBS="libltdl/.libs/libltdlc.a lib/isc/.libs/libisc.a -Wl,-Bstatic -lcrypto -luv -Wl,-Bdynamic"
+LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -lssl -lcrypto -luv -lnghttp2 -Wl,-Bdynamic"
 LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
 
 for fuzzer in fuzz/*.c; do

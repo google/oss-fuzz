@@ -20,11 +20,11 @@ RUN apt-get update &&  \
     apt-get install -y \
       autoconf         \
       cmake            \
-      libpng-dev       \
       libtool          \
       pkg-config       \
-      zlib1g-dev       \
-      make
+      make             \
+      ninja-build
+
 
 # Get some files for the seed corpus
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/

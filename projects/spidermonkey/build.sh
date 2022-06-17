@@ -15,9 +15,16 @@
 #
 ################################################################################
 
+# Ensure rust nightly is used
+source $HOME/.cargo/env
+rustup default nightly
+
 # Install dependencies.
+export MOZBUILD_STATE_PATH=/root/.mozbuild
 export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
+cd ../../
+./mach --no-interactive bootstrap --application-choice browser
+cd js/src/
 
 autoconf2.13
 
@@ -41,3 +48,6 @@ cp dist/bin/js $OUT
 mkdir -p $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib
+
+# Make sure libs are resolved properly
+patchelf --set-rpath '$ORIGIN/lib'  $OUT/js

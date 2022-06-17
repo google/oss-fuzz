@@ -1,0 +1,16 @@
+homepage: "https://www.tarantool.io/en/"
+language: c
+builds_per_day: 4
+primary_contact: "kirill.yukhin@gmail.com"
+auto_ccs:
+  - "estetus@gmail.com"
+  - "totktonada.ru@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+main_repo: "https://github.com/tarantool/tarantool"

@@ -5,7 +5,8 @@ auto_ccs:
     - "bouvigne@gmail.com"
 sanitizers:
  - address
- - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
 architectures:
  - x86_64
  - i386

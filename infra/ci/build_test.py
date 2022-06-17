@@ -16,8 +16,13 @@
 """Tests for build.py"""
 
 import os
+import sys
 import unittest
 from unittest import mock
+
+# pylint: disable=wrong-import-position
+INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(INFRA_DIR)
 
 from ci import build
 
@@ -73,11 +78,11 @@ class TestShouldBuild(unittest.TestCase):
     self.assertTrue(build.should_build(project_yaml))
 
   def test_go_coverage_build(self):
-    """Tests that should_build returns False for coverage build of a project
+    """Tests that should_build returns True for coverage build of a project
     specifying 'libfuzzer' and for fuzzing_engines."""
     _set_coverage_build()
     project_yaml = {'language': 'go'}
-    self.assertFalse(build.should_build(project_yaml))
+    self.assertTrue(build.should_build(project_yaml))
 
   def test_engine_project_none_build(self):
     """Tests that should_build returns False for an engine: 'none' build when

@@ -22,6 +22,7 @@ cp ./h2o-fuzzer-* $OUT/
 
 zip -jr $OUT/h2o-fuzzer-http1_seed_corpus.zip $SRC/h2o/fuzz/http1-corpus
 zip -jr $OUT/h2o-fuzzer-http2_seed_corpus.zip $SRC/h2o/fuzz/http2-corpus
+zip -jr $OUT/h2o-fuzzer-http3_seed_corpus.zip $SRC/h2o/fuzz/http3-corpus
 zip -jr $OUT/h2o-fuzzer-url_seed_corpus.zip $SRC/h2o/fuzz/url-corpus
 
 cp $SRC/*.options $SRC/h2o/fuzz/*.dict $OUT/

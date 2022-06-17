@@ -1,0 +1,7 @@
+homepage: "https://oatpp.io/"
+language: c++
+primary_contact: "bugs@oatpp.io"
+main_repo: "https://github.com/oatpp/oatpp"
+auto_ccs: 
+  - "leonid@oatpp.io"
+  - "david@adalogics.com"

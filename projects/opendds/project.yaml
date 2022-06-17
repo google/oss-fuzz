@@ -1,0 +1,9 @@
+homepage: "https://opendds.org/"
+language: c
+auto_ccs:
+  - "federico.maggi@gmail.com"
+primary_contact: "mitza@objectcomputing.com"
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/objectcomputing/OpenDDS.git'

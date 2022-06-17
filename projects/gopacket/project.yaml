@@ -8,3 +8,5 @@ fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
+main_repo: 'https://github.com/google/gopacket'
+file_github_issue: True

@@ -20,7 +20,7 @@
 # Cribbed from projects/wget2, thanks rockdaboot@gmail.com
 
 export DEPS_PATH=$SRC/knot_deps
-export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
+export PKG_CONFIG_PATH=$DEPS_PATH/lib64/pkgconfig:$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
@@ -75,6 +75,9 @@ make check
 # Set up fuzzing seeds
 
 git submodule update --init -- ./fuzz_packet.in
-find ./fuzz_packet.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
 git submodule update --init -- ./fuzz_zscanner.in
-find ./fuzz_zscanner.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+# ./fuzz_dname_to_str.in/ and ./fuzz_dname_from_str.in/ are stored in the base repository
+find ./fuzz_packet.in/         -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
+find ./fuzz_zscanner.in/       -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+find ./fuzz_dname_to_str.in/   -type f -exec zip -u $OUT/fuzz_dname_to_str_seed_corpus.zip {} \;
+find ./fuzz_dname_from_str.in/ -type f -exec zip -u $OUT/fuzz_dname_from_str_seed_corpus.zip {} \;

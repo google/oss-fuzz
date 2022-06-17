@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Commands migrated from Dockerfile to make CIFuzz work
+# REF: https://github.com/google/oss-fuzz/issues/6755
+git submodule update --init --recursive
+git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
+
+
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {
@@ -22,13 +28,28 @@ build() {
   shift
   fuzzer_prefix=$1
   shift
+  fuzz_targets=$1
+  shift
+  fuzz_target_path=$1
+  shift
   PROJECT_DIR=$SRC/$project
 
-  cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
+  # ensure we get absolute paths for the coverage report
+  cd $PROJECT_DIR
+  crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
+  while read i; do
+    export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
+  done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
-  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
+  cd $PROJECT_DIR/fuzz && cargo fuzz build --strip-dead-code -O --debug-assertions "$@"
 
-  for f in $PROJECT_DIR/fuzz/fuzz_targets/*.rs; do
+  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/$fuzz_target_path/x86_64-unknown-linux-gnu/release
+
+  if [ "x$fuzz_targets" = "x" ]; then
+      fuzz_targets=$PROJECT_DIR/fuzz/fuzz_targets/*.rs
+  fi
+
+  for f in $fuzz_targets; do
       src_name=$(basename ${f%.*})
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
@@ -39,12 +60,24 @@ build() {
               $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
       fi
 
-      cp $SRC/default.options $OUT/$dst_name.options
+      if [[ -f $SRC/$dst_name.options ]]; then
+        cp $SRC/$dst_name.options $OUT/$dst_name.options
+      else
+        cp $SRC/default.options $OUT/$dst_name.options
+      fi
   done
 }
 
-# Build with all features to enable the binaryen-using fuzz targets, and
-# the peepmatic fuzz targets.
-build wasmtime "" --all-features
+# Ensure OCaml environment is set up prior to Wasmtime build.
+eval $(opam env)
 
-build wasm-tools wasm-tools-
+build wasmtime "" "" target
+build wasm-tools wasm-tools- "" target
+build regalloc2 regalloc2- ion_checker fuzz/target
+
+# In coverage builds copy the opam header files into the output so coverage can
+# find the source files.
+if [ "$SANITIZER" = "coverage" ]; then
+  cp --recursive --dereference --no-preserve mode,ownership --parents \
+    $HOME/.opam/4.11.2/lib/ocaml $OUT
+fi

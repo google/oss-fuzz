@@ -15,23 +15,13 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  package=$1
-  function=$2
-  fuzzer=$3
 
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -func $function -o $fuzzer.a $package
 
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/google/go-attestation/attest FuzzParseEventLog \
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseEventLog \
     parse_event_log_fuzzer
-compile_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic12 \
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic12 \
     parse_ak_public12_fuzzer
-compile_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic20 \
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic20 \
     parse_ak_public20_fuzzer
-compile_fuzzer github.com/google/go-attestation/attest FuzzParseEKCertificate \
+compile_go_fuzzer github.com/google/go-attestation/attest FuzzParseEKCertificate \
     parse_ek_certificate_fuzzer

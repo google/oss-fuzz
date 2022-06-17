@@ -6,9 +6,10 @@ auto_ccs:
   - "cyan@fb.com"
   - "terrelln@fb.com"
   - "felixh@fb.com"
-  - "bimbashrestha@fb.com"
   - "mhl@fb.com"
-  - "reed@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -21,4 +22,4 @@ sanitizers:
   - dataflow
 architectures:
   - x86_64
-  - i386
+main_repo: 'https://github.com/lz4/lz4.git'

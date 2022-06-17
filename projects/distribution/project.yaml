@@ -1,0 +1,24 @@
+homepage: "https://github.com/distribution/distribution"
+main_repo: "https://github.com/distribution/distribution"
+primary_contact: "cncf-distribution-security@lists.cncf.io"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "chrispat@github.com"
+  - "clarkbw@github.com"
+  - "csnider@mirantis.com"
+  - "hswimelar@gitlab.com"
+  - "hweiwei@vmware.com"
+  - "jpereira@gitlab.com"
+  - "justin.cormack@docker.com"
+  - "ksquizzato@mirantis.com"
+  - "milos.gajdos@docker.com"
+  - "sargun@sargun.me"
+  - "wwarren@digitalocean.com"
+  - "wangyan@vmware.com"
+  - "steve.lasker@microsoft.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

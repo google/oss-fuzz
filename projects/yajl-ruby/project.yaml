@@ -5,12 +5,11 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
   - memory
-  - dataflow
 auto_ccs:
   - aaron.patterson@gmail.com
   - jonathan@titanous.com
+main_repo: 'https://github.com/brianmario/yajl-ruby'

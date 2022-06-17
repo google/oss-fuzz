@@ -6,5 +6,6 @@ auto_ccs:
  - "ammar@ammaraskar.com"
 sanitizers:
  - address
- - memory
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
  - undefined

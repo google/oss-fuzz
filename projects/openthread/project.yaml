@@ -5,8 +5,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
-  - dataflow
+main_repo: 'https://github.com/openthread/openthread'

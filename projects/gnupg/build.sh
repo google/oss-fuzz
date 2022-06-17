@@ -18,6 +18,7 @@
 #compile and link statically dependencies
 cd ..
 cd libgpg-error
+sed -i 's/0.19/0.20/g' ./po/Makefile.in.in
 ./autogen.sh
 ./configure --disable-doc --enable-static --disable-shared
 make

@@ -1,9 +1,18 @@
 name: Project tests
-on: [pull_request]
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+    - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -38,9 +47,15 @@ jobs:
       ARCHITECTURE: ${{ matrix.architecture }}
 
     steps:
-      - uses: actions/checkout@v2
-      - run: |  # Needed for git diff to work.
-          git fetch origin master --depth 1
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v3
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Clear unnecessary files
@@ -52,7 +67,7 @@ jobs:
           df -h
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.8
 

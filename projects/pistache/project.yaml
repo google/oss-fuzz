@@ -1,0 +1,10 @@
+homepage: "http://pistache.io"
+language: c++
+primary_contact: "kip@thevertigo.com"
+main_repo: "https://github.com/pistacheio/pistache"
+auto_ccs:
+ - "dennis.jenkins.75@gmail.com"
+ - "andrea@pappacoda.it"
+ - "hyperxor@protonmail.com"
+ - "auquetal@gmail.com"
+ - "david@adalogics.com"

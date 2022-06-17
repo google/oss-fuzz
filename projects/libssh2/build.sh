@@ -15,5 +15,6 @@
 #
 ################################################################################
 
+apt-get update
 # Run the OSS-Fuzz script in the project.
 ./tests/ossfuzz/ossfuzz.sh

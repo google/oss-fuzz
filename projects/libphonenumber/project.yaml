@@ -1,0 +1,9 @@
+homepage: "https://github.com/google/libphonenumber/"
+primary_contact: "penmetsaa@google.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+sanitizers:
+  - address
+main_repo: 'https://github.com/google/libphonenumber'
+file_github_issue: True

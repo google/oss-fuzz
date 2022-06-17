@@ -1,10 +1,14 @@
-out
 .git
+.venv
+infra/cifuzz/test_data/*
+docs/*
 
 # Copied from .gitignore.
 .vscode/
 *.pyc
-/build/
+build
 *~
 .DS_Store
 *.swp
+.pytest_cache
+*__pycache__/*

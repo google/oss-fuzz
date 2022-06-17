@@ -3,9 +3,6 @@ language: c++
 primary_contact: "htuch@google.com"
 auto_ccs:
   - "mattklein123@gmail.com"
-  - "alyssar@google.com"
-  - "dio@tetrate.io"
-  - "jbuckland@google.com"
   - "jmarantz@google.com"
   - "lizan@tetrate.io"
   - "envoy-security@googlegroups.com"
@@ -13,7 +10,23 @@ auto_ccs:
   - "asraa@google.com"
   - "adip@google.com"
   - "avd@google.com"
-  - "skerner@google.com"
-  - "rdsmith@google.com"
-  - "zasweq@google.com"
+  - "yanjunxiang@google.com"
+  - "kbaichoo@google.com"
+  - "pcrao@google.com"
+  - "tyxia@google.com"
+  - "krajshiva@google.com"
+  - "dominik.klemba@trailofbits.com"
+  - "dominik.czarnota@trailofbits.com"
+  - "luis.merino@x41-dsec.de"
+  - "dasfuzzer@x41-dsec.de"
+  - "copybara-watcher-pod-watcher-git@system.gserviceaccount.com"
+  - "copybara-worker@system.gserviceaccount.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
+main_repo: 'https://github.com/envoyproxy/envoy.git'
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+labels:
+  "*":
+    - ossfuzz-bugz-1149782
+

@@ -27,7 +27,7 @@ RUN apt-get install -y \
     zlib1g-dev \
     libjson-c-dev \
     build-essential \
-    python-minimal \
+    python \
     wget
 
 RUN git clone --depth 1 https://github.com/rnpgp/rnp.git rnp

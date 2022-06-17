@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
-RUN git clone --depth 1 https://github.com/horhof/quickjs quickjs
-WORKDIR $SRC/
+RUN git clone --depth 1 https://github.com/bellard/quickjs quickjs
+WORKDIR $SRC/quickjs
 COPY build.sh $SRC/
 COPY fuzz*.c $SRC/

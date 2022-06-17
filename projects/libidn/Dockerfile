@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
  autoconf-archive \
  automake \
  libtool \
- gettext gengetopt curl gperf
+ gettext gengetopt curl gperf wget
 
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
 

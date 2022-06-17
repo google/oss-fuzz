@@ -15,6 +15,7 @@ auto_ccs:
   - "eneyman@google.com"
   - "bigcheesegs@gmail.com"
   - "davg@google.com"
+  - "sammccall@google.com"
 
 sanitizers:
   - address
@@ -26,3 +27,4 @@ fuzzing_engines:
 
 # Bug reports are public by default:
 view_restrictions: none
+main_repo: 'https://github.com/llvm/llvm-project.git'

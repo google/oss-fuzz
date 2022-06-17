@@ -1,5 +1,6 @@
 homepage: "https://samba.org"
-language: c++
+main_repo: "https://git.samba.org/samba.git"
+language: c
 primary_contact: "douglas.bagnall@catalyst.net.nz"
 auto_ccs:
   - "abartlet+google@catalyst.net.nz"
@@ -9,6 +10,7 @@ auto_ccs:
   - "sloowfranklin@gmail.com"
   - "gdeschner@gmail.com"
   - "volker.lendecke@gmail.com"
+  - "davidmmulder@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

@@ -19,7 +19,7 @@ import base_images
 import project_sync
 import request_build
 import request_coverage_build
-import update_build_status
+import request_introspector_build
 
 
 def build_project(event, context):
@@ -42,11 +42,6 @@ def coverage_build(event, context):
   request_coverage_build.request_coverage_build(event, context)
 
 
-def builds_status(event, context):
-  """Entry point for builds status cloud function."""
-  update_build_status.update_status(event, context)
-
-
-def build_msan(event, context):
-  """Entry point for base msan builder."""
-  base_images.base_msan_builder(event, context)
+def introspector_build(event, context):
+  """Entry point for cloud function to build introspector reports."""
+  request_introspector_build.request_introspector_build(event, context)
