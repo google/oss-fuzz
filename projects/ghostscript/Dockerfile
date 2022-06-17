@@ -16,21 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y autoconf zlibc libtool liblcms2-dev libpng-dev wget
+RUN apt-get update && apt-get install -y autoconf zlibc libtool liblcms2-dev libpng-dev
 RUN git clone --branch branch-2.2 --single-branch --depth 1 https://github.com/apple/cups.git cups
 RUN git clone --branch VER-2-12-1 --single-branch --depth 1 https://git.savannah.gnu.org/git/freetype/freetype2.git freetype
 RUN git clone --single-branch --depth 1 git://git.ghostscript.com/ghostpdl.git ghostpdl
 RUN mkdir ghostpdl/fuzz
 
-# Get PDF seeds
 COPY pdf_seeds $SRC/pdf_seeds
-#RUN mkdir $SRC/pdf_seeds && \
-#    cd $SRC/pdf_seeds && \
-#    wget https://github.com/MozillaSecurity/fuzzdata/raw/master/samples/pdf/pdf.pdf
-
-# Get PDF dictionary
 COPY dicts $SRC/dicts
-RUN wget https://raw.githubusercontent.com/MozillaSecurity/fuzzdata/master/dicts/pdf.dict
 
 WORKDIR ghostpdl
 
