@@ -19,6 +19,7 @@
 #include "gstoraster_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+	/* Tests RGB color scheme */
 	gs_to_raster_fuzz(data, size, 1);
 	return 0;
 }

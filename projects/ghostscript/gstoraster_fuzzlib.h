@@ -53,6 +53,11 @@ int gs_to_raster_fuzz(const unsigned char *buf, size_t size, int color_scheme)
 	int ret;
 	void *gs = NULL;
 	char color_space[50];
+	/*
+	 * We are expecting color_scheme to be in the [0:62] interval.
+	 * This corresponds to the color schemes defined here:
+	 * https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
+	 */
 	sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
@@ -63,7 +68,7 @@ int gs_to_raster_fuzz(const unsigned char *buf, size_t size, int color_scheme)
 		"-dMaxBitmap=0",
 		"-dBufferSpace=450k",
 		"-dMediaPosition=1",
-		color_space, /* RGB */
+		color_space,
 		"-dQUIET",
 		"-dSAFER",
 		"-dNOPAUSE",
