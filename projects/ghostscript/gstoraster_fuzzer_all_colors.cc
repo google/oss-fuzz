@@ -22,7 +22,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	if (size == 0) {
 		return 0;
 	}
-	// Module the possibilities: https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
+	// Modulo the possibilities: https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
+	// This enables the fuzzer to explore all color schemes
 	int c = ((int)data[0] % 63);
 	data++;
 	size--;
