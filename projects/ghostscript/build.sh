@@ -49,31 +49,18 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   --with-drivers=cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint
 make -j$(nproc) libgs
 
-$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
-    $SRC/gstoraster_fuzzer.cc \
-    -o "$OUT/gstoraster_fuzzer" \
-    -Wl,-rpath='$ORIGIN' \
-    $CUPS_LIBS \
-    $LIB_FUZZING_ENGINE bin/gs.a
 
-$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
-    -DMULTIPLE_COLORS \
-    $SRC/gstoraster_fuzzer.cc \
-    -o "$OUT/gstoraster_fuzzer_all_colors" \
-    -Wl,-rpath='$ORIGIN' \
-    $CUPS_LIBS \
-    $LIB_FUZZING_ENGINE bin/gs.a
-
-$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
-    -DPDF_TARGET \
-    $SRC/gstoraster_fuzzer.cc \
-    -o "$OUT/pdf_fuzzer" \
-    -Wl,-rpath='$ORIGIN' \
-    $CUPS_LIBS \
-    $LIB_FUZZING_ENGINE bin/gs.a
+for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors; do
+	$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
+	    $SRC/${fuzzer}.cc \
+	    -o "$OUT/${fuzzer}" \
+	    -Wl,-rpath='$ORIGIN' \
+	    $CUPS_LIBS \
+	    $LIB_FUZZING_ENGINE bin/gs.a
+done
 
 # Create PDF seed corpus
-zip -j "$OUT/pdf_fuzzer_seed_corpus.zip" $SRC/pdf_seeds/*
+zip -j "$OUT/gstoraster_pdf_fuzzer_seed_corpus.zip" $SRC/pdf_seeds/*
 
 # Create corpus for all_color_fuzzer. Only use seeds of a few KB in size.
 mkdir -p "$WORK/all_color_seeds"
@@ -99,4 +86,4 @@ zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
 cp $SRC/*.options $OUT/
 
 # Copy out dictionary
-cp $SRC/pdf.dict $OUT/pdf_fuzzer.dict
+cp $SRC/dicts/pdf.dict $OUT/gstoraster_pdf_fuzzer.dict

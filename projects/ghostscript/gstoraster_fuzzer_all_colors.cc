@@ -19,6 +19,14 @@
 #include "gstoraster_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	gs_to_raster_fuzz(data, size, 1);
+	if (size == 0) {
+		return 0;
+	}
+	// Module the possibilities: https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
+	int c = ((int)data[0] % 63);
+	data++;
+	size--;
+
+	gs_to_raster_fuzz(data, size, c);
 	return 0;
 }

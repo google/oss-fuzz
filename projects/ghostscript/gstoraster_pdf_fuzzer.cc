@@ -18,7 +18,25 @@
 
 #include "gstoraster_fuzzlib.h"
 
+// Returns 1 if this has a valid PDF header and 0 otherwise
+static int quick_check_pdf(const uint8_t *data, size_t size) {
+	// PDF checks. Exit early if we don't have a valid PDF signature.
+	if (size < 5) {
+		return 0;
+	}
+
+	// Check PDF tag. We do this because we want to use seeds
+	if (data[0] != 0x25 || data[1] != 0x50 || data[2] != 0x44 || data[3] != 0x46 || data[4] != 0x2d) {
+		return 0;
+	}
+	return 1;
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+	if (quick_check_pdf(data, size) != 1) {
+		return 0;
+	}
+
 	gs_to_raster_fuzz(data, size, 1);
 	return 0;
 }

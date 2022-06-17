@@ -23,14 +23,16 @@ RUN git clone --single-branch --depth 1 git://git.ghostscript.com/ghostpdl.git g
 RUN mkdir ghostpdl/fuzz
 
 # Get PDF seeds
-RUN mkdir $SRC/pdf_seeds && \
-    cd $SRC/pdf_seeds && \
-    wget https://github.com/MozillaSecurity/fuzzdata/raw/master/samples/pdf/pdf.pdf
+COPY pdf_seeds $SRC/pdf_seeds
+#RUN mkdir $SRC/pdf_seeds && \
+#    cd $SRC/pdf_seeds && \
+#    wget https://github.com/MozillaSecurity/fuzzdata/raw/master/samples/pdf/pdf.pdf
 
 # Get PDF dictionary
+COPY dicts $SRC/dicts
 RUN wget https://raw.githubusercontent.com/MozillaSecurity/fuzzdata/master/dicts/pdf.dict
 
 WORKDIR ghostpdl
 
-COPY *.cc *.options $SRC/
+COPY *.cc *.options *.h $SRC/
 COPY build.sh $SRC/
