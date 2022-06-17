@@ -62,9 +62,11 @@ done
 # Create PDF seed corpus
 zip -j "$OUT/gstoraster_pdf_fuzzer_seed_corpus.zip" $SRC/pdf_seeds/*
 
-# Create corpus for all_color_fuzzer. Only use seeds of a few KB in size.
+# Create corpus for gstoraster_fuzzer_all_colors. Only use seeds of a few KB in size.
 mkdir -p "$WORK/all_color_seeds"
 for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
+  # Prepend a single byte to seed, because it's used to determine the color
+  # scheme in the gstoraster_fuzzer_all_colors.
   printf "\x01" | cat - "$f" > tmp_file.txt
   mv tmp_file.txt $f
   s=$(sha1sum "$f" | awk '{print $1}')
