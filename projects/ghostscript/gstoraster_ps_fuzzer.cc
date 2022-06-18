@@ -28,7 +28,7 @@ static int is_pdf(const uint8_t *data, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	/* Avoid PDF files */
-	if (is_pdf(data, size)) {
+	if (size == 0 || is_pdf(data, size)) {
 		return 0;
 	}
 
