@@ -50,7 +50,7 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
 make -j$(nproc) libgs
 
 
-for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors; do
+for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors gstoraster_ps_fuzzer; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
     $SRC/${fuzzer}.cc \
     -o "$OUT/${fuzzer}" \
@@ -89,3 +89,4 @@ cp $SRC/*.options $OUT/
 
 # Copy out dictionary
 cp $SRC/dicts/pdf.dict $OUT/gstoraster_pdf_fuzzer.dict
+cp $SRC/dicts/ps.dict $OUT/gstoraster_ps_fuzzer.dict
