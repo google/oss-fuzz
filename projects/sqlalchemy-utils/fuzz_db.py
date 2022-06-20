@@ -18,8 +18,15 @@ import sys
 
 with atheris.instrument_imports():
    import sqlalchemy
-   from sqlalchemy import create_engine, insert
-   from sqlalchemy import Table, Column, Integer, String, MetaData 
+   from sqlalchemy import (
+      create_engine,
+      insert,
+      Table,
+      Column,
+      Integer,
+      String,
+      MetaData
+   )
    import sqlalchemy_utils as utils
    from sqlalchemy.sql import text
    from sqlalchemy.exc import SQLAlchemyError
