@@ -17,21 +17,30 @@ import atheris
 import sys
 
 with atheris.instrument_imports():
-   import sqlalchemy
-   from sqlalchemy import create_engine, Integer, String, MetaData
-   from sqlalchemy import Table, Column, Sequence 
-   from sqlalchemy.sql import text, select
-   from sqlalchemy.exc import SQLAlchemyError
-   from sqlalchemy_utils import ArrowType, ChoiceType, ColorType
-   from sqlalchemy_utils import CountryType, Country, EmailType, JSONType
-   from sqlalchemy_utils import IPAddressType, ScalarListType
-   from sqlalchemy_utils import URLType, UUIDType, WeekDays, WeekDaysType 
    from arrow import utcnow
    from colour import Color
    from uuid import uuid4
+
+   import sqlalchemy
+   from sqlalchemy.sql import text, select
+   from sqlalchemy.exc import SQLAlchemyError
+   from sqlalchemy import (
+      create_engine, Integer, String, MetaData,
+      Table, Column, Sequence
+   )
+   from sqlalchemy_utils import (
+      ArrowType, ChoiceType, ColorType, CountryType,
+      Country, EmailType, JSONType, IPAddressType,
+      ScalarListType, URLType, UUIDType, WeekDays,
+      WeekDaysType
+   )
+
+   # The following imports are needed to make the pyinstaller
+   # executable work.
    from babel import Locale
    import babel.dates
    import babel.numbers
+
 
 @atheris.instrument_func
 def TestInput(data):
