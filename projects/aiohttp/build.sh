@@ -22,6 +22,13 @@ pip3 install -r requirements/dev.txt
 pre-commit install
 make install-dev
 
+# Duplicate fuzzers to use Pure python code (in addition
+# to the existing C-compiled code).
+cp fuzz_http_parser.py fuzz_http_parser_pure_python.py
+sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_parser_pure_python.py
+cp fuzz_http_payload_parser.py fuzz_http_payload_parser_pure_python.py
+sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_payload_parser_pure_python.py
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer

@@ -58,7 +58,7 @@ function build_native_go_fuzzer() {
 		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
 		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
 		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-		gotip test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+		go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
 
 		rm ./"${function,,}"_test.go
 	else

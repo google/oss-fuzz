@@ -1,10 +1,11 @@
 homepage: "https://github.com/gravitational/teleport"
-main_repo: "https://github.com/gravitational/teleport"
-primary_contact: "reed@goteleport.com"
-auto_ccs :
-  - "adam@adalogics.com"
-  - "oss-fuzz@goteleport.com"
 language: go
+primary_contact: "reed@goteleport.com"
+main_repo: "https://github.com/gravitational/teleport"
+auto_ccs:
+  - "oss-fuzz@goteleport.com"
+  - "zac.bergquist@goteleport.com"
+  - "ossfuzz1337@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

@@ -33,7 +33,7 @@ pushd $SRC
 for fuzzer in core_fuzzer filestorage_read_file_fuzzer \
    filestorage_read_filename_fuzzer filestorage_read_string_fuzzer \
    generateusergallerycollage_fuzzer imdecode_fuzzer imencode_fuzzer \
-   imread_fuzzer; do
+   imread_fuzzer readnetfromtensorflow_fuzzer; do
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.cc -std=c++11 \
 -I$install_dir/include/opencv4 -L$install_dir/lib \
 -L$install_dir/lib/opencv4/3rdparty \

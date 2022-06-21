@@ -23,3 +23,6 @@ RUN git clone --depth 1 https://github.com/eProsima/foonathan_memory_vendor.git
 RUN git clone --depth 1 https://github.com/eProsima/Fast-DDS.git
 COPY build.sh $SRC
 WORKDIR $SRC/Fast-DDS
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1
