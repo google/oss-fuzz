@@ -3,8 +3,6 @@ language: c++
 primary_contact: "htuch@google.com"
 auto_ccs:
   - "mattklein123@gmail.com"
-  - "alyssar@google.com"
-  - "dio@tetrate.io"
   - "jmarantz@google.com"
   - "lizan@tetrate.io"
   - "envoy-security@googlegroups.com"
@@ -12,9 +10,7 @@ auto_ccs:
   - "asraa@google.com"
   - "adip@google.com"
   - "avd@google.com"
-  - "chaoqinli@google.com"
   - "yanjunxiang@google.com"
-  - "david@adalogics.com"
   - "kbaichoo@google.com"
   - "pcrao@google.com"
   - "tyxia@google.com"

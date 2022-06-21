@@ -28,8 +28,7 @@ PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
-    'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e', 'CIFUZZ=True'
 ]
 
 EXTERNAL_PROJECT_IMAGE = 'external-project'
@@ -70,12 +69,14 @@ def delete_images(images):
 def get_base_docker_run_args(workspace,
                              sanitizer=constants.DEFAULT_SANITIZER,
                              language=constants.DEFAULT_LANGUAGE,
+                             architecture=constants.DEFAULT_ARCHITECTURE,
                              docker_in_docker=False):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
   env_mapping = {
       'SANITIZER': sanitizer,
+      'ARCHITECTURE': architecture,
       'FUZZING_LANGUAGE': language,
       'OUT': workspace.out
   }
@@ -95,11 +96,16 @@ def get_base_docker_run_args(workspace,
 def get_base_docker_run_command(workspace,
                                 sanitizer=constants.DEFAULT_SANITIZER,
                                 language=constants.DEFAULT_LANGUAGE,
+                                architecture=constants.DEFAULT_ARCHITECTURE,
                                 docker_in_docker=False):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
-      workspace, sanitizer, language, docker_in_docker=docker_in_docker)
+      workspace,
+      sanitizer,
+      language,
+      architecture,
+      docker_in_docker=docker_in_docker)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
 

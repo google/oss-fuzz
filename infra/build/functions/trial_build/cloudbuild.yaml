@@ -11,6 +11,7 @@ steps:
   args: []
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
   timeout: 21600s # 6 hours
 options:
   logging: CLOUD_LOGGING_ONLY

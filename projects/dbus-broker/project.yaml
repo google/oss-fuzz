@@ -1,0 +1,15 @@
+homepage: "https://github.com/bus1/dbus-broker"
+language: c
+primary_contact: "david.rheinsberg@gmail.com"
+builds_per_day: 4
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - evverx@gmail.com
+  - fsumsal@redhat.com
+main_repo: "https://github.com/bus1/dbus-broker"
+architectures:
+  - x86_64
+file_github_issue: True
