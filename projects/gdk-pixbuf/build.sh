@@ -49,6 +49,9 @@ meson \
     --libdir=lib \
     --default-library=static \
     -Dintrospection=disabled \
+    -Dgtk_doc=false \
+    -Dman=false \
+    -Ddocs=false \
     -Dbuiltin_loaders='all' \
     _builddir
 ninja -C _builddir
