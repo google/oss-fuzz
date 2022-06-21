@@ -16,21 +16,26 @@
 import atheris
 import sys
 with atheris.instrument_imports():
-    import openpyxl
+    from openpyxl import Workbook
+    from openpyxl.comments import Comment
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    wb = openpyxl.Workbook()
+
+    wb = Workbook()
     ws = wb.active
+    
+    #Set Comment
+    c1 = ws['A1'].comment
+    c1 = Comment(fdp.ConsumeString(10),fdp.ConsumeString(10))
+    c1.width = 300
+    c1.height = 50
+    ws['A1'].comment = c1
 
-    ws['A%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeInt(10)
-    ws.append(fdp.ConsumeIntList(3,5))
-
-    ws['B%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeUnicode(10)
-    ws['C%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBytes(10)
-    ws['D%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeString(10)
-    ws['E%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeFloat()
-    ws['F%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBool()
+    #Double assign comment
+    c2 = Comment(fdp.ConsumeString(10),fdp.ConsumeString(10))
+    ws['B1'].comment = c2
+    ws['C1'].comment = c2
 
     wb.save('%s.xlsx'%fdp.ConsumeString(10))
 

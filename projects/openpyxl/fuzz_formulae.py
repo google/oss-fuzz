@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
@@ -16,23 +17,17 @@
 import atheris
 import sys
 with atheris.instrument_imports():
-    import openpyxl
+    from openpyxl.formula import Tokenizer
+    from openpyxl.formula.translate import Translator
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    wb = openpyxl.Workbook()
-    ws = wb.active
 
-    ws['A%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeInt(10)
-    ws.append(fdp.ConsumeIntList(3,5))
+    #Initial tokenizer for random string and process it
+    Tokenizer(fdp.ConsumeString(200))
 
-    ws['B%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeUnicode(10)
-    ws['C%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBytes(10)
-    ws['D%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeString(10)
-    ws['E%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeFloat()
-    ws['F%d'%fdp.ConsumeIntInRange(1,sys.maxsize)] = fdp.ConsumeBool()
-
-    wb.save('%s.xlsx'%fdp.ConsumeString(10))
+    #Translate random string formulae
+    Translator(fdp.ConsumeString(200), origin="A1").translate_formula("B2")
 
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
