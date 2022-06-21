@@ -2,4 +2,13 @@ homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS"
 language: c++
 primary_contact: "bbeurdouche@mozilla.com"
 auto_ccs:
+  - "bbeurdouche@mozilla.com"
+  - "choller@mozilla.com"
+  - "djackson@mozilla.com"
+  - "dkeeler@mozilla.com"
+  - "jkratzer@mozilla.com"
+  - "jschanck@mozilla.com"
+  - "jschwartzentruber@mozilla.com"
+  - "nkulatova@mozilla.com"
   - "sledru@mozilla.com"
+  - "twsmith@mozilla.com"
