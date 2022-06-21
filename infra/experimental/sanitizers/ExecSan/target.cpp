@@ -14,7 +14,7 @@
  * limitations under the License.
 */
 /* A sample target program under test,
- * the sand program will be injected into its shell command */
+ * /tmp/tripwire or other commands will be injected into its shell command */
 
 #include <stdlib.h>
 #include <string>

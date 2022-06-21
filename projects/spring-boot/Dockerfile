@@ -25,6 +25,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     rm -rf go-fuzz-corpus
 
 ARG java_home="/out/open-jdk-17"
+RUN mkdir -p $JAVA_HOME
 
 RUN apt update && apt install -y openjdk-17-jdk
 ENV JAVA_HOME $java_home

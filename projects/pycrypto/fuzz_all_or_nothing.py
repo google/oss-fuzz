@@ -20,6 +20,8 @@ with atheris.instrument_imports():
   from Crypto.Protocol import AllOrNothing
   from Crypto.Cipher import AES
 
+
+@atheris.instrument_func
 def TestOneInput(data):
   if len(data) < 10:
     return

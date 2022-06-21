@@ -27,7 +27,7 @@ def get_env(config, workspace):
   env['OUT'] = workspace.out
   env['CIFUZZ'] = 'True'
   env['FUZZING_ENGINE'] = config_utils.DEFAULT_ENGINE
-  env['ARCHITECTURE'] = config_utils.DEFAULT_ARCHITECTURE
+  env['ARCHITECTURE'] = config.architecture
   # Do this so we don't fail in tests.
   env['FUZZER_ARGS'] = '-rss_limit_mb=2560 -timeout=25'
   return env
