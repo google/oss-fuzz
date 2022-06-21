@@ -26,10 +26,11 @@ def TestInput(input_bytes):
     public_key = private_key.public_key()
 
     data = fdp.ConsumeBytes(20)
-   
+    more_data = fdp.ConsumeBytes(20)
+
     hasher = hashes.Hash(hashes.SHA256())
     hasher.update(data)
-    hasher.update(data)
+    hasher.update(more_data)
     digest = hasher.finalize()
 
     sig1 = private_key.sign(data,hashes.SHA256())
