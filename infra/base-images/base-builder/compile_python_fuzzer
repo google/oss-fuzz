@@ -52,6 +52,11 @@ mkdir $PYFUZZ_WORKPATH $FUZZ_WORKPATH
 
 pyinstaller --distpath $OUT --workpath=$FUZZ_WORKPATH --onefile --name $fuzzer_package "$@" $fuzzer_path
 
+# Disable executable bit from package as OSS-Fuzz uses executable bits to
+# identify fuzz targets. We re-enable the executable bit in wrapper script
+# below.
+chmod -x $OUT/$fuzzer_package
+
 # In coverage mode save source files of dependencies in pyinstalled binary
 if [[ $SANITIZER = *coverage* ]]; then
   rm -rf /medio/
@@ -64,6 +69,7 @@ fi
 echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+chmod +x \$this_dir/$fuzzer_package
 LD_PRELOAD=\$this_dir/sanitizer_with_fuzzer.so \
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename

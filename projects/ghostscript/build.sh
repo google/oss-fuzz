@@ -49,16 +49,43 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   --with-drivers=cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint
 make -j$(nproc) libgs
 
-$CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
-    $SRC/gstoraster_fuzzer.cc \
-    -o "$OUT/gstoraster_fuzzer" \
+
+for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors; do
+  $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
+    $SRC/${fuzzer}.cc \
+    -o "$OUT/${fuzzer}" \
     -Wl,-rpath='$ORIGIN' \
     $CUPS_LIBS \
     $LIB_FUZZING_ENGINE bin/gs.a
+done
 
+# Create PDF seed corpus
+zip -j "$OUT/gstoraster_pdf_fuzzer_seed_corpus.zip" $SRC/pdf_seeds/*
+
+# Create corpus for gstoraster_fuzzer_all_colors. Only use seeds of a few KB in size.
+mkdir -p "$WORK/all_color_seeds"
+for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
+  # Prepend a single byte to seed, because it's used to determine the color
+  # scheme in the gstoraster_fuzzer_all_colors.
+  printf "\x01" | cat - "$f" > tmp_file.txt
+  mv tmp_file.txt $f
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/all_color_seeds/$s"
+done
+zip -j "$OUT/gstoraster_fuzzer_all_colors_seed_corpus.zip" "$WORK"/all_color_seeds/*
+
+# Create seeds for gstoraster_fuzzer
 mkdir -p "$WORK/seeds"
 for f in examples/*.{ps,pdf}; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/seeds/$s"
 done
+
+# Create corpus for gstoraster_fuzzer
 zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
+
+# Copy out options
+cp $SRC/*.options $OUT/
+
+# Copy out dictionary
+cp $SRC/dicts/pdf.dict $OUT/gstoraster_pdf_fuzzer.dict

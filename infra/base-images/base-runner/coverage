@@ -24,7 +24,8 @@ else
       -e 'llvm-symbolizer' \
       -e 'jazzer_agent_deploy.jar' \
       -e 'jazzer_driver' \
-      -e 'jazzer_driver_with_sanitizer')"
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
@@ -54,6 +55,9 @@ PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
 # can contain paths to source files / directories which are positional args.
 LLVM_COV_COMMON_ARGS="$PATH_EQUIVALENCE_ARGS \
     -ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
+
+# Options to extract branch coverage.
+BRANCH_COV_ARGS="--show-branches=count --show-expansions"
 
 # Timeout for running a single fuzz target.
 TIMEOUT=1h
@@ -116,7 +120,7 @@ function run_fuzz_target {
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
   # For introspector.
-  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
+  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
   
   if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
     # This is needed for dataflow strategy analysis, can be removed later. See
@@ -159,7 +163,7 @@ function run_python_fuzz_target {
   echo "{}" > "$FUZZER_STATS_DIR/$target.json"
 
   # Run fuzzer
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
+  $OUT/$target $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
@@ -297,7 +301,8 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   PYCOVDIR=/pycovdir/
   mkdir $PYCOVDIR
   for fuzzer in $FUZZ_TARGETS; do
-    unzip $OUT/$fuzzer.deps.zip
+    fuzzer_deps=${fuzzer}.pkg.deps.zip
+    unzip $OUT/${fuzzer_deps}
     rsync -r ./medio /pythoncovmergedfiles/medio
     rm -rf ./medio
 

@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+AIOHTTP_VAL=0
+if AIOHTTP_VAL == 0:
+  os.environ["AIOHTTP_NO_EXTENSIONS"] = ""
+else:
+  os.environ["AIOHTTP_NO_EXTENSIONS"] = "1"
+
 import sys
 import atheris
 

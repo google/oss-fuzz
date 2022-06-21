@@ -52,16 +52,15 @@ make -j$(nproc)
 cd $SRC/flac/oss-fuzz
 cp fuzzer_encoder fuzzer_encoder_v2 $OUT
 
-# Build libflac again for decoder fuzzers, but now with addition CFLAG
-export CFLAGS="$CFLAGS -DFUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW"
-
+# Build libflac again for decoder fuzzers, but now with additional define
 cd $SRC/flac/
-make clean
+echo "#define FUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW" >> config.h
+
 make -j$(nproc)
 
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder $OUT
+cp fuzzer_decoder fuzzer_seek $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 

@@ -23,3 +23,6 @@ RUN mkdir dart-sdk && cd dart-sdk && fetch dart
 COPY build.sh $SRC
 COPY patch.diff $SRC
 WORKDIR $SRC/dart-sdk/sdk
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1
