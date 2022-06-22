@@ -33,6 +33,7 @@ function rewrite_go_fuzz_harness() {
 	# Import https://github.com/AdamKorcz/go-118-fuzz-build.
 	# This changes the line numbers from the original fuzzer.
 	addimport -path "${fuzzer_fn}"
+	go get github.com/AdamKorcz/go-118-fuzz-build/utils
 }
 
 function build_native_go_fuzzer() {
