@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://foss.heptapod.net/openpyxl/openpyxl
 language: python
 main_repo: https://foss.heptapod.net/openpyxl/openpyxl
+primary_contact: "charlie.clark@clark-consulting.eu"
 sanitizers:
 - address
 - undefined
