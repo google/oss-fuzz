@@ -35,7 +35,7 @@ class GetProjectImageTest(unittest.TestCase):
     """Tests that get_project_image_name works as intended."""
     project = 'my-project'
     self.assertEqual(docker.get_project_image_name(project),
-                     'gcr.io/oss-fuzz/my-project')
+                     'gcr.io/oss-fuzz/my-project' + docker.UNIQUE_ID_SUFFIX)
 
 
 class GetDeleteImagesTest(unittest.TestCase):
