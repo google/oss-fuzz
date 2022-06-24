@@ -21,4 +21,6 @@ pip3 install .
 
 # Build fuzzers in $OUT.
 cd $SRC
-compile_python_fuzzer auth_fuzz.py
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

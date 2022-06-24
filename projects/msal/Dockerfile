@@ -19,4 +19,4 @@ RUN git clone https://github.com/AzureAD/microsoft-authentication-library-for-py
 WORKDIR msal
 
 #COPY build.sh task_fuzz.py parse_fuzz.py $SRC/
-COPY build.sh auth_fuzz.py $SRC/
+COPY build.sh fuzz_*.py $SRC/
