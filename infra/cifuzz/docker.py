@@ -15,6 +15,7 @@
 import logging
 import os
 import sys
+import uuid
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,7 +32,9 @@ _DEFAULT_DOCKER_RUN_ARGS = [
     '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e', 'CIFUZZ=True'
 ]
 
-EXTERNAL_PROJECT_IMAGE = 'external-project'
+UNIQUE_ID_SUFFIX = '-' + uuid.uuid4().hex
+
+PROJECT_IMAGE = 'external-project' + UNIQUE_ID_SUFFIX
 
 _DEFAULT_DOCKER_RUN_COMMAND = [
     'docker',
@@ -54,7 +57,7 @@ def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
   # TODO(ochang): We may need unique names to support parallel fuzzing.
   if project:
-    return PROJECT_TAG_PREFIX + project
+    return PROJECT_TAG_PREFIX + project + UNIQUE_ID_SUFFIX
 
   return EXTERNAL_PROJECT_IMAGE
 
