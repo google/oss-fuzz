@@ -17,8 +17,9 @@
 
 mv $SRC/*.dict $OUT
 
+export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
-cp -rL "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 cat > patch.diff <<- EOM
 diff --git a/pom.xml b/pom.xml
@@ -100,7 +101,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=org.springframework.security.**:org.bouncycastle.** \
 --cp=$RUNTIME_CLASSPATH \

@@ -24,13 +24,7 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
     mv fuzzing/dictionaries/pem.dict $SRC/EncryptionIntegrationFuzzer.dict && \
     rm -rf fuzzing
 
-ARG java_home="/out/open-jdk-17"
-RUN mkdir -p $JAVA_HOME
-
 RUN apt update && apt install -y openjdk-17-jdk
-ENV JAVA_HOME $java_home
-ENV PATH "${java_home}:${PATH}"
-ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
