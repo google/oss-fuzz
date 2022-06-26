@@ -32,6 +32,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	}
 
 	/* Tests using RGB color scheme */
-	gs_to_raster_fuzz(data, size, 1);
+	gs_to_raster_fuzz(data, size, 1, "cups");
 	return 0;
 }

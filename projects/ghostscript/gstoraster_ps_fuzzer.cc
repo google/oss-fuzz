@@ -40,6 +40,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	data++;
 	size--;
 
-	gs_to_raster_fuzz(data, size, color_scheme);
+	gs_to_raster_fuzz(data, size, color_scheme, "cups");
 	return 0;
 }
