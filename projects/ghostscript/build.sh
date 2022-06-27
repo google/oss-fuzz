@@ -83,7 +83,8 @@ done
 
 # Create corpus for gstoraster_fuzzer
 zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
-cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gstoraster_devices_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pdfwrite_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlmono_fuzzer_seed_corpus.zip"
 
 # Copy out options
 cp $SRC/*.options $OUT/
