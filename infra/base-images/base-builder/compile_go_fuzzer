@@ -50,7 +50,9 @@ if [[ $SANITIZER = *coverage* ]]; then
   echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
   # Additional packages for which to get coverage.
   pkgaddcov=""
-  if [[ -n "${GO_COV_ADD_PKG}" ]]; then
+  # to prevent bash from failing about unbound variable
+  GO_COV_ADD_PKG_SET=${GO_COV_ADD_PKG:-}
+  if [[ -n "${GO_COV_ADD_PKG_SET}" ]]; then
     pkgaddcov=","$GO_COV_ADD_PKG
     abspath_repo=`go list -m $tags -f {{.Dir}} $GO_COV_ADD_PKG || go list $tags -f {{.Dir}} $GO_COV_ADD_PKG`
     echo "s=$GO_COV_ADD_PKG"="$abspath_repo"= >> $OUT/$fuzzer.gocovpath
