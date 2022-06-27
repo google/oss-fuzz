@@ -50,7 +50,7 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
 make -j$(nproc) libgs
 
 
-for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors gstoraster_ps_fuzzer gstoraster_devices_fuzzer; do
+for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors gstoraster_ps_fuzzer gs_device_pdfwrite_fuzzer gs_device_pxlmono_fuzzer; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
     $SRC/${fuzzer}.cc \
     -o "$OUT/${fuzzer}" \
