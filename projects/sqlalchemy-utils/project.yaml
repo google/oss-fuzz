@@ -2,7 +2,7 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/kvesteri/sqlalchemy-utils
 language: python
-primary_contact: "contactme@kurtmckee.org"
+primary_contact: "kurtmckee@gmail.com"
 main_repo: https://github.com/kvesteri/sqlalchemy-utils
 sanitizers:
 - address
