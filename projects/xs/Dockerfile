@@ -14,9 +14,20 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+#Apache-2.0 license
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
+    zip -q $SRC/xst_jsonparse_seed_corpus.zip go-fuzz-corpus/json/corpus/*
+
+#Apache-2.0 license
+RUN git clone --depth 1 https://github.com/google/fuzzing && \
+    cat fuzzing/dictionaries/json.dict > $SRC/xst_jsonparse.dict && \
+    cat fuzzing/dictionaries/js.dict > $SRC/xst.dict
+
+#Apache-2.0 license, MIT license, BSD license
+RUN git clone --depth 1 https://github.com/tc39/test262-parser-tests && \
+	zip -q $SRC/xst_seed_corpus.zip test262-parser-tests/pass-explicit/*
+
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable
 WORKDIR moddable
 
-COPY target.c $SRC/
-COPY build.sh $SRC/
-COPY xst.options $SRC/
+COPY target.c build.sh xst.options $SRC/
