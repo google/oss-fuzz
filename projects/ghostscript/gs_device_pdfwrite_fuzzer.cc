@@ -1,4 +1,4 @@
-/* Copyright 2021 Google LLC
+/* Copyright 2022 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@ limitations under the License.
 #include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	/*
-	 * Fuzz pdfwrite and pxlmono
-	 */
 	fuzz_gs_device(data, size, 1, "pdfwrite");
-	fuzz_gs_device(data, size, 1, "pxlmono");
 	return 0;
 }
