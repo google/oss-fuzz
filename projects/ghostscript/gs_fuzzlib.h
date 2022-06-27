@@ -27,6 +27,13 @@
 static const unsigned char *g_data;
 static size_t g_size;
 
+int fuzz_gs_device(
+	const unsigned char *buf,
+	size_t size,
+	int color_scheme,
+	const char *device_target
+);
+
 #define min(x, y) ((x) < (y) ? (x) : (y))
 
 static int gs_stdin(void *inst, char *buf, int len)
@@ -49,6 +56,15 @@ static int gs_stdnull(void *inst, const char *buf, int len)
 }
 
 int gs_to_raster_fuzz(
+	const unsigned char *buf,
+	size_t size,
+	int color_scheme
+)
+{
+	return fuzz_gs_device(buf, size, color_scheme, "cups");
+}
+
+int fuzz_gs_device(
 	const unsigned char *buf,
 	size_t size,
 	int color_scheme,

@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "gstoraster_fuzzlib.h"
+#include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	if (size == 0) {
@@ -22,6 +22,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	data++;
 	size--;
 
-	gs_to_raster_fuzz(data, size, color_scheme, "cups");
+	gs_to_raster_fuzz(data, size, color_scheme);
 	return 0;
 }

@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "gstoraster_fuzzlib.h"
+#include "gs_fuzzlib.h"
 
 /* Returns 1 if the data has a PDF header and 0 otherwise */
 static int is_pdf(const uint8_t *data, size_t size) {
@@ -40,6 +40,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	data++;
 	size--;
 
-	gs_to_raster_fuzz(data, size, color_scheme, "cups");
+	gs_to_raster_fuzz(data, size, color_scheme);
 	return 0;
 }

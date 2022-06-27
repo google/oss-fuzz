@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "gstoraster_fuzzlib.h"
+#include "gs_fuzzlib.h"
 
 // Returns 1 if this has a valid PDF header and 0 otherwise
 static int quick_check_pdf(const uint8_t *data, size_t size) {
@@ -32,6 +32,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	}
 
 	/* Tests using RGB color scheme */
-	gs_to_raster_fuzz(data, size, 1, "cups");
+	gs_to_raster_fuzz(data, size, 1);
 	return 0;
 }
