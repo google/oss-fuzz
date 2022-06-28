@@ -55,7 +55,7 @@ if [[ $SANITIZER = *coverage* ]]; then
   if [[ -n "${GO_COV_ADD_PKG_SET}" ]]; then
     pkgaddcov=","$GO_COV_ADD_PKG
     abspath_repo=`go list -m $tags -f {{.Dir}} $GO_COV_ADD_PKG || go list $tags -f {{.Dir}} $GO_COV_ADD_PKG`
-    echo "s=$GO_COV_ADD_PKG"="$abspath_repo"= >> $OUT/$fuzzer.gocovpath
+    echo "s=^$GO_COV_ADD_PKG"="$abspath_repo"= >> $OUT/$fuzzer.gocovpath
   fi
   go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/...$pkgaddcov -c -o $OUT/$fuzzer $path
 else
