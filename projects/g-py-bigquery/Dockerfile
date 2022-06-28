@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install numpy ipython
+RUN pip3 install --upgrade pip && \
+    pip3 install numpy ipython grpcio
 RUN git clone https://github.com/googleapis/python-bigquery
 COPY build.sh *.py $SRC/
 WORKDIR python-bigquery
