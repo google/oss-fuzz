@@ -20,6 +20,12 @@ with atheris.instrument_imports():
     from msal.application import extract_certs
     from msal.authority import AuthorityBuilder
 
+def is_expected(error_list,error_msg):
+    for error in error_list:
+        if error in error_msg:
+            return True
+    return False
+
 def TestInput(input_bytes):
     if len(input_bytes)<32:
         return 
@@ -38,11 +44,7 @@ def TestInput(input_bytes):
             "should consist of an https url with a minimum of one segment in a path",
             "netloc"
         ]
-        expected_error = False
-        for error in error_list:
-            if error in str(e):
-                expected_error = True
-        if not expected_error:
+        if not is_expected(error_list,str(e)):
             raise e
 
     cert = "-----BEGIN CERTIFICATE-----%s-----END CERTIFICATE-----"%fdp.ConsumeString(200)

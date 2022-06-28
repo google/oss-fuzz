@@ -1,5 +1,4 @@
-#!/usr/bin/python3g
-
+#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +42,12 @@ def build_response(uid,utid,access_token,expires_in,token_type,**kwargs):
     response.update(kwargs)  # Pass-through key-value pairs as top-level fields
     return response
 
+def is_expected(error_list,error_msg):
+    for error in error_list:
+        if error in error_msg:
+            return True
+    return False
+
 def TestInput(input_bytes):
     if len(input_bytes)<32:
         return 
@@ -73,11 +78,7 @@ def TestInput(input_bytes):
            "Invalid IPv6 URL",
            "should consist of an https url with a minimum of one segment in a path"
         ]
-        expected_error = False
-        for error in error_list:
-            if error in str(e):
-                expected_error = True
-        if not expected_error:
+        if not is_expected(error_list,str(e)):
             raise e
 
 def main():
