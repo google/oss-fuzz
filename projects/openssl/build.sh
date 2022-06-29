@@ -25,7 +25,7 @@ fi
 
 make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
-fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl)
+fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl '!' -name \*.sh)
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
