@@ -322,7 +322,7 @@ int trace(std::map<pid_t, Tracee> pids) {
           if (ptrace(PTRACE_GETEVENTMSG, pid, 0, &exit_status) == -1) {
             debug_log("ptrace(PTRACE_GETEVENTMSG, %d): %s", pid, strerror(errno));
           }
-          debug_log("got exit status from root process: %d", exit_status);
+          debug_log("got exit status from root process: %lu", exit_status);
         }
 
         if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
