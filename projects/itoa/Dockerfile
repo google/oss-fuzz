@@ -14,8 +14,10 @@
 #
 ################################################################################
 
-FROM rustlang/rust:nightly
-WORKDIR /itoa
-COPY . .
-RUN cargo install cargo-fuzz
-RUN cargo fuzz run decode -- -runs=0
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN git clone --depth 1 https://github.com/dtolnay/itoa
+COPY fuzz $SRC/zip/fuzz
+WORKDIR $SRC
+
+COPY build.sh $SRC/
