@@ -107,8 +107,7 @@ function run_fuzz_target {
   fi
 
   # If necessary translate to latest profraw version.
-  profraw_update.py $OUT/$target $profraw_file_mask tmp.profraw
-  mv tmp.profraw $profraw_file_mask
+  profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
@@ -387,7 +386,7 @@ else
     fi
 
     report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
-    generate_html $profdata_path "$shared_libraries" "$objects" "$report_dir"
+    generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
 fi
 
