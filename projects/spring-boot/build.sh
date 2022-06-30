@@ -17,7 +17,9 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-cp -r "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME"
+export JAVA_HOME="$OUT/open-jdk-17"
+mkdir -p $JAVA_HOME
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
@@ -50,7 +52,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
