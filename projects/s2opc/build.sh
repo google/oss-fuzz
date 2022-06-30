@@ -24,7 +24,10 @@ SAMPLES=$SRC/S2OPC-fuzzing-data
 tar xzf $SRC/mbedtls.tgz -C $WORK
 mkdir -p $MBEDTLS_BUILD
 cd $MBEDTLS_BUILD
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON $WORK/mbedtls-2.*
+cmake -DPYTHON_EXECUTABLE="/usr/bin/python3" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      $WORK/mbedtls-2.*
 make -j$(nproc)
 make -j$(nproc) install
 
