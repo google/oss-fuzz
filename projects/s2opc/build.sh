@@ -62,11 +62,10 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DWITH_OSS_FUZZ=ON \
       $SRC/S2OPC
 cmake --build . --target fuzzers
-
-# Copy them and build the corpora
 cp bin/* $OUT
 
+# Build the corpora
 cd $SAMPLES
-for dir in $(ls -d */); do
-    zip -j $OUT/${dir%/}_fuzzer_seed_corpus.zip ${dir}*
+for dir in $(find -maxdepth 1 -type d -not -name ".*"); do
+    find $dir -exec zip -j $OUT/$(basename $dir)_fuzzer_seed_corpus.zip {} +
 done
