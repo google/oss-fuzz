@@ -13,6 +13,7 @@ auto_ccs:
   - "qxliu@google.com"
   - "ckitagawa@google.com"
   - "drott@chromium.org"
+  - "fwang@igalia.com"
 vendor_ccs:
   - "jmuizelaar@mozilla.com"
   - "lsalzman@mozilla.com"
