@@ -22,8 +22,11 @@ S2OPC_BUILD=$WORK/s2opc
 SAMPLES=$SRC/S2OPC-fuzzing-data
 
 # Build the dependencies
-## mbedtls
+
+## Configure mbedtls to disable support of the AES-NI instructions, known to cause error with some sanitizers
 tar xzf $SRC/mbedtls.tgz -C $WORK
+sed 's,#define MBEDTLS_AESNI_C,//#define MBEDTLS_AESNI_C,' -i $WORK/mbedtls-2.*/include/mbedtls/config.h
+
 mkdir -p $MBEDTLS_BUILD
 cd $MBEDTLS_BUILD
 cmake -DPYTHON_EXECUTABLE="/usr/bin/python3" \
