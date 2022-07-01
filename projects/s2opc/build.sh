@@ -36,7 +36,11 @@ make -j$(nproc) install
 ## libcheck
 tar xzf $SRC/check.tgz -C $WORK
 cd $WORK/check-0.*
-./configure --prefix=/usr/local --with-tcltk=no
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      $WORK/check-0.*
+make -j$(nproc)
+make -j$(nproc) install
 
 ## expat
 tar xzf $SRC/expat.tgz -C $WORK
