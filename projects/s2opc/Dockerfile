@@ -22,6 +22,7 @@ RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC
 RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC-fuzzing-data
 RUN curl -L https://github.com/Mbed-TLS/mbedtls/archive/v2.28.0.tar.gz -o $SRC/mbedtls.tgz
 RUN curl -L https://github.com/libcheck/check/releases/download/0.12.0/check-0.12.0.tar.gz -o $SRC/check.tgz
+RUN curl -L https://github.com/libexpat/libexpat/releases/download/R_2_4_3/expat-2.4.3.tar.gz -o $SRC/expat.tgz
 
 WORKDIR S2OPC
 COPY build.sh $SRC/
