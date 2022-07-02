@@ -15,7 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y pkg-config zlib1g zlib1g-dev libjpeg-dev libpng-dev npm
+RUN apt-get update && apt-get install -y \
+  pkg-config \
+  zlib1g \
+  zlib1g-dev \
+  libjpeg-dev \
+  libpng-dev \
+  npm \
+  libffi-dev
 RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/aiohttp/
