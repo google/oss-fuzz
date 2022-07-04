@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y \
     git \
     lib32gcc1 \
     libc6-i386 \
+    lib32stdc++6 \
     libcap2 \
     python3 \
     python3-pip \
