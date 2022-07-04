@@ -21,9 +21,35 @@ with atheris.instrument_imports():
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  s1 = fdp.ConsumeString(200)
-  s2 = fdp.ConsumeString(200)
-  path_template.validate(s1, s2)
+  targets = [
+    "expand",
+    "transcode",
+    "validate"
+  ]
+  target = targets[fdp.ConsumeIntInRange(0, len(targets)-1)]
+  if target == "expand":
+    s1 = fdp.ConsumeString(200)
+    s2 = fdp.ConsumeString(200)
+    try:
+      path_template.expand(s1, s2)
+    except ValueError:
+      # ValueError is raised
+      # https://github.com/googleapis/python-api-core/blob/5b5e77563229687c901d77b5fdecc18168b535e6/google/api_core/path_template.py#L123
+      pass
+  elif target == "transcode":
+    s1 = fdp.ConsumeString(200)
+    s2 = fdp.ConsumeString(200)
+    s3 = fdp.ConsumeString(200)
+    try:
+        path_template.transcode([{'uri' : s1, 'body' : s2,'method' : s3}])
+    except ValueError:
+        # ValueError is raised:
+        # https://github.com/googleapis/python-api-core/blob/main/google/api_core/path_template.py#L260
+        pass
+  elif target == "validate":
+    s1 = fdp.ConsumeString(200)
+    s2 = fdp.ConsumeString(200)
+    path_template.validate(s1, s2)
 
 
 def main():
