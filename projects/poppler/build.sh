@@ -84,7 +84,8 @@ make install
 
 mkdir -p $SRC/openjpeg/build
 pushd $SRC/openjpeg/build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$PREFIX
+sed -i "s#\${LCMS_LIBNAME}#-L$PREFIX/lib \${LCMS_LIBNAME}#" ../src/bin/jp2/CMakeLists.txt
+PKG_CONFIG=`which pkg-config` cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$PREFIX
 make -j$(nproc) install
 
 if [ "$SANITIZER" != "memory" ]; then
@@ -131,7 +132,7 @@ if [ "$SANITIZER" != "memory" ]; then
     popd
 
     pushd $SRC/pango
-    meson \
+    CFLAGS="$CFLAGS -fno-sanitize=vptr" CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" meson \
         -Ddefault_library=static \
         --prefix=$PREFIX \
         --libdir=lib \
