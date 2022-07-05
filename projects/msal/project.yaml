@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://github.com/AzureAD/microsoft-authentication-library-for-python
 language: python
 main_repo: https://github.com/AzureAD/microsoft-authentication-library-for-python
+primary_contact: "rayluo@microsoft.com"
 sanitizers:
 - address
 vendor_ccs:
