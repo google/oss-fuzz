@@ -16,7 +16,7 @@
 ################################################################################
 
 
-mkdir $SRC/ClickHouse/build
+mkdir -p $SRC/ClickHouse/build
 cd $SRC/ClickHouse/build
 
 sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
@@ -27,8 +27,11 @@ sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 
 # ClickHouse uses libcxx from contrib.
-# Enabling this manually will cause duplicate symbols at linker stage.
-CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
+# Enabling libstdc++ manually will cause duplicate symbols at linker stage.
+# Plus we want to fuzz the same binary as we have in our CI
+# https://github.com/ClickHouse/ClickHouse/blob/2e2ef087129ed072404bdc084e8028a5c5869dc0/PreLoad.cmake#L23
+unset CFLAGS
+unset CXXFLAGS
 
 # ClickHouse builds `protoc` from sources to be dependent only on compiler
 # but if we build ClickHouse with any kind of sanitizer, then `protoc`
