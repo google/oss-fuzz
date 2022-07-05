@@ -38,14 +38,10 @@ cd $SRC/libass
 
 export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./autogen.sh
-./configure --disable-asm
-make -j$(nproc)
+./configure FUZZ_CPPFLAGS="-DASS_FUZZMODE=2" \
+    --disable-asm --disable-shared --enable-fuzz
+make -j "$(nproc)" fuzz/fuzz_ossfuzz
 
-$CXX $CXXFLAGS -std=c++11 -I$SRC/libass \
-    $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
-    $LIB_FUZZING_ENGINE libass/.libs/libass.a \
-    -Wl,-Bstatic \
-    $(pkg-config --static --libs fontconfig freetype2 fribidi harfbuzz | sed 's/-lm //g') \
-    -Wl,-Bdynamic
+cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp fuzz/ass.dict $SRC/*.options $OUT/
