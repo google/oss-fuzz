@@ -178,7 +178,6 @@ void report_bug(std::string bug_type) {
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
   kill(g_root_pid, SIGABRT);
-  _exit(0);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
