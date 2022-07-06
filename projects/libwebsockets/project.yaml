@@ -1,0 +1,9 @@
+homepage: "https://libwebsockets.org"
+language: c
+primary_contact: "andy@warmcat.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://libwebsockets.org/repo/libwebsockets'
