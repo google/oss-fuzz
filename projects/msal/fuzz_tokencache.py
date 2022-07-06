@@ -53,9 +53,7 @@ def TestInput(input_bytes):
         return 
 
     fdp = atheris.FuzzedDataProvider(input_bytes)
-
     cache = TokenCache()
-
     client_id = fdp.ConsumeString(32)
     try:
         token = build_token(
@@ -67,10 +65,15 @@ def TestInput(input_bytes):
           "client_id": client_id,
           "scope": ["s2", "s1", "s3"],
           "token_endpoint": "https://%s"%fdp.ConsumeString(20),
-          "response": build_response(token_type=fdp.ConsumeString(5),
-            uid=fdp.ConsumeString(5), utid=fdp.ConsumeString(5),
-            expires_in=3600, access_token=fdp.ConsumeString(10),
-            id_token=token, refresh_token=fdp.ConsumeString(10)),
+          "response": build_response(
+              token_type=fdp.ConsumeString(5),
+              uid=fdp.ConsumeString(5),
+              utid=fdp.ConsumeString(5),
+              expires_in=3600,
+              access_token=fdp.ConsumeString(10),
+              id_token=token,
+              refresh_token=fdp.ConsumeString(10)
+          ),
         }, now=1000)
     except ValueError as e:
         error_list = [
