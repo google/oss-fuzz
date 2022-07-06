@@ -37,7 +37,7 @@ class FuzzHttpClient:
         return FuzzResponse(fdp = self.fdp)
 
     def get(self, url, params=None, headers=None, **kwargs):
-        return MinimalResponse(fdp = self.fdp)
+        return FuzzResponse(fdp = self.fdp)
 
     def close(self):
         self.session.close()
