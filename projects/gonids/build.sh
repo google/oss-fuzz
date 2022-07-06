@@ -31,6 +31,8 @@ mv $SRC/goroot /root/.go
 
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 
+base64 /out/fuzz_parserule
+
 cd $SRC
 unzip emerging.rules.zip
 cd rules
