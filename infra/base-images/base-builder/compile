@@ -22,11 +22,6 @@ if [ -n "${OLD_LLVMPASS-}" ]; then
   export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
 fi
 
-if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
-  echo "ERROR: 'dataflow' sanitizer can be used with 'dataflow' engine only."
-  exit 1
-fi
-
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
     echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
@@ -244,9 +239,4 @@ if [ "$SANITIZER" = "introspector" ]; then
   python3 /fuzz-introspector/post-processing/main.py report $REPORT_ARGS
 
   cp -rf $SRC/inspector $OUT/inspector
-fi
-
-if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
-  # Remove seed corpus as it can be huge but is not needed for a dataflow build.
-  rm -f $OUT/*.zip
 fi

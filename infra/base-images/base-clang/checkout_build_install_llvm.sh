@@ -192,18 +192,6 @@ ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
-# DataFlowSanitizer instrumented libraries.
-mkdir -p $WORK/dfsan
-cd $WORK/dfsan
-
-cmake_libcxx $CMAKE_EXTRA_ARGS \
-    -DLLVM_USE_SANITIZER=DataFlow \
-    -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
-
-ninja -j $NPROC cxx cxxabi
-ninja install-cxx install-cxxabi
-rm -rf $WORK/dfsan
-
 # libFuzzer sources.
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
