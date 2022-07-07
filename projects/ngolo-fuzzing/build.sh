@@ -18,15 +18,10 @@
 # compile latest go from git
 (
 cd $SRC/goroot/src
-(
-# temporary workaround for https://github.com/golang/go/issues/53190
-cd runtime
-grep nosplit libfuzzer.go || sed -i 's/func libfuzzerTraceConstCmp/\n\/\/go:nosplit\nfunc libfuzzerTraceConstCmp/' libfuzzer.go
-)
 ./make.bash
 )
 rm -Rf /root/.go/
-mv $SRC/goroot /root/.go
+export PATH=$PATH:$SRC/goroot/bin/
 
 compile_package () {
     pkg=$1
@@ -53,7 +48,7 @@ compile_package () {
             continue
         fi
         cd fuzz_ng_$pkg_flat
-        compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        GO_COV_ADD_PKG="$pkg" compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
         )
     else
         (
@@ -75,8 +70,8 @@ go build
 )
 
 # maybe we should git clone --depth 1 https://github.com/golang/go.git
-find /root/.go/src/ -type d | cut -d/ -f5- | while read pkg; do
-    if [[ `ls /root/.go/src/$pkg/*.go | wc -l` == '0' ]]; then
+find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
+    if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue
     fi
     if [[ `echo $pkg | grep internal | wc -l` == '1' ]]; then
