@@ -331,15 +331,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               ],
           })
 
-        if build.sanitizer == 'dataflow' and build.fuzzing_engine == 'dataflow':
-          dataflow_steps = dataflow_post_build_steps(project.name, env,
-                                                     base_images_project,
-                                                     config.test_image_suffix)
-          if dataflow_steps:
-            build_steps.extend(dataflow_steps)
-          else:
-            sys.stderr.write('Skipping dataflow post build steps.\n')
-
         build_steps.extend([
             # Generate targets list.
             {
@@ -455,36 +446,6 @@ def get_runner_image_name(base_images_project, test_image_suffix):
   if test_image_suffix:
     image += '-' + test_image_suffix
   return image
-
-
-def dataflow_post_build_steps(project_name, env, base_images_project,
-                              test_image_suffix):
-  """Appends dataflow post build steps."""
-  steps = build_lib.download_corpora_steps(project_name)
-  if not steps:
-    return None
-
-  steps.append({
-      'name':
-          get_runner_image_name(base_images_project, test_image_suffix),
-      'env':
-          env + [
-              'COLLECT_DFT_TIMEOUT=2h',
-              'DFT_FILE_SIZE_LIMIT=65535',
-              'DFT_MIN_TIMEOUT=2.0',
-              'DFT_TIMEOUT_RANGE=6.0',
-          ],
-      'args': [
-          'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
-           'collect_dft || (echo "DFT collection failed." && false)')
-      ],
-      'volumes': [{
-          'name': 'corpus',
-          'path': '/corpus'
-      }],
-  })
-  return steps
 
 
 # pylint: disable=no-member,too-many-arguments

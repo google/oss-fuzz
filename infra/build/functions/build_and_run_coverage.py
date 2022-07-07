@@ -130,8 +130,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'HTTP_PORT=',
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ]
-  if 'dataflow' in project.fuzzing_engines:
-    coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
       'name':
