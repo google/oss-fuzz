@@ -12,6 +12,5 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - dataflow
   - memory
 main_repo: 'https://gitlab.xiph.org/xiph/vorbis.git'
