@@ -156,10 +156,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    if args.engine == 'dataflow':
-      args.sanitizer = 'dataflow'
-    else:
-      args.sanitizer = constants.DEFAULT_SANITIZER
+    args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -459,7 +456,7 @@ def _add_sanitizer_args(parser, choices=None):
       '--sanitizer',
       default=None,
       choices=choices,
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+      help='the default is "address".')
 
 
 def _add_environment_args(parser):
