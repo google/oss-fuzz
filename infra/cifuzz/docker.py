@@ -55,9 +55,10 @@ def get_docker_env_vars(env_mapping):
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
-  # TODO(ochang): We may need unique names to support parallel fuzzing for
-  # CIFuzz (like CFL supports). Don't do this for now because no one has asked
-  # for it and build_specified_commit would need to be modified to support this.
+  # TODO(jonathanmetzman): We may need unique names to support parallel fuzzing
+  # for CIFuzz (like CFL supports). Don't do this for now because no one has
+  # asked for it and build_specified_commit would need to be modified to support
+  # this.
   if project:
     return PROJECT_TAG_PREFIX + project
 
