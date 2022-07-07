@@ -22,12 +22,10 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
   - memory
-  - dataflow
 architectures:
   - x86_64
   - i386
