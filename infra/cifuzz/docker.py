@@ -57,7 +57,7 @@ def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
   # TODO(ochang): We may need unique names to support parallel fuzzing.
   if project:
-    return PROJECT_TAG_PREFIX + project + UNIQUE_ID_SUFFIX
+    return PROJECT_TAG_PREFIX + project
 
   return EXTERNAL_PROJECT_IMAGE
 
