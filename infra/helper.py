@@ -452,11 +452,10 @@ def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
   if choices is None:
     choices = constants.SANITIZERS
-  parser.add_argument(
-      '--sanitizer',
-      default=None,
-      choices=choices,
-      help='the default is "address"')
+  parser.add_argument('--sanitizer',
+                      default=None,
+                      choices=choices,
+                      help='the default is "address"')
 
 
 def _add_environment_args(parser):
