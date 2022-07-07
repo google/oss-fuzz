@@ -216,8 +216,10 @@ def get_compile_step(project, build, env, parallel):
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
   compile_step = {
-      'name': project.image,
-      'env': env,
+      'name':
+      project.image,
+      'env':
+      env,
       'args': [
           'bash',
           '-c',
@@ -229,7 +231,8 @@ def get_compile_step(project, build, env, parallel):
            f'mkdir -p {build.out} && compile || '
            f'(echo "{failure_msg}" && false)'),
       ],
-      'id': get_id('compile', build),
+      'id':
+      get_id('compile', build),
   }
   if parallel:
     maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
@@ -302,16 +305,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Test fuzz targets.
           test_step = {
               'name':
-                  get_runner_image_name(base_images_project,
-                                        config.test_image_suffix),
+              get_runner_image_name(base_images_project,
+                                    config.test_image_suffix),
               'env':
-                  env,
-              'args': [
-                  'bash', '-c',
-                  f'test_all.py || (echo "{failure_msg}" && false)'
-              ],
+              env,
+              'args':
+              ['bash', '-c', f'test_all.py || (echo "{failure_msg}" && false)'],
               'id':
-                  get_id('build-check', build)
+              get_id('build-check', build)
           }
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
                              config.parallel)
@@ -321,9 +322,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Write target labels.
           build_steps.append({
               'name':
-                  project.image,
+              project.image,
               'env':
-                  env,
+              env,
               'args': [
                   '/usr/local/bin/write_labels.py',
                   json.dumps(project.labels),
@@ -334,7 +335,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
         if build.sanitizer == 'dataflow' and build.fuzzing_engine == 'dataflow':
           dataflow_steps = dataflow_post_build_steps(project.name, env,
                                                      base_images_project,
-                                                     config.testing,
                                                      config.test_image_suffix)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
@@ -345,10 +345,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             # Generate targets list.
             {
                 'name':
-                    get_runner_image_name(base_images_project,
-                                          config.test_image_suffix),
+                get_runner_image_name(base_images_project,
+                                      config.test_image_suffix),
                 'env':
-                    env,
+                env,
                 'args': [
                     'bash', '-c',
                     f'targets_list > /workspace/{build.targets_list_filename}'
@@ -458,23 +458,23 @@ def get_runner_image_name(base_images_project, test_image_suffix):
   return image
 
 
-def dataflow_post_build_steps(project_name, env, base_images_project, testing,
+def dataflow_post_build_steps(project_name, env, base_images_project,
                               test_image_suffix):
   """Appends dataflow post build steps."""
-  steps = build_lib.download_corpora_steps(project_name, testing)
+  steps = build_lib.download_corpora_steps(project_name)
   if not steps:
     return None
 
   steps.append({
       'name':
-          get_runner_image_name(base_images_project, test_image_suffix),
+      get_runner_image_name(base_images_project, test_image_suffix),
       'env':
-          env + [
-              'COLLECT_DFT_TIMEOUT=2h',
-              'DFT_FILE_SIZE_LIMIT=65535',
-              'DFT_MIN_TIMEOUT=2.0',
-              'DFT_TIMEOUT_RANGE=6.0',
-          ],
+      env + [
+          'COLLECT_DFT_TIMEOUT=2h',
+          'DFT_FILE_SIZE_LIMIT=65535',
+          'DFT_MIN_TIMEOUT=2.0',
+          'DFT_TIMEOUT_RANGE=6.0',
+      ],
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
