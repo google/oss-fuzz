@@ -34,6 +34,7 @@ _DEFAULT_DOCKER_RUN_ARGS = [
 
 UNIQUE_ID_SUFFIX = '-' + uuid.uuid4().hex
 
+# TODO(metzman): Make run_fuzzers able to delete this image.
 EXTERNAL_PROJECT_IMAGE = 'external-cfl-project' + UNIQUE_ID_SUFFIX
 
 _DEFAULT_DOCKER_RUN_COMMAND = [
