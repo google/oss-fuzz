@@ -31,7 +31,6 @@ popd
 
 rm -rf cups/libs || die
 rm -rf freetype || die
-rm -rf libpng || die
 rm -rf zlib || die
 
 mv $SRC/freetype freetype
@@ -46,11 +45,11 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   CUPSCONFIG=$CUPSCONFIG \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
-  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint
+  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m
 make -j$(nproc) libgs
 
 
-for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors gstoraster_ps_fuzzer gs_device_pdfwrite_fuzzer gs_device_pxlmono_fuzzer; do
+for fuzzer in gstoraster_pdf_fuzzer gstoraster_fuzzer gstoraster_fuzzer_all_colors gstoraster_ps_fuzzer gs_device_pdfwrite_fuzzer gs_device_pxlmono_fuzzer gs_device_pgm_fuzzer gs_device_ps2write_fuzzer gs_device_png_fuzzer; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
     $SRC/${fuzzer}.cc \
     -o "$OUT/${fuzzer}" \
