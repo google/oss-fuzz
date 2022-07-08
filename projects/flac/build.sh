@@ -42,6 +42,7 @@ cd $SRC/flac/
 ./autogen.sh
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
+    export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
     LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse --enable-oss-fuzzers
 else
     LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --enable-oss-fuzzers
@@ -60,7 +61,7 @@ make -j$(nproc)
 
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder fuzzer_seek $OUT
+cp fuzzer_decoder fuzzer_seek fuzzer_metadata $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 
