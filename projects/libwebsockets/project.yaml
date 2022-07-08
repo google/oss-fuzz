@@ -3,4 +3,6 @@ language: c
 primary_contact: "andy@warmcat.com"
 sanitizers:
   - address
+fuzzing_engines:
+- libfuzzer
 main_repo: 'https://libwebsockets.org/repo/libwebsockets'
