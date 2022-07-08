@@ -15,12 +15,16 @@
 
 import atheris
 import sys
-import random
 with atheris.instrument_imports():
      from retry import *
 
+IS_ERROR = True
+
 def error_method():
-    if random.randint(1,4) == 1:
+    global IS_ERROR
+    IS_ERROR = not IS_ERROR
+
+    if IS_ERROR:
         raise ValueError
     else:
        return
@@ -28,7 +32,8 @@ def error_method():
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    choice = fdp.ConsumeIntInRange(1,4)
+    global IS_ERROR 
+    IS_ERROR = fdp.ConsumeBool()
 
     retry_call(error_method,logger=None)
     retry_call(
