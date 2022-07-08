@@ -4,12 +4,10 @@ primary_contact: "philip.hazel@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386

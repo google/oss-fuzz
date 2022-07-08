@@ -138,9 +138,13 @@ function run_go_fuzz_target {
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
-  
-  $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
-  
+
+  timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
+  if (( $? != 0 )); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
   # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during

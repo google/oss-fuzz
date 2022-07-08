@@ -334,7 +334,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
         if build.sanitizer == 'dataflow' and build.fuzzing_engine == 'dataflow':
           dataflow_steps = dataflow_post_build_steps(project.name, env,
                                                      base_images_project,
-                                                     config.testing,
                                                      config.test_image_suffix)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
@@ -458,10 +457,10 @@ def get_runner_image_name(base_images_project, test_image_suffix):
   return image
 
 
-def dataflow_post_build_steps(project_name, env, base_images_project, testing,
+def dataflow_post_build_steps(project_name, env, base_images_project,
                               test_image_suffix):
   """Appends dataflow post build steps."""
-  steps = build_lib.download_corpora_steps(project_name, testing)
+  steps = build_lib.download_corpora_steps(project_name)
   if not steps:
     return None
 

@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
-RUN apt-get update && apt-get install -y wget
-RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.dict -O $OUT/fuzz.dict
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
-RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN git clone --depth 1 https://github.com/cilium/cilium/ cilium
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-COPY build.sh $SRC/
-WORKDIR $SRC/cilium
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install cython
+RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
+WORKDIR $SRC
+COPY *.py build.sh $SRC/

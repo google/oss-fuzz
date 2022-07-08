@@ -7,9 +7,7 @@ fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow

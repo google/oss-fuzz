@@ -9,9 +9,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
-  - dataflow
   - memory
 main_repo: 'https://github.com/libexif/libexif'

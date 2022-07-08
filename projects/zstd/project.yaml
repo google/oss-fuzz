@@ -15,11 +15,9 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
-  - dataflow
   - honggfuzz
 sanitizers:
   - address
-  - dataflow
   - memory
   - undefined
 main_repo: 'https://github.com/facebook/zstd'

@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
-RUN apt-get update && apt-get install -y wget
-RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.dict -O $OUT/fuzz.dict
+DIR=$SRC/libwebsockets/
 
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
-RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
+cd $DIR
+mkdir build && cd build
 
-RUN git clone --depth 1 https://github.com/cilium/cilium/ cilium
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-COPY build.sh $SRC/
-WORKDIR $SRC/cilium
+cmake -DCMAKE_C_FLAGS="$CFLAGS -fsanitize=address,fuzzer-no-link -g" -DCMAKE_CXX_FLAGS="$CXXFLAGS -fsanitize=address,fuzzer-no-link -g" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,fuzzer-no-link -g" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,fuzzer-no-link -g" ..
+make -j8
+
+cd $DIR
+$CXX -g -fsanitize=address,fuzzer -I$DIR/build/include -o $OUT/lws_upng_inflate_fuzzer lws_upng_inflate_fuzzer.cpp -L$DIR/build/lib -l:libwebsockets.a -L/usr/lib/x86_64-linux-gnu/ -l:libssl.so -l:libcrypto.so
