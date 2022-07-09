@@ -1,6 +1,8 @@
 homepage: "https://nghttp2.org/"
 language: c++
 primary_contact: "tatsuhiro.t@gmail.com"
+auto_ccs:
+  - "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
   - afl
