@@ -57,6 +57,10 @@ git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
 
+# wolfCrypt uses a slightly different ECDH algorithm than Trezor and libsecp256k1.
+# This disables running ECDH in Trezor and libsecp256k1 to prevent mismatches.
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_DISABLE_SPECIAL_ECDH"
+
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
