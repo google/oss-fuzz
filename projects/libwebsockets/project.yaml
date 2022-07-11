@@ -1,6 +1,6 @@
 homepage: "https://libwebsockets.org"
 language: c
-primary_contact: "andy@warmcat.com"
+primary_contact: "andy.warmcat.com@googlemail.com"
 sanitizers:
   - address
 fuzzing_engines:
