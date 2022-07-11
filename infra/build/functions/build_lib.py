@@ -64,10 +64,6 @@ ENGINE_INFO = {
         EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
                    supported_sanitizers=['address'],
                    supported_architectures=['x86_64']),
-    'dataflow':
-        EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
-                   supported_sanitizers=['dataflow'],
-                   supported_architectures=['x86_64']),
     'none':
         EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
                    supported_sanitizers=['address'],
