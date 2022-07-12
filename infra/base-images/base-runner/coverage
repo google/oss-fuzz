@@ -120,16 +120,6 @@ function run_fuzz_target {
 
   # For introspector.
   llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
-  
-  if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
-    # This is needed for dataflow strategy analysis, can be removed later. See
-    # - https://github.com/google/oss-fuzz/pull/3306
-    # - https://github.com/google/oss-fuzz/issues/1632
-    # Intentionally writing these to the logs dir in order to hide the dumps
-    # from the ClusterFuzz cron job.
-    llvm-cov export -instr-profile=$profdata_file -object=$target \
-      $shared_libraries $LLVM_COV_COMMON_ARGS > $LOGS_DIR/$target.json
-  fi
 }
 
 function run_go_fuzz_target {
