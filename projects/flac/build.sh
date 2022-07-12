@@ -27,7 +27,8 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
-export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
+export CXXFLAGS="$CXXFLAGS -D_FORTIFY_SOURCE=0 -D_GLIBCXX_DEBUG"
 
 # Build libogg
 mkdir $SRC/libogg-install
@@ -42,7 +43,6 @@ cd $SRC/flac/
 ./autogen.sh
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
     LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse --enable-oss-fuzzers
 else
     LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --enable-oss-fuzzers
