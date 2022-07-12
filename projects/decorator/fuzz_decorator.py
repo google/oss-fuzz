@@ -47,11 +47,11 @@ def TestInput(data):
     choice = fdp.ConsumeIntInRange(1,3)
 	
     if choice == 1:
-        func1(fdp.ConsumeBytes(10))
+        func1(fdp.ConsumeBytes(fdp.ConsumeIntInRange(1,1000)))
     if choice == 2:
-        func2(fdp.ConsumeBytes(10))
+        func2(fdp.ConsumeBytes(fdp.ConsumeIntInRange(1,1000)))
     if choice == 3:
-        decorate(func3,dummy_decorate,fdp.ConsumeInt(8))
+        decorate(func3,dummy_decorate,fdp.ConsumeInt(fdp.ConsumeIntInRange(1,1000)))
         func3(fdp.ConsumeBytes(10))
 
 def main():
