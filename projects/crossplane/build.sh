@@ -15,8 +15,4 @@
 #
 ################################################################################
 
-mv $SRC/fuzz.go $SRC/crossplane/internal/xpkg/
-go mod tidy
-rm /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2/internal/ini@v1.3.11/fuzz.go
-
-compile_go_fuzzer github.com/crossplane/crossplane/internal/xpkg FuzzParse fuzz_parse
+$SRC/cncf-fuzzing/projects/crossplane/build.sh
