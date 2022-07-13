@@ -4,4 +4,12 @@ auto_ccs:
   - "cgull@glup.org"
   - "andersk@mit.edu"
   - "achernya@google.com"
+  - "bbaren@google.com"
   - "mosh-security@mit.edu"
+language: c++
+main_repo: "https://github.com/mobile-shell/mosh.git"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

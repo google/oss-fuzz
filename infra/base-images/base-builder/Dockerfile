@@ -79,8 +79,6 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-d
 
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
-ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
-
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
 ENV SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
@@ -101,9 +99,6 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 # Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
 # messages which are treated as errors by some projects.
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
-
-# Coverage isntrumentation flags for dataflow builds.
-ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,bb,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"
@@ -145,7 +140,7 @@ RUN precompile_afl
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
-COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \

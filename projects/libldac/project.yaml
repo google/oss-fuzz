@@ -17,8 +17,6 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
-  - dataflow
 main_repo: 'https://android.googlesource.com/platform/external/libldac'
