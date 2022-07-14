@@ -66,6 +66,10 @@ const std::string kTripWire = "/tmp/tripwire";
 const std::string kInjectionError = "Shell injection";
 // Shell corruption bug detected based on syntax error.
 const std::string kCorruptionError = "Shell corruption";
+// The magic string that we'll use to detect arbitrary file open
+const std::string kFzAbsoluteDirectory = "/fz/";
+// Arbitrary file open in /fz/
+const std::string kArbitraryFilOpenError = "Arbitrary file open";
 
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
@@ -266,6 +270,17 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   match_error_pattern(buffer, g_shell_pids[pid]);
 }
 
+void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
+  // Inspect a PID's register for the sign of arbitrary file open.
+  std::string path = read_string(pid, regs.rsi, kFzAbsoluteDirectory.length());
+  if (!path.length()) {
+    return;
+  }
+  if (path == kFzAbsoluteDirectory) {
+    report_bug(kArbitraryFilOpenError);
+  }
+}
+
 int trace(std::map<pid_t, Tracee> pids) {
   unsigned long exit_status = 0;
   while (!pids.empty()) {
@@ -358,6 +373,10 @@ int trace(std::map<pid_t, Tracee> pids) {
               debug_log("Shell parsed: %s", shell.c_str());
               g_shell_pids.insert(std::make_pair(pid, shell));
             }
+          }
+
+          if (regs.orig_rax == __NR_openat) {
+            inspect_for_arbitrary_file_open(pid, regs);
           }
 
           if (regs.orig_rax == __NR_write &&
