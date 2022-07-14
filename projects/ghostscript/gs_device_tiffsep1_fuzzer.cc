@@ -15,6 +15,8 @@ limitations under the License.
 #include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	fuzz_gs_device(data, size, 1, "pxlmono", "/dev/null");
+  char filename[256];
+  sprintf(filename, "/tmp/libfuzzer.%d.tiff", getpid());
+	fuzz_gs_device(data, size, 1, "tiffsep1", filename);
 	return 0;
 }
