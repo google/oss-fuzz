@@ -31,7 +31,8 @@ int fuzz_gs_device(
 	const unsigned char *buf,
 	size_t size,
 	int color_scheme,
-	const char *device_target
+	const char *device_target,
+	const char *output_file
 );
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
@@ -61,28 +62,30 @@ int gs_to_raster_fuzz(
 	int color_scheme
 )
 {
-	return fuzz_gs_device(buf, size, color_scheme, "cups");
+	return fuzz_gs_device(buf, size, color_scheme, "cups", "/dev/null");
 }
 
 int fuzz_gs_device(
 	const unsigned char *buf,
 	size_t size,
 	int color_scheme,
-	const char *device_target
+	const char *device_target,
+	const char *output_file
 )
 {
 	int ret;
 	void *gs = NULL;
 	char color_space[50];
 	char gs_device[50];
+	char gs_o[100];
 	/*
 	 * We are expecting color_scheme to be in the [0:62] interval.
 	 * This corresponds to the color schemes defined here:
 	 * https://github.com/ArtifexSoftware/ghostpdl/blob/8c97d5adce0040ac38a1fb4d7954499c65f582ff/cups/libs/cups/raster.h#L102
 	 */
 	sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
-
 	sprintf(gs_device, "-sDEVICE=%s", device_target);
+	sprintf(gs_o, "-sOutputFile=%s", output_file);
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
 		"gs",
@@ -100,7 +103,7 @@ int fuzz_gs_device(
 		"-dNOINTERPOLATE",
 		"-dNOMEDIAATTRS",
 		"-sstdout=%%stderr",
-		"-sOutputFile=/dev/null",
+		gs_o,
 		gs_device,
 		"-_",
 	};

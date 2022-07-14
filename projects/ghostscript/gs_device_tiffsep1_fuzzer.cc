@@ -12,9 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+
 #include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	fuzz_gs_device(data, size, 1, "pdfwrite", "/dev/null");
+	char filename[256];
+	sprintf(filename, "/tmp/libfuzzer.%d.tiff", getpid());
+	fuzz_gs_device(data, size, 1, "tiffsep1", filename);
 	return 0;
 }
