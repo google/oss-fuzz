@@ -70,7 +70,7 @@ int fuzz_gs_device(
 	size_t size,
 	int color_scheme,
 	const char *device_target,
-	const char *output_file,
+	const char *output_file
 )
 {
 	int ret;
@@ -85,7 +85,7 @@ int fuzz_gs_device(
 	 */
 	sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
 	sprintf(gs_device, "-sDEVICE=%s", device_target);
-	sprintf(gs_o, "-sOutputFile=%s", output_file)
+	sprintf(gs_o, "-sOutputFile=%s", output_file);
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
 		"gs",
