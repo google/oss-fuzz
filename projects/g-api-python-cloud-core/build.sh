@@ -17,7 +17,6 @@
 
 pip3 install .
 
-# Build flask fuzzers
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
