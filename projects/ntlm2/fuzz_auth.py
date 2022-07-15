@@ -29,8 +29,8 @@ def TestInput(data):
     session.auth = HttpNtlmAuth(fdp.ConsumeString(50),fdp.ConsumeString(10))
 
     try:
-       requests.get('http://%s'%fdp.ConsumeString(100), auth=auth)
-       session.get('http://%s'%fdp.ConsumeString(100))
+       requests.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)),auth=auth)
+       session.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)))
     except InvalidURL as e:
        pass
 
