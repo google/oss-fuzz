@@ -19,7 +19,7 @@ import sys
 with atheris.instrument_imports():
   import pytz
   from datetime import datetime
-  from pytz.exceptions import UnknownTimeZoneError
+  from pytz.exceptions import Error
 
 
 def TestOneInput(data):
@@ -41,8 +41,8 @@ def TestOneInput(data):
   try:
     east2 = pytz.timezone(s1)
     east2.localize(d1)
-  except UnknownTimeZoneError as e:
-    None
+  except Error as e:
+    pass
 
 
 def main():
