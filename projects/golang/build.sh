@@ -18,7 +18,7 @@ rm -r parser
 
 mkdir math && cp $SRC/math_big_fuzzer.go ./math/
 
-go get -u golang.org/x/text
+git clone https://github.com/golang/text $GOPATH/src/golang.org/x/text
 mkdir text && cp $SRC/text_fuzzer.go ./text/
 
 go mod init "github.com/dvyukov/go-fuzz-corpus"

@@ -9,6 +9,7 @@ auto_ccs:
   - "chris.liddell@artifex.com"
   - "ken.sharp@artifex.com"
   - "kdlee@chromium.org"
+  - "david@adalogics.com"
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
