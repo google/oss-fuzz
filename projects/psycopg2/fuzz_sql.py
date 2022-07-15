@@ -14,40 +14,28 @@
 # limitations under the License.
 
 import atheris
-with atheris.instrument_imports():
-    from psycopg2 import sql
-
-def is_expected_error(error_list,error_str):
-    for error in error_list:
-        if error in error_str:
-            return True
-    return False
+from psycopg2 import sql 
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        query = sql.SQL(fdp.ConsumeString(100)).format(
-            sql.SQL(fdp.ConsumeString(100)).join([
-                sql.Identifier(fdp.ConsumeString(100)), 
-                fdp.ConsumeString(100)
-            ]),sql.Identifier(fdp.ConsumeString(100))
-        )
-        comp = sql.Composed([query, sql.Identifier(fdp.ConsumeString(100))])
-        query.string()
-        comp.seq()
-    except (TypeError,ValueError) as e:
-       error_list=[
-           "Composed elements must be Composable",
-           "no format specification supported by SQL",
-           "no format conversion supported by SQL",
-           "cannot switch from automatic field numbering to manual",
-           "cannot switch from manual field numbering to automatic",
-       ]
-       if not is_expected_error(error_list,str(e)):
-           raise e
+        # Create an SQL statement and perform a set of operations on it.
+        query = sql.SQL(fdp.ConsumeString(100))
+        i1 = sql.Identifier(fdp.ConsumeString(25))
+        i2 = sql.Identifier(fdp.ConsumeString(25))
+        i3 = sql.Identifier(fdp.ConsumeString(25))
+        i4 = sql.Identifier(fdp.ConsumeString(25))
+        i5 = sql.Identifier(fdp.ConsumeString(25))
+        q1 = sql.SQL(fdp.ConsumeString(100))
+        q1.join([i1, i2])
+        query.format(q1, i3,  i4)
+        comp = sql.Composed([query, i5])
+    except (TypeError, ValueError) as e:
+       pass
 
 def main():
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
 
