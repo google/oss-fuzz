@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://github.com/psycopg/psycopg2
 language: python
 main_repo: https://github.com/psycopg/psycopg2
+primary_contact: "daniele.varrazzo@gmail.com"
 sanitizers:
 - address
 vendor_ccs:
