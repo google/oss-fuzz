@@ -27,8 +27,13 @@ def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        query = sql.SQL(fdp.ConsumeString(10)).format(sql.SQL(fdp.ConsumeString(1)).join([sql.Identifier(fdp.ConsumeString(5)), fdp.ConsumeString(5)]),sql.Identifier(fdp.ConsumeString(5)))
-        comp = sql.Composed([query, sql.Identifier(fdp.ConsumeString(5))])
+        query = sql.SQL(fdp.ConsumeString(100)).format(
+            sql.SQL(fdp.ConsumeString(100)).join([
+                sql.Identifier(fdp.ConsumeString(100)), 
+                fdp.ConsumeString(100)
+            ]),sql.Identifier(fdp.ConsumeString(100))
+        )
+        comp = sql.Composed([query, sql.Identifier(fdp.ConsumeString(100))])
         query.string()
         comp.seq()
     except (TypeError,ValueError) as e:
