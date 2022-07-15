@@ -17,7 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN apt-get install libpq-dev postgresql -y
-RUN pip3 install --upgrade pip
 
 RUN git clone https://github.com/psycopg/psycopg2
 WORKDIR psycopg2

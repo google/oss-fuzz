@@ -17,6 +17,12 @@ import atheris
 with atheris.instrument_imports():
     from psycopg2 import sql
 
+def is_expected_error(error_list,error_str):
+    for error in error_list:
+        if error in error_str:
+            return True
+    return False
+
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
@@ -25,12 +31,17 @@ def TestInput(data):
         comp = sql.Composed([query, sql.Identifier(fdp.ConsumeString(5))])
         query.string()
         comp.seq()
-    except TypeError as e:
-       if "Composed elements must be Composable" in str(e):
-          #acceptable result
-          pass
-       else:
+    except (TypeError,ValueError) as e:
+       error_list=[
+           "Composed elements must be Composable",
+           "no format specification supported by SQL",
+           "no format conversion supported by SQL",
+           "cannot switch from automatic field numbering to manual",
+           "cannot switch from manual field numbering to automatic",
+       ]
+       if not is_expected_error(error_list,str(e)):
            raise e
+
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
