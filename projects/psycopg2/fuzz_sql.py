@@ -31,8 +31,14 @@ def TestInput(data):
         q1.join([i1, i2])
         query.format(q1, i3,  i4)
         comp = sql.Composed([query, i5])
-    except (TypeError, ValueError) as e:
-       pass
+    except (
+        AttributeError,
+        TypeError,
+        ValueError,
+        KeyError,
+        IndexError
+    ) as e:
+        pass
 
 def main():
     atheris.instrument_all()
