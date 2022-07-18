@@ -5,6 +5,7 @@ auto_ccs :
 - "cbenfield@apple.com"
 - "p.antoine@catenacyber.fr"
 - "thomasvl@google.com"
+- "m.i.b@apple.com"
 
 fuzzing_engines:
 - libfuzzer

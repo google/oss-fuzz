@@ -6,6 +6,7 @@ auto_ccs:
   - "akilsrin@apple.com"
   - "bigcheesegs@gmail.com"
   - "eric@efcs.ca"
+  - "m.i.b@apple.com"
 sanitizers:
   - address
   - memory
