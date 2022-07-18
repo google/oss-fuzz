@@ -3,6 +3,12 @@ fuzzing_engines:
 homepage: https://github.com/googleapis/google-auth-library-python
 language: python
 main_repo: https://github.com/googleapis/google-auth-library-python
+primary_contact: "kittureddy@google.com"
+auto_ccs:
+- "saisunder@google.com"
+- "stim@google.com"
+- "clundin@google.com"
+- "sijunliu@google.com"
 sanitizers:
 - address
 - undefined
