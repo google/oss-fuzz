@@ -16,9 +16,15 @@
 import atheris
 import sys
 
+# We instrument all imports below
 from google.auth import jwt
 from google.auth import crypt
 
+if os.path.isfile("privatekey.pem"):
+  with open("privatekey.pem", "rb") as fh:
+    PRIVATE_KEY_BYTES = fh.read()
+else:
+  raise Exception("Could not find private key")
 
 if os.path.isfile("public_cert.pem"):
   with open("public_cert.pem", "rb") as fh:
@@ -27,22 +33,38 @@ else:
   raise Exception("Could not find public cert")
 
 @atheris.instrument_func
-def test_token_decode(data):
+def test_roundtrip_unverified(data):
   fdp = atheris.FuzzedDataProvider(data)
+  signer = crypt.RSASigner.from_string(PRIVATE_KEY_BYTES, "1")
+
+  to_header = fdp.ConsumeIntInRange(1, 100)
+  if to_header < 50:
+    header = None
+  else:
+    header = {
+      "alg" : fdp.ConsumeString(100),
+    }
+  to_keyid = fdp.ConsumeIntInRange(1, 100)
+  raw_data = fdp.ConsumeString(200)
+
+  key_id = fdp.ConsumeString(50) if to_keyid < 50 else None
+  encoded = jwt.encode(signer, raw_data, header = header, key_id = key_id)
   try:
-    jwt.decode(fdp.ConsumeString(200), certs=PUBLIC_CERT_BYTES)
-  except ValueError:  # ValueError is thrown if any failed verification checks
-    pass
+    _, decoded_data, _, _ = jwt.decode(encoded, PUBLIC_CERT_BYTES)
+  except ValueError as e:
+    return
+
 
 @atheris.instrument_func
 def TestOneInput(data):
-  test_token_decode(data)
+  test_roundtrip_unverified(data)
 
 
 def main():
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
   atheris.instrument_all()
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()
