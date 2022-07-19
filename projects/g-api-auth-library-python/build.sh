@@ -19,6 +19,7 @@
 cp tests/data/*.pem $OUT/
 cp tests/data/*.pub $OUT/
 
+pip3 install -r docs/requirements-docs.txt
 pip3 install .
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
