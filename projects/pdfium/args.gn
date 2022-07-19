@@ -1,0 +1,33 @@
+#use_goma = false  # Googlers only. Make sure goma is installed and running first.
+#is_debug = false  # Enable debugging features.
+
+# Set true to enable experimental Skia backend.
+#pdf_use_skia = false
+# Set true to enable experimental Skia backend (paths only).
+#pdf_use_skia_paths = false
+#v8_enable_verify_heap = true
+
+#pdf_enable_xfa = true  # Set false to remove XFA support (implies JS support).
+#pdf_enable_v8 = true  # Set false to remove Javascript support.
+#pdf_is_standalone = true  # Set for a non-embedded build.
+#is_component_build = true # Disable component build (Though it should work)
+#optimize_for_fuzzing = true
+
+#use_libfuzzer = true
+#pdf_enable_xfa = true
+#is_asan=true
+#dcheck_always_on = true
+#use_libfuzzer = true
+dcheck_always_on = true
+v8_enable_verify_heap = true
+#enable_mojom_fuzzer = true
+#enable_nacl = false
+#ffmpeg_branding = "ChromeOS"
+is_asan = true
+is_component_build = false
+is_debug = false
+optimize_for_fuzzing = true
+pdf_enable_xfa = true
+proprietary_codecs = true
+use_goma = false
+use_libfuzzer = true
