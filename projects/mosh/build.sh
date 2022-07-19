@@ -19,16 +19,33 @@ set -eu
 
 ./autogen.sh
 
+# Sniff $CXXFLAGS to figure out what to pass to ./configure.
+configure_flags=
+case $CXXFLAGS in
+  *-fsanitize=address*)
+    configure_flags="$configure_flags --enable-asan"
+    ;;
+esac
+case $CXXFLAGS in
+  *-fcoverage*)
+    configure_flags="$configure_flags --enable-code-coverage"
+    ;;
+esac
+
+# Use libstdc++, not libc++, since the base image's prebuild libraries require
+# libstdc++.
+export CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+
 # Clear CFLAGS and CXXFLAGS during configure tests so configure won't try to
 # link with -fsanitize=fuzz.
-CFLAGS= CXXFLAGS= ./configure --enable-fuzzing --enable-asan --enable-static-libraries
+CFLAGS= CXXFLAGS= ./configure --disable-silent-rules --enable-fuzzing --enable-static-libraries $configure_flags
 
 n=$(nproc)
-make -j$n
+make -j$n CFLAGS+="$CFLAGS" CXXFLAGS+="$CXXFLAGS"
 
 cd src/fuzz
 
-make -j$n
+make -j$n CFLAGS+="$CFLAGS" CXXFLAGS+="$CXXFLAGS"
 
 for fuzzer in *_fuzzer; do
   cp $fuzzer $OUT
