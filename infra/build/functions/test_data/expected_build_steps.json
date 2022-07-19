@@ -12,7 +12,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "build",
-      "-t",
+      "--tag",
       "gcr.io/oss-fuzz/test-project",
       "."
     ],

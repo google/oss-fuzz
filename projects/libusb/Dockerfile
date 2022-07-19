@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libudev-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool libudev-dev libumockdev-dev
 RUN git clone --depth 1 https://github.com/libusb/libusb libusb
 WORKDIR libusb
 COPY build.sh *.cc $SRC/

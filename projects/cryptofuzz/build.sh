@@ -51,13 +51,15 @@ export INCLUDE_PATH_FLAGS=""
 cd $SRC/cryptofuzz
 python gen_repository.py
 
-go get golang.org/x/crypto/blake2b
-go get golang.org/x/crypto/blake2s
-go get golang.org/x/crypto/md4
-go get golang.org/x/crypto/ripemd160
+git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
+git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+
+# wolfCrypt uses a slightly different ECDH algorithm than Trezor and libsecp256k1.
+# This disables running ECDH in Trezor and libsecp256k1 to prevent mismatches.
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_DISABLE_SPECIAL_ECDH"
 
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
@@ -190,10 +192,9 @@ export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
 cd $SRC/cryptofuzz/modules/secp256k1/
 make -B -j$(nproc)
 
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-
-    # noble-secp256k1
+#if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+#then
+# noble-secp256k1
 #    cd $SRC/noble-secp256k1/
 #    npm install && npm run build
 #    export NOBLE_SECP256K1_PATH=$(realpath lib/index.js)
@@ -202,45 +203,42 @@ then
 #    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_SECP256K1"
 #    make -B
 
-    # noble-bls12-381
-    cd $SRC/noble-bls12-381/
-    cp math.ts new_index.ts
-    $(awk '/^export/ {print "tail -n +"FNR+1" index.ts"; exit}' index.ts) >>new_index.ts
-    mv new_index.ts index.ts
-    npm install && npm run build
-    export NOBLE_BLS12_381_PATH=$(realpath index.js)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_BLS12_381"
-    cd $SRC/cryptofuzz/modules/noble-bls12-381/
-    make -B
+# noble-bls12-381
+#    cd $SRC/noble-bls12-381/
+#    cp math.ts new_index.ts
+#    $(awk '/^export/ {print "tail -n +"FNR+1" index.ts"; exit}' index.ts) >>new_index.ts
+#    mv new_index.ts index.ts
+#    npm install && npm run build
+#    export NOBLE_BLS12_381_PATH=$(realpath index.js)
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_BLS12_381"
+#    cd $SRC/cryptofuzz/modules/noble-bls12-381/
+#    make -B
 
-    # noble-ed25519
-    cd $SRC/cryptofuzz/modules/noble-ed25519/
-    export NOBLE_ED25519_PATH="$SRC/noble-ed25519/index.js"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_ED25519"
-    make -B
-fi
-
-## Compile SymCrypt
-#cd $SRC/SymCrypt/
-#if [[ $CFLAGS != *sanitize=array-bounds* ]]
-#then
-#    # Unittests don't build with clang and are not needed anyway
-#    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
-#
-#    mkdir b/
-#    cd b/
-#    cmake ../
-#    make -j$(nproc)
-#
-#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
-#    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
-#    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
-#    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
-#
-#    # Compile Cryptofuzz SymCrypt module
-#    cd $SRC/cryptofuzz/modules/symcrypt
+# noble-ed25519
+#    cd $SRC/cryptofuzz/modules/noble-ed25519/
+#    export NOBLE_ED25519_PATH="$SRC/noble-ed25519/index.js"
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NOBLE_ED25519"
 #    make -B
 #fi
+
+## Compile SymCrypt
+cd $SRC/SymCrypt/
+# Unittests don't build with clang and are not needed anyway
+sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+mkdir b/
+cd b/
+cmake ../
+make symcrypt_common symcrypt_generic -j$(nproc)
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
+export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+
+# Compile Cryptofuzz SymCrypt module
+cd $SRC/cryptofuzz/modules/symcrypt
+make -B
 
 # Compile libgmp
 cd $SRC/libgmp/
@@ -316,8 +314,6 @@ scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
 scripts/config.pl set MBEDTLS_CMAC_C
 scripts/config.pl set MBEDTLS_NIST_KW_C
 scripts/config.pl set MBEDTLS_ARIA_C
-scripts/config.pl set MBEDTLS_MD2_C
-scripts/config.pl set MBEDTLS_MD4_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
     scripts/config.pl unset MBEDTLS_HAVE_ASM
@@ -495,7 +491,7 @@ cd $SRC/wolfssl
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

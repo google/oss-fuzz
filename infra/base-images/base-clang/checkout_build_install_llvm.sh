@@ -24,6 +24,11 @@ NPROC=$(expr $(nproc) / 2)
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
+INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
+fi
+
 # Checkout
 CHECKOUT_RETRIES=10
 function clone_with_retries {
@@ -64,8 +69,10 @@ function cmake_llvm {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
+git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
+# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
+git checkout 946a41a51f44207941b3729a0733dfc1e236644e
 
 LLVM_SRC=$SRC/llvm-project
 
@@ -74,6 +81,8 @@ OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
+# DO NOT CHANGE THIS UNTIL https://github.com/google/oss-fuzz/issues/7273 is
+# RESOLVED.
 FORCE_OUR_REVISION=1
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
@@ -92,6 +101,21 @@ fi
 
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
+
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  # For fuzz introspector.
+  echo "Applying introspector changes"
+  OLD_WORKING_DIR=$PWD
+  cd $LLVM_SRC
+  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
+  cp -rf /fuzz-introspector/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
+
+  # LLVM currently does not support dynamically loading LTO passes. Thus,
+  # we hardcode it into Clang instead.
+  # Ref: https://reviews.llvm.org/D77704
+  /fuzz-introspector/sed_cmds.sh
+  cd $OLD_WORKING_DIR
+fi
 
 # Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
@@ -168,18 +192,6 @@ ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
-# DataFlowSanitizer instrumented libraries.
-mkdir -p $WORK/dfsan
-cd $WORK/dfsan
-
-cmake_libcxx $CMAKE_EXTRA_ARGS \
-    -DLLVM_USE_SANITIZER=DataFlow \
-    -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
-
-ninja -j $NPROC cxx cxxabi
-ninja install-cxx install-cxxabi
-rm -rf $WORK/dfsan
-
 # libFuzzer sources.
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
@@ -187,6 +199,9 @@ cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
+if [ -n "$INTROSPECTOR_PATCHES" ]; then
+  apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
+fi
 apt-get autoremove -y
 
 # Delete unneeded parts of LLVM to reduce image size.
@@ -200,6 +215,7 @@ mv \
   /usr/local/bin/llvm-config \
   /usr/local/bin/llvm-cov \
   /usr/local/bin/llvm-objcopy \
+  /usr/local/bin/llvm-nm \
   /usr/local/bin/llvm-profdata \
   /usr/local/bin/llvm-ranlib \
   /usr/local/bin/llvm-symbolizer \

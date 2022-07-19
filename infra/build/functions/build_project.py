@@ -31,7 +31,6 @@ import posixpath
 import re
 import sys
 
-from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
 import six
 import yaml
@@ -55,10 +54,8 @@ PROJECTS_DIR = os.path.abspath(
     os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
                  os.path.pardir, 'projects'))
 
-DEFAULT_GCB_OPTIONS = {'machineType': 'N1_HIGHCPU_32'}
-
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel'])
+    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -82,9 +79,9 @@ class Build:  # pylint: disable=too-few-public-methods
 
 
 def get_project_data(project_name):
-  """Returns a tuple containing the contents of the project.yaml and Dockerfile
-  of |project_name|. Raises a FileNotFoundError if there is no Dockerfile for
-  |project_name|."""
+  """(Local only) Returns a tuple containing the contents of the project.yaml
+  and Dockerfile of |project_name|. Raises a FileNotFoundError if there is no
+  Dockerfile for |project_name|."""
   project_dir = os.path.join(PROJECTS_DIR, project_name)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   try:
@@ -96,18 +93,33 @@ def get_project_data(project_name):
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
     project_yaml_contents = project_yaml_file_handle.read()
-  return project_yaml_contents, dockerfile
+  project_yaml = yaml.safe_load(project_yaml_contents)
+  return project_yaml, dockerfile
+
+
+def get_sanitizer_strings(sanitizers):
+  """Accepts the sanitizers field from project.yaml where some sanitizers can be
+  defined as experimental. Returns a list of sanitizers."""
+  processed_sanitizers = []
+  for sanitizer in sanitizers:
+    if isinstance(sanitizer, six.string_types):
+      processed_sanitizers.append(sanitizer)
+    elif isinstance(sanitizer, dict):
+      processed_sanitizers.extend(sanitizer.keys())
+
+  return processed_sanitizers
 
 
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
-  def __init__(self, name, project_yaml_contents, dockerfile, image_project):
-    project_yaml = yaml.safe_load(project_yaml_contents)
+  def __init__(self, name, project_yaml, dockerfile, image_project):
+    project_yaml = project_yaml.copy()
+    set_yaml_defaults(project_yaml)
+
     self.name = name
     self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
-    set_yaml_defaults(project_yaml)
     self._sanitizers = project_yaml['sanitizers']
     self.disabled = project_yaml['disabled']
     self.architectures = project_yaml['architectures']
@@ -116,20 +128,16 @@ class Project:  # pylint: disable=too-many-instance-attributes
     self.labels = project_yaml['labels']
     self.fuzzing_language = project_yaml['language']
     self.run_tests = project_yaml['run_tests']
+    if 'main_repo' in project_yaml:
+      self.main_repo = project_yaml['main_repo']
+    else:
+      self.main_repo = ''
 
   @property
   def sanitizers(self):
     """Returns processed sanitizers."""
     assert isinstance(self._sanitizers, list)
-    processed_sanitizers = []
-    for sanitizer in self._sanitizers:
-      if isinstance(sanitizer, six.string_types):
-        processed_sanitizers.append(sanitizer)
-      elif isinstance(sanitizer, dict):
-        for key in sanitizer.keys():
-          processed_sanitizers.append(key)
-
-    return processed_sanitizers
+    return get_sanitizer_strings(self._sanitizers)
 
   @property
   def image(self):
@@ -244,12 +252,11 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml_contents, dockerfile, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile, image_project, base_images_project,
+    config):
   """Returns build steps for project."""
 
-  project = Project(project_name, project_yaml_contents, dockerfile,
-                    image_project)
+  project = Project(project_name, project_yaml, dockerfile, image_project)
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
@@ -267,8 +274,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
-    for sanitizer in project.sanitizers:
-      for architecture in project.architectures:
+    # Sort sanitizers and architectures so order is determinisitic (good for
+    # tests).
+    for sanitizer in sorted(project.sanitizers):
+      # Build x86_64 before i386.
+      for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)
         if not is_supported_configuration(build):
           continue
@@ -321,16 +331,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               ],
           })
 
-        if build.sanitizer == 'dataflow' and build.fuzzing_engine == 'dataflow':
-          dataflow_steps = dataflow_post_build_steps(project.name, env,
-                                                     base_images_project,
-                                                     config.testing,
-                                                     config.test_image_suffix)
-          if dataflow_steps:
-            build_steps.extend(dataflow_steps)
-          else:
-            sys.stderr.write('Skipping dataflow post build steps.\n')
-
         build_steps.extend([
             # Generate targets list.
             {
@@ -345,9 +345,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                 ],
             }
         ])
-        upload_steps = get_upload_steps(project, build, timestamp,
-                                        base_images_project, config.testing)
-        build_steps.extend(upload_steps)
+        if config.upload:
+          upload_steps = get_upload_steps(project, build, timestamp,
+                                          base_images_project, config.testing)
+          build_steps.extend(upload_steps)
 
   return build_steps
 
@@ -447,86 +448,32 @@ def get_runner_image_name(base_images_project, test_image_suffix):
   return image
 
 
-def dataflow_post_build_steps(project_name, env, base_images_project, testing,
-                              test_image_suffix):
-  """Appends dataflow post build steps."""
-  steps = build_lib.download_corpora_steps(project_name, testing)
-  if not steps:
-    return None
-
-  steps.append({
-      'name':
-          get_runner_image_name(base_images_project, test_image_suffix),
-      'env':
-          env + [
-              'COLLECT_DFT_TIMEOUT=2h',
-              'DFT_FILE_SIZE_LIMIT=65535',
-              'DFT_MIN_TIMEOUT=2.0',
-              'DFT_TIMEOUT_RANGE=6.0',
-          ],
-      'args': [
-          'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
-           'collect_dft || (echo "DFT collection failed." && false)')
-      ],
-      'volumes': [{
-          'name': 'corpus',
-          'path': '/corpus'
-      }],
-  })
-  return steps
-
-
-def get_logs_url(build_id, cloud_project='oss-fuzz'):
-  """Returns url where logs are displayed for the build."""
-  return ('https://console.cloud.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={cloud_project}')
-
-
-def get_gcb_url(build_id, cloud_project='oss-fuzz'):
-  """Returns url where logs are displayed for the build."""
-  return (f'https://console.cloud.google.com/cloud-build/builds/{build_id}'
-          f'?project={cloud_project}')
-
-
-# pylint: disable=no-member
+# pylint: disable=no-member,too-many-arguments
 def run_build(oss_fuzz_project,
               build_steps,
               credentials,
               build_type,
-              cloud_project='oss-fuzz'):
+              cloud_project='oss-fuzz',
+              extra_tags=None):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
   in GCB so the build can be queried for debugging purposes."""
-  options = {}
-  if 'GCB_OPTIONS' in os.environ:
-    options = yaml.safe_load(os.environ['GCB_OPTIONS'])
-  else:
-    options = DEFAULT_GCB_OPTIONS
-
+  if extra_tags is None:
+    extra_tags = []
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
-  build_body = {
-      'steps': build_steps,
-      'timeout': str(build_lib.BUILD_TIMEOUT) + 's',
-      'options': options,
+  tags.extend(extra_tags)
+  timeout = build_lib.BUILD_TIMEOUT
+  body_overrides = {
       'logsBucket': GCB_LOGS_BUCKET,
-      'tags': tags,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-
-  cloudbuild = cloud_build('cloudbuild',
-                           'v1',
-                           credentials=credentials,
-                           cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
-
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
-  return build_id
+  return build_lib.run_build(build_steps,
+                             credentials,
+                             cloud_project,
+                             timeout,
+                             body_overrides=body_overrides,
+                             tags=tags)
 
 
 def get_args(description):
@@ -568,19 +515,21 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing, args.test_image_suffix, args.branch,
-                  args.parallel)
+  config = Config(args.testing,
+                  args.test_image_suffix,
+                  args.branch,
+                  args.parallel,
+                  upload=True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
-      project_yaml_contents, dockerfile_contents = get_project_data(
-          project_name)
+      project_yaml, dockerfile_contents = get_project_data(project_name)
     except FileNotFoundError:
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       error = True
       continue
 
-    steps = get_build_steps_func(project_name, project_yaml_contents,
+    steps = get_build_steps_func(project_name, project_yaml,
                                  dockerfile_contents, image_project,
                                  base_images_project, config)
     if not steps:

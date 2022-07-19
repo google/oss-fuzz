@@ -30,7 +30,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -j $SRC/XmlFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
     rm -rf go-fuzz-corpus
 
-ENV JACKSON_BRANCH=2.13
+ENV JACKSON_BRANCH=2.14
 
 RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-dataformat-xml
 

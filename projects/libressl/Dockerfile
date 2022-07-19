@@ -24,3 +24,6 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_
 WORKDIR libressl
 RUN ./update.sh
 COPY build.sh *.options $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

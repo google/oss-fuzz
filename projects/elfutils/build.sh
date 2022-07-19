@@ -72,6 +72,11 @@ if [[ "$SANITIZER" == undefined ]]; then
     sed -i 's/\(check_undefined_val\)=[0-9]/\1=1/' configure.ac
 fi
 
+if [[ "$SANITIZER" == memory ]]; then
+    CFLAGS+=" -U_FORTIFY_SOURCE"
+    CXXFLAGS+=" -U_FORTIFY_SOURCE"
+fi
+
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --without-bzlib --without-lzma --without-zstd \
@@ -82,12 +87,57 @@ fi
 
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 
+# External dependencies used by the fuzz targets have to be built
+# with MSan explicitly to avoid bogus "security" bug reports like
+# https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45630,
+# https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45631 and
+# https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=45633
+# To make sure all the fuzz targets use the same version of zlib
+# it's also built with ASan and UBSan.
+git clone https://github.com/madler/zlib
+pushd zlib
+git checkout v1.2.12
+if ! ./configure --static; then
+    cat configure.log
+    exit 1
+fi
+make -j$(nproc) V=1
+popd
+zlib=zlib/libz.a
 
+# When new fuzz targets are added it usually makes sense to notify the maintainers of
+# the elfutils project using the mailing list: elfutils-devel@sourceware.org. There
+# fuzz targets can be reviewed properly (to make sure they don't fail to compile
+# with -Werror for example), their names can be chosen accordingly (so as not to spam
+# the mailing list with bogus bug reports that are opened and closed once they are renamed)
+# and so on. Also since a lot of bug reports coming out of the blue aren't exactly helpful
+# fuzz targets should probably be added one at a time to make it easier to keep track
+# of them.
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
 	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
-	./libdw/libdw.a ./libelf/libelf.a -l:libz.a \
+	./libdw/libdw.a ./libelf/libelf.a "$zlib" \
 	-o "$OUT/fuzz-dwfl-core"
+
+$CC $CFLAGS \
+  -D_GNU_SOURCE -DHAVE_CONFIG_H \
+  -I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+  -c "$SRC/fuzz-libelf.c" -o fuzz-libelf.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libelf.o \
+	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
+  ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
+	-o "$OUT/fuzz-libelf"
+
+$CC $CFLAGS \
+  -D_GNU_SOURCE -DHAVE_CONFIG_H \
+  -I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+  -c "$SRC/fuzz-libdwfl.c" -o fuzz-libdwfl.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdwfl.o \
+	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
+  ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
+	-o "$OUT/fuzz-libdwfl"
+
+# Corpus
 cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"

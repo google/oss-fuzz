@@ -29,6 +29,14 @@ auto_ccs:
     - "kaleb.himes@gmail.com"
     - "polubelovam@gmail.com"
     - "mbed-tls-security@lists.trustedfirmware.org"
+    - "choller@mozilla.com"
+    - "djackson@mozilla.com"
+    - "dkeeler@mozilla.com"
+    - "jkratzer@mozilla.com"
+    - "jschanck@mozilla.com"
+    - "jschwartzentruber@mozilla.com"
+    - "nkulatova@mozilla.com"
+    - "twsmith@mozilla.com"
 sanitizers:
  - address
  - undefined

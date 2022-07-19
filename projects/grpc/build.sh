@@ -18,10 +18,6 @@
 set -o errexit
 set -o nounset
 
-readonly FUZZER_DICTIONARIES=(
-  test/core/end2end/fuzzers/hpack.dictionary
-)
-
 readonly FUZZER_TARGETS=(
   test/core/json:json_fuzzer
   test/core/uri:uri_fuzzer_test
@@ -33,8 +29,6 @@ readonly FUZZER_TARGETS=(
   test/core/slice:percent_encode_fuzzer
   test/core/transport/chttp2:hpack_parser_fuzzer
   test/core/end2end/fuzzers:client_fuzzer
-  test/core/end2end/fuzzers:server_fuzzer
-  test/core/security:ssl_server_fuzzer
   test/core/security:alts_credentials_fuzzer
 )
 
@@ -67,8 +61,6 @@ fi
 
 tools/bazel build \
   --dynamic_mode=off \
-  --spawn_strategy=standalone \
-  --genrule_strategy=standalone \
   ${NO_VPTR} \
   --strip=never \
   --linkopt=-lc++ \
@@ -77,7 +69,7 @@ tools/bazel build \
   --linkopt=${LIB_FUZZING_ENGINE} \
   ${EXTRA_BAZEL_FLAGS} \
   ${FUZZER_TARGETS[@]} \
-  --verbose_failures
+  --verbose_failures -s
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -118,13 +110,6 @@ for target in "${FUZZER_TARGETS[@]}"; do
   echo "Copying fuzzer $fuzzer_name"
   cp "bazel-bin/$fuzzer_name" "$OUT/"
 done
-
-# Copy dictionaries and options files to $OUT/
-for dict in "${FUZZER_DICTIONARIES[@]}"; do
-  cp "${dict}" "${OUT}/"
-done
-
-cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
 
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses

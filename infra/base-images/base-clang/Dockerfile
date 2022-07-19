@@ -18,6 +18,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-image
 
+ARG introspector
+ENV INTROSPECTOR_PATCHES=$introspector
+ENV FUZZINTRO_OUTDIR=$SRC
+ENV FUZZ_INTROSPECTOR=$introspector
+
 # Install newer cmake.
 ENV CMAKE_VERSION 3.21.1
 RUN apt-get update && apt-get install -y wget sudo && \
@@ -27,6 +32,12 @@ RUN apt-get update && apt-get install -y wget sudo && \
     rm cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
     SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
+
+RUN apt-get update && apt-get install -y git && \
+    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
+    cd fuzz-introspector && \
+    git checkout 051932aa13b07f34e6c4844b084d3d928ae62138 && \
+    apt-get remove --purge -y git
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate

@@ -27,13 +27,14 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
-export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
+export CXXFLAGS="$CXXFLAGS -D_FORTIFY_SOURCE=0 -D_GLIBCXX_DEBUG"
 
 # Build libogg
 mkdir $SRC/libogg-install
 cd $SRC/ogg
 ./autogen.sh
-./configure --prefix="$SRC/libogg-install"
+./configure --disable-crc --disable-shared --prefix="$SRC/libogg-install"
 make -j$(nproc)
 make install
 
@@ -42,19 +43,28 @@ cd $SRC/flac/
 ./autogen.sh
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse --enable-oss-fuzzers
 else
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-oggtest --disable-examples --disable-xmms-plugin
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --enable-oss-fuzzers
 fi
 make -j$(nproc)
 
-cd $SRC/fuzzing-headers
-./install.sh
+# Copy encoder fuzzers
+cd $SRC/flac/oss-fuzz
+cp fuzzer_encoder fuzzer_encoder_v2 $OUT
 
-# Build fuzzers
-cd $SRC/flac-fuzzers/
+# Build libflac again for decoder fuzzers, but now with additional define
+cd $SRC/flac/
+echo "#define FUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW" >> config.h
+
+make -j$(nproc)
+
+# Copy decoder fuzzers
+cd $SRC/flac/oss-fuzz
+cp fuzzer_decoder fuzzer_seek fuzzer_metadata $OUT
+cp fuzzer_*.dict $OUT
+cd $SRC
+
+# Build fuzzer_exo
 $CXX $CXXFLAGS -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
     $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_exo
-$CXX $CXXFLAGS -I $SRC/flac/include/ fuzzer_decoder.cpp $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_decoder
-$CXX $CXXFLAGS -I $SRC/flac/include/ fuzzer_encoder.cpp $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_encoder
-cp fuzzer_encoder.dict $OUT/

@@ -1,0 +1,12 @@
+homepage: "https://github.com/cloudflare/circl"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+main_repo: "https://github.com/cloudflare/circl.git"
+auto_ccs:
+  - "armfazh@cloudflare.com"
+  - "chriswood@cloudflare.com"
+  - "bas@cloudflare.com"
+sanitizers:
+ - address
+architectures:
+ - x86_64

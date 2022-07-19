@@ -37,9 +37,13 @@ inputs:
       Document locking this down.
     required: false
   report-unreproducible-crashes:
-    description: 'If True, then unreproducible crashes will be reported by CIFuzz.'
+    description: 'If True, then unreproducible crashes will be reported.'
     required: false
-    default: false
+    default: False
+  minimize-crashes:
+    description: 'If True, reportable crashes will be minimized.'
+    required: false
+    default: False
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -53,5 +57,6 @@ runs:
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     REPORT_UNREPRODUCIBLE_CRASHES: ${{ inputs.report-unreproducible-crashes }}
+    MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'

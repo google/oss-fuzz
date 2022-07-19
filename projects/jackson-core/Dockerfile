@@ -24,7 +24,7 @@ RUN cat fuzzing/dictionaries/json.dict > $SRC/JsonFuzzer.dict
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -j $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
-ENV JACKSON_BRANCH=2.13
+ENV JACKSON_BRANCH=2.14
 
 RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-core
 RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-databind

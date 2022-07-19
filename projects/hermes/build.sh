@@ -30,19 +30,17 @@ ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
 
-cd $SRC/hermes
-
 if [ "${SANITIZER}" = address ]
 then
-    CONFIGURE_FLAGS="--enable-asan"
+    CONFIGURE_FLAGS="-DHERMES_ENABLE_ADDRESS_SANITIZER=ON"
 elif [ "${SANITIZER}" = undefined ]
 then
-    CONFIGURE_FLAGS="--enable-ubsan"
+    CONFIGURE_FLAGS="-DHERMES_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER=ON"
 else
     CONFIGURE_FLAGS=""
 fi
 
-./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
-                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON"
-cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
+cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DHERMES_USE_STATIC_ICU=ON \
+                 -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON
+cmake --build "$OUT/build" --target fuzzer-jsi-entry -j 4
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"

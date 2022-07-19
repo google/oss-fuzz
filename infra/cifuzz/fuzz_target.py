@@ -38,6 +38,7 @@ LIBFUZZER_OPTIONS_NO_REPORT_OOM = ['-rss_limit_mb=0']
 REPRODUCE_ATTEMPTS = 10
 
 REPRODUCE_TIME_SECONDS = 30
+MINIMIZE_TIME_SECONDS = 60 * 4
 
 # Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
@@ -122,7 +123,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     target_reproducer_path = os.path.join(self._target_artifact_path(),
                                           os.path.basename(crash.input_path))
     shutil.copy(crash.input_path, target_reproducer_path)
-
     bug_summary_artifact_path = target_reproducer_path + '.summary'
     with open(bug_summary_artifact_path, 'w') as handle:
       handle.write(crash.stacktrace)
@@ -194,11 +194,29 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       if is_reportable or self.config.upload_all_crashes:
         fuzzer_logs = result.logs
         testcase_path = self._save_crash(crash)
+        if is_reportable and self.config.minimize_crashes:
+          # TODO(metzman): We don't want to minimize unreproducible crashes.
+          # Use is_reportable to decide this even though reportable crashes
+          # are a subset of reproducible ones.
+          self.minimize_testcase(testcase_path)
       else:
         fuzzer_logs = None
         testcase_path = None
 
     return FuzzResult(testcase_path, fuzzer_logs, self.latest_corpus_path)
+
+  def minimize_testcase(self, testcase_path):
+    """Minimizes the testcase located at |testcase_path|."""
+    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
+                                             self.config.sanitizer,
+                                             self.target_path,
+                                             interactive=False):
+      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+      minimized_testcase_path = testcase_path + '-minimized'
+      return engine_impl.minimize_testcase(self.target_path, [],
+                                           testcase_path,
+                                           minimized_testcase_path,
+                                           max_time=MINIMIZE_TIME_SECONDS)
 
   def free_disk_if_needed(self, delete_fuzz_target=True):
     """Deletes things that are no longer needed from fuzzing this fuzz target to

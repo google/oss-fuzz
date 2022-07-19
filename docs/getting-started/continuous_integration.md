@@ -11,7 +11,9 @@ permalink: /getting-started/continuous-integration/
 OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
 on pull requests. This works similarly to running unit tests in CI. CIFuzz helps
 you find and fix bugs before they make it into your codebase.
-Currently, CIFuzz only supports projects hosted on GitHub.
+Currently, CIFuzz primarily supports projects hosted on GitHub.
+Non-OSS-Fuzz users can use CIFuzz with additional features through
+[ClusterFuzzLite](https://google.github.io/clusterfuzzlite/).
 
 ## How it works
 

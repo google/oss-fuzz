@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make
+RUN apt-get update && apt-get install -y make libgmp-dev libmpfr-dev
 RUN git clone --depth 1 https://github.com/libigl/libigl
 WORKDIR $SRC/libigl
 COPY igl_fuzzer.cpp \

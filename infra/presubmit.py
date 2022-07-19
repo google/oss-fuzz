@@ -100,11 +100,10 @@ class ProjectYamlChecker:
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
+      'file_github_issue',
   ]
 
-  # Note that some projects like boost only have auto-ccs. However, forgetting
-  # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
+  REQUIRED_SECTIONS = ['main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -124,7 +123,6 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
-        self.check_dataflow,
     ]
     for check_function in checks:
       check_function()
@@ -139,25 +137,6 @@ class ProjectYamlChecker:
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
-
-  def check_dataflow(self):
-    """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
-    specified in "sanitizers", and that if specified in "sanitizers", it is also
-    specified in "fuzzing_engines". Returns True if this condition is met."""
-    engines = self.data.get('fuzzing_engines', [])
-    dfsan_engines = 'dataflow' in engines
-    sanitizers = self.data.get('sanitizers', [])
-    dfsan_sanitizers = 'dataflow' in sanitizers
-
-    if dfsan_engines and not dfsan_sanitizers:
-      self.error('"dataflow" only specified in "fuzzing_engines" must also be '
-                 'specified in "sanitizers" or in neither.')
-      return
-
-    if dfsan_sanitizers and not dfsan_engines:
-      self.error('"dataflow" only specified in "sanitizers" must also be '
-                 'specified in "fuzzing_engines" or in neither.')
-      return
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
@@ -226,6 +205,10 @@ class ProjectYamlChecker:
 
 def _check_one_project_yaml(project_yaml_filename):
   """Does checks on the project.yaml file. Returns True on success."""
+  if _is_project_file(project_yaml_filename, 'project.yml'):
+    print(project_yaml_filename, 'must be named project.yaml.')
+    return False
+
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 

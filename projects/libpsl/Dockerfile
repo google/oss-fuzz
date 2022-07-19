@@ -42,4 +42,4 @@ RUN wget https://github.com/unicode-org/icu/releases/download/release-59-2/icu4c
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 
 WORKDIR libpsl
-COPY build.sh config.site $SRC/
+COPY build.sh config.site md5sum $SRC/

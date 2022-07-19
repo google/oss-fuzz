@@ -19,7 +19,9 @@
 mkdir build && cd build
 cmake ../prj/cmake \
 	-DCMAKE_BUILD_TYPE="Release"
-make -j$(nproc)
+
+# Force simd to only use a single core, as otherwise memory will be exhausted
+make -j1
 
 $CXX $CXXFLAGS -I/src/Simd/src -O3 -DNDEBUG -fPIC \
         -c $SRC/simd_load_fuzzer.cpp -o simd_load_fuzzer.o \

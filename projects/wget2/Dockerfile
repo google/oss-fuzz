@@ -35,7 +35,9 @@ RUN apt-get update && apt-get install -y \
  python \
  lzip \
  rsync \
- libmicrohttpd-dev
+ libmicrohttpd-dev \
+ gtk-doc-tools \
+ libtasn1-bin
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git

@@ -5,6 +5,7 @@ auto_ccs :
   - "etcd-maintainers@googlegroups.com"
   - "adam@adalogics.com"
   - "david@adalogics.com"
+  - "sahdev.zala1@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer

@@ -15,19 +15,26 @@
 #
 ################################################################################
 
-export LDSHARED=lld
-export LDFLAGS="$CFLAGS -stdlib=libc++"
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link against 32-bit libraries
 
-./configure
-
-sed -i 's/$(CC) $(LDFLAGS)/$(CXX) $(LDFLAGS)/g' Makefile
-
-make -j$(nproc) clean
-make -j$(nproc) all
-make -j$(nproc) check
-
+# Package seed corpus
 zip $OUT/seed_corpus.zip *.*
-for f in $(find . -name '*_fuzzer' -o -name 'fuzzer_*'); do
+
+# Build project
+mkdir build && cd build
+cmake .. -DCMAKE_C_FLAGS="${CFLAGS}" \
+         -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+         -DCMAKE_LINKER="${LD}" \
+         -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
+         -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+         -DBUILD_SHARED_LIBS=OFF \
+         -DWITH_FUZZERS=ON
+make clean
+make -j $(nproc)
+
+# Copy seed corpus for each fuzzer target
+for f in $(find . -type f -name 'fuzzer_*'); do
     cp -v $f $OUT
     (cd $OUT; ln -s seed_corpus.zip $(basename $f)_seed_corpus.zip)
 done

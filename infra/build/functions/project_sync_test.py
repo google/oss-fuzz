@@ -78,6 +78,14 @@ class CloudSchedulerClient:
     del parent
     self.schedulers.append(job)
 
+  def get_job(self, name):
+    """Simulate get_job."""
+    for scheduler in self.schedulers:
+      if scheduler['name'] == name:
+        return scheduler
+
+    return None
+
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
     """Return job path."""
@@ -93,7 +101,7 @@ class CloudSchedulerClient:
   def update_job(self, job, update_mask):
     """Simulate update jobs."""
     for existing_job in self.schedulers:
-      if existing_job == job:
+      if existing_job == job and 'schedule' in update_mask:
         job['schedule'] = update_mask['schedule']
 
 
@@ -161,6 +169,37 @@ class TestDataSync(unittest.TestCase):
       self.assertCountEqual([
           {
               'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test1-scheduler-fuzzing',
+              'pubsub_target': {
+                  'topic_name': 'projects/test-project/topics/request-build',
+                  'data': b'test1'
+              },
+              'schedule': '0 8 * * *'
+          },
+          {
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test1-scheduler-coverage',
+              'pubsub_target': {
+                  'topic_name':
+                      'projects/test-project/topics/request-coverage-build',
+                  'data':
+                      b'test1'
+              },
+              'schedule': '0 6 * * *'
+          },
+          {
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test1-scheduler-introspector',
+              'pubsub_target': {
+                  'topic_name':
+                      'projects/test-project/topics/request-introspector-build',
+                  'data':
+                      b'test1'
+              },
+              'schedule': '0 10 * * *'
+          },
+          {
+              'name': 'projects/test-project/location/us-central1/jobs/'
                       'test2-scheduler-fuzzing',
               'pubsub_target': {
                   'topic_name': 'projects/test-project/topics/request-build',
@@ -178,6 +217,17 @@ class TestDataSync(unittest.TestCase):
                       b'test2'
               },
               'schedule': '0 6 * * *'
+          },
+          {
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test2-scheduler-introspector',
+              'pubsub_target': {
+                  'topic_name':
+                      'projects/test-project/topics/request-introspector-build',
+                  'data':
+                      b'test2'
+              },
+              'schedule': '0 10 * * *'
           },
       ], cloud_scheduler_client.schedulers)
 

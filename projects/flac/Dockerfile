@@ -19,7 +19,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-
 RUN git clone --depth 1 https://github.com/xiph/flac.git
 RUN git clone --depth 1 https://github.com/xiph/ogg.git
 RUN git clone --depth 1 https://github.com/google/ExoPlayer.git
-RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
-RUN git clone --depth 1 https://github.com/guidovranken/flac-fuzzers.git
-COPY fuzzer_exo.cpp $SRC/flac-fuzzers
+COPY fuzzer_exo.cpp $SRC/
 COPY build.sh $SRC/

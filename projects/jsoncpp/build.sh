@@ -34,7 +34,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
 rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
 
 # Compile LPM fuzzer.
-$CXX $CXXFLAGS -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS -DNDEBUG -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
     $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
     ../LPM/src/libprotobuf-mutator.a \

@@ -23,7 +23,7 @@
 
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
-./configure
+./configure --disable-featured
 make -j$(nproc)
 cp ${SRC}/adhd/cras/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN apt-get update && apt-get install -y mesa-opencl-icd ocl-icd-opencl-dev gcc \
     git bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev
 RUN git clone --depth 1 https://github.com/filecoin-project/lotus

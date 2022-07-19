@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN git clone https://github.com/google/gvisor
 COPY build.sh state_fuzzer.go $SRC/
 ENV GVISOR_ROOT $SRC/gvisor

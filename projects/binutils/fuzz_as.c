@@ -44,6 +44,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   read_begin ();
   input_scrub_begin ();
   expr_begin ();
+  macro_init (flag_macro_alternate, flag_mri, 0, macro_expr);
+
   output_file_create (out_file_name);
   itbl_init ();
   dwarf2_init ();

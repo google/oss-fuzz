@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+# Temporarily disable randomization and enforce a safe and sane setup
+export AFL_SKIP_OSSFUZZ=1
+export AFL_LLVM_INSTRUMENT=CLASSIC
+
+# In emergencies where afl++'s own compiler fails set this to "1":
+export AFL_LLVM_MODE_WORKAROUND=0
+
 # AFL++ setup
 echo "Copying precompiled AFL++"
 
@@ -34,6 +41,8 @@ export CXX="$SRC/aflplusplus/afl-clang-fast++"
 export AFL_QUIET=1
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
+# Do not abort on any problems (because this is during build where it is ok)
+export AFL_IGNORE_PROBLEMS=1
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
 
@@ -44,7 +53,6 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
 
   # The variables need to be set to "1" here - or before running this script.
   # AFL++ configuration options.
-  export AFL_LLVM_MODE_WORKAROUND=0
   export AFL_ENABLE_DICTIONARY=0
   export AFL_ENABLE_CMPLOG=1
   export AFL_LAF_CHANCE=5
@@ -59,7 +67,7 @@ env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
     export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
     export AFL_ENABLE_CMPLOG=0
     # we increase the chance for LAF because we do not do CMPLOG with CTX
-    export AFL_LAF_CHANCE=30
+    export AFL_LAF_CHANCE=20
   }
 
   # 40% chance to create a dictionary.
