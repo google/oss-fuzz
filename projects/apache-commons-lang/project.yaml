@@ -6,8 +6,8 @@ main_repo: https://github.com/apache/commons-lang.git
 sanitizers:
 - address
 vendor_ccs:
-- patrice.salathe@code-intelligence.com
 - wagner@code-intelligence.com
 - yakdan@code-intelligence.com
 - glendowne@code-intelligence.com
 - patrice.salathe@code-intelligence.com
+- hlin@code-intelligence.com
