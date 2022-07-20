@@ -16,4 +16,4 @@
 ################################################################################
 
 bazel build BouncyCastleAllTests
-cp -r bazel-bin/* $OUT
+rsync -aLkR bazel-bin/* $OUT
