@@ -396,7 +396,7 @@ def get_logs_url(build_id, project_id='oss-fuzz-base'):
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
   """Returns url where logs are displayed for the build."""
-  return (f'https://console.cloud.google.com/cloud-build/builds/{build_id}'
+  return (f'https://console.cloud.google.com/cloud-build/builds;region=us-central1/{build_id}'
           f'?project={cloud_project}')
 
 
