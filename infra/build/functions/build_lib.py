@@ -68,6 +68,10 @@ ENGINE_INFO = {
         EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
                    supported_sanitizers=['address'],
                    supported_architectures=['x86_64']),
+    'wycheproof':
+        EngineInfo(upload_bucket='clusterfuzz-builds-wycheproof',
+                   supported_sanitizers=['none'],
+                   supported_architectures=['x86_64']),
 }
 
 OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
@@ -396,8 +400,9 @@ def get_logs_url(build_id, project_id='oss-fuzz-base'):
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
   """Returns url where logs are displayed for the build."""
-  return (f'https://console.cloud.google.com/cloud-build/builds;region=us-central1/{build_id}'
-          f'?project={cloud_project}')
+  return (
+      'https://console.cloud.google.com/cloud-build/builds;region=us-central1/'
+      f'{build_id}?project={cloud_project}')
 
 
 def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
