@@ -18,5 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN git clone https://github.com/google/wycheproof --depth 1
 WORKDIR wycheproof
-RUN bazel build BouncyCastleAllTests
 COPY build.sh $SRC/
