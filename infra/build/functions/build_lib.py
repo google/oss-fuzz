@@ -405,7 +405,6 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-
 def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
