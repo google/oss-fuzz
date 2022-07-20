@@ -15,4 +15,5 @@
 #
 ################################################################################
 
-mv bazel-bin/* $OUT
+bazel build BouncyCastleAllTests
+cp -r bazel-bin/* $OUT
