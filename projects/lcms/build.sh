@@ -16,7 +16,7 @@
 ################################################################################
 
 # build the target.
-./configure
+./configure --enable-shared=no
 make -j$(nproc) all
 
 # build your fuzzer(s)
