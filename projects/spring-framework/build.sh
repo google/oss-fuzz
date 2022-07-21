@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-cp -r "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
+export JAVA_HOME="$OUT/open-jdk-17"
+mkdir -p $JAVA_HOME
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 cat > patch.diff <<- EOM
 diff --git a/spring-core/spring-core.gradle b/spring-core/spring-core.gradle
@@ -37,7 +39,7 @@ git apply patch.diff
 CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
 ./gradlew build -x test -i -x javadoc
-./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc
+./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
 cp "spring-core/build/libs/spring-core-$CURRENT_VERSION-all.jar" "$OUT/spring-core.jar"
 cp "spring-web/build/libs/spring-web-$CURRENT_VERSION.jar" "$OUT/spring-web.jar"
 
@@ -60,7 +62,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \

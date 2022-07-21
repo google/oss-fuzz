@@ -15,8 +15,9 @@
 #
 ################################################################################
 
+export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
-cp -rL "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 cat > patch.diff <<- EOM
 diff --git a/ldap/spring-security-ldap.gradle b/ldap/spring-security-ldap.gradle
@@ -49,8 +50,8 @@ git apply patch.diff
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
-./gradlew build -x test -i -x javadoc -x :spring-security-docs:api -x :spring-security-itest-ldap-embedded-none:integrationTest
-./gradlew shadowJar --build-file ldap/spring-security-ldap.gradle -x javadoc -x :spring-security-itest-ldap-embedded-none:integrationTest
+./gradlew build -PbuildSrc.skipTests -x test -i -x javadoc -x :spring-security-docs:api -x :spring-security-itest-ldap-embedded-none:integrationTest -x :spring-security-config:integrationTest
+./gradlew shadowJar --build-file ldap/spring-security-ldap.gradle -PbuildSrc.skipTests -x test -x javadoc -x :spring-security-itest-ldap-embedded-none:integrationTest
 cp "core/build/libs/spring-security-core-$CURRENT_VERSION.jar" "$OUT/spring-security-core.jar"
 cp "ldap/build/libs/spring-security-ldap-$CURRENT_VERSION-all.jar" "$OUT/spring-security-ldap.jar"
 cp "build/libs/spring-security-$CURRENT_VERSION.jar" "$OUT/spring-security.jar"
@@ -76,7 +77,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=com.unboundid.ldap.**:org.springframework.ldap.** \
 --cp=$RUNTIME_CLASSPATH \

@@ -1,0 +1,10 @@
+homepage: "https://github.com/dtolnay/itoa"
+primary_contact: "dtolnay@gmail.com"
+main_repo: "https://github.com/dtolnay/itoa"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "adetaylor@chromium.org"

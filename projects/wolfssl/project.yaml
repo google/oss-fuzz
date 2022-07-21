@@ -16,12 +16,10 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386

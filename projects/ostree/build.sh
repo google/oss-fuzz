@@ -55,7 +55,8 @@ FUZZ_LIBS="./.libs/libbsdiff.a \
            -lm \
            -l:libz.a \
            -l:libselinux.a \
-           -pthread"
+           -pthread \
+           -l:libpcre2-8.a"
 
 FUZZ_INCLUDES="-I./src/libotutil \
                -I./src/libostree \

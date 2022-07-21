@@ -1,6 +1,8 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
 language: c++
 primary_contact: "glennrp@gmail.com"
+auto_ccs:
+  - "barbaro.alberto@gmail.com"
 vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"
