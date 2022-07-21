@@ -126,10 +126,7 @@ RUN cd $SRC && \
 RUN cd $SRC && \
     git clone \
       --depth 1 \
-      --branch main \
-      --single-branch \
-      'https://github.com/google/centipede.git' \
-      'centipede' && \
+      https://github.com/google/centipede.git && \
     cd centipede && \
     echo 'build --client_env=CC=clang --cxxopt=-std=c++17 ' \
       '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc

@@ -24,7 +24,8 @@ tar zxvf /clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz -C /clang
 rm -f /clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz
 
 apt-get install -y libssl-dev
-# Build Centipede with bazel
+
+# Build Centipede with bazel.
 cd "$SRC/centipede/"
 bazel build -c opt :all
 
