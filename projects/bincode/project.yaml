@@ -5,7 +5,6 @@ auto_ccs:
   - "zoey@dos.cafe"
   - "github@trangar.com"
   - "ty@pre-alpha.com"
-
 sanitizers:
   - address
 fuzzing_engines:
