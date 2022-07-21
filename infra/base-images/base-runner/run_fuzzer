@@ -65,6 +65,8 @@ function get_dictionary() {
      printf -- "-x %s" "$dict"
   elif [[ "$FUZZING_ENGINE" = "honggfuzz" ]]; then
      printf -- "--dict %s" "$dict"
+  elif [[ "$FUZZING_ENGINE" = "centipede" ]]; then
+     printf -- "--dictionary %s" "$dict"
   else
      printf "Unexpected FUZZING_ENGINE: $FUZZING_ENGINE, ignoring\n" >&2
   fi
