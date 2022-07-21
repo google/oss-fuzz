@@ -21,6 +21,7 @@ echo -n "Precompiling centipede"
 wget https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz --output-document=/clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz
 mkdir /clang
 tar zxvf /clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz -C /clang
+rm -f /clang-llvmorg-15-init-1995-g5bec1ea7-1.tgz
 
 apt-get install -y libssl-dev
 # Build Centipede with bazel
