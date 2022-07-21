@@ -37,6 +37,7 @@ execution environment and reporting tool.
 [libFuzzer]: https://llvm.org/docs/LibFuzzer.html
 [AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [Honggfuzz]: https://github.com/google/honggfuzz
+[Centipede]: https://github.com/google/centipede
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 [ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
