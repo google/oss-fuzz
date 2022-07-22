@@ -12,7 +12,10 @@ SET=cd ../ &&
 INC=-I../src/
 LIB=../src/libmodbus.la
 EXTCFLAGS= -Wall -Wextra
-LIBFUZZCF=-DLIB_FUZZER
+
+#libFuzz
+LIBFUZZCF=-fsanitize=fuzzer-no-link
+LIBFUZZEX=-DLIB_FUZZER $(LIBFUZZCF)
 LIBFUZZLD=-fsanitize=fuzzer
 
 all: $(TARGET)
@@ -23,6 +26,9 @@ INIT:
 
 CONF:
 	$(SET) ./configure --disable-shared CC=$(CC) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+
+LIBCONF:
+	$(SET) ./configure --disable-shared CC=$(CC) CFLAGS="$(CFLAGS) $(LIBFUZZCF)" LDFLAGS="$(LDFLAGS)"
 
 MAKEALL:
 	$(SET) make -j$(nproc)
@@ -37,19 +43,14 @@ $(TARGET): INIT CONF MAKEALL CPFILE
 	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(SERVEREXE).c
 	$(LIBTOOL) $(CC) $(LDFLAGS) $(SERVEREXE).o -o $(SERVEREXE) $(LIB)
 
-LibFuzz: INIT CONF MAKEALL CPFILE
-	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZCF) $(INC) -c $(CLIENTEXE).c
+LibFuzz: INIT LIBCONF MAKEALL CPFILE
+	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZEX) $(INC) -c $(CLIENTEXE).c
 	$(LIBTOOL) $(CC) $(LDFLAGS) $(LIBFUZZLD) $(CLIENTEXE).o -o $(CLIENTEXE) $(LIB)
 
-	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZCF) $(INC) -c $(SERVEREXE).c
+	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZEX) $(INC) -c $(SERVEREXE).c
 	$(LIBTOOL) $(CC) $(LDFLAGS) $(LIBFUZZLD) $(SERVEREXE).o -o $(SERVEREXE) $(LIB)
 
 clean:
 	rm $(CLIENTEXE) $(SERVEREXE) *.o
 
-help:
-	@echo "CC=_ CFLAGS=_ LDFLAGS=_ make AFL"
-	@echo "CC=clang CFLAGS=-fsanitize=fuzzer-no-link LDFLAGS=_ make LibFuzz"
-
 .PHONY: all AFL LibFuzz clean
-

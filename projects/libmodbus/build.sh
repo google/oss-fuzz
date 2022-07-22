@@ -16,4 +16,17 @@
 ################################################################################
 
 cd fuzz
-make all
+make LibFuzz
+
+: << 'COMMENT'
+if [[ $1 == "AFL" ]]
+then
+	make AFL
+elif [[ $1 == "LibFuzz" ]]
+then
+  	make LibFuzz
+else
+	echo "For AFL hongguzz : ./build.sh AFL"
+	echo "For LibFuzzer	   : ./build.sh LibFuzz"
+fi
+COMMENT

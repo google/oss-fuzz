@@ -6,9 +6,11 @@ auto_ccs:
 vendor_ccs:
   - "libmodbus@googlegroups.com"
 fuzzing_engines:
+  - libfuzzer
   - afl
   - honggfuzz
 sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/stephane/libmodbus'
+

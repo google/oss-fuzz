@@ -27,6 +27,7 @@ struct Fuzzer{
 };
 typedef struct Fuzzer Fuzzer;
 
+#define PORT 8080
 #define MinSize 9
 int server(Fuzzer *fuzzer);
 
@@ -90,7 +91,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
-    fuzzer->port = 8080;    //port
+    fuzzer->port = PORT;
 
     fuzzer->size = size;
     fuzzer->buffer = data;
@@ -105,14 +106,14 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #else
 int main(int argc, char *argv[]){
 
-    if(argc < 3){
-        printf("Server-port,Input-file \n");
+    if(argc < 2){
+        printf("input-file \n");
         return 0;
     }
 
     Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
-    fuzzer->port = atoi(argv[1]);
-    fuzzer->file = argv[2];
+    fuzzer->port = PORT;
+    fuzzer->file = argv[1];
 
     fuzzinit(fuzzer);
 
