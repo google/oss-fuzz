@@ -23,6 +23,13 @@ else
     apt-get install -y pkg-config
 fi
 
+if [[ "$SANITIZER" == undefined ]]; then
+    additional_ubsan_checks=alignment
+    UBSAN_FLAGS="-fsanitize=$additional_ubsan_checks -fno-sanitize-recover=$additional_ubsan_checks"
+    CFLAGS+=" $UBSAN_FLAGS"
+    CXXFLAGS+=" $UBSAN_FLAGS"
+fi
+
 pip3 install meson ninja
 
 meson -Db_lundef=false -Dlauncher=false build
