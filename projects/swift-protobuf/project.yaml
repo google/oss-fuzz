@@ -2,7 +2,7 @@ homepage: "https://github.com/apple/swift-protobuf"
 language: swift
 primary_contact: "tkientzle@apple.com"
 auto_ccs :
-- "cbenfield@apple.com"
+- "lukasa@apple.com"
 - "p.antoine@catenacyber.fr"
 - "thomasvl@google.com"
 
