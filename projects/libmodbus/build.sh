@@ -16,9 +16,7 @@
 ################################################################################
 
 cd fuzz
-make LibFuzz
 
-: << 'COMMENT'
 if [[ $1 == "AFL" ]]
 then
 	make AFL
@@ -29,4 +27,3 @@ else
 	echo "For AFL hongguzz : ./build.sh AFL"
 	echo "For LibFuzzer	   : ./build.sh LibFuzz"
 fi
-COMMENT
