@@ -12,6 +12,8 @@ SET=cd ../ &&
 INC=-I../src/
 LIB=../src/libmodbus.la
 EXTCFLAGS= -Wall -Wextra
+LIBFUZZCF=-DLIB_FUZZER
+LIBFUZZLD=-fsanitize=fuzzer
 
 all: $(TARGET)
 
@@ -35,7 +37,19 @@ $(TARGET): INIT CONF MAKEALL CPFILE
 	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(SERVEREXE).c
 	$(LIBTOOL) $(CC) $(LDFLAGS) $(SERVEREXE).o -o $(SERVEREXE) $(LIB)
 
+LibFuzz: INIT CONF MAKEALL CPFILE
+	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZCF) $(INC) -c $(CLIENTEXE).c
+	$(LIBTOOL) $(CC) $(LDFLAGS) $(LIBFUZZLD) $(CLIENTEXE).o -o $(CLIENTEXE) $(LIB)
+
+	$(CC) $(EXTCFLAGS) $(CFLAGS) $(LIBFUZZCF) $(INC) -c $(SERVEREXE).c
+	$(LIBTOOL) $(CC) $(LDFLAGS) $(LIBFUZZLD) $(SERVEREXE).o -o $(SERVEREXE) $(LIB)
+
 clean:
 	rm $(CLIENTEXE) $(SERVEREXE) *.o
 
-.PHONY: all AFL clean
+help:
+	@echo "CC=_ CFLAGS=_ LDFLAGS=_ make AFL"
+	@echo "CC=clang CFLAGS=-fsanitize=fuzzer-no-link LDFLAGS=_ make LibFuzz"
+
+.PHONY: all AFL LibFuzz clean
+

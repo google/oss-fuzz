@@ -81,6 +81,28 @@ void clean(Fuzzer *fuzzer){
     free(fuzzer);
 }
 
+#ifdef LIB_FUZZER
+
+extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+    if(size < MinSize){
+        return 1;
+    }
+
+    Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
+    fuzzer->port = 8080;    //port
+
+    fuzzer->size = size;
+    fuzzer->buffer = data;
+
+    pthread_create(&fuzzer->thread, NULL,client,fuzzer);
+    server(fuzzer);
+    pthread_join(fuzzer->thread, NULL);
+
+    free(fuzzer);
+    return 0;
+}
+#else
 int main(int argc, char *argv[]){
 
     if(argc < 3){
@@ -107,6 +129,7 @@ int main(int argc, char *argv[]){
 
     return 0;
 }
+#endif
 
 int server(Fuzzer *fuzzer)
 {

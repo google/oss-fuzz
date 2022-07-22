@@ -29,7 +29,7 @@ typedef struct Fuzzer Fuzzer;
 int client(Fuzzer *fuzzer);
 
 void fuzzinit(Fuzzer *fuzzer){
-
+#ifndef LIB_FUZZER
     {//File
         fuzzer->inFile = fopen(fuzzer->file,"rb");
 
@@ -41,6 +41,7 @@ void fuzzinit(Fuzzer *fuzzer){
 
         fread(fuzzer->buffer, sizeof(char), fuzzer->size, fuzzer->inFile);
     }
+#endif
     {//Server
         struct sockaddr_in server_addr;
         fuzzer->socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,10 +81,12 @@ void *Server(void *args){
 }
 
 void clean(Fuzzer *fuzzer){
+#ifndef LIB_FUZZER
     {//File
         free(fuzzer->buffer);
         fclose(fuzzer->inFile);
     }
+#endif
     {//Server
         shutdown(fuzzer->socket,SHUT_RDWR);
         close(fuzzer->socket);
@@ -91,6 +94,30 @@ void clean(Fuzzer *fuzzer){
     free(fuzzer);
 }
 
+#ifdef LIB_FUZZER
+
+extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+    if(size < MinSize){
+        return 1;
+    }
+
+    Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
+    fuzzer->port = 8080;    //port
+
+    fuzzer->size = size;
+    fuzzer->buffer = data;
+
+    fuzzinit(fuzzer);
+
+    pthread_create(&fuzzer->thread, NULL,Server,fuzzer);
+    client(fuzzer);
+    pthread_join(fuzzer->thread, NULL);
+
+    clean(fuzzer);
+    return 0;
+}
+#else
 int main(int argc, char *argv[]){
 
     if(argc < 3){
@@ -119,6 +146,7 @@ int main(int argc, char *argv[]){
 
     return 0;
 }
+#endif
 
 int client(Fuzzer *fuzzer){// For Testing 
 
