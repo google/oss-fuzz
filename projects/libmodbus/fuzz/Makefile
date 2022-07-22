@@ -12,8 +12,6 @@ SET=cd ../ &&
 INC=-I../src/
 LIB=../src/libmodbus.la
 EXTCFLAGS= -Wall -Wextra
-CFLAGS=-g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
-LDFLAGS=-fsanitize=address,undefined
 
 all: $(TARGET)
 
