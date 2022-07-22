@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +14,7 @@
 #
 ################################################################################
 
-# build the target.
-./configure --enable-shared=no
-make -j$(nproc) all
-
-# build your fuzzer(s)
-FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer cms_overwrite_transform_fuzzer cms_transform_all_fuzzer"
-for F in $FUZZERS; do
-    $CC $CFLAGS -c -Iinclude \
-        $SRC/$F.c -o $SRC/$F.o
-    $CXX $CXXFLAGS \
-        $SRC/$F.o -o $OUT/$F \
-        $LIB_FUZZING_ENGINE src/.libs/liblcms2.a
-done
-
-cp $SRC/icc.dict $SRC/*.options $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN git clone --depth 1 https://github.com/bus1/dbus-broker
+WORKDIR dbus-broker
+COPY *.c build.sh $SRC/

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,22 @@
 #
 ################################################################################
 
-# build the target.
-./configure --enable-shared=no
-make -j$(nproc) all
+apt-get update -y
 
-# build your fuzzer(s)
-FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer cms_overwrite_transform_fuzzer cms_transform_all_fuzzer"
-for F in $FUZZERS; do
-    $CC $CFLAGS -c -Iinclude \
-        $SRC/$F.c -o $SRC/$F.o
-    $CXX $CXXFLAGS \
-        $SRC/$F.o -o $OUT/$F \
-        $LIB_FUZZING_ENGINE src/.libs/liblcms2.a
-done
+if [[ "$ARCHITECTURE" == i386 ]]; then
+    apt-get install -y pkg-config:i386
+else
+    apt-get install -y pkg-config
+fi
 
-cp $SRC/icc.dict $SRC/*.options $OUT/
+pip3 install meson ninja
+
+meson -Db_lundef=false -Dlauncher=false build
+ninja -C ./build -v
+$CC $CFLAGS -c -o fuzz-message.o -Isrc -Isubprojects/libcstdaux-1/src -std=c11 -D_GNU_SOURCE "$SRC/fuzz-message.c"
+$CXX $CXXFLAGS -o "$OUT/fuzz-message" \
+    fuzz-message.o \
+    build/src/libbus-static.a \
+    build/subprojects/libcdvar-1/src/libcdvar-1.a \
+    build/subprojects/libcutf8-1/src/libcutf8-1.a \
+    $LIB_FUZZING_ENGINE
