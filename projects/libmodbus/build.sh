@@ -16,14 +16,8 @@
 ################################################################################
 
 cd fuzz
+make all
 
-if [[ $1 == "AFL" ]]
-then
-	make AFL
-elif [[ $1 == "LibFuzz" ]]
-then
-  	make LibFuzz
-else
-	echo "For AFL hongguzz : ./build.sh AFL"
-	echo "For LibFuzzer	   : ./build.sh LibFuzz"
-fi
+cp FuzzClient $OUT/FuzzClient
+cp FuzzServer $OUT/FuzzServer
+cp input.zip $OUT/input.zip

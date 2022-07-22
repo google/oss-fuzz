@@ -13,4 +13,3 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/stephane/libmodbus'
-

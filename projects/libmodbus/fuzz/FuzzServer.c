@@ -14,6 +14,9 @@
 #include <modbus.h>
 #include "unit-test.h"
 
+#define PORT 8080
+#define MinSize 9
+
 struct Fuzzer{
     uint16_t    port;    
     char*       file;
@@ -27,39 +30,20 @@ struct Fuzzer{
 };
 typedef struct Fuzzer Fuzzer;
 
-#define PORT 8080
-#define MinSize 9
 int server(Fuzzer *fuzzer);
-
-void fuzzinit(Fuzzer *fuzzer){
-
-    {//File
-        fuzzer->inFile = fopen(fuzzer->file,"rb");
-
-        fseek(fuzzer->inFile, 0L, SEEK_END);
-        fuzzer->size = ftell(fuzzer->inFile);
-        fseek(fuzzer->inFile, 0L, SEEK_SET);
-
-        fuzzer->buffer = (uint8_t*)calloc(fuzzer->size, sizeof(char));
-
-        fread(fuzzer->buffer, sizeof(char), fuzzer->size, fuzzer->inFile);
-    }
-}
 
 void *client(void *args){ 
 
     Fuzzer *fuzzer = (Fuzzer*)args;
     int sockfd;
     struct sockaddr_in serv_addr;
-    //char buffer[10240] = { 0 };
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(fuzzer->port);
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    while(1){
+    while(1){/* Try until connect*/
         if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0){
             continue;
         }else{
@@ -68,21 +52,10 @@ void *client(void *args){
     }
 
     send(sockfd,fuzzer->buffer,fuzzer->size,0);
-    //recv(sockfd,buffer,sizeof(buffer),0);
 
     close(sockfd);
     pthread_exit(NULL);
 }
-
-void clean(Fuzzer *fuzzer){
-    {//File
-        free(fuzzer->buffer);
-        fclose(fuzzer->inFile);
-    }
-    free(fuzzer);
-}
-
-#ifdef LIB_FUZZER
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
@@ -98,39 +71,11 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     pthread_create(&fuzzer->thread, NULL,client,fuzzer);
     server(fuzzer);
-    pthread_join(fuzzer->thread, NULL);
+    pthread_join(fuzzer->thread, NULL); /* Avoid UAF*/
 
     free(fuzzer);
     return 0;
 }
-#else
-int main(int argc, char *argv[]){
-
-    if(argc < 2){
-        printf("input-file \n");
-        return 0;
-    }
-
-    Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
-    fuzzer->port = PORT;
-    fuzzer->file = argv[1];
-
-    fuzzinit(fuzzer);
-
-    if(fuzzer->size < MinSize){
-        clean(fuzzer);
-        return 1;
-    }
-
-    pthread_create(&fuzzer->thread, NULL,client,fuzzer);
-
-    server(fuzzer);
-
-    clean(fuzzer);
-
-    return 0;
-}
-#endif
 
 int server(Fuzzer *fuzzer)
 {
@@ -155,9 +100,6 @@ int server(Fuzzer *fuzzer)
         modbus_free(ctx);
         return -1;
     }
-
-    /* Examples from PI_MODBUS_300.pdf.
-       Only the read-only input values are assigned. */
 
     /* Initialize input values that's can be only done server side. */
     modbus_set_bits_from_bytes(mb_mapping->tab_input_bits, 0, UT_INPUT_BITS_NB,
