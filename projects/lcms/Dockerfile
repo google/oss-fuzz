@@ -17,5 +17,14 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git lcms
+RUN mkdir $SRC/seeds && \
+    cd seeds && \
+    cp $SRC/lcms/testbed/bad.icc . && \
+    cp $SRC/lcms/testbed/toosmall.icc . && \
+    cp $SRC/lcms/testbed/test1.icc . && \
+    cp $SRC/lcms/testbed/crayons.icc . && \
+    cp $SRC/lcms/testbed/ibm-t61.icc . && \
+    zip -rj $SRC/seed_corpus.zip $SRC/seeds/*
+
 WORKDIR lcms
-COPY build.sh cmsIT8_load_fuzzer.* cms_transform_fuzzer.* cms_overwrite_transform_fuzzer.* cms_transform_all_fuzzer.c icc.dict $SRC/
+COPY build.sh *.c *.options *.dict $SRC/
