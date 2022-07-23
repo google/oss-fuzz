@@ -32,7 +32,11 @@ fi
 
 pip3 install meson ninja
 
-meson -Db_lundef=false -Dlauncher=false build
+if ! meson -Db_lundef=false -Dlauncher=false build; then
+    cat build/meson-logs/meson-log.txt
+    exit 1
+fi
+
 ninja -C ./build -v
 $CC $CFLAGS -c -o fuzz-message.o -Isrc -Isubprojects/libcstdaux-1/src -std=c11 -D_GNU_SOURCE "$SRC/fuzz-message.c"
 $CXX $CXXFLAGS -o "$OUT/fuzz-message" \
