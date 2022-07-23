@@ -21,3 +21,4 @@ make all
 cp FuzzClient $OUT/FuzzClient
 cp FuzzServer $OUT/FuzzServer
 cp input.zip $OUT/input.zip
+
