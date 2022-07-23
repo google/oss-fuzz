@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# fuzz-introspector isn't compatible with meson. Let's bail out explicitly here.
+# https://github.com/systemd/systemd/commit/ebd4541efe800190e5f158179f8201c654bb4c31
+if [[ "$SANITIZER" == introspector ]]; then
+    exit 1
+fi
+
 apt-get update -y
 
 if [[ "$ARCHITECTURE" == i386 ]]; then
