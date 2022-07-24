@@ -23,9 +23,10 @@
 
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
-./configure --disable-featured
+mkdir -p ${WORK}/build && cd ${WORK}/build
+${SRC}/adhd/cras/configure --disable-featured
 make -j$(nproc)
-cp ${SRC}/adhd/cras/src/server/rust/target/release/libcras_rust.a /usr/local/lib
+cp ${WORK}/build/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 
 CRAS_FUZZERS="rclient_message cras_hfp_slc cras_fl_media_fuzzer"
 
@@ -36,7 +37,7 @@ $CXX $CXXFLAGS $FUZZER_LDFLAGS \
   -I ${SRC}/adhd/cras/src/server \
   -I ${SRC}/adhd/cras/src/common \
   $(pkg-config --cflags dbus-1) \
-  ${SRC}/adhd/cras/src/.libs/libcrasserver.a \
+  ${WORK}/build/src/.libs/libcrasserver.a \
   -lcras_rust -lpthread -lrt -ludev -ldl -lm -lsystemd \
   $LIB_FUZZING_ENGINE \
   -Wl,-Bstatic -liniparser -lasound -lspeexdsp -ldbus-1 -lsbc -Wl,-Bdynamic
