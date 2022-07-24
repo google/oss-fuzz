@@ -6,6 +6,7 @@ main_repo: https://github.com/googleapis/python-storage
 sanitizers:
 - address
 - undefined
+primary_contact: "gorcester@google.com"
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
