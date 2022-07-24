@@ -37,5 +37,3 @@ RUN wget https://github.com/unicode-org/icu/releases/download/release-66-rc/icu4
 RUN git clone https://github.com/google/libphonenumber
 
 COPY build.sh $SRC/
-COPY phonefuzz.cc $SRC/
-WORKDIR $SRC/

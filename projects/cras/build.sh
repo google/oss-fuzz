@@ -27,7 +27,7 @@ cd ${SRC}/adhd/cras
 make -j$(nproc)
 cp ${SRC}/adhd/cras/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 
-CRAS_FUZZERS="rclient_message cras_hfp_slc"
+CRAS_FUZZERS="rclient_message cras_hfp_slc cras_fl_media_fuzzer"
 
 for fuzzer in ${CRAS_FUZZERS};
 do

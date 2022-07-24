@@ -29,7 +29,7 @@ libFuzzer command line interface as non-Go fuzz targets.
 
 ## Native Go Fuzzing support
 
-OSS-fuzz supports fuzzers written for the native Go 1.18 engine. These fuzzers are built as libFuzzer binaries in a similar fashion as fuzzers written for the go-fuzz engine. Because of that, dictionaries and seed corpora should be handled in accordance with [the OSS-fuzz documentation](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
+OSS-fuzz supports [fuzzers written for the native Go 1.18 engine](https://go.dev/doc/fuzz/). These fuzzers are built as libFuzzer binaries in a similar fashion as fuzzers written for the go-fuzz engine. Because of that, dictionaries and seed corpora should be handled in accordance with [the OSS-fuzz documentation](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
 Unlike libFuzzer/go-fuzz targets which must accept one data buffer, fuzz targets written for the Native Go engine can accept any number of arguments of any type. Here is an example of a valid fuzzer with multiple arguments:
 
 ```go
@@ -104,7 +104,7 @@ In order to build a Go fuzz target, you need to call `go-fuzz`
 command first, and then link the resulting `.a` file against
 `$LIB_FUZZING_ENGINE` using the `$CXX $CXXFLAGS ...` command.
 
-For go-fuzz fuzzers, the best way to do this is by using the `compile_go_fuzzer` script, and for native Go 1.18 fuzzers it is recommended to use the `compile_native_go_fuzzer` script. Both of these also support coverage builds.
+For go-fuzz fuzzers, the best way to do this is by using the [`compile_go_fuzzer` script](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/compile_go_fuzzer), and for native Go 1.18 fuzzers it is recommended to use the [`compile_native_go_fuzzer` script](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/compile_native_go_fuzzer). Both of these also support coverage builds.
 
 A usage example from go-dns project is
 
