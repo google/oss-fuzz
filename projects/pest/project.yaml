@@ -1,0 +1,12 @@
+homepage: "https://github.com/pest-parser/pest"
+language: rust
+primary_contact: "jstnlefebvre@gmail.com"
+auto_ccs:
+  - "cad97@cad97.com"
+  - "flying-sheep@web.de"
+  - "noah.bogart@hey.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/pest-parser/pest'
