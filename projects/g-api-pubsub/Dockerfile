@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,8 @@
 #
 ################################################################################
 
-autoreconf -i
-./configure --enable-static
-make V=1 all
-
-$CXX $CXXFLAGS -std=c++11 -Isrc/ \
-     $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
-     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a
-
-cp ./magic/magic.mgc $OUT/
-
-zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-*
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip && pip install google-api-core google-cloud-core
+RUN git clone https://github.com/googleapis/python-pubsub
+COPY build.sh *.py $SRC/
+WORKDIR python-pubsub
