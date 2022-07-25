@@ -19,6 +19,3 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 RUN apt-get update
 RUN git clone --depth 1 https://github.com/pest-parser/pest.git
 COPY build.sh $SRC/
-
-
-
