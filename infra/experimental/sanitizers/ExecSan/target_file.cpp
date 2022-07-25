@@ -17,12 +17,16 @@
  * /tmp/tripwire or other commands will be injected into its shell command */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string>
 #include <iostream>
 
 extern "C" int LLVMFuzzerTestOneInput(char* data, size_t size) {
   std::string str(data, size);
   std::cout << "INPUT" << str << std::endl;
-  system(str.c_str());
+  FILE *fp = fopen(str.c_str(), "r");
+  if (fp) {
+    fclose(fp);
+  }
   return 0;
 }

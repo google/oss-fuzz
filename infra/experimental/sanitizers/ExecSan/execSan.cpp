@@ -70,7 +70,7 @@ const std::string kCorruptionError = "Shell corruption";
 const std::string kFzAbsoluteDirectory = "/fz/";
 // Arbitrary file open in /fz/
 const std::string kArbitraryFileOpenError = "Arbitrary file open";
-// Assuming we will a shorter top dir.
+// Assuming only shorter (than this constant) top dir are legitly used.
 constexpr int kRootDirMaxLength = 16;
 
 // The PID of the root process we're fuzzing.
@@ -286,7 +286,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     if (found != std::string::npos) {
       std::string path_absolute_topdir = path.substr(0, found);
       struct stat dirstat;
-      if (stat (path_absolute_topdir.c_str(), &dirstat) != 0) {
+      if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
         report_bug(kArbitraryFileOpenError);
       }
     }
