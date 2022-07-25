@@ -1,12 +1,10 @@
 homepage: "https://github.com/pest-parser/pest"
 language: rust
-primary_contact: "sebastien.boeuf@intel.com"
+primary_contact: "jstnlefebvre@gmail.com"
 auto_ccs:
-  - "michael2012zhao@hotmail.com"
-  - "Henry.Wang@arm.com"
-  - "robert.bradford@intel.com"
-  - "samuel.e.ortiz@protonmail.com"
-
+  - "cad97@cad97.com"
+  - "flying-sheep@web.de"
+  - "noah.bogart@hey.com"
 sanitizers:
   - address
 fuzzing_engines:
