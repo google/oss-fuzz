@@ -17,17 +17,17 @@
 
 echo "---------------------------------------------------------------"
 
-if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
-  echo "ERROR: 'dataflow' sanitizer can be used with 'dataflow' engine only."
-  exit 1
+# This is a temporary fix: fall back to LLVM14's old pass manager
+if [ -n "${OLD_LLVMPASS-}" ]; then
+  export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
 fi
 
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
-    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ] && [ "$FUZZING_ENGINE" != "wycheproof" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer or tested with wycheproof engines only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "none" ]; then
     echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
     exit 1
   fi
@@ -151,6 +151,10 @@ if [ "$SANITIZER" = "introspector" ]; then
   export NM=llvm-nm
   export RANLIB=llvm-ranlib
 
+  export CFLAGS="$CFLAGS -g"
+  export CXXFLAGS="$CXXFLAGS -g"
+  export FI_BRANCH_PROFILE=1
+
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
   mv /usr/bin/nm /usr/bin/old-nm
@@ -215,8 +219,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   if [ -d "$OUT/textcov_reports" ]
   then
     cp $OUT/textcov_reports/*.covreport $SRC/inspector/
-  fi  
-  
+  fi
+
   cd $SRC/inspector
 
   # Correlate fuzzer binaries to fuzz-introspector's raw data
@@ -231,12 +235,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   fi
   # Use the just-generated correlation file
   REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
+  REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
   python3 /fuzz-introspector/post-processing/main.py report $REPORT_ARGS
 
   cp -rf $SRC/inspector $OUT/inspector
-fi
-
-if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
-  # Remove seed corpus as it can be huge but is not needed for a dataflow build.
-  rm -f $OUT/*.zip
 fi

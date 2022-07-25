@@ -27,7 +27,8 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
-export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
+export CXXFLAGS="$CXXFLAGS -D_FORTIFY_SOURCE=0 -D_GLIBCXX_DEBUG"
 
 # Build libogg
 mkdir $SRC/libogg-install
@@ -52,16 +53,15 @@ make -j$(nproc)
 cd $SRC/flac/oss-fuzz
 cp fuzzer_encoder fuzzer_encoder_v2 $OUT
 
-# Build libflac again for decoder fuzzers, but now with addition CFLAG
-export CFLAGS="$CFLAGS -DFUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW"
-
+# Build libflac again for decoder fuzzers, but now with additional define
 cd $SRC/flac/
-make clean
+echo "#define FUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW" >> config.h
+
 make -j$(nproc)
 
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder $OUT
+cp fuzzer_decoder fuzzer_seek fuzzer_metadata $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 

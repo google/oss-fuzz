@@ -61,6 +61,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     fuzzerName=$(basename $fuzzerName .cc)
     echo "Building fuzzer $fuzzerName"
     $CXX $CXXFLAGS -I genfiles -I . -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include -I include $LIB_FUZZING_ENGINE \
+        -DNDEBUG \
         -I $SRC/boringssl/include \
         $F genfiles/asn1_pdu.pb.cc $SRC/asn1_pdu_to_der.cc $SRC/common.cc \
         ./ssl/libssl.a ./crypto/libcrypto.a \

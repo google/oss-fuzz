@@ -24,7 +24,8 @@ else
       -e 'llvm-symbolizer' \
       -e 'jazzer_agent_deploy.jar' \
       -e 'jazzer_driver' \
-      -e 'jazzer_driver_with_sanitizer')"
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
@@ -54,6 +55,9 @@ PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
 # can contain paths to source files / directories which are positional args.
 LLVM_COV_COMMON_ARGS="$PATH_EQUIVALENCE_ARGS \
     -ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
+
+# Options to extract branch coverage.
+BRANCH_COV_ARGS="--show-branches=count --show-expansions"
 
 # Timeout for running a single fuzz target.
 TIMEOUT=1h
@@ -103,8 +107,7 @@ function run_fuzz_target {
   fi
 
   # If necessary translate to latest profraw version.
-  profraw_update.py $OUT/$target $profraw_file_mask tmp.profraw
-  mv tmp.profraw $profraw_file_mask
+  profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
@@ -116,17 +119,7 @@ function run_fuzz_target {
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
   # For introspector.
-  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
-  
-  if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
-    # This is needed for dataflow strategy analysis, can be removed later. See
-    # - https://github.com/google/oss-fuzz/pull/3306
-    # - https://github.com/google/oss-fuzz/issues/1632
-    # Intentionally writing these to the logs dir in order to hide the dumps
-    # from the ClusterFuzz cron job.
-    llvm-cov export -instr-profile=$profdata_file -object=$target \
-      $shared_libraries $LLVM_COV_COMMON_ARGS > $LOGS_DIR/$target.json
-  fi
+  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
 }
 
 function run_go_fuzz_target {
@@ -135,9 +128,13 @@ function run_go_fuzz_target {
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
-  
-  $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
-  
+
+  timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
+  if (( $? != 0 )); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
   # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during
@@ -159,7 +156,7 @@ function run_python_fuzz_target {
   echo "{}" > "$FUZZER_STATS_DIR/$target.json"
 
   # Run fuzzer
-  $OUT/$target.pkg $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
+  $OUT/$target $corpus_real -atheris_runs=$(ls -la $corpus_real | wc -l) > $LOGS_DIR/$target.log 2>&1
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
@@ -297,7 +294,8 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   PYCOVDIR=/pycovdir/
   mkdir $PYCOVDIR
   for fuzzer in $FUZZ_TARGETS; do
-    unzip $OUT/$fuzzer.deps.zip
+    fuzzer_deps=${fuzzer}.pkg.deps.zip
+    unzip $OUT/${fuzzer_deps}
     rsync -r ./medio /pythoncovmergedfiles/medio
     rm -rf ./medio
 
@@ -382,7 +380,7 @@ else
     fi
 
     report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
-    generate_html $profdata_path "$shared_libraries" "$objects" "$report_dir"
+    generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
 fi
 

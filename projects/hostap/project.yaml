@@ -7,13 +7,11 @@ fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
-  - dataflow
 architectures:
   - x86_64
   - i386

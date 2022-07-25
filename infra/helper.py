@@ -156,10 +156,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    if args.engine == 'dataflow':
-      args.sanitizer = 'dataflow'
-    else:
-      args.sanitizer = constants.DEFAULT_SANITIZER
+    args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -455,11 +452,10 @@ def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
   if choices is None:
     choices = constants.SANITIZERS
-  parser.add_argument(
-      '--sanitizer',
-      default=None,
-      choices=choices,
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+  parser.add_argument('--sanitizer',
+                      default=None,
+                      choices=choices,
+                      help='the default is "address"')
 
 
 def _add_environment_args(parser):
@@ -639,9 +635,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
-      'FUZZING_ENGINE=' + engine,
-      'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture,
+      'FUZZING_ENGINE=' + engine, 'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture, 'PROJECT_NAME=' + project.name
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
