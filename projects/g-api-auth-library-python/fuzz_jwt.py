@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atheris
+import os
 import sys
+import atheris
 
 from google.auth import jwt
 from google.auth import crypt
 
+bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+path_to_public_cert = os.path.abspath(os.path.join(bundle_dir, 'public_cert.pem'))
 
-if os.path.isfile("public_cert.pem"):
-  with open("public_cert.pem", "rb") as fh:
+if os.path.isfile(path_to_public_cert):
+  with open(path_to_public_cert, "rb") as fh:
     PUBLIC_CERT_BYTES = fh.read()
 else:
   raise Exception("Could not find public cert")

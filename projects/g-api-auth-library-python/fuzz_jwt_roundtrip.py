@@ -13,21 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atheris
+import os
 import sys
+import atheris
+
+bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+path_to_public_cert = os.path.abspath(os.path.join(bundle_dir, 'public_cert.pem'))
+path_to_private_key = os.path.abspath(os.path.join(bundle_dir, 'privatekey.pem'))
 
 # We instrument all imports below
 from google.auth import jwt
 from google.auth import crypt
 
-if os.path.isfile("privatekey.pem"):
-  with open("privatekey.pem", "rb") as fh:
+if os.path.isfile(path_to_private_key):
+  with open(path_to_private_key, "rb") as fh:
     PRIVATE_KEY_BYTES = fh.read()
 else:
   raise Exception("Could not find private key")
 
-if os.path.isfile("public_cert.pem"):
-  with open("public_cert.pem", "rb") as fh:
+if os.path.isfile(path_to_public_cert):
+  with open(path_to_public_cert, "rb") as fh:
     PUBLIC_CERT_BYTES = fh.read()
 else:
   raise Exception("Could not find public cert")
