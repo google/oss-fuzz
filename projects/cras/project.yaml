@@ -14,6 +14,7 @@ auto_ccs:
   - "hunghsienchen@chromium.org"
   - "htcheong@chromium.org"
   - "jrwu@chromium.org"
+  - "michelleyswang@google.com"
 sanitizers:
   - address
   - memory
