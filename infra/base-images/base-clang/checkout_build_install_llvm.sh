@@ -107,8 +107,8 @@ if [ -n "$INTROSPECTOR_PATCHES" ]; then
   echo "Applying introspector changes"
   OLD_WORKING_DIR=$PWD
   cd $LLVM_SRC
-  cp -rf /fuzz-introspector/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
-  cp -rf /fuzz-introspector/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
+  cp -rf /fuzz-introspector/frontends/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
+  cp -rf /fuzz-introspector/frontends/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
 
   # LLVM currently does not support dynamically loading LTO passes. Thus,
   # we hardcode it into Clang instead.
