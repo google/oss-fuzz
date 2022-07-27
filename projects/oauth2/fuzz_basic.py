@@ -15,6 +15,7 @@
 
 import atheris
 import sys
+
 with atheris.instrument_imports():
     from oauth2client.client import OAuth2WebServerFlow
     from oauth2client.client import OAuth2DeviceCodeError
