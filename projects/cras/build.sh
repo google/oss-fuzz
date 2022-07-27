@@ -24,7 +24,7 @@
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
 mkdir -p ${WORK}/build && cd ${WORK}/build
-${SRC}/adhd/cras/configure --disable-featured
+CFLAGS="${CFLAGS} -DHAVE_FUZZER" ${SRC}/adhd/cras/configure --disable-featured
 make -j$(nproc)
 cp ${WORK}/build/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 
