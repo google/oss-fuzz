@@ -21,9 +21,9 @@ RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz
     tar -zxvf ant.tar.gz -C $SRC/ant --strip-components=1 && \
     rm -rf ant.tar.gz
 
-ARG java_home="/out/open-jdk-17"
+ARG java_home="/out/open-jdk"
 
-RUN apt update && apt install -y openjdk-17-jdk
+RUN apt update && apt install -y default-jdk
 ENV JAVA_HOME $java_home
 ENV PATH "${java_home}:${PATH}"
 ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
