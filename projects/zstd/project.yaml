@@ -7,11 +7,15 @@ auto_ccs:
   - "cyan@fb.com"
   - "felixh@fb.com"
   - "dpc@fb.com"
-  - "mhl@fb.com"
+  - "hmf@fb.com"
+  - "yaohway@fb.com"
+  - "axxu@fb.com"
   - "binhvo@fb.com"
   - "embg@fb.com"
   - "yoniko@fb.com"
   - "sangelov@fb.com"
+vendor_ccs:
+  - "oss-fuzz@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
