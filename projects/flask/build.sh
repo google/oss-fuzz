@@ -15,10 +15,14 @@
 #
 ################################################################################
 
+# Build Werkzeug from latest
+cd $SRC/werkzeug
+pip3 install -r ./requirements/dev.in
+pip3 install .
+
 # Build flask
 cd $SRC/flask
 python3 -m pip install importlib_metadata
-pip3 install -r ./requirements/tests-pallets-min.in
 pip3 install .
 
 # Build flask-cors

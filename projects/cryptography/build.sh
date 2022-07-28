@@ -21,4 +21,6 @@ unset RUSTFLAGS
 pip3 install .
 
 cd $SRC
-compile_python_fuzzer symenc_fuzz.py
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+   compile_python_fuzzer $fuzzer 
+done
