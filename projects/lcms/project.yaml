@@ -1,6 +1,9 @@
+main_repo: "https://github.com/mm2/Little-CMS"
 homepage: "http://www.littlecms.com/"
 language: c++
 primary_contact: "marti.maria.s@gmail.com"
+auto_ccs:
+  - "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
   - afl

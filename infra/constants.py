@@ -38,4 +38,4 @@ SANITIZERS = [
     'introspector'
 ]
 ARCHITECTURES = ['i386', 'x86_64']
-ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none']
+ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none', 'wycheproof']

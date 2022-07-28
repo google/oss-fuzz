@@ -77,7 +77,7 @@ fi
 # Build libphonenumber
 cd $SRC/libphonenumber/cpp
 sed -i 's/set (BUILD_SHARED_LIB true)/set (BUILD_SHARED_LIB false)/g' CMakeLists.txt
-sed -i 's/set(CMAKE_CXX_STANDARD 11)/set(CMAKE_CXX_STANDARD 14)/g' CMakeLists.txt
+sed -i 's/set(CMAKE_CXX_STANDARD 11/set(CMAKE_CXX_STANDARD 14/g' CMakeLists.txt
 sed -i 's/list (APPEND CMAKE_C_FLAGS "-pthread")/string (APPEND CMAKE_C_FLAGS " -pthread")/g' CMakeLists.txt
 sed -i 's/# Safeguarding/find_package(absl REQUIRED) # Safeguarding/g' CMakeLists.txt
 
@@ -93,7 +93,7 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
 make
 
 # Build our fuzzer
-$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c $SRC/phonefuzz.cc
+$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c ../test/phonenumbers/fuzz_phone.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
     ./libphonenumber.a \
     $SRC/protobuf/src/.libs/libprotobuf.a \
