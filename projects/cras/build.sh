@@ -24,9 +24,10 @@
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
 mkdir -p ${WORK}/build && cd ${WORK}/build
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 CFLAGS="${CFLAGS} -DHAVE_FUZZER" ${SRC}/adhd/cras/configure --disable-featured
 make -j$(nproc)
-cp ${WORK}/build/src/server/rust/target/release/libcras_rust.a /usr/local/lib
+cp ${WORK}/build/src/server/rust/target/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
 CRAS_FUZZERS="rclient_message cras_hfp_slc cras_fl_media_fuzzer"
 
