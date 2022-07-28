@@ -17,7 +17,7 @@ import atheris
 import sys
 with atheris.instrument_imports():
     import requests
-    from requests.exceptions import InvalidURL 
+    from requests.exceptions import InvalidURL,ConnectionError
     from requests_ntlm2 import HttpNtlmAuth
 
 def TestInput(data):
@@ -31,7 +31,7 @@ def TestInput(data):
     try:
        requests.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)),auth=auth)
        session.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)))
-    except InvalidURL as e:
+    except (InvalidURL,ConnectionError) as e:
        pass
 
 def main(): 
