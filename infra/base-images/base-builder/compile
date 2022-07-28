@@ -23,11 +23,11 @@ if [ -n "${OLD_LLVMPASS-}" ]; then
 fi
 
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
-    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ] && [ "$FUZZING_ENGINE" != "wycheproof" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer or tested with wycheproof engines only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "none" ]; then
     echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
     exit 1
   fi

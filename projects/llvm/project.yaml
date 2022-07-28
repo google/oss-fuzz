@@ -3,7 +3,7 @@ language: c++
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "mascasa@google.com"
-  - "jdevlieghere@apple.com"
+  - "jonas@devlieghere.com"
   - "vsk@apple.com"
   - "akilsrin@apple.com"
   - "llvm-bugs@lists.llvm.org"

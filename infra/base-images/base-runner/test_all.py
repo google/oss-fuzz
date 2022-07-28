@@ -89,7 +89,7 @@ def find_fuzz_targets(directory):
     # trees).
     if not is_elf(path) and not is_shell_script(path):
       continue
-    if os.getenv('FUZZING_ENGINE') != 'none':
+    if os.getenv('FUZZING_ENGINE') not in {'none', 'wycheproof'}:
       with open(path, 'rb') as file_handle:
         binary_contents = file_handle.read()
         if b'LLVMFuzzerTestOneInput' not in binary_contents:
