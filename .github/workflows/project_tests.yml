@@ -38,6 +38,9 @@ jobs:
           - engine: none
             sanitizer: address
             architecture: x86_64
+          - engine: wycheproof
+            sanitizer: none
+            architecture: x86_64
     env:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}

@@ -15,6 +15,6 @@ limitations under the License.
 #include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	fuzz_gs_device(data, size, 1, "pxlmono");
+	fuzz_gs_device(data, size, 1, "pxlmono", "/dev/null");
 	return 0;
 }

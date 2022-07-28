@@ -14,5 +14,10 @@ auto_ccs:
   - "hunghsienchen@chromium.org"
   - "htcheong@chromium.org"
   - "jrwu@chromium.org"
-builds_per_day: 2
+  - "michelleyswang@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+builds_per_day: 4
 main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'

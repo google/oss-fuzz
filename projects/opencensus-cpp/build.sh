@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -std=c++14"
+
 git grep cc_fuzz_target.bzl | grep BUILD | cut -d: -f1 | uniq | while read i; do sed -i -e 's=//bazel:cc_fuzz_target.bzl=@rules_fuzzing//fuzzing:cc_defs.bzl=' $i; done
 
 git grep fuzz_target\( | grep BUILD | cut -d: -f1 | uniq | while read i; do sed -i -e 's/fuzz_target/fuzz_test/' $i; done

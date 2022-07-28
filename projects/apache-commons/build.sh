@@ -18,8 +18,9 @@
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-PROJECTS="compress imaging geometry"
+PROJECTS="compress imaging geometry math"
 GEOMETRY_MODULE="commons-geometry-io-euclidean"
+MATH_MODULE="commons-math-legacy"
 
 for project in $PROJECTS; do
   cd $SRC/commons-$project
@@ -32,6 +33,11 @@ for project in $PROJECTS; do
     # to build and extract the proper module (commons-geometry-io-euclidean)
     $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -am -pl $GEOMETRY_MODULE $MAVEN_ARGS
     cp "$GEOMETRY_MODULE/target/$GEOMETRY_MODULE-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
+  elif [ $project = 'math' ]; then
+    # math also is a multi-library project
+    # further, math's libraries are named 'math4' rather then 'math'
+    $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -am -pl $MATH_MODULE $MAVEN_ARGS
+    cp "$MATH_MODULE/target/commons-math4-legacy-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
   else
     $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
     cp "target/commons-$project-$CURRENT_VERSION.jar" $OUT/commons-$project.jar
