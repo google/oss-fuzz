@@ -1,0 +1,16 @@
+homepage: "https://libmodbus.org"
+language: c
+primary_contact: "stephane.raimbault@gmail.com"
+auto_ccs:
+  - "0x34d@protonmail.com"
+vendor_ccs:
+  - "libmodbus@googlegroups.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/stephane/libmodbus'
+
