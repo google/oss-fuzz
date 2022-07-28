@@ -20,5 +20,6 @@ make all
 
 cp FuzzClient $OUT/FuzzClient
 cp FuzzServer $OUT/FuzzServer
-cp input.zip $OUT/input.zip
+cp input.zip $OUT/FuzzClient_seed_corpus.zip
+cp input.zip $OUT/FuzzServer_seed_corpus.zip
 
