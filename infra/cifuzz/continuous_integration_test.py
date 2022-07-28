@@ -18,6 +18,7 @@ import unittest
 from unittest import mock
 
 import continuous_integration
+import docker
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -79,7 +80,7 @@ class BuildExternalProjetDockerImage(unittest.TestCase):
         project_src, build_integration_path)
 
     mock_docker_build.assert_called_with([
-        '-t', 'external-project', '-f',
+        '-t', docker.EXTERNAL_PROJECT_IMAGE, '-f',
         os.path.join('.clusterfuzzlite', 'Dockerfile'), project_src
     ])
 

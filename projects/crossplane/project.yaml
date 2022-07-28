@@ -1,0 +1,13 @@
+homepage: "https://github.com/crossplane/crossplane"
+main_repo: "https://github.com/crossplane/crossplane"
+primary_contact: "jbw976@gmail.com"
+auto_ccs :
+  - "me@muvaf.com"
+  - "nicc@rk0n.org"
+vendor_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

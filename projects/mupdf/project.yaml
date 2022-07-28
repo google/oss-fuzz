@@ -6,11 +6,9 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
-  - dataflow
 auto_ccs:
   - jonathan@titanous.com
   - sebastian.rasmussen@artifex.com

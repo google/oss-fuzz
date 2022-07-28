@@ -177,7 +177,7 @@ void report_bug(std::string bug_type) {
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
-  kill(g_root_pid, SIGABRT);
+  tgkill(g_root_pid, g_root_pid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {

@@ -107,10 +107,8 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
-    collect_dft \
     coverage \
     coverage_helper \
-    dataflow_tracer.py \
     download_corpus \
     jacoco_report_converter.py \
     rcfilt \

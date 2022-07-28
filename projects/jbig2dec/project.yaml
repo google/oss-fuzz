@@ -5,9 +5,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
-  - dataflow
 main_repo: 'git://git.ghostscript.com/jbig2dec.git'

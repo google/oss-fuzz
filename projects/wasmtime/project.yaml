@@ -8,6 +8,7 @@ auto_ccs:
   - "cfallin@gmail.com"
   - "andrew.s.brown2@gmail.com"
   - "peterhuene@gmail.com"
+  - "jsharp@fastly.com"
 sanitizers:
   - address
 fuzzing_engines:
