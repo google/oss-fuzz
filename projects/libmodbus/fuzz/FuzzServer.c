@@ -26,7 +26,8 @@ limitations under the License.
 #include "unit-test.h"
 
 #define PORT 8080
-#define MinSize 9
+#define kMinInputLength 9
+#define kMaxInputLength MODBUS_RTU_MAX_ADU_LENGTH
 
 struct Fuzzer{
     uint16_t    port;    
@@ -70,8 +71,8 @@ void *client(void *args){
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-    if(size < MinSize){
-        return 1;
+    if (size < kMinInputLength || size > kMaxInputLength){
+        return 0;
     }
 
     Fuzzer *fuzzer = (Fuzzer*)malloc(sizeof(Fuzzer));
