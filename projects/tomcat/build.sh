@@ -15,14 +15,27 @@
 #
 ################################################################################
 
-cp -r "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+cp -r "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
 
 $ANT
+$ANT test-compile
+$ANT download-compile
 
-cp "output/build/lib/tomcat-coyote.jar" "$OUT/tomcat-coyote.jar"
-cp "output/build/lib/tomcat-util.jar" "$OUT/tomcat-util.jar"
+cd $SRC/tomcat/output/classes && jar cfv classes.jar . && mv ./classes.jar $OUT 
+cd $SRC/tomcat/output/testclasses && jar cfv testclasses.jar . && mv ./testclasses.jar $OUT
+cd $OUT
+mkdir tmp
+(cd tmp; unzip -uo ../classes.jar)
+(cd tmp; unzip -uo ../testclasses.jar)
+jar -cvf tomcat.jar -C tmp .
+rm -rf tmp
+rm classes.jar
+rm testclasses.jar
+cd $SRC/tomcat
 
-ALL_JARS="tomcat-coyote.jar tomcat-util.jar"
+cp /root/tomcat-build-libs/unboundid*/unboundid*.jar $OUT/unboundid-ldapsdk.jar
+
+ALL_JARS="tomcat.jar unboundid-ldapsdk.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -33,19 +46,19 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
-  cp $SRC/$fuzzer_basename.class $OUT/
+  javac -cp $BUILD_CLASSPATH $fuzzer --release 11
+  cp $SRC/[$fuzzer_basename]*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+JAVA_HOME=\"\$this_dir/open-jdk/\" \
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+-rss_limit_mb=0 \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
