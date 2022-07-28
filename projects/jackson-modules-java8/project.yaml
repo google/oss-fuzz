@@ -1,0 +1,13 @@
+homepage: "https://github.com/FasterXML/jackson-modules-java8"
+language: jvm
+main_repo: "https://github.com/FasterXML/jackson-modules-java8.git"
+primary_contact: "tatu@fasterxml.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

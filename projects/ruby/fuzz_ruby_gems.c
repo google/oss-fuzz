@@ -15,6 +15,10 @@ limitations under the License.
 
 #define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
 
+// The maximum number of arguments of any of the target functions.
+// Increase as needed.
+#define MAX_NARGS 2
+
 enum RubyDataType { RDT_CString };
 
 struct TargetFunction {
@@ -143,12 +147,10 @@ int run_fuzz_function(struct ByteStream *bs, struct TargetFunction *fcn) {
     return -1;
   }
 
-  VALUE *args = calloc(fcn->nargs_, sizeof(VALUE));
-  if (!args) {
-    return -1;
-  }
+  VALUE args[MAX_NARGS] = {};
   int result = -1;
   int i;
+  assert(fcn->nargs_ <= MAX_NARGS);
   for (i = 0; i < fcn->nargs_; i++) {
     VALUE v = generate_value(bs, fcn->argTypes_[i]);
     if (!v) {
@@ -166,7 +168,6 @@ int run_fuzz_function(struct ByteStream *bs, struct TargetFunction *fcn) {
   }
 
 out:
-  free(args);
   return result;
 }
 

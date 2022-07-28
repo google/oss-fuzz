@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/AzureAD/microsoft-authentication-library-for-python msal
+WORKDIR msal
 
-export LIB_FUZZING_ENGINE="/usr/lib/DataFlow*.o"
-echo -n "Compiling DataFlow to $LIB_FUZZING_ENGINE... "
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-
-$CXX $CXXFLAGS -fno-sanitize=all $SANITIZER_FLAGS -std=c++11 -O2 -c \
-    $SRC/libfuzzer/dataflow/DataFlow.cpp
-$CXX $CXXFLAGS -fno-sanitize=all -fPIC -std=c++11 -O2 -c \
-    $SRC/libfuzzer/dataflow/DataFlowCallbacks.cpp
-
-cp $WORK/libfuzzer/DataFlow*.o /usr/lib/
-
-popd > /dev/null
-rm -rf $WORK/libfuzzer
-echo " done."
+COPY build.sh fuzz_*.py $SRC/

@@ -14,12 +14,10 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
 main_repo: 'https://github.com/lz4/lz4.git'

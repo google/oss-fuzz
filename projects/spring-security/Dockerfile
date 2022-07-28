@@ -16,21 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/json.dict $SRC/BasicJsonParserFuzzer.dict && \
-    rm -rf fuzzing
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $SRC/BasicJsonParserFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
-    rm -rf go-fuzz-corpus
-
-ARG java_home="/out/open-jdk-17"
-RUN mkdir -p $java_home
-
 RUN apt update && apt install -y openjdk-17-jdk
-ENV JAVA_HOME $java_home
-ENV PATH "${java_home}:${PATH}"
-ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
 
 RUN git clone --depth 1 https://github.com/spring-projects/spring-security
 RUN git clone --depth 1 https://github.com/spring-projects/spring-ldap spring-ldap

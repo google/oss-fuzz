@@ -177,8 +177,7 @@ void report_bug(std::string bug_type) {
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
-  kill(g_root_pid, SIGABRT);
-  _exit(0);
+  tgkill(g_root_pid, g_root_pid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
@@ -267,7 +266,8 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   match_error_pattern(buffer, g_shell_pids[pid]);
 }
 
-void trace(std::map<pid_t, Tracee> pids) {
+int trace(std::map<pid_t, Tracee> pids) {
+  unsigned long exit_status = 0;
   while (!pids.empty()) {
     std::vector<pid_t> new_pids;
 
@@ -313,6 +313,21 @@ void trace(std::map<pid_t, Tracee> pids) {
         }
         sig = siginfo.si_signo;
         debug_log("forwarding signal %d to %d", sig, pid);
+      }
+
+      if ((status >> 8 == (SIGTRAP | (PTRACE_EVENT_EXIT << 8)))) {
+        debug_log("%d exiting", pid);
+        if (pid == g_root_pid) {
+          if (ptrace(PTRACE_GETEVENTMSG, pid, 0, &exit_status) == -1) {
+            debug_log("ptrace(PTRACE_GETEVENTMSG, %d): %s", pid, strerror(errno));
+          }
+          debug_log("got exit status from root process: %lu", exit_status);
+        }
+
+        if (ptrace(PTRACE_DETACH, pid, 0, 0) == -1) {
+          debug_log("ptrace(PTRACE_DETACH, %d): %s", pid, strerror(errno));
+        }
+        continue;
       }
 
       if (WIFSTOPPED(status) &&
@@ -374,6 +389,7 @@ void trace(std::map<pid_t, Tracee> pids) {
       pids.emplace(pid, Tracee(pid));
     }
   }
+  return static_cast<int>(exit_status >> 8);
 }
 
 int main(int argc, char **argv) {
@@ -390,7 +406,8 @@ int main(int argc, char **argv) {
   pid_t pid = run_child(argv + 1);
 
   long options = PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEFORK |
-                 PTRACE_O_TRACEVFORK | PTRACE_O_TRACECLONE;
+                 PTRACE_O_TRACEVFORK | PTRACE_O_TRACECLONE |
+                 PTRACE_O_TRACEEXIT;
 
   if (ptrace(PTRACE_SEIZE, pid, nullptr, options) == -1) {
     fatal_log("ptrace(PTRACE_SEIZE): %s", strerror(errno));
@@ -407,5 +424,5 @@ int main(int argc, char **argv) {
   g_root_pid = pid;
   std::map<pid_t, Tracee> pids;
   pids.emplace(pid, Tracee(pid));
-  trace(pids);
+  return trace(pids);
 }

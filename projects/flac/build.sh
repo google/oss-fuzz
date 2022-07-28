@@ -27,7 +27,8 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
-export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+export CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=0"
+export CXXFLAGS="$CXXFLAGS -D_FORTIFY_SOURCE=0 -D_GLIBCXX_DEBUG"
 
 # Build libogg
 mkdir $SRC/libogg-install
@@ -60,7 +61,7 @@ make -j$(nproc)
 
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder fuzzer_seek $OUT
+cp fuzzer_decoder fuzzer_seek fuzzer_metadata $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 
