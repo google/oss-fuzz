@@ -73,9 +73,9 @@ run_test(const uint8_t *data,
   }
 
   // Create the transform
-  cmsContext Plugin = cmsCreateContext(NULL, NULL);
+  cmsContext ctx = cmsCreateContext(NULL, NULL);
   cmsHTRANSFORM hTransform = cmsCreateTransformTHR(
-    Plugin,
+    ctx,
     srcProfile,
     srcFormat,
     dstProfile,
