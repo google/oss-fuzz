@@ -45,7 +45,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
   write(fd, buffer.data(), buffer.size());
 
-  std::string fspath("/proc/self/fd" + std::to_string(fd));
+  std::string fspath("/proc/self/fd/" + std::to_string(fd));
 
   ext2_filsys fs;
   errcode_t retval = ext2fs_open(
