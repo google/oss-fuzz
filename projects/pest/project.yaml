@@ -5,6 +5,7 @@ auto_ccs:
   - "cad97@cad97.com"
   - "flying-sheep@web.de"
   - "nbtheduke@gmail.com"
+  - "me@tomtau.be"
 sanitizers:
   - address
 fuzzing_engines:
