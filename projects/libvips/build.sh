@@ -57,17 +57,20 @@ popd
 pushd $SRC/aom
 mkdir -p build/linux
 cd build/linux
-cmake -G "Unix Makefiles" \
-  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
-  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+extra_libaom_flags='-DAOM_MAX_ALLOCABLE_MEMORY=536870912 -DDO_RANGE_CHECK_CLAMP=1'
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DCONFIG_PIC=1 \
+  -DENABLE_EXAMPLES=0 \
+  -DENABLE_DOCS=0 \
+  -DENABLE_TESTS=0 \
   -DENABLE_TOOLS=0 \
   -DCONFIG_SIZE_LIMIT=1 \
-  -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
-  -DDO_RANGE_CHECK_CLAMP=1 \
-  -DAOM_MAX_ALLOCABLE_MEMORY=536870912 \
+  -DDECODE_HEIGHT_LIMIT=12288 \
+  -DDECODE_WIDTH_LIMIT=12288 \
+  -DAOM_EXTRA_C_FLAGS="$extra_libaom_flags" \
+  -DAOM_EXTRA_CXX_FLAGS="$extra_libaom_flags" \
   -DAOM_TARGET_CPU=generic \
   ../../
 make clean
@@ -93,14 +96,20 @@ popd
 
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_TURBOJPEG=FALSE
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DENABLE_STATIC=TRUE \
+  -DENABLE_SHARED=FALSE \
+  -DWITH_TURBOJPEG=FALSE \
+  .
 make -j$(nproc)
 make install
 popd
 
 # libpng
 pushd $SRC/libpng
-sed -ie "s/option WARNING /& disabled/" scripts/pnglibconf.dfa
+sed -ie 's/option WARNING /& disabled/' scripts/pnglibconf.dfa
 autoreconf -fi
 ./configure \
   --prefix=$WORK \
@@ -112,7 +121,7 @@ popd
 
 # libspng
 pushd $SRC/libspng
-meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized \
   -Dstatic_zlib=true
 ninja -C build
 ninja -C build install
@@ -155,17 +164,16 @@ pushd $SRC/libjxl
 sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
 # FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
 # https://github.com/libjxl/libjxl/issues/858
-cmake -G "Unix Makefiles" \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=$CC \
-  -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
-  -DCMAKE_CXX_FLAGS="$CXXFLAGS -DHWY_DISABLED_TARGETS=HWY_SSSE3" \
-  -DCMAKE_INSTALL_PREFIX="$WORK" \
-  -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
-  -DCMAKE_USE_PTHREADS_INIT=1 \
+extra_libjxl_flags='-DHWY_DISABLED_TARGETS=HWY_SSSE3'
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS $extra_libjxl_flags" \
+  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS $extra_libjxl_flags" \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DZLIB_ROOT=$WORK \
   -DBUILD_SHARED_LIBS=0 \
   -DBUILD_TESTING=0 \
+  -DJPEGXL_FORCE_SYSTEM_LCMS2=1 \
   -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
   -DJPEGXL_ENABLE_FUZZERS=0 \
   -DJPEGXL_ENABLE_TOOLS=0 \
@@ -181,14 +189,14 @@ popd
 
 # libimagequant
 pushd $SRC/libimagequant
-meson setup build --prefix=$WORK --libdir=lib --default-library=static
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized
 ninja -C build
 ninja -C build install
 popd
 
 # cgif
 pushd $SRC/cgif
-meson setup build --prefix=$WORK --libdir=lib --default-library=static
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized
 ninja -C build
 ninja -C build install
 popd

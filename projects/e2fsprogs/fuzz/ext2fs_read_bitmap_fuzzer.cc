@@ -32,18 +32,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider stream(data, size);
   const FuzzerType f = stream.ConsumeEnum<FuzzerType>();
-  static const char* fname = "/tmp/ext2_test_file";
+  const int flags = stream.ConsumeIntegral<int>();
+
+  static const char* fname = "ext2_test_file";
 
   // Write our data to a temp file.
   int fd = syscall(SYS_memfd_create, fname, 0);
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
   write(fd, buffer.data(), buffer.size());
-  close(fd);
+
+  std::string fspath("/proc/self/fd/" + std::to_string(fd));
 
   ext2_filsys fs;
   errcode_t retval = ext2fs_open(
-      fname,
-      0, 0, 0,
+      fspath.c_str(),
+      flags | EXT2_FLAG_IGNORE_CSUM_ERRORS, 0, 0,
       unix_io_manager,
       &fs);
 
@@ -63,6 +66,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     ext2fs_close(fs);
   }
+  close(fd);
 
   return 0;
 }
