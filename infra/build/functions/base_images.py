@@ -54,15 +54,9 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   return steps
 
 
-def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
-  """Returns build steps for given images version of introspector"""
-  steps = [{
-      'args': [
-          'clone',
-          'https://github.com/google/oss-fuzz.git',
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  }]
+def get_introspector_base_images_steps(branch=None, tag_prefix=TAG_PREFIX):
+  """Returns build steps for given images version of introspector."""
+  steps = [build_lib.get_clone_step(branch)]
 
   for base_image in images:
     image = tag_prefix + base_image
@@ -122,8 +116,7 @@ def base_builder(event, context):
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  introspector_steps = _get_introspector_base_images_steps(
-      INTROSPECTOR_BASE_IMAGES)
+  introspector_steps = get_introspector_base_images_steps()
   introspector_images = [
       TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]

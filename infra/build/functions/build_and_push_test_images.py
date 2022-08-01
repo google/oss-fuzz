@@ -67,7 +67,7 @@ def build_image(image, tags, cache_from_tag):
   logging.info('Built: %s', image)
 
 
-def gcb_build_and_push_images(test_image_suffix):
+def gcb_build_and_push_images(test_image_suffix, introspector):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_images = []
@@ -97,7 +97,7 @@ def gcb_build_and_push_images(test_image_suffix):
                  check=True)
 
 
-def build_and_push_images(test_image_suffix):
+def build_and_push_images(test_image_suffix, introspector=False):
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
