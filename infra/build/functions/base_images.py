@@ -74,7 +74,7 @@ def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
       args_list.extend(['--build-arg', 'introspector=1'])
     elif base_image == 'base-builder':
       args_list.extend(
-          ['--build-arg', 'gcr.io/oss-fuzz-base/base-clang:introspector'])
+          ['--build-arg', 'parent_image=gcr.io/oss-fuzz-base/base-clang:introspector'])
 
     args_list.extend([
         '-t',
@@ -92,7 +92,7 @@ def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
 
 # pylint: disable=no-member
 def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
-  """Execute the retrieved build steps in gcb."""
+  """Execute the build |steps| in GCB and push |images| to the registry."""
   credentials, _ = google.auth.default()
   body_overrides = {
       'images': images + [f'{image}:{build_version}' for image in images],
