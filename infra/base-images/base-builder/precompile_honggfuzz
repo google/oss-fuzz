@@ -21,9 +21,7 @@ export BUILD_OSSFUZZ_STATIC=true
 PACKAGES=(
     libunwind8-dev
     libblocksruntime-dev
-    liblzma-dev
     libiberty-dev
-    zlib1g-dev
     pkg-config)
 
 apt-get install -y ${PACKAGES[@]}
