@@ -293,7 +293,7 @@ def trial_build_main(args=None, local_base_build=True):
   builds."""
   args = get_args(args)
   if args.branch:
-    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch}'
+    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
 
