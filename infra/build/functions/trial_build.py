@@ -293,12 +293,17 @@ def trial_build_main(args=None, local_base_build=True):
   builds."""
   args = get_args(args)
   introspector = 'introspector' in args.sanitizers
+  if args.branch:
+    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
+  else:
+    test_image_suffix = TEST_IMAGE_SUFFIX
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        TEST_IMAGE_SUFFIX)
+        test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(
-        TEST_IMAGE_SUFFIX, introspector=introspector)
+        test_image_suffix, introspector=introspector)
+
   return _do_test_builds(args)
 
 
