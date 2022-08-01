@@ -106,6 +106,28 @@ function cmake_llvm {
       $LLVM_SRC/llvm
 }
 
+# Use chromium's clang revision
+mkdir $SRC/chromium_tools
+cd $SRC/chromium_tools
+git clone https://chromium.googlesource.com/chromium/src/tools/clang
+cd clang
+# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
+git checkout 946a41a51f44207941b3729a0733dfc1e236644e
+
+LLVM_SRC=$SRC/llvm-project
+
+# For manual bumping.
+OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
+
+# To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
+# *not* force a manual downgrade). Set to 1 to force a manual downgrade.
+# DO NOT CHANGE THIS UNTIL https://github.com/google/oss-fuzz/issues/7273 is
+# RESOLVED.
+FORCE_OUR_REVISION=1
+LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
+
+clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
+
 set +e
 git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION
 IS_OUR_REVISION_ANCESTOR_RETCODE=$?
