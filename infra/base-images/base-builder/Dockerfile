@@ -30,6 +30,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
+        python3-pip \
         rsync \
         subversion \
         zip
