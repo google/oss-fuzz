@@ -32,6 +32,7 @@ CLOUD_PROJECT = 'oss-fuzz-base'
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 IMAGES_DIR = os.path.join(INFRA_DIR, 'base-images')
 OSS_FUZZ_ROOT = os.path.dirname(INFRA_DIR)
+GCB_BUILD_TAGS = ['trial-build']
 
 
 def push_image(tag):
@@ -92,7 +93,7 @@ def get_image_tags(image, test_image_suffix=None, introspector=False):
   return main_tag, test_tag
 
 
-def _get_introspector_base_images_steps(test_image_suffix):
+def _get_introspector_base_images_build_body(test_image_suffix):
   """Returns build steps for introspector."""
   steps = []
 
@@ -114,10 +115,11 @@ def _get_introspector_base_images_steps(test_image_suffix):
                                          image_path,
                                          test_tag,
                                          src_root='.')
-
   step['args'] += ['--build-arg', f'parent_image={test_clang_tag}']
   steps.append(step)
-  return steps
+  overrides = {'images': [test_clang_tag, test_tag]}
+  return build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
+                                  GCB_BUILD_TAGS)
 
 
 def gcb_build_and_push_images(test_image_suffix, introspector):
@@ -138,10 +140,10 @@ def gcb_build_and_push_images(test_image_suffix, introspector):
 
   overrides = {'images': test_tags}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
-                                        ['trial-build'])
+                                        GCB_BUILD_TAGS)
   _run_cloudbuild(build_body)
   if introspector:
-    introspector_build_body = _get_introspector_base_images_steps(
+    introspector_build_body = _get_introspector_base_images_build_body(
         test_image_suffix)
     _run_cloudbuild(introspector_build_body)
 
