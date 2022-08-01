@@ -44,10 +44,8 @@ def push_image(tag):
 
 def build_and_push_image(image, test_image_suffix):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
-  main_tag = base_images.TAG_PREFIX + image
-  testing_tag = main_tag + '-' + test_image_suffix
-  tags = [main_tag, testing_tag]
-  build_image(image, tags, testing_tag)
+  main_tag, testing_tag = base_images.get_image_tags(image, test_image_suffix)
+  build_image(image, [main_tag, testing_tag], testing_tag)
   push_image(testing_tag)
 
 
@@ -74,31 +72,62 @@ def _run_cloudbuild(build_body):
   subprocess.run([
       'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
       f'--config={yaml_file}'
-  ], cwd=OSS_FUZZ_ROOT, check=True)
+  ],
+                 cwd=OSS_FUZZ_ROOT,
+                 check=True)
 
+
+def _get_introspector_base_images_steps(test_image_suffix):
+  """Returns build steps for introspector."""
+  steps = []
+
+  main_clang_tag, test_clang_tag = base_images.get_image_tags('base-clang',
+                                                              test_image_suffix,
+                                                              introspector=True)
+  image_path = build_lib.get_base_image_path('base-clang')
+  step = build_lib.get_docker_build_step([main_clang_tag, test_clang_tag],
+                                         image_path,
+                                         test_clang_tag,
+                                         src_root='.')
+  step['args'] += ['--build-arg', 'introspector=1']
+  steps.append(step)
+  main_tag, test_tag = base_images.get_image_tags('base-builder',
+                                                  test_image_suffix,
+                                                  introspector=True)
+  image_path = build_lib.get_base_image_path('base-builder')
+  step = build_lib.get_docker_build_step([main_tag, test_tag],
+                                         image_path,
+                                         test_tag,
+                                         src_root='.')
+
+  step['args'] += ['--build-arg', f'parent_image={test_clang_tag}']
+  steps.append(step)
+  return steps
 
 
 def gcb_build_and_push_images(test_image_suffix, introspector):
   """Build and push test versions of base images using GCB."""
   steps = []
-  test_images = []
+  test_tags = []
   for base_image in base_images.BASE_IMAGES:
-    image_name = base_images.TAG_PREFIX + base_image
-    test_image_name = f'{image_name}-{test_image_suffix}'
-    test_images.append(test_image_name)
+    main_tag, test_tag = build_lib.get_image_tags(base_image,
+                                                  test_image_suffix,
+                                                  introspector=introspector)
+    test_tags.append(test_tag)
     directory = os.path.join('infra', 'base-images', base_image)
-    step = build_lib.get_docker_build_step([image_name, test_image_name],
+    step = build_lib.get_docker_build_step([main_tag, test_tag],
                                            directory,
-                                           buildkit_cache_image=test_image_name,
+                                           buildkit_cache_image=test_tag,
                                            src_root='.')
     steps.append(step)
 
-  overrides = {'images': test_images}
+  overrides = {'images': test_tags}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
                                         ['trial-build'])
   _run_cloudbuild(build_body)
   if introspector:
-    introspector_build_body = get_introspector_base_images_steps(
+    introspector_build_body = _get_introspector_base_images_steps(
+        test_image_suffix)
     _run_cloudbuild(introspector_build_body)
 
 

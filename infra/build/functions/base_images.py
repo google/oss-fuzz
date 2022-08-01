@@ -15,6 +15,7 @@
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
 import logging
+import os
 
 import google.auth
 
@@ -42,6 +43,12 @@ TIMEOUT = str(6 * 60 * 60)
 INTROSPECTOR_ARG = ['--build-arg', 'introspector=1']
 
 
+def get_base_image_path(image_name):
+  """Returns the path to the directory containing the Dockerfile of the base
+  image."""
+  return os.path.join('infra', 'base-images', image_name)
+
+
 def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images."""
   steps = [build_lib.get_git_clone_step()]
@@ -49,47 +56,40 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   for base_image in images:
     image = tag_prefix + base_image
     tagged_image = image + ':' + MAJOR_TAG
+    image_path = get_base_image_path(base_image)
     steps.append(
-        build_lib.get_docker_build_step([image, tagged_image],
-                                        'infra/base-images/' + base_image))
+        build_lib.get_docker_build_step([image, tagged_image], image_path))
   return steps
 
-def get_image_tags(name, test_image_suffix=None, introspector=False):
-  tags = [TAG_PREFIX + image]
+
+def get_image_tags(image, test_image_suffix=None, introspector=False):
+  """Returns tags for image build."""
+  main_tag = TAG_PREFIX + image
+  test_tag = None
+
   if test_image_suffix:
-    tag = tags[0]
-    tags.append(tag + '-' + test_image_suffix)
+    test_tag = main_tag + '-' + test_image_suffix
+
   if introspector:
+    main_tag += ':introspector'
+    if test_tag is not None:
+      test_tag += ':introspector'
+  return main_tag, test_tag
 
-  return tags
 
+def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
+  """Returns build steps for given images version of introspector"""
+  steps = [build_lib.get_git_clone_step()]
 
-def get_introspector_base_images_steps(
-    clone=True, test_image_suffix=None, tag_prefix=TAG_PREFIX):
-  """Returns build steps for given images version of introspector."""
-  steps = []
-  if clone:
-    steps.append(build_lib.get_clone_step())
-
-  for base_image in images:
+  for base_image in INTROSPECTOR_BASE_IMAGES:
     image = tag_prefix + base_image
     args_list = ['build']
 
-  steps += [
-    ['build', '--build-arg', 'introspector=1'],
-  ]
-
     if base_image == 'base-clang':
-      args_list.extend(INTROSPECTOR_ARG)
+      args_list.extend(['--build-arg', 'introspector=1'])
     elif base_image == 'base-builder':
-      steps.append({
-          'name':
-              'gcr.io/cloud-builders/docker',
-          'args': [
-              'tag', 'gcr.io/oss-fuzz-base/base-clang:introspector',
-              'gcr.io/oss-fuzz-base/base-clang:latest'
-          ]
-      })
+      args_list.extend(
+          ['--build-arg', 'gcr.io/oss-fuzz-base/base-clang:introspector'])
 
     args_list.extend([
         '-t',
@@ -98,7 +98,7 @@ def get_introspector_base_images_steps(
     ])
     steps.append({
         'args': args_list,
-        'dir': 'oss-fuzz/infra/base-images/' + base_image,
+        'dir': os.path.join('oss-fuzz', get_base_image_path(base_image)),
         'name': 'gcr.io/cloud-builders/docker',
     })
 
@@ -133,7 +133,7 @@ def base_builder(event, context):
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  introspector_steps = get_introspector_base_images_steps()
+  introspector_steps = _get_introspector_base_images_steps()
   introspector_images = [
       TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
