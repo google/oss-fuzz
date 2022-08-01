@@ -39,6 +39,7 @@ TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
 TIMEOUT = str(6 * 60 * 60)
+INTROSPECTOR_ARG = ['--build-arg', 'introspector=1']
 
 
 def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
@@ -53,17 +54,33 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
                                         'infra/base-images/' + base_image))
   return steps
 
+def get_image_tags(name, test_image_suffix=None, introspector=False):
+  tags = [TAG_PREFIX + image]
+  if test_image_suffix:
+    tag = tags[0]
+    tags.append(tag + '-' + test_image_suffix)
+  if introspector:
 
-def get_introspector_base_images_steps(branch=None, tag_prefix=TAG_PREFIX):
+  return tags
+
+
+def get_introspector_base_images_steps(
+    clone=True, test_image_suffix=None, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images version of introspector."""
-  steps = [build_lib.get_clone_step(branch)]
+  steps = []
+  if clone:
+    steps.append(build_lib.get_clone_step())
 
   for base_image in images:
     image = tag_prefix + base_image
     args_list = ['build']
 
+  steps += [
+    ['build', '--build-arg', 'introspector=1'],
+  ]
+
     if base_image == 'base-clang':
-      args_list.extend(['--build-arg', 'introspector=1'])
+      args_list.extend(INTROSPECTOR_ARG)
     elif base_image == 'base-builder':
       steps.append({
           'name':

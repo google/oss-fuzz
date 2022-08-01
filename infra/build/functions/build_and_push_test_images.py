@@ -29,7 +29,6 @@ import base_images
 import build_lib
 
 CLOUD_PROJECT = 'oss-fuzz-base'
-TAG_PREFIX = f'gcr.io/{CLOUD_PROJECT}/'
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 IMAGES_DIR = os.path.join(INFRA_DIR, 'base-images')
 OSS_FUZZ_ROOT = os.path.dirname(INFRA_DIR)
@@ -45,7 +44,7 @@ def push_image(tag):
 
 def build_and_push_image(image, test_image_suffix):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
-  main_tag = TAG_PREFIX + image
+  main_tag = base_images.TAG_PREFIX + image
   testing_tag = main_tag + '-' + test_image_suffix
   tags = [main_tag, testing_tag]
   build_image(image, tags, testing_tag)
@@ -67,12 +66,24 @@ def build_image(image, tags, cache_from_tag):
   logging.info('Built: %s', image)
 
 
+def _run_cloudbuild(build_body):
+  yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
+  with open(yaml_file, 'w') as yaml_file_handle:
+    yaml.dump(build_body, yaml_file_handle)
+
+  subprocess.run([
+      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
+      f'--config={yaml_file}'
+  ], cwd=OSS_FUZZ_ROOT, check=True)
+
+
+
 def gcb_build_and_push_images(test_image_suffix, introspector):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_images = []
   for base_image in base_images.BASE_IMAGES:
-    image_name = TAG_PREFIX + base_image
+    image_name = base_images.TAG_PREFIX + base_image
     test_image_name = f'{image_name}-{test_image_suffix}'
     test_images.append(test_image_name)
     directory = os.path.join('infra', 'base-images', base_image)
@@ -85,19 +96,13 @@ def gcb_build_and_push_images(test_image_suffix, introspector):
   overrides = {'images': test_images}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
                                         ['trial-build'])
-  yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
-  with open(yaml_file, 'w') as yaml_file_handle:
-    yaml.dump(build_body, yaml_file_handle)
-
-  subprocess.run([
-      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-      f'--config={yaml_file}'
-  ],
-                 cwd=OSS_FUZZ_ROOT,
-                 check=True)
+  _run_cloudbuild(build_body)
+  if introspector:
+    introspector_build_body = get_introspector_base_images_steps(
+    _run_cloudbuild(introspector_build_body)
 
 
-def build_and_push_images(test_image_suffix, introspector=False):
+def build_and_push_images(test_image_suffix):
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
