@@ -44,7 +44,7 @@ def push_image(tag):
 
 def build_and_push_image(image, test_image_suffix):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
-  main_tag, testing_tag = base_images.get_image_tags(image, test_image_suffix)
+  main_tag, testing_tag = get_image_tags(image, test_image_suffix)
   build_image(image, [main_tag, testing_tag], testing_tag)
   push_image(testing_tag)
 
@@ -77,24 +77,39 @@ def _run_cloudbuild(build_body):
                  check=True)
 
 
+def get_image_tags(image, test_image_suffix=None, introspector=False):
+  """Returns tags for image build."""
+  main_tag = base_images.TAG_PREFIX + image
+  test_tag = None
+
+  if test_image_suffix:
+    test_tag = main_tag + '-' + test_image_suffix
+
+  if introspector:
+    main_tag += ':introspector'
+    if test_tag is not None:
+      test_tag += ':introspector'
+  return main_tag, test_tag
+
+
 def _get_introspector_base_images_steps(test_image_suffix):
   """Returns build steps for introspector."""
   steps = []
 
-  main_clang_tag, test_clang_tag = base_images.get_image_tags('base-clang',
-                                                              test_image_suffix,
-                                                              introspector=True)
-  image_path = build_lib.get_base_image_path('base-clang')
+  main_clang_tag, test_clang_tag = get_image_tags('base-clang',
+                                                  test_image_suffix,
+                                                  introspector=True)
+  image_path = base_images.get_base_image_path('base-clang')
   step = build_lib.get_docker_build_step([main_clang_tag, test_clang_tag],
                                          image_path,
                                          test_clang_tag,
                                          src_root='.')
   step['args'] += ['--build-arg', 'introspector=1']
   steps.append(step)
-  main_tag, test_tag = base_images.get_image_tags('base-builder',
-                                                  test_image_suffix,
-                                                  introspector=True)
-  image_path = build_lib.get_base_image_path('base-builder')
+  main_tag, test_tag = get_image_tags('base-builder',
+                                      test_image_suffix,
+                                      introspector=True)
+  image_path = base_images.get_base_image_path('base-builder')
   step = build_lib.get_docker_build_step([main_tag, test_tag],
                                          image_path,
                                          test_tag,
@@ -110,9 +125,9 @@ def gcb_build_and_push_images(test_image_suffix, introspector):
   steps = []
   test_tags = []
   for base_image in base_images.BASE_IMAGES:
-    main_tag, test_tag = build_lib.get_image_tags(base_image,
-                                                  test_image_suffix,
-                                                  introspector=introspector)
+    main_tag, test_tag = get_image_tags(base_image,
+                                        test_image_suffix,
+                                        introspector=introspector)
     test_tags.append(test_tag)
     directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([main_tag, test_tag],

@@ -62,21 +62,6 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   return steps
 
 
-def get_image_tags(image, test_image_suffix=None, introspector=False):
-  """Returns tags for image build."""
-  main_tag = TAG_PREFIX + image
-  test_tag = None
-
-  if test_image_suffix:
-    test_tag = main_tag + '-' + test_image_suffix
-
-  if introspector:
-    main_tag += ':introspector'
-    if test_tag is not None:
-      test_tag += ':introspector'
-  return main_tag, test_tag
-
-
 def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
   """Returns build steps for given images version of introspector"""
   steps = [build_lib.get_git_clone_step()]
