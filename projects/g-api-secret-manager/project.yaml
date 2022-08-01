@@ -1,6 +1,8 @@
 homepage: "https://github.com/googleapis/python-secret-manager"
 language: python
 main_repo: "https://github.com/googleapis/python-secret-manager"
+fuzzing_engines:
+- libfuzzer
 sanitizers:
 - address
 - undefined

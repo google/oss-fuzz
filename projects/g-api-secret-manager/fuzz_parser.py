@@ -29,7 +29,6 @@ def TestOneInput(data):
     SecretManagerServiceClient.parse_common_organization_path(fdp.ConsumeString(sys.maxsize))
     SecretManagerServiceClient.parse_common_folder_path(fdp.ConsumeString(sys.maxsize))
     SecretManagerServiceClient.parse_common_billing_account_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_topic_path(fdp.ConsumeString(sys.maxsize))
 
 
 def main():
