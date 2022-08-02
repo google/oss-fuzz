@@ -256,7 +256,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   return all(build_results.values())
 
 
-def _do_test_builds(args):
+def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
   # TODO(metzman): Make this handle concurrent builds.
   build_types = []
@@ -274,7 +274,7 @@ def _do_test_builds(args):
     projects = get_projects_to_build(list(args.projects), build_type,
                                      args.force_build)
     config = build_project.Config(testing=True,
-                                  test_image_suffix=TEST_IMAGE_SUFFIX,
+                                  test_image_suffix=test_image_suffix,
                                   branch=args.branch,
                                   parallel=False,
                                   upload=False)
@@ -302,7 +302,7 @@ def trial_build_main(args=None, local_base_build=True):
         test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
-  return _do_test_builds(args)
+  return _do_test_builds(args, test_image_suffix)
 
 
 def main():
