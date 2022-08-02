@@ -282,13 +282,14 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     report_bug(kArbitraryFileOpenError);
   }
   if (path[0] == '/' && path.length() > 1) {
-    size_t found = path.find('/', 1);
-    if (found != std::string::npos) {
-      std::string path_absolute_topdir = path.substr(0, found);
-      struct stat dirstat;
-      if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-        report_bug(kArbitraryFileOpenError);
-      }
+    std::string path_absolute_topdir = path;
+    size_t root_dir_end = path.find('/', 1);
+    if (root_dir_end != std::string::npos) {
+      path_absolute_topdir = path.substr(0, root_dir_end);
+    }
+    struct stat dirstat;
+    if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
+      report_bug(kArbitraryFileOpenError);
     }
   }
 }
