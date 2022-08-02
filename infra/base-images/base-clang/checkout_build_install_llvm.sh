@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# See issue #4270. The compiler crashes on GCB instance with 32 vCPUs, so when
-# we compile on GCB we want 16 cores. But locally we want more (so use nproc /
-# 2).
 NPROC=$(nproc)
 
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
