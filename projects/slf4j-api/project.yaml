@@ -6,6 +6,7 @@ auto_ccs:
   - "wagner@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "yakdan@code-intelligence.com"
+  - "hlin@code-intelligence.com"
 fuzzing_engines:
   - "libfuzzer"
 sanitizers:
