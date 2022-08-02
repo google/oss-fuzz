@@ -7,6 +7,8 @@ auto_ccs:
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

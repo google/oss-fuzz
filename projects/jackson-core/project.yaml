@@ -4,6 +4,8 @@ primary_contact: "tatu@fasterxml.com"
 auto_ccs:
   - "meumertzheim@code-intelligence.com"
   - "norbert.schneider@code-intelligence.com"
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/FasterXML/jackson-core"
