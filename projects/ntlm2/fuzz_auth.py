@@ -15,24 +15,52 @@
 
 import atheris
 import sys
+import socket
+import time
+from threading import Thread
 with atheris.instrument_imports():
     import requests
     from requests.exceptions import InvalidURL,ConnectionError
     from requests_ntlm2 import HttpNtlmAuth
 
+class ServerThread(Thread):
+    def __init__(self, fdp):
+        self.fdp = fdp
+
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind(("127.0.0.1", 8001))
+        self.s.listen(1)
+
+        Thread.__init__(self)
+
+    def run(self):
+        conn, addr = self.s.accept()
+        conn.recv(self.fdp.ConsumeIntInRange(1024,2048))
+        conn.send(self.fdp.ConsumeBytes(2048))
+        time.sleep(0.005)
+        conn.close()
+        self.s.shutdown(1)
+        self.s.close()
+        time.sleep(0.01)
+
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    session = requests.Session()
+    t1 = ServerThread(fdp)
+    t1.start()
 
+    session = requests.Session()
     auth = HttpNtlmAuth(fdp.ConsumeString(50),fdp.ConsumeString(10))
     session.auth = HttpNtlmAuth(fdp.ConsumeString(50),fdp.ConsumeString(10))
 
     try:
-       requests.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)),auth=auth)
-       session.get('http://localhost:%d/%s'%(fdp.ConsumeIntInRange(10000,65535),fdp.ConsumeString(20)))
+       requests.get('http://localhost:8001/%s'%fdp.ConsumeString(20),auth=auth)
+       session.get('http://localhost:8001/%s'%fdp.ConsumeString(20))
     except (InvalidURL,ConnectionError) as e:
        pass
+
+    t1.join()
 
 def main(): 
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
