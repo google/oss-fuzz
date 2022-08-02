@@ -84,7 +84,7 @@ def gcb_build_and_push_images(test_image_suffix):
 
   overrides = {'images': test_images}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
-                                        ['trial-build'])
+                                        ['trial-build', test_image_suffix])
   yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
   with open(yaml_file, 'w') as yaml_file_handle:
     yaml.dump(build_body, yaml_file_handle)
