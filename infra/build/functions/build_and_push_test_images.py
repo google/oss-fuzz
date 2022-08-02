@@ -119,7 +119,7 @@ def _get_introspector_base_images_build_body(test_image_suffix):
   steps.append(step)
   overrides = {'images': [test_clang_tag, test_tag]}
   return build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
-                                  GCB_BUILD_TAGS)
+                                  GCB_BUILD_TAGS + [test_image_suffix])
 
 
 def gcb_build_and_push_images(test_image_suffix, introspector):
@@ -140,7 +140,7 @@ def gcb_build_and_push_images(test_image_suffix, introspector):
 
   overrides = {'images': test_tags}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
-                                        GCB_BUILD_TAGS)
+                                        GCB_BUILD_TAGS + [test_image_suffix])
   _run_cloudbuild(build_body)
   if introspector:
     introspector_build_body = _get_introspector_base_images_build_body(

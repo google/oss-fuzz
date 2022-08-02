@@ -14,7 +14,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-testing"
+      "gcr.io/oss-fuzz-base/base-builder-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -22,7 +22,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-testing",
+      "gcr.io/oss-fuzz-base/base-builder-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder"
     ]
   },
@@ -30,7 +30,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-swift-testing"
+      "gcr.io/oss-fuzz-base/base-builder-swift-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -38,7 +38,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-swift-testing",
+      "gcr.io/oss-fuzz-base/base-builder-swift-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-swift"
     ]
   },
@@ -46,7 +46,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-jvm-testing"
+      "gcr.io/oss-fuzz-base/base-builder-jvm-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -54,7 +54,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-jvm-testing",
+      "gcr.io/oss-fuzz-base/base-builder-jvm-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-jvm"
     ]
   },
@@ -62,7 +62,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-go-testing"
+      "gcr.io/oss-fuzz-base/base-builder-go-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -70,7 +70,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-go-testing",
+      "gcr.io/oss-fuzz-base/base-builder-go-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-go"
     ]
   },
@@ -78,7 +78,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-python-testing"
+      "gcr.io/oss-fuzz-base/base-builder-python-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -86,7 +86,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-python-testing",
+      "gcr.io/oss-fuzz-base/base-builder-python-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-python"
     ]
   },
@@ -94,7 +94,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
-      "gcr.io/oss-fuzz-base/base-builder-rust-testing"
+      "gcr.io/oss-fuzz-base/base-builder-rust-testing-mybranch"
     ],
     "waitFor": "-"
   },
@@ -102,7 +102,7 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
-      "gcr.io/oss-fuzz-base/base-builder-rust-testing",
+      "gcr.io/oss-fuzz-base/base-builder-rust-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-rust"
     ]
   },
@@ -147,7 +147,7 @@
     "id": "compile-afl-address-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -164,7 +164,7 @@
     "id": "build-check-afl-address-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -197,7 +197,7 @@
     "id": "compile-libfuzzer-address-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -214,7 +214,7 @@
     "id": "build-check-libfuzzer-address-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -247,7 +247,7 @@
     "id": "compile-libfuzzer-address-i386"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -264,7 +264,7 @@
     "id": "build-check-libfuzzer-address-i386"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -297,7 +297,7 @@
     "id": "compile-libfuzzer-undefined-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -314,7 +314,7 @@
     "id": "build-check-libfuzzer-undefined-x86_64"
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner-testing",
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
