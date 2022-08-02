@@ -51,7 +51,8 @@ def TestOneInput(data):
       message=gapic_pubsub_message._pb,
       ack_id = fdp.ConsumeUnicodeNoSurrogates(20),
       delivery_attempt = fdp.ConsumeIntInRange(1, 1000),
-      request_queue=queue.Queue()
+      request_queue=queue.Queue(),
+      exactly_once_delivery_enabled_func = fuzz_exactly_once_delivery_enabled_func
     )
     msg.modify_ack_deadline_with_response(fdp.ConsumeIntInRange(1, 1000))
     msg.ack_with_response()
