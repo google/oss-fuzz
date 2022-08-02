@@ -73,8 +73,10 @@ def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
     if base_image == 'base-clang':
       args_list.extend(['--build-arg', 'introspector=1'])
     elif base_image == 'base-builder':
-      args_list.extend(
-          ['--build-arg', 'parent_image=gcr.io/oss-fuzz-base/base-clang:introspector'])
+      args_list.extend([
+          '--build-arg',
+          'parent_image=gcr.io/oss-fuzz-base/base-clang:introspector'
+      ])
 
     args_list.extend([
         '-t',
