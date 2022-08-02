@@ -14,7 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import java.io.ByteArrayOutputStream;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.core.JsonParser;
@@ -23,21 +22,30 @@ import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonFactory;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
-public class FuzzParseNextToken {
+public class ParseNextTokenFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     JsonFactory jf = new JsonFactory();
+    JsonParser jp;
         
     try {
-      JsonParser jp = jf.createParser(data.consumeRemainingAsBytes());
+        jp = jf.createParser(data.consumeRemainingAsBytes());
+      if (data.consumeBoolean()) {
+      } else {
+        InputStream myInputStream = new ByteArrayInputStream(data.consumeRemainingAsBytes());
+        jp = jf.createParser(myInputStream);
+      }
       jp.nextFieldName();
 
       ByteArrayOutputStream bytes = new ByteArrayOutputStream();
       Base64Variant orig = Base64Variants.PEM;
-      jp.readBinaryValue(orig, bytes);
       while (jp.nextToken() != null) {
             ;
         }
+      jp.readBinaryValue(orig, bytes);
     } catch (IOException | IllegalArgumentException ignored) {
     }
   }

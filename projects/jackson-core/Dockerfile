@@ -31,5 +31,5 @@ RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/ja
 RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-annotations
 
 COPY build.sh $SRC/
-COPY JsonFuzzer.java FuzzParseNextToken.java UTF8GeneratorFuzzer.java $SRC/
+COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/
