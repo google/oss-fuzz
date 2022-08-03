@@ -21,5 +21,5 @@ RUN apt-get update && apt-get install -y valgrind zip
 RUN apt-get install -y build-essential libgmp-dev && \
     wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
     tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
-    make && make install && cd .. && rm -rf gdb-12.1* && \
+    make -j && make install && cd .. && rm -rf gdb-12.1* && \
     apt-get remove --purge -y build-essential libgmp-dev
