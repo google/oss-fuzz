@@ -38,4 +38,4 @@ RUN git clone --depth 1 https://github.com/FasterXML/jackson-annotations
 RUN git clone --depth 1 https://github.com/FasterXML/jackson-core
 
 COPY build.sh $SRC/
-COPY ObjectReaderFuzzer.java $SRC/
+COPY ObjectReaderFuzzer.java ObjectWriterFuzzer.java $SRC/
