@@ -26,7 +26,7 @@ all: $(TARGET)
 INIT:
 	$(SET) ./buildprep -n
 CONF:
-	$(SET) CC=$(CC) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./waf configure --enable-debug --disable-doc
+	$(SET) CC=$(CC) CFLAGS="$(CFLAGS)" LDFLAGS="$(CFLAGS)" ./waf configure --enable-debug --disable-doc
 MAKEALL:
 	$(SET) ./waf build --notests
 SETUP:
