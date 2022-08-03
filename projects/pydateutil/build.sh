@@ -19,10 +19,7 @@
 cd dateutil
 pip3 install .
 
-mkdir -p dateutil/test/fuzz
-cp $SRC/fuzz*.py dateutil/test/fuzz
-
 # Build fuzzers in $OUT.
-for fuzzer in $(ls dateutil/test/fuzz/fuzz*.py); do
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

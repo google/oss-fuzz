@@ -16,9 +16,10 @@
 
 import atheris
 
-import dateutil.parser
+with atheris.instrument_imports():
+  import dateutil.parser
 
-
+@atheris.instrument_func
 def TestOneInput(input_bytes):
   fdp = atheris.FuzzedDataProvider(input_bytes)
   data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
