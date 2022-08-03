@@ -31,7 +31,6 @@ TIME_ZONE_STRATEGY = st.sampled_from([None, tz.UTC] +
 ASCII_STRATEGY = st.characters(max_codepoint=127)
 
 
-@atheris.instrument_func
 @given(dt=st.datetimes(timezones=TIME_ZONE_STRATEGY), sep=ASCII_STRATEGY)
 def test_timespec_auto(dt, sep):
     if dt.tzinfo is not None:
@@ -49,6 +48,6 @@ if __name__ == "__main__":
      test_timespec_auto()
 
      # If that passed, we use Atheris to provide the inputs to our test:
-     atheris.Setup(sys.argv, test_timespec_auto.hypothesis.fuzz_one_input)
+     atheris.Setup(sys.argv, atheris.instrument_func(test_timespec_auto.hypothesis.fuzz_one_input))
      atheris.Fuzz()
 
