@@ -1,8 +1,8 @@
 homepage: "https://dateutil.readthedocs.io/en/stable/"
 language: python
-primary_contact: "paul@ganssle.io"
-auto_ccs:
-  - "p.antoine@catenacyber.fr"
+vendor_ccs:
+- "p.antoine@catenacyber.fr"
+- "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
