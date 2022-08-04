@@ -21,13 +21,12 @@ import iniconfig
 
 def TestOneInput(data):
     """Simple fuzzer that targets parse routine"""
-    with open("example.ini", "wb") as f:
-        f.write(data)
+    fdp = atheris.FuzzedDataProvider(data)
     try:
-        ini = iniconfig.IniConfig("example.ini")
-    except (iniconfig.ParseError, UnicodeDecodeError) as e:
+        ini = iniconfig.IniConfig(None, fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    except iniconfig.ParseError:
         pass
-    os.remove("example.ini")
+
 
 def main():
     atheris.instrument_all()
