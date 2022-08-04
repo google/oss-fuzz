@@ -40,7 +40,6 @@ TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
 TIMEOUT = str(6 * 60 * 60)
-INTROSPECTOR_ARG = ['--build-arg', 'introspector=1']
 
 
 def get_base_image_path(image_name):
