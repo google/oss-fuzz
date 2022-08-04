@@ -1,0 +1,12 @@
+homepage: "https://github.com/ijl/orjson"
+language: python
+primary_contact: ""
+auto_ccs:
+  - "maxnair.dev@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/ijl/orjson"
+file_github_issue: true
