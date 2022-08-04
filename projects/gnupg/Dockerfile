@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool bzip2 gn
 
 # Install automake 1.16.3 from future. See:
 RUN wget http://ftp.de.debian.org/debian/pool/main/a/automake-1.16/automake_1.16.3-2_all.deb && \
-   ls -la . && \
    apt install $SRC/automake_1.16.3-2_all.deb
 
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
