@@ -26,7 +26,7 @@ with atheris.instrument_imports():
 
 # Strategies
 TIME_ZONE_STRATEGY = st.sampled_from([None, tz.UTC] +
-    [tz.gettz(zname) for zname in ('US/Eastern', 'US/Pacific',
+    [tz.gettz(zname) for zname in ('America/New_York', 'America/Los_Angeles',
                                    'Australia/Sydney', 'Europe/London')])
 ASCII_STRATEGY = st.characters(max_codepoint=127)
 
