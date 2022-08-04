@@ -292,16 +292,18 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
+  introspector = 'introspector' in args.sanitizers
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
-
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         test_image_suffix)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+    build_and_push_test_images.gcb_build_and_push_images(
+        test_image_suffix, introspector=introspector)
+
   return _do_test_builds(args, test_image_suffix)
 
 
