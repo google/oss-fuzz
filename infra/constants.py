@@ -37,5 +37,5 @@ SANITIZERS = [
     'address', 'none', 'memory', 'undefined', 'thread', 'coverage',
     'introspector'
 ]
-ARCHITECTURES = ['i386', 'x86_64']
+ARCHITECTURES = ['i386', 'x86_64', 'aarch64']
 ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none', 'wycheproof']
