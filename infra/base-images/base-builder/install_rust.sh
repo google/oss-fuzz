@@ -19,3 +19,4 @@ curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=mi
 cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
 rustup component add rust-src --toolchain nightly
+cp -r /usr/local/lib/x86_64-unknown-linux-gnu/* /usr/local/lib/
