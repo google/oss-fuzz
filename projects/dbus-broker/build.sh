@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# fuzz-introspector isn't compatible with meson. Let's bail out explicitly here.
+# https://github.com/systemd/systemd/commit/ebd4541efe800190e5f158179f8201c654bb4c31
+if [[ "$SANITIZER" == introspector ]]; then
+    exit 1
+fi
+
 apt-get update -y
 
 if [[ "$ARCHITECTURE" == i386 ]]; then
@@ -32,12 +38,16 @@ fi
 
 pip3 install meson ninja
 
-meson -Db_lundef=false -Dlauncher=false build
+if ! meson -Db_lundef=false -Dlauncher=false build; then
+    cat build/meson-logs/meson-log.txt
+    exit 1
+fi
+
 ninja -C ./build -v
-$CC $CFLAGS -c -o fuzz-message.o -Isrc -Isubprojects/libcstdaux-1/src -std=c11 -D_GNU_SOURCE "$SRC/fuzz-message.c"
+$CC $CFLAGS -c -o fuzz-message.o -Isrc -I subprojects/libcstdaux-*/src -std=c11 -D_GNU_SOURCE "$SRC/fuzz-message.c"
 $CXX $CXXFLAGS -o "$OUT/fuzz-message" \
     fuzz-message.o \
     build/src/libbus-static.a \
-    build/subprojects/libcdvar-1/src/libcdvar-1.a \
-    build/subprojects/libcutf8-1/src/libcutf8-1.a \
+    build/subprojects/libcdvar-*/src/libcdvar-*.a \
+    build/subprojects/libcutf8-*/src/libcutf8-*.a \
     $LIB_FUZZING_ENGINE

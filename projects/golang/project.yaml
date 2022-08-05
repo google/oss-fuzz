@@ -2,7 +2,6 @@ homepage: "https://golang.org/"
 main_repo: "https://github.com/golang/go"
 primary_contact: "golang-fuzz@googlegroups.com"
 auto_ccs:
- - "josharian@gmail.com"
  - "emmanuel@orijtech.com"
  - "Adam@adalogics.com"
  - "cuong.manhle.vn@gmail.com"

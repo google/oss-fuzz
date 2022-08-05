@@ -5,8 +5,10 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+primary_contact: "security@tomcat.apache.org"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
