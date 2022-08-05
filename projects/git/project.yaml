@@ -6,6 +6,7 @@ auto_ccs:
   - "emilyshaffer@google.com"
   - "jonathantanmy@google.com"
   - "jrn@google.com"
+  - "david@adalogics.com"
 main_repo: 'https://github.com/git/git'
 
 # Disable honggfuzz due to undiagnosed build failures
