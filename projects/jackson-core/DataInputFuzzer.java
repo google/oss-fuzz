@@ -122,10 +122,26 @@ public class DataInputFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     JsonFactory jf = new JsonFactory();
     try {
+      int typeOfNext = data.consumeInt();
       JsonParser jp = jf.createParser(new MockFuzzDataInput(data.consumeRemainingAsString()));
-      while (jp.nextToken() != null) {
+      switch (typeOfNext%4) {
+      case 0:
+        while (jp.nextToken() != null) {
               ;
-      }
+        }
+      case 1:
+        while (jp.nextTextValue() != null) {
+              ;
+        }
+      case 2:
+        while (jp.nextBooleanValue() != null) {
+              ;
+        }
+      case 3:
+        while (jp.nextFieldName() != null) {
+              ;
+        }
+      }      
     } catch (IOException ignored) {
     }
   }
