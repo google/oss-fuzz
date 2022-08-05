@@ -22,7 +22,6 @@ RUN python3 -m pip install --upgrade pip
 RUN rm -rf /usr/local/bin/cargo
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2022-07-26 --profile minimal -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustup component add rust-src --toolchain nightly-2022-07-26-x86_64-unknown-linux-gnu
 
 RUN git clone --depth 1 https://github.com/ijl/orjson orjson
 
