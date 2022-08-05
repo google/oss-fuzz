@@ -21,11 +21,13 @@ RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-mav
     rm -rf maven.zip
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/json.dict $SRC/ObjectReaderFuzzer.dict && \
+    cp fuzzing/dictionaries/json.dict $SRC/ObjectReaderFuzzer.dict && \
+    cp fuzzing/dictionaries/json.dict $SRC/ObjectWriterFuzzer.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -q $SRC/ObjectReaderFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
+    zip -q $SRC/ObjectWriterFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
 RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
