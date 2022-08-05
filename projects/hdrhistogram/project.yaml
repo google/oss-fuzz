@@ -6,6 +6,7 @@ auto_ccs:
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/HdrHistogram/HdrHistogram.git"

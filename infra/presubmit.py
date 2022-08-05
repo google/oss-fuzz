@@ -371,6 +371,7 @@ def run_nonbuild_tests(parallel):
   command = [
       'pytest',
       '--ignore-glob=infra/build/*',
+      '--ignore-glob=projects/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])

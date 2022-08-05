@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+ARG parent_image=gcr.io/oss-fuzz-base/base-clang
+FROM $parent_image
 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
