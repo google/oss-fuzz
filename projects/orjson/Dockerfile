@@ -27,4 +27,3 @@ RUN git clone --depth 1 https://github.com/ijl/orjson orjson
 
 WORKDIR orjson
 COPY build.sh *.py $SRC/
-
