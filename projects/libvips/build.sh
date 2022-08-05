@@ -162,13 +162,8 @@ popd
 pushd $SRC/libjxl
 # Ensure libvips finds JxlEncoderInitBasicInfo
 sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
-# FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
-# https://github.com/libjxl/libjxl/issues/858
-extra_libjxl_flags='-DHWY_DISABLED_TARGETS=HWY_SSSE3'
 cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS $extra_libjxl_flags" \
-  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS $extra_libjxl_flags" \
   -DCMAKE_INSTALL_PREFIX=$WORK \
   -DZLIB_ROOT=$WORK \
   -DBUILD_SHARED_LIBS=0 \
