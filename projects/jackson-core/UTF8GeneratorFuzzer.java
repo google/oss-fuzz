@@ -15,7 +15,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.StringReader;
+import java.io.InputStream;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.core.Base64Variant;
@@ -34,6 +36,9 @@ public class UTF8GeneratorFuzzer {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     String fuzzString;
     JsonGenerator g;
+    int offset;
+    byte[] b;
+    Base64Variant b64v;
 
     try {
       g = jf.createGenerator(out);
@@ -41,56 +46,74 @@ public class UTF8GeneratorFuzzer {
       return;
     }
 
-    try {      
-      int apiType = data.consumeInt();
-      switch(apiType%7) {
-      case 0:
-        fuzzString = data.consumeString(1000000);
-        StringReader targetReader = new StringReader(fuzzString);
-        g.writeStartArray();
-        g.writeString(targetReader, fuzzString.length());
-        g.writeEndArray();
-      case 1:
-        fuzzString = data.consumeString(1000000);
-        g.writeStartArray();
-        g.writeString(fuzzString);
-        g.writeEndArray();
-      case 2:
-        fuzzString = data.consumeString(1000000);
-        SerializableString ss = new SerializedString(fuzzString);
-        g.writeStartArray();
-        g.writeString(ss);
-        g.writeEndArray();
-      case 3:
-        fuzzString = data.consumeString(1000000);
-        g.writeStartArray();
-        g.writeRaw(fuzzString);
-        g.writeEndArray();
-      case 4:
-        fuzzString = data.consumeString(1000000);
-        g.writeStartArray();
-        g.writeRaw(fuzzString, 0, fuzzString.length());
-        g.writeEndArray();
-      case 5:
-        String key = data.consumeString(50000);
-        String value = data.consumeString(50000);
-        g.writeStartObject();
-        g.writeStringField(key, value);
-        g.writeEndObject();
-      case 6:
-        Base64Variant b64v = Base64Variants.getDefaultVariant();
-        byte[] b = data.consumeRemainingAsBytes();
-        g.writeStartArray();
-        g.writeBinary(b64v, b, 0, b.length);
-        g.writeEndArray();
+    int numberOfOps = data.consumeInt();
+    for (int i = 0; i < numberOfOps%20; i++) {
+      try {      
+        int apiType = data.consumeInt();
+        switch(apiType%9) {
+        case 0:
+          fuzzString = data.consumeString(1000000);
+          StringReader targetReader = new StringReader(fuzzString);
+          g.writeStartArray();
+          g.writeString(targetReader, fuzzString.length());
+          g.writeEndArray();
+        case 1:
+          fuzzString = data.consumeString(1000000);
+          g.writeStartArray();
+          g.writeString(fuzzString);
+          g.writeEndArray();
+        case 2:
+          fuzzString = data.consumeString(1000000);
+          SerializableString ss = new SerializedString(fuzzString);
+          g.writeStartArray();
+          g.writeString(ss);
+          g.writeEndArray();
+        case 3:
+          fuzzString = data.consumeString(1000000);
+          g.writeStartArray();
+          g.writeRaw(fuzzString);
+          g.writeEndArray();
+        case 4:
+          fuzzString = data.consumeString(1000000);
+          offset = data.consumeInt();
+          g.writeStartArray();
+          g.writeRaw(fuzzString, offset, fuzzString.length());
+          g.writeEndArray();
+        case 5:
+          String key = data.consumeString(1000000);
+          String value = data.consumeString(1000000);
+          g.writeStartObject();
+          g.writeStringField(key, value);
+          g.writeEndObject();
+        case 6:
+          b64v = Base64Variants.getDefaultVariant();
+          b = data.consumeBytes(1000000);
+           offset = data.consumeInt();
+          g.writeStartArray();
+          g.writeBinary(b64v, b, offset, b.length);
+          g.writeEndArray();
+        case 7:
+          b = data.consumeBytes(1000000);
+          offset = data.consumeInt();
+          g.writeStartObject();
+          g.writeUTF8String(b, offset, b.length);
+          g.writeEndObject();
+        case 8:
+          b64v = Base64Variants.getDefaultVariant();
+          b = data.consumeBytes(1000000);
+          offset = data.consumeInt();
+          InputStream targetStream = new ByteArrayInputStream(b);
+          g.writeStartArray();
+          g.writeBinary(b64v, targetStream, b.length);
+          g.writeEndArray();
+        }
+      } catch (IOException | IllegalArgumentException ignored) {
       }
-    } catch (IOException | IllegalArgumentException ignored) {
     }
 
     try {
       g.close();
     } catch (IOException ignored) {
-      return;
     }
     
   }

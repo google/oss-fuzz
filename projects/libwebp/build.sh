@@ -39,6 +39,7 @@ webp_libs=(
   src/mux/.libs/libwebpmux.a
   src/.libs/libwebp.a
   imageio/.libs/libimageio_util.a
+  sharpyuv/.libs/libsharpyuv.a
 )
 webp_c_fuzzers=(
   advanced_api_fuzzer

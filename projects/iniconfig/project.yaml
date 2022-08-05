@@ -1,0 +1,13 @@
+homepage: "https://github.com/pytest-dev/iniconfig"
+language: python
+main_repo: "https://github.com/pytest-dev/iniconfig"
+view_restrictions: None
+file_github_issue: true
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
