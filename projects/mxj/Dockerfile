@@ -20,4 +20,3 @@ RUN git clone --depth 1 https://github.com/clbanning/mxj mxj
 COPY build.sh $SRC/
 COPY fuzz.go $SRC/mxj
 WORKDIR $SRC/mxj
-
