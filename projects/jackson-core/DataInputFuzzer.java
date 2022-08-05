@@ -17,7 +17,10 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.core.JsonParser.Feature;
 
 import java.io.*;
 
@@ -120,11 +123,38 @@ public class DataInputFuzzer {
 
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    Feature[] features = new Feature[]{
+        Feature.AUTO_CLOSE_SOURCE,
+        Feature.ALLOW_COMMENTS,
+        Feature.ALLOW_YAML_COMMENTS,
+        Feature.ALLOW_UNQUOTED_FIELD_NAMES,
+        Feature.ALLOW_SINGLE_QUOTES,
+        Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
+        Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
+        Feature.ALLOW_NUMERIC_LEADING_ZEROS,
+        Feature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS,
+        Feature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
+        Feature.ALLOW_TRAILING_DECIMAL_POINT_FOR_NUMBERS,
+        Feature.ALLOW_NON_NUMERIC_NUMBERS,
+        Feature.ALLOW_MISSING_VALUES,
+        Feature.ALLOW_TRAILING_COMMA,
+        Feature.STRICT_DUPLICATE_DETECTION,
+        Feature.IGNORE_UNDEFINED,
+        Feature.INCLUDE_SOURCE_IN_LOCATION,
+        Feature.USE_FAST_DOUBLE_PARSER,
+    };
     JsonFactory jf = new JsonFactory();
     try {
+        for (int i = 0; i < features.length; i++) {
+            if (data.consumeBoolean()) {
+                jf.enable(features[i]);
+            } else {
+                jf.disable(features[i]);
+            }
+        }
       int typeOfNext = data.consumeInt();
       JsonParser jp = jf.createParser(new MockFuzzDataInput(data.consumeRemainingAsString()));
-      switch (typeOfNext%4) {
+      switch (typeOfNext%5) {
       case 0:
         while (jp.nextToken() != null) {
               ;
@@ -141,9 +171,14 @@ public class DataInputFuzzer {
         while (jp.nextFieldName() != null) {
               ;
         }
+      case 4:
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Base64Variants b64vs = new Base64Variants();
+        jp.readBinaryValue(b64vs.MIME, outputStream);
       }      
-    } catch (IOException ignored) {
+    } catch (IOException | IllegalArgumentException ignored) {
     }
   }
 }
+
 
