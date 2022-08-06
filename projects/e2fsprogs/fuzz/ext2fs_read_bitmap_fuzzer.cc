@@ -32,6 +32,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider stream(data, size);
   const FuzzerType f = stream.ConsumeEnum<FuzzerType>();
+  (void) stream.ConsumeIntegral<int>();
 
   static const char* fname = "ext2_test_file";
 
