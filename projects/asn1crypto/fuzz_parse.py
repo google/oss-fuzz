@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,23 @@
 #
 ################################################################################
 
-python3 ./setup.py install
+import sys
+import atheris
+from asn1crypto import parser
 
-cd $SRC
+def TestOneInput(data):
+    try:
+        parser.parse(data)
+    except (ValueError, TypeError) as e:
+        # Raises ValueError and TypeError:
+        # https://github.com/wbond/asn1crypto/blob/b5f03e6f9797c691a3b812a5bb1acade3a1f4eeb/asn1crypto/parser.py#L91-L92
+        pass
 
-# Build parse and task fuzzers
-compile_python_fuzzer fuzz_parse.py --add-data ansible/lib/ansible/config:ansible/config
-compile_python_fuzzer fuzz_task.py --add-data ansible/lib/ansible/config:ansible/config
 
-# Build fuzz_encrypt with a specific wrapper only in non-coverage
-if [ "$SANITIZER" != "coverage" ]; then
-  compile_python_fuzzer fuzz_encrypt.py --add-data ansible/lib/ansible/config:ansible/config
-  cp $SRC/fuzz_encrypt.sh $OUT/fuzz_encrypt
-  chmod +x $OUT/fuzz_encrypt
-fi
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
 
-cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 $OUT/libcrypt.so
+if __name__ == "__main__":
+    main()

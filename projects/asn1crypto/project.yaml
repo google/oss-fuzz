@@ -1,0 +1,10 @@
+homepage: "https://github.com/wbond/asn1crypto"
+language: python
+main_repo: "https://github.com/wbond/asn1crypto"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

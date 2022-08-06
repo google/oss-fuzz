@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,9 @@
 #
 ################################################################################
 
-python3 ./setup.py install
-
-cd $SRC
-
-# Build parse and task fuzzers
-compile_python_fuzzer fuzz_parse.py --add-data ansible/lib/ansible/config:ansible/config
-compile_python_fuzzer fuzz_task.py --add-data ansible/lib/ansible/config:ansible/config
-
-# Build fuzz_encrypt with a specific wrapper only in non-coverage
-if [ "$SANITIZER" != "coverage" ]; then
-  compile_python_fuzzer fuzz_encrypt.py --add-data ansible/lib/ansible/config:ansible/config
-  cp $SRC/fuzz_encrypt.sh $OUT/fuzz_encrypt
-  chmod +x $OUT/fuzz_encrypt
-fi
-
-cp /usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0 $OUT/libcrypt.so
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN pip3 install --upgrade pip && pip install google-api-core google-cloud-core mock
+RUN git clone --depth 1 https://github.com/googleapis/python-resource-manager
+WORKDIR python-resource-manager
+COPY build.sh *.py $SRC/
