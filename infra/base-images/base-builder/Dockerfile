@@ -17,20 +17,6 @@
 ARG parent_image=gcr.io/oss-fuzz-base/base-clang
 FROM $parent_image
 
-# Setup the environment.
-ENV CC "clang"
-ENV CXX "clang++"
-ENV CCC "clang++"
-
-# FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
-# http://libfuzzer.info#fuzzer-friendly-build-mode
-
-ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
-ENV CXXFLAGS_EXTRA "-stdlib=libc++"
-ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
-
-# END COPY
-
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
