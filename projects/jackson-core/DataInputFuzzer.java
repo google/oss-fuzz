@@ -154,7 +154,7 @@ public class DataInputFuzzer {
         }
       int typeOfNext = data.consumeInt();
       JsonParser jp = jf.createParser(new MockFuzzDataInput(data.consumeRemainingAsString()));
-      switch (typeOfNext%5) {
+      switch (typeOfNext%11) {
       case 0:
         while (jp.nextToken() != null) {
               ;
@@ -175,6 +175,19 @@ public class DataInputFuzzer {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Base64Variants b64vs = new Base64Variants();
         jp.readBinaryValue(b64vs.MIME, outputStream);
+      case 5:
+        String outString = jp.getValueAsString();
+      case 6:
+        int outInt = jp.getValueAsInt();
+      case 7:
+        Writer writer = new StringWriter();
+        int len = jp.getText(writer);
+      case 8:
+        char[] textChars = jp.getTextCharacters();
+      case 9:
+        int textLen = jp.getTextLength();
+      case 10:
+        int textOffset = jp.getTextOffset();
       }      
     } catch (IOException | IllegalArgumentException ignored) {
     }
