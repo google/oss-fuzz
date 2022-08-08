@@ -1,11 +1,13 @@
 homepage: "https://github.com/spring-cloud/spring-cloud-commons"
 language: jvm
 main_repo: "https://github.com/spring-cloud/spring-cloud-commons.git"
+primary_contact: "pwebb@vmware.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
 vendor_ccs:
+  - "wilkinsona@vmware.com"
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
