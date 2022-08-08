@@ -309,15 +309,12 @@ function check_mixed_sanitizers {
   if [[ $ARCHITECTURE == "x86_64" ]]
   then
     CALL_INSN="callq\s+[0-9a-f]+\s+<"
-    OBJDUMP="objdump"
   elif [[ $ARCHITECTURE == "i386" ]]
   then
     CALL_INSN="call\s+[0-9a-f]+\s+<"
-    OBJDUMP="objdump"
   elif [[ $ARCHITECTURE == "aarch64" ]]
   then
     CALL_INSN="bl\s+[0-9a-f]+\s+<"
-    OBJDUMP="aarch64-linux-gnu-objdump"
   else
     echo "UNSUPPORTED ARCHITECTURE"
     exit 1
