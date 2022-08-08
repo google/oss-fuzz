@@ -25,7 +25,6 @@ ENV INTROSPECTOR_PATCHES=$introspector
 ENV FUZZINTRO_OUTDIR=$SRC
 ENV FUZZ_INTROSPECTOR=$introspector
 
-RUN echo $arch
 # Install newer cmake.
 ENV CMAKE_VERSION 3.21.1
 RUN apt-get update && apt-get install -y wget sudo && \
