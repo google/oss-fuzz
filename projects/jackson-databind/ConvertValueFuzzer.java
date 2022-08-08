@@ -19,32 +19,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.*;
 import java.lang.IllegalArgumentException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class ReadTreeFuzzer {
+public class ConvertValueFuzzer {
+    public static Class[] classes = { DummyClass.class, Integer.class, String.class, Byte.class, List.class, Map.class,
+        TreeMap.class, BitSet.class, TimeZone.class, Date.class, Calendar.class, Locale.class };
+
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            JsonNode root = mapper.readTree(data.consumeString(1000000));
-            int target = data.consumeInt();
-            switch(target%3) {
-                case 0:
-                    String rootValue = data.consumeString(10000);
-                    if (root.get(rootValue) != null ) {
-                        String rootGet = root.get(rootValue).asText();
-                    }
-                case 1:
-                    String json = mapper.writeValueAsString(root);
-                case 2:
-                    String treeAt = data.consumeString(100000);
-                    JsonNode node = root.at(treeAt);
-                    DummyClass dc = mapper.treeToValue(node, DummyClass.class);
-                }
-        } catch (JsonProcessingException | IllegalArgumentException e) { }
+            int idx = data.consumeInt(0, classes.length - 1);
+            mapper.convertValue(data.consumeRemainingAsString(), classes[idx]);
+        } catch (IllegalArgumentException e) { }
     }
+
     public static class DummyClass {
         public TreeMap<String, Integer> _treeMap;
         public List<String> _arrayList;
