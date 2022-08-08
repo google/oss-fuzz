@@ -72,7 +72,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 
-COPY install_java.sh /install_java.sh
+COPY install_java.sh /
 RUN /install_java.sh && rm /install_java.sh
 
 # Install JaCoCo for JVM coverage.
