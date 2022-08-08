@@ -17,23 +17,22 @@
 ARG parent_image=gcr.io/oss-fuzz-base/base-clang
 FROM $parent_image
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get install -y \
-        binutils-dev \
-        build-essential \
-        curl \
-        wget \
-        git \
-        jq \
-        libc6-dev-i386 \
-        patchelf \
-        rsync \
-        subversion \
-        zip
+# Setup the environment.
+ENV CC "clang"
+ENV CXX "clang++"
+ENV CCC "clang++"
+
+# FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
+# http://libfuzzer.info#fuzzer-friendly-build-mode
+
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CXXFLAGS_EXTRA "-stdlib=libc++"
+ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
+
+# END COPY
+
+COPY install_deps.sh /
+RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
