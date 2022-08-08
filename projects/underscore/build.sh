@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-#pip3 install .
-#python3 setup.py develop
-#mkdir $SRC/fuzz && cd $SRC/fuzz
-#cd underscore
 mv $SRC/fuzz_*.py .
 for fuzzer in $(find . -name 'fuzz_*.py'); do
    compile_python_fuzzer $fuzzer --paths=$PWD/underscore
