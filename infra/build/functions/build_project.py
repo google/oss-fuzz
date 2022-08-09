@@ -236,7 +236,7 @@ def get_compile_step(project, build, env, parallel):
       'id': get_id('compile', build),
   }
   if utils.is_arm():
-    compile_step['args'].extend(['--platform', 'linux/arm64'])
+    compile_step['args'] = ['--platform', 'linux/arm64'] + compile_step['args']
   if parallel:
     maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
