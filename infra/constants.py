@@ -34,8 +34,14 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'python', 'rust', 'swift'
 ]
 SANITIZERS = [
-    'address', 'none', 'memory', 'undefined', 'thread', 'coverage',
-    'introspector'
+    'address',
+    'none',
+    'memory',
+    'undefined',
+    'thread',
+    'coverage',
+    'introspector',
+    'hwaddress',
 ]
 ARCHITECTURES = ['i386', 'x86_64', 'aarch64']
 ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none', 'wycheproof']
