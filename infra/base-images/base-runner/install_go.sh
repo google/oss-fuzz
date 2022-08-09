@@ -1,4 +1,4 @@
-#!/bin/bash -u
+#!/bin/bash -eux
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +20,12 @@
 case $(uname -m) in
     x86_64)
       # Download and install the latest stable Go.
-      wget https://storage.googleapis.com/golang/getgo/installer_linux
+      wget https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
       SHELL="bash" $SRC/installer_linux -version 1.18beta2
       rm $SRC/installer_linux
       # Set up Golang coverage modules.
-      cp gocoverage $GOPATH/gocoverage
+      printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && go install ./...
       ;;
     aarch64)
