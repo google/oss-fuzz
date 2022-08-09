@@ -387,13 +387,34 @@ def project_image_steps(  # pylint: disable=too-many-arguments
     language,
     branch=None,
     test_image_suffix=None,
-    is_arm=False):
+    build_arm=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   # TODO(metzman): Pass the URL to clone.
 
-  if is_arm:
+  clone_step = get_git_clone_step(branch=branch)
+  steps = [clone_step]
+  if test_image_suffix:
+    steps.extend(get_pull_test_images_steps(test_image_suffix))
+  docker_build_step = get_docker_build_step([image],
+                                            os.path.join('projects', name))
+  steps.append(docker_build_step)
+  srcmap_step_id = get_srcmap_step_id()
+  steps.extend([{
+      'name': image,
+      'args': [
+          'bash', '-c',
+          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          'FUZZING_LANGUAGE=%s' % language,
+      ],
+      'id': srcmap_step_id
+  }])
+
+  if build_arm:
     builder_name = 'buildxbuilder'
-    steps = [
+    steps.extend([
         {
             'name': 'gcr.io/cloud-builders/docker',
             'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']
@@ -406,32 +427,12 @@ def project_image_steps(  # pylint: disable=too-many-arguments
             'name': DOCKER_TOOL_IMAGE,
             'args': ['buildx', 'use', builder_name]
         },
-    ]
-  else:
-    clone_step = get_git_clone_step(branch=branch)
-    steps = [clone_step]
-  if test_image_suffix:
-    steps.extend(get_pull_test_images_steps(test_image_suffix))
-  docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name),
-                                            is_arm=is_arm)
-  steps.append(docker_build_step)
-  if is_arm:
-    # The srcmap steps will be done on the x86 build.
-    return steps
-  srcmap_step_id = get_srcmap_step_id()
-  steps += [{
-      'name': image,
-      'args': [
-          'bash', '-c',
-          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-      ],
-      'env': [
-          'OSSFUZZ_REVISION=$REVISION_ID',
-          'FUZZING_LANGUAGE=%s' % language,
-      ],
-      'id': srcmap_step_id
-  }]
+    ])
+    docker_build_arm_step = get_docker_build_step([image],
+                                                  os.path.join(
+                                                      'projects', name), is_arm=True)
+    steps.append(docker_build_arm_step)
+
 
   return steps
 

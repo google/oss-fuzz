@@ -283,16 +283,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.image,
       project.fuzzing_language,
       branch=config.branch,
-      test_image_suffix=config.test_image_suffix)
-  if has_arm_build(project):
-    build_steps.extend(
-        build_lib.project_image_steps(
-            project.name,
-            project.image,
-            project.fuzzing_language,
-            branch=config.branch,
-            test_image_suffix=config.test_image_suffix,
-            is_arm=True))
+      test_image_suffix=config.test_image_suffix,
+      build_arm=has_arm_build(project))
+
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
