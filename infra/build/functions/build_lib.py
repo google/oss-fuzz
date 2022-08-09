@@ -31,6 +31,8 @@ from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
+import utils
+
 BUILD_TIMEOUT = 16 * 60 * 60
 
 # Needed for reading public target.list.* files.
@@ -55,7 +57,7 @@ ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(upload_bucket='clusterfuzz-builds',
                    supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64', 'i386']),
+                   supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
                    supported_sanitizers=['address'],
@@ -273,12 +275,14 @@ def get_pull_test_images_steps(test_image_suffix):
   they are used in builds."""
   images = [
       'gcr.io/oss-fuzz-base/base-builder',
-      'gcr.io/oss-fuzz-base/base-builder-swift',
+  ]
+  if not utils.is_arm():
+    images.extend(['gcr.io/oss-fuzz-base/base-builder-swift',
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
       'gcr.io/oss-fuzz-base/base-builder-rust',
-  ]
+    ])
   steps = []
   for image in images:
     test_image = image + '-' + test_image_suffix
@@ -333,7 +337,12 @@ def get_docker_build_step(image_names,
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
-  args = ['build']
+  args = []
+  if utils.is_arm():
+    args.append('buildx')
+  args.append('build')
+  if utils.is_arm():
+    args.extend(['--platform', 'linux/arm64'])
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
@@ -368,9 +377,20 @@ def project_image_steps(name,
   clone_step = get_git_clone_step(branch=branch)
 
   steps = [clone_step]
+
+  import utils
+  if utils.is_arm():
+    builder_name = 'buildxbuilder'
+    steps.extend([
+        {'name': 'gcr.io/cloud-builders/docker',
+         'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']},
+        {'name': 'gcr.io/cloud-builders/docker',
+         'args': ['buildx', 'create', '--name', builder_name]},
+        {'name': 'gcr.io/cloud-builders/docker',
+         'args': ['buildx', 'use', builder_name]},
+    ])
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
-
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name))
   srcmap_step_id = get_srcmap_step_id()
@@ -418,6 +438,10 @@ def get_build_body(steps,
 
   if use_build_pool:
     options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+  if 'env' not in options:
+    options['env'] = []
+  if utils.is_arm():
+    options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
 
   build_body = {
       'steps': steps,

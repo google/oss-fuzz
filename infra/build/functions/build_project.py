@@ -36,6 +36,7 @@ import six
 import yaml
 
 import build_lib
+import utils
 
 FUZZING_BUILD_TYPE = 'fuzzing'
 
@@ -166,6 +167,9 @@ def is_supported_configuration(build):
   fuzzing_engine_info = build_lib.ENGINE_INFO[build.fuzzing_engine]
   if build.architecture == 'i386' and build.sanitizer != 'address':
     return False
+  if build.architecture == 'aarch64' and (
+      build.sanitizer not in {'address', 'hwaddress', 'undefined'}):
+    return False
   return (build.sanitizer in fuzzing_engine_info.supported_sanitizers and
           build.architecture in fuzzing_engine_info.supported_architectures)
 
@@ -231,6 +235,8 @@ def get_compile_step(project, build, env, parallel):
       ],
       'id': get_id('compile', build),
   }
+  if utils.is_arm():
+    compile_step['args'].extend(['--platform', 'linux/arm64'])
   if parallel:
     maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
@@ -263,7 +269,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-
   build_steps = build_lib.project_image_steps(
       project.name,
       project.image,
@@ -280,6 +285,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       # Build x86_64 before i386.
       for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)
+        if architecture != 'aarch64':
+          continue
         if not is_supported_configuration(build):
           continue
 
@@ -299,23 +306,24 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
               f'--architecture {build.architecture} {project.name}\n' +
               '*' * 80)
+          # !!!
           # Test fuzz targets.
-          test_step = {
-              'name':
-                  get_runner_image_name(base_images_project,
-                                        config.test_image_suffix),
-              'env':
-                  env,
-              'args': [
-                  'bash', '-c',
-                  f'test_all.py || (echo "{failure_msg}" && false)'
-              ],
-              'id':
-                  get_id('build-check', build)
-          }
-          maybe_add_parallel(test_step, get_last_step_id(build_steps),
-                             config.parallel)
-          build_steps.append(test_step)
+          # test_step = {
+          #     'name':
+          #         get_runner_image_name(base_images_project,
+          #                               config.test_image_suffix),
+          #     'env':
+          #         env,
+          #     'args': [
+          #         'bash', '-c',
+          #         f'test_all.py || (echo "{failure_msg}" && false)'
+          #     ],
+          #     'id':
+          #         get_id('build-check', build)
+          # }
+          # maybe_add_parallel(test_step, get_last_step_id(build_steps),
+          #                    config.parallel)
+          # build_steps.append(test_step)
 
         if project.labels:
           # Write target labels.
