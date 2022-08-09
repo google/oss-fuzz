@@ -225,7 +225,7 @@ def get_compile_step(project, build, env, parallel):
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
   compile_step = {
-      'name': project.name,
+      'name': project.image,
       'env': env,
       'args': [
           'bash',
@@ -241,17 +241,8 @@ def get_compile_step(project, build, env, parallel):
       'id': get_id('compile', build),
   }
   if build.is_arm:
-    compile_step['name'] = build_lib.DOCKER_TOOL_IMAGE
-    args = compile_step['args']
-    compile_step['args'] = [
-        'run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace'
-    ]
-    for env_var in env:
-      compile_step['args'].extend(['-e', env_var])
-    compile_step['args'] += ['-t', project.image]
-    compile_step['args'] += args
-  if parallel:
-    maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
+    build_lib.armify_docker_run_step(compile_step)
+  maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
 
