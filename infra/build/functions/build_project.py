@@ -36,7 +36,6 @@ import six
 import yaml
 
 import build_lib
-import utils
 
 FUZZING_BUILD_TYPE = 'fuzzing'
 
@@ -70,6 +69,11 @@ class Build:  # pylint: disable=too-few-public-methods
     self.architecture = architecture
     self.targets_list_filename = build_lib.get_targets_list_filename(
         self.sanitizer)
+
+  @property
+  def is_arm(self):
+    """Returns True if CPU architecture is ARM-based."""
+    return self.architecture == 'aarch64'
 
   @property
   def out(self):
@@ -168,8 +172,8 @@ def is_supported_configuration(build):
   if build.architecture == 'i386' and build.sanitizer != 'address':
     return False
   # TODO(jonathanmetzman): UBSan should be easy to support.
-  if build.architecture == 'aarch64' and (
-      build.sanitizer not in {'address', 'hwaddress'}):
+  if build.architecture == 'aarch64' and (build.sanitizer
+                                          not in {'address', 'hwaddress'}):
     return False
   return (build.sanitizer in fuzzing_engine_info.supported_sanitizers and
           build.architecture in fuzzing_engine_info.supported_architectures)
@@ -236,9 +240,11 @@ def get_compile_step(project, build, env, parallel):
       ],
       'id': get_id('compile', build),
   }
-  if utils.is_arm():
+  if build.is_arm:
     args = compile_step['args']
-    compile_step['args'] = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
+    compile_step['args'] = [
+        'run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace'
+    ]
     for env_var in env:
       compile_step['args'].extend(['-e', env_var])
     compile_step['args'] += ['-t', f'gcr.io/oss-fuzz/{project.name}']
@@ -263,6 +269,11 @@ def get_id(step_type, build):
           f'-{build.architecture}')
 
 
+def has_arm_build(project):
+  """Returns True if project has an ARM build."""
+  return 'aarch64' in project.architectures
+
+
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
     project_name, project_yaml, dockerfile, image_project, base_images_project,
     config):
@@ -281,6 +292,15 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.fuzzing_language,
       branch=config.branch,
       test_image_suffix=config.test_image_suffix)
+  if has_arm_build(project):
+    build_steps.extend(
+        build_lib.project_image_steps(
+            project.name,
+            project.image,
+            project.fuzzing_language,
+            branch=config.branch,
+            test_image_suffix=config.test_image_suffix,
+            is_arm=True))
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.

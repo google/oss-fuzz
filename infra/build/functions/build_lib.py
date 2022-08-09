@@ -31,8 +31,6 @@ from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
 
-import utils
-
 BUILD_TIMEOUT = 16 * 60 * 60
 
 # Needed for reading public target.list.* files.
@@ -275,14 +273,12 @@ def get_pull_test_images_steps(test_image_suffix):
   they are used in builds."""
   images = [
       'gcr.io/oss-fuzz-base/base-builder',
-  ]
-  if not utils.is_arm():
-    images.extend(['gcr.io/oss-fuzz-base/base-builder-swift',
+      'gcr.io/oss-fuzz-base/base-builder-swift',
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
       'gcr.io/oss-fuzz-base/base-builder-rust',
-    ])
+  ]
   steps = []
   for image in images:
     test_image = image + '-' + test_image_suffix
@@ -333,16 +329,19 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
 def get_docker_build_step(image_names,
                           directory,
                           buildkit_cache_image=None,
-                          src_root='oss-fuzz'):
+                          src_root='oss-fuzz',
+                          is_arm=False):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
-  args = []
-  if utils.is_arm():
-    args.append('buildx')
-  args.append('build')
-  if utils.is_arm():
-    args.extend(['--platform', 'linux/arm64', '--progress', 'plain', '--load'])
+
+  if not is_arm:
+    args = ['build']
+  else:
+    args = [
+        'buildx', 'build', '--platform', 'linux/arm64', '--progress', 'plain',
+        '--load'
+    ]
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
@@ -367,47 +366,57 @@ def get_docker_build_step(image_names,
   return step
 
 
-def project_image_steps(name,
-                        image,
-                        language,
-                        branch=None,
-                        test_image_suffix=None):
+def project_image_steps(  # pylint: disable=too-many-arguments
+    name,
+    image,
+    language,
+    branch=None,
+    test_image_suffix=None,
+    is_arm=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   # TODO(metzman): Pass the URL to clone.
-  clone_step = get_git_clone_step(branch=branch)
 
-  steps = [clone_step]
-
-  import utils
-  if utils.is_arm():
+  if is_arm:
     builder_name = 'buildxbuilder'
-    steps.extend([
-        {'name': 'gcr.io/cloud-builders/docker',
-         'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']},
-        {'name': 'gcr.io/cloud-builders/docker',
-         'args': ['buildx', 'create', '--name', builder_name]},
-        {'name': 'gcr.io/cloud-builders/docker',
-         'args': ['buildx', 'use', builder_name]},
-    ])
+    steps = [
+        {
+            'name': 'gcr.io/cloud-builders/docker',
+            'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']
+        },
+        {
+            'name': 'gcr.io/cloud-builders/docker',
+            'args': ['buildx', 'create', '--name', builder_name]
+        },
+        {
+            'name': 'gcr.io/cloud-builders/docker',
+            'args': ['buildx', 'use', builder_name]
+        },
+    ]
+  else:
+    clone_step = get_git_clone_step(branch=branch)
+    steps = [clone_step]
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name))
+                                            os.path.join('projects', name),
+                                            is_arm=is_arm)
+  steps.append(docker_build_step)
+  if is_arm:
+    # The srcmap steps will be done on the x86 build.
+    return steps
   srcmap_step_id = get_srcmap_step_id()
-  steps += [
-      docker_build_step, {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': [
-              'OSSFUZZ_REVISION=$REVISION_ID',
-              'FUZZING_LANGUAGE=%s' % language,
-          ],
-          'id': srcmap_step_id
-      }
-  ]
+  steps += [{
+      'name': image,
+      'args': [
+          'bash', '-c',
+          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          'FUZZING_LANGUAGE=%s' % language,
+      ],
+      'id': srcmap_step_id
+  }]
 
   return steps
 
@@ -440,8 +449,7 @@ def get_build_body(steps,
     options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
   if 'env' not in options:
     options['env'] = []
-  if utils.is_arm():
-    options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
+  options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
 
   build_body = {
       'steps': steps,
