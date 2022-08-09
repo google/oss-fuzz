@@ -81,6 +81,8 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
 US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
+DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
+
 
 def get_targets_list_filename(sanitizer):
   """Returns target list filename."""
@@ -92,6 +94,19 @@ def get_targets_list_url(bucket, project, sanitizer):
   filename = get_targets_list_filename(sanitizer)
   url = GCS_UPLOAD_URL_FORMAT.format(bucket, project, filename)
   return url
+
+
+def armify_docker_run_step(step):
+  """Modify a docker run step to run using QEMU's aarch64 emulation."""
+  image = step['name']
+  step['name'] = DOCKER_TOOL_IMAGE
+  new_args = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
+  for env_var in step.get('env', {}):
+    new_args.extend(['-e', env_var])
+  new_args += ['-t', image]
+  new_args += step['args']
+  step['args'] = new_args
+  return step
 
 
 def get_upload_bucket(engine, architecture, testing):
@@ -283,7 +298,7 @@ def get_pull_test_images_steps(test_image_suffix):
   for image in images:
     test_image = image + '-' + test_image_suffix
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': DOCKER_TOOL_IMAGE,
         'args': [
             'pull',
             test_image,
@@ -301,7 +316,7 @@ def get_pull_test_images_steps(test_image_suffix):
     # the test image with the non-test version, so that the test version is used
     # instead of pulling the real one.
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': DOCKER_TOOL_IMAGE,
         'args': ['tag', test_image, image],
     })
   return steps
@@ -346,7 +361,7 @@ def get_docker_build_step(image_names,
     args.extend(['--tag', image_name])
 
   step = {
-      'name': 'gcr.io/cloud-builders/docker',
+      'name': DOCKER_TOOL_IMAGE,
       'args': args,
       'dir': directory,
   }
@@ -384,11 +399,11 @@ def project_image_steps(  # pylint: disable=too-many-arguments
             'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']
         },
         {
-            'name': 'gcr.io/cloud-builders/docker',
+            'name': DOCKER_TOOL_IMAGE,
             'args': ['buildx', 'create', '--name', builder_name]
         },
         {
-            'name': 'gcr.io/cloud-builders/docker',
+            'name': DOCKER_TOOL_IMAGE,
             'args': ['buildx', 'use', builder_name]
         },
     ]
