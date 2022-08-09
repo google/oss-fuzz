@@ -106,6 +106,13 @@
       "gcr.io/oss-fuzz-base/base-builder-rust"
     ]
   },
+  {"args": ["pull", "gcr.io/oss-fuzz-base/base-runner-testing-mybranch"],
+   "name": "gcr.io/cloud-builders/docker",
+   "waitFor": "-"},
+  {"args": ["tag",
+            "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+            "gcr.io/oss-fuzz-base/base-runner"],
+   "name": "gcr.io/cloud-builders/docker"},
   {
     "name": "gcr.io/cloud-builders/docker",
     "args": [
