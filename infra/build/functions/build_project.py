@@ -167,8 +167,9 @@ def is_supported_configuration(build):
   fuzzing_engine_info = build_lib.ENGINE_INFO[build.fuzzing_engine]
   if build.architecture == 'i386' and build.sanitizer != 'address':
     return False
+  # TODO(jonathanmetzman): UBSan should be easy to support.
   if build.architecture == 'aarch64' and (
-      build.sanitizer not in {'address', 'hwaddress', 'undefined'}):
+      build.sanitizer not in {'address', 'hwaddress'}):
     return False
   return (build.sanitizer in fuzzing_engine_info.supported_sanitizers and
           build.architecture in fuzzing_engine_info.supported_architectures)
