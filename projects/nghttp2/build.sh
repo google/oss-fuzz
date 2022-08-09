@@ -23,6 +23,10 @@ $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
     fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
     $LIB_FUZZING_ENGINE lib/.libs/libnghttp2.a
 
+$CXX $CXXFLAGS -std=c++11 -Ilib/includes \
+    fuzz/fuzz_target_fdp.cc -o $OUT/nghttp2_fuzzer_fdp \
+    $LIB_FUZZING_ENGINE lib/.libs/libnghttp2.a
+
 cp $SRC/*.options $OUT
 
 zip -j $OUT/nghttp2_fuzzer_seed_corpus.zip fuzz/corpus/*/*
