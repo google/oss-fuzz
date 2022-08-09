@@ -306,24 +306,23 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
               f'--architecture {build.architecture} {project.name}\n' +
               '*' * 80)
-          # !!!
           # Test fuzz targets.
-          # test_step = {
-          #     'name':
-          #         get_runner_image_name(base_images_project,
-          #                               config.test_image_suffix),
-          #     'env':
-          #         env,
-          #     'args': [
-          #         'bash', '-c',
-          #         f'test_all.py || (echo "{failure_msg}" && false)'
-          #     ],
-          #     'id':
-          #         get_id('build-check', build)
-          # }
-          # maybe_add_parallel(test_step, get_last_step_id(build_steps),
-          #                    config.parallel)
-          # build_steps.append(test_step)
+          test_step = {
+              'name':
+                  get_runner_image_name(base_images_project,
+                                        config.test_image_suffix),
+              'env':
+                  env,
+              'args': [
+                  'bash', '-c',
+                  f'test_all.py || (echo "{failure_msg}" && false)'
+              ],
+              'id':
+                  get_id('build-check', build)
+          }
+          maybe_add_parallel(test_step, get_last_step_id(build_steps),
+                             config.parallel)
+          build_steps.append(test_step)
 
         if project.labels:
           # Write target labels.
