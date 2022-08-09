@@ -303,8 +303,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       # Build x86_64 before i386.
       for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)
-        if architecture != 'aarch64':
-          continue
         if not is_supported_configuration(build):
           continue
 
