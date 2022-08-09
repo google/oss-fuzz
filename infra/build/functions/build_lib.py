@@ -98,7 +98,7 @@ def get_targets_list_url(bucket, project, sanitizer):
 
 def armify_docker_run_step(step):
   """Modify a docker run step to run using QEMU's aarch64 emulation."""
-  image = step['name']
+  image = f'{step["name"]}-arm'
   step['name'] = DOCKER_TOOL_IMAGE
   new_args = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
   for env_var in step.get('env', {}):
@@ -358,6 +358,7 @@ def get_docker_build_step(image_names,
         'buildx', 'build', '--platform', 'linux/arm64', '--progress', 'plain',
         '--load'
     ]
+    image_names += [image_name + '-arm' for image_name in image_names]
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
