@@ -28,6 +28,11 @@ case $(uname -m) in
       ;;
     aarch64)
       TARGET_TO_BUILD=AArch64
+      # g++ multilib is not needed on AArch64 because we don't care about i386.
+      # We need to install clang and lld using apt because the binary downloaded
+      # from Chrome's developer tools doesn't support AArch64.
+      # TODO(metzman): Make x86_64 use the distro's clang for consistency once
+      # we support AArch64 fully.
       ARCHITECTURE_DEPS="clang lld g++"
       export CC=clang
       export CXX=clang++
@@ -212,6 +217,8 @@ function free_disk_space {
 if [ "$TARGET_TO_BUILD" == "AArch64" ]
 then
   free_disk_space
+  # Exit now on AArch64. We don't need to rebuild libc++ because on AArch64 we
+  # do not support MSAN nor do we care about i386.
   exit 0
 fi
 
