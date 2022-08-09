@@ -221,7 +221,7 @@ def get_compile_step(project, build, env, parallel):
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
   compile_step = {
-      'name': project.image,
+      'name': 'gcr.io/cloud-builders/docker',
       'env': env,
       'args': [
           'bash',
@@ -237,7 +237,12 @@ def get_compile_step(project, build, env, parallel):
       'id': get_id('compile', build),
   }
   if utils.is_arm():
-    compile_step['args'] = ['--platform', 'linux/arm64'] + compile_step['args']
+    args = compile_step['args']
+    compile_step['args'] = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
+    for env_var in env:
+      compile_step['args'].extend(['-e', env_var])
+    compile_step['args'] += ['-t', f'gcr.io/oss-fuzz/{project.name}']
+    compile_step['args'] += args
   if parallel:
     maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step

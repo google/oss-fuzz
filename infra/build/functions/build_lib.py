@@ -342,7 +342,7 @@ def get_docker_build_step(image_names,
     args.append('buildx')
   args.append('build')
   if utils.is_arm():
-    args.extend(['--platform', 'linux/arm64', '--progress', 'plain'])
+    args.extend(['--platform', 'linux/arm64', '--progress', 'plain', '--load'])
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
