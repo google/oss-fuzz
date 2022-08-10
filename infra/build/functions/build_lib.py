@@ -97,7 +97,8 @@ def get_targets_list_url(bucket, project, sanitizer):
 
 
 def dockerify_run_step(step, use_arm, armify_image_name=False):
-  """Modify a docker run step to run using QEMU's aarch64 emulation."""
+  """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
+  allows us to specify which architecture to run the image on."""
   image = step['name']
   if armify_image_name:
     image = _armify_image_name(image)

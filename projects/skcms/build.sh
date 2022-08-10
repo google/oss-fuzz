@@ -20,7 +20,6 @@ $CC -c $CFLAGS fuzz/fuzz_iccprofile_info.c fuzz/fuzz_iccprofile_atf.c fuzz/fuzz_
 $CXX $CXXFLAGS skcms.o fuzz_iccprofile_info.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_info
 $CXX $CXXFLAGS skcms.o fuzz_iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
 $CXX $CXXFLAGS skcms.o fuzz_iccprofile_transform.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_transform
-echo "ARCH $(uname -m)"
 
 # They share the same options
 cp iccprofile.options $OUT/iccprofile_info.options

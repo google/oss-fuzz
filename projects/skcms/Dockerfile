@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN uname -m
 RUN apt-get update && apt-get install -y wget
 
 # checkout all sources needed to build your project
