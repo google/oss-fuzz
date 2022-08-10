@@ -22,12 +22,20 @@ with atheris.instrument_imports():
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  whttp.parse_content_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_set_header(fdp.ConsumeUnicode(100))
-  whttp.parse_etags(fdp.ConsumeUnicode(100))
-  whttp.parse_if_range_header(fdp.ConsumeUnicode(100))
-  whttp.parse_dict_header(fdp.ConsumeUnicode(100))
+  try:
+    whttp.parse_content_range_header(fdp.ConsumeUnicode(100))
+    whttp.parse_range_header(fdp.ConsumeUnicode(100))
+    whttp.parse_set_header(fdp.ConsumeUnicode(100))
+    whttp.parse_etags(fdp.ConsumeUnicode(100))
+    whttp.parse_if_range_header(fdp.ConsumeUnicode(100))
+    whttp.parse_dict_header(fdp.ConsumeUnicode(100))
+  except ValueError as e:
+    if "Bad range provided" in str(e):
+      # https://github.com/pallets/werkzeug/blob/main/src/werkzeug/datastructures.py#L2580
+      # https://github.com/pallets/werkzeug/blob/main/src/werkzeug/datastructures.py#L2596
+      pass
+    else:
+      raise e
 
 
 def main():
