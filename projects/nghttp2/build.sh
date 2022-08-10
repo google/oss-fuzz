@@ -22,7 +22,7 @@ make
 make check
 
 $CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ -I../tests/ \
-    ../fuzz/fuzz_frames.cc -o $OUT/nghttp2_fuzz_frames \
+    ../fuzz/fuzz_frames.cc -o $OUT/nghttp2_fuzzer_frames \
     tests/CMakeFiles/main.dir/nghttp2_test_helper.c.o \
     $LIB_FUZZING_ENGINE lib/libnghttp2.a
 
