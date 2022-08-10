@@ -30,5 +30,6 @@ ENV OUT=/out
 ENV SRC=/src
 ENV WORK=/work
 ENV PATH="$PATH:/out"
+ENV HWASAN_OPTIONS=random_tags=0
 
 RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
