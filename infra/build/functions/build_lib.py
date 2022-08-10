@@ -96,17 +96,17 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def dockerify_run_step(step, use_arm, armify_image_name=False):
+def dockerify_run_step(step, build, use_architecture_image_name=False):
   """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
   allows us to specify which architecture to run the image on."""
   image = step['name']
-  if armify_image_name:
-    image = _armify_image_name(image)
+  if use_architecture_image_name:
+    image = _make_image_name_architecture_specific(image, build)
   step['name'] = DOCKER_TOOL_IMAGE
-  if not use_arm:
-    platform = 'linux/amd64'
-  else:
+  if build.is_arm:
     platform = 'linux/arm64'
+  else:
+    platform = 'linux/amd64'
   new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
@@ -349,9 +349,9 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def _armify_image_name(image_name):
-  """Returns an ARM-specific name for |image_name|."""
-  return image_name + '-arm'
+def _make_image_name_architecture_specific(image_name, build):
+  """Returns an architecture-specific name for |image_name|, based on |build|"""
+  return f'{image_name}-{build.architecture.lower()}'
 
 
 def get_docker_build_step(image_names,
@@ -396,16 +396,23 @@ def get_docker_build_step(image_names,
   return step
 
 
-def project_image_steps(  # pylint: disable=too-many-arguments
+def has_arm_build(architectures):
+  """Returns True if project has an ARM build."""
+  return 'aarch64' in architectures
+
+
+def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
     language,
     branch=None,
     test_image_suffix=None,
-    build_arm=False):
+    architectures=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
-  # TODO(metzman): Pass the URL to clone.
+  if architectures is None:
+    architectures = []
 
+  # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(branch=branch)
   steps = [clone_step]
   if test_image_suffix:
@@ -427,7 +434,7 @@ def project_image_steps(  # pylint: disable=too-many-arguments
       'id': srcmap_step_id
   }])
 
-  if build_arm:
+  if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
     steps.extend([
         {

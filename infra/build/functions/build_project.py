@@ -241,8 +241,8 @@ def get_compile_step(project, build, env, parallel):
       'id': get_id('compile', build),
   }
   build_lib.dockerify_run_step(compile_step,
-                               use_arm=build.is_arm,
-                               armify_image_name=build.is_arm)
+                               build,
+                               use_platform_image_name=build.is_arm)
   maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
@@ -262,11 +262,6 @@ def get_id(step_type, build):
           f'-{build.architecture}')
 
 
-def has_arm_build(project):
-  """Returns True if project has an ARM build."""
-  return 'aarch64' in project.architectures
-
-
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
     project_name, project_yaml, dockerfile, image_project, base_images_project,
     config):
@@ -279,13 +274,13 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-  build_steps = build_lib.project_image_steps(
+  build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
       project.fuzzing_language,
       branch=config.branch,
       test_image_suffix=config.test_image_suffix,
-      build_arm=has_arm_build(project))
+      architectures=project.archtitectures)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -329,7 +324,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               'id':
                   get_id('build-check', build)
           }
-          build_lib.dockerify_run_step(test_step, use_arm=build.is_arm)
+          build_lib.dockerify_run_step(test_step, build)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
                              config.parallel)
           build_steps.append(test_step)
