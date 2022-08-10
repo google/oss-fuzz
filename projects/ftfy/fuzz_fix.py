@@ -22,28 +22,19 @@ def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        ftfy.fix_text(fdp.ConsumeString(1000))
-        ftfy.fix_text(fdp.ConsumeUnicode(1000))
-
-        plan1 = ftfy.fix_and_explain(fdp.ConsumeString(1000))[1]
-        plan2 = ftfy.fix_and_explain(fdp.ConsumeUnicode(1000))[1]
-        ftfy.apply_plan(fdp.ConsumeString(1000), plan1)
-        ftfy.apply_plan(fdp.ConsumeString(1000), plan2)
-        ftfy.apply_plan(fdp.ConsumeUnicode(1000), plan1)
-        ftfy.apply_plan(fdp.ConsumeUnicode(1000), plan2)
-
-        ftfy.fix_text_segment(fdp.ConsumeString(1000))
-        ftfy.fix_text_segment(fdp.ConsumeUnicode(1000))
+        ftfy.fix_text(fdp.ConsumeUnicodeNoSurrogates(100))
+        plan1 = ftfy.fix_and_explain(fdp.ConsumeUnicodeNoSurrogates(100))[1]
+        ftfy.apply_plan(fdp.ConsumeUnicodeNoSurrogates(100), plan1)
+        ftfy.fix_text_segment(fdp.ConsumeUnicodeNoSurrogates(100))
 
         f = open("temp.txt", "w")
-        f.write(fdp.ConsumeString(1000))
-        f.write(fdp.ConsumeUnicode(1000))
+        f.write(fdp.ConsumeUnicodeNoSurrogates(1000))
         f.close()
         f = open("temp.txt", "r")
         ftfy.fix_file(f)
         f.close()
 
-        ftfy.guess_bytes(fdp.ConsumeBytes(1000))
+        ftfy.guess_bytes(fdp.ConsumeBytes(100))
     except UnicodeError as e:
         if "Hey wait, this isn't Unicode." not in str(e):
             raise e
