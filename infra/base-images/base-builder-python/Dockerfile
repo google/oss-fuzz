@@ -14,8 +14,6 @@
 #
 ################################################################################
 
-# TODO(https://github.com/google/oss-fuzz/issues/8059): Stop pinning after
-# https://github.com/google/atheris/pull/37 lands.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:e6f6348068b09ca658bb6cf157fc0bfc67c77604b73d4a3fa05c4f4fe3d13be9
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN install_python.sh
