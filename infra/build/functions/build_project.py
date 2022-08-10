@@ -240,8 +240,7 @@ def get_compile_step(project, build, env, parallel):
       ],
       'id': get_id('compile', build),
   }
-  if build.is_arm:
-    build_lib.armify_docker_run_step(compile_step, armify_image=True)
+  build_lib.dockerify_run_step(compile_step, use_arm=build.is_arm, armify_image=build.is_arm)
   maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
@@ -329,8 +328,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               'id':
                   get_id('build-check', build)
           }
-          if build.is_arm:
-            build_lib.armify_docker_run_step(test_step, armify_image=False)
+          build_lib.dockerify_run_step(test_step, use_arm=build.is_arm)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
                              config.parallel)
           build_steps.append(test_step)

@@ -96,11 +96,17 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def armify_docker_run_step(step, armify_image):
+def dockerify_run_step(step, use_arm, armify_image=False):
   """Modify a docker run step to run using QEMU's aarch64 emulation."""
-  image = armify_image_name(step['name'])
+  image = step['name']
+  if armify_image:
+    image = armify_image_name(image)
   step['name'] = DOCKER_TOOL_IMAGE
-  new_args = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
+  if not use_arm:
+    platform = 'linux/amd64'
+  else:
+    platform = 'linux/arm64'
+  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
@@ -341,10 +347,7 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
 
   return clone_step
 
-
 def armify_image_name(image_name):
-  """Returns an arm-specific version for |image_name| so we don't clobber any
-  x86 version."""
   return image_name + '-arm'
 
 
