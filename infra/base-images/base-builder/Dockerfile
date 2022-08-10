@@ -17,23 +17,8 @@
 ARG parent_image=gcr.io/oss-fuzz-base/base-clang
 FROM $parent_image
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get install -y \
-        binutils-dev \
-        build-essential \
-        curl \
-        wget \
-        git \
-        jq \
-        libc6-dev-i386 \
-        patchelf \
-        rsync \
-        subversion \
-        zip
+COPY install_deps.sh /
+RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
@@ -74,6 +59,7 @@ RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_hwaddress "-fsanitize=hwaddress -fuse-ld=lld -Wno-unused-command-line-argument"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"

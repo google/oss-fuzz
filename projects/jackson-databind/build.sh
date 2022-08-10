@@ -52,10 +52,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
-  
-  if [ "$fuzzer_basename" != "ReadTreeFuzzer" ]; then
-    cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
-  fi
+  cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh

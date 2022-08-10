@@ -18,6 +18,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-image
 
+ARG arch=x86_64
+
 ARG introspector
 ENV INTROSPECTOR_PATCHES=$introspector
 ENV FUZZINTRO_OUTDIR=$SRC
@@ -26,17 +28,17 @@ ENV FUZZ_INTROSPECTOR=$introspector
 # Install newer cmake.
 ENV CMAKE_VERSION 3.21.1
 RUN apt-get update && apt-get install -y wget sudo && \
-    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix="/usr/local" && \
-    rm cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
+    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
+    chmod +x cmake-$CMAKE_VERSION-Linux-$arch.sh && \
+    ./cmake-$CMAKE_VERSION-Linux-$arch.sh --skip-license --prefix="/usr/local" && \
+    rm cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 10cb2db2c307a211ee0f009bda9fa744880eddba && \
+    git checkout 11364ead46a8f01318e506d2a3490aea7e236901 && \
     apt-get remove --purge -y git
 
 COPY checkout_build_install_llvm.sh /root/
