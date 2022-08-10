@@ -15,18 +15,25 @@
 #
 ################################################################################
 
-autoreconf -i
-./configure --enable-lib-only
-make -j$(nproc) all
+mkdir build
+cd build
+cmake -DENABLE_LIB_ONLY=ON -DENABLE_STATIC_LIB=ON -DHAVE_CUNIT=ON ../
+make
+make check
 
-$CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-    fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
-    $LIB_FUZZING_ENGINE lib/.libs/libnghttp2.a
+$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ -I../tests/ \
+    ../fuzz/fuzz_frames.cc -o $OUT/nghttp2_fuzzer_frames \
+    tests/CMakeFiles/main.dir/nghttp2_test_helper.c.o \
+    $LIB_FUZZING_ENGINE lib/libnghttp2.a
 
-$CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-    fuzz/fuzz_target_fdp.cc -o $OUT/nghttp2_fuzzer_fdp \
-    $LIB_FUZZING_ENGINE lib/.libs/libnghttp2.a
+$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ \
+    ../fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
+    $LIB_FUZZING_ENGINE lib/libnghttp2.a
+
+$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ \
+    ../fuzz/fuzz_target_fdp.cc -o $OUT/nghttp2_fuzzer_fdp \
+    $LIB_FUZZING_ENGINE lib/libnghttp2.a
 
 cp $SRC/*.options $OUT
 
-zip -j $OUT/nghttp2_fuzzer_seed_corpus.zip fuzz/corpus/*/*
+zip -j $OUT/nghttp2_fuzzer_seed_corpus.zip ../fuzz/corpus/*/*
