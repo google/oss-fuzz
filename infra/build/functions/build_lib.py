@@ -22,14 +22,13 @@ import six.moves.urllib.parse as urlparse
 import sys
 import time
 
-import requests
-import yaml
-
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
 from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
+import requests
+import yaml
 
 BUILD_TIMEOUT = 16 * 60 * 60
 
@@ -83,6 +82,8 @@ US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
+_ARM64 = 'aarch64'
+
 
 def get_targets_list_filename(sanitizer):
   """Returns target list filename."""
@@ -101,7 +102,7 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
   allows us to specify which architecture to run the image on."""
   image = step['name']
   if use_architecture_image_name:
-    image = _make_image_name_architecture_specific(image, build)
+    image = _make_image_name_architecture_specific(image, build.architecture)
   step['name'] = DOCKER_TOOL_IMAGE
   if build.is_arm:
     platform = 'linux/arm64'
@@ -349,21 +350,21 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
-def _make_image_name_architecture_specific(image_name, build):
+def _make_image_name_architecture_specific(image_name, architecture):
   """Returns an architecture-specific name for |image_name|, based on |build|"""
-  return f'{image_name}-{build.architecture.lower()}'
+  return f'{image_name}-{architecture.lower()}'
 
 
 def get_docker_build_step(image_names,
                           directory,
                           buildkit_cache_image=None,
                           src_root='oss-fuzz',
-                          is_arm=False):
+                          architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
 
-  if not is_arm:
+  if architecture != _ARM64:
     args = ['build']
   else:
     args = [
@@ -371,7 +372,10 @@ def get_docker_build_step(image_names,
         '--load'
     ]
     # TODO(metzman): This wont work when we want to build the base-images.
-    image_names = [_armify_image_name(image_name) for image_name in image_names]
+    image_names = [
+        _make_image_name_architecture_specific(image_name, architecture)
+        for image_name in image_names
+    ]
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
@@ -453,7 +457,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     docker_build_arm_step = get_docker_build_step([image],
                                                   os.path.join(
                                                       'projects', name),
-                                                  is_arm=True)
+                                                  architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
   return steps
@@ -485,9 +489,9 @@ def get_build_body(steps,
 
   if use_build_pool:
     options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
-  if 'env' not in options:
-    options['env'] = []
-  options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
+  # if 'env' not in options:
+  #   options['env'] = []
+  # options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
 
   build_body = {
       'steps': steps,

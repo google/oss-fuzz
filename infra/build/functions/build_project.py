@@ -242,7 +242,7 @@ def get_compile_step(project, build, env, parallel):
   }
   build_lib.dockerify_run_step(compile_step,
                                build,
-                               use_platform_image_name=build.is_arm)
+                               use_architecture_image_name=build.is_arm)
   maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
@@ -280,7 +280,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.fuzzing_language,
       branch=config.branch,
       test_image_suffix=config.test_image_suffix,
-      architectures=project.archtitectures)
+      architectures=project.architectures)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
