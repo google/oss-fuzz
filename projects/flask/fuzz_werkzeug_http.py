@@ -34,7 +34,7 @@ def TestOneInput(data):
       # https://github.com/pallets/werkzeug/blob/main/src/werkzeug/datastructures.py#L2580
       # https://github.com/pallets/werkzeug/blob/main/src/werkzeug/datastructures.py#L2596
       pass
-    else;
+    else:
       raise e
 
 
