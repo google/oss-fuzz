@@ -96,9 +96,9 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def armify_docker_run_step(step):
+def armify_docker_run_step(step, armify_image):
   """Modify a docker run step to run using QEMU's aarch64 emulation."""
-  image = f'{step["name"]}-arm'
+  image = armify_image_name(step['name'])
   step['name'] = DOCKER_TOOL_IMAGE
   new_args = ['run', '--platform', 'linux/arm64', '-v', '/workspace:/workspace']
   for env_var in step.get('env', {}):
@@ -342,6 +342,12 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
+def armify_image_name(image_name):
+  """Returns an arm-specific version for |image_name| so we don't clobber any
+  x86 version."""
+  return image_name + '-arm'
+
+
 def get_docker_build_step(image_names,
                           directory,
                           buildkit_cache_image=None,
@@ -358,7 +364,8 @@ def get_docker_build_step(image_names,
         'buildx', 'build', '--platform', 'linux/arm64', '--progress', 'plain',
         '--load'
     ]
-    image_names += [image_name + '-arm' for image_name in image_names]
+    # TODO(metzman): This wont work when we want to build the base-images.
+    image_names = [armify_image_name(image_name) for image_name in image_names]
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
