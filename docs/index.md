@@ -30,7 +30,7 @@ instances of [ClusterFuzz] or [ClusterFuzzLite].
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
 
-We support the [libFuzzer], [AFL++], and [Honggfuzz] fuzzing engines in
+We support the [libFuzzer], [AFL++], [Honggfuzz], and [Centipede] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 

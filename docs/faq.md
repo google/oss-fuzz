@@ -192,7 +192,7 @@ OSS-Fuzz *uses* the following
 1. [AFL++](https://github.com/AFLplusplus/AFLplusplus), an improved and
    well-maintained version of [AFL](https://lcamtuf.coredump.cx/afl/).
 1. [Honggfuzz](https://github.com/google/honggfuzz).
-1. (Experimental)[Centipede](https://github.com/google/centipede).
+1. [Centipede (Experimental)](https://github.com/google/centipede).
 
 Follow the [new project guide] and OSS-Fuzz will use all its fuzzing engines
 on your code.
