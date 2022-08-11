@@ -129,7 +129,8 @@ RUN cd $SRC && \
       https://github.com/google/centipede.git && \
     cd centipede && \
     echo 'build --client_env=CC=clang --cxxopt=-std=c++17 ' \
-      '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc
+      '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc && \
+    mkdir -p "$OUT/corpus" "$OUT/workdir"
 
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
