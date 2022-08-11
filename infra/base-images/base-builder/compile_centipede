@@ -23,7 +23,7 @@ cp "$BIN_DIR/centipede" "$OUT"
 cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt"`
-export COVERAGE_FLAGS="$CENTIPEDE_FLAGS -fsanitize-coverage=trace-loads -ldl -lrt -lpthread"
+export COVERAGE_FLAGS="$CENTIPEDE_FLAGS -fsanitize-coverage=trace-loads -ldl -lrt -lpthread /$OUT/weak.o"
 
 export CC='/clang/bin/clang'
 export CCC='/clang/bin/clang++'

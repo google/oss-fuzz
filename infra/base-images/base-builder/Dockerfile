@@ -161,6 +161,7 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC
+COPY weak.c $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc
 

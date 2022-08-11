@@ -29,4 +29,7 @@ apt-get install -y libssl-dev
 cd "$SRC/centipede/"
 bazel build -c opt :all
 
+# Prepare the weak.c trick
+/clang/bin/clang "$SRC/weak.c" -c -o "$OUT/weak.o"
+
 echo 'Done.'
