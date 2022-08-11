@@ -4,6 +4,7 @@ primary_contact: "mikesamuel@gmail.com"
 auto_ccs:
   - "meumertzheim@code-intelligence.com"
   - "norbert.schneider@code-intelligence.com"
+  - "hlin@code-intelligence.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/OWASP/json-sanitizer"

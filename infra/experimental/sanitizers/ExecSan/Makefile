@@ -2,7 +2,7 @@
 CXX     = clang++
 CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3
 
-all: clean execSan target
+all: clean execSan target target_file
 
 execSan: execSan.cpp
 	$(CXX) $(CFLAGS) -lpthread -o $@ $^
@@ -10,8 +10,12 @@ execSan: execSan.cpp
 target: target.cpp
 	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
 
+target_file: target_file.cpp
+	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
+
 test:  all vuln.dict
 	./execSan ./target -dict=vuln.dict
+	./execSan ./target_file -dict=vuln.dict
 
 pytorch-lightning-1.5.10:
 	cp execSan.cpp PoEs/pytorch-lightning-1.5.10/; \
@@ -26,4 +30,4 @@ node-shell-quote-v1.7.3:
 	docker run -t execsan_node-shell-quote:latest;
 
 clean:
-	rm -f execSan /tmp/tripwire target
+	rm -f execSan /tmp/tripwire target target_file

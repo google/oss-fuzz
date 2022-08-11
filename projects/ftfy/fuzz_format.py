@@ -26,22 +26,16 @@ def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     ftfy.character_width(chr(fdp.ConsumeIntInRange(1,1114110)))
-    ftfy.monospaced_width(fdp.ConsumeString(1000))
-    ftfy.monospaced_width(fdp.ConsumeUnicode(1000))
+    ftfy.monospaced_width(fdp.ConsumeUnicodeNoSurrogates(1000))
 
     choice = fdp.ConsumeIntInRange(1,3)
     if choice == 1:
-        ftfy.display_ljust(fdp.ConsumeString(1000),fdp.ConsumeIntInRange(1,2000))
-        ftfy.display_ljust(fdp.ConsumeUnicode(1000),fdp.ConsumeIntInRange(1,2000))
+        ftfy.display_ljust(fdp.ConsumeUnicodeNoSurrogates(1000),fdp.ConsumeIntInRange(1,2000))
     if choice == 2:
-        ftfy.display_rjust(fdp.ConsumeString(1000),fdp.ConsumeIntInRange(1,2000))
-        ftfy.display_rjust(fdp.ConsumeUnicode(1000),fdp.ConsumeIntInRange(1,2000))
+        ftfy.display_rjust(fdp.ConsumeUnicodeNoSurrogates(1000),fdp.ConsumeIntInRange(1,2000))
     if choice == 3:
-        ftfy.display_center(fdp.ConsumeString(1000),fdp.ConsumeIntInRange(1,2000))
-        ftfy.display_center(fdp.ConsumeUnicode(1000),fdp.ConsumeIntInRange(1,2000))
-
-    fixes.remove_bom(fdp.ConsumeString(1000))
-    fixes.remove_bom(fdp.ConsumeUnicode(1000))
+        ftfy.display_center(fdp.ConsumeUnicodeNoSurrogates(1000),fdp.ConsumeIntInRange(1,2000))
+    fixes.remove_bom(fdp.ConsumeUnicodeNoSurrogates(1000))
     
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)

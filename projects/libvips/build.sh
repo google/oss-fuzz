@@ -162,13 +162,11 @@ popd
 pushd $SRC/libjxl
 # Ensure libvips finds JxlEncoderInitBasicInfo
 sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
-# FIXME: Remove the `-DHWY_DISABLED_TARGETS=HWY_SSSE3` workaround, see:
-# https://github.com/libjxl/libjxl/issues/858
-extra_libjxl_flags='-DHWY_DISABLED_TARGETS=HWY_SSSE3'
+# CMake ignores the CPPFLAGS env, so prepend it to -DCMAKE_C{XX,}_FLAGS instead
 cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS $extra_libjxl_flags" \
-  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS $extra_libjxl_flags" \
+  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS" \
+  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS" \
   -DCMAKE_INSTALL_PREFIX=$WORK \
   -DZLIB_ROOT=$WORK \
   -DBUILD_SHARED_LIBS=0 \
@@ -253,7 +251,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
     $LDFLAGS \
     -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
-    -ltiff -lwebpmux -lwebpdemux -lwebp -lheif -laom \
+    -ltiff -lwebpmux -lwebpdemux -lwebp -lsharpyuv -lheif -laom \
     -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \

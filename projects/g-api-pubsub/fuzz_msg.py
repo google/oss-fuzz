@@ -28,37 +28,45 @@ PUBLISHED_MICROS = 123456
 PUBLISHED = RECEIVED + datetime.timedelta(days=1, microseconds=PUBLISHED_MICROS)
 PUBLISHED_SECONDS = 1234543
 
+is_once = True
+
+def fuzz_exactly_once_delivery_enabled_func():
+    if is_once:
+        return True
+    return False
+
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  try:
+    fdp = atheris.FuzzedDataProvider(data)
+    is_once = fdp.ConsumeBool()
     gapic_pubsub_message = gapic_types.PubsubMessage(
       data=data,
       message_id="message_id",
       publish_time=timestamp_pb2.Timestamp(
         seconds=PUBLISHED_SECONDS, nanos=PUBLISHED_MICROS * 1000
       ),
-      ordering_key=fdp.ConsumeString(10),
+      ordering_key=fdp.ConsumeUnicodeNoSurrogates(20),
     )
 
     msg = message.Message(
       message=gapic_pubsub_message._pb,
-      ack_id = fdp.ConsumeString(10),
+      ack_id = fdp.ConsumeUnicodeNoSurrogates(20),
       delivery_attempt = fdp.ConsumeIntInRange(1, 1000),
-      request_queue=queue.Queue()
+      request_queue=queue.Queue(),
+      exactly_once_delivery_enabled_func = fuzz_exactly_once_delivery_enabled_func
     )
     msg.modify_ack_deadline_with_response(fdp.ConsumeIntInRange(1, 1000))
     msg.ack_with_response()
     msg.nack_with_response()
-  except UnicodeEncodeError:
-    return
 
-  return msg.ack_id
+    s1 = repr(msg)
+
+    return msg.ack_id
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
 
 if __name__ == "__main__":
-  main()
+    main()

@@ -14,7 +14,7 @@
 #
 ################################################################################
 cd $SRC/pest/meta
-cargo bootstrap
+RUSTFLAGS="" cargo bootstrap
 cargo +nightly fuzz build
 cd $SRC/pest/grammars
 cargo +nightly fuzz build
