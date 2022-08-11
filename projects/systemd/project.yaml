@@ -26,4 +26,5 @@ main_repo: 'https://github.com/systemd/systemd'
 architectures:
   - x86_64
   - i386
+  - aarch64
 file_github_issue: True

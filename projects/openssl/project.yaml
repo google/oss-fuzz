@@ -1,7 +1,7 @@
 homepage: "https://www.openssl.org/"
 language: c++
 primary_contact: "kurt@roeckx.be"
-auto_ccs: 
+auto_ccs:
  - "openssl-security@openssl.org"
  - "appronym@gmail.com"
  - "caswell.matt@googlemail.com"
@@ -11,4 +11,7 @@ sanitizers:
  - memory:
     experimental: True
  - undefined
+architectures:
+  - x86_64
+  - aarch64
 main_repo: 'https://github.com/openssl/openssl.git'

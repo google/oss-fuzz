@@ -71,6 +71,11 @@ class Build:  # pylint: disable=too-few-public-methods
         self.sanitizer)
 
   @property
+  def is_arm(self):
+    """Returns True if CPU architecture is ARM-based."""
+    return self.architecture == 'aarch64'
+
+  @property
   def out(self):
     """Returns the out directory for the build."""
     return posixpath.join(
@@ -166,6 +171,10 @@ def is_supported_configuration(build):
   fuzzing_engine_info = build_lib.ENGINE_INFO[build.fuzzing_engine]
   if build.architecture == 'i386' and build.sanitizer != 'address':
     return False
+  # TODO(jonathanmetzman): UBSan should be easy to support.
+  if build.architecture == 'aarch64' and (build.sanitizer
+                                          not in {'address', 'hwaddress'}):
+    return False
   return (build.sanitizer in fuzzing_engine_info.supported_sanitizers and
           build.architecture in fuzzing_engine_info.supported_architectures)
 
@@ -231,8 +240,10 @@ def get_compile_step(project, build, env, parallel):
       ],
       'id': get_id('compile', build),
   }
-  if parallel:
-    maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
+  build_lib.dockerify_run_step(compile_step,
+                               build,
+                               use_architecture_image_name=build.is_arm)
+  maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
 
@@ -263,13 +274,13 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-
-  build_steps = build_lib.project_image_steps(
+  build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
       project.fuzzing_language,
       branch=config.branch,
-      test_image_suffix=config.test_image_suffix)
+      test_image_suffix=config.test_image_suffix,
+      architectures=project.architectures)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -313,6 +324,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               'id':
                   get_id('build-check', build)
           }
+          build_lib.dockerify_run_step(test_step, build)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
                              config.parallel)
           build_steps.append(test_step)
