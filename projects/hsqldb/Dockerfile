@@ -25,5 +25,5 @@ ENV ANT $SRC/ant/apache-ant-1.10.12/bin/ant
 RUN svn checkout https://svn.code.sf.net/p/hsqldb/svn/base/trunk hsqldb-svn
 
 COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+COPY *.java $SRC/
 WORKDIR $SRC/hsqldb
