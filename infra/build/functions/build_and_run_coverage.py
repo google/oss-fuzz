@@ -100,7 +100,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
-  build_steps = build_lib.project_image_steps(
+  build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
       project.fuzzing_language,

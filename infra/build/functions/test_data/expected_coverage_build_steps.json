@@ -32,7 +32,7 @@
     "id": "srcmap"
   },
   {
-    "name": "gcr.io/oss-fuzz/test-project",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -42,6 +42,25 @@
       "SANITIZER=coverage"
     ],
     "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-coverage-x86_64",
+      "-e",
+      "SANITIZER=coverage",
+      "-t",
+      "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
       "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-coverage-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
@@ -94,22 +113,22 @@
     ]
   },
   {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "entrypoint": "sh",
     "args": [
       "-c",
       "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/reports-by-target/20200101 || exit 0"
-    ],
-    "entrypoint": "sh",
-    "name": "gcr.io/cloud-builders/gsutil"
+    ]
   },
   {
+    "name": "gcr.io/cloud-builders/gsutil",
     "args": [
       "-m",
       "cp",
       "-r",
       "/workspace/out/libfuzzer-coverage-x86_64/report_target",
       "gs://oss-fuzz-coverage/test-project/reports-by-target/20200101"
-    ],
-    "name": "gcr.io/cloud-builders/gsutil"
+    ]
   },
   {
     "name": "gcr.io/cloud-builders/gsutil",

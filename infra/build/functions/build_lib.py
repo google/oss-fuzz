@@ -489,10 +489,6 @@ def get_build_body(steps,
 
   if use_build_pool:
     options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
-  # if 'env' not in options:
-  #   options['env'] = []
-  # options['env'].append('DOCKER_CLI_EXPERIMENTAL=enabled')
-
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
