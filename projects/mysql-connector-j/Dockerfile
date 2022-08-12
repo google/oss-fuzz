@@ -64,7 +64,7 @@ RUN cat mysql-connector-j/build.xml.orig | sed '/version \&quot;1.8/d' > mysql-c
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN  chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 
 COPY build.sh $SRC/
