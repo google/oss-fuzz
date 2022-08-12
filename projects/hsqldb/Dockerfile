@@ -14,18 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y \
-  pkg-config \
-  zlib1g \
-  zlib1g-dev \
-  libjpeg-dev \
-  libpng-dev \
-  npm \
-  libffi-dev
-RUN python3 -m pip install --upgrade pip
-RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
-COPY build.sh $SRC/
-COPY fuzz_* $SRC/aiohttp/
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-WORKDIR $SRC/aiohttp
+RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.zip -o ant.zip && \
+    unzip ant.zip -d $SRC/ant && \
+    rm -rf ant.zip
+
+ENV ANT $SRC/ant/apache-ant-1.10.12/bin/ant
+
+RUN svn checkout https://svn.code.sf.net/p/hsqldb/svn/base/trunk hsqldb-svn
+
+COPY build.sh $SRC/
+COPY *.java $SRC/
+WORKDIR $SRC/hsqldb

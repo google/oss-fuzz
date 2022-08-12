@@ -15,37 +15,21 @@
 #
 ################################################################################
 
-cd $SRC/roaster
-$MVN clean install
-cp ./api/target/roaster-api-2.26.1-SNAPSHOT.jar $OUT/roaster.jar
-cp ./impl/target/roaster-jdt-2.26.1-SNAPSHOT.jar $OUT/roaster-jdt.jar
-cd $SRC/jackson-databind
-
 # Move seed corpus and dictionary.
-mv $SRC/{*.zip,*.dict} $OUT
+mv $SRC/*.dict $OUT
 
-# jackson-databind
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS
+MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
-cp "target/jackson-databind-$CURRENT_VERSION.jar" "$OUT/jackson-databind.jar"
+cp "csv/target/jackson-dataformat-csv-$CURRENT_VERSION.jar" $OUT/jackson-dataformat-csv.jar
+cp "yaml/target/jackson-dataformat-yaml-$CURRENT_VERSION.jar" $OUT/jackson-dataformat-yaml.jar
+cp "properties/target/jackson-dataformat-properties-$CURRENT_VERSION.jar" $OUT/jackson-dataformat-properties.jar
+cp "toml/target/jackson-dataformat-toml-$CURRENT_VERSION.jar" $OUT/jackson-dataformat-toml.jar
 
-# jackson-core
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS -f "jackson-core/pom.xml"
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout -f "jackson-core/pom.xml")
-cp "jackson-core/target/jackson-core-$CURRENT_VERSION.jar" "$OUT/jackson-core.jar"
 
-# jackson-annnotations
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS -f "jackson-annotations/pom.xml"
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout -f "jackson-annotations/pom.xml")
-cp "jackson-annotations/target/jackson-annotations-$CURRENT_VERSION.jar" "$OUT/jackson-annotations.jar"
 
-ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar roaster.jar roaster-jdt.jar"
+ALL_JARS="jackson-dataformat-csv.jar jackson-dataformat-yaml.jar jackson-dataformat-properties.jar jackson-dataformat-toml.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -59,20 +43,15 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
 
-  if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
-    cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
-  fi
-
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---instrumentation_excludes=com.fasterxml.jackson.core.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
 --jvm_args=\"-Xmx2048m\" \
 \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
 done

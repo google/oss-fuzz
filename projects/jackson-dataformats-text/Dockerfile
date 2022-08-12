@@ -20,26 +20,15 @@ RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-mav
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    cp fuzzing/dictionaries/json.dict $SRC/ObjectReaderFuzzer.dict && \
-    cp fuzzing/dictionaries/json.dict $SRC/ObjectWriterFuzzer.dict && \
-    rm -rf fuzzing
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -q $SRC/ObjectReaderFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
-    zip -q $SRC/ObjectWriterFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
-    rm -rf go-fuzz-corpus
-
-RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
-
-RUN git clone --depth 1 https://github.com/forge/roaster
-
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
-WORKDIR jackson-databind
+RUN git clone --depth 1 https://github.com/google/fuzzing && \
+    mv fuzzing/dictionaries/yaml.dict $SRC/YAMLFuzzer.dict && \
+    mv fuzzing/dictionaries/toml.dict $SRC/TOMLFuzzer.dict && \
+    rm -rf fuzzing
 
-RUN git clone --depth 1 https://github.com/FasterXML/jackson-annotations
-RUN git clone --depth 1 https://github.com/FasterXML/jackson-core
+RUN git clone --depth 1 https://github.com/FasterXML/jackson-dataformats-text.git
 
 COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+COPY CSVFuzzer.java PropertiesFuzzer.java TOMLFuzzer.java YAMLFuzzer.java $SRC/
+WORKDIR $SRC/jackson-dataformats-text

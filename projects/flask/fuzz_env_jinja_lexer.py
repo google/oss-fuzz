@@ -14,6 +14,7 @@
 # limitations under the License.
 import sys
 import atheris
+import traceback
 
 with atheris.instrument_imports():
     import jinja2
@@ -26,9 +27,16 @@ def TestOneInput(data):
     env = jinja2.Environment()
     try:
         v1 = env.from_string(original)
-    except jinja2.TemplateSyntaxError:
+        v1.render()
+    except (jinja2.TemplateSyntaxError, jinja2.UndefinedError, RecursionError, MemoryError) as e:
         return
-    v1.render()
+    except Exception as e2:
+        # avoid raising anything that is raise by jinjas "handle_exception"
+        tb = traceback.format_exc()
+        if "handle_exception" in str(tb):
+            pass
+        else:
+            raise e2
 
     # Hit tokernizer directly
     env.lexer.tokenize(original)
