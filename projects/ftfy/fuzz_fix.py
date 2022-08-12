@@ -35,6 +35,8 @@ def TestInput(data):
         f.close()
 
         ftfy.guess_bytes(fdp.ConsumeBytes(100))
+    except UnicodeEncodeError as e2:
+        pass
     except UnicodeError as e:
         if "Hey wait, this isn't Unicode." not in str(e):
             raise e
