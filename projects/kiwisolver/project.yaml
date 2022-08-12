@@ -1,0 +1,11 @@
+homepage: "https://github.com/nucleic/kiwi"
+language: python
+main_repo: "https://github.com/nucleic/kiwi"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - david@adalogics.com
+  - adam@adalogics.com
