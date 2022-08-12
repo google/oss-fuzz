@@ -1,6 +1,8 @@
 homepage: "https://github.com/python-restx/flask-restx"
 language: python
 main_repo: "https://github.com/python-restx/flask-restx"
+fuzzing_engines:
+- libfuzzer
 sanitizers:
 - address
 - undefined
