@@ -40,12 +40,16 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 # compile all java files and copy them to $OUT
 javac -cp $SRC:$BUILD_CLASSPATH -g $SRC/*.java
 cp $SRC/*.class $OUT/
+# copy the mysqld launcher to $OUT
+cp $SRC/entrypoint.sh $OUT/
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
+# start mysql and setup it
+\$(dirname \"\$0\")/entrypoint.sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \

@@ -62,9 +62,8 @@ RUN curl -o mysql-connector-j/lib/oci-java-sdk-common-2.14.1.jar https://repo1.m
 RUN cp mysql-connector-j/build.xml mysql-connector-j/build.xml.orig
 RUN cat mysql-connector-j/build.xml.orig | sed '/version \&quot;1.8/d' > mysql-connector-j/build.xml
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN  chmod +x /usr/local/bin/entrypoint.sh
-#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+COPY entrypoint.sh $SRC/entrypoint.sh
+RUN  chmod +x $SRC/entrypoint.sh
 
 
 COPY build.sh $SRC/

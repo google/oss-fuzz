@@ -24,9 +24,10 @@ _is_sourced() {
 
 _main() {
 	/etc/init.d/mysql start
-	echo "CREATE USER 'test' IDENTIFIED BY 'test' ;" | mysql
-	echo "GRANT ALL PRIVILEGES ON *.* TO 'test';" | mysql
-	echo "CREATE DATABASE test" | mysql --user=test --password=test
+	(echo "CREATE USER 'test' IDENTIFIED BY 'test' ;" | mysql) || true
+	(echo "GRANT ALL PRIVILEGES ON *.* TO 'test';" | mysql) || true
+	(echo "DROP DATABASE test" | mysql --user=test --password=test) || true
+	(echo "CREATE DATABASE test" | mysql --user=test --password=test) || true
 	exec "$@"
 }
 
