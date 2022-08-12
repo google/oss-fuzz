@@ -46,3 +46,28 @@ compile_go_fuzzer $FUZZ_ROOT/time Fuzz time_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/xml Fuzz xml_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/zip Fuzz zip_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/zlib Fuzz zlib_fuzzer
+
+cd $SRC && git clone https://github.com/AdamKorcz/instrumentation
+cd instrumentation
+go run main.go $SRC/go/src/archive/tar
+
+cd $SRC/go/src/archive/tar
+cp $SRC/fuzz_tar_reader.go ./
+go mod init tarPackage
+rm ./*_test.go
+
+compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
+
+cd $SRC/go/src/internal/saferio
+go mod init saferioPackage
+go mod tidy
+
+cd $SRC/go/src/debug/elf
+go mod init elfPackage
+go mod tidy
+go mod edit -replace internal/saferio=../../internal/saferio
+go get internal/saferio
+cp $SRC/elf_fuzzer.go ./
+rm ./*_test.go
+compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
+zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
