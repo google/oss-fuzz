@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/websocket-client/websocket-client websocket-client
 WORKDIR websocket-client
-COPY build.sh fuzz_http.py $SRC/
+COPY build.sh *.py $SRC/
