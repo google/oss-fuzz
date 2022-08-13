@@ -71,3 +71,5 @@ cp $SRC/elf_fuzzer.go ./
 rm ./*_test.go
 compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
 zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
+
+mv $SRC/fuzz_tar_reader.options $OUT/
