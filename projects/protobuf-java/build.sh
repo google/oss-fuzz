@@ -17,14 +17,9 @@
 
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
-mkdir $SRC/protobuf-install/
 cd $SRC/protobuf/
-./autogen.sh
-./configure --prefix=$SRC/protobuf-install
-make -j$(nproc)
-make install
-
-export PROTOC="$SRC/protobuf-install/bin/protoc"
+bazelisk build :protoc
+export PROTOC="$SRC/protobuf/bazelhbin/protoc"
 
 # Build protobuf-java (requires protoc in source tree).
 cd $SRC/protobuf/java/
