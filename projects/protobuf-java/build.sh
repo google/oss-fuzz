@@ -19,7 +19,9 @@
 unset CFLAGS CXXFLAGS
 cd $SRC/protobuf/
 bazel build :protoc
+cp $SRC/protobuf/bazel-bin/protoc $SRC/protobuf/protoc
 export PROTOC="$SRC/protobuf/bazel-bin/protoc"
+
 
 # Build protobuf-java (requires protoc in source tree).
 cd $SRC/protobuf/java/
