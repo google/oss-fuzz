@@ -18,21 +18,18 @@
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
 mkdir $SRC/protobuf-install/
-cd $SRC/protobuf/
-./autogen.sh
-./configure --prefix=$SRC/protobuf-install
+cmake $SRC/protobuf -Dprotobuf_BUILD_TESTS=OFF
 make -j$(nproc)
 make install
-export PROTOC="$SRC/protobuf-install/bin/protoc"
-
 ldconfig
-cd python
-python3 setup.py build --cpp_implementation
+
+cd $SRC/protobuf/python
+python3 setup.py build
 pip3 install .
 
 # Compile test protos with protoc.
 cd $SRC/
-$PROTOC --python_out=. --proto_path=. test-full.proto
+protoc --python_out=. --proto_path=. test-full.proto
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
