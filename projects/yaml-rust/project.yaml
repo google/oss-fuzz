@@ -1,0 +1,10 @@
+homepage: "https://github.com/chyh1990/yaml-rust"
+language: rust
+main_repo: "https://github.com/chyh1990/yaml-rust"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - maxnair.dev@gmail.com
+file_github_issue: true
