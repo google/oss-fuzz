@@ -53,6 +53,7 @@ RUN git clone --depth 1 https://github.com/libyal/libfsxfs.git libfsxfs
 
 RUN git clone --depth 1 https://github.com/libyal/libbde.git libbde
 RUN git clone --depth 1 https://github.com/libyal/libluksde.git libluksde
+RUN git clone --depth 1 https://github.com/libyal/libvsapm.git libvsapm
 RUN git clone --depth 1 https://github.com/libyal/libvsgpt.git libvsgpt
 RUN git clone --depth 1 https://github.com/libyal/libvshadow.git libvshadow
 RUN git clone --depth 1 https://github.com/libyal/libvslvm.git libvslvm
