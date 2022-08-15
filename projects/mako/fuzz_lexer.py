@@ -22,9 +22,8 @@ from mako.lexer import Lexer
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    s1 = fdp.ConsumeUnicodeNoSurrogates(128)
     try:
-        Lexer(s1).parse()
+        Lexer(fdp.ConsumeUnicodeNoSurrogates(1024)).parse()
     except exceptions.MakoException:
         pass
 
