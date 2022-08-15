@@ -62,7 +62,6 @@ fuzzers="gstoraster_fuzzer            \
          gs_device_faxg3_fuzzer       \
          gs_device_tiffsep1_fuzzer"
 
-fuzzers="gs_device_eps2write_fuzzer gs_device_eps2write_fuzzer"
 for fuzzer in $fuzzers; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
     $SRC/${fuzzer}.cc \
