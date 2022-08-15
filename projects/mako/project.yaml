@@ -1,5 +1,6 @@
 homepage: "https://github.com/sqlalchemy/mako"
 language: python
+primary_contact: "mike_mp@zzzcomputing.com"
 main_repo: "https://github.com/sqlalchemy/mako"
 fuzzing_engines:
   - libfuzzer
