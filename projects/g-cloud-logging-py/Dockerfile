@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN git clone https://github.com/googleapis/python-logging gcloud-logging
+RUN pip3 install --upgrade pip mock
 WORKDIR gcloud-logging
 
 COPY build.sh fuzz_*.py $SRC/

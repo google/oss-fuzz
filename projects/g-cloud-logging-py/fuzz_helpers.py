@@ -15,24 +15,26 @@
 
 import atheris
 import sys
-with atheris.instrument_imports():
-    import google.cloud.logging_v2._helpers as helpers
-    import google.cloud.logging_v2.handlers._helpers as handlers_helpers
+
+import google.cloud.logging_v2._helpers as helpers
+import google.cloud.logging_v2.handlers._helpers as handlers_helpers
+
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    helpers.retrieve_metadata_server(fdp.ConsumeString(100))
-    helpers._normalize_severity(fdp.ConsumeInt(100))
-    helpers._add_defaults_to_filter(fdp.ConsumeString(100))
-
-    handlers_helpers.get_request_data_from_flask()
-    handlers_helpers.get_request_data_from_django()
-    handlers_helpers._parse_trace_parent(fdp.ConsumeString(100))
-    handlers_helpers._parse_xcloud_trace(fdp.ConsumeString(100))
-    handlers_helpers.get_request_data()
+    op = fdp.ConsumeIntInRange(0, 4)
+    if op == 0:
+        helpers._normalize_severity(fdp.ConsumeInt(sys.maxsize))
+    elif op == 1:
+        helpers._add_defaults_to_filter(fdp.ConsumeUnicodeNoSurrogates(40))
+    elif op == 2:
+        handlers_helpers._parse_trace_parent(fdp.ConsumeUnicodeNoSurrogates(300))
+    else:
+        handlers_helpers._parse_xcloud_trace(fdp.ConsumeUnicodeNoSurrogates(300))
 
 def main():
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
 
