@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-python3 -m pip install -U --upgrade --force-reinstall pyinstaller
 python3 -m pip install -U -r dev_requirements.txt
 python3 prepare.py
 python3 -m pip install -U  .
@@ -33,3 +32,5 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod +x $OUT/$fuzzer_basename
 done
+
+zip -j $OUT/pcap_fuzzer_seed_corpus.zip tests/pcaps/*
