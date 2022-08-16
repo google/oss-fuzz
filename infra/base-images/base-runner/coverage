@@ -1,4 +1,4 @@
-#!/bin/bash -xu
+#!/bin/bash -u
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -191,6 +191,7 @@ function run_java_fuzz_target {
 
   if (( $(du -c $exec_file | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce .exec files.
+    echo "$target failed to produce .exec file."
     return 0
   fi
 
