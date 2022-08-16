@@ -1,0 +1,11 @@
+homepage: "https://github.com/pyparsing/pyparsing"
+language: python
+main_repo: "https://github.com/pyparsing/pyparsing"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
