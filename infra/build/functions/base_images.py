@@ -123,7 +123,6 @@ def get_push_manifest_steps(image):
   arm_version = f'{image}-testing-arm'
   amd64_image = f'{image}:manifest-amd64'
   arm64_image = f'{image}:manifest-arm64v8'
-  base_runner = f'TAG_PREFIX/base-runner'
   steps = [
       {
           'name': 'gcr.io/cloud-builders/docker',
@@ -135,7 +134,7 @@ def get_push_manifest_steps(image):
       },
       {
           'name': 'gcr.io/cloud-builders/docker',
-          'args': ['tag', arm_version, arm_image],
+          'args': ['tag', arm_version, arm64_image],
       },
       {
           'name':
@@ -162,7 +161,7 @@ def base_builder(event, context):
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  steps = get_arm_manifest_steps(BASE_IMAGES)
+  steps = get_arm_manifest_steps()
   images = []
   run_build(steps, images)
 
