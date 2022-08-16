@@ -1,0 +1,11 @@
+homepage: "https://github.com/Ousret/charset_normalizer"
+language: python
+main_repo: "https://github.com/Ousret/charset_normalizer"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
