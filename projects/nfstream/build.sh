@@ -16,7 +16,6 @@
 
 python3 -m pip install -U --upgrade --force-reinstall pyinstaller
 python3 -m pip install -U -r dev_requirements.txt
-python3 -m pip install -U --upgrade --force-reinstall cffi
 python3 prepare.py
 python3 -m pip install -U  .
 
@@ -24,7 +23,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
 
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
+  python3 -m pyinstaller --hidden-import=_cffi_backend --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
