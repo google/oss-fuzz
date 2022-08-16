@@ -18,23 +18,24 @@ import sys
 import atheris
 
 with atheris.instrument_imports():
-  import io
-  from nfstream import NFStreamer
+    import io
+    from nfstream import NFStreamer
 
 
 def TestOneInput(input_bytes):
-  with open('fuzz_one_input.pcap', 'wb') as w:
-    w.write(io.BytesIO(input_bytes).read())
-  try:
-    for _ in NFStreamer(source="fuzz_one_input.pcap"):
-      pass
-  except (ValueError, TypeError):
-    pass
+    with open('fuzz_one_input.pcap', 'wb') as w:
+        w.write(io.BytesIO(input_bytes).read())
+    try:
+        for _ in NFStreamer(source="fuzz_one_input.pcap"):
+            pass
+    except (ValueError, TypeError):
+        pass
+
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
 
 
 if __name__ == "__main__":
-  main()
+    main()
