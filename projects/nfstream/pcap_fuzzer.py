@@ -24,6 +24,7 @@ with atheris.instrument_imports():
 
 def TestOneInput(input_bytes):
     with open('fuzz_one_input.pcap', 'wb') as w:
+        # Save it as binary file with .pcap extension
         w.write(io.BytesIO(input_bytes).read())
     try:
         for _ in NFStreamer(source="fuzz_one_input.pcap"):
