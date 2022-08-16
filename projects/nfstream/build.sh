@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-python3 prepare.py
 pip3 install -r dev_requirements.txt
+python3 prepare.py
 pip3 install .
 
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do

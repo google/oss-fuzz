@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update
 RUN apt-get install -y python3-dev autoconf automake libtool pkg-config flex bison gettext libjson-c-dev libpcap-dev
-RUN apt-get install -y libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev
+RUN apt-get install -y libusb-1.0-0-dev libdbus-glib-1-dev libbluetooth-dev libnl-genl-3-dev libffi-dev
 RUN python3 -m pip install --upgrade pip
 RUN git clone --branch fuzz --recurse-submodules https://github.com/nfstream/nfstream.git
 WORKDIR nfstream
