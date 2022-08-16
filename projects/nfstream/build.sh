@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-pip3 install -r dev_requirements.txt
+python3 -m pip install -r dev_requirements.txt
+python3 -m pip -vvv install --upgrade --force-reinstall cffi
 python3 prepare.py
 pip3 install .
 
