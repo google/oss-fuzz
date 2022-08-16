@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
-python3 -m pip install -r dev_requirements.txt
-python3 -m pip -vvv install --upgrade --force-reinstall cffi
+python3 -m pip install -U --upgrade --force-reinstall pyinstaller
+python3 -m pip install -U -r dev_requirements.txt
+python3 -m pip install -U --upgrade --force-reinstall cffi
 python3 prepare.py
-pip3 install .
+python3 -m pip3 install -U  .
 
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
