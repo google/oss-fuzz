@@ -26,7 +26,7 @@ class NoFilestore(filestore.BaseFilestore):
     """Noop implementation of upload_crashes."""
     logging.info('Not uploading crashes because no Filestore.')
 
-  def upload_corpus(self, name, directory):
+  def upload_corpus(self, name, directory, replace=False):
     """Noop implementation of upload_corpus."""
     logging.info('Not uploading corpus because no Filestore.')
 

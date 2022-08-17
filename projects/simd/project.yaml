@@ -6,5 +6,4 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  - memory
 main_repo: 'https://github.com/ermig1979/Simd'

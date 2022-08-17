@@ -15,7 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get --yes update \
+   && apt-get install --no-install-recommends --yes \
+   libssl-dev \
+   pkg-config \
+   python \
+   && apt-get clean \
+   && rm --recursive --force /var/lib/apt/lists/*
+
 RUN git clone --depth 1 https://github.com/linkerd/linkerd2-proxy
 
 COPY build.sh $SRC/
 WORKDIR $SRC
+
+COPY rustc.py $SRC/

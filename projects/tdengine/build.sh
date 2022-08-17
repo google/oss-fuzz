@@ -22,7 +22,14 @@ sed -i 's/\.git//g' .gitmodules
 git submodule update --init --recursive
 sed -i 's/-Werror//g' ./cmake/define.inc
 mkdir debug && cd debug
-cmake -DBUILD_HTTP=true  .. && cmake --build .
+export LDFLAGS="${CXXFLAGS}"
+
+if [[ $SANITIZER = *coverage* ]]; then
+  ln -f -s /usr/bin/gold /usr/bin/ld
+fi
+
+cmake -DBUILD_HTTP=true ..
+cmake --build .
 
 cd build/bin
 
@@ -41,7 +48,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE sql-fuzzer.o -o $OUT/sql-fuzzer \
       ../lib/libquery.a  ../lib/libtsdb.a ../lib/libcommon.a \
        ../lib/libtfs.a ../lib/liblz4.a ../lib/libos.a \
        ../lib/liboslinux.a ../lib/libz.a ../lib/librmonotonic.a \
-       ../lib/liblua.a \
+       ../lib/liblua.a ../lib/libtutil.a ../lib/libTSZ.a \
        -Wl,--end-group -lpthread -ldl
 
 cp $SRC/*.options $OUT/

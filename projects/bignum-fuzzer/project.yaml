@@ -16,3 +16,6 @@ auto_ccs:
     - "libmpdec@gmail.com"
     - "richard@levitte.org"
 main_repo: 'https://github.com/guidovranken/bignum-fuzzer'
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

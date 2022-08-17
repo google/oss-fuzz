@@ -1,0 +1,10 @@
+homepage: "https://github.com/zip-rs/zip"
+main_repo: "https://github.com/zip-rs/zip"
+primary_contact: "marli@frost.red"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"

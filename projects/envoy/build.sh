@@ -19,7 +19,15 @@ declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
 '
-declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
+
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # CI has fewer resources so restricting to a small number of fuzz targets.
+  # Choosing the header_parser, and header_map_impl.
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | grep ':header' | sed 's/$/_oss_fuzz/')"
+else
+  declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
+fi
 
 declare -r EXTRA_BAZEL_FLAGS="$(
 if [ -n "$CC" ]; then
@@ -70,17 +78,15 @@ declare -r DI="$(
 if [ "$SANITIZER" != "coverage" ]
 then
 # Envoy code. Disable coverage instrumentation
-  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0" 
+  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*source/common/protobuf/.*\.cc\$@-fsanitize-coverage=0"
 
 # Envoy test code. Disable coverage instrumentation
   echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
 
 # External dependencies. Disable all instrumentation.
-  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -92,6 +98,11 @@ then
   echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+
+# External dependency which needs to be compiled with sanitizers. Disable
+# coverage instrumentation.
+  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
 
 # All protobuf code and code in bazel-out
   echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -121,9 +132,15 @@ then
   # the profiler.
   declare -r REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
-  # For .cc, we only really care about source/ today.
+  # Copy the cc and header files that will be covered.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/envoy "${REMAP_PATH}"
+  # Envoy currently uses a modified version of http_parser (see:
+  # https://github.com/envoyproxy/envoy/issues/19749).
+  declare -r BAZEL_EXTERNAL_REMAP_PATH="${REMAP_PATH}/external/envoy/bazel/external"
+  mkdir -p "${BAZEL_EXTERNAL_REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/bazel/external/http_parser "${BAZEL_EXTERNAL_REMAP_PATH}"
   # Remove filesystem loop manually.
   rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.

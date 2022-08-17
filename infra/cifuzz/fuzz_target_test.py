@@ -95,6 +95,25 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     test_helpers.patch_environ(self, empty=True)
     os.environ['ROOT_DIR'] = root_dir
 
+  # There's an extremely bad issue that happens if this test is run: Other tests
+  # in this file fail in CI with stacktraces using referencing fakefs even if
+  # the tests do not use fakefs.
+  # TODO(metzman): Stop using fakefs.
+  @mock.patch('os.chmod')
+  @unittest.skip('Skip because of weird failures.')
+  def test_repro_timed_out(self, mock_chmod, mock_get_container_name):
+    """Tests that is_reproducible behaves correctly when reproduction times
+    out."""
+    del mock_get_container_name
+    del mock_chmod
+
+    with mock.patch(
+        'clusterfuzz._internal.bot.fuzzers.libFuzzer.engine.LibFuzzerEngine.'
+        'reproduce',
+        side_effect=TimeoutError):
+      self.assertFalse(
+          self.target.is_reproducible('/testcase', self.target.target_path, []))
+
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
@@ -230,7 +249,7 @@ class FuzzTest(fake_filesystem_unittest.TestCase):
   """Fuzz test."""
 
   def setUp(self):
-    """Sets up example fuzz target to test is_reproducible method."""
+    """Sets up example fuzz target."""
     self.setUpPyfakefs()
     deployment = _create_deployment()
     config = deployment.config

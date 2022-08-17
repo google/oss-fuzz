@@ -7,7 +7,6 @@ auto_ccs:
   - "seph@directionless.org"
   - "alessandro.gario@gmail.com"
   - "tom@ritter.vg"
-  - "mhl@fb.com"
   - "sharvil@sharvilshah.com"
   - "gellerbedoya@gmail.com"
   - "stefano.bonicatti@gmail.com"
@@ -17,3 +16,4 @@ fuzzing_engines:
  - libfuzzer
  - afl
 main_repo: 'https://github.com/osquery/osquery'
+coverage_extra_args: -ignore-filename-regex=.*/libraries/.* -ignore-filename-regex=.*/build/libs/.* -ignore-filename-regex=.*/build/openssl/.* -ignore-filename-regex=.*/build/installed_formulas/.*

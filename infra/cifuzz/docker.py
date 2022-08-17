@@ -15,23 +15,27 @@
 import logging
 import os
 import sys
+import uuid
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import constants
 import utils
+import environment
 
 BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e',
-    'ARCHITECTURE=' + constants.DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e', 'CIFUZZ=True'
 ]
 
-EXTERNAL_PROJECT_IMAGE = 'external-project'
+UNIQUE_ID_SUFFIX = '-' + uuid.uuid4().hex
+
+# TODO(metzman): Make run_fuzzers able to delete this image.
+EXTERNAL_PROJECT_IMAGE = 'external-cfl-project' + UNIQUE_ID_SUFFIX
 
 _DEFAULT_DOCKER_RUN_COMMAND = [
     'docker',
@@ -52,7 +56,10 @@ def get_docker_env_vars(env_mapping):
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
-  # TODO(ochang): We may need unique names to support parallel fuzzing.
+  # TODO(jonathanmetzman): We may need unique names to support parallel fuzzing
+  # for CIFuzz (like CFL supports). Don't do this for now because no one has
+  # asked for it and build_specified_commit would need to be modified to support
+  # this.
   if project:
     return PROJECT_TAG_PREFIX + project
 
@@ -69,17 +76,20 @@ def delete_images(images):
 def get_base_docker_run_args(workspace,
                              sanitizer=constants.DEFAULT_SANITIZER,
                              language=constants.DEFAULT_LANGUAGE,
+                             architecture=constants.DEFAULT_ARCHITECTURE,
                              docker_in_docker=False):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
   env_mapping = {
       'SANITIZER': sanitizer,
+      'ARCHITECTURE': architecture,
       'FUZZING_LANGUAGE': language,
       'OUT': workspace.out
   }
   docker_args += get_docker_env_vars(env_mapping)
-  docker_container = utils.get_container_name()
+  docker_container = environment.get('CFL_CONTAINER_ID',
+                                     utils.get_container_name())
   logging.info('Docker container: %s.', docker_container)
   if docker_container and not docker_in_docker:
     # Don't map specific volumes if in a docker container, it breaks when
@@ -93,11 +103,16 @@ def get_base_docker_run_args(workspace,
 def get_base_docker_run_command(workspace,
                                 sanitizer=constants.DEFAULT_SANITIZER,
                                 language=constants.DEFAULT_LANGUAGE,
+                                architecture=constants.DEFAULT_ARCHITECTURE,
                                 docker_in_docker=False):
   """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
-      workspace, sanitizer, language, docker_in_docker=docker_in_docker)
+      workspace,
+      sanitizer,
+      language,
+      architecture,
+      docker_in_docker=docker_in_docker)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
 

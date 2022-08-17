@@ -28,6 +28,8 @@ def TestOneInput(input_bytes):
     context = yaml.load(input_bytes, Loader=yaml.FullLoader)
   except yaml.YAMLError:
     pass
+  except RecursionError:
+    pass
 
 def main():
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)

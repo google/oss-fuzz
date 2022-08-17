@@ -15,15 +15,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import java.io.IOException;
-import java.util.HashMap;
 import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.common.bytesource.ByteSourceArray;
 import org.apache.commons.imaging.formats.bmp.BmpImageParser;
 
 public class ImagingBmpFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     try {
-      new BmpImageParser().getBufferedImage(new ByteSourceArray(input), new HashMap<>());
+      new BmpImageParser().getBufferedImage(input, null);
     } catch (IOException | ImageReadException ignored) {
     }
   }

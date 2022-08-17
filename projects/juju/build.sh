@@ -15,11 +15,10 @@
 #
 ################################################################################
 
+go mod download
+# A fuzzer in this dependency is broken:
+find /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2 -name "*fuzz.go" -exec rm -rf {} \;
+
+# Compile fuzzer:
 mv $SRC/storage_fuzzer.go $SRC/juju/storage/
-
-if [[ $SANITIZER = *coverage* ]]; then
-	compile_go_fuzzer github.com/juju/juju/storage Fuzz storage_fuzzer
-	exit 0
-fi
-
-compile_go_fuzzer ./storage Fuzz storage_fuzzer
+compile_go_fuzzer github.com/juju/juju/storage Fuzz storage_fuzzer

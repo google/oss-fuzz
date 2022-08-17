@@ -14,9 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-
-python3 -m pip install tf-nightly-cpu
+export ORIG_CFLAGS="$CFLAGS"
+export ORIG_CXXFLAGS="$CXXFLAGS"
+export CFLAGS=""
+export CXXFLAGS=""
 python3 -m pip install numpy
+export CFLAGS=$ORIG_CFLAGS
+export CXXFLAGS=$ORIG_CXXFLAGS
+python3 -m pip install tf-nightly-cpu
 
 # Rename to avoid the following: https://github.com/tensorflow/tensorflow/issues/40182
 mv $SRC/tensorflow/tensorflow $SRC/tensorflow/tensorflow_src
@@ -29,15 +34,11 @@ for fuzzer in $(find $SRC -name '*_fuzz.py'); do
 
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libgfortran-2e0d59d6.so.5.0.0 $OUT
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libopenblasp-r0-2d23e62b.3.17.so $OUT
-  cp /usr/local/lib/python3.8/site-packages/numpy.libs/libquadmath-2d0c479f.so.0.0.0 $OUT
-
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-LD_PRELOAD=\"\$this_dir/sanitizer_with_fuzzer.so \$this_dir/libz-eb09ad1d.so.1.2.3 \$this_dir/libquadmath-2d0c479f.so.0.0.0 \$this_dir/libgfortran-2e0d59d6.so.5.0.0 \$this_dir/libopenblasp-r0-09e95953.3.13.so\" \
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+
+LD_PRELOAD=ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod +x $OUT/$fuzzer_basename
 done

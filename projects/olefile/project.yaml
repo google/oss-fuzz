@@ -1,0 +1,10 @@
+homepage: "http://www.decalage.info/olefile"
+language: python
+main_repo: "https://github.com/decalage2/olefile"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - david@adalogics.com

@@ -103,11 +103,12 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    if self.is_external:
-      # TODO(metzman): Handle this properly.
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logging.warning('No project.yaml. Assuming c++.')
       return constants.DEFAULT_LANGUAGE
 
-    project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
@@ -115,8 +116,8 @@ class Project:
         if match:
           return match.group(1)
 
-    logging.warning('Language not specified in project.yaml.')
-    return None
+    logging.warning('Language not specified in project.yaml. Assuming c++.')
+    return constants.DEFAULT_LANGUAGE
 
   @property
   def out(self):
@@ -155,10 +156,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    if args.engine == 'dataflow':
-      args.sanitizer = 'dataflow'
-    else:
-      args.sanitizer = constants.DEFAULT_SANITIZER
+    args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -454,11 +452,10 @@ def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
   if choices is None:
     choices = constants.SANITIZERS
-  parser.add_argument(
-      '--sanitizer',
-      default=None,
-      choices=choices,
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+  parser.add_argument('--sanitizer',
+                      default=None,
+                      choices=choices,
+                      help='the default is "address"')
 
 
 def _add_environment_args(parser):
@@ -638,9 +635,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
-      'FUZZING_ENGINE=' + engine,
-      'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture,
+      'FUZZING_ENGINE=' + engine, 'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture, 'PROJECT_NAME=' + project.name
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
@@ -712,17 +708,11 @@ def check_build(args):
       not _check_fuzzer_exists(args.project, args.fuzzer_name)):
     return False
 
-  fuzzing_language = args.project.language
-  if not fuzzing_language:
-    fuzzing_language = constants.DEFAULT_LANGUAGE
-    logging.warning('Language not specified in project.yaml. Defaulting to %s.',
-                    fuzzing_language)
-
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + fuzzing_language,
+      'FUZZING_LANGUAGE=' + args.project.language,
   ]
   _add_oss_fuzz_ci_if_needed(env)
   if args.e:

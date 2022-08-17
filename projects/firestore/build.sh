@@ -25,8 +25,20 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 # Build the project using cmake with FUZZING option enabled to link to OSS Fuzz
 # fuzzing library defined in ${LIB_FUZZING_ENGINE}.
 cd $SRC/firebase-ios-sdk
+
+# Do not use Werror anywhere
+sed -i 's/-Werror=reorder//g' ./cmake/compiler_setup.cmake
+sed -i 's/-Werror=return-type//g' ./cmake/compiler_setup.cmake
+sed -i 's/-Wall -Wextra -Werror//g' ./cmake/compiler_setup.cmake
+sed -i 's/-Wuninitialized/#-Wu/g' ./cmake/compiler_setup.cmake
+sed -i 's/-Wfno-common/#-Wu/g' ./cmake/compiler_setup.cmake
+sed -i 's/-Werror//g' ./scripts/sync_project.rb
+sed -i 's/-Werror=reorder//g' ./FirebaseFirestore.podspec
+sed -i 's/ReadContext context/\/\/ReadContext/g' ./Firestore/fuzzing/serializer_fuzzer.cc
+sed -i 's/serializer.Dec/\/\/serializer/g' ./Firestore/fuzzing/serializer_fuzzer.cc
+
 mkdir build && cd build
-cmake -DFUZZING=ON ..
+cmake -DFIREBASE_IOS_BUILD_TESTS=OFF -DFIREBASE_IOS_BUILD_BENCHMARKS=OFF -DFUZZING=ON ..
 make -j$(nproc)
 
 # Copy fuzzing targets, dictionaries, and zipped corpora to $OUT.

@@ -24,8 +24,32 @@ RUN apt-get --yes update \
    && apt-get clean \
    && rm --recursive --force /var/lib/apt/lists/*
 
+# Install rustup.
+ARG rustup_dir=/usr/local/cargo
+ENV RUSTUP_HOME ${rustup_dir}
+ENV CARGO_HOME ${rustup_dir}
+ENV PATH "${rustup_dir}/bin:${PATH}"
+RUN curl --location https://sh.rustup.rs > /tmp/rustup \
+  && sh /tmp/rustup -y --default-toolchain=none \
+  && chmod a+rwx ${rustup_dir} \
+  && rustup --version
+
+# Install Rust toolchain.
+# We currently need the nightly version in order to be able to compile some of the examples.
+# See https://rust-lang.github.io/rustup-components-history/ for how to pick a version that supports
+# the appropriate set of components.
+ARG rust_version=nightly-2022-04-22
+RUN rustup toolchain install ${rust_version} \
+  && rustup default ${rust_version}
+
 # Install WebAssembly target for Rust.
 RUN rustup target add wasm32-unknown-unknown
+
+# Install musl target for Rust (for statically linked binaries).
+RUN rustup target add x86_64-unknown-linux-musl
+
+# Install rust-src. Needed to recompile rust std library for MSAN
+RUN rustup component add rust-src
 
 # Install Protobuf compiler.
 ARG protobuf_version=3.13.0

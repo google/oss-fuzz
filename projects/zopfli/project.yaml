@@ -7,3 +7,4 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/google/zopfli'
+file_github_issue: True

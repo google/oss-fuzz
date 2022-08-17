@@ -8,3 +8,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
 main_repo: 'https://github.com/google/draco'
+file_github_issue: True

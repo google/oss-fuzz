@@ -21,7 +21,7 @@ RUN apt-get update && \
     libgoogle-glog-dev \
     libgtest-dev libssl-dev \
     make \
-    curl
+    curl pkg-config 
 
 # OpenSSL
 ARG OPENSSL_VERSION=1.1.1g
@@ -41,3 +41,4 @@ WORKDIR $SRC/s2geometry
 COPY build.sh \
      s2_fuzzer.cc \
      $SRC/
+COPY project.patch $SRC/

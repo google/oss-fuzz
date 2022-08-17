@@ -202,6 +202,8 @@ class RepoManager:
     self.fetch_unshallow()
     self.git(['fetch', 'origin', pr_ref], check_result=True)
     self.git(['checkout', '-f', 'FETCH_HEAD'], check_result=True)
+    self.git(['submodule', 'update', '-f', '--init', '--recursive'],
+             check_result=True)
 
   def checkout_commit(self, commit, clean=True):
     """Checks out a specific commit from the repo.
@@ -217,6 +219,8 @@ class RepoManager:
     if not self.commit_exists(commit):
       raise ValueError('Commit %s does not exist in current branch' % commit)
     self.git(['checkout', '-f', commit], check_result=True)
+    self.git(['submodule', 'update', '-f', '--init', '--recursive'],
+             check_result=True)
     if clean:
       self.git(['clean', '-fxd'], check_result=True)
     if self.get_current_commit() != commit:

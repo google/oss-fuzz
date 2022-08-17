@@ -20,7 +20,6 @@ import urllib.request
 
 import config_utils
 import continuous_integration
-import filestore
 import filestore_utils
 import http_utils
 import get_coverage
@@ -159,9 +158,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     try:
       self.filestore.upload_corpus(name, corpus_dir, replace=replace)
       logging.info('Done uploading corpus.')
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as err:  # pylint: disable=broad-except
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
-                    target_name, error)
+                    target_name, err)
 
   def upload_build(self, commit):
     """Upload the build produced by CIFuzz as the latest build."""
@@ -171,9 +170,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       result = self.filestore.upload_build(build_name, self.workspace.out)
       logging.info('Done uploading latest build.')
       return result
-    except Exception as error:  # pylint: disable=broad-except
+    except Exception as err:  # pylint: disable=broad-except
       logging.error('Failed to upload latest build: %s. Error: %s',
-                    self.workspace.out, error)
+                    self.workspace.out, err)
 
   def upload_crashes(self):
     """Uploads crashes."""
@@ -193,8 +192,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       try:
         self.filestore.upload_crashes(crash_target, artifact_dir)
         logging.info('Done uploading crashes.')
-      except Exception as error:  # pylint: disable=broad-except
-        logging.error('Failed to upload crashes. Error: %s', error)
+      except Exception as err:  # pylint: disable=broad-except
+        logging.error('Failed to upload crashes. Error: %s', err)
 
   def upload_coverage(self):
     """Uploads the coverage report to the filestore."""
@@ -211,8 +210,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
         return None
       return get_coverage.FilesystemCoverage(
           repo_path, self.workspace.clusterfuzz_coverage)
-    except (get_coverage.CoverageError, filestore.FilestoreError):
-      logging.error('Could not get coverage.')
+    except Exception as err:  # pylint: disable=broad-except
+      logging.error('Could not get coverage: %s.', err)
       return None
 
 

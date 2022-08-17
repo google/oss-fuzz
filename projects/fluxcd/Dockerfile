@@ -14,16 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y wget zlib1g-dev pkg-config
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/kustomize-controller
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/pkg
-RUN git clone --depth 1 --branch fuzz1 https://github.com/AdamKorcz/notification-controller
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 
-# Go 1.16 is needed to build the notification-controller
-RUN cd /tmp \
-	&& wget https://golang.org/dl/go1.16.8.linux-amd64.tar.gz \
-	&& tar -xf go1.16.8.linux-amd64.tar.gz
+ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/fluxcd"
+
+RUN mkdir -p "${PROJECT_ROOT}"
+
+# Flux has its components scattered around multiple repositories due to its architecture. 
+# Here we clone all of them. The build process happens as build.sh iterate over each one of them.
+ARG REPOSITORIES="pkg notification-controller kustomize-controller helm-controller image-reflector-controller source-controller image-automation-controller"
+RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/fluxcd/${repo}" "${PROJECT_ROOT}/${repo}"; done
 
 COPY build.sh $SRC/
 WORKDIR $SRC

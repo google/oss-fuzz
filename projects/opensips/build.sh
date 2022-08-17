@@ -17,6 +17,8 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 
+cp $SRC/fuzz_*.c ./parser/
+
 make static
 
 rm main.o

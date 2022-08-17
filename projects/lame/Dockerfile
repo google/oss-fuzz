@@ -15,7 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool subversion
+RUN apt-get update && apt-get install -y make autoconf automake libtool subversion pkg-config wget
+
+# ubuntu apt has not recent enough mpg123
+RUN wget https://www.mpg123.de/snapshot
+RUN tar -xvf snapshot
+RUN mv mpg123* mpg123
+
 RUN git clone --depth 1 https://github.com/guidovranken/LAME-fuzzers
 RUN svn checkout https://svn.code.sf.net/p/lame/svn/trunk/lame $SRC/lame
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-export PKG_CONFIG_PATH=/work/lib/pkgconfig
-export LDFLAGS="$CXXFLAGS"
+export PKG_CONFIG="pkg-config --static"
+export PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+export CPPFLAGS="-I$WORK/include"
+export LDFLAGS="-L$WORK/lib"
 
 # libz
 pushd $SRC/zlib
@@ -31,6 +33,7 @@ autoreconf -fi
 ./configure \
   --enable-static \
   --disable-shared \
+  --disable-nls \
   --disable-docs \
   --disable-dependency-tracking \
   --prefix=$WORK
@@ -54,16 +57,20 @@ popd
 pushd $SRC/aom
 mkdir -p build/linux
 cd build/linux
-cmake -G "Unix Makefiles" \
-  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
-  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+extra_libaom_flags='-DAOM_MAX_ALLOCABLE_MEMORY=536870912 -DDO_RANGE_CHECK_CLAMP=1'
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DCONFIG_PIC=1 \
+  -DENABLE_EXAMPLES=0 \
+  -DENABLE_DOCS=0 \
+  -DENABLE_TESTS=0 \
+  -DENABLE_TOOLS=0 \
   -DCONFIG_SIZE_LIMIT=1 \
-  -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
-  -DDO_RANGE_CHECK_CLAMP=1 \
-  -DAOM_MAX_ALLOCABLE_MEMORY=536870912 \
+  -DDECODE_HEIGHT_LIMIT=12288 \
+  -DDECODE_WIDTH_LIMIT=12288 \
+  -DAOM_EXTRA_C_FLAGS="$extra_libaom_flags" \
+  -DAOM_EXTRA_CXX_FLAGS="$extra_libaom_flags" \
   -DAOM_TARGET_CPU=generic \
   ../../
 make clean
@@ -73,14 +80,15 @@ popd
 
 # libheif
 pushd $SRC/libheif
+# Ensure libvips finds heif_image_handle_get_raw_color_profile
+sed -i '/^Libs.private:/s/-lstdc++/-lc++/' libheif.pc.in
 autoreconf -fi
 ./configure \
   --disable-shared \
   --enable-static \
   --disable-examples \
   --disable-go \
-  --prefix=$WORK \
-  CPPFLAGS=-I$WORK/include
+  --prefix=$WORK
 make clean
 make -j$(nproc)
 make install
@@ -88,14 +96,20 @@ popd
 
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_TURBOJPEG=FALSE
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DENABLE_STATIC=TRUE \
+  -DENABLE_SHARED=FALSE \
+  -DWITH_TURBOJPEG=FALSE \
+  .
 make -j$(nproc)
 make install
 popd
 
 # libpng
 pushd $SRC/libpng
-sed -ie "s/option WARNING /& disabled/" scripts/pnglibconf.dfa
+sed -ie 's/option WARNING /& disabled/' scripts/pnglibconf.dfa
 autoreconf -fi
 ./configure \
   --prefix=$WORK \
@@ -107,11 +121,10 @@ popd
 
 # libspng
 pushd $SRC/libspng
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DSPNG_STATIC=TRUE -DSPNG_SHARED=FALSE -DZLIB_ROOT=$WORK
-make -j$(nproc)
-make install
-# Fix pkg-config file of libspng
-sed -i'.bak' "s/-lspng/&_static/" $WORK/lib/pkgconfig/libspng.pc
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized \
+  -Dstatic_zlib=true
+ninja -C build
+ninja -C build install
 popd
 
 # libwebp
@@ -147,25 +160,21 @@ popd
 
 # jpeg-xl (libjxl)
 pushd $SRC/libjxl
-sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
-# Don't overwrite our linker flags
-sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
-cmake -G "Unix Makefiles" \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=$CC \
-  -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS" \
-  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
-  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
-  -DCMAKE_INSTALL_PREFIX="$WORK" \
-  -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
-  -DCMAKE_USE_PTHREADS_INIT=1 \
+# Ensure libvips finds JxlEncoderInitBasicInfo
+sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
+# CMake ignores the CPPFLAGS env, so prepend it to -DCMAKE_C{XX,}_FLAGS instead
+cmake \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS" \
+  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS" \
+  -DCMAKE_INSTALL_PREFIX=$WORK \
+  -DZLIB_ROOT=$WORK \
   -DBUILD_SHARED_LIBS=0 \
   -DBUILD_TESTING=0 \
-  -DJPEGXL_STATIC=1 \
+  -DJPEGXL_FORCE_SYSTEM_LCMS2=1 \
   -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
   -DJPEGXL_ENABLE_FUZZERS=0 \
+  -DJPEGXL_ENABLE_TOOLS=0 \
   -DJPEGXL_ENABLE_MANPAGES=0 \
   -DJPEGXL_ENABLE_BENCHMARK=0 \
   -DJPEGXL_ENABLE_EXAMPLES=0 \
@@ -178,32 +187,50 @@ popd
 
 # libimagequant
 pushd $SRC/libimagequant
-meson setup --prefix=$WORK --libdir=lib --default-library=static build
-cd build
-ninja -j$(nproc)
-ninja install
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized
+ninja -C build
+ninja -C build install
 popd
 
 # cgif
 pushd $SRC/cgif
-meson setup --prefix=$WORK --libdir=lib --default-library=static build
-cd build
-ninja -j$(nproc)
-ninja install
+meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized
+ninja -C build
+ninja -C build install
 popd
 
+# pdfium doesn't need fuzzing, but we want to fuzz the libvips/pdfium link
+pushd $SRC/pdfium-latest
+cp lib/* $WORK/lib
+cp -r include/* $WORK/include
+popd
+
+# make a pdfium.pc that libvips can use ... the version number just needs to
+# be higher than 4200 to satisfy libvips
+cat > $WORK/lib/pkgconfig/pdfium.pc << EOF
+  prefix=$WORK
+  exec_prefix=\${prefix}
+  libdir=\${exec_prefix}/lib
+  includedir=\${prefix}/include
+  Name: pdfium
+  Description: pdfium
+  Version: 4901
+  Requires:
+  Libs: -L\${libdir} -lpdfium
+  Cflags: -I\${includedir}
+EOF
+
 # libvips
-sed -i'.bak' "/test/d" Makefile.am
-sed -i'.bak' "/tools/d" Makefile.am
-PKG_CONFIG="pkg-config --static" ./autogen.sh \
-  --disable-shared \
-  --disable-modules \
-  --disable-gtk-doc \
-  --disable-gtk-doc-html \
-  --disable-dependency-tracking \
-  --prefix=$WORK
-make -j$(nproc) CCLD=$CXX
-make install
+# Disable building man pages, gettext po files, tools, and tests
+sed -i "/subdir('man')/{N;N;N;N;d;}" meson.build
+meson setup build --prefix=$WORK --libdir=lib --default-library=static \
+  -Ddeprecated=false -Dintrospection=false -Dmodules=disabled
+ninja -C build
+ninja -C build install
+
+# All shared libraries needed during fuzz target execution should be inside the $OUT/lib directory
+mkdir -p $OUT/lib
+cp $WORK/lib/*.so $OUT/lib
 
 # Merge the seed corpus in a single directory, exclude files larger than 2k
 mkdir -p fuzz/corpus
@@ -219,33 +246,20 @@ zip -jrq $OUT/seed_corpus.zip fuzz/corpus
 for fuzzer in fuzz/*_fuzzer.cc; do
   target=$(basename "$fuzzer" .cc)
   $CXX $CXXFLAGS -std=c++11 "$fuzzer" -o "$OUT/$target" \
-    -I$WORK/include \
+    $CPPFLAGS \
     -I/usr/include/glib-2.0 \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    $WORK/lib/libvips.a \
-    $WORK/lib/libexif.a \
-    $WORK/lib/liblcms2.a \
-    $WORK/lib/libjpeg.a \
-    $WORK/lib/libpng.a \
-    $WORK/lib/libspng_static.a \
-    $WORK/lib/libz.a \
-    $WORK/lib/libwebpmux.a \
-    $WORK/lib/libwebpdemux.a \
-    $WORK/lib/libwebp.a \
-    $WORK/lib/libtiff.a \
-    $WORK/lib/libheif.a \
-    $WORK/lib/libaom.a \
-    $WORK/lib/libjxl.a \
-    $WORK/lib/libjxl_threads.a \
-    $WORK/lib/libhwy.a \
-    $WORK/lib/libimagequant.a \
-    $WORK/lib/libcgif.a \
+    $LDFLAGS \
+    -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
+    -ltiff -lwebpmux -lwebpdemux -lwebp -lsharpyuv -lheif -laom \
+    -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
-    -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
+    -lgio-2.0 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
     -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
-    -Wl,-Bdynamic -pthread
+    -Wl,-Bdynamic -pthread \
+    -Wl,-rpath,'$ORIGIN/lib'
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done
 

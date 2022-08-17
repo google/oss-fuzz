@@ -20,6 +20,6 @@ RUN git clone https://github.com/OpenSIPS/opensips
 
 COPY patch.diff $SRC/
 COPY build.sh $SRC/
-COPY fuzz_*.c $SRC/opensips/parser/
+COPY fuzz_*.c $SRC/
 
 WORKDIR opensips

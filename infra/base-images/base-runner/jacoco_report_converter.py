@@ -25,17 +25,17 @@ import xml.etree.ElementTree as ET
 def convert(xml):
   """Turns a JaCoCo XML report into an llvm-cov JSON summary."""
   summary = {
-      "type": "oss-fuzz.java.coverage.json.export",
-      "version": "1.0.0",
-      "data": [{
-          "totals": {},
-          "files": [],
+      'type': 'oss-fuzz.java.coverage.json.export',
+      'version': '1.0.0',
+      'data': [{
+          'totals': {},
+          'files': [],
       }],
   }
 
   report = ET.fromstring(xml)
   totals = make_element_summary(report)
-  summary["data"][0]["totals"] = totals
+  summary['data'][0]['totals'] = totals
 
   # Since Java compilation does not track source file location, we match
   # coverage info to source files via the full class name, e.g. we search for
@@ -46,21 +46,23 @@ def convert(xml):
   # way.
   src_files = list_src_files()
 
-  for class_element in report.findall("./package/class"):
-    class_name = class_element.attrib["name"]
+  for class_element in report.findall('./package/class'):
+    class_name = class_element.attrib['name']
     package_name = os.path.dirname(class_name)
-    if "sourcefilename" not in class_element.attrib:
+    if 'sourcefilename' not in class_element.attrib:
       continue
-    basename = class_element.attrib["sourcefilename"]
-    # This path is "foo/Bar.java" for the class element
+    basename = class_element.attrib['sourcefilename']
+    # This path is 'foo/Bar.java' for the class element
     # <class name="foo/Bar" sourcefilename="Bar.java">.
     canonical_path = os.path.join(package_name, basename)
 
     class_summary = make_element_summary(class_element)
-    summary["data"][0]["files"].append({
-        "filename": relative_to_src_path(src_files, canonical_path),
-        "summary": class_summary,
-    })
+    src_files = relative_to_src_path(src_files, canonical_path)
+    for src_file in src_files:
+      summary['data'][0]['files'].append({
+          'filename': src_file,
+          'summary': class_summary,
+      })
 
   return json.dumps(summary)
 
@@ -68,12 +70,12 @@ def convert(xml):
 def list_src_files():
   """Returns a map from basename to full path for all files in $OUT/$SRC."""
   filename_to_paths = {}
-  out_path = os.environ["OUT"] + "/"
-  src_path = os.environ["SRC"]
+  out_path = os.environ['OUT'] + '/'
+  src_path = os.environ['SRC']
   src_in_out = out_path + src_path
   for dirpath, _, filenames in os.walk(src_in_out):
     for filename in filenames:
-      full_path = dirpath + "/" + filename
+      full_path = dirpath + '/' + filename
       # Map /out//src/... to /src/...
       src_path = full_path[len(out_path):]
       filename_to_paths.setdefault(filename, []).append(src_path)
@@ -95,11 +97,11 @@ def make_element_summary(element):
   """Returns a coverage summary for an element in the XML report."""
   summary = {}
 
-  function_counter = element.find("./counter[@type='METHOD']")
-  summary["functions"] = make_counter_summary(function_counter)
+  function_counter = element.find('./counter[@type=\'METHOD\']')
+  summary['functions'] = make_counter_summary(function_counter)
 
-  line_counter = element.find("./counter[@type='LINE']")
-  summary["lines"] = make_counter_summary(line_counter)
+  line_counter = element.find('./counter[@type=\'LINE\']')
+  summary['lines'] = make_counter_summary(line_counter)
 
   # JaCoCo tracks branch coverage, which counts the covered control-flow edges
   # between llvm-cov's regions instead of the covered regions themselves. For
@@ -109,12 +111,12 @@ def make_element_summary(element):
   # coverage. Since this would give incorrect results for CI Fuzz purposes, we
   # increase the regions counter by 1 if there is any amount of instruction
   # coverage.
-  instruction_counter = element.find("./counter[@type='INSTRUCTION']")
+  instruction_counter = element.find('./counter[@type=\'INSTRUCTION\']')
   has_some_coverage = instruction_counter is not None and int(
       instruction_counter.attrib["covered"]) > 0
   branch_covered_adjustment = 1 if has_some_coverage else 0
-  region_counter = element.find("./counter[@type='BRANCH']")
-  summary["regions"] = make_counter_summary(
+  region_counter = element.find('./counter[@type=\'BRANCH\']')
+  summary['regions'] = make_counter_summary(
       region_counter, covered_adjustment=branch_covered_adjustment)
 
   return summary
@@ -126,15 +128,15 @@ def make_counter_summary(counter_element, covered_adjustment=0):
   covered = covered_adjustment
   missed = 0
   if counter_element is not None:
-    covered += int(counter_element.attrib["covered"])
-    missed += int(counter_element.attrib["missed"])
-  summary["covered"] = covered
-  summary["notcovered"] = missed
-  summary["count"] = summary["covered"] + summary["notcovered"]
-  if summary["count"] != 0:
-    summary["percent"] = (100.0 * summary["covered"]) / summary["count"]
+    covered += int(counter_element.attrib['covered'])
+    missed += int(counter_element.attrib['missed'])
+  summary['covered'] = covered
+  summary['notcovered'] = missed
+  summary['count'] = summary['covered'] + summary['notcovered']
+  if summary['count'] != 0:
+    summary['percent'] = (100.0 * summary['covered']) / summary['count']
   else:
-    summary["percent"] = 0
+    summary['percent'] = 0
   return summary
 
 
@@ -154,5 +156,5 @@ def main():
   return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main())

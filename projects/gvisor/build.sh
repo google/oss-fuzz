@@ -15,5 +15,7 @@
 #
 ################################################################################
 
+# Checkout branch here as opposed to the Dockerfile to make CIFuzz happy
+git checkout go
 mv $SRC/state_fuzzer.go $GVISOR_ROOT/
 compile_go_fuzzer gvisor.dev/gvisor FuzzStateLoad state_load_fuzz

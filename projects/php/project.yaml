@@ -4,6 +4,7 @@ primary_contact: "stas@php.net"
 auto_ccs:
  - "smalyshev@gmail.com"
  - "nikita.ppv@gmail.com"
+ - "dmitrystogov@gmail.com"
 sanitizers:
  - address
  - undefined

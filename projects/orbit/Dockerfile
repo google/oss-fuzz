@@ -23,6 +23,7 @@ RUN mkdir -p $SRC/orbit && tar -xzf $SRC/main.tar.gz \
   -C $SRC/orbit/ --strip-components 1; rm -f $SRC/main.tar.gz
 WORKDIR $SRC/orbit
 COPY build.sh $SRC/
+COPY default.options $SRC/
 
 # That's a hack. The service needs to have a more recent kernel than what the
 # container provides. But this code is not going to be called from the fuzz-

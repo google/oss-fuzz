@@ -42,8 +42,9 @@ tar xzf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
 cp -r swift-5.4.2-RELEASE-ubuntu20.04/usr/* /usr/
 rm -rf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
 # TODO: Move to a seperate work dir
-git clone --depth 1 https://github.com/llvm/llvm-project.git
+git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
+git checkout 63bf228450b8403e0c5e828d276be47ffbcd00d0 # TODO: Keep in sync with base-clang.
 git apply ../llvmsymbol.diff --verbose
 cmake -G "Ninja" \
     -DLIBCXX_ENABLE_SHARED=OFF \

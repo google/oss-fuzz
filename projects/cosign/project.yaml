@@ -1,8 +1,0 @@
-homepage: https://sigstore.dev/
-language: go 
-primary_contact: "priyawadhwa@google.com"
-main_repo: "https://github.com/sigstore/cosign"
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address

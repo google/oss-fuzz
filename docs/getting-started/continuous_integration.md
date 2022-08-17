@@ -11,7 +11,9 @@ permalink: /getting-started/continuous-integration/
 OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
 on pull requests. This works similarly to running unit tests in CI. CIFuzz helps
 you find and fix bugs before they make it into your codebase.
-Currently, CIFuzz only supports projects hosted on GitHub.
+Currently, CIFuzz primarily supports projects hosted on GitHub.
+Non-OSS-Fuzz users can use CIFuzz with additional features through
+[ClusterFuzzLite](https://google.github.io/clusterfuzzlite/).
 
 ## How it works
 
@@ -100,7 +102,7 @@ to `c++`. This should be the same as the value you set in `project.yaml`. See
 [this explanation]({{ site.baseurl }}//getting-started/new-project-guide/#language)
 for more details.
 
-`fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
+`fuzz-seconds`: Determines how long CIFuzz spends fuzzing your project in seconds.
 The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6
 hours). This variable is only meaningful when supplied to the `run_fuzzers`
 action, not the `build_fuzzers` action.
@@ -201,7 +203,7 @@ jobs:
 ```
 
 You can checkout CIFuzz configs for OSS-Fuzz projects. Example -
-[systemd](https://github.com/systemd/systemd/blob/master/.github/workflows/cifuzz.yml),
+[systemd](https://github.com/systemd/systemd/blob/main/.github/workflows/cifuzz.yml),
 [curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
 
 ## Understanding results

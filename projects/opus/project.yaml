@@ -3,6 +3,7 @@ language: c++
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
   - "flim@google.com"
+  - "tomdenton@google.com"
 vendor_ccs:
   - "twsmith@mozilla.com"
 fuzzing_engines:

@@ -6,3 +6,4 @@ auto_ccs:
 sanitizers:
   - address
 main_repo: 'https://github.com/google/libphonenumber'
+file_github_issue: True

@@ -49,6 +49,8 @@ function copy_fuzzer {
   cp -v "$1" "$OUT/"
   patchelf --set-rpath '$ORIGIN/lib' "$OUT/$(basename "$1")"
 
+  cp -v "$SRC/default.options" "$OUT/$(basename "$1").options"
+
   ldd "$1" | grep '=>' | cut -d ' ' -f 3 | while read lib; do
     if [[ -f $lib ]]; then
       cp -v "$lib" "$OUT/lib/"

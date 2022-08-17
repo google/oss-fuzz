@@ -31,6 +31,11 @@ RUN apt-get update -y \
             python3-lxml \
             python3-requests \
             python3-termcolor \
+            protobuf-compiler \
+            libprotoc-dev \
+            libgrpc++-dev \
+            protobuf-compiler-grpc \
+            libprotobuf-dev \
             sudo \
             tzdata
 

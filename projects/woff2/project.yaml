@@ -19,3 +19,4 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/google/woff2'
+file_github_issue: True

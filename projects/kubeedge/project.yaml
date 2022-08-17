@@ -1,0 +1,14 @@
+homepage: "https://kubeedge.io/en/"
+primary_contact: "linguohui1@huawei.com"
+auto_ccs :
+  - "xufei40@huawei.com"
+  - "wangzefeng@huawei.com"
+vendor_ccs :
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/kubeedge/kubeedge'

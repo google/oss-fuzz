@@ -22,7 +22,9 @@ RUN apt-get update &&  \
       cmake            \
       libtool          \
       pkg-config       \
-      make
+      make             \
+      ninja-build
+
 
 # Get some files for the seed corpus
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/

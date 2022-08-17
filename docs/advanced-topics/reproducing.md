@@ -55,6 +55,15 @@ site.baseurl }}/faq/#why-do-you-use-docker)).
 
 ## Building using Docker
 
+### Cloning OSS-Fuzz
+
+To use the following `infra/helper.py` commands, you need a checkout of OSS-Fuzz:
+
+```bash
+$ git clone --depth=1 https://github.com/google/oss-fuzz.git
+$ cd oss-fuzz
+```
+
 ### Pull the latest Docker images
 
 Docker images get regularly updated with a newer version of build tools, build
@@ -95,9 +104,6 @@ After you build an image and a fuzzer, you can reproduce a bug by running the fo
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
-
-**Note**: The reproduce command only supports `libfuzzer` fuzzing engine. Crashes
-found with other fuzzing engines should be reproducible with `libfuzzer` too.
 
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and

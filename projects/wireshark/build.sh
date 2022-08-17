@@ -23,10 +23,13 @@ export SAMPLES_DIR="$WORK/samples"
 mkdir -p "$SAMPLES_DIR"
 cp -a $SRC/wireshark-fuzzdb/samples/* "$SAMPLES_DIR"
 
+# Make sure we build fuzzshark.
+CMAKE_DEFINES="-DBUILD_fuzzshark=ON"
+
 # compile static version of libs
 # XXX, with static wireshark linking each fuzzer binary is ~346 MB (just libwireshark.a is 761 MB).
 # XXX, wireshark is not ready for including static plugins into binaries.
-CMAKE_DEFINES="-DENABLE_STATIC=ON -DENABLE_PLUGINS=OFF"
+CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_STATIC=ON -DENABLE_PLUGINS=OFF"
 
 # disable optional dependencies
 CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"

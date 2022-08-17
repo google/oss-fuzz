@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y make
 
 RUN git clone https://github.com/jonathanmetzman/cifuzz-example.git
 WORKDIR cifuzz-example
+RUN echo "hi" > untracked-file
 COPY build.sh $SRC/

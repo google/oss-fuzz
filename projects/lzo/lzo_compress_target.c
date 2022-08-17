@@ -41,7 +41,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      * we must provide a little more output space in case that compression
      * is not possible.
     */
-    unsigned char __LZO_MMODEL in[size];
+    unsigned char __LZO_MMODEL in[size > 0 ? size : 1];
     unsigned char __LZO_MMODEL out[size + size/16 + 64 + 3];
 
     static bool isInit = false;

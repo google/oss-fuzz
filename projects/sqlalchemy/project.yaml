@@ -8,4 +8,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
-main_repo: "ihttps://github.com/sqlalchemy/sqlalchemy"
+main_repo: "https://github.com/sqlalchemy/sqlalchemy"

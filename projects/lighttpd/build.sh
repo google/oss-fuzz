@@ -20,4 +20,4 @@
 make
 cd src
 $CC $CFLAGS -c $SRC/fuzz_burl.c -I. -I../include
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_burl.o burl.o buffer.o base64.o ck.o -o $OUT/fuzz_burl
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_burl.o lighttpd-burl.o lighttpd-buffer.o lighttpd-base64.o lighttpd-ck.o -o $OUT/fuzz_burl

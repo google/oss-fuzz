@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="$CXXFLAGS -std=c++14"
+
 # For coverage build we need to remove some flags when building protobuf and icu
 if [ "$SANITIZER" = "coverage" ]
 then
@@ -25,6 +27,16 @@ then
     CXF1=${CXXFLAGS//-fprofile-instr-generate/}
     export CXXFLAGS=${CXF1//-fcoverage-mapping/}
 fi
+
+cd $SRC/
+git clone --depth=1 https://github.com/abseil/abseil-cpp
+cd abseil-cpp
+mkdir build && cd build
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
+
+ldconfig
+
+cd $SRC/
 
 # Build Protobuf
 git clone https://github.com/google/protobuf.git
@@ -65,7 +77,9 @@ fi
 # Build libphonenumber
 cd $SRC/libphonenumber/cpp
 sed -i 's/set (BUILD_SHARED_LIB true)/set (BUILD_SHARED_LIB false)/g' CMakeLists.txt
+sed -i 's/set(CMAKE_CXX_STANDARD 11/set(CMAKE_CXX_STANDARD 14/g' CMakeLists.txt
 sed -i 's/list (APPEND CMAKE_C_FLAGS "-pthread")/string (APPEND CMAKE_C_FLAGS " -pthread")/g' CMakeLists.txt
+sed -i 's/# Safeguarding/find_package(absl REQUIRED) # Safeguarding/g' CMakeLists.txt
 
 mkdir build && cd build
 cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
@@ -79,7 +93,40 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
 make
 
 # Build our fuzzer
-$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c $SRC/phonefuzz.cc
+$CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c ../test/phonenumbers/fuzz_phone.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
-     ./libphonenumber.a $SRC/protobuf/src/.libs/libprotobuf.a \
-     $DEPS_PATH/lib/libicu.a -lpthread
+    ./libphonenumber.a \
+    $SRC/protobuf/src/.libs/libprotobuf.a \
+    /usr/local/lib/libabsl_cord.a \
+    /usr/local/lib/libabsl_cordz_info.a \
+    /usr/local/lib/libabsl_cord_internal.a \
+    /usr/local/lib/libabsl_cordz_functions.a \
+    /usr/local/lib/libabsl_cordz_handle.a \
+    /usr/local/lib/libabsl_hash.a \
+    /usr/local/lib/libabsl_city.a \
+    /usr/local/lib/libabsl_bad_variant_access.a \
+    /usr/local/lib/libabsl_low_level_hash.a \
+    /usr/local/lib/libabsl_raw_hash_set.a \
+    /usr/local/lib/libabsl_bad_optional_access.a \
+    /usr/local/lib/libabsl_hashtablez_sampler.a \
+    /usr/local/lib/libabsl_exponential_biased.a \
+    /usr/local/lib/libabsl_synchronization.a \
+    /usr/local/lib/libabsl_graphcycles_internal.a \
+    /usr/local/lib/libabsl_stacktrace.a \
+    /usr/local/lib/libabsl_symbolize.a \
+    /usr/local/lib/libabsl_malloc_internal.a \
+    /usr/local/lib/libabsl_debugging_internal.a \
+    /usr/local/lib/libabsl_demangle_internal.a \
+    /usr/local/lib/libabsl_time.a \
+    /usr/local/lib/libabsl_strings.a \
+    /usr/local/lib/libabsl_strings_internal.a \
+    /usr/local/lib/libabsl_throw_delegate.a \
+    /usr/local/lib/libabsl_int128.a \
+    /usr/local/lib/libabsl_civil_time.a \
+    /usr/local/lib/libabsl_time_zone.a \
+    /usr/local/lib/libabsl_base.a \
+    /usr/local/lib/libabsl_raw_logging_internal.a \
+    /usr/local/lib/libabsl_log_severity.a \
+    /usr/local/lib/libabsl_spinlock_wait.a \
+    -lrt \
+    $DEPS_PATH/lib/libicu.a -lpthread

@@ -1,13 +1,13 @@
 homepage: "https://www.djangoproject.com/"
-language: c++
-primary_contact: "guidovranken@gmail.com"
+language: python
+primary_contact: "f.apolloner@gmail.com"
 auto_ccs:
- - "f.apolloner@gmail.com"
- - "info+django+security@markusholtermann.eu"
- - "jammamarkus@gmail.com"
+  - "jammamarkus@gmail.com"
+  - "guidovranken@gmail.com"
+  - "info+django+security@markusholtermann.eu"
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 sanitizers:
- - undefined
-main_repo: 'https://github.com/django/django.git'
+  - address
+  - undefined
+main_repo: "https://github.com/django/django.git"

@@ -16,10 +16,7 @@
 ################################################################################
 
 # build project
-cmake -DDNP3_FUZZING=ON -DSTATICLIBS=ON .
-
-# We must set AFL_LLVM_INSTRUMENT as otherwise the build fails with AFL
-export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+cmake -DDNP3_FUZZING=ON -DDNP3_STATIC_LIBS=ON .
 make all
 
 cd cpp/tests/fuzz
@@ -28,6 +25,7 @@ TARGETS="fuzzdecoder \
   fuzzoutstation \
   fuzzmaster"
 
+echo "detect_leaks=0" >> fuzzdnp3.options
 for target in $TARGETS; do
   # build corpus
   zip -r ${target}_seed_corpus.zip corpus/*.dnp
@@ -37,6 +35,9 @@ for target in $TARGETS; do
   cp fuzzdnp3.options $OUT/${target}.options
 
   # build fuzz target
-  $CXX $CXXFLAGS -I. -I ../../libs/include/ -I ../../tests/libs/src/ -I ../../libs/src/ -c ${target}.cpp -o ${target}.o
-  $CXX $CXXFLAGS -std=c++14 ${target}.o -o $OUT/${target} ../../../libdnp3mocks.a ../../../libtestlib.a ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a $LIB_FUZZING_ENGINE
+  $CXX $CXXFLAGS -I. -I ../../lib/include/ -I ../../tests/lib/src/ \
+    -I ../../lib/src/ -I ../../../_deps/exe4cpp-src/src/ -I ../dnp3mocks/include/ \
+    -I ../../../_deps/ser4cpp-src/src/ -I ../../../_deps/asio-src/asio/include \
+    -c ${target}.cpp -o ${target}.o
+  $CXX $CXXFLAGS -std=c++14 ${target}.o -o $OUT/${target} ../dnp3mocks/libdnp3mocks.a ../../lib/libopendnp3.a $LIB_FUZZING_ENGINE
 done

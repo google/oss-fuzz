@@ -82,7 +82,7 @@ limitations.
 Building fuzzers requires building your project with a fresh Clang compiler and
 special compiler flags.  An easy-to-use Docker image is provided to simplify
 toolchain distribution. This also simplifies our support for a variety of Linux
-distributions and provides a reproducible and secure environment for fuzzer
+distributions and provides a reproducible environment for fuzzer
 building and execution.
 
 ## How do you handle timeouts and OOMs?

@@ -15,23 +15,28 @@
 #
 ################################################################################
 
+# Ensure rust nightly is used
+source $HOME/.cargo/env
+rustup default nightly
+
 # Install dependencies.
+export MOZBUILD_STATE_PATH=/root/.mozbuild
 export SHELL=/bin/bash
-../../mach --no-interactive bootstrap --application-choice browser
+cd ../../
+./mach --no-interactive bootstrap --application-choice browser
+cd js/src/
 
 autoconf2.13
 
 mkdir build_DBG.OBJ
 cd build_DBG.OBJ
 
-# Temporarily disable cranelift (see bug 1497570)
 ../configure \
     --enable-debug \
     --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --disable-tests \
-    --enable-address-sanitizer \
-    --disable-cranelift
+    --enable-address-sanitizer
 
 make "-j$(nproc)"
 

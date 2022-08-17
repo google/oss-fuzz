@@ -1,6 +1,8 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
 language: c++
 primary_contact: "glennrp@gmail.com"
+auto_ccs:
+  - "barbaro.alberto@gmail.com"
 vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"
@@ -10,4 +12,6 @@ sanitizers:
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
   - undefined
+architectures:
+  - x86_64
 main_repo: 'https://github.com/glennrp/libpng.git'

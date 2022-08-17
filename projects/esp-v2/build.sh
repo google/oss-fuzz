@@ -15,13 +15,26 @@
 #
 ################################################################################
 
-## Copied from envoy
+cat <<EOF >> .bazelrc
+#build:oss-fuzz --config=fuzzing
+build:oss-fuzz --define=FUZZING_ENGINE=oss-fuzz
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_sanitizer=none
+build:oss-fuzz --dynamic_mode=off
+build:oss-fuzz --strip=never
+build:oss-fuzz --copt=-fno-sanitize=vptr
+build:oss-fuzz --linkopt=-fno-sanitize=vptr
+build:oss-fuzz --define=tcmalloc=disabled
+build:oss-fuzz --define=signal_trace=disabled
+build:oss-fuzz --copt=-D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
+build:oss-fuzz --define=force_libcpp=enabled
+build:oss-fuzz --linkopt=-lc++
+build:oss-fuzz --linkopt=-pthread
+EOF
 
+## Copied from envoy
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
-
-FUZZER_DICTIONARIES="\
-"
 
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
 # compilation and linking.
@@ -37,22 +50,31 @@ done
 for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
-
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
-  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt -D__SANITIZE_ADDRESS__" "--copt -DADDRESS_SANITIZER=1"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
 fi
 )"
 
+# Find targets
 declare BAZEL_BUILD_TARGETS=""
 declare BAZEL_CORPUS_TARGETS=""
 declare FILTERED_FUZZER_TARGETS=""
-for t in $(bazel query 'src/...' --output label | grep '_fuzz_test$')
+
+# In CI we only build a single target as otherwise we exhaust resources in the CI
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  fuzz_suffix='json_struct_fuzz_test$'
+else
+  fuzz_suffix='_fuzz_test$'
+fi
+
+for t in $(bazel query 'src/...' --output label | grep $fuzz_suffix)
 do
   declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${t})")
   if [ -z "${TAGGED}" ]
@@ -60,8 +82,8 @@ do
     BASE_PATH=${t//://}
     BASE_PATH=${BASE_PATH#"//"}
     FILTERED_FUZZER_TARGETS+="${BASE_PATH} "
-    BAZEL_BUILD_TARGETS+="${t}_driverless "
-    BAZEL_CORPUS_TARGETS+="${t}_corpus_tar "
+    BAZEL_BUILD_TARGETS+="${t} "
+    BAZEL_CORPUS_TARGETS+="${t}_corpus "
   fi
 done
 
@@ -75,7 +97,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=sandboxed \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
-  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} --config=oss-fuzz \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
@@ -110,7 +132,7 @@ fi
 for t in ${FILTERED_FUZZER_TARGETS}
 do
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  TARGET_DRIVERLESS=bazel-bin/"${t}"_driverless
+  TARGET_DRIVERLESS=bazel-bin/"${t}"
   echo "Copying fuzzer $t"
   cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
 done
@@ -122,20 +144,8 @@ CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
 for t in ${FILTERED_FUZZER_TARGETS}
 do
   echo "Extracting and zipping fuzzer $t corpus"
-  rm -rf "${CORPUS_UNTAR_PATH}"
-  mkdir -p "${CORPUS_UNTAR_PATH}"
-  tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  # There may be *.dict files in this folder that need to be moved into the OUT dir.
-  find "${CORPUS_UNTAR_PATH}" -type f -name *.dict -exec mv -n {} "${OUT}"/ \;
-  zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "${CORPUS_UNTAR_PATH}"/*
-done
-rm -rf "${CORPUS_UNTAR_PATH}"
-
-# Copy dictionaries and options files to $OUT/
-for d in $FUZZER_DICTIONARIES; do
-  cp "$d" "${OUT}"/
+  zip "${OUT}/${TARGET_BASE}"_seed_corpus.zip bazel-bin/"${t}"_corpus/*
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build

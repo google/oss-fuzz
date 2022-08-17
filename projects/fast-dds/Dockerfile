@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt install -y autoconf automake
+RUN apt-get update && apt install -y autoconf automake pkg-config
 RUN git clone --depth 1 https://github.com/leethomason/tinyxml2
 RUN git clone --depth 1 https://github.com/chriskohlhoff/asio/
 RUN git clone --depth 1 https://github.com/eProsima/Fast-CDR.git
@@ -23,3 +23,6 @@ RUN git clone --depth 1 https://github.com/eProsima/foonathan_memory_vendor.git
 RUN git clone --depth 1 https://github.com/eProsima/Fast-DDS.git
 COPY build.sh $SRC
 WORKDIR $SRC/Fast-DDS
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1
