@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-cp -r "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
+export JAVA_HOME="$OUT/open-jdk-11"
+mkdir -p $JAVA_HOME
+rsync -aL --exclude=*.zip --exclude 'lib/security/blacklisted.certs' "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
 
 $ANT
 $ANT test-compile
@@ -53,8 +55,8 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"\$this_dir/open-jdk/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+JAVA_HOME=\"\$this_dir/open-jdk-11/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-11/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
