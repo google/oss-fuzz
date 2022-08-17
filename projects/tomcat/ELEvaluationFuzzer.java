@@ -17,10 +17,11 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
 
-import org.apache.el.*;
-
+import jakarta.el.ExpressionFactory;
 import jakarta.el.ELException;
+import jakarta.el.ELContext;
 import jakarta.el.ValueExpression;
+import jakarta.el.MethodExpression;
 
 import org.apache.el.lang.ELSupport;
 import org.apache.jasper.el.ELContextImpl;
@@ -33,12 +34,29 @@ public class ELEvaluationFuzzer {
             evaluateExpression(str);
         } catch (ELException | IllegalArgumentException | ArithmeticException e) {
         }
+
+        try {
+            ExpressionFactory factory = ExpressionFactory.newInstance();
+            ELContext context = new ELContextImpl(factory);
+
+            MethodExpression me1 = factory.createMethodExpression(context, str, String.class, new Class<?>[] {});
+            MethodExpression me2 = factory.createMethodExpression(context, str, String.class, new Class<?>[] { String.class });
+            MethodExpression me3 = factory.createMethodExpression(context, str, null, new Class<?>[] {});
+            MethodExpression me4 = factory.createMethodExpression(context, str, null, new Class[]{String.class});
+
+            Object r1 = me1.invoke(context, null);
+            Object r2 = me2.invoke(context, null);
+            Object r3 = me3.invoke(context, null);
+            Object r4 = me4.invoke(context, null);
+        } catch (ELException e) {
+        }
+
     }
 
     public static String evaluateExpression(String expression) {
-        ExpressionFactoryImpl exprFactory = new ExpressionFactoryImpl();
+        ExpressionFactory exprFactory = ExpressionFactory.newInstance();
+
         ELContextImpl ctx = new ELContextImpl(exprFactory);
-        ctx.setFunctionMapper(new TesterFunctions.FMapper());
         ValueExpression ve = exprFactory.createValueExpression(ctx, expression, String.class);
         return (String) ve.getValue(ctx);
     }
