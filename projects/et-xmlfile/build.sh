@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+cd $SRC/lxml
+python3 ./setup.py install
 
-RUN git clone https://github.com/googleapis/python-logging gcloud-logging
-RUN pip3 install --upgrade pip mock
-WORKDIR gcloud-logging
-
-COPY build.sh fuzz_*.py $SRC/
+cd $SRC/et_xmlfile
+pip3 install .
+for fuzzer in $(find $SRC/et-xmlfile-fuzzers/ -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

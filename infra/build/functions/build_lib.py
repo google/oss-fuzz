@@ -30,6 +30,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import yaml
 
+BASE_IMAGES_PROJECT = 'oss-fuzz-base'
+
 BUILD_TIMEOUT = 16 * 60 * 60
 
 # Needed for reading public target.list.* files.
@@ -184,7 +186,7 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
-def download_corpora_steps(project_name):
+def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
   fuzz_targets = _get_targets_list(project_name)
@@ -210,7 +212,7 @@ def download_corpora_steps(project_name):
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
+        'name': get_runner_image_name(BASE_IMAGES_PROJECT, test_image_suffix),
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
         'volumes': [{
@@ -474,6 +476,15 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
   return (
       'https://console.cloud.google.com/cloud-build/builds;region=us-central1/'
       f'{build_id}?project={cloud_project}')
+
+
+def get_runner_image_name(base_images_project, test_image_suffix):
+  """Returns the runner image that should be used, based on
+  |base_images_project|. Returns the testing image if |test_image_suffix|."""
+  image = f'gcr.io/{base_images_project}/base-runner'
+  if test_image_suffix:
+    image += '-' + test_image_suffix
+  return image
 
 
 def get_build_body(steps,

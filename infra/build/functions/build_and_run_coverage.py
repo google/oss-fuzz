@@ -111,7 +111,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
-  download_corpora_steps = build_lib.download_corpora_steps(project.name)
+  download_corpora_steps = build_lib.download_corpora_steps(
+      project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
     logging.info('Skipping code coverage build for %s.', project.name)
     return []
@@ -133,8 +134,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   build_steps.append({
       'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
+          build_lib.get_runner_image_name(base_images_project,
+                                          config.test_image_suffix),
       'env':
           coverage_env,
       'args': [

@@ -14,10 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN git clone https://github.com/googleapis/python-logging gcloud-logging
-RUN pip3 install --upgrade pip mock
-WORKDIR gcloud-logging
+RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-COPY build.sh fuzz_*.py $SRC/
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+
+RUN git clone --depth 1 https://github.com/apache/commons-cli.git 
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/commons-cli

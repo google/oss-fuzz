@@ -313,8 +313,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Test fuzz targets.
           test_step = {
               'name':
-                  get_runner_image_name(base_images_project,
-                                        config.test_image_suffix),
+                  build_lib.get_runner_image_name(base_images_project,
+                                                  config.test_image_suffix),
               'env':
                   env,
               'args': [
@@ -347,8 +347,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             # Generate targets list.
             {
                 'name':
-                    get_runner_image_name(base_images_project,
-                                          config.test_image_suffix),
+                    build_lib.get_runner_image_name(base_images_project,
+                                                    config.test_image_suffix),
                 'env':
                     env,
                 'args': [
@@ -451,15 +451,6 @@ def get_cleanup_step(project, build):
   }
 
 
-def get_runner_image_name(base_images_project, test_image_suffix):
-  """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |test_image_suffix|."""
-  image = f'gcr.io/{base_images_project}/base-runner'
-  if test_image_suffix:
-    image += '-' + test_image_suffix
-  return image
-
-
 # pylint: disable=no-member,too-many-arguments
 def run_build(oss_fuzz_project,
               build_steps,
@@ -523,7 +514,6 @@ def build_script_main(script_description, get_build_steps_func, build_type):
   logging.basicConfig(level=logging.INFO)
 
   image_project = 'oss-fuzz'
-  base_images_project = 'oss-fuzz-base'
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
@@ -543,7 +533,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
     steps = get_build_steps_func(project_name, project_yaml,
                                  dockerfile_contents, image_project,
-                                 base_images_project, config)
+                                 build_lib.BASE_IMAGES_PROJECT, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       error = True

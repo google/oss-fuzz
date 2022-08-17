@@ -13,30 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atheris
+import os
 import sys
+import atheris
+from io import BytesIO
 
-import google.cloud.logging_v2._helpers as helpers
-import google.cloud.logging_v2.handlers._helpers as handlers_helpers
+try:
+    import lxml
+except ImportError:
+    raise ImportError("lxml is required to run the tests.")
 
+from et_xmlfile import xmlfile
 
-def TestInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-
-    op = fdp.ConsumeIntInRange(0, 4)
-    if op == 0:
-        helpers._normalize_severity(fdp.ConsumeInt(sys.maxsize))
-    elif op == 1:
-        helpers._add_defaults_to_filter(fdp.ConsumeUnicodeNoSurrogates(40))
-    elif op == 2:
-        handlers_helpers._parse_trace_parent(fdp.ConsumeUnicodeNoSurrogates(300))
+def recursive_write(xf, fdp, level):
+    if level == 1:
+        xf.write(fdp.ConsumeUnicodeNoSurrogates(50))
     else:
-        handlers_helpers._parse_xcloud_trace(fdp.ConsumeUnicodeNoSurrogates(300))
+        with xf.element(fdp.ConsumeUnicodeNoSurrogates(50)):
+            recursive_write(xf, fdp, level-1)
+
+
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+    f2 = BytesIO()
+    # Call write on et_xmlfile 10 times.
+    with xmlfile(f2) as xf:
+        recursive_write(xf, fdp, 10)
+
 
 def main():
     atheris.instrument_all()
-    atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
+
 
 if __name__ == "__main__":
     main()

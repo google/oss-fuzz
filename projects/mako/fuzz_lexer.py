@@ -11,13 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+import os
+import sys
+import atheris
 
-RUN git clone https://github.com/googleapis/python-logging gcloud-logging
-RUN pip3 install --upgrade pip mock
-WORKDIR gcloud-logging
+from mako import exceptions
+from mako.lexer import Lexer
 
-COPY build.sh fuzz_*.py $SRC/
+
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+    try:
+        Lexer(fdp.ConsumeUnicodeNoSurrogates(1024)).parse()
+    except exceptions.MakoException:
+        pass
+
+
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()
