@@ -1,0 +1,10 @@
+homepage: "https://github.com/pypa/pip"
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/pypa/pip"
+vendor_ccs:
+ - david@adalogics.com
+ - adam@adalogics.com

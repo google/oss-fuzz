@@ -15,18 +15,6 @@
 #
 ################################################################################
 
-cp standalone.gclient .gclient
-gclient sync
-
-mkdir -p out/Debug
-pushd out/Debug
-
-# ubsan's vptr sanitization is desabled as it requires RTTI, which is disabled
-# when building tint.
-CFLAGS="$CFLAGS -fno-sanitize=vptr" \
-CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
-cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
-
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
   # When running in the CI, restrict to a small number of fuzz targets to save
@@ -47,16 +35,11 @@ else
    ${SPIRV_TOOLS_FUZZERS}"
 fi
 
-# The spirv-as tool is used to build seed corpora
-ninja ${SPIRV_FUZZERS}
-
-cp ${SPIRV_FUZZERS} $OUT
-
-popd
-
 # An un-instrumented build of spirv-as is used to generate a corpus of SPIR-V binaries.
-mkdir -p out/Standard
-pushd out/Standard
+git clone --depth 1 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
+git clone https://github.com/KhronosGroup/SPIRV-Headers spirv-tools/external/spirv-headers --depth=1
+mkdir -p out/spirv-tools-build
+pushd out/spirv-tools-build
 
 # Back-up instrumentation options
 CFLAGS_SAVE="$CFLAGS"
@@ -65,7 +48,7 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 
-cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release
+cmake -GNinja ../../spirv-tools -DCMAKE_BUILD_TYPE=Release
 ninja spirv-as
 
 # Restore instrumentation options
@@ -78,7 +61,7 @@ popd
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # tint repository.
 mkdir $WORK/spirv-corpus
-python3 src/tint/fuzzers/generate_spirv_corpus.py test $WORK/spirv-corpus out/Standard/spirv-as
+python3 src/tint/fuzzers/generate_spirv_corpus.py test/tint $WORK/spirv-corpus out/spirv-tools-build/tools/spirv-as
 
 mkdir $WORK/spirv-corpus-hashed-names
 for f in `ls $WORK/spirv-corpus/*.spv`
@@ -104,3 +87,23 @@ tint_enable_all_mutations = false
 tint_mutation_batch_size = 5
 " > "$OUT/${fuzzer}.options"
 done
+
+# Now actually build tint
+
+cp scripts/standalone.gclient .gclient
+gclient sync
+
+mkdir -p out/Debug
+pushd out/Debug
+
+# ubsan's vptr sanitization is desabled as it requires RTTI, which is disabled
+# when building tint.
+CFLAGS="$CFLAGS -fno-sanitize=vptr" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+cmake -GNinja ../.. -DCMAKE_BUILD_TYPE=Release -DTINT_BUILD_FUZZERS=ON -DTINT_BUILD_SPIRV_TOOLS_FUZZER=ON -DTINT_BUILD_TESTS=OFF -DTINT_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE
+
+ninja ${SPIRV_FUZZERS}
+
+cp ${SPIRV_FUZZERS} $OUT
+
+popd

@@ -450,7 +450,7 @@ dict = dictionary_name.dict
 
 It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
-(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
+(example: [expat](https://github.com/google/oss-fuzz/blob/ad88a2e5295d91251d15f8a612758cd9e5ad92db/projects/expat/parse_fuzzer.options)).
 
 ### Input Size
 

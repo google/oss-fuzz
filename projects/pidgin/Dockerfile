@@ -19,12 +19,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         make autoconf automake libtool pkg-config \
         zlib1g-dev zlib1g-dev:i386 liblzma-dev liblzma-dev:i386 \
-        wget intltool  sasl2-bin python3-pip
+        wget intltool  sasl2-bin python3-pip libpcre2-dev
 RUN pip3 install -U meson ninja
 
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
-RUN wget https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.5/pidgin-2.14.5.tar.bz2
+RUN wget https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.10/pidgin-2.14.10.tar.bz2
 RUN wget ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus

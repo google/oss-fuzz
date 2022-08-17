@@ -20,11 +20,11 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --build-type=debug \
                 --generator=Ninja \
                 --enable-fuzzers \
-                --enable-mobile-ipv6 \
                 --disable-python \
                 --disable-zeekctl \
                 --disable-auxtools \
-                --disable-broker-tests
+                --disable-broker-tests \
+		--disable-spicy
 
 cd build
 ninja install
@@ -82,4 +82,11 @@ if [ "${SANITIZER}" = "coverage" ]; then
   # causing the coverage build to fail.
   mkdir -p $OUT/$(basename $SRC)
   cp -r $SRC/zeek $OUT/$(basename $SRC)/zeek
+
+  # Replace the 3rdpary/ghc symlink in the ./build directory with the
+  # actual contents. The symlink otherwise points into the /src directory.
+  if [ -L ${OUT}/$(basename $SRC)/zeek/build/zeek/3rdparty/ghc ]; then
+    rm ${OUT}/$(basename $SRC)/zeek/build/zeek/3rdparty/ghc
+    cp -r $SRC/zeek/auxil/filesystem/include/ghc ${OUT}/$(basename $SRC)/zeek/build/zeek/3rdparty/
+  fi
 fi

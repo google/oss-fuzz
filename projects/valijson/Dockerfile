@@ -21,3 +21,6 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://github.com/tristanpenman/valijson
 WORKDIR valijson
 RUN cp $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN git clone --depth 1 https://github.com/juju/juju
 COPY build.sh storage_fuzzer.go $SRC/
 WORKDIR $SRC/juju

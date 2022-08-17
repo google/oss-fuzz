@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y \
   libexpat1-dev \
   libffi-dev \
   libfftw3-dev \
-  libgflags-dev \
   libselinux1-dev \
   libtool \
   nasm \
@@ -53,3 +52,6 @@ RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 
 WORKDIR libvips
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

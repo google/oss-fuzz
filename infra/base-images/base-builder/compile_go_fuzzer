@@ -48,7 +48,16 @@ if [[ $SANITIZER = *coverage* ]]; then
   abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
   # give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
   echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-  go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+  # Additional packages for which to get coverage.
+  pkgaddcov=""
+  # to prevent bash from failing about unbound variable
+  GO_COV_ADD_PKG_SET=${GO_COV_ADD_PKG:-}
+  if [[ -n "${GO_COV_ADD_PKG_SET}" ]]; then
+    pkgaddcov=","$GO_COV_ADD_PKG
+    abspath_repo=`go list -m $tags -f {{.Dir}} $GO_COV_ADD_PKG || go list $tags -f {{.Dir}} $GO_COV_ADD_PKG`
+    echo "s=^$GO_COV_ADD_PKG"="$abspath_repo"= >> $OUT/$fuzzer.gocovpath
+  fi
+  go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/...$pkgaddcov -c -o $OUT/$fuzzer $path
 else
   # Compile and instrument all Go files relevant to this fuzz target.
   echo "Running go-fuzz $tags -func $function -o $fuzzer.a $path"

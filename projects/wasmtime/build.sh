@@ -30,6 +30,8 @@ build() {
   shift
   fuzz_targets=$1
   shift
+  fuzz_target_path=$1
+  shift
   PROJECT_DIR=$SRC/$project
 
   # ensure we get absolute paths for the coverage report
@@ -41,7 +43,7 @@ build() {
 
   cd $PROJECT_DIR/fuzz && cargo fuzz build --strip-dead-code -O --debug-assertions "$@"
 
-  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
+  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/$fuzz_target_path/x86_64-unknown-linux-gnu/release
 
   if [ "x$fuzz_targets" = "x" ]; then
       fuzz_targets=$PROJECT_DIR/fuzz/fuzz_targets/*.rs
@@ -69,9 +71,9 @@ build() {
 # Ensure OCaml environment is set up prior to Wasmtime build.
 eval $(opam env)
 
-build wasmtime "" ""
-build wasm-tools wasm-tools- ""
-build regalloc.rs regalloc- bt bt
+build wasmtime "" "" target
+build wasm-tools wasm-tools- "" target
+build regalloc2 regalloc2- ion_checker fuzz/target
 
 # In coverage builds copy the opam header files into the output so coverage can
 # find the source files.

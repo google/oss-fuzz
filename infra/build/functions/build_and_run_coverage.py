@@ -41,7 +41,9 @@ INTROSPECTOR_BUILD_TYPE = 'introspector'
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
+LANGUAGES_WITH_COVERAGE_SUPPORT = [
+    'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
+]
 
 LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
 
@@ -98,7 +100,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
-  build_steps = build_lib.project_image_steps(
+  build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
       project.fuzzing_language,
@@ -110,7 +112,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
   download_corpora_steps = build_lib.download_corpora_steps(
-      project.name, testing=config.testing)
+      project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
     logging.info('Skipping code coverage build for %s.', project.name)
     return []
@@ -129,13 +131,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'HTTP_PORT=',
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ]
-  if 'dataflow' in project.fuzzing_engines:
-    coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
       'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
+          build_lib.get_runner_image_name(base_images_project,
+                                          config.test_image_suffix),
       'env':
           coverage_env,
       'args': [
@@ -312,8 +312,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
                   f'/reports/{coverage_report_latest}/linux')
 
   download_coverage_steps = build_lib.download_coverage_data_steps(
-      project.name, coverage_report_latest, bucket_name, build.out,
-      config.testing)
+      project.name, coverage_report_latest, bucket_name, build.out)
   if not download_coverage_steps:
     logging.warning(
         'Skipping introspector build for %s. No coverage data found.',
@@ -347,6 +346,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
+  env.append(f'PROJECT_NAME={project.name}')
 
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))

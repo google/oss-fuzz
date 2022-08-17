@@ -1,0 +1,11 @@
+homepage: "numpy.org"
+main_repo: "https://github.com/numpy/numpy"
+language: python
+primary_contact: "ralf.gommers@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - david@adalogics.com
+  - adam@adalogics.com

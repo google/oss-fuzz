@@ -48,7 +48,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE sql-fuzzer.o -o $OUT/sql-fuzzer \
       ../lib/libquery.a  ../lib/libtsdb.a ../lib/libcommon.a \
        ../lib/libtfs.a ../lib/liblz4.a ../lib/libos.a \
        ../lib/liboslinux.a ../lib/libz.a ../lib/librmonotonic.a \
-       ../lib/liblua.a \
+       ../lib/liblua.a ../lib/libtutil.a ../lib/libTSZ.a \
        -Wl,--end-group -lpthread -ldl
 
 cp $SRC/*.options $OUT/

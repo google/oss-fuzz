@@ -18,3 +18,4 @@ sanitizers:
 - undefined
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 # - memory
+file_github_issue: True

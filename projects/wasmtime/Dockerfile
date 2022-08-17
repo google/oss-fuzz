@@ -28,7 +28,7 @@ RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.s
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-tools wasm-tools
 
-RUN git clone --depth 1 https://github.com/bytecodealliance/regalloc.rs regalloc.rs
+RUN git clone --depth 1 https://github.com/bytecodealliance/regalloc2 regalloc2
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
 WORKDIR wasmtime
