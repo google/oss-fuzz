@@ -27,8 +27,11 @@ def TestOneInput(data):
     except ValueError:
         return
 
-    encoded = orjson.dumps(orjson_data)
-    del encoded
+    try:
+        encoded = orjson.dumps(orjson_data)
+        del encoded
+    except TypeError:
+        return
 
 
 def main():
