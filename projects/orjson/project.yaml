@@ -8,4 +8,3 @@ sanitizers:
 main_repo: "https://github.com/ijl/orjson"
 vendor_ccs:
  - maxnair.dev@gmail.com
-file_github_issue: true
