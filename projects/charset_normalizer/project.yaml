@@ -1,0 +1,12 @@
+homepage: "https://github.com/Ousret/charset_normalizer"
+language: python
+primary_contact: "ahmed.tahri@cloudnursery.dev"
+main_repo: "https://github.com/Ousret/charset_normalizer"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
