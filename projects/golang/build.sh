@@ -18,12 +18,20 @@ rm -r parser
 
 mkdir math && cp $SRC/math_big_fuzzer.go ./math/
 
-git clone https://github.com/golang/text $GOPATH/src/golang.org/x/text
+git clone https://github.com/golang/text $SRC/text
+cd $SRC/text/
+cp $SRC/unicode_fuzzer.go ./encoding/unicode/
+find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+compile_go_fuzzer golang.org/x/text/encoding/unicode FuzzUnicodeTransform fuzz_unicode_transform
+
+cd $SRC/golang
 mkdir text && cp $SRC/text_fuzzer.go ./text/
+cp $SRC/language_fuzzer.go ./text/
 
 go mod init "github.com/dvyukov/go-fuzz-corpus"
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer
+compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers
 compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2
@@ -46,6 +54,14 @@ compile_go_fuzzer $FUZZ_ROOT/time Fuzz time_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/xml Fuzz xml_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/zip Fuzz zip_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/zlib Fuzz zlib_fuzzer
+
+cd $SRC/go/src/regexp
+cp $SRC/regexp_fuzzer.go ./
+go mod init regexpPackage
+go mod tidy
+find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+compile_go_fuzzer regexpPackage FuzzCompile fuzz_regexp_compile
+compile_go_fuzzer regexpPackage FuzzCompilePOSIX fuzz_compile_posix
 
 cd $SRC/go/src/archive/tar
 go mod init tarPackage
