@@ -36,6 +36,7 @@ compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2
 compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer
+compile_go_fuzzer $FUZZ_ROOT/math FuzzFloat64SpecialCases fuzz_float64_special_cases
 compile_go_fuzzer $FUZZ_ROOT/asn1 Fuzz asn_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/csv Fuzz csv_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/elliptic Fuzz elliptic_fuzzer
