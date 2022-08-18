@@ -25,10 +25,7 @@ RUN apt-get --yes update \
    && rm --recursive --force /var/lib/apt/lists/*
 
 # Install rustup.
-ARG rustup_dir=/usr/local/cargo
-ENV RUSTUP_HOME ${rustup_dir}
-ENV CARGO_HOME ${rustup_dir}
-ENV PATH "${rustup_dir}/bin:${PATH}"
+ARG rustup_dir=/rust
 RUN curl --location https://sh.rustup.rs > /tmp/rustup \
   && sh /tmp/rustup -y --default-toolchain=none \
   && chmod a+rwx ${rustup_dir} \
