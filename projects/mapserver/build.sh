@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
+#Patch
+cp patch/CMakeLists.patch .
+cp -r patch/fuzzers .
+patch < CMakeLists.patch
+
 #Dir
 mkdir build
 cd build
@@ -22,29 +27,15 @@ cd build
 cmake \
     -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CFLAGS" \
-    -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$CFLAGS" \
-    -DCMAKE_BUILD_TYPE=Debug -DBUILD_STATIC=ON \
+    -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
+    -DCMAKE_BUILD_TYPE=Debug -DBUILD_STATIC=ON -DFUZZER=ON \
     -DWITH_PROTOBUFC=0 -DWITH_FRIBIDI=0 -DWITH_HARFBUZZ=0 -DWITH_CAIRO=0 -DWITH_FCGI=0 ../
 
 make -j$(nproc)
 
-#Fuzzer
-cp ../fuzzers/*.c .
-
-$CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c mapfuzzer.c
-$CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c shapefuzzer.c
-
-$CXX $CFLAGS $LIB_FUZZING_ENGINE mapfuzzer.o -o mapfuzzer \
--L. -lmapserver_static \
--lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
-
-$CXX $CFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
--L. -lmapserver_static \
--lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
-
 #SetUp
-cp mapfuzzer $OUT/mapfuzzer
-cp shapefuzzer $OUT/shapefuzzer
+cp fuzzers/mapfuzzer $OUT/mapfuzzer
+cp fuzzers/shapefuzzer $OUT/shapefuzzer
 
 cd ../
 zip -r $OUT/mapfuzzer_seed_corpus.zip tests/*.map
