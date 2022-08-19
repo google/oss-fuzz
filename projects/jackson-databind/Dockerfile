@@ -32,6 +32,8 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 
 RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
 
+RUN git clone --depth 1 https://github.com/forge/roaster
+
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 WORKDIR jackson-databind

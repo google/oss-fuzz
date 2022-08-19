@@ -191,6 +191,7 @@ function run_java_fuzz_target {
 
   if (( $(du -c $exec_file | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce .exec files.
+    echo "$target failed to produce .exec file."
     return 0
   fi
 

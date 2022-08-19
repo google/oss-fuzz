@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+cd $SRC/roaster
+$MVN clean install
+cp ./api/target/roaster-api-2.26.1-SNAPSHOT.jar $OUT/roaster.jar
+cp ./impl/target/roaster-jdt-2.26.1-SNAPSHOT.jar $OUT/roaster-jdt.jar
+cd $SRC/jackson-databind
+
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
@@ -39,7 +45,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout -f "jackson-annotations/pom.xml")
 cp "jackson-annotations/target/jackson-annotations-$CURRENT_VERSION.jar" "$OUT/jackson-annotations.jar"
 
-ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar"
+ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar roaster.jar roaster-jdt.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -52,7 +58,10 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
-  cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
+
+  if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
+    cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
+  fi
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh

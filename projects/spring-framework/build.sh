@@ -23,17 +23,17 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 cat > patch.diff <<- EOM
 diff --git a/spring-core/spring-core.gradle b/spring-core/spring-core.gradle
-index d9ce720..dc4e1c6 100644
+index 6546aa7..3e83242 100644
 --- a/spring-core/spring-core.gradle
 +++ b/spring-core/spring-core.gradle
-@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+@@ -4,6 +4,7 @@ import org.springframework.build.shadow.ShadowSource
  description = "Spring Core"
  
  apply plugin: "kotlin"
 +apply plugin: 'com.github.johnrengelman.shadow'
  
- // spring-core includes asm, javapoet and repackages cglib, inlining all into the
- // spring-core jar. cglib itself depends on asm and is therefore further transformed by
+ def javapoetVersion = "1.13.0"
+ def objenesisVersion = "3.2"
 EOM
 
 git apply patch.diff
@@ -73,4 +73,6 @@ LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 --jvm_args=\"-Xmx2048m\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
-done 
+done
+
+cp $SRC/BeanWrapperFuzzer\$Bean.class $OUT/

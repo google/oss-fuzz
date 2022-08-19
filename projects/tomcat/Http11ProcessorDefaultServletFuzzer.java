@@ -127,7 +127,6 @@ public class Http11ProcessorDefaultServletFuzzer {
 
             socket.close();
         } catch (IOException e) {
-            throw new FuzzerSecurityIssueHigh("Should only throw IOException.");
         }
     }
 }

@@ -339,7 +339,8 @@ def upload_index(json_index, html_string):
 def generate_html_string(content):
   """Generate html body for introspector index"""
   html_body = HTML_PREFIX_STRING
-  for project, url in content.items():
+  for project in sorted(content.keys()):
+    url = content[project]
     html_body += f'\t<li><a href="{url}"> {project} </a></li>\n'
 
   html_body += HTML_SUFFIX_STRING

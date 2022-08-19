@@ -1,0 +1,12 @@
+homepage: "https://github.com/nedbat/coveragepy/"
+language: python
+primary_contact: "ned@nedbatchelder.com"
+main_repo: "https://github.com/nedbat/coveragepy"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
