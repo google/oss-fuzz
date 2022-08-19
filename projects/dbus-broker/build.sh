@@ -15,10 +15,22 @@
 #
 ################################################################################
 
-# fuzz-introspector isn't compatible with meson. Let's bail out explicitly here.
-# https://github.com/systemd/systemd/commit/ebd4541efe800190e5f158179f8201c654bb4c31
+# The MESON_* variables are passed to meson to build dbus-broker itself and the original
+# variables are used to build the fuzz target without meson to make the script compatible
+# with fuzz-introspector. Once the fuzz target is built with meson as well the MESON_*
+# variables can be safely removed and CFLAGS/CXXFLAGS/LDFLAGS can be tweaked directly
+# instead: https://github.com/google/oss-fuzz/pull/7583#issuecomment-1104011067
+MESON_CFLAGS=${CFLAGS:-}
+MESON_CXXFLAGS=${CXXFLAGS:-}
+MESON_LDFLAGS=${LDFLAGS:-}
+
 if [[ "$SANITIZER" == introspector ]]; then
-    exit 1
+    MESON_CFLAGS="${MESON_CFLAGS//-fuse-ld=gold/ }"
+    MESON_CXXFLAGS="${MESON_CXXFLAGS//-fuse-ld=gold/ }"
+    MESON_LDFLAGS="${MESON_LDFLAGS//-fuse-ld=gold/ }"
+    MESON_LDFLAGS+=" -flto"
+    export CC_LD=gold
+    export CXX_LD=gold
 fi
 
 apt-get update -y
@@ -38,7 +50,7 @@ fi
 
 pip3 install meson ninja
 
-if ! meson -Db_lundef=false -Dlauncher=false build; then
+if ! CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" LDFLAGS="$MESON_LDFLAGS" meson -Db_lundef=false -Dlauncher=false build; then
     cat build/meson-logs/meson-log.txt
     exit 1
 fi

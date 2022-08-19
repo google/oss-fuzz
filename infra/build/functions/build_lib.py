@@ -22,14 +22,15 @@ import six.moves.urllib.parse as urlparse
 import sys
 import time
 
-import requests
-import yaml
-
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
 from google.api_core.client_options import ClientOptions
 import google.auth
 from oauth2client.service_account import ServiceAccountCredentials
+import requests
+import yaml
+
+BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 
 BUILD_TIMEOUT = 16 * 60 * 60
 
@@ -55,7 +56,7 @@ ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(upload_bucket='clusterfuzz-builds',
                    supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64', 'i386']),
+                   supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
                    supported_sanitizers=['address'],
@@ -81,6 +82,10 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
 US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
+DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
+
+_ARM64 = 'aarch64'
+
 
 def get_targets_list_filename(sanitizer):
   """Returns target list filename."""
@@ -92,6 +97,26 @@ def get_targets_list_url(bucket, project, sanitizer):
   filename = get_targets_list_filename(sanitizer)
   url = GCS_UPLOAD_URL_FORMAT.format(bucket, project, filename)
   return url
+
+
+def dockerify_run_step(step, build, use_architecture_image_name=False):
+  """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
+  allows us to specify which architecture to run the image on."""
+  image = step['name']
+  if use_architecture_image_name:
+    image = _make_image_name_architecture_specific(image, build.architecture)
+  step['name'] = DOCKER_TOOL_IMAGE
+  if build.is_arm:
+    platform = 'linux/arm64'
+  else:
+    platform = 'linux/amd64'
+  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  for env_var in step.get('env', {}):
+    new_args.extend(['-e', env_var])
+  new_args += ['-t', image]
+  new_args += step['args']
+  step['args'] = new_args
+  return step
 
 
 def get_upload_bucket(engine, architecture, testing):
@@ -161,7 +186,7 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
-def download_corpora_steps(project_name):
+def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
   fuzz_targets = _get_targets_list(project_name)
@@ -187,7 +212,7 @@ def download_corpora_steps(project_name):
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
+        'name': get_runner_image_name(BASE_IMAGES_PROJECT, test_image_suffix),
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
         'volumes': [{
@@ -284,7 +309,7 @@ def get_pull_test_images_steps(test_image_suffix):
   for image in images:
     test_image = image + '-' + test_image_suffix
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': DOCKER_TOOL_IMAGE,
         'args': [
             'pull',
             test_image,
@@ -302,7 +327,7 @@ def get_pull_test_images_steps(test_image_suffix):
     # the test image with the non-test version, so that the test version is used
     # instead of pulling the real one.
     steps.append({
-        'name': 'gcr.io/cloud-builders/docker',
+        'name': DOCKER_TOOL_IMAGE,
         'args': ['tag', test_image, image],
     })
   return steps
@@ -327,19 +352,37 @@ def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
   return clone_step
 
 
+def _make_image_name_architecture_specific(image_name, architecture):
+  """Returns an architecture-specific name for |image_name|, based on |build|"""
+  return f'{image_name}-{architecture.lower()}'
+
+
 def get_docker_build_step(image_names,
                           directory,
                           buildkit_cache_image=None,
-                          src_root='oss-fuzz'):
+                          src_root='oss-fuzz',
+                          architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
-  args = ['build']
+
+  if architecture != _ARM64:
+    args = ['build']
+  else:
+    args = [
+        'buildx', 'build', '--platform', 'linux/arm64', '--progress', 'plain',
+        '--load'
+    ]
+    # TODO(metzman): This wont work when we want to build the base-images.
+    image_names = [
+        _make_image_name_architecture_specific(image_name, architecture)
+        for image_name in image_names
+    ]
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
   step = {
-      'name': 'gcr.io/cloud-builders/docker',
+      'name': DOCKER_TOOL_IMAGE,
       'args': args,
       'dir': directory,
   }
@@ -359,36 +402,65 @@ def get_docker_build_step(image_names,
   return step
 
 
-def project_image_steps(name,
-                        image,
-                        language,
-                        branch=None,
-                        test_image_suffix=None):
+def has_arm_build(architectures):
+  """Returns True if project has an ARM build."""
+  return 'aarch64' in architectures
+
+
+def get_project_image_steps(  # pylint: disable=too-many-arguments
+    name,
+    image,
+    language,
+    branch=None,
+    test_image_suffix=None,
+    architectures=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
+  if architectures is None:
+    architectures = []
+
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(branch=branch)
-
   steps = [clone_step]
   if test_image_suffix:
     steps.extend(get_pull_test_images_steps(test_image_suffix))
-
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name))
+  steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
-  steps += [
-      docker_build_step, {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': [
-              'OSSFUZZ_REVISION=$REVISION_ID',
-              'FUZZING_LANGUAGE=%s' % language,
-          ],
-          'id': srcmap_step_id
-      }
-  ]
+  steps.extend([{
+      'name': image,
+      'args': [
+          'bash', '-c',
+          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          'FUZZING_LANGUAGE=%s' % language,
+      ],
+      'id': srcmap_step_id
+  }])
+
+  if has_arm_build(architectures):
+    builder_name = 'buildxbuilder'
+    steps.extend([
+        {
+            'name': 'gcr.io/cloud-builders/docker',
+            'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']
+        },
+        {
+            'name': DOCKER_TOOL_IMAGE,
+            'args': ['buildx', 'create', '--name', builder_name]
+        },
+        {
+            'name': DOCKER_TOOL_IMAGE,
+            'args': ['buildx', 'use', builder_name]
+        },
+    ])
+    docker_build_arm_step = get_docker_build_step([image],
+                                                  os.path.join(
+                                                      'projects', name),
+                                                  architecture=_ARM64)
+    steps.append(docker_build_arm_step)
 
   return steps
 
@@ -406,6 +478,15 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
+def get_runner_image_name(base_images_project, test_image_suffix):
+  """Returns the runner image that should be used, based on
+  |base_images_project|. Returns the testing image if |test_image_suffix|."""
+  image = f'gcr.io/{base_images_project}/base-runner'
+  if test_image_suffix:
+    image += '-' + test_image_suffix
+  return image
+
+
 def get_build_body(steps,
                    timeout,
                    body_overrides,
@@ -419,7 +500,6 @@ def get_build_body(steps,
 
   if use_build_pool:
     options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
-
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',

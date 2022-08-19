@@ -9,6 +9,7 @@ auto_ccs:
   - "hlin@code-intelligence.com"
   - "Adam@adalogics.com"
   - "David@adalogics.com"
+  - "fanningpj@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
