@@ -4,4 +4,5 @@ primary_contact: "tytso@mit.edu"
 auto_ccs:
   - "theodore.tso@gmail.com"
   - "tytso@google.com"
+  - "mxms@google.com"
 main_repo: 'https://github.com/tytso/e2fsprogs'

@@ -278,6 +278,7 @@ def get_pull_test_images_steps(test_image_suffix):
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
       'gcr.io/oss-fuzz-base/base-builder-rust',
+      'gcr.io/oss-fuzz-base/base-runner',
   ]
   steps = []
   for image in images:
@@ -405,7 +406,11 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
+def get_build_body(steps,
+                   timeout,
+                   body_overrides,
+                   build_tags,
+                   use_build_pool=True):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -420,8 +425,8 @@ def get_build_body(steps, timeout, body_overrides, tags, use_build_pool=True):
       'timeout': str(timeout) + 's',
       'options': options,
   }
-  if tags:
-    build_body['tags'] = tags
+  if build_tags:
+    build_body['tags'] = build_tags
 
   if body_overrides is None:
     body_overrides = {}

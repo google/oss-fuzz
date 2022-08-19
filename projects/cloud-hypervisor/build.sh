@@ -16,5 +16,8 @@
 cd $SRC/cloud-hypervisor
 cargo fuzz build -O
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/block $OUT/
+cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/cmos $OUT/
+cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/http_api $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/qcow $OUT/
+cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/serial $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/vhdx $OUT/

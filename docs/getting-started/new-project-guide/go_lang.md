@@ -106,6 +106,12 @@ command first, and then link the resulting `.a` file against
 
 For go-fuzz fuzzers, the best way to do this is by using the [`compile_go_fuzzer` script](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/compile_go_fuzzer), and for native Go 1.18 fuzzers it is recommended to use the [`compile_native_go_fuzzer` script](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/compile_native_go_fuzzer). Both of these also support coverage builds.
 
+`compile_native_go_fuzzer` requires two dependencies which can be installed with:
+```bash
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/utils
+```
+
 A usage example from go-dns project is
 
 ```sh

@@ -15,5 +15,5 @@
 #
 ################################################################################
 
-mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy
+mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy/
 compile_go_fuzzer github.com/ossf/scorecard/v4/policy FuzzParseFromYAML fuzz_parse_from_yaml gofuzz

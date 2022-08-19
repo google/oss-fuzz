@@ -6,7 +6,7 @@ auto_ccs:
   - "Henry.Wang@arm.com"
   - "robert.bradford@intel.com"
   - "samuel.e.ortiz@protonmail.com"
-
+  - "chen.bo@intel.com"
 sanitizers:
   - address
 fuzzing_engines:

@@ -224,7 +224,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   cd $SRC/inspector
 
   # Correlate fuzzer binaries to fuzz-introspector's raw data
-  python3 /fuzz-introspector/post-processing/main.py correlate --binaries_dir=$OUT/
+  python3 /fuzz-introspector/src/main.py correlate --binaries_dir=$OUT/
 
   # Generate fuzz-introspector HTML report, this generates
   # the file exe_to_fuzz_introspector_logs.yaml
@@ -236,7 +236,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   # Use the just-generated correlation file
   REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
   REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
-  python3 /fuzz-introspector/post-processing/main.py report $REPORT_ARGS
+  python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
 
   cp -rf $SRC/inspector $OUT/inspector
 fi
