@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.File;
+import java.lang.IllegalArgumentException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -170,7 +171,7 @@ public class ObjectReader2Fuzzer {
                 JsonFactory jf = new JsonFactory();
                 r2 = r.with(jf);                
             }
-        } catch (IOException e) { }
+        } catch (IOException | IllegalArgumentException e) { }
 
         try {
             Files.delete(Paths.get("fuzzFile"));
