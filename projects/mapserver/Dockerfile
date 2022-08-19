@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake libpng-dev libjpeg-dev libfreetype-dev libproj-dev libgdal-dev
+RUN apt-get update && apt-get install -y cmake libpng-dev libjpeg-dev libfreetype-dev libproj-dev libgdal-dev libprotobuf-c-dev libfribidi-dev libharfbuzz-dev libcairo2-dev libfcgi-dev 
 RUN git clone --depth 1 https://github.com/MapServer/MapServer
 COPY build.sh $SRC/
 COPY patch/ $SRC/MapServer/patch
