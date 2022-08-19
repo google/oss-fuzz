@@ -34,6 +34,8 @@ RUN apt-get install -y libgtest-dev && \
     ln -sn /usr/local/lib/googletest/libgtest.a /lib/x86_64-linux-gnu/libgtest.a
 RUN wget https://github.com/unicode-org/icu/releases/download/release-66-rc/icu4c-66rc-src.tgz && \
     tar xzvf icu4c-66rc-src.tgz
+RUN git clone https://github.com/google/protobuf.git
 RUN git clone https://github.com/google/libphonenumber
+RUN git clone --depth=1 https://github.com/abseil/abseil-cpp
 
 COPY build.sh $SRC/
