@@ -20,9 +20,9 @@ cd build
 
 #Build
 cmake \
-    -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} \
-    -DCMAKE_C_FLAGS="${CFLAGS}" -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-    -DCMAKE_EXE_LINKER_FLAGS="${CXXFLAGS}" -DCMAKE_SHARED_LINKER_FLAGS="${CXXFLAGS}" \
+    -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
+    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CFLAGS" \
+    -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$CFLAGS" \
     -DCMAKE_BUILD_TYPE=Debug -DBUILD_STATIC=ON \
     -DWITH_PROTOBUFC=0 -DWITH_FRIBIDI=0 -DWITH_HARFBUZZ=0 -DWITH_CAIRO=0 -DWITH_FCGI=0 ../
 
@@ -34,12 +34,12 @@ cp ../fuzzers/*.c .
 $CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c mapfuzzer.c
 $CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c shapefuzzer.c
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE mapfuzzer.o -o mapfuzzer \
+$CXX $CFLAGS $LIB_FUZZING_ENGINE mapfuzzer.o -o mapfuzzer \
 -L. -lmapserver_static \
 -L/lib/ -lgdal \
--L/lib/x86_64-linux-gnu/ -lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
+-L/lib/x86_64-linux-gnu/ -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
+$CXX $CFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
 -L. -lmapserver_static \
 -L/lib/ -lgdal \
 -L/lib/x86_64-linux-gnu/ -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
