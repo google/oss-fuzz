@@ -36,13 +36,11 @@ $CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c sh
 
 $CXX $CFLAGS $LIB_FUZZING_ENGINE mapfuzzer.o -o mapfuzzer \
 -L. -lmapserver_static \
--L/lib/ -lgdal \
--L/lib/x86_64-linux-gnu/ -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
+-lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
 
 $CXX $CFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
 -L. -lmapserver_static \
--L/lib/ -lgdal \
--L/lib/x86_64-linux-gnu/ -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
+-lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype
 
 #SetUp
 cp mapfuzzer $OUT/mapfuzzer
