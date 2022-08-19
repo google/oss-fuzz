@@ -18,22 +18,20 @@
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
 mkdir $SRC/protobuf-install/
-cd $SRC/protobuf/
-./autogen.sh
-./configure --prefix=$SRC/protobuf-install
+cd $SRC/protobuf-install/
+cmake -Dprotobuf_BUILD_TESTS=OFF $SRC/protobuf
 make -j$(nproc)
 make install
-export PROTOC="$SRC/protobuf-install/bin/protoc"
-
 ldconfig
-cd python
-python3 setup.py build --cpp_implementation
+
+cd $SRC/protobuf/python
+python3 setup.py build
 pip3 install .
 
 # Compile .proto specs
 cd $SRC/python-api-common-protos/
 for target in quota billing service routing log; do
-  $PROTOC --python_out=. --proto_path=. google/api/$target.proto
+  protoc --python_out=. --proto_path=. google/api/$target.proto
 done
 
 # Compile fuzzer
