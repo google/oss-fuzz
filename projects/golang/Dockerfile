@@ -25,6 +25,9 @@ COPY build.sh text_fuzzer.go \
      regexp_fuzzer.go \
      language_fuzzer.go \
      unicode_fuzzer.go \
+     x509_fuzzer.go \
+     ecdsa_fuzzer.go \
+     aes_fuzzer.go \
      elf_fuzzer.go $SRC/
 
 WORKDIR $SRC/golang
