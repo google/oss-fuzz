@@ -28,8 +28,24 @@ cd $SRC/golang
 mkdir text && cp $SRC/text_fuzzer.go ./text/
 cp $SRC/language_fuzzer.go ./text/
 
+mkdir -p crypto/x509
+cp $SRC/x509_fuzzer.go ./crypto/x509/
+
+mkdir -p crypto/ecdsa
+cp $SRC/ecdsa_fuzzer.go ./crypto/ecdsa/
+
+mkdir -p crypto/aes
+cp $SRC/aes_fuzzer.go ./crypto/aes/
+
 go mod init "github.com/dvyukov/go-fuzz-corpus"
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
+compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert
+zip $OUT/fuzz_parse_cert_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
+compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt
+zip $OUT/fuzz_pem_decrypt_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
+compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherDecrypt fuzz_aes_cipher_decrypt
+compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherEncrypt fuzz_aes_cipher_encrypt
+compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign
 compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers
 compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer
@@ -63,6 +79,8 @@ go mod tidy
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 compile_go_fuzzer regexpPackage FuzzCompile fuzz_regexp_compile
 compile_go_fuzzer regexpPackage FuzzCompilePOSIX fuzz_compile_posix
+compile_go_fuzzer regexpPackage FuzzReplaceAll fuzz_replace_all
+compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 
 cd $SRC/go/src/archive/tar
 go mod init tarPackage
