@@ -15,22 +15,12 @@
 #
 ################################################################################
 
-cd $SRC/numpy
 
-export CFLAGS2="${CFLAGS}"
-export CXXFLAGS2="${CXXFLAGS}"
-unset CFLAGS
-unset CXXFLAGS
-pip3 install .
-python3 setup.py install
-
-export CFLAGS="${CFLAGS2}"
-export CXXFLAGS="${CXXFLAGS2}"
 cd $SRC/bottleneck
 pip3 install .
 python3 setup.py install
 
-# Build fuzzers in $OUT.
+# Build fuzzers and put them in $OUT/
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
