@@ -110,17 +110,17 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
                              use_build_pool=False)
 
 
-def get_architecture_manifest_steps():
+def get_images_architecture_manifest_steps():
   """Returns steps to create manifests for ARM and x86_64 versions of
   base-runner and base-builder."""
   images = [f'{TAG_PREFIX}/base-builder', f'{TAG_PREFIX}/base-runner']
   steps = []
   for image in images:
-    steps.extend(get_push_manifest_steps(image))
+    steps.extend(get_image_push_architecture_manifest_steps(image))
   return steps
 
 
-def get_push_architecture_manifest_steps(image):
+def get_image_push_architecture_manifest_steps(image):
   """Returns the steps to push a manifest pointing to ARM64 and AMD64 versions
   of |image|."""
   arm_testing_image = f'{image}-testing-arm'
@@ -164,8 +164,8 @@ def base_builder(event, context):
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  steps = get_architecture_manifest_steps()
-  images = []
+  steps = get_images_architecture_manifest_steps()
+  images = ['base-builder', 'base-runner']
   run_build(steps, images)
 
   introspector_steps = _get_introspector_base_images_steps()
