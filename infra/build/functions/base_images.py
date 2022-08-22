@@ -110,7 +110,9 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
                              use_build_pool=False)
 
 
-def get_arm_manifest_steps():
+def get_architecture_manifest_steps():
+  """Returns steps to create manifests for ARM and x86_64 versions of
+  base-runner and base-builder."""
   images = [f'{TAG_PREFIX}/base-builder', f'{TAG_PREFIX}/base-runner']
   steps = []
   for image in images:
@@ -118,30 +120,31 @@ def get_arm_manifest_steps():
   return steps
 
 
-def get_push_manifest_steps(image):
-
-  arm_version = f'{image}-testing-arm'
-  amd64_image = f'{image}:manifest-amd64'
-  arm64_image = f'{image}:manifest-arm64v8'
+def get_push_architecture_manifest_steps(image):
+  """Returns the steps to push a manifest pointing to ARM64 and AMD64 versions
+  of |image|."""
+  arm_testing_image = f'{image}-testing-arm'
+  amd64_manifest_image = f'{image}:manifest-amd64'
+  arm64_manifest_image = f'{image}:manifest-arm64v8'
   steps = [
       {
           'name': 'gcr.io/cloud-builders/docker',
-          'args': ['tag', image, amd64_image],
+          'args': ['tag', image, amd64_manifest_image],
       },
       {
           'name': 'gcr.io/cloud-builders/docker',
-          'args': ['pull', arm_version],
+          'args': ['pull', arm_testing_image],
       },
       {
           'name': 'gcr.io/cloud-builders/docker',
-          'args': ['tag', arm_version, arm64_image],
+          'args': ['tag', arm_testing_image, arm64_manifest_image],
       },
       {
           'name':
               'gcr.io/cloud-builders/docker',
           'args': [
-              'tag', 'manifest', 'create', image, '--amend', arm64_image,
-              '--amend', amd64_image
+              'tag', 'manifest', 'create', image, '--amend',
+              arm64_manifest_image, '--amend', amd64_manifest_image
           ],
       },
       {
@@ -161,7 +164,7 @@ def base_builder(event, context):
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  steps = get_arm_manifest_steps()
+  steps = get_architecture_manifest_steps()
   images = []
   run_build(steps, images)
 
