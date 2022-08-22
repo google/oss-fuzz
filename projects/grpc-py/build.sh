@@ -20,7 +20,7 @@ pip3 install -r ./requirements.txt
 
 GRPC_PYTHON_CFLAGS="${CFLAGS}" GRPC_PYTHON_BUILD_SYSTEM_RE2=true GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true pip3 install -v . 
 
-cd $SRC
+cd $SRC/grpc/examples/python/helloworld
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data helloworld_pb2.py:. --add-data helloworld_pb2_grpc.py:.
 done
