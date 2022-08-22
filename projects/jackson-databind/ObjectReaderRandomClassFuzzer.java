@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.lang.NoSuchMethodException;
 import java.lang.IllegalAccessException;
 import java.lang.ClassNotFoundException;
+import java.lang.ArrayIndexOutOfBoundsException;
 import java.lang.reflect.*;
 import java.lang.reflect.Method; 
 import java.net.URL; 
@@ -52,8 +53,12 @@ public class ObjectReaderRandomClassFuzzer {
         String classString = data.consumeString(1000000);
 
         // Sanity check: Do we have valid java code? If not, exit early.
-        List<Problem> problems = Roaster.validateSnippet(classString);
-        if (problems.size()>0) {
+        try {
+            List<Problem> problems = Roaster.validateSnippet(classString);
+            if (problems.size()>0) {
+                return;
+            }            
+        } catch (ArrayIndexOutOfBoundsException e) {
             return;
         }
 
