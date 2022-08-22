@@ -29,6 +29,7 @@ import java.lang.NoSuchMethodException;
 import java.lang.IllegalAccessException;
 import java.lang.ClassNotFoundException;
 import java.lang.ArrayIndexOutOfBoundsException;
+import java.lang.IllegalArgumentException;
 import java.lang.reflect.*;
 import java.lang.reflect.Method; 
 import java.net.URL; 
@@ -231,7 +232,7 @@ public class ObjectReaderRandomClassFuzzer {
                     fuzzInt2 = data.consumeInt();
                     jp = r.createParser(data.consumeRemainingAsBytes(), fuzzInt1, fuzzInt2);
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException | IllegalArgumentException e) {
                 // Close the classLoader. This should render the
                 // created class unusable.
                 classLoader.close();
