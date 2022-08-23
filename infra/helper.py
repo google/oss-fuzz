@@ -68,6 +68,7 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -523,6 +524,13 @@ def _workdir_from_dockerfile(project):
     lines = file_handle.readlines()
 
   return workdir_from_lines(lines, default=os.path.join('/src', project.name))
+
+
+def prepare_aarch64_emulation():
+  # docker_run('linuxkit/binfmt:v0.8')
+  subprocess.check_call(
+      ['docker', 'buildx', 'create', '--name', ARM_BUILDER_NAME])
+  subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
 
 def docker_run(run_args, print_output=True):
