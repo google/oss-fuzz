@@ -390,9 +390,8 @@ def check_project_exists(project):
 
 def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
   """Checks if a fuzzer exists."""
-  command = ['docker', 'run', '--rm']
-  if architecture == 'aarch64':
-    command += ['--platform', 'linux/arm64']
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = ['docker', 'run', '--rm', '--platform', platform]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
 
@@ -552,10 +551,8 @@ def prepare_aarch64_emulation():
 
 def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
-  command = ['docker', 'run', '--rm', '--privileged']
-  if architecture == 'aarch64':
-    command += ['--platform', 'linux/arm64']
-
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = ['docker', 'run', '--rm', '--privileged', '--platform', platform]
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
@@ -736,8 +733,9 @@ def check_build(args):
   if not check_project_exists(args.project):
     return False
 
-  if (args.fuzzer_name and not _check_fuzzer_exists(
-      args.project, args.fuzzer_name, args.architecture)):
+  if (args.fuzzer_name and
+      not _check_fuzzer_exists(
+          args.project, args.fuzzer_name, args.architecture)):
     return False
 
   env = [
