@@ -299,6 +299,7 @@ def get_pull_test_images_steps(test_image_suffix):
   images = [
       'gcr.io/oss-fuzz-base/base-builder',
       'gcr.io/oss-fuzz-base/base-builder-swift',
+      'gcr.io/oss-fuzz-base/base-builder-javascript',
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
