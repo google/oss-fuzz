@@ -35,6 +35,9 @@ jobs:
           - engine: libfuzzer
             sanitizer: address
             architecture: i386
+          - engine: libfuzzer
+            sanitizer: address
+            architecture: aarch64
           - engine: none
             sanitizer: address
             architecture: x86_64
