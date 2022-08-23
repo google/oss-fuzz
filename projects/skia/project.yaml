@@ -11,6 +11,7 @@ auto_ccs:
   - "skia-gpu-wrangler@google.com"
   - "skia-bugs-central@skia-public.iam.gserviceaccount.com"
   - "fuzz@skia.org"
+  - "armansito@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
