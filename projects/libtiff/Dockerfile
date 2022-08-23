@@ -23,4 +23,4 @@ RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
 ADD https://raw.githubusercontent.com/google/AFL/debe27037b9444bbf090a0ffbd5d24889bb887ae/dictionaries/tiff.dict tiff.dict
 WORKDIR libtiff
-COPY build.sh $SRC/
+COPY build.sh write_fuzzer.cc $SRC/

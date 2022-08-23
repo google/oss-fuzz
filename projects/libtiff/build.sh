@@ -16,3 +16,16 @@
 ################################################################################
 
 . contrib/oss-fuzz/build.sh
+
+cp $SRC/write_fuzzer.cc $SRC/libtiff/contrib/oss-fuzz/
+if [ "$ARCHITECTURE" = "i386" ]; then
+    $CXX $CXXFLAGS -std=c++11 -I$WORK/include \
+        $SRC/libtiff/contrib/oss-fuzz/write_fuzzer.cc -o $OUT/tiff_write_fuzzer \
+        $LIB_FUZZING_ENGINE $WORK/lib/libtiffxx.a $WORK/lib/libtiff.a $WORK/lib/libz.a $WORK/lib/libjpeg.a \
+        $WORK/lib/libjbig.a $WORK/lib/libjbig85.a
+else
+    $CXX $CXXFLAGS -std=c++11 -I$WORK/include \
+        $SRC/libtiff/contrib/oss-fuzz/write_fuzzer.cc -o $OUT/tiff_write_fuzzer \
+        $LIB_FUZZING_ENGINE $WORK/lib/libtiffxx.a $WORK/lib/libtiff.a $WORK/lib/libz.a $WORK/lib/libjpeg.a \
+        $WORK/lib/libjbig.a $WORK/lib/libjbig85.a -Wl,-Bstatic -llzma -Wl,-Bdynamic
+fi
