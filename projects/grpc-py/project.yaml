@@ -1,6 +1,7 @@
 fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/grpc/grpc
+primary_contact: "j.belleville.richard@gmail.com"
 language: python
 main_repo: https://github.com/grpc/grpc
 sanitizers:
