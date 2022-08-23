@@ -1,11 +1,28 @@
+#!/usr/bin/env python
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+"""Script for pinning builder images for projects that break on upgrades. Works
+with projects that use language builders."""
 import argparse
+import functools
 import logging
 import os
 import re
 import sys
 import subprocess
-
-import functools
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 PROJECTS_DIR = os.path.join(ROOT_DIR, 'projects')
@@ -16,6 +33,8 @@ FROM_LINE_REGEX = re.compile(
 
 @functools.cache
 def get_latest_docker_image_digest(image):
+  """Returns a pinnable version of the latest |image|. This version will have a
+  SHA."""
   subprocess.run(['docker', 'pull', image], check=True)
   subprocess.run(['docker', 'pull', image], stdout=subprocess.PIPE, check=True)
 
@@ -27,18 +46,12 @@ def get_latest_docker_image_digest(image):
 
 
 def get_args():
+  """Returns parsed arguments."""
   parser = argparse.ArgumentParser(sys.argv[0],
                                    description='Hold back builder images.')
   parser.add_argument('projects',
-                      help='Projects. "All" for all projects',
+                      help='Projects.',
                       nargs='+')
-
-  parser.add_argument(
-      '--hold-image-digest',
-      required=False,
-      nargs='?',
-      default=None,
-      help='Image to hold on.')
 
   parser.add_argument(
       '--update-held',
@@ -58,14 +71,22 @@ def get_args():
 
 
 def get_hold_image_digest(line, hold_image_digest, update_held):
+  """Returns the image digest for the |line| we want to pin. If the image is
+  already pinned then it is only updated if |update_held. If |hold_image_digest
+  is specified then it is returned, otherwise the latest pinnable version is
+  returned."""
   matches = FROM_LINE_REGEX.match(line).groups()
   if matches[1] and not update_held:
     return None, False
   initial_image = matches[0]
+  if hold_image_digest:
+    return hold_image_digest, True
   return get_latest_docker_image_digest(initial_image), True
 
 
 def hold_image(project, hold_image_digest, update_held, issue_number):
+  """Rewrites the Dockerfile of |project| to pin the base-builder image on
+  upgrade."""
   dockerfile_path = os.path.join(PROJECTS_DIR, project, 'Dockerfile')
   with open(dockerfile_path, 'r') as dockerfile_handle:
     dockerfile = dockerfile_handle.readlines()
@@ -93,6 +114,7 @@ def hold_image(project, hold_image_digest, update_held, issue_number):
     dockerfile_handle.write(dockerfile)
 
 def main():
+  """Script for pinning builder images for projects that break on upgrades."""
   args = get_args()
   for project in args.projects:
     hold_image(
