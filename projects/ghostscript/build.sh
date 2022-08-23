@@ -45,7 +45,7 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   CUPSCONFIG=$CUPSCONFIG \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
-  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m,tiffsep1,faxg3,psdcmyk,eps2write
+  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m,tiffsep1,faxg3,psdcmyk,eps2write,bmpmono
 make -j$(nproc) libgs
 
 fuzzers="gstoraster_fuzzer            \
@@ -60,6 +60,7 @@ fuzzers="gstoraster_fuzzer            \
          gs_device_psdcmyk_fuzzer     \
          gs_device_eps2write_fuzzer   \
          gs_device_faxg3_fuzzer       \
+         gs_device_bmpmono_fuzzer     \
          gs_device_tiffsep1_fuzzer"
 
 for fuzzer in $fuzzers; do
@@ -98,6 +99,7 @@ zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pdfwrite_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlmono_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_eps2write_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_bmpmono_fuzzer_seed_corpus.zip"
 
 # Copy out options
 cp $SRC/*.options $OUT/
