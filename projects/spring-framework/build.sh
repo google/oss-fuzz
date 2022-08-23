@@ -22,6 +22,18 @@ mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 cat > patch.diff <<- EOM
+diff --git a/spring-webmvc/spring-webmvc.gradle b/spring-webmvc/spring-webmvc.gradle
+index c2ccacb..d2b80b4 100644
+--- a/spring-webmvc/spring-webmvc.gradle
++++ b/spring-webmvc/spring-webmvc.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring Web MVC"
+ 
++apply plugin: 'com.github.johnrengelman.shadow'
+ apply plugin: "kotlin"
+ 
+ dependencies {
+
 diff --git a/spring-core/spring-core.gradle b/spring-core/spring-core.gradle
 index 6546aa7..3e83242 100644
 --- a/spring-core/spring-core.gradle
@@ -42,12 +54,15 @@ CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (
 
 ./gradlew build -x test -i -x javadoc
 ./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
+./gradlew shadowJar --build-file spring-webmvc/spring-webmvc.gradle -x javadoc -x test
 cp "spring-core/build/libs/spring-core-$CURRENT_VERSION-all.jar" "$OUT/spring-core.jar"
 cp "spring-web/build/libs/spring-web-$CURRENT_VERSION.jar" "$OUT/spring-web.jar"
 cp "spring-context/build/libs/spring-context-$CURRENT_VERSION.jar" "$OUT/spring-context.jar"
 cp "spring-beans/build/libs/spring-beans-$CURRENT_VERSION.jar" "$OUT/spring-beans.jar"
+cp "spring-webmvc/build/libs/spring-webmvc-$CURRENT_VERSION-all.jar" "$OUT/spring-webmvc.jar"
+cp "./spring-test/build/libs/spring-test-$CURRENT_VERSION.jar" "$OUT/spring-test.jar"
 
-ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar"
+ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar spring-webmvc.jar spring-test.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
