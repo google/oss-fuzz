@@ -9,7 +9,7 @@ steps:
   - .
 - name: 'gcr.io/oss-fuzz-base/build-status'
   args: []
-  timeout: 5400s
+  timeout: 10800s
 options:
   logging: CLOUD_LOGGING_ONLY
-timeout: 5400s
+timeout: 10800s
