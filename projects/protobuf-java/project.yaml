@@ -9,6 +9,8 @@ auto_ccs:
   - "sandyzhang@google.com"
   - "norbert.schneider@code-intelligence.com"
   - "hlin@code-intelligence.com"
+  - "protobuf-core@google.com"
+  - "woops-core@google.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/protocolbuffers/protobuf"
