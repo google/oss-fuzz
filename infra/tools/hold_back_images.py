@@ -97,7 +97,7 @@ def hold_image(project, hold_image_digest, update_held, issue_number):
     hold_image_digest, should_hold = get_hold_image_digest(
         line.strip(), hold_image_digest, update_held)
     if not should_hold:
-      logging.error(f'Not holding back {project}.')
+      logging.error('Not holding back %s.', project)
       break
     dockerfile[idx] = f'FROM {hold_image_digest}\n'
     if issue_number:
