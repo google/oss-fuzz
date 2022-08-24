@@ -18,6 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
 RUN git clone --depth 1 https://github.com/golang/go
+RUN git clone --depth 1 https://github.com/golang/net
 COPY build.sh text_fuzzer.go \
      math_big_fuzzer.go \
      fuzz_tar_reader.go \
@@ -28,6 +29,8 @@ COPY build.sh text_fuzzer.go \
      x509_fuzzer.go \
      ecdsa_fuzzer.go \
      aes_fuzzer.go \
+     h2c_fuzzer.go \
+     fuzz_h2c.options \
      elf_fuzzer.go $SRC/
 
 WORKDIR $SRC/golang
