@@ -22,18 +22,18 @@ import google.auth
 import build_lib
 
 BASE_IMAGES = [
-    'base-image',
-    'base-clang',
+    # 'base-image',
+    # 'base-clang',
     'base-builder',
-    'base-builder-go',
-    'base-builder-go-codeintelligencetesting',
-    'base-builder-javascript',
-    'base-builder-jvm',
-    'base-builder-python',
-    'base-builder-rust',
-    'base-builder-swift',
+    # 'base-builder-go',
+    # 'base-builder-go-codeintelligencetesting',
+    # 'base-builder-javascript',
+    # 'base-builder-jvm',
+    # 'base-builder-python',
+    # 'base-builder-rust',
+    # 'base-builder-swift',
     'base-runner',
-    'base-runner-debug',
+    # 'base-runner-debug',
 ]
 INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder']
 BASE_PROJECT = 'oss-fuzz-base'
@@ -144,7 +144,7 @@ def get_image_push_architecture_manifest_steps(image):
           'name':
               'gcr.io/cloud-builders/docker',
           'args': [
-              'tag', 'manifest', 'create', image, '--amend',
+              'manifest', 'create', image, '--amend',
               arm64_manifest_image, '--amend', amd64_manifest_image
           ],
       },
@@ -162,11 +162,9 @@ def base_builder(event, context):
   logging.basicConfig(level=logging.INFO)
 
   steps = get_base_image_steps(BASE_IMAGES)
-  images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
-  run_build(steps, images)
-
-  steps = get_images_architecture_manifest_steps()
-  images = ['base-builder', 'base-runner']
+  steps.extend(get_images_architecture_manifest_steps())
+  images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES
+            if base_image not in {'base-builder', 'base-runner'}]
   run_build(steps, images)
 
   introspector_steps = _get_introspector_base_images_steps()
