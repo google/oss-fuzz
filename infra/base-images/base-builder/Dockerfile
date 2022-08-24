@@ -124,10 +124,10 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 RUN cd $SRC && \
-    git clone \
-      --depth 1 \
+    git clone -n \
       https://github.com/google/centipede.git && \
     cd centipede && \
+    git checkout 2a2c78a2c161d99f5962b9710bce61feb00acc3d && \
     echo 'build --client_env=CC=clang --cxxopt=-std=c++17 ' \
       '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc && \
     mkdir -p "$OUT/corpus" "$OUT/workdir"
@@ -161,7 +161,6 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC
-COPY weak.c $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc
 
