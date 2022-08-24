@@ -15,11 +15,4 @@
 #
 ################################################################################
 
-mv -f ./tests/korean.* $OUT/
-mv -f ./tests/utf8_nonbmp.* $OUT/
-
-autoreconf -vfi
-./configure --disable-shared --enable-static
-make clean
-make -j$(nproc) 
-$CXX $CXXFLAGS -o $OUT/fuzzer -I./src/ $LIB_FUZZING_ENGINE ./src/tools/fuzzer.cxx ./src/hunspell/.libs/libhunspell-1.7.a
+$SRC/hunspell/oss-fuzz-build.sh
