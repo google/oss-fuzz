@@ -45,3 +45,25 @@ cp shapefuzzer $OUT/shapefuzzer
 cd ../
 zip -r $OUT/mapfuzzer_seed_corpus.zip tests/*.map
 zip -r $OUT/shapefuzzer_seed_corpus.zip tests/*.shp tests/*.shx tests/*.dbf
+
+#CopyLibrary
+mkdir -p $OUT/lib
+
+cd /lib/
+cp libarmadillo.so.9 libdfalt.so.0 libgdal.so.26 libmfhdfalt.so.0 libogdi.so.4.1 $OUT/lib
+
+cd /lib/x86_64-linux-gnu/
+cp libaec.so.0 libarpack.so.2 libblas.so.3 libcairo.so.2 libcfitsio.so.8 libCharLS.so.2 libdap.so.25 \
+libdapclient.so.6 libepsilon.so.1 libfontconfig.so.1 libfreetype.so.6 libfreexl.so.1 libfribidi.so.0 \
+libfyba.so.0 libfygm.so.0 libfyut.so.0 libgeos_c.so.1 libgeos-3.8.0.so libgeotiff.so.5 libgfortran.so.5 \
+libgif.so.7 libgraphite2.so.3 libharfbuzz.so.0 libhdf5_serial_hl.so.100 libhdf5_serial.so.103 libjbig.so.0 \
+libjpeg.so.8 libkmlbase.so.1 libkmldom.so.1 libkmlengine.so.1 liblapack.so.3 liblcms2.so.2 libltdl.so.7 \
+libminizip.so.1 libmysqlclient.so.21 libnetcdf.so.15 libnspr4.so libnss3.so libnssutil3.so libodbc.so.2 \
+libodbcinst.so.2 libopenjp2.so.7 libpixman-1.so.0 libplc4.so libplds4.so libpng16.so.16 libpoppler.so.97 \
+libpq.so.5 libproj.so.15 libprotobuf-c.so.1 libqhull.so.7 libsmime3.so libspatialite.so.7 libsuperlu.so.5 \
+libsz.so.2 libtiff.so.5 liburiparser.so.1 libwebp.so.6 libxcb-render.so.0 libxcb-shm.so.0 libxerces-c-3.2.so \
+libXrender.so.1 $OUT/lib
+
+#patchelf
+patchelf --set-rpath '$ORIGIN/lib' $OUT/mapfuzzer
+patchelf --set-rpath '$ORIGIN/lib' $OUT/shapefuzzer
