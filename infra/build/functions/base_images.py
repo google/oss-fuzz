@@ -22,18 +22,18 @@ import google.auth
 import build_lib
 
 BASE_IMAGES = [
-    # 'base-image',
-    # 'base-clang',
+    'base-image',
+    'base-clang',
     'base-builder',
-    # 'base-builder-go',
-    # 'base-builder-go-codeintelligencetesting',
-    # 'base-builder-javascript',
-    # 'base-builder-jvm',
-    # 'base-builder-python',
-    # 'base-builder-rust',
-    # 'base-builder-swift',
+    'base-builder-go',
+    'base-builder-go-codeintelligencetesting',
+    'base-builder-javascript',
+    'base-builder-jvm',
+    'base-builder-python',
+    'base-builder-rust',
+    'base-builder-swift',
     'base-runner',
-    # 'base-runner-debug',
+    'base-runner-debug',
 ]
 INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder']
 BASE_PROJECT = 'oss-fuzz-base'
