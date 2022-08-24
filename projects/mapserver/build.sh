@@ -32,11 +32,25 @@ $CC $CFLAGS -Wall -Wextra -I. -I/usr/include/gdal/. -DPROJ_VERSION_MAJOR=6 -c sh
 
 $CXX $CFLAGS $LIB_FUZZING_ENGINE mapfuzzer.o -o mapfuzzer \
 -L. -lmapserver_static \
--lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype -lcairo -lfribidi -lharfbuzz -lprotobuf-c
+-Wl,-rpath,'$ORIGIN'/lib \
+-laec -larmadillo -larpack -lblas -lcairo -lcfitsio -lCharLS -ldap -ldapclient -ldfalt -lepsilon -lfontconfig \
+-lfreetype -lfreexl -lfribidi -lfyba -lfygm -lfyut -lgdal -lgeos_c -lgeos-3.8.0 -lgeotiff -lgif \
+-lgraphite2 -lharfbuzz -lhdf5_serial -lhdf5_serial_hl -ljbig -ljpeg -lkmlbase -lkmldom -lkmlengine -llapack \
+-lltdl -lmfhdfalt -lminizip -lmysqlclient -lnetcdf -lnspr4 -lnss3 -lnssutil3 -lodbc \
+-lodbcinst -logdi -lopenjp2 -lpixman-1 -lplc4 -lplds4 -lpng -lpoppler -lpq -lproj -lprotobuf-c \
+-lqhull -lsmime3 -lspatialite -lsuperlu -lsz -ltiff -luriparser -lwebp -lxcb-render -lxcb-shm \
+-lxerces-c -lXrender -lxml2
 
 $CXX $CFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
 -L. -lmapserver_static \
--lgdal -lgeos_c -lgif -ljpeg -lpng -lpq -lproj -lxml2 -lfreetype -lcairo -lfribidi -lharfbuzz -lprotobuf-c
+-Wl,-rpath,'$ORIGIN'/lib \
+-laec -larmadillo -larpack -lblas -lcairo -lcfitsio -lCharLS -ldap -ldapclient -ldfalt -lepsilon -lfontconfig \
+-lfreetype -lfreexl -lfribidi -lfyba -lfygm -lfyut -lgdal -lgeos_c -lgeos-3.8.0 -lgeotiff -lgif \
+-lgraphite2 -lharfbuzz -lhdf5_serial -lhdf5_serial_hl -ljbig -ljpeg -lkmlbase -lkmldom -lkmlengine -llapack \
+-lltdl -lmfhdfalt -lminizip -lmysqlclient -lnetcdf -lnspr4 -lnss3 -lnssutil3 -lodbc \
+-lodbcinst -logdi -lopenjp2 -lpixman-1 -lplc4 -lplds4 -lpng -lpoppler -lpq -lproj -lprotobuf-c \
+-lqhull -lsmime3 -lspatialite -lsuperlu -lsz -ltiff -luriparser -lwebp -lxcb-render -lxcb-shm \
+-lxerces-c -lXrender -lxml2
 
 #SetUp
 cp mapfuzzer $OUT/mapfuzzer
@@ -63,7 +77,3 @@ libodbcinst.so.2 libopenjp2.so.7 libpixman-1.so.0 libplc4.so libplds4.so libpng1
 libpq.so.5 libproj.so.15 libprotobuf-c.so.1 libqhull.so.7 libsmime3.so libspatialite.so.7 libsuperlu.so.5 \
 libsz.so.2 libtiff.so.5 liburiparser.so.1 libwebp.so.6 libxcb-render.so.0 libxcb-shm.so.0 libxerces-c-3.2.so \
 libXrender.so.1 $OUT/lib
-
-#patchelf
-patchelf --set-rpath '$ORIGIN/lib' $OUT/mapfuzzer
-patchelf --set-rpath '$ORIGIN/lib' $OUT/shapefuzzer
