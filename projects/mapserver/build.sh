@@ -53,7 +53,7 @@ cd /lib/
 cp libarmadillo.so.9 libdfalt.so.0 libgdal.so.26 libmfhdfalt.so.0 libogdi.so.4.1 $OUT/lib
 
 cd /lib/x86_64-linux-gnu/
-cp libaec.so.0 libarpack.so.2 libblas.so.3 libcairo.so.2 libcfitsio.so.8 libCharLS.so.2 libdap.so.25 \
+cp libaec.so.0 libarpack.so.2 libblas.so.3 libcairo.so.2 libcfitsio.so.8 libCharLS.so.2 libdap.so.25 libxml2.so.2 \
 libdapclient.so.6 libepsilon.so.1 libfontconfig.so.1 libfreetype.so.6 libfreexl.so.1 libfribidi.so.0 \
 libfyba.so.0 libfygm.so.0 libfyut.so.0 libgeos_c.so.1 libgeos-3.8.0.so libgeotiff.so.5 libgfortran.so.5 \
 libgif.so.7 libgraphite2.so.3 libharfbuzz.so.0 libhdf5_serial_hl.so.100 libhdf5_serial.so.103 libjbig.so.0 \
