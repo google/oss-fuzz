@@ -1,5 +1,6 @@
 homepage: "https://github.com/kjd/idna"
 language: python
+primary_contact: "kim@cynosure.com.au"
 main_repo: "https://github.com/kjd/idna"
 fuzzing_engines:
 - libfuzzer
