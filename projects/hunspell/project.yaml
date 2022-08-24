@@ -7,10 +7,9 @@ vendor_ccs:
   - "twsmith@mozilla.com"
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+  - memory
   - undefined
 architectures:
- - i386
- - x86_64
+  - i386
+  - x86_64
 main_repo: 'https://github.com/hunspell/hunspell.git'
