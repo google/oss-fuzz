@@ -1,0 +1,10 @@
+homepage: https://websockets.readthedocs.io/
+language: python
+primary_contact: aymeric.augustin@fractalideas.com
+main_repo: https://github.com/aaugustin/websockets
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
