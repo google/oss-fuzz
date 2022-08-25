@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-mv $SRC/{*.zip,*.dict} $OUT
+cp $SRC/{*.zip,*.dict} $OUT
 
 export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
