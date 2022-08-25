@@ -22,9 +22,7 @@ cd "$SRC/centipede/"
 ./install_dependencies_debian.sh
 bazel build -c opt :all
 
-apt uninstall curl gnupg apt-transport-https git bazel binutils libssl-dev
-
-# Prepare the weak symbols trick
-cp "$CENTIPEDE_SRC/bazel-bin/libweak_sancov_stubs.so" "$OUT/weak.o"
+# Prepare the weak symbols trick.
+cp "$CENTIPEDE_SRC/bazel-bin/libweak_sancov_stubs.so" "$OUT/weak.so"
 
 echo 'Done.'
