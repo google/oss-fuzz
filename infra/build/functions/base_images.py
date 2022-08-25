@@ -41,7 +41,8 @@ TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
 MANIFEST_IMAGES = [
-    'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner']
+    'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner'
+]
 TIMEOUT = str(6 * 60 * 60)
 
 
@@ -98,8 +99,8 @@ def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
 def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   """Execute the build |steps| in GCB and push |images| to the registry."""
   credentials, _ = google.auth.default()
-  images = [image for image in images if image not in MANIFEST_IMAGES] + (
-      [f'{image}:{build_version}' for image in images])
+  images = [image for image in images if image not in MANIFEST_IMAGES
+           ] + ([f'{image}:{build_version}' for image in images])
   body_overrides = {
       'images': images,
       'options': {
@@ -156,8 +157,8 @@ def get_image_push_architecture_manifest_steps(image):
           'name':
               'gcr.io/cloud-builders/docker',
           'args': [
-              'manifest', 'create', image, '--amend',
-              arm64_manifest_image, '--amend', amd64_manifest_image
+              'manifest', 'create', image, '--amend', arm64_manifest_image,
+              '--amend', amd64_manifest_image
           ],
       },
       {
