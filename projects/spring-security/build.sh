@@ -45,6 +45,7 @@ index c4f6c08..413b992 100644
  	optional "org.apache.directory.server:apacheds-protocol-shared"
 EOM
 
+# pipe into true to make subsequent executions of build.sh inside the docker shell possible
 git apply patch.diff
 
 
