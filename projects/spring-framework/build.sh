@@ -27,7 +27,7 @@ ALL_JARS="";
 
 function installShadowJar {
 	./gradlew shadowJar --build-file spring-$1/spring-$1.gradle -x javadoc -x test
-	cp "spring-$1/build/libs/spring-$1-${CURRENT_VERSION}-all.jar" "$OUT/spring-$1.jar";
+	install -v "spring-$1/build/libs/spring-$1-${CURRENT_VERSION}-all.jar" "$OUT/spring-$1.jar";
 	ALL_JARS="${ALL_JARS} spring-$1.jar";
 }
 
@@ -42,13 +42,13 @@ installShadowJar tx;
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH:$SRC
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
 javac -cp $BUILD_CLASSPATH $SRC/*.java --release 17
-cp -v $SRC/*.class $OUT/
+install -v $SRC/*.class $OUT
 
 for fuzzer in $SRC/*Fuzzer.java; do
   fuzzer_basename=$(basename -s .java $fuzzer)
