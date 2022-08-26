@@ -30,4 +30,5 @@ RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+COPY *.dict $SRC/
 WORKDIR $SRC/spring-framework 
