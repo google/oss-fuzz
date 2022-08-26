@@ -21,35 +21,6 @@ export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-cat > patch.diff <<- EOM
-diff --git a/spring-webmvc/spring-webmvc.gradle b/spring-webmvc/spring-webmvc.gradle
-index c2ccacb..d2b80b4 100644
---- a/spring-webmvc/spring-webmvc.gradle
-+++ b/spring-webmvc/spring-webmvc.gradle
-@@ -1,5 +1,6 @@
- description = "Spring Web MVC"
- 
-+apply plugin: 'com.github.johnrengelman.shadow'
- apply plugin: "kotlin"
- 
- dependencies {
-
-diff --git a/spring-core/spring-core.gradle b/spring-core/spring-core.gradle
-index 6546aa7..3e83242 100644
---- a/spring-core/spring-core.gradle
-+++ b/spring-core/spring-core.gradle
-@@ -4,6 +4,7 @@ import org.springframework.build.shadow.ShadowSource
- description = "Spring Core"
- 
- apply plugin: "kotlin"
-+apply plugin: 'com.github.johnrengelman.shadow'
- 
- def javapoetVersion = "1.13.0"
- def objenesisVersion = "3.2"
-EOM
-
-git apply patch.diff
-
 CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
 ./gradlew build -x test -i -x javadoc
@@ -72,9 +43,10 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+javac -cp $BUILD_CLASSPATH $SRC/*.java --release 17
+
+for fuzzer in $SRC/*Fuzzer.java; do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
   cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.

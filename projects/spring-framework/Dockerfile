@@ -26,7 +26,10 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -j $SRC/GenericXmlApplicationContextFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
     rm -rf go-fuzz-corpus
 
-RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
+RUN git clone https://github.com/spring-projects/spring-framework
+COPY *.diff $SRC/
+RUN  cd spring-framework && tr -d '\015' < ${SRC}/add-shadow-core.diff | git apply
+RUN  cd spring-framework && tr -d '\015' < ${SRC}/add-shadow-webmvc.diff | git apply
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
