@@ -50,6 +50,11 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 javac -cp $BUILD_CLASSPATH $SRC/*.java --release 17
 install -v $SRC/*.class $OUT
 
+javac -cp $BUILD_CLASSPATH $SRC/jdbc/*.java --release 17
+install -vd $OUT/jdbc
+install -v  $SRC/jdbc/*.class $OUT/jdbc
+install -v  $SRC/JdbcCoreMapperFuzzerBeans.xml $OUT
+
 for fuzzer in $SRC/*Fuzzer.java; do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
