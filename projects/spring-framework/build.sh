@@ -48,10 +48,10 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
 javac -cp $BUILD_CLASSPATH $SRC/*.java --release 17
+cp -v $SRC/*.class $OUT/
 
 for fuzzer in $SRC/*Fuzzer.java; do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
@@ -66,5 +66,3 @@ LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
-
-cp $SRC/BeanWrapperFuzzer\$Bean.class $OUT/
