@@ -23,18 +23,28 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
-./gradlew build -x test -i -x javadoc
-./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
-./gradlew shadowJar --build-file spring-webmvc/spring-webmvc.gradle -x javadoc -x test
-cp "spring-core/build/libs/spring-core-$CURRENT_VERSION-all.jar" "$OUT/spring-core.jar"
-cp "spring-web/build/libs/spring-web-$CURRENT_VERSION.jar" "$OUT/spring-web.jar"
-cp "spring-context/build/libs/spring-context-$CURRENT_VERSION.jar" "$OUT/spring-context.jar"
-cp "spring-beans/build/libs/spring-beans-$CURRENT_VERSION.jar" "$OUT/spring-beans.jar"
-cp "spring-webmvc/build/libs/spring-webmvc-$CURRENT_VERSION-all.jar" "$OUT/spring-webmvc.jar"
-cp "spring-test/build/libs/spring-test-$CURRENT_VERSION.jar" "$OUT/spring-test.jar"
-cp "spring-tx/build/libs/spring-tx-$CURRENT_VERSION.jar" "$OUT/spring-tx.jar"
+#./gradlew build -x test -i -x javadoc
+#./gradlew shadowJar --build-file spring-context/spring-context.gradle -x javadoc -x test
+#./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
+#./gradlew shadowJar --build-file spring-test/spring-test.gradle -x javadoc -x test
+#./gradlew shadowJar --build-file spring-tx/spring-tx.gradle -x javadoc -x test
+#./gradlew shadowJar --build-file spring-web/spring-web.gradle -x javadoc -x test
+#./gradlew shadowJar --build-file spring-webmvc/spring-webmvc.gradle -x javadoc -x test
 
-ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar spring-webmvc.jar spring-test.jar spring-tx.jar"
+ALL_JARS="";
+
+function installShadowJar {
+	./gradlew shadowJar --build-file spring-$1/spring-$1.gradle -x javadoc -x test
+	cp "spring-$1/build/libs/spring-$1-${CURRENT_VERSION}-all.jar" "$OUT/spring-$1.jar";
+	ALL_JARS="${ALL_JARS} spring-$1.jar";
+}
+
+installShadowJar context;
+installShadowJar core;
+installShadowJar web;
+installShadowJar webmvc;
+installShadowJar test;
+installShadowJar tx;
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

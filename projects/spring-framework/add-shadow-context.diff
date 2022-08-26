@@ -1,0 +1,11 @@
+diff --git a/spring-context/spring-context.gradle b/spring-context/spring-context.gradle
+index d7e366331b..93e6d5c631 100644
+--- a/spring-context/spring-context.gradle
++++ b/spring-context/spring-context.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring Context"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ apply plugin: "kotlinx-serialization"
+ 
