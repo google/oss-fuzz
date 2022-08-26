@@ -23,14 +23,6 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
-#./gradlew build -x test -i -x javadoc
-#./gradlew shadowJar --build-file spring-context/spring-context.gradle -x javadoc -x test
-#./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
-#./gradlew shadowJar --build-file spring-test/spring-test.gradle -x javadoc -x test
-#./gradlew shadowJar --build-file spring-tx/spring-tx.gradle -x javadoc -x test
-#./gradlew shadowJar --build-file spring-web/spring-web.gradle -x javadoc -x test
-#./gradlew shadowJar --build-file spring-webmvc/spring-webmvc.gradle -x javadoc -x test
-
 ALL_JARS="";
 
 function installShadowJar {
@@ -41,6 +33,8 @@ function installShadowJar {
 
 installShadowJar context;
 installShadowJar core;
+installShadowJar jdbc;
+installShadowJar orm;
 installShadowJar web;
 installShadowJar webmvc;
 installShadowJar test;
