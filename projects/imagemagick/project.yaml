@@ -5,10 +5,10 @@ auto_ccs:
   - paul.l.kehrer@gmail.com
   - alex.gaynor@gmail.com
   - urban.warrior.fuzz@gmail.com
+  - jon.sneyers@gmail.com
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-# - memory
+  - memory
   - undefined
 architectures:
   - x86_64
