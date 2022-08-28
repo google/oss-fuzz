@@ -20,6 +20,7 @@ cd build
 
 cmake -DCMAKE_BUILD_TYPE=Debug -DFUZZER=ON -DCMAKE_C_COMPILER="$CC" \
 -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
+make -j$(nproc)
 
 cp fuzzer $OUT/fuzzer
 zip -r $OUT/fuzzer_seed_corpus.zip ../fuzzer/input/*.raw
