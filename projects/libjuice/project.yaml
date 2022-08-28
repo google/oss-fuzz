@@ -1,0 +1,14 @@
+homepage: "https://github.com/paullouisageneau/libjuice"
+language: c
+primary_contact: "paul-louis@ageneau.org"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/paullouisageneau/libjuice'
