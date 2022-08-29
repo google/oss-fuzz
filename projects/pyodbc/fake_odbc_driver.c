@@ -9,27 +9,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/* Fake odbc driver that simply returns 0 on every call and has no side effects */
 
-int SQLAllocHandle(long a1, long a2, long a3){
-        return 0;
+#include <sql.h>
+#include <sqlext.h>
+
+SQLRETURN SQLAllocHandle(SQLSMALLINT a1, SQLHANDLE a2, SQLHANDLE *a3) {
+  return 0;
 }
 
-int SQLDriverConnect(long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) {
-        return 0;
+SQLRETURN
+SQLDriverConnect(SQLHDBC ConnectionHandle, SQLHWND WindowHandle,
+                 SQLCHAR *InConnectionString, SQLSMALLINT StringLength1,
+                 SQLCHAR *OutConnectionString, SQLSMALLINT BufferLength,
+                 SQLSMALLINT *StringLength2Ptr, SQLUSMALLINT DriverCompletion) {
+  return 0;
 }
 
-int SQLSetConnectAttr(long a1, long a2, long a3, long a4) {
-        return 0;
+SQLRETURN SQLSetConnectAttr(SQLHDBC ConnectionHandle, SQLINTEGER Attribute,
+                            SQLPOINTER ValuePtr, SQLINTEGER StringLength) {
+  return 0;
 }
 
-int SQLExecDirectW(long a1, long a2, long a3) {
-        return 0;
+SQLRETURN SQL_API SQLExecDirectW(SQLHSTMT hstmt, SQLWCHAR *szSqlStr,
+                                 SQLINTEGER cbSqlStr) {
+  return 0;
 }
 
-int SQLRowCount(long a1, long a2) {
-        return 0;
+SQLRETURN SQL_API SQLRowCount(SQLHSTMT StatementHandle, SQLLEN *RowCount) {
+  return 0;
 }
 
-int SQLNumResultCols(long a1, long a2) {
-        return 0;
+SQLRETURN SQL_API SQLNumResultCols(SQLHSTMT StatementHandle,
+                                   SQLSMALLINT *ColumnCount) {
+  return 0;
 }
