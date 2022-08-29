@@ -44,7 +44,7 @@ def exploit_target(env_value, env_name):
   `parse_env_variables`:
   https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.utilities.argparse.html  # pylint: disable=line-too-long
   It might not be the most realistic example,
-  but serves as a PoC to show that execSan works for Python."""
+  but serves as a PoC to show that SystemSan works for Python."""
   os.environb[env_name.encode()] = env_value
   parse_env_variables(Trainer, template=env_name)
 

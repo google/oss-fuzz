@@ -30,6 +30,6 @@ COPY ./build.sh $SRC
 RUN  ./build.sh
 
 COPY . $SRC
-RUN make execSan
+RUN make SystemSan
 
 CMD ["make", "run"]
