@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake groff libtool pkg-config cmake nasm autopoint po4a libc6:i386 libc6-dev:i386
+    apt-get install -y make autoconf automake groff libtool pkg-config cmake nasm autopoint
+RUN apt-get install -y libc6-dev:i386
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/strukturag/libde265

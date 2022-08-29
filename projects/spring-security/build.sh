@@ -31,11 +31,11 @@ index c4f6c08..413b992 100644
 +
  apply plugin: 'io.spring.convention.spring-module'
 +apply plugin: 'com.github.johnrengelman.shadow'
- 
+
  dependencies {
  	management platform(project(":spring-security-dependencies"))
 @@ -10,7 +15,7 @@ dependencies {
- 
+
  	optional 'com.fasterxml.jackson.core:jackson-databind'
  	optional 'ldapsdk:ldapsdk'
 -	optional "com.unboundid:unboundid-ldapsdk"
@@ -60,7 +60,7 @@ cp "config/build/libs/spring-security-config-$CURRENT_VERSION-test.jar" "$OUT/sp
 
 ALL_JARS="spring-security-ldap.jar spring-security-core.jar spring-security.jar spring-security-config.jar spring-security-config-test.jar"
 
-# The classpath at build-time includes the project jars in $OUT as well as the
+# The class path at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 
