@@ -60,9 +60,10 @@ cp "spring-web/build/libs/spring-web-$CURRENT_VERSION.jar" "$OUT/spring-web.jar"
 cp "spring-context/build/libs/spring-context-$CURRENT_VERSION.jar" "$OUT/spring-context.jar"
 cp "spring-beans/build/libs/spring-beans-$CURRENT_VERSION.jar" "$OUT/spring-beans.jar"
 cp "spring-webmvc/build/libs/spring-webmvc-$CURRENT_VERSION-all.jar" "$OUT/spring-webmvc.jar"
-cp "./spring-test/build/libs/spring-test-$CURRENT_VERSION.jar" "$OUT/spring-test.jar"
+cp "spring-test/build/libs/spring-test-$CURRENT_VERSION.jar" "$OUT/spring-test.jar"
+cp "spring-tx/build/libs/spring-tx-$CURRENT_VERSION.jar" "$OUT/spring-tx.jar"
 
-ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar spring-webmvc.jar spring-test.jar"
+ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar spring-webmvc.jar spring-test.jar spring-tx.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
