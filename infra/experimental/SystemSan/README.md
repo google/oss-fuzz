@@ -5,12 +5,11 @@ various vulnerabilities.
 
 ## Command injection
 
-if our `/tmp/tripwire` command in `vuln.dict` was injected into the shell of
-the testing target program. This works by
+This detector currently works by
 
-- Checking if `execve` is called with `/tmp/tripwire`.
-- TODO: Checking if we managed to invoke a shell (e.g. /bin/sh) and cause a
-  syntax error.
+- Checking if `execve` is called with `/tmp/tripwire` (which comes from our dictionary).
+- Checking if `execve` is invoking a shell with invalid syntax. This is likely
+  caused by our input.
 
 ## Arbitrary file open
 
