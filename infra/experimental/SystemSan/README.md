@@ -1,6 +1,10 @@
-# Shell Injection Detection with `ptrace`
+# System Sanitizers
 
 We use `ptrace` to instrument system calls made by the target program to detect
+various vulnerabilities.
+
+## Command injection
+
 if our `/tmp/tripwire` command in `vuln.dict` was injected into the shell of
 the testing target program. This works by
 
@@ -8,7 +12,11 @@ the testing target program. This works by
 - TODO: Checking if we managed to invoke a shell (e.g. /bin/sh) and cause a
   syntax error.
 
-## Quick test
+## Arbitrary file open
+
+TODO: documentation.
+
+## Proof of concept
 
 ### Cleanup
 Note this will delete /tmp/tripwire if it exists.
@@ -34,13 +42,13 @@ which indicates the detection of executing the planted `/tmp/tripwire`.
 which indicates the detection of executing a syntactic erroneous command.
 
 
-## PoC in Python with `pytorch-lightning`
+### Command injection PoC in Python with `pytorch-lightning`
 With `SystemSan`, [`Artheris`](https://github.com/google/atheris) can detect a shell injection bug in [version v1.5.10 of `pytorch-lightning`](https://github.com/PyTorchLightning/pytorch-lightning/tree/1.5.0).
 ```shell
 make pytorch-lightning-1.5.10
 ```
 
-## PoC in JavaScript with `shell-quote`
+### Command injection PoC in JavaScript with `shell-quote`
 With `SystemSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corrpution bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/substack/node-shell-quote) without any seed.
 ```shell
 make node-shell-quote-v1.7.3
@@ -51,10 +59,9 @@ This is based on [a shell injection exploit report](https://wh0.github.io/2021/1
 `:`/tmp/tripwire``:`
 ```
 
+## Trophies
 
-## TODOs
-1. Find real examples of past shell injection vulnerabilities using this.
-2. More specific patterns of error messages (to avoid false postives/negatives)
-  * e.g. cache and concatenate the buffer of consecutive `write` syscalls
-  * e.g. define the RegEx of patterns and pattern-match with buffers
+- <https://github.com/syoyo/tinygltf/issues/368>
+- <https://github.com/substack/node-shell-quote/issues/54>
+
 
