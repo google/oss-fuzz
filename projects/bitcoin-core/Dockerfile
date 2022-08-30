@@ -14,9 +14,7 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
-FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:b942129fbed50e87e554a58dbbbbf90382f17c650dc4d4e27b7a9f8e68b1d494
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 # Packages taken from:
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
