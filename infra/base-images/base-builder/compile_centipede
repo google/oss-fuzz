@@ -22,6 +22,8 @@ export BIN_DIR="$SRC/centipede/bazel-bin/"
 cp "$BIN_DIR/centipede" "$OUT"
 cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
+mkdir "$OUT/corpus" "$OUT/workdir"
+
 export DFTRACING_FLAGS='-fsanitize-coverage=trace-loads'
 export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt"`
 export LIBRARIES_FLAGS="-ldl -lrt -lpthread $SRC/centipede/weak.o"
