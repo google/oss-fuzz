@@ -25,6 +25,7 @@ FUZZERS="cmsIT8_load_fuzzer            \
         cms_overwrite_transform_fuzzer \
         cms_transform_all_fuzzer       \
         cms_profile_fuzzer             \
+        cms_universal_transform_fuzzer \
         cms_transform_extended_fuzzer"
 
 for F in $FUZZERS; do
