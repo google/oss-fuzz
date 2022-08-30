@@ -19,9 +19,12 @@
 ALL_JARS=""
 
 pushd "${SRC}/groovy"
-	./gradlew jar
+	./gradlew shadowJar
 	cp -v ./build/libs/groovy-raw-*-SNAPSHOT.jar "$OUT/groovy.jar"
 	ALL_JARS="${ALL_JARS} groovy.jar"
+
+  cp -v ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar "$OUT/groovy-test.jar"
+	ALL_JARS="${ALL_JARS} groovy-test.jar"
 popd
 
 # The classpath at build-time includes the project jars in $OUT as well as the

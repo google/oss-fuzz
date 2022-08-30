@@ -17,6 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN git clone https://github.com/apache/groovy.git
+COPY *.diff $SRC/
+RUN cd groovy && tr -d '\015' < $SRC/add-shadow-to-test.diff | git apply
 
 COPY build.sh $SRC/
 COPY *.java $SRC/
