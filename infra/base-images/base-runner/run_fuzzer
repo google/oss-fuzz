@@ -153,6 +153,11 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 
+elif [[ "$FUZZING_ENGINE" = centipede ]]; then
+
+  # Create the work and corpus directory for Centipede
+  mkdir "$OUT/workdir" "$OUT/corpus"
+
 else
 
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
