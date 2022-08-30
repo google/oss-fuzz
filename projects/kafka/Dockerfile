@@ -16,13 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update -y
-RUN apt-get install wget software-properties-common lsb-release gcc make python3-dev libsasl2-modules-gssapi-mit krb5-user -y
-
+RUN apt-get update -y && apt-get install wget 
 RUN wget -qO - https://packages.confluent.io/deb/7.0/archive.key | apt-key add -
 RUN add-apt-repository "deb https://packages.confluent.io/clients/deb $(lsb_release -cs) main"
-RUN apt-get update -y
-RUN apt-get install librdkafka-dev -y
+RUN apt-get update -y && apt-get install librdkafka-dev software-properties-common lsb-release gcc make python3-dev libsasl2-modules-gssapi-mit krb5-user -y
+
+RUN pip3 install --upgrade pip
 
 RUN git clone --depth=1 https://github.com/confluentinc/confluent-kafka-python kafka
 WORKDIR kafka
