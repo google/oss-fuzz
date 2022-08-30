@@ -71,7 +71,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   cmsUInt32Number intent = 0;
   cmsUInt32Number flags = 0;
   cmsHTRANSFORM hTransform = cmsCreateTransform(
-      srcProfile, srcFormat, dstProfile, TYPE_BGR_8, intent, flags);
+      srcProfile, srcFormat, dstProfile, dstFormat, intent, flags);
   cmsCloseProfile(srcProfile);
   cmsCloseProfile(dstProfile);
 
