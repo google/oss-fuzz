@@ -20,11 +20,22 @@
 function rewrite_go_fuzz_harness() {
 	fuzzer_filename=$1
 	fuzz_function=$2
+	remove_tests=$3
 
 	# Create a copy of the fuzzer to not modify the existing fuzzer.
 	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
 	mv $fuzzer_filename /tmp/
 	fuzzer_fn="${fuzzer_filename}"_fuzz_.go
+
+	if "${remove_tests}"; then
+		# Remove the body of go testing funcs that may be co-located.
+		echo "removing *testing.T"
+		sed -i -e '/func Test.*testing.T) {$/ {:r;/\n}/!{N;br}; s/\n.*\n/\n/}' "${fuzzer_fn}"
+		# After removing the body of the go testing funcs, consolidate the imports.
+		if command -v goimports; then
+			goimports -w "${fuzzer_fn}"
+		fi
+	fi
 
 	# Replace *testing.F with *go118fuzzbuildutils.F.
 	echo "replacing *testing.F"
@@ -72,6 +83,8 @@ path=$1
 function=$2
 fuzzer=$3
 tags="-tags gofuzz"
+# remove_tests removes the body of any test funcs co-located with the fuzzing tests.
+remove_tests="${4:-false}"
 
 # Get absolute path.
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
@@ -83,7 +96,7 @@ fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
 
-	rewrite_go_fuzz_harness $fuzzer_filename $function
+	rewrite_go_fuzz_harness $fuzzer_filename $function $remove_tests
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
 
 	# Clean up.
