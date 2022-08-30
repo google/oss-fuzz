@@ -58,6 +58,10 @@ run_test(const uint8_t *data,
     dstProfile = cmsCreateLab4Profile(NULL);
     dstFormat = TYPE_Lab_DBL;
   }
+  else if (dstVal == 7) {
+    dstProfile = cmsCreateLab4Profile(NULL);
+    dstFormat = TYPE_Lab_DBL;
+  }
   else {
     dstProfile = cmsCreate_sRGBProfile();
     dstFormat = TYPE_RGB_8;
@@ -73,8 +77,14 @@ run_test(const uint8_t *data,
   cmsUInt32Number nSrcComponents = cmsChannelsOf(srcCS);
   cmsUInt32Number srcFormat;
   if (srcCS == cmsSigLabData) {
-    srcFormat =
-        COLORSPACE_SH(PT_Lab) | CHANNELS_SH(nSrcComponents) | BYTES_SH(0);
+    if (dstVal != 7) {
+        srcFormat =
+            COLORSPACE_SH(PT_Lab) | CHANNELS_SH(nSrcComponents) | BYTES_SH(0);
+    }
+    else {
+        srcFormat =
+            COLORSPACE_SH(PT_Lab) | CHANNELS_SH(nSrcComponents) | BYTES_SH(0) | FLOAT_SH(1);
+    }
   } else {
     srcFormat =
         COLORSPACE_SH(PT_ANY) | CHANNELS_SH(nSrcComponents) | BYTES_SH(1);
@@ -100,7 +110,8 @@ run_test(const uint8_t *data,
   // The output buffer type depends on the dstFormat
   // The input buffer type depends on the srcFormat.
   if (T_BYTES(srcFormat) == 0) {  // 0 means double
-    uint8_t output[4];
+    // Ensure output is large enough
+    long long output[nSrcComponents*4];
     double input[nSrcComponents];
     for (uint32_t i = 0; i < nSrcComponents; i++) input[i] = 0.5f;
     cmsDoTransform(hTransform, input, output, 1);
@@ -131,23 +142,18 @@ run_test(const uint8_t *data,
 
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 8) {
+  if (size < 12) {
     return 0;
   }
 
   uint32_t flags         = *((const uint32_t *)data+0);
   uint32_t intent        = *((const uint32_t *)data+1) % 16;
-  data += 8;
-  size -= 8;
+  int decider = *((int*)data+2) % 10;
+  data += 12;
+  size -= 12;
 
   // Transform using various output formats.
-  run_test(data, size, intent, flags, 0);
-  run_test(data, size, intent, flags, 1);
-  run_test(data, size, intent, flags, 2);
-  run_test(data, size, intent, flags, 3);
-  run_test(data, size, intent, flags, 4);
-  run_test(data, size, intent, flags, 5);
-  run_test(data, size, intent, flags, 6);
+  run_test(data, size, intent, flags, decider);
 
   return 0;
 }

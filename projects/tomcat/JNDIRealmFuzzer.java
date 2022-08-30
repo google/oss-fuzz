@@ -18,7 +18,10 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
+import javax.lang.model.util.SimpleAnnotationValueVisitor9;
+import javax.naming.NamingException;
 import org.apache.juli.logging.LogFactory;
 import org.apache.catalina.realm.JNDIRealm;
 import org.apache.catalina.realm.GenericPrincipal;
@@ -40,11 +43,42 @@ public class JNDIRealmFuzzer {
     static InMemoryDirectoryServer ldapServer;
     static String username = "admin";
     static String credentials = "password";
-    static int poolSize = 1;
 
-    public static class JNDIRW extends JNDIRealm { // JNDIRealm wrapper, because containerLog is protected in JNDIRealm
+    public static class JNDIRW extends JNDIRealm {
+        JNDIConnection connection = null;
+        ClassLoader ocl = null;
+
         public JNDIRW () {
             this.containerLog = LogFactory.getLog(JNDIRealmFuzzer.class);
+            this.setConnectionURL("ldap://localhost:" + ldapServer.getListenPort());
+            this.setUserPattern("cn={0},ou=people,dc=example,dc=com");
+            this.setUserSearch(null);
+            this.setUserBase(null);
+            this.setRoleSearch("member=cn={1},ou=people,dc=example,dc=com");
+            this.setRoleBase("ou=people,dc=example,dc=com");
+            this.setUserRoleAttribute("cn");
+            this.setRoleName("cn");
+            this.setRoleNested(true);
+            this.setConnectionPoolSize(1);
+            
+            try {
+                connection = super.get();
+            } catch (Exception e) {
+                containerLog.error(sm.getString("jndiRealm.exception"), e);
+                super.release(connection);
+
+                if (containerLog.isDebugEnabled()) {
+                    containerLog.debug("Returning null principal.");
+                }
+            } finally {
+                if (!isUseContextClassLoader()) {
+                    Thread.currentThread().setContextClassLoader(ocl);
+                }
+            }
+        }
+
+        void release() {
+            super.release(connection);
         }
     }
 
@@ -53,8 +87,9 @@ public class JNDIRealmFuzzer {
     }
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        username = data.consumeString(500);
         credentials = data.consumeRemainingAsString();
-       
+
         if (username.isEmpty() || credentials.isEmpty() || (username.equals("admin") && credentials.equals("password"))) {
             return;
         }
@@ -65,75 +100,61 @@ public class JNDIRealmFuzzer {
 
         try {
             createLDAP();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("create LDAP error");
+        } catch (LDAPException | LDIFException | UnknownHostException e) {
+            e.printStackTrace();
         }
 
         JNDIRW realm = new JNDIRW();
-
-        realm.setConnectionURL("ldap://localhost:" + ldapServer.getListenPort());
-        realm.setUserPattern("cn={0},ou=people,dc=example,dc=com");
-        realm.setUserSearch(null);
-        realm.setUserBase(null);
-        realm.setRoleSearch("member=cn={1},ou=people,dc=example,dc=com");
-        realm.setRoleBase("ou=people,dc=example,dc=com"); 
-        realm.setUserRoleAttribute("cn");
-        realm.setRoleName("cn");
-        realm.setRoleNested(true);
-        realm.setConnectionPoolSize(poolSize);
-
-        for (int i = 0; i < poolSize; i++) {
-            GenericPrincipal p = null;
-            try {
-                p = (GenericPrincipal) realm.authenticate(username, credentials);   
-            } catch (Exception e) { 
-            } finally {
-                if (p != null) { 
-                    throw new FuzzerSecurityIssueHigh("Invalid user `" + username + "` could authenticate");
-                }    
-            }
+        GenericPrincipal p = null;
+        
+        try {
+            p = (GenericPrincipal) realm.authenticate(realm.connection, username, credentials);
+        } catch (NullPointerException | NamingException e) {
         }
+            
+        if (p != null) {
+            throw new FuzzerSecurityIssueHigh("Invalid user `" + username + "` could authenticate");
+        }
+
+        realm.release();
     }
 
-    public static void createLDAP() throws Exception {
+    public static void createLDAP() throws LDIFException, LDAPException, UnknownHostException {
         InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig("dc=example,dc=com");
         InetAddress localhost = InetAddress.getByName("localhost");
         InMemoryListenerConfig listenerConfig = new InMemoryListenerConfig("localListener", localhost, 0, null, null, null);
-        
+
         config.setListenerConfigs(listenerConfig);
         config.setEnforceSingleStructuralObjectClass(false);
         config.setEnforceAttributeSyntaxCompliance(true);
         ldapServer = new InMemoryDirectoryServer(config);
         ldapServer.startListening();
 
-        try (LDAPConnection conn =  ldapServer.getConnection()) {
-            AddRequest addBase = new AddRequest(
-                    "dn: dc=example,dc=com",
-                    "objectClass: top",
-                    "objectClass: domain",
-                    "dc: example");
-            LDAPResult result = conn.processOperation(addBase);
-            assert ResultCode.SUCCESS == result.getResultCode();
+        LDAPConnection conn =  ldapServer.getConnection();
+        AddRequest addBase = new AddRequest(
+                "dn: dc=example,dc=com",
+                "objectClass: top",
+                "objectClass: domain",
+                "dc: example");
+        LDAPResult result = conn.processOperation(addBase);
+        assert ResultCode.SUCCESS == result.getResultCode();
+        
+        AddRequest addPeople = new AddRequest(
+                "dn: ou=people,dc=example,dc=com",
+                "objectClass: top",
+                "objectClass: organizationalUnit");
+        result = conn.processOperation(addPeople);
+        assert ResultCode.SUCCESS == result.getResultCode();
 
-            AddRequest addPeople = new AddRequest(
-                    "dn: ou=people,dc=example,dc=com",
-                    "objectClass: top",
-                    "objectClass: organizationalUnit");
-            result = conn.processOperation(addPeople);
-            assert ResultCode.SUCCESS == result.getResultCode();
-
-            AddRequest addUserAdmin = new AddRequest(
-                    "dn: cn=admin,ou=people,dc=example,dc=com",
-                    "objectClass: top",
-                    "objectClass: person",
-                    "objectClass: organizationalPerson",
-                    "cn: admin",
-                    "sn: Admin",
-                    "userPassword: password");
-            result = conn.processOperation(addUserAdmin);
-            assert ResultCode.SUCCESS == result.getResultCode();
-        } catch (LDIFException e) {
-            e.printStackTrace();
-        }       
+        AddRequest addUserAdmin = new AddRequest(
+                "dn: cn=admin,ou=people,dc=example,dc=com",
+                "objectClass: top",
+                "objectClass: person",
+                "objectClass: organizationalPerson",
+                "cn: admin",
+                "sn: Admin",
+                "userPassword: password");
+        result = conn.processOperation(addUserAdmin);
+        assert ResultCode.SUCCESS == result.getResultCode();
     }
 }

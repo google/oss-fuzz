@@ -61,6 +61,7 @@ LD_LIBRARY_PATH=\"\$this_dir/open-jdk-11/lib/server\":\$this_dir \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
 -rss_limit_mb=0 \
+--disabled_hooks=\"com.code_intelligence.jazzer.sanitizers.ExpressionLanguageInjection\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

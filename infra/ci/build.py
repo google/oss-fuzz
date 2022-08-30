@@ -234,6 +234,7 @@ def build_base_images():
       'base-builder',
       'base-builder-go',
       'base-builder-go-codeintelligencetesting',
+      'base-builder-javascript',
       'base-builder-jvm',
       'base-builder-python',
       'base-builder-rust',

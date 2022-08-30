@@ -44,9 +44,6 @@ def test_timespec_auto(dt, sep):
     assert dt_rt == dt
 
 if __name__ == "__main__":
-     # Replay, deduplicate, and minimize any failures from previous runs:
-     test_timespec_auto()
-
      # If that passed, we use Atheris to provide the inputs to our test:
      atheris.Setup(sys.argv, atheris.instrument_func(test_timespec_auto.hypothesis.fuzz_one_input))
      atheris.Fuzz()

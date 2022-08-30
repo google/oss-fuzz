@@ -25,7 +25,7 @@ def TestOneInput(input_bytes):
   data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
   try:
     dateutil.parser.parse(data)
-  except dateutil.parser.ParserError:
+  except (dateutil.parser.ParserError, OverflowError):
     pass
 
 def main():

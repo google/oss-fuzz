@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Build and run the proof of error in pytorch-lightning.
+################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN apt update && \
-  apt install -y vim && \
-  git clone \
-    --depth 1 \
-    --branch 1.5.10 \
-    https://github.com/PyTorchLightning/pytorch-lightning.git
-
-COPY ./build.sh $SRC
-RUN  ./build.sh
-
-COPY . $SRC
-RUN make execSan
-
-CMD ["make", "run"]
+pip3 install .
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

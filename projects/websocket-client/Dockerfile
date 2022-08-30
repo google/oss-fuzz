@@ -12,24 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Build and run the proof of error in shell-quote v1.7.3.
+################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt update && \
-  apt install -y \
-  vim \
-  npm && \
-  git clone \
-    --depth 1 \
-    https://github.com/substack/node-shell-quote.git && \
-  npm config set @gitlab-org:registry \
-    https://gitlab.com/api/v4/packages/npm/
-
-COPY ./build.sh $SRC
-RUN  ./build.sh
-
-COPY . $SRC
-RUN make execSan
-
-CMD ["make", "run"]
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/websocket-client/websocket-client websocket-client
+WORKDIR websocket-client
+COPY build.sh *.py $SRC/

@@ -15,7 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "FuzzedDataProvider.h"
+#include <fuzzer/FuzzedDataProvider.h>
 
 #include "wabt/src/binary-reader-ir.h"
 #include "wabt/src/binary-reader.h"

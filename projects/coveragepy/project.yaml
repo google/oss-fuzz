@@ -1,6 +1,6 @@
 homepage: "https://github.com/nedbat/coveragepy/"
 language: python
-primary_contact: "ned@nedbatchelder.com"
+primary_contact: "nedbat@gmail.com"
 main_repo: "https://github.com/nedbat/coveragepy"
 fuzzing_engines:
 - libfuzzer

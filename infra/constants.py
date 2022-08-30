@@ -25,6 +25,7 @@ LANGUAGES = [
     'c',
     'c++',
     'go',
+    'javascript',
     'jvm',
     'python',
     'rust',

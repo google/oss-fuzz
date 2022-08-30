@@ -140,6 +140,7 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     # Go, java, and swift installation scripts.
     install_go.sh \
     install_go_CodeIntelligenceTesting.sh \
+    install_javascript.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \

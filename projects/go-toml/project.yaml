@@ -1,0 +1,10 @@
+homepage: "https://github.com/pelletier/go-toml"
+language: go
+main_repo: "https://github.com/pelletier/go-toml"
+primary_contact: "pelletier.thomas@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - maxnair.dev@gmail.com

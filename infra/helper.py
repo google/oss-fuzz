@@ -46,6 +46,7 @@ BASE_IMAGES = {
         'gcr.io/oss-fuzz-base/base-runner-debug',
     ],
     'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
+    'javascript': ['gcr.io/oss-fuzz-base/base-builder-javascript'],
     'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
     'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
     'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],

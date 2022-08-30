@@ -133,6 +133,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_skparagraph \
   api_svg_canvas \
   api_triangulation \
+  colrv1 \
   image_decode \
   image_decode_incremental \
   image_filter_deserialize \
@@ -284,3 +285,6 @@ mv out/Fuzz/api_skparagraph $OUT/api_skparagraph
 mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
+
+mv out/Fuzz/colrv1 $OUT/colrv1
+mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
