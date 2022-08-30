@@ -22,7 +22,13 @@ cd "$SRC/centipede/"
 ./install_dependencies_debian.sh
 bazel build -c opt :all
 
-# Prepare the weak symbols trick.
-cp "$CENTIPEDE_SRC/bazel-bin/libweak_sancov_stubs.so" "$OUT/weak.so"
+# Prepare the weak symbols:
+# This is necessary because we compile the target binary and the intermediate
+# auxiliary binaries with the same cflags. The auxiliary binaries do not need
+# data-flow tracing flags, but will still throw errors when they cannot find
+# the corresponding functions.
+# The weak symbols provides fake implementations for intermediate binaries.
+/clang/bin/clang++ "$SRC/centipede/weak_sancov_stubs.cc" -c -o \
+  "$SRC/centipede/weak.o"
 
 echo 'Done.'
