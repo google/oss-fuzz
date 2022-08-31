@@ -761,8 +761,13 @@ def check_build(args):
   if args.e:
     env += args.e
 
+  if args.engine == 'centipede' and args.sanitizer != 'none':
+    target_dir = f'{args.project.out}/{args.project.name}_{args.sanitizer}'
+  else:
+    target_dir = args.project.out
+
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
+      '-v', f'{target_dir}:/out', '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
