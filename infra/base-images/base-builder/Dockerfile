@@ -124,7 +124,7 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 RUN cd $SRC && \
-    git clone -n https://github.com/google/centipede.git && \
+    git clone --depth 1 https://github.com/google/centipede.git && \
     cd centipede && \
     echo 'build --client_env=CC=clang --cxxopt=-std=c++17 ' \
       '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc
