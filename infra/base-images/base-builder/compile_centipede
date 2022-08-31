@@ -19,7 +19,10 @@ echo -n "Skipping compilation; using precompiled centipede"
 
 export BIN_DIR="$SRC/centipede/bazel-bin/"
 
-cp "$BIN_DIR/centipede" "$OUT"
+if [[ "$SANITIZER" == 'none' ]]; then
+  cp "$BIN_DIR/centipede" "$OUT"
+fi
+
 cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export DFTRACING_FLAGS='-fsanitize-coverage=trace-loads'
