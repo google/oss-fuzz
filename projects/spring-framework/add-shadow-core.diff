@@ -1,0 +1,10 @@
+--- a/spring-core/spring-core.gradle
++++ b/spring-core/spring-core.gradle
+@@ -3,6 +3,7 @@ import org.springframework.build.shadow.ShadowSource
+ 
+ description = "Spring Core"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ 
+ def javapoetVersion = "1.13.0"
