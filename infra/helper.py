@@ -715,20 +715,22 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 def build_fuzzers(args):
   """Builds fuzzers."""
   if args.engine == 'centipede':
+    # A hack to place target binary (with san) into a subdir of project
+    project_name = args.project.name
+    args.project.name += f'/{args.project.name}_{args.sanitizer}'
     build_fuzzers_impl(args.project,
                        args.clean,
                        args.engine,
-                       'none',
+                       args.sanitizer,
                        args.architecture,
                        args.e,
                        args.source_path,
                        mount_path=args.mount_path)
-    # A hack to place target binary (with san) as a subdir of project
-    args.project.name += f'/{args.project.name}_{args.sanitizer}'
+    args.project.name = project_name
   return build_fuzzers_impl(args.project,
                             args.clean,
                             args.engine,
-                            args.sanitizer,
+                            'none',
                             args.architecture,
                             args.e,
                             args.source_path,
