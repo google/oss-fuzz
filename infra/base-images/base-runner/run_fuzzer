@@ -158,18 +158,16 @@ elif [[ "$FUZZING_ENGINE" = centipede ]]; then
   # Create the work and corpus directory for Centipede.
   mkdir "$OUT/workdir" "$OUT/corpus"
 
-  # --workdir: Store corpus&features in its own format, use $FUZZER_OUT for now,
-  #   May change later if Centipede allows customising crash dir.
+  # --workdir: Dir that stores corpus&features in Centipede's own format.
   # --corpus_dir: Location of the initial (and destination) file corpus.
   # --fork_server: Execute the target(s) via the fork server.
-  #   Run in fork mode to allow ignoring ooms, timeouts, crashes and
-  #   continue fuzzing indefinitely.
-  # --exit_on_crash=0: do not exit on crash.
-  # --timeout=1200: The runner process will abort if an input runs >= 1200.
-  # --rss_limit_mb=0: Instructs the target to fail if RSS goes over this number
-  #   of megabytes and report an OOM.
-  # --address_space_limit_mb=0: Instructs the target to set setrlimit(RLIMIT_AS)
-  #   to this number of megabytes.
+  #   Run in fork mode to continue fuzzing indefinitely in case of
+  #   OOMs, timeouts, and crashes.
+  # --exit_on_crash=0: Do not exit on crash.
+  # --timeout=1200: The process that executes target binary will abort
+  #   if an input runs >= 1200s.
+  # --rss_limit_mb=0: Disable RSS limit.
+  # --address_space_limit_mb=0: No address space limit.
   # --binary: The target binary under test without sanitizer.
   # --extra_binary: The target binaries under test with sanitizers.
 
