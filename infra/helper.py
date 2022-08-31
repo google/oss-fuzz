@@ -292,6 +292,7 @@ def get_parser():  # pylint: disable=too-many-statements
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
+  _add_architecture_args(run_fuzzer_parser)
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
