@@ -554,8 +554,10 @@ def prepare_aarch64_emulation():
 def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
-  command = ['docker', 'run', '--rm', '--privileged', '--shm-size=2g',
-             '--platform', platform]
+  command = [
+      'docker', 'run', '--rm', '--privileged', '--shm-size=2g', '--platform',
+      platform
+  ]
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
