@@ -22,6 +22,6 @@ WORKDIR ${SRC}
 #
 RUN git clone https://github.com/osgi/osgi.git
 
-COPY build.sh ${SRC}
-COPY *.java ${SRC}
+COPY build.sh ${SRC}/
+COPY *.java ${SRC}/
 WORKDIR ${SRC}/osgi
