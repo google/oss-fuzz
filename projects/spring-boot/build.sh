@@ -23,17 +23,18 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
-./gradlew publishToMavenLocal -x test -x intTest -i -x asciidoctor -x javadoc -x asciidoctorPdf -x :spring-boot-project:spring-boot-docs:zip -x :spring-boot-project:spring-boot-docs:publishMavenPublicationToMavenLocal
-cp "/root/.m2/repository/org/springframework/boot/spring-boot/$CURRENT_VERSION/spring-boot-$CURRENT_VERSION.jar" "$OUT/spring-boot.jar"
-cp "/root/.m2/repository/org/springframework/boot/spring-boot-loader/$CURRENT_VERSION/spring-boot-loader-$CURRENT_VERSION.jar" "$OUT/spring-boot-loader.jar"
-cp "/root/.m2/repository/org/springframework/boot/spring-boot-starter-web/$CURRENT_VERSION/spring-boot-starter-web-$CURRENT_VERSION.jar" "$OUT/spring-boot-starter-web.jar"
+./gradlew build -x test -x intTest -i -x asciidoctor -x javadoc -x asciidoctorPdf -x :spring-boot-project:spring-boot-docs:zip -x :spring-boot-project:spring-boot-docs:publishMavenPublicationToMavenLocal -x :checkstyleNohttp -x :spring-boot-project:spring-boot-docs:publishMavenPublicationToProjectRepository
+cp "spring-boot-project/spring-boot/build/libs/spring-boot-$CURRENT_VERSION.jar" "$OUT/spring-boot.jar"
+cp "spring-boot-project/spring-boot-tools/spring-boot-loader/build/libs/spring-boot-loader-$CURRENT_VERSION.jar" "$OUT/spring-boot-loader.jar"
+cp "spring-boot-project/spring-boot-starters/spring-boot-starter-web/build/libs/spring-boot-starter-web-$CURRENT_VERSION.jar" "$OUT/spring-boot-starter-web.jar"
+cp "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/build/libs/spring-boot-configuration-processor-3.0.0-SNAPSHOT.jar" "$OUT/spring-boot-configure-processor.jar"
 
 # Spring core
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain --build-file=spring-framework/build.gradle | sed -nr "s/^version:\ (.*)/\1/p")
 ./gradlew build --build-file=spring-framework/spring-core/spring-core.gradle -x test -x javadoc -x :checkstyleNohttp
 cp "spring-framework/spring-core/build/libs/spring-core-$CURRENT_VERSION.jar" "$OUT/spring-core.jar"
 
-ALL_JARS="spring-boot.jar spring-boot-loader.jar spring-core.jar spring-boot-starter-web.jar"
+ALL_JARS="spring-boot.jar spring-boot-loader.jar spring-core.jar spring-boot-starter-web.jar spring-boot-configure-processor.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
