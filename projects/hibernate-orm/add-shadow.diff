@@ -1,0 +1,17 @@
+--- a/hibernate-core/hibernate-core.gradle
++++ b/hibernate-core/hibernate-core.gradle
+@@ -7,6 +7,7 @@
+ import org.apache.tools.ant.filters.ReplaceTokens
+ 
+ plugins {
++	 id 'com.github.johnrengelman.shadow' version '7.1.2'
+     id 'org.hibernate.build.xjc-jakarta'
+ }
+ 
+@@ -270,4 +271,4 @@ if ( gradle.ext.javaVersions.test.release.asInt() >= 17 ) {
+     testClasses.dependsOn compileTestJava17Java
+     // And run this as part of the check task by default
+     check.dependsOn java17Test
+-}
+\ No newline at end of file
++}
