@@ -101,6 +101,11 @@ go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_h2c
 mv $SRC/fuzz_h2c.options $OUT/
 
+cd $SRC/image/tiff
+cp $SRC/tiff_fuzzer.go ./
+compile_go_fuzzer . FuzzTiffDecode fuzz_tiff_decode
+cp $SRC/fuzz_tiff_decode.options $OUT/
+
 cd $SRC/go/src/archive/tar
 cp $SRC/fuzz_tar_reader.go ./
 rm ./*_test.go
