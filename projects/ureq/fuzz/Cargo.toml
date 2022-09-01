@@ -30,7 +30,7 @@ libfuzzer-sys = "0.4"
 ureq = { path = ".." }
 
 [[bin]]
-name = "fuzz_client"
+name = "fuzz_simple"
 path = "fuzz_targets/fuzz_simple.rs"
 
 [workspace]
