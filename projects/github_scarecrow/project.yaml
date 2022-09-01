@@ -1,3 +1,5 @@
+fuzzing_engines:
+- centipede
 homepage: 'https://github.com/Alan32Liu/github-scarecrow'
 primary_contact: 'donggeliu@google.com'
 language: c++
