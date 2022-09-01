@@ -15,4 +15,5 @@ fuzzing_engines:
 sanitizers:
   - address
   - memory
+  - undefined
 main_repo: 'https://github.com/MapServer/MapServer'

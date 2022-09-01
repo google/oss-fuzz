@@ -18,11 +18,14 @@
 pushd $SRC/gdal
 mkdir build
 cd build
+#While Compiling the dependency, I do not want sanitizers or the fuzzing tags in the dependency library.
 cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF \
--DCMAKE_C_FLAGS="$CFLAGS -fPIC" -DCMAKE_CXX_FLAGS="$CXXFLAGS -fPIC" ../
+-DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang++" \
+-DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC" ../
 make -j$(nproc)
 make install
 popd
+
 
 #Build MapServer
 cd $SRC/MapServer
@@ -33,7 +36,9 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_STATIC=ON \
 -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
 -DWITH_PROTOBUFC=0 -DWITH_FRIBIDI=0 -DWITH_HARFBUZZ=0 -DWITH_CAIRO=0 -DWITH_FCGI=0 \
 -DWITH_GEOS=0 -DWITH_POSTGIS=0 -DWITH_GIF=0 ../
-make -j$(nproc)
+#While using undefined sanitizer, Project cannot compile binary but can compile library.
+make -j$(nproc) --ignore-errors 
+
 
 #Fuzzer
 cp ../fuzzers/*.c .
@@ -50,6 +55,7 @@ $CXX $CFLAGS $LIB_FUZZING_ENGINE shapefuzzer.o -o shapefuzzer \
 -L. -lmapserver_static -lgdal \
 -l:libpng.a -l:libjpeg.a -l:libfreetype.a -l:libproj.a -l:libxml2.a -l:libz.a \
 -l:libicuuc.a -l:libicudata.a -l:libsqlite3.a -l:liblzma.so.5 -lc++
+
 
 #SetUp
 cp mapfuzzer $OUT/mapfuzzer
