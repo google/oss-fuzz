@@ -25,11 +25,12 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
+arbitrary = { version = "1",  features = ["derive"] }
 libfuzzer-sys = "0.4"
 ureq = { path = ".." }
 
 [[bin]]
 name = "fuzz_client"
-path = "fuzz_targets/fuzz_client.rs"
+path = "fuzz_targets/fuzz_simple.rs"
 
 [workspace]

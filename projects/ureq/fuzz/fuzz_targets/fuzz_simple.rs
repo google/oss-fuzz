@@ -15,3 +15,25 @@
 //###############################################################################
 
 #![no_main]
+
+use ureq;
+use libfuzzer_sys::{arbitrary::Arbitrary, fuzz_target};
+
+#[derive(Debug, Arbitrary)]
+struct HttpSpec {
+    uri: String,
+    header_name: String, 
+    header_value: String, 
+}
+
+fn fuzz_get(inp: HttpSpec) -> Result<(), ureq::Error> {
+    let _ = ureq::get(&inp.uri)
+        .set(&inp.header_name, &inp.header_value)
+        .call()?
+        .into_string()?;
+    Ok(())
+}
+
+fuzz_target!(|inp: HttpSpec|{
+    let _ = fuzz_get(inp);
+});

@@ -17,4 +17,4 @@
 
 cd $SRC/ureq
 cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_client $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_simple $OUT/
