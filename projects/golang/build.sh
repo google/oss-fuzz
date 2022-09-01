@@ -93,10 +93,10 @@ compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
 cd $SRC && git clone https://github.com/AdamKorcz/instrumentation
 cd instrumentation
 go run main.go $SRC/go/src/archive/tar
-go run main.go $SRC/net
 
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
+cd $SRC/instrumentation && go run main.go $SRC/net && cd -
 go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_h2c
 mv $SRC/fuzz_h2c.options $OUT/

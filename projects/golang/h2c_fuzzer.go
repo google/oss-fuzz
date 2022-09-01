@@ -16,31 +16,75 @@
 package h2c
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/argoproj/argo-events/eventsources/common/webhook"
 	"golang.org/x/net/http2"
 	"io"
+	"io/ioutil"
+	"net"
 	"net/http"
-
-	fuzz "github.com/AdaLogics/go-fuzz-headers"
+	"net/textproto"
+	"runtime"
+	"strings"
 )
+
+type FakeHttpWriter struct {
+	HeaderStatus int
+	Payload      []byte
+}
+
+func (f *FakeHttpWriter) Header() http.Header {
+	return http.Header{}
+}
+
+func (f *FakeHttpWriter) Write(body []byte) (int, error) {
+	f.Payload = body
+	return len(body), nil
+}
+
+func (f *FakeHttpWriter) WriteHeader(status int) {
+	f.HeaderStatus = status
+}
+
+func (f *FakeHttpWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	r1 := bytes.NewReader([]byte{})
+	r2 := bufio.NewReader(r1)
+	w := bufio.NewWriter(ioutil.Discard)
+	rw := bufio.NewReadWriter(r2, w)
+	return nil, rw, nil
+}
+
+// We ignore these panics, as they don't represent real bugs.
+func catchPanics() {
+	if r := recover(); r != nil {
+		var err string
+		switch r.(type) {
+		case string:
+			err = r.(string)
+		case runtime.Error:
+			err = r.(runtime.Error).Error()
+		case error:
+			err = r.(error).Error()
+		}
+		fmt.Println(err)
+		// Very hacky for now, but it rids us of a lot of instantiation
+		if strings.Contains(err, "invalid memory address or nil pointer dereference") {
+			return
+		} else {
+			panic(err)
+		}
+	}
+}
 
 func FuzzH2c(data []byte) int {
 	if len(data) < 10 {
 		return 0
 	}
-	if len(data)%2 != 0 {
-		return 0
-	}
-	data1 := data[:len(data)/10]
-	data2 := data[(len(data)/10)+1:]
-	f1 := fuzz.NewConsumer(data1)
 	headerMap := make(map[string][]string)
-	err := f1.FuzzMap(&headerMap)
-	if err != nil {
-		return 0
-	}
+	headerMap[textproto.CanonicalMIMEHeaderKey("Upgrade")] = []string{"h2c"}
+	headerMap[textproto.CanonicalMIMEHeaderKey("Connection")] = []string{"HTTP2-Settings"}
+	headerMap[textproto.CanonicalMIMEHeaderKey("HTTP2-Settings")] = []string{""}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Hello world")
 	})
@@ -48,11 +92,12 @@ func FuzzH2c(data []byte) int {
 		// ...
 	}
 	h := NewHandler(handler, h2s)
-	w := &webhook.FakeHttpWriter{}
+	w := &FakeHttpWriter{}
 	r := &http.Request{
-		Body: io.NopCloser(bytes.NewReader(data2)),
+		Body: io.NopCloser(bytes.NewReader(data)),
 	}
 	r.Header = headerMap
+	defer catchPanics()
 	h.ServeHTTP(w, r)
 	return 1
 }
