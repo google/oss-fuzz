@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -54,12 +54,12 @@ public class FileHandlerFuzzer {
         StandardCharsets.UTF_16BE.name(), StandardCharsets.UTF_16LE.name(), StandardCharsets.UTF_8.name()};
 
     public static void fuzzerTearDown() {
-        assert deleteDirectory(logsDir) == true : new FuzzerSecurityIssueHigh("Delete Error in fuzzerTearDown!");
+        assert deleteDirectory(logsDir) == true : new FuzzerSecurityIssueLow("Delete Error in fuzzerTearDown!");
     }
 
     public static void fuzzerInitialize() {
         if (Files.exists(Paths.get(logsBase))) {
-            assert deleteDirectory(new File(logsBase)) == true : new FuzzerSecurityIssueHigh("Delete Error in fuzzerInitialize!");
+            assert deleteDirectory(new File(logsBase)) == true : new FuzzerSecurityIssueLow("Delete Error in fuzzerInitialize!");
         }
     }
 
@@ -103,7 +103,7 @@ public class FileHandlerFuzzer {
             fh1.setEncoding(ea[en]);
             afh1.setEncoding(ea[en]);   
         } catch (UnsupportedEncodingException e) {
-            throw new FuzzerSecurityIssueHigh("UnsupportedEncodingException Error!");
+            throw new FuzzerSecurityIssueLow("UnsupportedEncodingException Error!");
         }
         
         fh1.open();
@@ -122,7 +122,7 @@ public class FileHandlerFuzzer {
         afh1.close();
 
         if (cnt++ % 1000 == 0) {
-            assert deleteDirectory(logsDir) == true : new FuzzerSecurityIssueHigh("Delete Error!");
+            assert deleteDirectory(logsDir) == true : new FuzzerSecurityIssueLow("Delete Error!");
         }
     }
 
