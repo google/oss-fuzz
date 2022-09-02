@@ -101,6 +101,12 @@ go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_h2c
 mv $SRC/fuzz_h2c.options $OUT/
 
+cp $SRC/openpgp_fuzzer.go $SRC/crypto/openpgp/packet
+cd $SRC/crypto/openpgp/packet
+cd $SRC/instrumentation && go run main.go $SRC/crypto && cd -
+go mod tidy
+compile_go_fuzzer . FuzzOpenpgpRead fuzz_openpgp_read
+
 cd $SRC/image/tiff
 cp $SRC/tiff_fuzzer.go ./
 compile_go_fuzzer . FuzzTiffDecode fuzz_tiff_decode
