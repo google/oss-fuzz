@@ -156,7 +156,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
 elif [[ "$FUZZING_ENGINE" = centipede ]]; then
 
   # Create the work and corpus directory for Centipede.
-  mkdir "$OUT/workdir"
+  mkdir -p "$OUT/workdir"
 
   # Centipede only saves crashes to crashes/ in workdir.
   rm -rf $FUZZER_OUT
