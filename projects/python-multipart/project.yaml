@@ -1,0 +1,10 @@
+homepage: "https://github.com/andrew-d/python-multipart"
+language: python
+main_repo: "https://github.com/andrew-d/python-multipart"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+ - maxnair.dev@gmail.com
