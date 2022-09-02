@@ -716,6 +716,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 def build_fuzzers(args):
   """Builds fuzzers."""
   if args.engine == 'centipede':
+    # Centipede always requires separate binaries for sanitizers.
     # An unsanitized binary, which Centipede requires for fuzzing.
     unsanitized_bin_status = build_fuzzers_impl(args.project,
                                                 args.clean,
