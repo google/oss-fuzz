@@ -107,6 +107,11 @@ cd $SRC/instrumentation && go run main.go $SRC/crypto && cd -
 go mod tidy
 compile_go_fuzzer . FuzzOpenpgpRead fuzz_openpgp_read
 
+cd $SRC/image/webp
+cp $SRC/webp_fuzzer.go ./
+compile_go_fuzzer . FuzzWebpDecode fuzz_webp_decode
+zip $OUT/fuzz_webp_decode_seed_corpus.zip $SRC/image/testdata/*.webp
+
 cd $SRC/image/tiff
 cp $SRC/tiff_fuzzer.go ./
 compile_go_fuzzer . FuzzTiffDecode fuzz_tiff_decode
