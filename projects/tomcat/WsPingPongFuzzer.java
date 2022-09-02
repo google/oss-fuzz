@@ -59,6 +59,7 @@ public class WsPingPongFuzzer {
             tomcat = null;
             System.gc();
         } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Teardown Error!");
         }
     }
 
@@ -76,6 +77,7 @@ public class WsPingPongFuzzer {
         try {
             tomcat.start();
         } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Tomcat Start error!");
         }
 
         wsContainer = ContainerProvider.getWebSocketContainer();
@@ -92,6 +94,7 @@ public class WsPingPongFuzzer {
             wsSession = wsContainer.connectToServer(TesterProgrammaticEndpoint.class, clientEndpointConfig, 
                 new URI("ws://localhost:" + tomcat.getConnector().getLocalPort() + TesterEchoServer.Config.PATH_ASYNC));
         } catch (URISyntaxException | DeploymentException | IOException e) {
+            return;
         }
         
         CountDownLatch latch = new CountDownLatch(1);
