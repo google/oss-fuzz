@@ -158,9 +158,8 @@ elif [[ "$FUZZING_ENGINE" = centipede ]]; then
   # Create the work and corpus directory for Centipede.
   mkdir "$OUT/workdir"
 
-  # Centipede saves crashes to crashes/ in workdir.
+  # Centipede only saves crashes to crashes/ in workdir.
   rm -rf $FUZZER_OUT
-  FUZZER_OUT="$OUT/workdir/crashes"
 
   # --workdir: Dir that stores corpus&features in Centipede's own format.
   # --corpus_dir: Location of the initial (and destination) file corpus.
