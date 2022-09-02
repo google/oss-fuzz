@@ -67,7 +67,6 @@ func catchPanics() {
 		case error:
 			err = r.(error).Error()
 		}
-		fmt.Println(err)
 		// Very hacky for now, but it rids us of a lot of instantiation
 		if strings.Contains(err, "invalid memory address or nil pointer dereference") {
 			return
