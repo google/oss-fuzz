@@ -775,7 +775,8 @@ def check_build(args):
     env += args.e
 
   if args.engine == 'centipede' and args.sanitizer != 'none':
-    target_dir = f'{args.project.out}/{args.project.name}_{args.sanitizer}'
+    target_dir = os.path.join(args.project.out,
+                              f'{args.project.name}_{args.sanitizer}')
   else:
     target_dir = args.project.out
 
