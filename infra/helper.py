@@ -655,8 +655,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
     # Clean old and possibly conflicting artifacts in project's out directory.
     docker_run([
-        '-v', f'{project_out}:/out',
-        '-t', f'gcr.io/oss-fuzz/{project.name}',
+        '-v', f'{project_out}:/out', '-t', f'gcr.io/oss-fuzz/{project.name}',
         '/bin/bash', '-c', 'rm -rf /out/*'
     ],
                architecture=architecture)
@@ -702,9 +701,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v', f'{project_out}:/out',
-      '-v', f'{project.work}:/work',
-      '-t', f'gcr.io/oss-fuzz/{project.name}'
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      f'gcr.io/oss-fuzz/{project.name}'
   ]
 
   result = docker_run(command, architecture=architecture)
@@ -719,15 +717,14 @@ def build_fuzzers(args):
   """Builds fuzzers."""
   if args.engine == 'centipede':
     # An unsanitized binary, which Centipede requires for fuzzing.
-    unsanitized_bin_status = build_fuzzers_impl(
-        args.project,
-        args.clean,
-        args.engine,
-        'none',
-        args.architecture,
-        args.e,
-        args.source_path,
-        mount_path=args.mount_path)
+    unsanitized_bin_status = build_fuzzers_impl(args.project,
+                                                args.clean,
+                                                args.engine,
+                                                'none',
+                                                args.architecture,
+                                                args.e,
+                                                args.source_path,
+                                                mount_path=args.mount_path)
     # A sanitized binary, placed in the child directory.
     sanitized_bin_status = build_fuzzers_impl(
         args.project,
