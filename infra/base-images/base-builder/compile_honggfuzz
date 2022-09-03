@@ -20,6 +20,10 @@ echo "Skipping compilation; using precompiled honggfuzz"
 cp $SRC/honggfuzz/honggfuzz.a $LIB_FUZZING_ENGINE
 cp $SRC/honggfuzz/honggfuzz $OUT/
 
+# Set flags necessary for netdriver compilation
+export HF_CLANG=$SRC/honggfuzz/hfuzz_cc/hfuzz-clang
+export HF_NETDRIVER="-Wl,-u,LIBHFNETDRIVER_module_netdriver -Wl,--start-group $SRC/honggfuzz/libhfnetdriver/libhfnetdriver.a $SRC/honggfuzz/libhfcommon/libhfcommon.a -Wl,--end-group"
+
 # Custom coverage flags, roughly in sync with:
 # https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c
 export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"

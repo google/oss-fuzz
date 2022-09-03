@@ -20,9 +20,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DMG_ENABLE_LINES -DMG_ENABLE_LOG=0 mongoose.
 # Fuzzer using honggfuzz netdriver.
 if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
 then
-  export HONGGFUZZ_HOME=$SRC/honggfuzz
-  $HONGGFUZZ_HOME/hfuzz_cc/hfuzz-clang $CFLAGS -DMG_ENABLE_LINES=1 \
+  $CC $LIB_FUZZING_ENGINE $CFLAGS $HF_NETDRIVER -DMG_ENABLE_LINES=1 \
+    -D "HFND_FUZZING_ENTRY_FUNCTION_CXX(x,y)=extern const char* LIBHFNETDRIVER_module_netdriver;const char** LIBHFNETDRIVER_tmp1 = &LIBHFNETDRIVER_module_netdriver;extern \"C\" int HonggfuzzNetDriver_main(x,y);int HonggfuzzNetDriver_main(x,y)" \
+    -D "HFND_FUZZING_ENTRY_FUNCTION(x,y)=extern const char* LIBHFNETDRIVER_module_netdriver;const char** LIBHFNETDRIVER_tmp1 = &LIBHFNETDRIVER_module_netdriver;int HonggfuzzNetDriver_main(x,y);int HonggfuzzNetDriver_main(x,y)" \
+    -I /src/honggfuzz/includes/ -D __NO_STRING_INLINES \
     -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
     fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
-    $HONGGFUZZ_HOME/libhfnetdriver/libhfnetdriver.a -pthread
+    -pthread -v
 fi
