@@ -155,7 +155,8 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   if [[ "$FUZZER" == *"netdriver"* ]]; then
 
   if [[ $(LC_ALL=C grep -P "\x01_LIBHFUZZ_NETDRIVER_BINARY_SIGNATURE_\x02\xFF" "$FUZZER" ) ]]; then
-    export HFND_TCP_PORT=8000
+    # Honggfuzz Netdriver port. This must match the port in Clusterfuzz
+    export HFND_TCP_PORT=8666
   fi
 elif [[ "$FUZZING_ENGINE" = centipede ]]; then
 
