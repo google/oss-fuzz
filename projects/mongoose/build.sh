@@ -23,7 +23,7 @@ then
   $CC $LIB_FUZZING_ENGINE $CFLAGS -DMG_ENABLE_LINES=1 \
     -I /src/honggfuzz/includes/ -D __NO_STRING_INLINES \
     -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
-    $HF_NETDRIVER "$HF_ND_CC" \
+    $LIB_HF_NETDRIVER "$HF_ND_CC" \
     fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
     -pthread
 fi
