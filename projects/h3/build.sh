@@ -17,18 +17,6 @@
 
 mkdir build
 cd build
-sed -i '21d' $SRC/h3/CMakeLists.txt
 cmake ..
-make -j$(nproc)
-$CC $CFLAGS -DH3_PREFIX="" \
-    -I/src/h3/src/apps/applib/include \
-    -I/src/h3/src/h3lib/include \
-    -I/src/h3/build/src/h3lib/include \
-    -o h3_fuzzer.o \
-    -c $SRC/h3_fuzzer.c
-
-$CC $CFLAGS $LIB_FUZZING_ENGINE -rdynamic \
-    h3_fuzzer.o \
-    -o $OUT/h3_fuzzer \
-    lib/libh3.a
-
+make -j$(nproc) fuzzers
+cp bin/fuzzer* $OUT
