@@ -21,9 +21,8 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DMG_ENABLE_LINES -DMG_ENABLE_LOG=0 mongoose.
 if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
 then
   $CC $LIB_FUZZING_ENGINE $CFLAGS -DMG_ENABLE_LINES=1 \
-    -I /src/honggfuzz/includes/ -D __NO_STRING_INLINES \
     -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
-    $LIB_HF_NETDRIVER "$HF_ND_CC" \
+    $LIB_HFND "$HFND_CFLAGS" \
     fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
     -pthread
 fi
