@@ -126,8 +126,7 @@ RUN cd $SRC && \
 RUN cd $SRC && \
     git clone --depth 1 https://github.com/google/centipede.git && \
     cd centipede && \
-    echo 'build --client_env=CC=clang --cxxopt=-std=c++17 ' \
-      '--cxxopt=-stdlib=libc++ --linkopt=-lc++' >> .bazelrc
+    sed -i.bck '$s/$/ --cxxopt=-stdlib=libc++ --linkopt=-lc++/' .bazelrc
 
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
