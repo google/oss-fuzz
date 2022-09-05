@@ -20,7 +20,8 @@ echo -n "Precompiling centipede"
 # Build Centipede with bazel.
 cd "$SRC/centipede/"
 ./install_dependencies_debian.sh
-bazel build -c opt :all
+bazel --bazelrc="$SRC/centipede/.bazelrc" --bazelrc=/tmp/centipede.bazelrc \
+  build -c opt :all
 
 # Prepare the weak symbols:
 # This is necessary because we compile the target binary and the intermediate

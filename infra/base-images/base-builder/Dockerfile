@@ -125,7 +125,8 @@ RUN cd $SRC && \
 
 RUN cd $SRC && \
     git clone --depth 1 https://github.com/google/centipede.git && \
-    echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> centipede/.bazelrc
+    echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' \
+      >> /tmp/centipede.bazelrc
 
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
