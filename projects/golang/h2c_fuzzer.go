@@ -25,6 +25,7 @@ import (
 	"net"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"runtime"
 	"strings"
 )
@@ -94,6 +95,7 @@ func FuzzH2c(data []byte) int {
 	w := &FakeHttpWriter{}
 	r := &http.Request{
 		Body: io.NopCloser(bytes.NewReader(data)),
+		URL:  &url.URL{Path: "nil"},
 	}
 	r.Header = headerMap
 	defer catchPanics()
