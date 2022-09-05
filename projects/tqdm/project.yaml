@@ -1,0 +1,6 @@
+homepage: "https://github.com/tqdm/tqdm"
+language: python
+main_repo: "https://github.com/tqdm/tqdm"
+file_github_issue: false
+vendor_ccs:
+  - "david@adalogics.com"
