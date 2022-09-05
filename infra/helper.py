@@ -716,28 +716,25 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 def build_fuzzers(args):
   """Builds fuzzers."""
   if args.engine == 'centipede':
-    # Centipede always requires separate binaries for sanitizers.
+    # Centipede always requires separate binaries for sanitizers:
     # An unsanitized binary, which Centipede requires for fuzzing.
-    unsanitized_bin_status = build_fuzzers_impl(args.project,
-                                                args.clean,
-                                                args.engine,
-                                                'none',
-                                                args.architecture,
-                                                args.e,
-                                                args.source_path,
-                                                mount_path=args.mount_path)
     # A sanitized binary, placed in the child directory.
-    sanitized_bin_status = build_fuzzers_impl(
-        args.project,
-        args.clean,
-        args.engine,
-        args.sanitizer,
-        args.architecture,
-        args.e,
-        args.source_path,
-        mount_path=args.mount_path,
-        child_dir=f'{args.project.name}_{args.sanitizer}')
-    return unsanitized_bin_status and sanitized_bin_status
+    sanitized_binary_directories = (
+        ('none', ''),
+        (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
+    )
+    return all([
+        build_fuzzers_impl(args.project,
+                           args.clean,
+                           args.engine,
+                           sanitizer,
+                           args.architecture,
+                           args.e,
+                           args.source_path,
+                           mount_path=args.mount_path,
+                           child_dir=child_dir)
+        for sanitizer, child_dir in sanitized_binary_directories
+    ])
   return build_fuzzers_impl(args.project,
                             args.clean,
                             args.engine,
