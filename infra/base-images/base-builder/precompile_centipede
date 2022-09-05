@@ -20,6 +20,7 @@ echo -n "Precompiling centipede"
 # Build Centipede with bazel.
 cd "$SRC/centipede/"
 ./install_dependencies_debian.sh
+echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
 bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 
 # Prepare the weak symbols:
