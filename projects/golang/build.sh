@@ -18,8 +18,7 @@ rm -r parser
 
 mkdir math && cp $SRC/math_big_fuzzer.go ./math/
 
-git clone https://github.com/golang/text $SRC/text
-cd $SRC/text/
+cd $SRC/text
 cp $SRC/unicode_fuzzer.go ./encoding/unicode/
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 compile_go_fuzzer golang.org/x/text/encoding/unicode FuzzUnicodeTransform fuzz_unicode_transform
@@ -90,8 +89,7 @@ go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
 go get github.com/AdamKorcz/go-118-fuzz-build/utils
 compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
 
-cd $SRC && git clone https://github.com/AdamKorcz/instrumentation
-cd instrumentation
+cd $SRC/instrumentation
 go run main.go $SRC/go/src/archive/tar
 
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
