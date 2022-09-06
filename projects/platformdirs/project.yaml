@@ -1,5 +1,6 @@
 homepage: "https://github.com/platformdirs/platformdirs"
 language: python
+primary_contact: "gaborjbernat@gmail.com"
 main_repo: "https://github.com/platformdirs/platformdirs"
 fuzzing_engines:
   - libfuzzer
