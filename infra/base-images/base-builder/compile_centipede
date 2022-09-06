@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo -n "Skipping compilation; using precompiled centipede"
+echo "Skipping compilation; using precompiled centipede"
 
 export BIN_DIR="$SRC/centipede/bazel-bin/"
 
@@ -26,7 +26,7 @@ fi
 cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export DFTRACING_FLAGS='-fsanitize-coverage=trace-loads'
-export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt"`
+export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt" | tr '\n' ' '`
 export LIBRARIES_FLAGS="-ldl -lrt -lpthread $SRC/centipede/weak.o"
 export CC='/clang/bin/clang'
 export CCC='/clang/bin/clang++'
