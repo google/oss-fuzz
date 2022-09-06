@@ -554,7 +554,10 @@ def prepare_aarch64_emulation():
 def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
-  command = ['docker', 'run', '--rm', '--privileged', '--platform', platform]
+  command = [
+      'docker', 'run', '--rm', '--privileged', '--shm-size=2g', '--platform',
+      platform
+  ]
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
@@ -640,19 +643,20 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     architecture,
     env_to_add,
     source_path,
-    mount_path=None):
+    mount_path=None,
+    child_dir=''):
   """Builds fuzzers."""
   if not build_image_impl(project, architecture=architecture):
     return False
 
+  project_out = os.path.join(project.out, child_dir)
   if clean:
     logging.info('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
     docker_run([
-        '-v',
-        '%s:/out' % project.out, '-t',
-        'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /out/*'
+        '-v', f'{project_out}:/out', '-t', f'gcr.io/oss-fuzz/{project.name}',
+        '/bin/bash', '-c', 'rm -rf /out/*'
     ],
                architecture=architecture)
 
@@ -697,10 +701,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v',
-      '%s:/out' % project.out, '-v',
-      '%s:/work' % project.work, '-t',
-      'gcr.io/oss-fuzz/%s' % project.name
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      f'gcr.io/oss-fuzz/{project.name}'
   ]
 
   result = docker_run(command, architecture=architecture)
@@ -713,14 +715,28 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 def build_fuzzers(args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project,
-                            args.clean,
-                            args.engine,
-                            args.sanitizer,
-                            args.architecture,
-                            args.e,
-                            args.source_path,
-                            mount_path=args.mount_path)
+  if args.engine == 'centipede':
+    # Centipede always requires separate binaries for sanitizers:
+    # An unsanitized binary, which Centipede requires for fuzzing.
+    # A sanitized binary, placed in the child directory.
+    sanitized_binary_directories = (
+        ('none', ''),
+        (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
+    )
+  else:
+    # Generally, a fuzzer only needs one sanitized binary in the default dir.
+    sanitized_binary_directories = ((args.sanitizer, ''),)
+  return all(
+      build_fuzzers_impl(args.project,
+                         args.clean,
+                         args.engine,
+                         sanitizer,
+                         args.architecture,
+                         args.e,
+                         args.source_path,
+                         mount_path=args.mount_path,
+                         child_dir=child_dir)
+      for sanitizer, child_dir in sanitized_binary_directories)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
@@ -728,6 +744,14 @@ def _add_oss_fuzz_ci_if_needed(env):
   oss_fuzz_ci = os.getenv('OSS_FUZZ_CI')
   if oss_fuzz_ci:
     env.append('OSS_FUZZ_CI=' + oss_fuzz_ci)
+
+
+def get_target_out_dir(args):
+  """Change the out/ to a subdir when building wth Centipede and sanitizers"""
+  if args.engine == 'centipede' and args.sanitizer != 'none':
+    return os.path.join(args.project.out,
+                        f'{args.project.name}_{args.sanitizer}')
+  return args.project.out
 
 
 def check_build(args):
@@ -749,8 +773,10 @@ def check_build(args):
   if args.e:
     env += args.e
 
+  target_dir = get_target_out_dir(args)
+
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
+      '-v', f'{target_dir}:/out', '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:

@@ -65,6 +65,8 @@ function get_dictionary() {
      printf -- "-x %s" "$dict"
   elif [[ "$FUZZING_ENGINE" = "honggfuzz" ]]; then
      printf -- "--dict %s" "$dict"
+  elif [[ "$FUZZING_ENGINE" = "centipede" ]]; then
+     printf -- "--dictionary %s" "$dict"
   else
      printf "Unexpected FUZZING_ENGINE: $FUZZING_ENGINE, ignoring\n" >&2
   fi
@@ -151,6 +153,27 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 
+elif [[ "$FUZZING_ENGINE" = centipede ]]; then
+
+  # Create the work and corpus directory for Centipede.
+  mkdir -p "$OUT/workdir"
+
+  # Centipede only saves crashes to crashes/ in workdir.
+  rm -rf $FUZZER_OUT
+
+  # --workdir: Dir that stores corpus&features in Centipede's own format.
+  # --corpus_dir: Location of the initial (and destination) file corpus.
+  # --fork_server: Execute the target(s) via the fork server.
+  #   Run in fork mode to continue fuzzing indefinitely in case of
+  #   OOMs, timeouts, and crashes.
+  # --exit_on_crash=0: Do not exit on crash.
+  # --timeout=1200: The process that executes target binary will abort
+  #   if an input runs >= 1200s.
+  # --rss_limit_mb=0: Disable RSS limit.
+  # --address_space_limit_mb=0: No address space limit.
+  # --binary: The target binary under test without sanitizer.
+  # --extra_binary: The target binaries under test with sanitizers.
+  CMD_LINE="$OUT/centipede --workdir=\"$OUT/workdir\" --corpus_dir=\"$CORPUS_DIR\" --fork_server=1 --exit_on_crash=1 --timeout=1200 --rss_limit_mb=4096 --address_space_limit_mb=0 $(get_dictionary) --binary=\"$OUT/${FUZZER}\" --extra_binaries=\"$OUT/**_${SANITIZER}/${FUZZER}\" $*"
 else
 
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"

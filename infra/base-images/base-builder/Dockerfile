@@ -123,6 +123,9 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
+RUN cd $SRC && \
+    git clone --depth 1 https://github.com/google/centipede.git
+
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
 RUN precompile_afl
@@ -130,7 +133,11 @@ RUN precompile_afl
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
+COPY precompile_centipede /usr/local/bin/
+RUN precompile_centipede
+
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+    compile_centipede \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
