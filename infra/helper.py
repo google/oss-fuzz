@@ -723,26 +723,20 @@ def build_fuzzers(args):
         ('none', ''),
         (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
     )
-    return all([
-        build_fuzzers_impl(args.project,
-                           args.clean,
-                           args.engine,
-                           sanitizer,
-                           args.architecture,
-                           args.e,
-                           args.source_path,
-                           mount_path=args.mount_path,
-                           child_dir=child_dir)
-        for sanitizer, child_dir in sanitized_binary_directories
-    ])
-  return build_fuzzers_impl(args.project,
-                            args.clean,
-                            args.engine,
-                            args.sanitizer,
-                            args.architecture,
-                            args.e,
-                            args.source_path,
-                            mount_path=args.mount_path)
+  else:
+    # Generally, a fuzzer only needs one sanitized binary in the default dir.
+    sanitized_binary_directories = ((args.sanitizer, ''),)
+  return all(
+      build_fuzzers_impl(args.project,
+                         args.clean,
+                         args.engine,
+                         sanitizer,
+                         args.architecture,
+                         args.e,
+                         args.source_path,
+                         mount_path=args.mount_path,
+                         child_dir=child_dir)
+      for sanitizer, child_dir in sanitized_binary_directories)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
