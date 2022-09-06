@@ -33,7 +33,7 @@ import constants
 CANARY_PROJECT = 'skcms'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
+DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer', 'centipede']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
