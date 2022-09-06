@@ -15,27 +15,32 @@
 #
 ################################################################################
 
+MVN_FLAGS="-Dmaven.compiler.source=15 -Dmaven.compiler.target=15 -DskipTests"
+ALL_JARS=""
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-cp "httpclient5/target/httpclient5-$CURRENT_VERSION.jar" "$OUT/httpclient5.jar"
+# install the build servers' jazzer-api into the maven repository
+pushd "/tmp"
+	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
+		-DgroupId="com.code-intelligence" \
+		-DartifactId="jazzer-api" \
+		-Dversion="0.12.0" \
+		-Dpackaging=jar
+popd
 
-$MVN package $MAVEN_ARGS -f "httpcomponents-core/pom.xml"
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout -f httpcomponents-core/pom.xml)
-cp "httpcomponents-core/httpcore5/target/httpcore5-$CURRENT_VERSION.jar" "$OUT/httpcore5.jar"
-cp "httpcomponents-core/httpcore5-h2/target/httpcore5-h2-$CURRENT_VERSION.jar" "$OUT/httpcore5-h2.jar"
+pushd "${SRC}/org.aspectj"
+	${MVN} package ${MVN_FLAGS}
+	${MVN} install ${MVN_FLAGS}
+	CURRENT_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+  -Dexpression=project.version -q -DforceStdout)
+popd
 
-cd slf4j
-$MVN package $MAVEN_ARGS
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-cp "slf4j-api/target/slf4j-api-$CURRENT_VERSION.jar" "$OUT/slf4j.jar"
-cd $SRC
+pushd ${SRC}
+	${MVN} package -DaspectjVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
+	install -v target/aspectj-fuzzer-${CURRENT_VERSION}.jar ${OUT}/aspectj-fuzzer-${CURRENT_VERSION}.jar
+	ALL_JARS="${ALL_JARS} aspectj-fuzzer-${CURRENT_VERSION}.jar"
+popd
 
-ALL_JARS="httpclient5.jar httpcore5.jar slf4j.jar httpcore5-h2.jar"
+
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -44,10 +49,17 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+MVN_FUZZERS_PREFIX="src/main/java"
+
+for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
+  stripped_path=$(echo ${fuzzer} | sed 's|^.*src/main/java/\(.*\).java$|\1|');
+  # the .java was stripped by sed
+  if (echo ${stripped_path} | grep ".java$"); then
+	continue;
+  fi
+
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename*.class $OUT/
+  fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
@@ -55,9 +67,9 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---cp=$RUNTIME_CLASSPATH \
---target_class=$fuzzer_basename \
+--cp=${RUNTIME_CLASSPATH} \
+--target_class=${fuzzer_classname} \
 --jvm_args=\"-Xmx2048m\" \
-\$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+\$@" > $OUT/${fuzzer_basename}
+  chmod u+x $OUT/${fuzzer_basename}
 done

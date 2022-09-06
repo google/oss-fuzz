@@ -14,19 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven && \
-rm -rf maven.zip
-
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-client
-
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-
-WORKDIR httpcomponents-client
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-core
-RUN git clone --depth 1 https://github.com/qos-ch/slf4j
-
-COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/nucleic/kiwi kiwi
+WORKDIR kiwi
+COPY build.sh *.py $SRC/

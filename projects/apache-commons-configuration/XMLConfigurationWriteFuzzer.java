@@ -19,12 +19,13 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.io.FileHandler;
 
-public class XMLConfigurationLoadFuzzer {
+public class XMLConfigurationWriteFuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         // Create needed objects
         final File tempFile;
@@ -45,14 +46,15 @@ public class XMLConfigurationLoadFuzzer {
         }
 
         final XMLConfiguration xmlConfig = new XMLConfiguration();
-        xmlConfig.setLogger(null); // disable logger
+        xmlConfig.setLogger(null); // disable the logger
 
         final FileHandler fileHandler = new FileHandler(xmlConfig);
         fileHandler.setPath(absoluteFilepath);
 
         try {
             fileHandler.load();
-        } catch (ConfigurationException ignored) {
+            xmlConfig.write(new StringWriter());
+        } catch (ConfigurationException | IOException ignored) {
             // expected Exceptions get ignored
         } finally {
             tempFile.delete();

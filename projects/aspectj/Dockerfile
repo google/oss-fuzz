@@ -20,13 +20,14 @@ RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-mav
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-client
-
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
-WORKDIR httpcomponents-client
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-core
-RUN git clone --depth 1 https://github.com/qos-ch/slf4j
+WORKDIR ${SRC}
+#
+# clone repository
+#
+RUN git clone https://github.com/eclipse/org.aspectj
 
-COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/org.aspectj

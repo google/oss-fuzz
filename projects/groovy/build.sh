@@ -16,26 +16,13 @@
 ################################################################################
 
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-cp "httpclient5/target/httpclient5-$CURRENT_VERSION.jar" "$OUT/httpclient5.jar"
+ALL_JARS=""
 
-$MVN package $MAVEN_ARGS -f "httpcomponents-core/pom.xml"
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout -f httpcomponents-core/pom.xml)
-cp "httpcomponents-core/httpcore5/target/httpcore5-$CURRENT_VERSION.jar" "$OUT/httpcore5.jar"
-cp "httpcomponents-core/httpcore5-h2/target/httpcore5-h2-$CURRENT_VERSION.jar" "$OUT/httpcore5-h2.jar"
-
-cd slf4j
-$MVN package $MAVEN_ARGS
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-cp "slf4j-api/target/slf4j-api-$CURRENT_VERSION.jar" "$OUT/slf4j.jar"
-cd $SRC
-
-ALL_JARS="httpclient5.jar httpcore5.jar slf4j.jar httpcore5-h2.jar"
+pushd "${SRC}/groovy"
+	./gradlew jar
+	cp -v ./build/libs/groovy-raw-*-SNAPSHOT.jar "$OUT/groovy.jar"
+	ALL_JARS="${ALL_JARS} groovy.jar"
+popd
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -44,10 +31,12 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
+# compile all java files and copy them to $OUT
+javac -cp $SRC:$BUILD_CLASSPATH -g $SRC/*.java
+cp $SRC/*.class $OUT/
+
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh

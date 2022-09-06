@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+pip3 install .
 
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven && \
-rm -rf maven.zip
-
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-client
-
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-
-WORKDIR httpcomponents-client
-RUN git clone --depth 1 https://github.com/apache/httpcomponents-core
-RUN git clone --depth 1 https://github.com/qos-ch/slf4j
-
-COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
