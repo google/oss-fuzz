@@ -746,14 +746,6 @@ def _add_oss_fuzz_ci_if_needed(env):
     env.append('OSS_FUZZ_CI=' + oss_fuzz_ci)
 
 
-def get_target_out_dir(args):
-  """Change the out/ to a subdir when building wth Centipede and sanitizers"""
-  if args.engine == 'centipede' and args.sanitizer != 'none':
-    return os.path.join(args.project.out,
-                        f'{args.project.name}_{args.sanitizer}')
-  return args.project.out
-
-
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
   if not check_project_exists(args.project):
@@ -773,10 +765,8 @@ def check_build(args):
   if args.e:
     env += args.e
 
-  target_dir = get_target_out_dir(args)
-
   run_args = _env_to_docker_args(env) + [
-      '-v', f'{target_dir}:/out', '-t', BASE_RUNNER_IMAGE
+      '-v', f'{args.project.out}:/out', '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:

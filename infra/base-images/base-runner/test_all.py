@@ -80,6 +80,11 @@ def find_fuzz_targets(directory):
       continue
     if filename.startswith('jazzer_'):
       continue
+    if os.getenv('FUZZING_ENGINE') == 'centipede':
+      if os.getenv('SANITIZER') in filename and os.path.isdir(path):
+        fuzz_targets.extend(find_fuzz_targets(path))
+      elif os.getenv('SANITIZER') not in path:
+        continue
     if not os.path.isfile(path):
       continue
     if not os.stat(path).st_mode & EXECUTABLE:
