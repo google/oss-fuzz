@@ -67,12 +67,15 @@ cleanup:
 
   if (key1 != NULL) {
     free(key1);
+    key1 = NULL;
   }
   if (val1 != NULL) {
     free(val1);
+    val1 = NULL;
   }
   if (key2 != NULL) {
-    free(key1);
+    free(key2);
+    key2 = NULL;
   }
 
   return 0;
