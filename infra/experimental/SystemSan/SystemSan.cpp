@@ -280,6 +280,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   }
   if (path.substr(0, kFzAbsoluteDirectory.length()) == kFzAbsoluteDirectory) {
     report_bug(kArbitraryFileOpenError);
+    std::cerr << "===File opened: " << path.c_str() << ", flags = " << regs.rdx << "===\n";
   }
   if (path[0] == '/' && path.length() > 1) {
     std::string path_absolute_topdir = path;
@@ -290,6 +291,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     struct stat dirstat;
     if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
       report_bug(kArbitraryFileOpenError);
+      std::cerr << "===File opened: " << path.c_str() << ", flags = " << regs.rdx << "===\n";
     }
   }
 }
