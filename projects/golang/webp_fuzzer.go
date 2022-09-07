@@ -20,6 +20,14 @@ import (
 )
 
 func FuzzWebpDecode(data []byte) int {
+	conf, err := DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return 0
+	}
+	totalSize := conf.Width * conf.Height
+	if totalSize > 1e6 {
+		return 0
+	}
 	_, _ = Decode(bytes.NewReader(data))
 	return 1
 }
