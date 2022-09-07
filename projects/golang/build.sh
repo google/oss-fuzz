@@ -36,8 +36,13 @@ cp $SRC/ecdsa_fuzzer.go ./crypto/ecdsa/
 mkdir -p crypto/aes
 cp $SRC/aes_fuzzer.go ./crypto/aes/
 
+mkdir fp
+cp $SRC/filepath_fuzzer.go ./fp/
+cp $SRC/glob_fuzzer.options $OUT/
+
 go mod init "github.com/dvyukov/go-fuzz-corpus"
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
+compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert
 zip $OUT/fuzz_parse_cert_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
 compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt
