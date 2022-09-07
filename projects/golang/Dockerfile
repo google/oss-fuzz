@@ -39,6 +39,8 @@ COPY build.sh text_fuzzer.go \
      tiff_fuzzer.go \
      fuzz_tiff_decode.options \
      openpgp_fuzzer.go \
-     webp_fuzzer.go $SRC/
+     webp_fuzzer.go \
+     filepath_fuzzer.go \
+     glob_fuzzer.options $SRC/
 
 WORKDIR $SRC/golang
