@@ -109,5 +109,15 @@ cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlcolor_fuzzer_seed
 cp $SRC/*.options $OUT/
 
 # Copy out dictionary
-cp $SRC/dicts/pdf.dict $OUT/gstoraster_pdf_fuzzer.dict
+fuzzers_with_dict="gstoraster_fuzzer  \
+         gstoraster_fuzzer_all_colors \
+         gstoraster_pdf_fuzzer        \
+         gs_device_pdfwrite_fuzzer    \
+         gs_device_faxg3_fuzzer       \
+         gs_device_bmpmono_fuzzer     \
+         gs_device_xpswrite_fuzzer"
+
+for fuzzer in $fuzzers_with_dict; do
+  cp $SRC/dicts/pdf.dict $OUT/${fuzzer}.dict
+done
 cp $SRC/dicts/ps.dict $OUT/gstoraster_ps_fuzzer.dict
