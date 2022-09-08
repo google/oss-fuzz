@@ -30,6 +30,7 @@
 /* Linux */
 #include <sys/ptrace.h>
 #include <syscall.h>
+#include <fcntl.h>
 
 #include <fstream>
 #include <iostream>
@@ -278,10 +279,13 @@ void log_file_open(std::string path, int flags) {
   switch (flags & 3) {
     case O_RDONLY:
       std::cerr << "O_RDONLY";
+      break;
     case O_WRONLY:
       std::cerr << "O_WRONLY";
+      break;
     case O_RDWR:
       std::cerr << "O_RDWR";
+      break;
     default:
       std::cerr << "unknown";
   }
