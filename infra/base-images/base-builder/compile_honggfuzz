@@ -20,7 +20,7 @@ echo "Skipping compilation; using precompiled honggfuzz"
 cp $SRC/honggfuzz/honggfuzz.a $LIB_FUZZING_ENGINE
 cp $SRC/honggfuzz/honggfuzz $OUT/
 
-# Set flags necessary for netdriver compilation
+# Set flags necessary for netdriver compilation.
 export LIB_HFND="-Wl,-u,LIBHFNETDRIVER_module_netdriver -Wl,--start-group $SRC/honggfuzz/libhfnetdriver/libhfnetdriver.a $SRC/honggfuzz/libhfcommon/libhfcommon.a -Wl,--end-group"
 
 export HFND_CXXFLAGS='-DHFND_FUZZING_ENTRY_FUNCTION_CXX(x,y)=extern const char* LIBHFNETDRIVER_module_netdriver;const char** LIBHFNETDRIVER_tmp1 = &LIBHFNETDRIVER_module_netdriver;extern "C" int HonggfuzzNetDriver_main(x,y);int HonggfuzzNetDriver_main(x,y)'
