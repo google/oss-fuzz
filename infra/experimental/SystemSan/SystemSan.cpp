@@ -40,6 +40,9 @@
 #include <string>
 #include <vector>
 
+#include "inspect_utils.h"
+#include "inspect_dns.h"
+
 #define DEBUG_LOGS 0
 
 #if DEBUG_LOGS
@@ -160,23 +163,6 @@ pid_t run_child(char **argv) {
       fatal_log("execvp: %s", strerror(errno));
   }
   return pid;
-}
-
-std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
-                                   size_t size) {
-  std::vector<std::byte> memory;
-
-  for (size_t i = 0; i < size; i += sizeof(long)) {
-    long word = ptrace(PTRACE_PEEKTEXT, pid, address + i, 0);
-    if (word == -1) {
-      return memory;
-    }
-
-    std::byte *word_bytes = reinterpret_cast<std::byte *>(&word);
-    memory.insert(memory.end(), word_bytes, word_bytes + sizeof(long));
-  }
-
-  return memory;
 }
 
 // Construct a string with the memory specified in a register.
@@ -458,6 +444,8 @@ int trace(std::map<pid_t, Tracee> pids) {
               g_shell_pids.insert(std::make_pair(pid, shell));
             }
           }
+
+          inspect_dns_syscalls(pid, regs);
 
           if (regs.orig_rax == __NR_openat) {
             inspect_for_arbitrary_file_open(pid, regs);
