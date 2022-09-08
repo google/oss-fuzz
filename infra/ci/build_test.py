@@ -68,7 +68,7 @@ class TestShouldBuild(unittest.TestCase):
 
   def test_libfuzzer_coverage_build(self):
     """Tests that should_build returns True for coverage build of a project
-    specifying 'libfuzzer' and for fuzzing_engines."""
+    specifying 'libfuzzer' for fuzzing_engines."""
     _set_coverage_build()
     project_yaml = {
         'language': 'c++',
@@ -79,7 +79,7 @@ class TestShouldBuild(unittest.TestCase):
 
   def test_go_coverage_build(self):
     """Tests that should_build returns True for coverage build of a project
-    specifying 'libfuzzer' and for fuzzing_engines."""
+    specifying 'libfuzzer' for fuzzing_engines."""
     _set_coverage_build()
     project_yaml = {'language': 'go'}
     self.assertTrue(build.should_build(project_yaml))
@@ -99,7 +99,7 @@ class TestShouldBuild(unittest.TestCase):
 
   def test_centipede_none_build(self):
     """Tests that should_build returns True for none sanitizer build of a
-    project specifying 'centipede' and for fuzzing_engines."""
+    project specifying 'centipede' for fuzzing_engines."""
     os.environ['SANITIZER'] = 'none'
     os.environ['ENGINE'] = 'centipede'
     os.environ['ARCHITECTURE'] = 'x86_64'
@@ -112,7 +112,7 @@ class TestShouldBuild(unittest.TestCase):
 
   def test_centipede_address_build(self):
     """Tests that should_build returns True for address sanitizer build of a
-    project specifying 'centipede' and for fuzzing_engines."""
+    project specifying 'centipede' for fuzzing_engines."""
     os.environ['SANITIZER'] = 'address'
     os.environ['ENGINE'] = 'centipede'
     os.environ['ARCHITECTURE'] = 'x86_64'
