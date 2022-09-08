@@ -15,6 +15,4 @@
 #
 ################################################################################
 
-$CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    $SRC/github-scarecrow/scarecrow.cc -o $OUT/scarecrow \
-    $LIB_FUZZING_ENGINE
+compile_python_fuzzer ../fuzz.py

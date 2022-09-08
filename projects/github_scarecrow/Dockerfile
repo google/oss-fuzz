@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
+RUN pip3 install requests
 RUN git clone --depth 1 https://github.com/Alan32Liu/github-scarecrow.git $SRC/github-scarecrow
 WORKDIR $SRC/github-scarecrow
-COPY build.sh $SRC/
+COPY fuzz.py fakelib.py build.sh $SRC/
