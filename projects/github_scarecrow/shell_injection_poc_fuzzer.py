@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+import sys
+import atheris
+with atheris.instrument_imports():
+  import os
+  # To trick atheris
+  import fakelib
 
-RUN pip3 install requests
-RUN git clone --depth 1 https://github.com/Alan32Liu/github-scarecrow.git $SRC/github-scarecrow
-WORKDIR $SRC/github-scarecrow
-RUN git clone --depth 1 https://github.com/google/oss-fuzz
-RUN cd oss-fuzz/infra/experimental/SystemSan && make
-COPY shell_injection_poc_fuzzer.py fakelib.py build.sh $SRC/
+def TestOneInput(data):
+    fakelib.do_something(data)
+    if not data:
+        return
+    if not data[0]:
+        return
+    if any(0 == c for c in data):
+        return
+    try:
+        os.system(data)
+    except ValueError as e:
+        print(e)
+        return
+    return
+
+def main():
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
+
+if __name__ == "__main__":
+    main()

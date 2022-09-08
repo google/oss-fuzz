@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_python_fuzzer ../fuzz.py
+compile_python_fuzzer ../shell_injection_poc_fuzzer.py
