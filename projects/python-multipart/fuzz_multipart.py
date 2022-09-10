@@ -31,12 +31,12 @@ def TestOneInput(data):
     on_field = Mock()
     on_file = Mock()
     try:
-        parse_form(
-            {'Content-Type': 'application/octet-stream'},
-            io.BytesIO(data),
-            on_field,
-            on_file
-        )
+        parse_form({'Content-Type': 'application/octet-stream'},
+                   io.BytesIO(data), on_field, on_file)
+        parse_form({'Content-Type': 'application/x-url-encoded'},
+                   io.BytesIO(data), on_field, on_file)
+        parse_form({'Content-Type': 'application/x-www-form-urlencoded'},
+                   io.BytesIO(data), on_field, on_file)
     except FormParserError:
         return
 
