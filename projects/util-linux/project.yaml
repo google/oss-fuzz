@@ -9,7 +9,6 @@ auto_ccs:
   - "kerolasa@gmail.com"
 architectures:
   - x86_64
-  - i386
 sanitizers:
   - address
   - undefined
