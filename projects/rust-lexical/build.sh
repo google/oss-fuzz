@@ -15,5 +15,31 @@
 ################################################################################
 cd $SRC/rust-lexical/fuzz
 cargo fuzz build -O
-cp -a $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/. $OUT/
-
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-i8 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-i16 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-i32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-i64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-i128 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-isize $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-u8 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-u16 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-u32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-u64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-u128 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-integer-usize $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-float-f32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/parse-float-f64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-float-f32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-float-f64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-i8 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-i16 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-i32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-i64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-i128 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-isize $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-u8 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-u16 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-u32 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-u64 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-u128 $OUT/
+cp $SRC/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/write-integer-usize $OUT/
