@@ -124,7 +124,9 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 RUN cd $SRC && \
-    git clone --depth 1 https://github.com/google/centipede.git
+    git clone https://github.com/google/centipede.git && \
+    cd centipede && \
+    git checkout de14f117d01fd5a54d0c3129503420d9d6f23c3f
 
 # Do precompiles before copying other scripts for better cache efficiency.
 COPY precompile_afl /usr/local/bin/
