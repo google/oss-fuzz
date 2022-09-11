@@ -3,6 +3,10 @@ main_repo: "https://github.com/containerd/containerd"
 primary_contact: "security@containerd.io"
 auto_ccs :
   - "adam@adalogics.com"
+  - "samuelkarp@google.com"
+  - "derek@mcgstyle.net"
+  - "estesp@gmail.com"
+  - "mikebrow@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer

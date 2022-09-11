@@ -2,6 +2,7 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/googleapis/google-resumable-media-python
 language: python
+primary_contact: "gorcester@google.com"
 main_repo: https://github.com/googleapis/google-resumable-media-python
 sanitizers:
 - address

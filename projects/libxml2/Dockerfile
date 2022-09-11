@@ -18,8 +18,11 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        make autoconf automake libtool pkg-config \
+        make autoconf libtool pkg-config \
         zlib1g-dev zlib1g-dev:i386 liblzma-dev liblzma-dev:i386
+# Build requires automake 1.16.3
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 WORKDIR libxml2
 COPY build.sh $SRC/

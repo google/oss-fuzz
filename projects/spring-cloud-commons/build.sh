@@ -26,26 +26,6 @@ diff --git a/pom.xml b/pom.xml
 index 831f5a1..855a43e 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -32,6 +32,19 @@
- 	</properties>
- 	<build>
- 		<plugins>
-+			<plugin>
-+				<groupId>org.apache.maven.plugins</groupId>
-+				<artifactId>maven-shade-plugin</artifactId>
-+				<version>3.3.0</version>
-+				<executions>
-+				  <execution>
-+				    <phase>package</phase>
-+				    <goals>
-+				      <goal>shade</goal>
-+				    </goals>
-+				  </execution>
-+				</executions>
-+			</plugin>
- 			<plugin>
- 				<groupId>org.codehaus.mojo</groupId>
- 				<artifactId>flatten-maven-plugin</artifactId>
 @@ -61,10 +74,6 @@
  				<groupId>io.spring.javaformat</groupId>
  				<artifactId>spring-javaformat-maven-plugin</artifactId>
@@ -78,6 +58,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout)
 
 $MVN clean package $MAVEN_ARGS
+$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 cp "spring-cloud-commons/target/spring-cloud-commons-$CURRENT_VERSION.jar" "$OUT/spring-cloud-commons.jar"
 cp "spring-cloud-context/target/spring-cloud-context-$CURRENT_VERSION.jar" "$OUT/spring-cloud-context.jar"
 cp "spring-cloud-starter-bootstrap/target/spring-cloud-starter-bootstrap-$CURRENT_VERSION.jar" "$OUT/spring-cloud-starter-bootstrap.jar"

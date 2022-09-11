@@ -23,7 +23,7 @@ public class EncryptionIntegrationFuzzer {
         TextEncryptor encryptor;
 		try {
             encryptor = new EncryptorFactory(salt).create(keyStr);
-        } catch (KeyFormatException e) {
+        } catch (KeyFormatException | IllegalArgumentException e) {
             return;
         }
 

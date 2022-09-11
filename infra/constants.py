@@ -25,6 +25,7 @@ LANGUAGES = [
     'c',
     'c++',
     'go',
+    'javascript',
     'jvm',
     'python',
     'rust',
@@ -34,8 +35,14 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'python', 'rust', 'swift'
 ]
 SANITIZERS = [
-    'address', 'none', 'memory', 'undefined', 'thread', 'coverage',
-    'introspector'
+    'address',
+    'none',
+    'memory',
+    'undefined',
+    'thread',
+    'coverage',
+    'introspector',
+    'hwaddress',
 ]
-ARCHITECTURES = ['i386', 'x86_64']
-ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none', 'wycheproof']
+ARCHITECTURES = ['i386', 'x86_64', 'aarch64']
+ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede', 'none', 'wycheproof']

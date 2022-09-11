@@ -15,13 +15,10 @@
 #
 ################################################################################
 
-# Copy cryptographic test data
-cp tests/data/*.pem $OUT/
-cp tests/data/*.pub $OUT/
-
 pip3 install -r docs/requirements-docs.txt
 pip3 install .
 
+# Embed certificates and private key too
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data "$PWD/tests/data/privatekey.pem:." --add-data "$PWD/tests/data/public_cert.pem:."
 done

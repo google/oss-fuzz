@@ -153,7 +153,7 @@ sed -i -e "s/TARGET = qtharfbuzz/TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-san
 sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
 # Fix memory stuff in qt 5.15 unfixable since branch is closed now
 sed -i -e "s/struct statx statxBuffer/struct statx statxBuffer = {}/g" src/corelib/io/qfilesystemengine_unix.cpp
-./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -no-pkg-config -platform linux-clang-libc++ -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
+./configure --zlib=qt --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -no-pkg-config -platform linux-clang-libc++ -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
 make -j$(nproc)
 make install
 popd

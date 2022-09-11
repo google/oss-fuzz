@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "fuzzer_common.h"
+
 #define LOG_TAG "FLACParser"
 
 #define LITERAL_TO_STRING_INTERNAL(x) #x

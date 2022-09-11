@@ -18,8 +18,19 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN apt update && apt install -y openjdk-17-jdk
 
-RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
+RUN git clone --depth 1 https://github.com/google/fuzzing && \
+    mv fuzzing/dictionaries/xml.dict $SRC/GenericXmlApplicationContextFuzzer.dict && \
+    rm -rf fuzzing
+
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
+    zip -j $SRC/GenericXmlApplicationContextFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
+    rm -rf go-fuzz-corpus
+
+RUN git clone https://github.com/spring-projects/spring-framework
+COPY add-shadow-*.diff $SRC/
+RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' < $i | git apply; done )
 
 COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+COPY *.dict *.java *.xml $SRC/
+COPY jdbc $SRC/jdbc/
 WORKDIR $SRC/spring-framework 

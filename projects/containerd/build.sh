@@ -16,4 +16,3 @@
 ################################################################################
 
 $SRC/containerd/contrib/fuzz/oss_fuzz_build.sh
-$SRC/cncf-fuzzing/projects/containerd/build.sh

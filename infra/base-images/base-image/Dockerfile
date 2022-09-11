@@ -16,7 +16,10 @@
 
 # Base image for all other images.
 
-FROM ubuntu:20.04
+ARG parent_image=ubuntu:20.04
+
+FROM $parent_image
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -27,5 +30,6 @@ ENV OUT=/out
 ENV SRC=/src
 ENV WORK=/work
 ENV PATH="$PATH:/out"
+ENV HWASAN_OPTIONS=random_tags=0
 
 RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK

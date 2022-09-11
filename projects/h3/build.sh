@@ -17,18 +17,25 @@
 
 mkdir build
 cd build
-sed -i '21d' $SRC/h3/CMakeLists.txt
 cmake ..
-make -j$(nproc)
-$CC $CFLAGS -DH3_PREFIX="" \
-    -I/src/h3/src/apps/applib/include \
-    -I/src/h3/src/h3lib/include \
-    -I/src/h3/build/src/h3lib/include \
-    -o h3_fuzzer.o \
-    -c $SRC/h3_fuzzer.c
+make -j$(nproc) h3
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE -rdynamic \
-    h3_fuzzer.o \
-    -o $OUT/h3_fuzzer \
+H3_BASE=/src/h3/
+
+for fuzzer in $(find $H3_BASE/src/apps/fuzzers -name '*.c'); do
+  fuzzer_basename=$(basename -s .c $fuzzer)
+  # H3_USE_LIBFUZZER is needed so that H3 does not try to build its own
+  # implementation of `main`
+  $CC $CFLAGS -DH3_PREFIX="" \
+    -DH3_USE_LIBFUZZER=1 \
+    -I$H3_BASE/src/apps/applib/include \
+    -I$H3_BASE/src/h3lib/include \
+    -I$H3_BASE/build/src/h3lib/include \
+    -o $fuzzer_basename.o \
+    -c $fuzzer
+
+  $CC $CFLAGS $LIB_FUZZING_ENGINE -rdynamic \
+    $fuzzer_basename.o \
+    -o $OUT/$fuzzer_basename \
     lib/libh3.a
-
+done

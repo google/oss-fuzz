@@ -55,6 +55,9 @@ RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-imaging.git
 # Geometry
 RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-geometry.git
 
+# Math
+RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-math.git
+
 # Copy build script and all fuzzers
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/

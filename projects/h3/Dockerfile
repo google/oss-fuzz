@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config
 RUN git clone --depth 1 https://github.com/uber/h3
 WORKDIR h3
-COPY build.sh h3_fuzzer.c $SRC/
+COPY build.sh $SRC/

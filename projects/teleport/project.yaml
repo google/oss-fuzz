@@ -5,6 +5,7 @@ main_repo: "https://github.com/gravitational/teleport"
 auto_ccs:
   - "oss-fuzz@goteleport.com"
   - "zac.bergquist@goteleport.com"
+  - "jakub.nyckowski@goteleport.com"
   - "ossfuzz1337@gmail.com"
 fuzzing_engines:
   - libfuzzer

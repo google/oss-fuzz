@@ -77,7 +77,7 @@ tags="-tags gofuzz"
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
 # TODO(adamkorcz): Get rid of "-r" flag here.
-fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
+fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
 
 # Test if file contains a line with "func $function" and "testing.F".
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
