@@ -20,6 +20,9 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
 RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/golang/net
 RUN git clone --depth 1 https://github.com/golang/image
+RUN git clone --depth 1 https://github.com/golang/crypto
+RUN git clone --depth 1 https://github.com/golang/text
+RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
 COPY build.sh text_fuzzer.go \
      math_big_fuzzer.go \
      fuzz_tar_reader.go \
@@ -34,6 +37,10 @@ COPY build.sh text_fuzzer.go \
      fuzz_h2c.options \
      elf_fuzzer.go \
      tiff_fuzzer.go \
-     fuzz_tiff_decode.options $SRC/
+     fuzz_tiff_decode.options \
+     openpgp_fuzzer.go \
+     webp_fuzzer.go \
+     filepath_fuzzer.go \
+     glob_fuzzer.options $SRC/
 
 WORKDIR $SRC/golang

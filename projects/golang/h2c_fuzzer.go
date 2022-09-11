@@ -25,6 +25,7 @@ import (
 	"net"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"runtime"
 	"strings"
 )
@@ -67,7 +68,6 @@ func catchPanics() {
 		case error:
 			err = r.(error).Error()
 		}
-		fmt.Println(err)
 		// Very hacky for now, but it rids us of a lot of instantiation
 		if strings.Contains(err, "invalid memory address or nil pointer dereference") {
 			return
@@ -95,6 +95,7 @@ func FuzzH2c(data []byte) int {
 	w := &FakeHttpWriter{}
 	r := &http.Request{
 		Body: io.NopCloser(bytes.NewReader(data)),
+		URL:  &url.URL{Path: "nil"},
 	}
 	r.Header = headerMap
 	defer catchPanics()

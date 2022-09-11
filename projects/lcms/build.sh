@@ -39,6 +39,8 @@ done
 cp $SRC/icc.dict $SRC/*.options $OUT/
 cp $SRC/icc.dict $OUT/cms_transform_all_fuzzer.dict
 cp $SRC/icc.dict $OUT/cms_transform_extended_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_universal_transform_fuzzer.dict
 cp $SRC/icc.dict $OUT/cms_profile_fuzzer.dict
 cp $SRC/seed_corpus.zip $OUT/cms_transform_fuzzer_seed_corpus.zip
 cp $SRC/seed_corpus.zip $OUT/cms_profile_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_universal_transform_fuzzer_seed_corpus.zip

@@ -29,9 +29,9 @@ RUN git clone --depth 1 https://github.com/xz-mirror/xz
 RUN git clone --depth 1 https://github.com/libraw/libraw
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
+RUN git clone --depth 1 https://github.com/freetype/freetype
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl
-RUN git clone https://git.savannah.nongnu.org/r/freetype/freetype2.git/
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/heic heic_corpus
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz

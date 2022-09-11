@@ -183,7 +183,7 @@ target (instructions to download
 restore it to the new GCS location later (instruction to find the
 new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corpus-for-a-fuzz-target)).
 
-## Does OSS-Fuzz support AFL or honggfuzz?
+## Does OSS-Fuzz support AFL or honggfuzz or Centipede?
 
 OSS-Fuzz *uses* the following
 [fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine):
@@ -192,6 +192,7 @@ OSS-Fuzz *uses* the following
 1. [AFL++](https://github.com/AFLplusplus/AFLplusplus), an improved and
    well-maintained version of [AFL](https://lcamtuf.coredump.cx/afl/).
 1. [Honggfuzz](https://github.com/google/honggfuzz).
+1. [Centipede (Experimental)](https://github.com/google/centipede).
 
 Follow the [new project guide] and OSS-Fuzz will use all its fuzzing engines
 on your code.

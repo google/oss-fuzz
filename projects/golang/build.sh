@@ -12,65 +12,82 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# These two dependencies cause build issues and are not used by oss-fuzz:
-rm -r sqlparser
-rm -r parser
+export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
-mkdir math && cp $SRC/math_big_fuzzer.go ./math/
-
-git clone https://github.com/golang/text $SRC/text
-cd $SRC/text/
+cd $SRC/text
 cp $SRC/unicode_fuzzer.go ./encoding/unicode/
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 compile_go_fuzzer golang.org/x/text/encoding/unicode FuzzUnicodeTransform fuzz_unicode_transform
 
-cd $SRC/golang
-mkdir text && cp $SRC/text_fuzzer.go ./text/
-cp $SRC/language_fuzzer.go ./text/
+function setup_golang_fuzzers() {
+	cd $SRC/golang
+	# These two directories cause build issues and are not used by oss-fuzz.
+	# They can be removed:
+	rm -r sqlparser
+	rm -r parser
 
-mkdir -p crypto/x509
-cp $SRC/x509_fuzzer.go ./crypto/x509/
+	mkdir $SRC/golang/math && cp $SRC/math_big_fuzzer.go $SRC/golang/math/
 
-mkdir -p crypto/ecdsa
-cp $SRC/ecdsa_fuzzer.go ./crypto/ecdsa/
+	mkdir $SRC/golang/text && cp $SRC/text_fuzzer.go $SRC/golang/text/
+	cp $SRC/language_fuzzer.go $SRC/golang/text/
 
-mkdir -p crypto/aes
-cp $SRC/aes_fuzzer.go ./crypto/aes/
+	mkdir -p $SRC/golang/crypto/x509
+	cp $SRC/x509_fuzzer.go $SRC/golang/crypto/x509/
 
-go mod init "github.com/dvyukov/go-fuzz-corpus"
-export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
-compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert
-zip $OUT/fuzz_parse_cert_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
-compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt
-zip $OUT/fuzz_pem_decrypt_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
-compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherDecrypt fuzz_aes_cipher_decrypt
-compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherEncrypt fuzz_aes_cipher_encrypt
-compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign
-compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers
-compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1
-compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2
-compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/math FuzzFloat64SpecialCases fuzz_float64_special_cases
-compile_go_fuzzer $FUZZ_ROOT/asn1 Fuzz asn_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/csv Fuzz csv_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/elliptic Fuzz elliptic_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/flate Fuzz flate_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/fmt Fuzz fmt_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/gzip Fuzz gzip_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/httpreq Fuzz httpreq_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/jpeg Fuzz jpeg_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/json Fuzz json_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/lzw Fuzz lzw_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/mime Fuzz mime_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/multipart Fuzz multipart_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/png Fuzz png_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/tar Fuzz tar_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/time Fuzz time_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/xml Fuzz xml_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/zip Fuzz zip_fuzzer
-compile_go_fuzzer $FUZZ_ROOT/zlib Fuzz zlib_fuzzer
+	mkdir -p $SRC/golang/crypto/ecdsa
+	cp $SRC/ecdsa_fuzzer.go ./crypto/ecdsa/
+
+	mkdir -p $SRC/golang/crypto/aes
+	cp $SRC/aes_fuzzer.go ./crypto/aes/
+
+	mkdir $SRC/golang/fp
+	cp $SRC/filepath_fuzzer.go $SRC/golang/fp/
+	go mod init "github.com/dvyukov/go-fuzz-corpus"
+}
+
+function compile_fuzzers() {
+	# version is used as suffix for the binaries
+	version=$1
+	compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version
+	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt$version
+	compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherDecrypt fuzz_aes_cipher_decrypt$version
+	compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherEncrypt fuzz_aes_cipher_encrypt$version
+	compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign$version
+	compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers$version
+	compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzFloat64SpecialCases fuzz_float64_special_cases$version
+	compile_go_fuzzer $FUZZ_ROOT/asn1 Fuzz asn_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/csv Fuzz csv_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/elliptic Fuzz elliptic_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/flate Fuzz flate_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/fmt Fuzz fmt_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/gzip Fuzz gzip_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/httpreq Fuzz httpreq_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/jpeg Fuzz jpeg_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/json Fuzz json_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/lzw Fuzz lzw_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/mime Fuzz mime_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/multipart Fuzz multipart_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/png Fuzz png_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/tar Fuzz tar_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/time Fuzz time_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/xml Fuzz xml_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/zip Fuzz zip_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/zlib Fuzz zlib_fuzzer$version
+
+	zip $OUT/fuzz_pem_decrypt${version}_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
+	zip $OUT/fuzz_parse_cert${version}_seed_corpus.zip $SRC/go/src/crypto/x509/testdata/*
+}
+
+
+# Build fuzzers with Go 1.18
+setup_golang_fuzzers
+compile_fuzzers ""
 
 cd $SRC/go/src/regexp
 cp $SRC/regexp_fuzzer.go ./
@@ -89,9 +106,9 @@ find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
 go get github.com/AdamKorcz/go-118-fuzz-build/utils
 compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
+zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
-cd $SRC && git clone https://github.com/AdamKorcz/instrumentation
-cd instrumentation
+cd $SRC/instrumentation
 go run main.go $SRC/go/src/archive/tar
 
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
@@ -101,17 +118,30 @@ go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_h2c
 mv $SRC/fuzz_h2c.options $OUT/
 
+cp $SRC/openpgp_fuzzer.go $SRC/crypto/openpgp/packet
+cd $SRC/crypto/openpgp/packet
+cd $SRC/instrumentation && go run main.go $SRC/crypto && cd -
+go mod tidy
+compile_go_fuzzer . FuzzOpenpgpRead fuzz_openpgp_read
+
+cd $SRC/image/webp
+cp $SRC/webp_fuzzer.go ./
+compile_go_fuzzer . FuzzWebpDecode fuzz_webp_decode
+zip $OUT/fuzz_webp_decode_seed_corpus.zip $SRC/image/testdata/*.webp
+
 cd $SRC/image/tiff
 cp $SRC/tiff_fuzzer.go ./
 compile_go_fuzzer . FuzzTiffDecode fuzz_tiff_decode
 cp $SRC/fuzz_tiff_decode.options $OUT/
+zip $OUT/fuzz_tiff_decode_seed_corpus.zip $SRC/image/testdata/*.tiff
 
 cd $SRC/go/src/archive/tar
 cp $SRC/fuzz_tar_reader.go ./
 rm ./*_test.go
 
 compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
-mv $SRC/fuzz_tar_reader.options $OUT/ 
+mv $SRC/fuzz_tar_reader.options $OUT/
+zip $OUT/fuzz_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
 cd $SRC/go/src/archive/zip
 go mod init zipPackage
@@ -120,6 +150,7 @@ find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
 go get github.com/AdamKorcz/go-118-fuzz-build/utils
 compile_native_go_fuzzer zipPackage FuzzReader fuzz_std_lib_zip_reader
+zip $OUT/fuzz_std_lib_zip_reader_seed_corpus.zip $SRC/go/src/archive/zip/testdata/*.zip
 
 cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
@@ -156,6 +187,7 @@ find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
 go get github.com/AdamKorcz/go-118-fuzz-build/utils
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
+zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
 cd $SRC/go/src/html
 go mod init htmlPackage
@@ -163,3 +195,23 @@ go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
 go get github.com/AdamKorcz/go-118-fuzz-build/utils
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
+
+# Install latest Go from master branch and build fuzzers again
+cd $SRC
+rm -r go
+rm -r golang
+git clone --depth 1 https://github.com/golang/go
+git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus $SRC/golang
+cd $SRC/go/src
+./all.bash
+ls /src/go/bin
+export GOROOT="/src/go"
+export PATH=/src/go/bin:$PATH
+
+# build fuzzers
+setup_golang_fuzzers
+compile_fuzzers "_latest_master"
+
+# options files
+cp $SRC/glob_fuzzer.options $OUT/
+cp $SRC/glob_fuzzer.options $OUT/glob_fuzzer_latest_master.options
