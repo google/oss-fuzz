@@ -116,6 +116,10 @@ RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
 
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
+
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
     mkdir honggfuzz && \
@@ -123,15 +127,14 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-RUN cd $SRC && \
-    git clone --depth 1 https://github.com/google/centipede.git
-
-# Do precompiles before copying other scripts for better cache efficiency.
-COPY precompile_afl /usr/local/bin/
-RUN precompile_afl
 
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
+
+RUN cd $SRC && \
+    git clone https://github.com/google/centipede.git && \
+    cd centipede && \
+    git checkout a976295b2acaff8461a906c461f5bb25dafdf557
 
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
