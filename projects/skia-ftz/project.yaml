@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/skia"
 language: c++
-primary_contact: "kjlubick@chromium.org"
+primary_contact: "brendandg@nyu.edu"
 auto_ccs:
   - "metzman@google.com"
 
