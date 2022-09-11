@@ -193,6 +193,7 @@ function free_disk_space {
       /usr/local/bin/clang-refactor \
       /usr/local/bin/clang-offload-wrapper \
       /usr/local/bin/clang-offload-bundler \
+      /usr/local/bin/clang-repl \
       /usr/local/bin/clang-check \
       /usr/local/bin/clang-refactor \
       /usr/local/bin/c-index-test \
