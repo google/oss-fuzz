@@ -13,6 +13,7 @@ limitations under the License.
 #include <stdint.h>
 #include "lcms2.h"
 
+
 /* Fuzzer that creates a transform with the following vars initialized by way
  * of fuzzer data:
  * - srcFormat
@@ -23,7 +24,7 @@ limitations under the License.
  * that it is large enough for any input/output types.
  */ 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 2048) {
+  if (size < 4096) {
     return 0;
   }
   uint8_t *profile_data = NULL;
@@ -37,6 +38,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   uint32_t dstFormat = *(uint32_t*)data;
   data += 4;
   size -= 4;
+  uint32_t flags = *(uint32_t*)data;
+  data += 4;
+  size -= 4;
+  uint32_t intent = (*(uint32_t*)data) % 16;
+  data += 4;
+  size -= 4;
+
+  if (T_CHANNELS(srcFormat) <= 0 ||
+      T_EXTRA(srcFormat) > 5 ||
+      T_CHANNELS(dstFormat) == 0) {
+    return 0;
+  }
+  int max_channels = T_CHANNELS(dstFormat);
+  if (max_channels < T_CHANNELS(srcFormat)) {
+    max_channels = T_CHANNELS(srcFormat);
+  }
 
   profile_data = (uint8_t*)malloc(512);
   memcpy(profile_data, data, 512);
@@ -58,18 +75,36 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   // allocate input buffer with fuzz data. Choose a large enough size so
   // overflows wont occur due to erroneous typing.
-  if (size < nSrcComponents * 80) {
+  int pixel_size = T_BYTES(srcFormat);
+  if (pixel_size < T_BYTES(dstFormat))
+    pixel_size = T_BYTES(dstFormat);
+  if (pixel_size == 0)
+    pixel_size = sizeof(uint64_t);
+
+  // Ensure inout_size meets the upper bound of input and output
+  // buffers.
+  int inout_size = 4 + nSrcComponents;
+  if (max_channels > 0) {
+    inout_size *= max_channels;
+  }
+  if (T_EXTRA(srcFormat) > 0) {
+    inout_size *= T_EXTRA(srcFormat);
+  }
+  if (pixel_size > 0) {
+    inout_size *= pixel_size;
+  }
+  inout_size *= 80;
+  if (size < inout_size) {
     cmsCloseProfile(srcProfile);
     cmsCloseProfile(dstProfile);
     goto cleanup;
   }
-  input_data = (uint8_t *)malloc(nSrcComponents * 80);
-  memcpy(input_data, data, nSrcComponents*80);
-  // Make empty output data
-  output_data = (uint8_t *)malloc(nSrcComponents * 80);
 
-  cmsUInt32Number intent = 0;
-  cmsUInt32Number flags = 0;
+  input_data = (uint8_t *)malloc(inout_size);
+  memcpy(input_data, data, inout_size);
+  // Make empty output data
+  output_data = (uint8_t *)malloc(inout_size);
+
   cmsHTRANSFORM hTransform = cmsCreateTransform(
       srcProfile, srcFormat, dstProfile, dstFormat, intent, flags);
   cmsCloseProfile(srcProfile);

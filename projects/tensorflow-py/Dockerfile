@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN python3 -m pip install --upgrade pip
+
 # Due to Bazel bug, need to symlink python3 to python
 # See https://github.com/bazelbuild/bazel/issues/8665
 RUN ln -s /usr/local/bin/python3 /usr/local/bin/python
