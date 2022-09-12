@@ -2,7 +2,6 @@ homepage: "https://web.mit.edu/kerberos/"
 language: c
 primary_contact: "krbcore-security@mit.edu"
 vendor_ccs:
-  - "tlyu@mit.edu"
   - "ghudson@mit.edu"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
