@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-python3 -m pip install -U -r dev_requirements.txt
-python3 -m pip install -U  .
-
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=_cffi_backend
-done
-
-zip -j $OUT/pcap_fuzzer_seed_corpus.zip tests/pcaps/*
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt install -y nodejs
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/jupyter-server/jupyter_server/
+COPY build.sh *.py $SRC/
+WORKDIR jupyter_server

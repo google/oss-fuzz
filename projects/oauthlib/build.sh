@@ -13,13 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-python3 -m pip install -U -r dev_requirements.txt
-python3 -m pip install -U  .
-
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=_cffi_backend
+pip3 install .
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer --hidden-import=jwt --hidden-import=jwt.algorithms
 done
-
-zip -j $OUT/pcap_fuzzer_seed_corpus.zip tests/pcaps/*

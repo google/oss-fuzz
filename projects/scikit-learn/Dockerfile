@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update 
-RUN git clone https://github.com/cesanta/mongoose
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fuzz_netdriver_http.c $SRC/mongoose/fuzz_netdriver_http.c
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool libomp-dev
+RUN pip3 install --upgrade pip setuptools
+RUN pip3 install \
+            meson \
+            ninja \
+            numpy \
+            pybind11 \
+            cython \
+            pythran \
+            setuptools \
+            setuptools_scm \
+            scipy \
+            joblib \
+            threadpoolctl
+RUN git clone --depth 1 https://github.com/scikit-learn/scikit-learn scikit-learn
+WORKDIR scikit-learn
+COPY build.sh *.py $SRC/
