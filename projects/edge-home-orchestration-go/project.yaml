@@ -1,0 +1,8 @@
+homepage: "https://wiki.lfedge.org/display/HOME/Home+Edge+Project"
+primary_contact: "t.drozdovsky@samsung.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/lf-edge/edge-home-orchestration-go'
