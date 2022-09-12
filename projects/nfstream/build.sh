@@ -15,7 +15,6 @@
 #
 
 python3 -m pip install -U -r dev_requirements.txt
-python3 prepare.py
 python3 -m pip install -U  .
 
 # Build fuzzers in $OUT.
