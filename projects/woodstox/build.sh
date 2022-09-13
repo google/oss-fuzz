@@ -30,8 +30,8 @@ index 3e29db9..c79e086 100644
                  <configuration>
 -                    <source>1.6</source>
 -                    <target>1.6</target>
-+                    <source>15</source>
-+                    <target>15</target>
++                    <source>17</source>
++                    <target>17</target>
  <!--
                      <excludes>
                          <exclude>test/**</exclude>
@@ -40,7 +40,7 @@ EOM
 git apply patch.diff
 
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)

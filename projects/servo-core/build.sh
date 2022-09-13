@@ -16,7 +16,7 @@
 ################################################################################
 
 cd servo-core
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)

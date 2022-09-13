@@ -20,7 +20,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF8\"?>
   <toolchain>
     <type>jdk</type>
     <provides>
-      <version>15</version>
+      <version>17</version>
     </provides>
     <configuration>
        <jdkHome>$JAVA_HOME</jdkHome>

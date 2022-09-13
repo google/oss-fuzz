@@ -18,7 +18,7 @@
 #
 # cglib uses different variables for the java version.
 #
-MVN_FLAGS="-Dmaven.compiler.source=15 -Dmaven.compiler.target=15 -DskipTests  -Djava.version.source=15 -Djava.version.target=15 -Djavac.target=15"
+MVN_FLAGS="-Dmaven.compiler.source=17 -Dmaven.compiler.target=17 -DskipTests  -Djava.version.source=17 -Djava.version.target=17 -Djavac.target=17"
 ALL_JARS=""
 
 # install the build servers' jazzer-api into the maven repository

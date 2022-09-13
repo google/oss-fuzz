@@ -19,7 +19,7 @@ mv $SRC/{*.zip,*.dict} $OUT
 
 patch pom.xml pom.patch
 export MAVEN_OPTS="-Xmx1G"
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=17 -Djavac.target.version=17"
 $MVN package $MAVEN_ARGS
 JETTY_VERSION=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
 cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-http-$JETTY_VERSION.jar $OUT/jetty-http.jar

@@ -18,7 +18,7 @@
 # Copy seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-mvn package -Dmaven.test.skip=true -Djdk.version=15
+mvn package -Dmaven.test.skip=true -Djdk.version=17
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "target/fastjson-$CURRENT_VERSION.jar" $OUT/fastjson.jar

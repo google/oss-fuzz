@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)

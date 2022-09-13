@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-MVN_FLAGS="-Dmaven.compiler.source=15 -Dmaven.compiler.target=15 -DskipTests"
+MVN_FLAGS="-Dmaven.compiler.source=17 -Dmaven.compiler.target=17 -DskipTests"
 ALL_JARS=""
 
 # install the build servers' jazzer-api into the maven repository
