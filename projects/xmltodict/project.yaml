@@ -6,5 +6,6 @@ sanitizers:
       - address
       - undefined
 main_repo: "https://github.com/martinblech/xmltodict.git"
-vendor_ccs:
+primary_contact: cneo@google.com
+auto_ccs:
 - "david@adalogics.com"
