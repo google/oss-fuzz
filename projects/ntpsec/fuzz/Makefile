@@ -5,21 +5,21 @@ TARGET=Fuzzer
 CLIENTEXE=FuzzClient
 EXTENSEXE=FuzzExtens
 SERVEREXE=FuzzServer
+LEAPSECEXE=FuzzLeapsec
 
 #Flags
 SET=cd ../ &&
 EXTCFLAGS= -Wall -Wextra
-INC=-I../include/
+INC=-I../include/ -I../ntpd/ -I../build/ -I../tests/unity/ -I../tests/common/
 LIBINC=../build/main
 
 #library
 ntpd_lib=-L$(LIBINC)/ntpd/ -lntpd_lib
-libntpd_obj=$(LIBINC)/ntpd/nts.c.1.o $(LIBINC)/ntpd/nts_client.c.1.o $(LIBINC)/ntpd/nts_server.c.1.o $(LIBINC)/ntpd/nts_cookie.c.1.o $(LIBINC)/ntpd/nts_extens.c.1.o
 libntp=-L$(LIBINC)/libntp/ -lntp
 libaes_siv=-L$(LIBINC)/libaes_siv/ -laes_siv
 extra_lib=-lssl -lcrypto
 setup_inc=setup.o
-LIB=$(ntpd_lib) $(libntpd_obj) $(libntp) $(libaes_siv) $(extra_lib) $(setup_inc)
+LIB=$(ntpd_lib) $(libntp) $(libaes_siv) $(extra_lib) $(setup_inc)
 
 all: $(TARGET)
 
@@ -36,13 +36,15 @@ $(TARGET): INIT CONF MAKEALL SETUP
 	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(CLIENTEXE).c
 	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(EXTENSEXE).c
 	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(SERVEREXE).c
+	$(CC) $(EXTCFLAGS) $(CFLAGS) $(INC) -c $(LEAPSECEXE).c
 
-	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB) $(LIB_FUZZING_ENGINE) $(CLIENTEXE).o -o $(CLIENTEXE)
-	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB) $(LIB_FUZZING_ENGINE) $(EXTENSEXE).o -o $(EXTENSEXE)
-	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB) $(LIB_FUZZING_ENGINE) $(SERVEREXE).o -o $(SERVEREXE)
+	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB_FUZZING_ENGINE) $(CLIENTEXE).o -o $(CLIENTEXE) $(LIB) 
+	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB_FUZZING_ENGINE) $(EXTENSEXE).o -o $(EXTENSEXE) $(LIB) 
+	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB_FUZZING_ENGINE) $(SERVEREXE).o -o $(SERVEREXE) $(LIB) 
+	$(CXX) $(LDFLAGS) $(CFLAGS) $(LIB_FUZZING_ENGINE) $(LEAPSECEXE).o -o $(LEAPSECEXE) $(LIB) 
 
 clean:
-	rm $(CLIENTEXE) $(EXTENSEXE) $(SERVEREXE) *.o
+	rm $(CLIENTEXE) $(EXTENSEXE) $(SERVEREXE) $(LEAPSECEXE) *.o
 
 reallyclean: clean
 	$(SET) ./waf clean

@@ -20,3 +20,4 @@ RUN git clone https://gitlab.com/NTPsec/ntpsec
 COPY build.sh $SRC/
 COPY fuzz/ $SRC/ntpsec/fuzz/
 WORKDIR $SRC/ntpsec/
+
