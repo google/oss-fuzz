@@ -23,6 +23,8 @@ popd
 pushd fuzzing/
 make
 
+cp -r rdreq/ $OUT/.
+
 cp Fuzz_ndr $OUT/Fuzz_ndr
 cp Fuzz_pac $OUT/Fuzz_pac
 cp Fuzz_chpw $OUT/Fuzz_chpw

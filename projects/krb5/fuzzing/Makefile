@@ -7,6 +7,7 @@ chpwEXE=Fuzz_chpw
 jsonEXE=Fuzz_json
 marshalEXE=Fuzz_marshal
 profileEXE=Fuzz_profile
+rdreqEXE=Fuzz_rdreq
 
 #Compiler Flags
 INC=-I../src/include/ -I../src/kdc/ -I../src/lib/krb5/ccache/ -I../src/util/profile/
@@ -42,8 +43,10 @@ $(TARGET):
 	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -DHAS_STDARG -c $(profileEXE).c
 	$(CXX) $(CFLAGS) $(LibINC) -o $(profileEXE) $(profileEXE).o  $(profileOBJ) $(LibFLAGS)
 
+	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(rdreqEXE).c
+	$(CXX) $(CFLAGS) $(LibINC) -o $(rdreqEXE) $(rdreqEXE).o  $(LibFLAGS)
+
 clean:
-	rm $(ndrEXE) $(pacEXE) $(chpwEXE) $(jsonEXE) $(marshalEXE) $(profileEXE) *.o
+	rm $(ndrEXE) $(pacEXE) $(chpwEXE) $(jsonEXE) $(marshalEXE) $(profileEXE) $(rdreqEXE) *.o
 
 .PHONY: all clean
-
