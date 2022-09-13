@@ -466,7 +466,7 @@ function main {
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
-  if [ -z ${MORE_BAD_BUILD_CHECKS+x} ]
+  if [ -n "$MORE_BAD_BUILD_CHECKS" ]
   then
     check_reproduce_empty_file $FUZZER
     result=$?
