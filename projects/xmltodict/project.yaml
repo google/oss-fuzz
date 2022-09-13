@@ -1,0 +1,10 @@
+homepage: "https://github.com/martinblech/xmltodict"
+language: python
+fuzzing_engines:
+      - libfuzzer
+sanitizers:
+      - address
+      - undefined
+main_repo: "https://github.com/martinblech/xmltodict.git"
+vendor_ccs:
+- "david@adalogics.com"
