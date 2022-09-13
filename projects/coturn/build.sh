@@ -19,4 +19,7 @@ cd fuzz
 make all
 
 cp FuzzStun $OUT/FuzzStun
+cp FuzzStunClient $OUT/FuzzStunClient
 cp input/FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
+cp input/FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
+
