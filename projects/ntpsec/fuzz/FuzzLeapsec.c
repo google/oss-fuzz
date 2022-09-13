@@ -23,7 +23,7 @@ limitations under the License.
 int validate_check(uint8_t *Data);
 int load_check(uint8_t *Data);
 
-static int stringreader(void* farg)
+__attribute__((no_sanitize("address","memory","undefined"))) static int stringreader(void* farg)
 {
 	const char ** cpp = (const char**)farg;
 	if (**cpp) {
@@ -32,6 +32,8 @@ static int stringreader(void* farg)
 	    return EOF;
 	}
 }
+
+
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
@@ -55,4 +57,3 @@ int load_check(uint8_t *Data){
 	rc = rc && leapsec_set_table(pt);
 	return rc;
 }
-
