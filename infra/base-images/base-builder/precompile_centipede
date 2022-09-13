@@ -32,4 +32,8 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 /clang/bin/clang++ "$SRC/centipede/weak_sancov_stubs.cc" -c -o \
   "$SRC/centipede/weak.o"
 
+echo 'Removing extra stuff leftover to avoid bloating image.'
+
+rm -rf /clang-*.tgz /clang /root/.cache/*
+
 echo 'Done.'

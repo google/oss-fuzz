@@ -1,8 +1,6 @@
 homepage: "https://hunspell.github.io/"
 language: c++
 primary_contact: "caolanm@redhat.com"
-auto_ccs:
-  - "security@documentfoundation.org"
 vendor_ccs:
   - "twsmith@mozilla.com"
 sanitizers:
