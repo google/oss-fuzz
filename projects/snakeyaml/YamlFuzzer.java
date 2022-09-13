@@ -29,6 +29,8 @@ public class YamlFuzzer {
       options.setMaxAliasesForCollections(5);
       options.setAllowRecursiveKeys(false);
       options.setNestingDepthLimit(3);
+      // since the input is often in UTF-8 for OSS Fuzz, code points are bytes
+      options.setCodePointLimit(5*1024);
       Yaml yaml = new Yaml(new SafeConstructor(options));
       yaml.load(data.consumeRemainingAsString());
     } catch (YAMLException | IllegalArgumentException e) {
