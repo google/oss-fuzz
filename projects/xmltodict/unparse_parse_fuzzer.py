@@ -19,9 +19,9 @@ import atheris
 import logging
 import sys
 
-with atheris.instrument_imports():
-    from xmltodict import OrderedDict, parse, unparse
-    from xml.parsers.expat import ExpatError
+from collections import OrderedDict
+from xmltodict import parse, unparse
+from xml.parsers.expat import ExpatError
 
 _MAX_LENGTH = 1000
 _MAX_DEPTH = 500
@@ -108,6 +108,11 @@ def test_one_input(data: bytes):
 
         assert v1 == v2, (v1, v2)
 
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, test_one_input)
+    atheris.Fuzz()
+    return 0
 
-atheris.Setup(sys.argv, test_one_input)
-atheris.Fuzz()
+if __name__ == "__main__":
+    sys.exit(main())
