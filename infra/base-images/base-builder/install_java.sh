@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-# Install OpenJDK 15 and trim its size by removing unused components.
+# Install OpenJDK 17 and trim its size by removing unused components.
 cd /tmp
-curl -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+curl -L -O https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz && \
 mkdir -p $JAVA_HOME
-tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
-rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
+tar -xzv --strip-components=1 -f openjdk-17.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+rm -f openjdk-17.0.2_linux-x64_bin.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
 # Install the latest Jazzer in $OUT.

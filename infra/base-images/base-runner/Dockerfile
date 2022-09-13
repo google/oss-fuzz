@@ -68,8 +68,8 @@ COPY gocoverage $GOPATH/gocoverage
 COPY install_go.sh /
 RUN /install_go.sh && rm /install_go.sh
 
-# Install OpenJDK 15 and trim its size by removing unused components.
-ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+# Install OpenJDK 17 and trim its size by removing unused components.
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 

@@ -25,21 +25,21 @@ cd $SRC/jackson-databind
 mv $SRC/{*.zip,*.dict} $OUT
 
 # jackson-databind
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "target/jackson-databind-$CURRENT_VERSION.jar" "$OUT/jackson-databind.jar"
 
 # jackson-core
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS -f "jackson-core/pom.xml"
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout -f "jackson-core/pom.xml")
 cp "jackson-core/target/jackson-core-$CURRENT_VERSION.jar" "$OUT/jackson-core.jar"
 
 # jackson-annnotations
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS -f "jackson-annotations/pom.xml"
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout -f "jackson-annotations/pom.xml")
