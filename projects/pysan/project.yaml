@@ -2,3 +2,10 @@ homepage: "https://github.com/google/oss-fuzz"
 language: python
 primary_contact: "david@adalogics.com"
 main_repo: "https://github.com/google/oss-fuzz"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
