@@ -30,7 +30,7 @@ cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 cd jazzer && \
 git checkout 9076da807d9990a7806836fa5666bc43fb5270ae
-bazel build --java_runtime_version=local_jdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
+bazel build --java_runtime_version=local_jdk_17 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
   //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar
 cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/
 cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH
