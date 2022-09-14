@@ -24,11 +24,15 @@ def TestInput(data):
     def dummy_callback(err, partitions):
         pass
 
-    c = Consumer({
-        'group.id': fdp.ConsumeString(10),
-        'socket.timeout.ms': fdp.ConsumeIntInRange(10,2000),
-        'session.timeout.ms': fdp.ConsumeIntInRange(10,2000),
-        'on_commit': dummy_callback})
+    try:
+        c = Consumer({
+            'group.id': fdp.ConsumeString(10),
+            'socket.timeout.ms': fdp.ConsumeIntInRange(10,2000),
+            'session.timeout.ms': fdp.ConsumeIntInRange(10,2000),
+            'on_commit': dummy_callback})
+    except Exception as e:
+        # If the consumer fails, we just retry
+        return
 
     try:
         c.subscribe(
