@@ -19,6 +19,7 @@
 touch __init__.py
 cp $SRC/target_lib.py .
 cp $SRC/sanlib.py .
+python3 ./sanlib.py
 compile_python_fuzzer $SRC/fuzz_poc.py
 
 # libvcs

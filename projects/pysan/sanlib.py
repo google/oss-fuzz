@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-from typing import Optional
+from typing import Any, Callable, Optional
 import functools
 import re
 import sys
 import time
+import os
+import subprocess
 
 sanitizer_log_level = 0
 def sanitizer_log(msg, log_level):
@@ -26,8 +28,11 @@ def sanitizer_log(msg, log_level):
     if log_level >= sanitizer_log_level:
         print(f"[PYSAN] {msg}")
 
-def hookObject(**methods):
-  """function for hooking an object.
+#################
+# Hooking logic #
+#################
+def create_object_wrapper(**methods):
+  """Hooks functions in an object
 
   This is needed for hooking built-in types and object attributes.
 
@@ -85,66 +90,55 @@ def hookObject(**methods):
 
   return Wrapper
 
-p = re.compile("a")
-
-def hooked_re_findall_post(self, s):
-    global starttime
-    #print("In post hook")
-    try:
-        endtime = time.time() - starttime
-        if endtime > 4:
-            raise Exception("Potential ReDOS attack")
-    except NameError:
-        #print("For some reason starttime is not set, which it should have")
-        sys.exit(1)
-        pass
-
-def hooked_re_findall(self, s):
-    #print("In hooked")
-    global starttime
-    starttime = time.time()
-    #time.sleep(5)
-    #print(self.pattern)
-
-    # Check if pattern + argument equals ReDOS
-    #print(s)
 
 
-def sanitize_hook(function, hook = None, post_hook = None, extra=None):
+
+def pysan_add_hook(function: Callable[[Any], Any],
+                   pre_exec_hook: Optional[Callable[[Any], Any]] = None,
+                   post_exec_hook: Optional[Callable[[Any], Any]] = None):
     """Hook a function.
 
     Hooks can be placed pre and post function call. At least one hook is
     needed.
+
+    This hooking is intended on non-object hooks. In order to hook functions
+    in objects the `create_object_wrapper` function is used in combination with function
+    hooking initialisation functions post execution.
     """
-    if hook is None and post_hook is None:
+    if pre_exec_hook is None and post_exec_hook is None:
         raise Exception("Some hooks must be included")
 
     @functools.wraps(function)
     def run(*args, **kwargs):
         sanitizer_log(f"Hook start {str(function)}", 0)
+
         # Call hook
-        hook(*args, **kwargs)
+        if pre_exec_hook is not None:
+            pre_exec_hook(*args, **kwargs)
 
         # Call the original function in the even the hook did not indicate
         # failure.
         ret = function(*args, **kwargs)
 
-        # Ensure we hook object
-        if extra == "hookrecompile":
-            print("Hooking object's function")
-            H = hookObject(findall = (hooked_re_findall, hooked_re_findall_post))
-            ret = H(ret)
-            #ret.findall = sanitize_hook(ret.findall, pysan_hook_re_compile)
-
-        # Enable post hooking. This can be used to e.g. check
-        # state of file system.
-        if post_hook is not None:
-            post_hook(*args, **kwargs)
+        # Post execution hook. Overwrite return value if anything is returned
+        # by post hook.
+        if post_exec_hook is not None:
+            tmp_ret = post_exec_hook(ret, *args, **kwargs)
+            if tmp_ret is not None:
+                print("Overwriting ret value")
+                ret = tmp_ret
         sanitizer_log(f"Hook end {str(function)}", 0)
         return ret
     return run
 
 
+##############
+# Sanitizers #
+##############
+
+#############################
+# Code injection sanitizers #
+#############################
 def check_code_injection_match(elem) -> Optional[str]:
     # Check exact match
     if elem == "exec-sanitizer":
@@ -186,39 +180,72 @@ def pysan_hook_eval(cmd):
     if res != None:
         raise Exception(f"Potential code injection by way of eval\n{res}")
 
+
+# Hooks for regular expressions.
+# Main problem is to identify ReDOS attemps. This is a non-trivial task
+# - https://arxiv.org/pdf/1701.04045.pdf
+# - https://dl.acm.org/doi/pdf/10.1145/3236024.3236027
+# and the current approach we use is simply check for extensive computing time.
+# In essence, this is more of a refinement of traditional timeout checker from
+# the fuzzer, however, that's the consequence of ReDOS attacks as well.
+#
+# Perhaps the smartest would be to use something like e.g.
+# https://github.com/doyensec/regexploit to scan the regex patterns.
+# Other heuristics without going too technical on identifying super-linear
+# regexes:
+# - check
+#   - if "taint" exists in re.compile(xx)
+# - check 
+#   - for backtracking possbility in PATTERN within re.comile(PATTERN)
+#   - and
+#   - "taint" in findall(XX) calls.
+def pysan_hook_re_pattern_findall_post(self, s):
+    global starttime
+    print("In post hook")
+    try:
+        endtime = time.time() - starttime
+        if endtime > 4:
+            print("param: %s"%(s))
+            raise Exception("Potential ReDOS attack")
+    except NameError:
+        #print("For some reason starttime is not set, which it should have")
+        sys.exit(1)
+        pass
+
+def pysan_hook_re_pattern_findall_pre(self, s):
+    global starttime
+    starttime = time.time()
+    #time.sleep(5)
+    #print("Pattern")
+    #print(self.pattern)
+
+def pysan_hook_post_re_compile(retval, pattern, flags=None):
+    """Hook for re.compile post execution to hook returned objects functions"""
+    sanitizer_log("Inside of post compile hook", 0)
+    wrapper_object = create_object_wrapper(methods = {
+            "findall" : (pysan_hook_re_pattern_findall_pre, pysan_hook_re_pattern_findall_post)
+        }
+    )
+    hooked_object = wrapper_object(retval)
+    return hooked_object
+
+
 def pysan_hook_re_compile(pattern, flags=None):
+    """Check if tainted input exists in pattern. If so, likely chance of making
+    ReDOS possible."""
     sanitizer_log("Inside re compile hook", 0)
 
-    # Should we dosomething here in terms of setting return value?
 
-def pysan_hook_re_pattern_findall(s):
-    sanitizer_log("Inside re compile hook", 0)
-
-def pysan_hook_re_findall(pattern, string, flags=0):
-    sanitizer_log("Insider re findall hook")
-
-def pysan_add_hook(target, pre_hook = None, post_hook = None, extra = None):
-    return sanitize_hook(target, hook = pre_hook, post_hook = post_hook, extra = extra)
-
-
-# Do the actual hooks
+############################################
+# Set up the hooks
+############################################
 def pysan_add_hooks():
-    #import re
-    import os
-    import subprocess
-    #eval = pysan_add_hook(eval, pre_hook = pysan_hook_eval)
-    #re.Pattern.findall = pysan_add_hook(re.Pattern.findall,
-    #                            pre_hook = pysan_hook_re_pattern_findall)
-    re.findall = pysan_add_hook(re.findall,
-                                pre_hook = pysan_hook_re_findall)
-
     re.compile = pysan_add_hook(re.compile,
-                                pre_hook = pysan_hook_re_compile,
-                                extra = "hookrecompile")
+                                pre_exec_hook = pysan_hook_re_compile,
+                                post_exec_hook = pysan_hook_post_re_compile)
     os.system = pysan_add_hook(os.system,
-                               pre_hook = pysan_hook_os_system)
+                               pre_exec_hook = pysan_hook_os_system)
     subprocess.Popen = pysan_add_hook(subprocess.Popen,
-                                      pre_hook = pysan_hook_subprocess_Popen)
-
+                               pre_exec_hook = pysan_hook_subprocess_Popen)
 
 pysan_add_hooks()
