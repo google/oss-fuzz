@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/oauthlib/oauthlib oauthlib
-RUN pip3 install --upgrade pip PyJWT
+RUN pip3 install --upgrade pip && pip3 install -r $SRC/oauthlib/requirements.txt
 WORKDIR oauthlib
 COPY build.sh *.py $SRC/
