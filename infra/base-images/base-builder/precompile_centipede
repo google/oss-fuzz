@@ -36,4 +36,11 @@ echo 'Removing extra stuff leftover to avoid bloating image.'
 
 rm -rf /clang-*.tgz /clang
 
+# TODO(AlanLiu32): Only move the static lib and centipede binary and delete
+# everything else.
+BAZEL_BIN_REAL_DIR=(readlink -f $SRC/centipede/bazel-bin)
+rm -rf $SRC/centipede/bazel-bin
+mv $BAZEL_BIN_REAL_DIR $SRC/centipede/bazel-bin
+rm -rf /root/.cache
+
 echo 'Done.'
