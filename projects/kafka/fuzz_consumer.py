@@ -15,8 +15,8 @@
 
 import atheris
 import sys
-with atheris.instrument_imports():
-    from confluent_kafka import Consumer, KafkaException
+from confluent_kafka import Consumer, KafkaException, TopicPartition
+
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
@@ -31,13 +31,25 @@ def TestInput(data):
         'on_commit': dummy_callback})
 
     try:
-        c.subscribe([fdp.ConsumeString(10)], on_assign=dummy_callback, on_revoke=dummy_callback)
+        c.subscribe(
+            [fdp.ConsumeString(10)],
+            on_assign=dummy_callback,
+            on_revoke=dummy_callback
+        )
         c.unsubscribe()
 
         msg = c.poll(timeout=0.001)
-        msglist = c.consume(num_messages=fdp.ConsumeIntInRange(1,10), timeout=0.001)
+        msglist = c.consume(
+            num_messages=fdp.ConsumeIntInRange(1,10),
+            timeout=0.001
+        )
 
-        partitions = list(map(lambda part: TopicPartition(fdp.ConsumeString(10), part), range(0, 100, 3)))
+        partitions = list(
+            map(
+                lambda part: TopicPartition(fdp.ConsumeString(10), part),
+                range(0, 100, 3)
+            )
+        )
         c.assign(partitions)
         c.unassign()
 
@@ -51,9 +63,12 @@ def TestInput(data):
 
     c.close()
 
+
 def main():
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
+
 
 if __name__ == "__main__":
     main()
