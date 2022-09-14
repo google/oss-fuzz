@@ -28,9 +28,6 @@ cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 export DFTRACING_FLAGS='-fsanitize-coverage=trace-loads'
 export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt" | tr '\n' ' '`
 export LIBRARIES_FLAGS="-ldl -lrt -lpthread $SRC/centipede/weak.o"
-export CC='/clang/bin/clang'
-export CCC='/clang/bin/clang++'
-export CXX='/clang/bin/clang++'
 
 export CFLAGS="$CFLAGS $DFTRACING_FLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
 export CXXFLAGS="$CXXFLAGS $DFTRACING_FLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"

@@ -34,6 +34,6 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 
 echo 'Removing extra stuff leftover to avoid bloating image.'
 
-rm -rf /clang-*.tgz /clang /root/.cache/*
+rm -rf /clang-*.tgz /clang
 
 echo 'Done.'
