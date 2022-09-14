@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-export CC="clang $CFLAGS"
-export CXX="clang++ $CFLAGS"
+export CC="$CC $CFLAGS"
+export CXX="$CXX $CFLAGS"
 export CFLAGS=""
 export CXXFLAGS="$CFLAGS"
 
