@@ -33,9 +33,7 @@ __attribute__((no_sanitize("address","memory","undefined"))) static int stringre
 	}
 }
 
-
-
-extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/tests/ntpd/leapsec.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;

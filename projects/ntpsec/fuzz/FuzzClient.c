@@ -20,7 +20,7 @@ limitations under the License.
 
 bool nts_client_process_response_core(uint8_t *buff, int transferred, struct peer* peer);
 
-extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/tests/ntpd/nts_client.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;

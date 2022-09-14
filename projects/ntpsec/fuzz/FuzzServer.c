@@ -18,7 +18,8 @@ limitations under the License.
 #define kMinInputLength 4
 #define kMaxInputLength 1024
 
-extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/tests/ntpd/nts_server.c
+
 	if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
     }
