@@ -43,3 +43,10 @@ cd ansible-runner
 git checkout cdc0961df51fa1e10b44371944aafe5ae140b98c
 pip3 install .
 compile_python_fuzzer $SRC/fuzz_ansible_runner.py
+
+cd $SRC
+git clone https://github.com/python-ldap/python-ldap
+cd python-ldap
+git checkout 404c36b702c5b3a7e60729745c8bda16098b1472
+pip3 install .
+compile_python_fuzzer $SRC/fuzz_ldap.py

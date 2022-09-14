@@ -15,7 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y \
+  make \
+  autoconf \
+  automake \
+  libtool \
+  python3-dev libldap2-dev libsasl2-dev ldap-utils
 RUN pip3 install --upgrade pip pexpect
 #RUN git clone https://github.com/Nuitka/Nuitka
 #RUN git clone https://github.com/vcs-python/libvcs && \
