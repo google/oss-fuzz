@@ -109,7 +109,7 @@ def get_args(args=None):
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
-                      default=['afl', 'libfuzzer', 'honggfuzz'],
+                      default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
                       nargs='+',
                       help='Fuzzing engines.')
   parser.add_argument('--branch',

@@ -75,6 +75,42 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                                                 config)
     self.assertEqual(build_steps, expected_build_steps)
 
+  @mock.patch('build_lib.get_signed_url', return_value='test_url')
+  @mock.patch('build_project.get_datetime_now',
+              return_value=test_utils.FAKE_DATETIME)
+  def test_get_centipede_build_steps(self, mock_url, mock_get_datetime_now):
+    """Test for get_build_steps of centipede."""
+    del mock_url, mock_get_datetime_now
+    # The none sanitizer should be added automatically when other sanitizers are
+    # specified by the users.
+    project_yaml_contents = (
+        'language: c++\n'
+        'fuzzing_engines:\n'
+        '  - centipede\n'
+        'sanitizers:\n'
+        '  - address\n'
+        'architectures:\n'
+        '  - x86_64\n'
+        'main_repo: https://github.com/google/centipede.git\n')
+    self.fs.create_dir(test_utils.PROJECT_DIR)
+    test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
+
+    expected_build_steps_file_path = test_utils.get_test_data_file_path(
+        'expected_centipede_build_steps.json')
+    self.fs.add_real_file(expected_build_steps_file_path)
+    with open(expected_build_steps_file_path) as expected_build_steps_file:
+      expected_build_steps = json.load(expected_build_steps_file)
+
+    config = build_project.Config(False, False, None, False, True)
+    project_yaml, dockerfile = build_project.get_project_data(
+        test_utils.PROJECT)
+    build_steps = build_project.get_build_steps(test_utils.PROJECT,
+                                                project_yaml, dockerfile,
+                                                test_utils.IMAGE_PROJECT,
+                                                test_utils.BASE_IMAGES_PROJECT,
+                                                config)
+    self.assertEqual(build_steps, expected_build_steps)
+
 
 if __name__ == '__main__':
   unittest.main(exit=False)

@@ -75,7 +75,7 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
     'centipede':
         EngineInfo(upload_bucket='clusterfuzz-builds-centipede',
-                   supported_sanitizers=['address'],
+                   supported_sanitizers=['address', 'none'],
                    supported_architectures=['x86_64']),
 }
 

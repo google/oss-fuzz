@@ -115,6 +115,14 @@ def get_sanitizer_strings(sanitizers):
   return processed_sanitizers
 
 
+def set_default_sanitizer_for_centipede(project_yaml):
+  """Adds none as a sanitizer for centipede in yaml if it does not exist yet."""
+  # Centipede requires a separate unsanitized binary to use sanitized ones.
+  if ('centipede' in project_yaml['fuzzing_engines'] and
+      project_yaml['sanitizers'] and 'none' not in project_yaml['sanitizers']):
+    project_yaml['sanitizers'].append('none')
+
+
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
@@ -164,6 +172,9 @@ def set_yaml_defaults(project_yaml):
   project_yaml.setdefault('run_tests', True)
   project_yaml.setdefault('coverage_extra_args', '')
   project_yaml.setdefault('labels', {})
+  # Adds 'none' as a sanitizer for centipede to the project yaml by default,
+  # because Centipede always requires a separate build of unsanitized binary.
+  set_default_sanitizer_for_centipede(project_yaml)
 
 
 def is_supported_configuration(build):
