@@ -75,7 +75,7 @@ public class UrlEscapersFuzzer {
 		} catch (IllegalArgumentException e) {
 			/* ignore */
 	    } catch (Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 }

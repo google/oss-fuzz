@@ -1,5 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 import com.google.common.net.HostSpecifier;
 import java.text.ParseException;
 
@@ -14,13 +14,13 @@ public class HostSpecifierFuzzer {
 			 * would have thrown an exception.
 			 */
 			if (! HostSpecifier.isValid(hs.toString())) {
-				throw new FuzzerSecurityIssueMedium("toString() generated a poor host specifier");
+				throw new FuzzerSecurityIssueLow("toString() generated a poor host specifier");
 			}
 			hs.hashCode();
 		} catch (ParseException e) {
 			/* documented to be thrown, ignore */
 	    } catch (Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 }

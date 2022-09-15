@@ -1,5 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 import com.google.common.net.InetAddresses;
 import java.lang.IllegalArgumentException;
 import java.net.InetAddress;
@@ -21,7 +21,7 @@ public class InetAddressesFuzzer {
             } catch (IllegalArgumentException e) {
                 /* documented, ignore */
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
 
             try {
@@ -33,13 +33,13 @@ public class InetAddressesFuzzer {
             } catch (IllegalArgumentException  e) {
                 /* documented, ignore */
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
 
             try {
                 InetAddresses.getCoercedIPv4Address(inet6);
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
         }
     }
@@ -54,7 +54,7 @@ public class InetAddressesFuzzer {
         } catch (UnknownHostException e) {
             /* documented, ignore */
         } catch (Exception e) {
-            throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+            throw new FuzzerSecurityIssueLow("Undocumented Exception");
         }
 
         testInet6ApiSpecificMethods(in6);
@@ -68,7 +68,7 @@ public class InetAddressesFuzzer {
         } catch (IllegalArgumentException e) {
             /* documented, ignore */
         } catch (Exception e) {
-            throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+            throw new FuzzerSecurityIssueLow("Undocumented Exception");
         }
 
         /*
@@ -80,7 +80,7 @@ public class InetAddressesFuzzer {
             InetAddresses.isMappedIPv4Address(value);
             InetAddresses.isMappedIPv4Address(value);
         } catch (Exception e) {
-            throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+            throw new FuzzerSecurityIssueLow("Undocumented Exception");
         }
         
         if (addr != null) {
@@ -93,7 +93,7 @@ public class InetAddressesFuzzer {
                 InetAddresses.toAddrString(addr);
                 InetAddresses.coerceToInteger(addr);
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
 
             try {
@@ -102,7 +102,7 @@ public class InetAddressesFuzzer {
             } catch (IllegalArgumentException e) {
                 /* documented, ignore */
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
 
             try {
@@ -110,7 +110,7 @@ public class InetAddressesFuzzer {
             } catch (IllegalArgumentException e) {
                 /* documented, ignore */
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
 
             try {
@@ -118,7 +118,7 @@ public class InetAddressesFuzzer {
             } catch (IllegalArgumentException e) {
                 /* documented, ignore */
             } catch (Exception e) {
-                throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+                throw new FuzzerSecurityIssueLow("Undocumented Exception");
             }
         }
 	} 

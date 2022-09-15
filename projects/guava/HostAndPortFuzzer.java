@@ -1,5 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 import com.google.common.net.HostAndPort;
 import java.lang.IllegalArgumentException;
 
@@ -11,7 +11,7 @@ public class HostAndPortFuzzer {
 			/* documented to be thrown, ignore */
 	    } catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new FuzzerSecurityIssueMedium();
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 }

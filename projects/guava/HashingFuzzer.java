@@ -1,5 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.HashFunction;
@@ -100,8 +100,10 @@ public class HashingFuzzer {
 			HashCode.fromString(s);
 
 			hc.hashCode();
+		} catch (IllegalArgumentException e) {
+			/* ignore */
 		} catch (Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 
@@ -120,8 +122,10 @@ public class HashingFuzzer {
 			h.putShort(hashInputData.getShort());
 			h.putUnencodedChars(hashInputData.getString());
 			hc = h.hash();
+		} catch (IllegalArgumentException e) {
+			/* ignore */
 		} catch (Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 
 		if (hc != null) {
@@ -135,8 +139,11 @@ public class HashingFuzzer {
 		 */
 		try {
 			HashCode.fromString(hashInputData.getString());
+		} catch (IllegalArgumentException e) {
+			/* ignore */
 		} catch(Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			e.printStackTrace(System.out);
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 
@@ -171,8 +178,11 @@ public class HashingFuzzer {
 			testHash(Hashing.sha512(), hashInputData);
 			testHash(Hashing.sipHash24(), hashInputData);
 			testHash(Hashing.sipHash24(k0, k1), hashInputData);
+		} catch (IllegalArgumentException e) {
+			/* ignore */
 		} catch (Exception e) {
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			e.printStackTrace(System.out);
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 }

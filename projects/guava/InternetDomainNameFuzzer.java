@@ -1,5 +1,5 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 import com.google.common.net.InternetDomainName;
 import java.lang.IllegalArgumentException;
 import java.lang.IllegalStateException;
@@ -63,8 +63,7 @@ public class InternetDomainNameFuzzer {
 			testChild(idn, dataProvider.consumeString(dataProvider.remainingBytes()));
 
 	    } catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new FuzzerSecurityIssueMedium("Undocumented Exception");
+			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
 }
