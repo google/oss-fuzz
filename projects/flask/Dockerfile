@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y libffi-dev
+RUN python3 -m pip install --upgrade pip
 RUN git clone https://github.com/pallets/flask
 RUN git clone https://github.com/pallets/werkzeug
 RUN git clone https://github.com/corydolphin/flask-cors

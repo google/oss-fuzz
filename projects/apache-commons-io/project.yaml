@@ -5,6 +5,7 @@ language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-io.git
 sanitizers:
 - address
+primary_contact: "garydgregory@gmail.com"
 vendor_ccs:
 - glendowne@code-intelligence.com
 - wagner@code-intelligence.com

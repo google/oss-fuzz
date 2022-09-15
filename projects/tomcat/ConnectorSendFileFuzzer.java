@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import java.io.OutputStreamWriter;
 import java.io.BufferedInputStream;
@@ -48,12 +48,12 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.catalina.LifecycleException;
 import org.apache.tomcat.util.buf.ByteChunk;
 
 public class ConnectorSendFileFuzzer {
     static Tomcat tomcat = null;
     static Connector connector1 = null;
-    static int PORT = 8088;
     static Context root = null;
     static String contextPath = null;
     static String baseDir = null;
@@ -138,8 +138,8 @@ public class ConnectorSendFileFuzzer {
             tomcat.destroy();
             tomcat = null;
             System.gc();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Teardown Error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Teardown Error!");
         }
     }
     
@@ -151,7 +151,6 @@ public class ConnectorSendFileFuzzer {
         tomcat.setBaseDir(baseDir);
 
         connector1 = tomcat.getConnector();
-        // connector1.setPort(PORT);
         connector1.setPort(0);
 
         String docBase = new File(".").getAbsolutePath();
@@ -160,8 +159,8 @@ public class ConnectorSendFileFuzzer {
 
         try {
             tomcat.start();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Tomcat Start error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Tomcat Start error!");
         }
     }
 
@@ -175,8 +174,8 @@ public class ConnectorSendFileFuzzer {
 
         try {
             file = generateFile(new File("./" + baseDir), ba);
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("generateFile Error!");
+        } catch (IOException e) {
+            throw new FuzzerSecurityIssueLow("generateFile Error!");
         }
 
         if (counter < Integer.MAX_VALUE) {
@@ -184,7 +183,6 @@ public class ConnectorSendFileFuzzer {
         }
         else {
             System.exit(1);
-            // throw new FuzzerSecurityIssueHigh("Max Counter Reached!");
         }
 
         WritingServlet servlet = new WritingServlet(file, c_num, e_num);
@@ -196,21 +194,17 @@ public class ConnectorSendFileFuzzer {
         int rc = -1;
         try {
             rc = getUrl("http://localhost:" + tomcat.getConnector().getLocalPort() + "/servlet", bc, null, respHeaders);   
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("getUrl error!");
+        } catch (IOException e) {
+            throw new FuzzerSecurityIssueLow("getUrl error!");
         }
-        assert rc == HttpServletResponse.SC_OK : new FuzzerSecurityIssueHigh("rc is not ok!");
+        assert rc == HttpServletResponse.SC_OK : new FuzzerSecurityIssueLow("rc is not ok!");
 
         bc.recycle();
         respHeaders.clear();
 
         file.delete();
 
-        try {
-            System.gc();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("gc Error!");
-        }
+        System.gc();
         
     }
 
@@ -250,23 +244,22 @@ public class ConnectorSendFileFuzzer {
                             written += len;
                         }
                     } while (len > 0);
-                    // System.out.println("Server Wrote " + written + " bytes in " + (System.currentTimeMillis() - start) + " ms.");
                 }
         }
     }
 
     public static File generateFile(File dir, byte [] ba) throws IOException {
-        String name = "testSendFile-"; // + System.currentTimeMillis() + suffix; // + ".txt";
+        String name = "testSendFile-";
         String suffix = "";
-        // File f = new File(dir, name);
+        
         File f = File.createTempFile(name, suffix, dir);
         
-        // try (FileWriter fw = new FileWriter(f, false); BufferedWriter w = new BufferedWriter(fw)) {
+        
         try (FileOutputStream w = new FileOutputStream(f)) {
             w.write(ba);
             w.flush();
         }
-        // System.out.println("Created file:" + f.getAbsolutePath() + " with " + f.length() + " bytes.");
+        
         return f;
 
     }

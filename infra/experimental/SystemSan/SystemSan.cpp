@@ -30,6 +30,7 @@
 /* Linux */
 #include <sys/ptrace.h>
 #include <syscall.h>
+#include <fcntl.h>
 
 #include <fstream>
 #include <iostream>
@@ -272,6 +273,25 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   match_error_pattern(buffer, g_shell_pids[pid]);
 }
 
+void log_file_open(std::string path, int flags) {
+  report_bug(kArbitraryFileOpenError);
+  std::cerr << "===File opened: " << path << ", flags = " << flags << ",";
+  switch (flags & 3) {
+    case O_RDONLY:
+      std::cerr << "O_RDONLY";
+      break;
+    case O_WRONLY:
+      std::cerr << "O_WRONLY";
+      break;
+    case O_RDWR:
+      std::cerr << "O_RDWR";
+      break;
+    default:
+      std::cerr << "unknown";
+  }
+  std::cerr << "===\n";
+}
+
 void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's register for the sign of arbitrary file open.
   std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
@@ -279,7 +299,8 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     return;
   }
   if (path.substr(0, kFzAbsoluteDirectory.length()) == kFzAbsoluteDirectory) {
-    report_bug(kArbitraryFileOpenError);
+    log_file_open(path, regs.rdx);
+    return;
   }
   if (path[0] == '/' && path.length() > 1) {
     std::string path_absolute_topdir = path;
@@ -289,7 +310,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     }
     struct stat dirstat;
     if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-      report_bug(kArbitraryFileOpenError);
+      log_file_open(path, regs.rdx);
     }
   }
 }

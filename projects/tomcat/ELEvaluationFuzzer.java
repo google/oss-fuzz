@@ -31,15 +31,13 @@ public class ELEvaluationFuzzer {
         String str = data.consumeRemainingAsString();
 
         try {
-            evaluateExpression(str);
-        } catch (ELException | IllegalArgumentException | ArithmeticException e) {
-        }
+            evaluateExpression(str); // Fuzz the createValueExpression
 
-        try {
+
             ExpressionFactory factory = ExpressionFactory.newInstance();
             ELContext context = new ELContextImpl(factory);
 
-            MethodExpression me1 = factory.createMethodExpression(context, str, String.class, new Class<?>[] {});
+            MethodExpression me1 = factory.createMethodExpression(context, str, String.class, new Class<?>[] {}); // Fuzz the createMethodExpression
             MethodExpression me2 = factory.createMethodExpression(context, str, String.class, new Class<?>[] { String.class });
             MethodExpression me3 = factory.createMethodExpression(context, str, null, new Class<?>[] {});
             MethodExpression me4 = factory.createMethodExpression(context, str, null, new Class[]{String.class});
@@ -48,7 +46,7 @@ public class ELEvaluationFuzzer {
             Object r2 = me2.invoke(context, null);
             Object r3 = me3.invoke(context, null);
             Object r4 = me4.invoke(context, null);
-        } catch (ELException e) {
+        } catch (ELException | IllegalArgumentException | ArithmeticException e) {
         }
 
     }

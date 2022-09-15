@@ -15,12 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential \
+RUN apt-get update && apt-get install -y make autoconf libtool build-essential \
     libass-dev libfreetype6-dev libsdl1.2-dev \
     libvdpau-dev libxcb1-dev libxcb-shm0-dev libdrm-dev \
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
     xutils-dev libpciaccess-dev nasm rsync
-
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2

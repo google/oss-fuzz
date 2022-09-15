@@ -1,0 +1,12 @@
+homepage: "https://github.com/nucleic/kiwi"
+language: python
+main_repo: "https://github.com/nucleic/kiwi"
+primary_contact: "m.dartiailh@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+auto_ccs:
+  - david@adalogics.com
+  - adam@adalogics.com

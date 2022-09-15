@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import org.apache.catalina.filters.*;
 
@@ -47,6 +47,7 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.BasicAuthenticator;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.startup.BytesStreamer;
+import org.apache.catalina.LifecycleException;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
@@ -98,7 +99,6 @@ public class RestCsrfPreventionFilterFuzzer {
     public static Context context;
     public static List<String> cookies = new ArrayList<>();
     public static String validNonce;
-    public static int PORT = 8088;
 
     public static void fuzzerTearDown() {
         try {
@@ -106,8 +106,8 @@ public class RestCsrfPreventionFilterFuzzer {
             tomcat.destroy();
             tomcat = null;
             System.gc();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Teardown Error!!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Teardown Error!!");
         }
     }
     
@@ -124,13 +124,13 @@ public class RestCsrfPreventionFilterFuzzer {
         try {
             setUpApplication();   
         } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("setUpApplication Error!");
+            throw new FuzzerSecurityIssueLow("setUpApplication Error!");
         }
 
         try {
             tomcat.start();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Tomcat Start Error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Tomcat Start Error!");
         }
         
     }
@@ -171,21 +171,21 @@ public class RestCsrfPreventionFilterFuzzer {
             rc = postUrl(body, HTTP_PREFIX + tomcat.getConnector().getLocalPort() + uri, bc, reqHeaders, respHeaders);
         }
 
-        assert (rc == expectedRC || rc ==  HttpServletResponse.SC_BAD_REQUEST ): new FuzzerSecurityIssueHigh("expectedRC not equal to rc!");
+        assert (rc == expectedRC || rc ==  HttpServletResponse.SC_BAD_REQUEST ): new FuzzerSecurityIssueLow("expectedRC not equal to rc!");
 
         if (expectedRC == HttpServletResponse.SC_OK) {
-            assert expectedResponse.equals(bc.toString()) : new FuzzerSecurityIssueHigh("expectedResponse not equals to bc.toString()");
+            assert expectedResponse.equals(bc.toString()) : new FuzzerSecurityIssueLow("expectedResponse not equals to bc.toString()");
             List<String> newCookies = respHeaders.get(SERVER_COOKIE_HEADER);
             saveCookies(newCookies, l -> Objects.nonNull(l) && l.size() > 0);
         }
 
         if (!expectCsrfRH) {
-            assert respHeaders.get(Constants.CSRF_REST_NONCE_HEADER_NAME) == null : new FuzzerSecurityIssueHigh("respHeaders.get(Constants.CSRF_REST_NONCE_HEADER_NAME) is not null!");
+            assert respHeaders.get(Constants.CSRF_REST_NONCE_HEADER_NAME) == null : new FuzzerSecurityIssueLow("respHeaders.get(Constants.CSRF_REST_NONCE_HEADER_NAME) is not null!");
         } else {
             List<String> respHeaderValue = respHeaders.get(Constants.CSRF_REST_NONCE_HEADER_NAME); // Constants.CSRF_REST_NONCE_HEADER_NAME == X-CSRF-Token
             // assert respHeaderValue != null : new FuzzerSecurityIssueHigh("respHeaderValue is null!"); 
             if (Objects.nonNull(expectedCsrfRHV)) {
-                assert respHeaderValue.contains(expectedCsrfRHV) : new FuzzerSecurityIssueHigh("respHeaderValue does not contain expectedCsrfRHV!");
+                assert respHeaderValue.contains(expectedCsrfRHV) : new FuzzerSecurityIssueLow("respHeaderValue does not contain expectedCsrfRHV!");
             } else {
                 validNonce = respHeaderValue.get(0);
             }
