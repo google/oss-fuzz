@@ -43,3 +43,4 @@ RUN git clone --depth 1 https://github.com/FasterXML/jackson-core
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+COPY AdaLObjectReader3Fuzzer_seed_corpus.zip $SRC/
