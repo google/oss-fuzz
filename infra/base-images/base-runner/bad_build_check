@@ -124,7 +124,6 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
-    return 0
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
