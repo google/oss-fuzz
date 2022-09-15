@@ -10,10 +10,10 @@ auto_ccs:
   - "hmf@fb.com"
   - "yaohway@fb.com"
   - "axxu@fb.com"
-  - "binhvo@fb.com"
   - "embg@fb.com"
   - "yoniko@fb.com"
   - "sangelov@fb.com"
+  - "drozenblit@fb.com"
 vendor_ccs:
   - "oss-fuzz@fb.com"
 fuzzing_engines:

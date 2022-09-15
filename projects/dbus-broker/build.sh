@@ -46,6 +46,8 @@ if [[ "$SANITIZER" == undefined ]]; then
     UBSAN_FLAGS="-fsanitize=$additional_ubsan_checks -fno-sanitize-recover=$additional_ubsan_checks"
     CFLAGS+=" $UBSAN_FLAGS"
     CXXFLAGS+=" $UBSAN_FLAGS"
+    MESON_CFLAGS+=" $UBSAN_FLAGS"
+    MESON_CXXFLAGS+=" $UBSAN_FLAGS"
 fi
 
 pip3 install meson ninja

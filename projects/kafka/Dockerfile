@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update -y && apt-get install wget 
+RUN apt-get update -y && apt-get install -y wget software-properties-common
 RUN wget -qO - https://packages.confluent.io/deb/7.0/archive.key | apt-key add -
 RUN add-apt-repository "deb https://packages.confluent.io/clients/deb $(lsb_release -cs) main"
 RUN apt-get update -y && apt-get install librdkafka-dev software-properties-common lsb-release gcc make python3-dev libsasl2-modules-gssapi-mit krb5-user -y

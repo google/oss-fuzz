@@ -27,3 +27,5 @@ criteria, depending on how well the criteria is satisfied.
 
 The highest cap values ($5,000) are awarded only to projects of a critical importance for the
 global infrastructure and/or widely used products, devices, or services.
+
+To submit your application for a reward, please fill out [this form](https://docs.google.com/forms/d/e/1FAIpQLSd5TlIXAiWRmbsHtPDR-8aDYKAZVgkJ5tcn6Dh-ym79r4iUxA/viewform) after reading the [blog post](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html).

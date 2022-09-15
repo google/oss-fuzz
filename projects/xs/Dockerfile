@@ -24,8 +24,13 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cat fuzzing/dictionaries/js.dict > $SRC/xst.dict
 
 #Apache-2.0 license, MIT license, BSD license
-RUN git clone --depth 1 https://github.com/tc39/test262-parser-tests && \
-	zip -q $SRC/xst_seed_corpus.zip test262-parser-tests/pass-explicit/*
+#RUN git clone --depth 1 https://github.com/tc39/test262-parser-tests && \
+#    zip -q $SRC/xst_seed_corpus.zip test262-parser-tests/pass-explicit/*
+
+#test262 built-ins
+#BSD license
+RUN git clone --depth 1 https://github.com/tc39/test262 && \
+    find test262/test/built-ins -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
 
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable
 WORKDIR moddable

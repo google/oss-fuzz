@@ -17,14 +17,17 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.File;
 import java.lang.IllegalArgumentException;
+import java.net.URI;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -179,7 +182,8 @@ public class ObjectReader2Fuzzer {
     }
 
     public static Class[] classes = { DummyClass.class, Integer.class, String.class, Byte.class, List.class, Map.class,
-        TreeMap.class, BitSet.class, TimeZone.class, Date.class, Calendar.class, Locale.class, Long.class };
+        TreeMap.class, BitSet.class, TimeZone.class, Date.class, Calendar.class, Locale.class, Long.class, File.class,
+        Pattern.class, Charset.class, URI.class };
 
     public static class DummyClass {
         public TreeMap<String, Integer> _treeMap;

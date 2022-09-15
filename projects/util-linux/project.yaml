@@ -9,9 +9,9 @@ auto_ccs:
   - "kerolasa@gmail.com"
 architectures:
   - x86_64
-  - i386
 sanitizers:
   - address
   - undefined
   - memory
 main_repo: 'https://github.com/util-linux/util-linux'
+file_github_issue: True
