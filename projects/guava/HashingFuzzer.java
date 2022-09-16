@@ -159,7 +159,7 @@ public class HashingFuzzer {
 		 * testHash handles exceptions itself, so this try-block
 		 * only catches exceptions thrown by Hashing's "factory"
 		 * functions, none of which is documented to throw
-		 * exceptions
+		 * exceptions.
 		 */
 		try {
 			testHash(Hashing.adler32(), hashInputData);

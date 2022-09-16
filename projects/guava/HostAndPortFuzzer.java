@@ -9,7 +9,7 @@ public class HostAndPortFuzzer {
 			HostAndPort hap = HostAndPort.fromString(data.consumeRemainingAsString());
 		} catch (IllegalArgumentException e) {
 			/* documented to be thrown, ignore */
-	    } catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}

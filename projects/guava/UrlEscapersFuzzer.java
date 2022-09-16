@@ -11,20 +11,20 @@ import java.net.URLDecoder;
 public class UrlEscapersFuzzer {
 
 	/*
-	 * these constants are private members copy-pasted from
-	 * com.google.common.net.UrlEscapers
+	 * These constants are private members copy-pasted from
+	 * com.google.common.net.UrlEscapers.
 	 */
 	static final String URL_FORM_PARAMETER_OTHER_SAFE_CHARS = "-_.*";
 	static final String URL_PATH_OTHER_SAFE_CHARS_LACKING_PLUS =
-      "-._~" // Unreserved characters.
-          + "!$'()*,;&=" // The subdelim characters (excluding '+').
-          + "@:"; // The gendelim characters permitted in paths.
+	  "-._~" // Unreserved characters.
+	+ "!$'()*,;&=" // The subdelim characters (excluding '+').
+	+ "@:"; // The gendelim characters permitted in paths.
 
 	private static boolean containsUnsafeCharacters(String string, String additionalSafeChars) {
 		String safe = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		
 		/*
-		 * the percent character is always safe
+		 * The percent character is always safe.
 		 */
 		safe += "%";
 		
@@ -74,7 +74,7 @@ public class UrlEscapersFuzzer {
 			testUrlEscaper(UrlEscapers.urlPathSegmentEscaper(),   URL_PATH_OTHER_SAFE_CHARS_LACKING_PLUS + "+",   value, false);
 		} catch (IllegalArgumentException e) {
 			/* ignore */
-	    } catch (Exception e) {
+		} catch (Exception e) {
 			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}

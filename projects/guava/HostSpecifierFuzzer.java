@@ -19,7 +19,7 @@ public class HostSpecifierFuzzer {
 			hs.hashCode();
 		} catch (ParseException e) {
 			/* documented to be thrown, ignore */
-	    } catch (Exception e) {
+		} catch (Exception e) {
 			throw new FuzzerSecurityIssueLow("Undocumented Exception");
 		}
 	}
