@@ -57,6 +57,8 @@ PROJECTS_DIR = os.path.abspath(
 Config = collections.namedtuple(
     'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
 
+
+
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 
@@ -289,7 +291,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.name,
       project.image,
       project.fuzzing_language,
-      branch=config.branch,
+      branch=config,
       test_image_suffix=config.test_image_suffix,
       architectures=project.architectures)
 
