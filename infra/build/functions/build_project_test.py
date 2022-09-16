@@ -65,7 +65,7 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_build_steps = json.load(expected_build_steps_file)
 
-    config = build_project.Config(False, False, None, False, True)
+    config = build_project.Config(upload=True)
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
     build_steps = build_project.get_build_steps(test_utils.PROJECT,
@@ -101,7 +101,7 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     with open(expected_build_steps_file_path) as expected_build_steps_file:
       expected_build_steps = json.load(expected_build_steps_file)
 
-    config = build_project.Config(False, False, None, False, True)
+    config = build_project.Config(upload=True)
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
     build_steps = build_project.get_build_steps(test_utils.PROJECT,
