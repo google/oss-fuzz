@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,18 @@
 #
 ################################################################################
 
-autoreconf -i
-./configure --enable-static
-make V=1 all
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-$CXX $CXXFLAGS -std=c++11 -Isrc/ \
-     $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
-     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a
+RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-cp ./magic/magic.mgc $OUT/
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
 
-zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-*
+RUN apt update && apt install -y openjdk-17-jdk
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-data-jpa.git
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/spring-data-jpa
