@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y btrfs-progs libc-dev pkg-config libseccomp-dev gcc wget libbtrfs-dev
-RUN git clone --depth 1 https://github.com/containerd/containerd
-RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+
+RUN git clone --depth 1 https://github.com/janino-compiler/janino.git janino
+
 COPY build.sh $SRC/
-WORKDIR $SRC/containerd
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/janino
