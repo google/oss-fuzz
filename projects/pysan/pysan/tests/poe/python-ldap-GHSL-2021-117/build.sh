@@ -15,22 +15,9 @@
 #
 ################################################################################
 
-cd $SRC/pysan-lib
-
-# install pysan
-python3 ./setup.py install
-
-# poc
-cd tests
-compile_python_fuzzer os_command_injection.py
-
-# libvcs
-# https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
-cd $SRC/pysan-lib/tests/poe/libvcs-cve-2022-21187
-./build.sh
-
-cd $SRC/pysan-lib/tests/poe/ansible-runner-cve-2021-4041
-./build.sh
-
-cd $SRC/pysan-lib/tests/poe/python-ldap-GHSL-2021-117
-./build.sh
+git clone https://github.com/python-ldap/python-ldap
+cd python-ldap
+git checkout 404c36b702c5b3a7e60729745c8bda16098b1472
+pip3 install .
+cd ../
+compile_python_fuzzer fuzz_ldap.py

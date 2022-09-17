@@ -239,18 +239,17 @@ def pysan_hook_re_compile(pattern, flags=None):
 ############################################
 # Set up the hooks
 ############################################
-def pysan_add_hooks(experimental = False):
+def pysan_add_hooks():
     os.system = pysan_add_hook(os.system,
                                pre_exec_hook = pysan_hook_os_system)
-    if experimental:
-        re.compile = pysan_add_hook(
-            re.compile,
-            pre_exec_hook = pysan_hook_re_compile,
-            post_exec_hook = pysan_hook_post_re_compile
-        )
-        subprocess.Popen = pysan_add_hook(
-            subprocess.Popen,
-            pre_exec_hook = pysan_hook_subprocess_Popen
-        )
+    re.compile = pysan_add_hook(
+        re.compile,
+        pre_exec_hook = pysan_hook_re_compile,
+        post_exec_hook = pysan_hook_post_re_compile
+    )
+    subprocess.Popen = pysan_add_hook(
+        subprocess.Popen,
+        pre_exec_hook = pysan_hook_subprocess_Popen
+    )
 
 #pysan_add_hooks()

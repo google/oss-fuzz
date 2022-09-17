@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+"""Targets: https://github.com/python-ldap/python-ldap/security/advisories/GHSA-r8wq-qrxc-hmcm"""
 
-cd $SRC/pysan-lib
+import os
+import sys
+import atheris
+import pysan
+pysan.pysan_add_hooks()
 
-# install pysan
-python3 ./setup.py install
+import ldap.schema
 
-# poc
-cd tests
-compile_python_fuzzer os_command_injection.py
 
-# libvcs
-# https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
-cd $SRC/pysan-lib/tests/poe/libvcs-cve-2022-21187
-./build.sh
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+    try:
+        ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))
+    except ValueError:
+        pass
 
-cd $SRC/pysan-lib/tests/poe/ansible-runner-cve-2021-4041
-./build.sh
 
-cd $SRC/pysan-lib/tests/poe/python-ldap-GHSL-2021-117
-./build.sh
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()
