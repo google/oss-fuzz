@@ -38,7 +38,7 @@ def TestOneInput(data):
 
 
 def main():
-    pysan.pysan_add_hooks()
+    pysan.pysan_add_hooks(experimental = True)
     atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
