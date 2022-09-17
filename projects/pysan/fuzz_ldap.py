@@ -16,7 +16,7 @@
 import os
 import sys
 import atheris
-import sanlib
+import pysan
 
 import ldap.schema
 
@@ -30,6 +30,7 @@ def TestOneInput(data):
 
 
 def main():
+    pysan.pysan_add_hooks()
     atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,27 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
-import atheris
-import sanlib
+# Import sanlib and expose only neede functionality by way of __all__
+from .sanlib import *
 
-import target_lib
-
-
-def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    target_lib.list_files_perhaps(
-        fdp.ConsumeUnicodeNoSurrogates(24),
-        fdp.ConsumeIntInRange(500, 1500)
-    )
-
-
-def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
-
-
-if __name__ == "__main__":
-    main()
+__all__ = ['pysan_add_hooks']

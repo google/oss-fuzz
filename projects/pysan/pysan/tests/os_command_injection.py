@@ -12,38 +12,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets: https://github.com/advisories/GHSA-435p-f82x-mxwm"""
 
 import os
 import sys
 import atheris
+
 import pysan
 
-import yamale
+
+def list_files_perhaps(param, magicval):
+    if magicval == 1337:
+        try:
+            os.system(param)
+        except ValueError:
+            pass
+    elif magicval == 1338:
+        os.system("exec-san")
+    elif magicval == 1339:
+        os.system("ls -la FROMFUZZ")
+    else:
+        return 2
 
 
 def TestOneInput(data):
-    assist = True
     fdp = atheris.FuzzedDataProvider(data)
-
-    str_to_parse = fdp.ConsumeUnicodeNoSurrogates(1024)
-    try:
-        yamale.syntax.parse(str_to_parse)
-    except (
-        SyntaxError,
-        ValueError,
-        MemoryError,
-        ZeroDivisionError,
-        ValueError
-    ) as e:
-        pass
+    list_files_perhaps(
+        fdp.ConsumeUnicodeNoSurrogates(24),
+        fdp.ConsumeIntInRange(500, 1500)
+    )
 
 
 def main():
     pysan.pysan_add_hooks()
+
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
 
 
 if __name__ == "__main__":
     main()
+

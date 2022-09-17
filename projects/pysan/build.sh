@@ -15,12 +15,14 @@
 #
 ################################################################################
 
+cd $SRC/pysan-lib
+
+# install pysan
+python3 ./setup.py install
+
 # poc
-touch __init__.py
-cp $SRC/target_lib.py .
-cp $SRC/sanlib.py .
-python3 ./sanlib.py
-compile_python_fuzzer $SRC/fuzz_poc.py
+cd tests
+compile_python_fuzzer os_command_injection.py
 
 # libvcs
 # https://github.com/advisories/GHSA-mv2w-4jqc-6fg4

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from setuptools import setup, find_packages
 
-import os
-import sys
-
-def list_files_perhaps(param, magicval):
-    if magicval == 1337:
-        try:
-            os.system(param)
-        except ValueError:
-            pass
-    elif magicval == 1338:
-        os.system("exec-san")
-    elif magicval == 1339:
-        os.system("ls -la FROMFUZZ")
-    else:
-        return 2
+setup(
+    name='pysan',
+    version='1.0',
+    author='David Korczynski',
+    author_email='david@adalogics.com',
+    packages=find_packages(exclude="tests")
+)

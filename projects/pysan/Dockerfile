@@ -29,5 +29,6 @@ RUN pip3 install --upgrade pip pexpect
 #RUN pip3 install libvcs
 #COPY Yamale $SRC/Yamale
 RUN mkdir $SRC/command-injection-python
-WORKDIR command-injection-python
+#WORKDIR command-injection-python
+COPY pysan pysan-lib
 COPY build.sh *.py $SRC/

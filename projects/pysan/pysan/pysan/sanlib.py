@@ -248,4 +248,4 @@ def pysan_add_hooks():
     subprocess.Popen = pysan_add_hook(subprocess.Popen,
                                pre_exec_hook = pysan_hook_subprocess_Popen)
 
-pysan_add_hooks()
+#pysan_add_hooks()
