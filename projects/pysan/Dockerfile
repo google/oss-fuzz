@@ -22,13 +22,6 @@ RUN apt-get update && apt-get install -y \
   libtool \
   python3-dev libldap2-dev libsasl2-dev ldap-utils
 RUN pip3 install --upgrade pip pexpect
-#RUN git clone https://github.com/Nuitka/Nuitka
-#RUN git clone https://github.com/vcs-python/libvcs && \
-#    cd $SRC/libvcs && \
-#    git checkout tags/v0.10.0
-#RUN pip3 install libvcs
-#COPY Yamale $SRC/Yamale
-RUN mkdir $SRC/command-injection-python
-#WORKDIR command-injection-python
+
 COPY pysan pysan-lib
 COPY build.sh *.py $SRC/
