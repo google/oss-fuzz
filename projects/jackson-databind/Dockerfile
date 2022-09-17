@@ -34,6 +34,9 @@ RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-datab
 
 RUN git clone --depth 1 https://github.com/forge/roaster
 
+# Seed files
+RUN git clone --depth 1 https://github.com/AdamKorcz/github-samples
+
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 WORKDIR jackson-databind
@@ -43,4 +46,3 @@ RUN git clone --depth 1 https://github.com/FasterXML/jackson-core
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
-COPY AdaLObjectReader3Fuzzer_seed_corpus.zip $SRC/
