@@ -1,0 +1,9 @@
+homepage: "https://github.com/ordian/toml_edit"
+language: rust
+main_repo: "https://github.com/ordian/toml_edit"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - maxnair.dev@gmail.com
