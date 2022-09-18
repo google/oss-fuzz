@@ -1,10 +1,9 @@
 homepage: "https://github.com/coturn/coturn"
 language: c
 primary_contact: "misi@majd.eu"
-vendor_ccs:
+auto_ccs:
   - "mom040267@gmail.com"
   - "gustavogb@gmail.com"
-auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
   - libfuzzer
