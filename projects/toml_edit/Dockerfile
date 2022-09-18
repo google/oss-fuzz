@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 ttps://github.com/ordian/toml_edit toml_edit
+RUN git clone --depth 1 https://github.com/ordian/toml_edit toml_edit
 WORKDIR $SRC
 COPY build.sh $SRC/
