@@ -32,7 +32,8 @@
 #  $ cd oss-fuzz/projects/elfutils
 #  $ git clone git://sourceware.org/git/elfutils.git
 #  $ ./build.sh
-#  $ unzip -d CORPUS fuzz-dwfl-core_seed_corpus.zip
+#  $ wget -O fuzz-dwfl-core-corpus.zip "https://storage.googleapis.com/elfutils-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/elfutils_fuzz-dwfl-core/public.zip"
+#  $ unzip -d CORPUS fuzz-dwfl-core-corpus.zip
 #  $ ./out/fuzz-dwfl-core CORPUS/
 
 set -eux
@@ -143,6 +144,3 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdwfl.o \
 	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
   ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-libdwfl"
-
-# Corpus
-cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"
