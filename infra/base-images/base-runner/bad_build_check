@@ -114,7 +114,16 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
-    return 0
+  elif [[ "$FUZZING_ENGINE" == centipede &&  "$SANITIZER" == "none" ]]; then
+    # Only perform run test on unsanitized binary for now.
+    # TODO(Dongge): Support run test for sanitized binaries as well.
+    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "\[0] begin-fuzz: ft: 0 cov: 0" -c $FUZZER_OUTPUT)
+    if (( $CHECK_PASSED == 0 )); then
+      echo "BAD BUILD: fuzzing $FUZZER with centipede failed."
+      cat $FUZZER_OUTPUT
+      return 1
+    fi
   fi
 
   # TODO: add checks for other fuzzing engines if possible.

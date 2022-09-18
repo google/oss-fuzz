@@ -5,6 +5,7 @@ auto_ccs:
  - "itaiz@google.com"
  - "mihaimaruseac@google.com"
  - "rostam@google.com"
+ - "unda@google.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
