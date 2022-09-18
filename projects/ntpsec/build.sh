@@ -23,8 +23,9 @@ cp FuzzExtens $OUT/FuzzExtens
 cp FuzzServer $OUT/FuzzServer
 cp FuzzLeapsec $OUT/FuzzLeapsec
 
-cp input/FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
-cp input/FuzzExtens_seed_corpus.zip $OUT/FuzzExtens_seed_corpus.zip
-cp input/FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip
-cp input/FuzzLeapsec_seed_corpus.zip $OUT/FuzzLeapsec_seed_corpus.zip
+cd $SRC/oss-fuzz-bloat/ntpsec/
+cp FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
+cp FuzzExtens_seed_corpus.zip $OUT/FuzzExtens_seed_corpus.zip
+cp FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip
+cp FuzzLeapsec_seed_corpus.zip $OUT/FuzzLeapsec_seed_corpus.zip
 
