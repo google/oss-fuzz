@@ -100,12 +100,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
-  build_steps = build_lib.get_project_image_steps(
-      project.name,
-      project.image,
-      project.fuzzing_language,
-      branch=config.branch,
-      test_image_suffix=config.test_image_suffix)
+  build_steps = build_lib.get_project_image_steps(project.name,
+                                                  project.image,
+                                                  project.fuzzing_language,
+                                                  config=config)
 
   build = build_project.Build(FUZZING_ENGINE, 'coverage', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)

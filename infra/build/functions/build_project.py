@@ -54,8 +54,11 @@ PROJECTS_DIR = os.path.abspath(
     os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
                  os.path.pardir, 'projects'))
 
+DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
+    'Config',
+    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
+    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -115,6 +118,14 @@ def get_sanitizer_strings(sanitizers):
   return processed_sanitizers
 
 
+def set_default_sanitizer_for_centipede(project_yaml):
+  """Adds none as a sanitizer for centipede in yaml if it does not exist yet."""
+  # Centipede requires a separate unsanitized binary to use sanitized ones.
+  if ('centipede' in project_yaml['fuzzing_engines'] and
+      project_yaml['sanitizers'] and 'none' not in project_yaml['sanitizers']):
+    project_yaml['sanitizers'].append('none')
+
+
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
@@ -164,6 +175,9 @@ def set_yaml_defaults(project_yaml):
   project_yaml.setdefault('run_tests', True)
   project_yaml.setdefault('coverage_extra_args', '')
   project_yaml.setdefault('labels', {})
+  # Adds 'none' as a sanitizer for centipede to the project yaml by default,
+  # because Centipede always requires a separate build of unsanitized binary.
+  set_default_sanitizer_for_centipede(project_yaml)
 
 
 def is_supported_configuration(build):
@@ -278,8 +292,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.name,
       project.image,
       project.fuzzing_language,
-      branch=config.branch,
-      test_image_suffix=config.test_image_suffix,
+      config=config,
       architectures=project.architectures)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
@@ -517,10 +530,10 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing,
-                  args.test_image_suffix,
-                  args.branch,
-                  args.parallel,
+  config = Config(testing=args.testing,
+                  test_image_suffix=args.test_image_suffix,
+                  branch=args.branch,
+                  parallel=args.parallel,
                   upload=True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)

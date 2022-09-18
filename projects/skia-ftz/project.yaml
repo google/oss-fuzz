@@ -3,6 +3,7 @@ language: c++
 primary_contact: "brendandg@nyu.edu"
 auto_ccs:
   - "metzman@google.com"
+  - "bd52@nyu.edu"
 
 sanitizers:
  - address

@@ -1,0 +1,19 @@
+homepage: "https://mapserver.org"
+language: c++
+primary_contact: "mapserver-security@osgeo.org"
+vendor_ccs:
+  - "max.kellermann@gmail.com"
+  - "sethg@geographika.co.uk"
+  - "jmckenna@gatewaygeomatics.com"
+  - "even.rouault@spatialys.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/MapServer/MapServer'
