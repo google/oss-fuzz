@@ -21,7 +21,7 @@ make all
 cp FuzzStun $OUT/FuzzStun
 cp FuzzStunClient $OUT/FuzzStunClient
 
-cd $SRC/oss-fuzz-bloat/coturn/
+pushd $SRC/oss-fuzz-bloat/coturn/
 cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
 cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
-
+popd
