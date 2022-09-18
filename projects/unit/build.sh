@@ -21,6 +21,9 @@ pushd fuzzer/
 make
 cp Fuzz_http $OUT/Fuzz_http
 cp Fuzz_clone $OUT/Fuzz_clone
+popd
+
+pushd $SRC/oss-fuzz-bloat/nginx-unit/
 cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
 cp Fuzz_clone_seed_corpus.zip $OUT/Fuzz_clone_seed_corpus.zip
 popd
