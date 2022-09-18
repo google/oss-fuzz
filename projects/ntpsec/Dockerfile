@@ -21,4 +21,3 @@ RUN git clone https://github.com/0x34d/oss-fuzz-bloat
 COPY build.sh $SRC/
 COPY fuzz/ $SRC/ntpsec/fuzz/
 WORKDIR $SRC/ntpsec/
-

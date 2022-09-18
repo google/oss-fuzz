@@ -23,9 +23,9 @@ cp FuzzExtens $OUT/FuzzExtens
 cp FuzzServer $OUT/FuzzServer
 cp FuzzLeapsec $OUT/FuzzLeapsec
 
-cd $SRC/oss-fuzz-bloat/ntpsec/
+pushd $SRC/oss-fuzz-bloat/ntpsec/
 cp FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
 cp FuzzExtens_seed_corpus.zip $OUT/FuzzExtens_seed_corpus.zip
 cp FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip
 cp FuzzLeapsec_seed_corpus.zip $OUT/FuzzLeapsec_seed_corpus.zip
-
+popd
