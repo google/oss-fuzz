@@ -33,10 +33,11 @@ cp Fuzz_profile $OUT/Fuzz_profile
 cp Fuzz_marshal $OUT/Fuzz_marshal
 popd
 
-cd $SRC/oss-fuzz-bloat/krb5/
+pushd $SRC/oss-fuzz-bloat/krb5/
 cp Fuzz_ndr_seed_corpus.zip $OUT/Fuzz_ndr_seed_corpus.zip
 cp Fuzz_pac_seed_corpus.zip $OUT/Fuzz_pac_seed_corpus.zip
 cp Fuzz_chpw_seed_corpus.zip $OUT/Fuzz_chpw_seed_corpus.zip
 cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 cp Fuzz_profile_seed_corpus.zip $OUT/Fuzz_profile_seed_corpus.zip
 cp Fuzz_marshal_seed_corpus.zip $OUT/Fuzz_marshal_seed_corpus.zip
+popd
