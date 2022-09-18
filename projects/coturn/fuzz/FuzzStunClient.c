@@ -18,7 +18,7 @@ limitations under the License.
 #include "stun_buffer.h"
 
 #define kMinInputLength 5
-#define kMaxInputLength 65507
+#define kMaxInputLength 10240
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//stunclient.c
 
