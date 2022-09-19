@@ -18,8 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool shtool zlib1g-dev:i386
 RUN git clone --depth 1 https://github.com/file/file.git
 
-# Supplement file's existing test files to get elf + pe coverage.
+# Supplement file's existing test files
 RUN git clone --depth 1 https://github.com/DavidKorczynski/binary-samples.git
+RUN git clone --depth 1 https://github.com/corkami/pocs
 
 WORKDIR file
 COPY build.sh magic_fuzzer.cc $SRC/

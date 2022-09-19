@@ -25,4 +25,7 @@ $CXX $CXXFLAGS -std=c++11 -Isrc/ \
 
 cp ./magic/magic.mgc $OUT/
 
-zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-*
+mkdir pocs_all
+find $SRC/pocs/ -type f -print0 | xargs -0 -I % mv -f % ./pocs_all
+
+zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-* $SRC/pocs_all
