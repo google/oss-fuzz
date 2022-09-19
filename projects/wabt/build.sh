@@ -22,11 +22,16 @@ cmake ..
 cmake --build .
 cd ..
 
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
+for fuzzers in $(find $SRC -name '*_fuzzer.cc' | grep -v wasm_objdump_fuzzer); do
   fuzz_basename=$(basename -s .cc $fuzzers)
   $CXX $CXXFLAGS -std=c++11 -I. -Ibuild \
   $fuzzers $LIB_FUZZING_ENGINE ./build/libwabt.a \
   -o $OUT/$fuzz_basename
 done
+
+# wasm_objdump_fuzzer needs to be linked together with binary-reader-objdump.cc
+$CXX $CXXFLAGS -std=c++11 -I. -Ibuild /src/wasm_objdump_fuzzer.cc \
+        ./src/binary-reader-objdump.cc $LIB_FUZZING_ENGINE ./build/libwabt.a \
+        -o $OUT/wasm_objdump_fuzzer
 
 

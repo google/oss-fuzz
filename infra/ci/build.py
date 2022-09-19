@@ -182,7 +182,8 @@ def build_project(project):
   print('Building project', project)
   build_fuzzers(project, engine, sanitizer, architecture)
 
-  if engine != 'none' and sanitizer != 'coverage':
+  run_tests = project_yaml.get('run_tests', True)
+  if engine != 'none' and sanitizer != 'coverage' and run_tests:
     check_build(project, engine, sanitizer, architecture)
 
 
