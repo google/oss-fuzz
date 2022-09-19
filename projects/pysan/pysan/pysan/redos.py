@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""Sanitizer for regular expression dos."""
 
 import time
 import sys
@@ -24,7 +25,8 @@ from pysan import sanlib
 # - https://dl.acm.org/doi/pdf/10.1145/3236024.3236027
 # and the current approach we use is simply check for extensive computing time.
 # In essence, this is more of a refinement of traditional timeout checker from
-# the fuzzer, however, that's the consequence of ReDOS attacks as well.
+# the fuzzer, which, effectivelly will detect these types of attacks by way of
+# timeouts.
 #
 # Perhaps the smartest would be to use something like e.g.
 # https://github.com/doyensec/regexploit to scan the regex patterns.

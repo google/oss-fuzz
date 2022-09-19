@@ -14,15 +14,16 @@
 #
 ################################################################################
 
-from typing import Any, Callable, Optional
-import functools
 import re
+import os
 import sys
 import time
-import os
+import functools
 import subprocess
 
+from typing import Any, Callable, Optional
 from pysan import command_injection, redos
+
 
 sanitizer_log_level = 0
 def sanitizer_log(msg, log_level):
@@ -30,9 +31,7 @@ def sanitizer_log(msg, log_level):
     if log_level >= sanitizer_log_level:
         print(f"[PYSAN] {msg}")
 
-#################
-# Hooking logic #
-#################
+
 def create_object_wrapper(**methods):
   """Hooks functions in an object
 

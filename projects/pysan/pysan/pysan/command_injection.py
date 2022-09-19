@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""Sanitizers for capturing code injections"""
 
 from typing import Optional
 
@@ -59,6 +60,7 @@ def pysan_hook_subprocess_Popen(cmd, **kwargs):
 
     # Command injections depend on whether the first argument is a list of
     # strings or a string. Handle this now.
+    # Example: tests/poe/ansible-runner-cve-2021-4041
     if type(cmd) is str:
         res = check_code_injection_match(cmd, check_unquoted=True)
         if res != None:
@@ -73,6 +75,7 @@ def pysan_hook_subprocess_Popen(cmd, **kwargs):
 
 
     # Check for hg command injection
+    # Example: tests/poe/libvcs-cve-2022-21187
     if cmd[0] == "hg":
         # Check if the arguments are controlled by the fuzzer, and this given
         # arg is not preceded by --
@@ -97,7 +100,7 @@ def pysan_hook_os_system(cmd):
 
 
 def pysan_hook_eval(cmd):
-    """Hook for eval"""
+    """Hook for eval. Experimental atm."""
     res = check_code_injection_match(cmd)
     if res != None:
         raise Exception(f"Potential code injection by way of eval\n{res}")
