@@ -27,6 +27,7 @@ def get_all_substr_prefixes(main_str, sub_str):
         # where an occurence of the substring was found.
         idx += len(sub_str)
 
+
 def check_code_injection_match(
     elem, check_unquoted = False
 ) -> Optional[str]:
@@ -57,7 +58,7 @@ def pysan_hook_subprocess_Popen(cmd, **kwargs):
 
     # Check first argument
     if type(cmd) is str:
-        res = check_code_injection_match(cmd)
+        res = check_code_injection_match(cmd, check_unquoted=True)
         if res != None:
             # Check taint is unquoted.
             if arg_shell is True:
