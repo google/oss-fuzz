@@ -15,6 +15,7 @@
 ################################################################################
 """Sanitizers for capturing code injections"""
 
+import sys
 from typing import Optional
 
 
@@ -96,7 +97,10 @@ def pysan_hook_os_system(cmd):
     """Hook for os.system"""
     res = check_code_injection_match(cmd)
     if res != None:
-        raise Exception(f"Potential code injection by way of os.system\n{res}")
+        print("code injection by way of os.system")
+        # Exceptions are not enough to throw if they are all caught: https://github.com/Lightning-AI/lightning/blob/8b7a12c52e52a06408e9231647839ddb4665e8ae/pytorch_lightning/utilities/argparse.py#L123-L125
+        sys.exit(1337)
+        #raise Exception(f"Potential code injection by way of os.system\n{res}")
 
 
 def pysan_hook_eval(cmd):
