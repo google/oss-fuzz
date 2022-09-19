@@ -23,4 +23,4 @@ RUN git clone --depth 1 https://github.com/DavidKorczynski/binary-samples.git
 RUN git clone --depth 1 https://github.com/corkami/pocs
 
 WORKDIR file
-COPY build.sh magic_fuzzer.cc $SRC/
+COPY build.sh fuzzer_temp_file.h magic_fuzzer.cc magic_fuzzer_loaddb.cc $SRC/
