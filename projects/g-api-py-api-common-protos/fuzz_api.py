@@ -19,7 +19,6 @@ import atheris
 with atheris.instrument_imports(enable_loader_override=False):
   import google.api.quota_pb2
   import google.api.billing_pb2
-  import google.api.service_pb2
   import google.api.routing_pb2
   import google.api.log_pb2
   from google.protobuf.message import DecodeError, EncodeError
@@ -44,7 +43,6 @@ def TestOneInput(input_bytes):
 
   protobuf_roundtrip(google.api.quota_pb2.QuotaLimit(), input_bytes)
   protobuf_roundtrip(google.api.billing_pb2.Billing(), input_bytes)
-  protobuf_roundtrip(google.api.service_pb2.Service(), input_bytes)
   protobuf_roundtrip(google.api.routing_pb2.RoutingRule(), input_bytes)
   protobuf_roundtrip(google.api.log_pb2.LogDescriptor(), input_bytes)
 
