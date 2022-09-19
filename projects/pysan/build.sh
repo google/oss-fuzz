@@ -23,6 +23,7 @@ python3 ./setup.py install
 # poc
 cd tests
 compile_python_fuzzer os_command_injection.py
+compile_python_fuzzer subprocess_popen_injection.py
 
 # libvcs
 # https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
