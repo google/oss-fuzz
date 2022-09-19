@@ -3,7 +3,7 @@ language: c++
 primary_contact: "mapserver-security@osgeo.org"
 vendor_ccs:
   - "max.kellermann@gmail.com"
-  - "sethg@geographika.co.uk"
+  - "geographika@gmail.com"
   - "jmckenna@gatewaygeomatics.com"
   - "even.rouault@spatialys.com"
 auto_ccs:
