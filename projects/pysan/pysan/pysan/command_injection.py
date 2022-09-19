@@ -16,6 +16,7 @@
 
 from typing import Optional
 
+
 def get_all_substr_prefixes(main_str, sub_str):
     idx = 0
     while True:
@@ -56,24 +57,36 @@ def pysan_hook_subprocess_Popen(cmd, **kwargs):
     else:
         arg_shell = False
 
-    # Check first argument
+    # Command injections depend on whether the first argument is a list of
+    # strings or a string. Handle this now.
     if type(cmd) is str:
         res = check_code_injection_match(cmd, check_unquoted=True)
         if res != None:
-            # Check taint is unquoted.
+            # if shell arg is true and string is tainted and unquoted that's a
+            # definite code injection.
             if arg_shell is True:
                 raise Exception("Code injection in Popen")
 
             # Otherwise it's a maybe.
             raise Exception(
                     f"Potental code injection in subprocess.Popen\n{res}")
-    if type(cmd) is list:
-        for elem in cmd:
-            res = check_code_injection_match(elem)
-            if res != None:
-                print(res)
+
+
+    # Check for hg command injection
+    if cmd[0] == "hg":
+        # Check if the arguments are controlled by the fuzzer, and this given
+        # arg is not preceded by --
+        found_dashes = False
+        for idx in range(1, len(cmd)):
+            if cmd[0] == "--":
+                found_dashes = True
+            if not found_dashes and check_code_injection_match(cmd[idx]):
                 raise Exception(
-                    f"Potential code injection in subprocess.Popen\n{res}")
+                    f"""command injection likely by way of mercurial. The following
+                      command {str(cmd)} is executed, and if you substitute {cmd[idx]}
+                      with \"--config=alias.init=!touch HELLO_PY\" then you will
+                      create HELLO_PY"""
+                )
 
 
 def pysan_hook_os_system(cmd):
