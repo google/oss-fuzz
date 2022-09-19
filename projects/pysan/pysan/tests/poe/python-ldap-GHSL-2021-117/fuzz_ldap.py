@@ -21,9 +21,6 @@ import atheris
 import pysan
 pysan.pysan_add_hooks()
 
-from pysan import sanlib
-from pysan import redos
-
 import ldap.schema
 
 
