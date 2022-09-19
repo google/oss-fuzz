@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake bison flex
 RUN git clone --branch master  https://github.com/igraph/igraph
-RUN wget https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.14.tar.xz && tar xf libxml2-2.9.14.tar.xz
+RUN wget https://download.gnome.org/sources/libxml2/2.10/libxml2-2.10.0.tar.xz && tar xf libxml2-2.10.0.tar.xz
 WORKDIR igraph
 RUN cp $SRC/igraph/fuzzing/build.sh $SRC/build.sh
