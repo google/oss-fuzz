@@ -16,15 +16,15 @@
 ################################################################################
 
 autoreconf -i
-./configure --enable-static
+./configure --enable-static --enable-fsect-man5
 make V=1 all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
-     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      $SRC/magic_fuzzer_loaddb.cc -o $OUT/magic_fuzzer_loaddb \
-     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
 
 cp ./magic/magic.mgc $OUT/
 
