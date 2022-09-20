@@ -15,10 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get install --yes cmake
-RUN apt-get install --yes autoconf
-RUN apt-get install --yes libtool
-RUN apt-get install --yes pkg-config
+RUN apt-get update && apt-get install --yes cmake autoconf libtool pkg-config
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/extra-cmake-modules.git

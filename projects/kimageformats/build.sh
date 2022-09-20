@@ -115,8 +115,8 @@ HANDLER_TYPES="ANIHandler ani
         SoftimagePICHandler pic
         PSDHandler psd
         RASHandler ras
-        RGBHandler rgb
         RAWHandler raw
+        RGBHandler rgb
         TGAHandler tga
         XCFHandler xcf"
 
