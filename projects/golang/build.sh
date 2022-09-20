@@ -116,7 +116,7 @@ cd $SRC/net/http2/h2c
 cd $SRC/instrumentation && go run main.go $SRC/net && cd -
 go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_x_h2c
-mv $SRC/fuzz_h2c.options $OUT/
+mv $SRC/fuzz_x_h2c.options $OUT/
 
 cp $SRC/openpgp_fuzzer.go $SRC/crypto/openpgp/packet
 cd $SRC/crypto/openpgp/packet

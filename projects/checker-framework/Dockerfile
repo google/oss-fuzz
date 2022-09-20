@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,19 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config cmake bison flex
-RUN git clone --branch master  https://github.com/igraph/igraph
-WORKDIR igraph
-RUN cp $SRC/igraph/fuzzing/build.sh $SRC/build.sh
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN apt update && apt install -y openjdk-17-jdk
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+RUN git clone --depth 1 https://github.com/typetools/checker-framework
+
+WORKDIR checker-framework
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/

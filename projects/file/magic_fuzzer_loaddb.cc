@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,38 +17,20 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 
 #include <magic.h>
 
-struct Environment {
-  Environment(std::string data_dir) {
-    magic = magic_open(MAGIC_COMPRESS|MAGIC_CONTINUE);
-    std::string magic_path = data_dir + "/magic";
-    if (magic_load(magic, magic_path.c_str())) {
-      fprintf(stderr, "error loading magic file: %s\n", magic_error(magic));
-      exit(1);
-    }
-  }
-
-  magic_t magic;
-};
-
-static Environment* env;
-
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  char* exe_path = (*argv)[0];
-  // dirname() can modify its argument.
-  char* exe_path_copy = strdup(exe_path);
-  char* dir = dirname(exe_path_copy);
-  env = new Environment(dir);
-  free(exe_path_copy);
-  return 0;
-}
+#include "fuzzer_temp_file.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1)
     return 0;
-  magic_buffer(env->magic, data, size);
+  
+  FuzzerTemporaryFile ftf (data, size);
+  magic_t magic = magic_open(MAGIC_NONE);
+  
+  magic_check(magic, ftf.filename());
+  magic_compile(magic, ftf.filename());
+  magic_close(magic);
   return 0;
 }

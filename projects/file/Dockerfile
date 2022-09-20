@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool shtool zlib1g-dev:i386
+RUN apt-get update && apt install -y make autoconf automake libtool shtool
+RUN apt-get update && apt install -y libbz2-dev      liblzma-dev      zlib1g-dev      libzstd-dev      liblz4-dev
+RUN apt-get update && apt install -y libbz2-dev:i386 liblzma-dev:i386 zlib1g-dev:i386 libzstd-dev:i386 liblz4-dev:i386 
 RUN git clone --depth 1 https://github.com/file/file.git
 
 # Supplement file's existing test files
@@ -23,4 +25,4 @@ RUN git clone --depth 1 https://github.com/DavidKorczynski/binary-samples.git
 RUN git clone --depth 1 https://github.com/corkami/pocs
 
 WORKDIR file
-COPY build.sh magic_fuzzer.cc $SRC/
+COPY build.sh fuzzer_temp_file.h magic_fuzzer.cc magic_fuzzer_loaddb.cc $SRC/
