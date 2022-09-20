@@ -22,8 +22,7 @@ TMP_CXXFLAGS=$CXXFLAGS
 CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
 CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 autoreconf --install
-./configure
-# ln -s Makefile.dist Makefile
+./configure --disable-examples
 make -j$(nproc) 
 make install -j$(nproc)
 CFLAGS=$TMP_CFLAGS
