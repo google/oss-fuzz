@@ -34,7 +34,7 @@ COPY build.sh text_fuzzer.go \
      ecdsa_fuzzer.go \
      aes_fuzzer.go \
      h2c_fuzzer.go \
-     fuzz_h2c.options \
+     fuzz_x_h2c.options \
      elf_fuzzer.go \
      tiff_fuzzer.go \
      fuzz_tiff_decode.options \
