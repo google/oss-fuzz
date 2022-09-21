@@ -15,19 +15,35 @@
 
 import atheris
 import sys
+import mock
+
 with atheris.instrument_imports():
-    import google.cloud.logging_v2.handlers._monitored_resources as resources
+    from google.cloud.logging_v2.handlers import _monitored_resources
+
+
+global_fdp = None
+def mock_retrieve_metadata_server(endpoint):
+    """Mock for retrieve_metadata_server"""
+    if global_fdp is None:
+        return None
+    if global_fdp.ConsumeIntInRange(1, 10) < 3:
+        return None
+    return global_fdp.ConsumeUnicodeNoSurrogates(30)
 
 def TestInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
+    global global_fdp
+    global_fdp = atheris.FuzzedDataProvider(data)
 
-    resources._create_functions_resource()
-    resources._create_kubernetes_resource()
-    resources._create_compute_resource()
-    resources._create_cloud_run_resource()
-    resources._create_app_engine_resource()
-    resources._create_global_resource(fdp.ConsumeString(100))
-    resources.detect_resource(fdp.ConsumeString(100))
+    # Mock the metadata server to avoid connections. The
+    # retrieve_metadata_server will return fuzzer-seeded data.
+    patch = mock.patch(
+        "google.cloud.logging_v2.handlers._monitored_resources.retrieve_metadata_server",
+        wraps=mock_retrieve_metadata_server,
+    )
+    # TODO: randomise relevant environment variables.
+    with patch:
+        _monitored_resources.detect_resource()
+
 
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)

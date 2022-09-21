@@ -43,9 +43,9 @@ cd $SRC/flac/
 ./autogen.sh
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse --enable-oss-fuzzers
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-programs --disable-xmms-plugin --disable-asm-optimizations --disable-sse --enable-oss-fuzzers
 else
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-xmms-plugin --enable-oss-fuzzers
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-shared --disable-oggtest --disable-examples --disable-programs --disable-xmms-plugin --enable-oss-fuzzers
 fi
 make -j$(nproc)
 
@@ -66,5 +66,5 @@ cp fuzzer_*.dict $OUT
 cd $SRC
 
 # Build fuzzer_exo
-$CXX $CXXFLAGS -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
+$CXX $CXXFLAGS -I $SRC/flac/oss-fuzz/ -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
     $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_exo

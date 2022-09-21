@@ -29,6 +29,8 @@ def TestOneInput(data):
       return
     except RecursionError:
       return
+    except MemoryError:
+      return
     return
 
 def main():

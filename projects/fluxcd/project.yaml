@@ -2,9 +2,9 @@ homepage: "https://fluxcd.io/"
 main_repo: "https://github.com/fluxcd/flux2"
 primary_contact: "cncf-flux-security@lists.cncf.io"
 auto_ccs :
-  - "stefan@weave.works"
   - "hidde@weave.works"
-  - "michael@weave.works"
+  - "scott@weave.works"
+  - "paulo.gomes@weave.works"
   - "david@adalogics.com"
   - "adam@adalogics.com"
 language: go

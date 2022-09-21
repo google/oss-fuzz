@@ -16,6 +16,6 @@
 package policy
 
 func FuzzParseFromYAML(data []byte) int {
-	_, _ = ParseFromYAML(data)
+	_, _ = parseFromYAML(data)
 	return 1
 }

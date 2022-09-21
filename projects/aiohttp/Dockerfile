@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
   libpng-dev \
   npm \
   libffi-dev
+RUN python3 -m pip install --upgrade pip
 RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/aiohttp/

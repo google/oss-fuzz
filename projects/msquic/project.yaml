@@ -1,0 +1,6 @@
+homepage: "https://github.com/microsoft/msquic"
+language: c
+primary_contact: "msquicinfra@microsoft.com"
+auto_ccs:
+  - "daikiaminaka@microsoft.com"
+main_repo: 'https://github.com/microsoft/msquic.git'

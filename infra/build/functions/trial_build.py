@@ -109,9 +109,13 @@ def get_args(args=None):
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
-                      default=['afl', 'libfuzzer', 'honggfuzz'],
+                      default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
                       nargs='+',
                       help='Fuzzing engines.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=build_project.DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
@@ -196,7 +200,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=['trial-build']))
+          extra_tags=['trial-build', f'branch-{args.branch}']))
     except Exception:  # pylint: disable=broad-except
       # Handle flake.
       print('Failed to start build', project_name)
@@ -256,7 +260,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   return all(build_results.values())
 
 
-def _do_test_builds(args):
+def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
   # TODO(metzman): Make this handle concurrent builds.
   build_types = []
@@ -274,7 +278,8 @@ def _do_test_builds(args):
     projects = get_projects_to_build(list(args.projects), build_type,
                                      args.force_build)
     config = build_project.Config(testing=True,
-                                  test_image_suffix=TEST_IMAGE_SUFFIX,
+                                  test_image_suffix=test_image_suffix,
+                                  repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
                                   upload=False)
@@ -292,12 +297,19 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
+  introspector = 'introspector' in args.sanitizers
+  if args.branch:
+    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
+  else:
+    test_image_suffix = TEST_IMAGE_SUFFIX
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        TEST_IMAGE_SUFFIX)
+        test_image_suffix)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(TEST_IMAGE_SUFFIX)
-  return _do_test_builds(args)
+    build_and_push_test_images.gcb_build_and_push_images(
+        test_image_suffix, introspector=introspector)
+
+  return _do_test_builds(args, test_image_suffix)
 
 
 def main():

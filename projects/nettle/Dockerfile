@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Held back because of github.com/google/oss-fuzz/pull/8313
+# Please fix failure and upgrade.
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
 RUN apt-get install -y software-properties-common make autoconf build-essential wget lzip libtool python
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
 RUN git clone --depth 1 https://github.com/randombit/botan.git

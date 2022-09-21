@@ -20,7 +20,7 @@ RUN git clone --recursive https://github.com/WebAssembly/wabt
 WORKDIR wabt
 RUN git submodule init
 RUN git submodule update
-COPY build.sh wasm2wat_fuzzer.cc $SRC/
+COPY build.sh *_fuzzer.cc $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
 ENV OLD_LLVMPASS 1

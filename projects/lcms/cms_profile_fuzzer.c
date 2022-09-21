@@ -17,6 +17,18 @@ limitations under the License.
 
 #include "lcms2.h"
 
+cmsTagSignature tagsToRead[] = {
+  cmsSigGreenColorantTag,
+  cmsSigGreenMatrixColumnTag,
+  cmsSigGreenTRCTag,
+  cmsSigMeasurementTag,
+  cmsSigNamedColorTag,
+  cmsSigPreview1Tag,
+  cmsSigPs2CRD2Tag,
+  cmsSigPs2CRD3Tag,
+  cmsSigRedTRCTag,
+};
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size == 0)
     return 0;
@@ -35,19 +47,59 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (hProfile) {
     char tagBuffer[4];
 
-    // Perform multiple tag reads
-    cmsReadRawTag(hProfile, cmsSigGreenColorantTag, tagBuffer, 4);
-    cmsReadRawTag(hProfile, cmsSigGreenColorantTag, NULL, 0);
-    cmsReadRawTag(hProfile, cmsSigGreenColorantTag, tagBuffer, 4);
-    cmsReadTag(hProfile, cmsSigGamutTag);
+    // Perform multiple tag reads. Read tags twice as behavior matters
+    // if tags have been read before.
+    for (int j = 0; j < 2; j++) {
+      for (int i = 0; i < sizeof(tagsToRead)/sizeof(tagsToRead[0]); i++) {
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadRawTag(hProfile, tagsToRead[i], NULL, 0);
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadTag(hProfile, tagsToRead[i]);
+      }
+    }
 
     // Save to random file
     cmsSaveProfileToFile(hProfile, "random.icc");
+    cmsCloseProfile(hProfile);
+  }
 
+  // Let's write the profile now.
+  hProfile = cmsOpenProfileFromFile(filename, "w");
+  if (hProfile) {
+    char tagBuffer[4] = {'a', 'a', 'a', 'a'};
+
+    // Perform multiple tag reads
+    for (int j = 0; j < 2; j++) {
+      for (int i = 0; i < sizeof(tagsToRead)/sizeof(tagsToRead[0]); i++) {
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadRawTag(hProfile, tagsToRead[i], NULL, 0);
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadTag(hProfile, tagsToRead[i]);
+      }
+    }
+
+    for (int i = 0; i < sizeof(tagsToRead)/sizeof(tagsToRead[0]); i++) {
+      cmsWriteRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+    }
+
+    for (int j = 0; j < 2; j++) {
+      for (int i = 0; i < sizeof(tagsToRead)/sizeof(tagsToRead[0]); i++) {
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadRawTag(hProfile, tagsToRead[i], NULL, 0);
+        cmsReadRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+        cmsReadTag(hProfile, tagsToRead[i]);
+      }
+    }
+
+    for (int i = 0; i < sizeof(tagsToRead)/sizeof(tagsToRead[0]); i++) {
+      cmsWriteRawTag(hProfile, tagsToRead[i], tagBuffer, 4);
+    }
+
+    // Save to random file
+    cmsSaveProfileToFile(hProfile, "random.icc");
     cmsCloseProfile(hProfile);
   }
 
   unlink(filename);
-
   return 0;
 }

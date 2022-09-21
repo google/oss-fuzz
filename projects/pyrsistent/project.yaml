@@ -1,0 +1,10 @@
+homepage: "https://github.com/tobgu/pyrsistent"
+language: python
+main_repo: "https://github.com/tobgu/pyrsistent"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - david@adalogics.com

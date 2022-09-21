@@ -35,21 +35,8 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
-RUN apt-get update && apt-get install -y \
-    binutils \
-    file \
-    fonts-dejavu \
-    git \
-    lib32gcc1 \
-    libc6-i386 \
-    libcap2 \
-    python3 \
-    python3-pip \
-    python3-setuptools \
-    rsync \
-    unzip \
-    wget \
-    zip --no-install-recommends
+COPY install_deps.sh /
+RUN /install_deps.sh && rm /install_deps.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage $CODE_COVERAGE_SRC && \
@@ -70,34 +57,24 @@ ENV UBSAN_OPTIONS="print_stacktrace=1:print_summary=1:silence_unsigned_overflow=
 ENV FUZZER_ARGS="-rss_limit_mb=2560 -timeout=25"
 ENV AFL_FUZZER_ARGS="-m none"
 
-# Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux -version 1.18beta2 && \
-    rm $SRC/installer_linux
-
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
 
 # /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
-
-# Set up Golang coverage modules.
 COPY gocoverage $GOPATH/gocoverage
-RUN cd $GOPATH/gocoverage && go install ./...
+
+COPY install_go.sh /
+RUN /install_go.sh && rm /install_go.sh
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 
-RUN wget https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz -O /tmp/openjdk-15.0.2_linux-x64_bin.tar.gz && \
-    cd /tmp && \
-    mkdir -p $JAVA_HOME && \
-    tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
-    rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
-    rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
+COPY install_java.sh /
+RUN /install_java.sh && rm /install_java.sh
 
 # Install JaCoCo for JVM coverage.
 RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar -O /opt/jacoco-cli.jar && \

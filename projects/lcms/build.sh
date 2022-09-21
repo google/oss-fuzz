@@ -20,7 +20,14 @@
 make -j$(nproc) all
 
 # build your fuzzer(s)
-FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer cms_overwrite_transform_fuzzer cms_transform_all_fuzzer cms_profile_fuzzer"
+FUZZERS="cmsIT8_load_fuzzer            \
+        cms_transform_fuzzer           \
+        cms_overwrite_transform_fuzzer \
+        cms_transform_all_fuzzer       \
+        cms_profile_fuzzer             \
+        cms_universal_transform_fuzzer \
+        cms_transform_extended_fuzzer"
+
 for F in $FUZZERS; do
     $CC $CFLAGS -c -Iinclude \
         $SRC/$F.c -o $SRC/$F.o
@@ -30,5 +37,10 @@ for F in $FUZZERS; do
 done
 
 cp $SRC/icc.dict $SRC/*.options $OUT/
+cp $SRC/icc.dict $OUT/cms_transform_all_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_transform_extended_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_universal_transform_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_profile_fuzzer.dict
 cp $SRC/seed_corpus.zip $OUT/cms_transform_fuzzer_seed_corpus.zip
 cp $SRC/seed_corpus.zip $OUT/cms_profile_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_universal_transform_fuzzer_seed_corpus.zip

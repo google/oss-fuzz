@@ -28,26 +28,18 @@ then
     export CXXFLAGS=${CXF1//-fcoverage-mapping/}
 fi
 
-cd $SRC/
-git clone --depth=1 https://github.com/abseil/abseil-cpp
-cd abseil-cpp
+cd $SRC/abseil-cpp
 mkdir build && cd build
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
-
 ldconfig
-
-cd $SRC/
 
 # Build Protobuf
-git clone https://github.com/google/protobuf.git
-cd protobuf
-git submodule update --init --recursive
-./autogen.sh
-./configure
+mkdir $SRC/protobuf-install
+cd $SRC/protobuf-install
+cmake $SRC/protobuf -Dprotobuf_BUILD_TESTS=OFF -DABSL_ROOT_DIR=$SRC/abseil-cpp
 make -j$(nproc)
 make install
-ldconfig
-
+cp $SRC/protobuf/src/google/protobuf/*.inc /usr/local/include/google/protobuf/
 
 # Build icu
 export DEPS_PATH=/src/deps/
@@ -81,9 +73,10 @@ sed -i 's/set(CMAKE_CXX_STANDARD 11/set(CMAKE_CXX_STANDARD 14/g' CMakeLists.txt
 sed -i 's/list (APPEND CMAKE_C_FLAGS "-pthread")/string (APPEND CMAKE_C_FLAGS " -pthread")/g' CMakeLists.txt
 sed -i 's/# Safeguarding/find_package(absl REQUIRED) # Safeguarding/g' CMakeLists.txt
 
-mkdir build && cd build
+mkdir build
+cd build
 cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
-      -DPROTOBUF_LIB="/src/protobuf/src/.libs/libprotobuf.a" \
+      -DPROTOBUF_LIB="/src/protobuf-install/libprotobuf.a" \
       -DBUILD_STATIC_LIB=ON \
       -DICU_UC_INCLUDE_DIR=$SRC/icu/source/comon \
       -DICU_UC_LIB=$DEPS_PATH/lib/libicuuc.a \
@@ -96,7 +89,7 @@ make
 $CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c ../test/phonenumbers/fuzz_phone.cc
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE phonefuzz.o -o $OUT/phonefuzz \
     ./libphonenumber.a \
-    $SRC/protobuf/src/.libs/libprotobuf.a \
+    $SRC/protobuf-install/libprotobuf.a \
     /usr/local/lib/libabsl_cord.a \
     /usr/local/lib/libabsl_cordz_info.a \
     /usr/local/lib/libabsl_cord_internal.a \

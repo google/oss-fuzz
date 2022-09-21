@@ -10,15 +10,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <gelf.h>
 #include <inttypes.h>
 #include <libelf.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "system.h"
 
 
 void fuzz_logic_one(char *filename, int compression_type) {
@@ -69,14 +72,17 @@ void fuzz_logic_twice(char *filename, int open_flags, Elf_Cmd cmd) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
+  char filename[] = "/tmp/fuzz-libelf.XXXXXX";
+  int fd;
+  ssize_t n;
+
+  fd = mkstemp(filename);
+  assert(fd >= 0);
+
+  n = write_retry(fd, data, size);
+  assert(n == (ssize_t) size);
+
+  close(fd);
 
   fuzz_logic_one(filename, 0);
   fuzz_logic_one(filename, 1);

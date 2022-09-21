@@ -15,10 +15,10 @@
 
 import atheris
 import sys
-with atheris.instrument_imports():
-    import google.cloud.logging_v2.entries as entries
-    from google.cloud.logging_v2.client import Client
-    from google.cloud.logging_v2.resource import Resource
+
+import google.cloud.logging_v2.entries as entries
+from google.cloud.logging_v2.client import Client
+from google.cloud.logging_v2.resource import Resource
 
 def create_dummy_log_entry(fdp):
     return entries.LogEntry(
@@ -72,6 +72,7 @@ def TestInput(data):
             raise e
 
 def main():
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
     atheris.Fuzz()
 

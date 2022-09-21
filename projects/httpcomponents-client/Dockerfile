@@ -29,4 +29,4 @@ RUN git clone --depth 1 https://github.com/apache/httpcomponents-core
 RUN git clone --depth 1 https://github.com/qos-ch/slf4j
 
 COPY build.sh $SRC/
-COPY HttpFuzzer.java $SRC/
+COPY *Fuzzer.java $SRC/

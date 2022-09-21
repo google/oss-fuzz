@@ -2,7 +2,9 @@ homepage: "https://github.com/facebook/hermes"
 language: c++
 primary_contact: "neildhar@fb.com"
 auto_ccs:
-  - "mhl@fb.com"
+  - "hmf@fb.com"
+  - "yaohway@fb.com"
+  - "axxu@fb.com"
   - "avp@fb.com"
   - "jsx@fb.com"
 vendor_ccs:

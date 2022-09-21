@@ -54,8 +54,11 @@ PROJECTS_DIR = os.path.abspath(
     os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
                  os.path.pardir, 'projects'))
 
+DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 Config = collections.namedtuple(
-    'Config', ['testing', 'test_image_suffix', 'branch', 'parallel', 'upload'])
+    'Config',
+    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
+    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -69,6 +72,11 @@ class Build:  # pylint: disable=too-few-public-methods
     self.architecture = architecture
     self.targets_list_filename = build_lib.get_targets_list_filename(
         self.sanitizer)
+
+  @property
+  def is_arm(self):
+    """Returns True if CPU architecture is ARM-based."""
+    return self.architecture == 'aarch64'
 
   @property
   def out(self):
@@ -108,6 +116,14 @@ def get_sanitizer_strings(sanitizers):
       processed_sanitizers.extend(sanitizer.keys())
 
   return processed_sanitizers
+
+
+def set_default_sanitizer_for_centipede(project_yaml):
+  """Adds none as a sanitizer for centipede in yaml if it does not exist yet."""
+  # Centipede requires a separate unsanitized binary to use sanitized ones.
+  if ('centipede' in project_yaml['fuzzing_engines'] and
+      project_yaml['sanitizers'] and 'none' not in project_yaml['sanitizers']):
+    project_yaml['sanitizers'].append('none')
 
 
 class Project:  # pylint: disable=too-many-instance-attributes
@@ -159,12 +175,19 @@ def set_yaml_defaults(project_yaml):
   project_yaml.setdefault('run_tests', True)
   project_yaml.setdefault('coverage_extra_args', '')
   project_yaml.setdefault('labels', {})
+  # Adds 'none' as a sanitizer for centipede to the project yaml by default,
+  # because Centipede always requires a separate build of unsanitized binary.
+  set_default_sanitizer_for_centipede(project_yaml)
 
 
 def is_supported_configuration(build):
   """Check if the given configuration is supported."""
   fuzzing_engine_info = build_lib.ENGINE_INFO[build.fuzzing_engine]
   if build.architecture == 'i386' and build.sanitizer != 'address':
+    return False
+  # TODO(jonathanmetzman): UBSan should be easy to support.
+  if build.architecture == 'aarch64' and (build.sanitizer
+                                          not in {'address', 'hwaddress'}):
     return False
   return (build.sanitizer in fuzzing_engine_info.supported_sanitizers and
           build.architecture in fuzzing_engine_info.supported_architectures)
@@ -231,8 +254,10 @@ def get_compile_step(project, build, env, parallel):
       ],
       'id': get_id('compile', build),
   }
-  if parallel:
-    maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
+  build_lib.dockerify_run_step(compile_step,
+                               build,
+                               use_architecture_image_name=build.is_arm)
+  maybe_add_parallel(compile_step, build_lib.get_srcmap_step_id(), parallel)
   return compile_step
 
 
@@ -263,13 +288,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-
-  build_steps = build_lib.project_image_steps(
+  build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
       project.fuzzing_language,
-      branch=config.branch,
-      test_image_suffix=config.test_image_suffix)
+      config=config,
+      architectures=project.architectures)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -302,8 +326,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Test fuzz targets.
           test_step = {
               'name':
-                  get_runner_image_name(base_images_project,
-                                        config.test_image_suffix),
+                  build_lib.get_runner_image_name(base_images_project,
+                                                  config.test_image_suffix),
               'env':
                   env,
               'args': [
@@ -313,6 +337,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               'id':
                   get_id('build-check', build)
           }
+          build_lib.dockerify_run_step(test_step, build)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
                              config.parallel)
           build_steps.append(test_step)
@@ -335,8 +360,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             # Generate targets list.
             {
                 'name':
-                    get_runner_image_name(base_images_project,
-                                          config.test_image_suffix),
+                    build_lib.get_runner_image_name(base_images_project,
+                                                    config.test_image_suffix),
                 'env':
                     env,
                 'args': [
@@ -439,15 +464,6 @@ def get_cleanup_step(project, build):
   }
 
 
-def get_runner_image_name(base_images_project, test_image_suffix):
-  """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |test_image_suffix|."""
-  image = f'gcr.io/{base_images_project}/base-runner'
-  if test_image_suffix:
-    image += '-' + test_image_suffix
-  return image
-
-
 # pylint: disable=no-member,too-many-arguments
 def run_build(oss_fuzz_project,
               build_steps,
@@ -511,14 +527,13 @@ def build_script_main(script_description, get_build_steps_func, build_type):
   logging.basicConfig(level=logging.INFO)
 
   image_project = 'oss-fuzz'
-  base_images_project = 'oss-fuzz-base'
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(args.testing,
-                  args.test_image_suffix,
-                  args.branch,
-                  args.parallel,
+  config = Config(testing=args.testing,
+                  test_image_suffix=args.test_image_suffix,
+                  branch=args.branch,
+                  parallel=args.parallel,
                   upload=True)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
@@ -531,7 +546,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
     steps = get_build_steps_func(project_name, project_yaml,
                                  dockerfile_contents, image_project,
-                                 base_images_project, config)
+                                 build_lib.BASE_IMAGES_PROJECT, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       error = True

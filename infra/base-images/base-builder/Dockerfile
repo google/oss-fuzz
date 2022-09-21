@@ -14,25 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+ARG parent_image=gcr.io/oss-fuzz-base/base-clang
+FROM $parent_image
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get install -y \
-        binutils-dev \
-        build-essential \
-        curl \
-        wget \
-        git \
-        jq \
-        libc6-dev-i386 \
-        patchelf \
-        rsync \
-        subversion \
-        zip
+COPY install_deps.sh /
+RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
@@ -73,9 +59,13 @@ RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_hwaddress "-fsanitize=hwaddress -fuse-ld=lld -Wno-unused-command-line-argument"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
+
+# Don't include "function" since it is unsupported on aarch64.
+ENV SANITIZER_FLAGS_undefined_aarch64 "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
@@ -122,9 +112,13 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout c208dcf9c573e3d85990c7dea777646f7fa4961c && \
+    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
+
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -133,14 +127,20 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-# Do precompiles before copying other scripts for better cache efficiency.
-COPY precompile_afl /usr/local/bin/
-RUN precompile_afl
 
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
+RUN cd $SRC && \
+    git clone https://github.com/google/centipede.git && \
+    cd centipede && \
+    git checkout baa82e7189677bb9086beb5d9b5e58018d991607
+
+COPY precompile_centipede /usr/local/bin/
+RUN precompile_centipede
+
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+    compile_centipede \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
@@ -150,6 +150,7 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     # Go, java, and swift installation scripts.
     install_go.sh \
     install_go_CodeIntelligenceTesting.sh \
+    install_javascript.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \

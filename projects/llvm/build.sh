@@ -82,10 +82,13 @@ for fuzzer in "${FUZZERS[@]}"; do
   cp bin/$fuzzer $OUT
 done
 
-ninja clang-fuzzer-dictionary
-for fuzzer in "${CLANG_DICT_FUZZERS[@]}"; do
-  bin/clang-fuzzer-dictionary > $OUT/$fuzzer.dict
-done
+# 10th August 2022: The lines for building the dictionaries
+# broke the whole build. They are left as a reminder to re-enable
+# them once they have been fixed upstream.
+#ninja clang-fuzzer-dictionary
+#for fuzzer in "${CLANG_DICT_FUZZERS[@]}"; do
+#  bin/clang-fuzzer-dictionary > $OUT/$fuzzer.dict
+#done
 
 zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang/tools/clang-fuzzer/corpus_examples/objc/*
 zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang-tools-extra/clangd/test/*
