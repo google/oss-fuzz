@@ -2,6 +2,7 @@
 #define FUZZ_CMD_BASE_H
 
 #define HASH_SIZE 20
+#define HASH_HEX_SIZE 40
 
 int randomize_git_file(char *dir, char *name, char *data, int size);
 void randomize_git_files(char *dir, char *name_set[],

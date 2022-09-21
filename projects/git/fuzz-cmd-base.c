@@ -104,7 +104,7 @@ void generate_commit(char *data, int size)
  */
 void generate_commit_in_branch(char *data, int size, char *branch_name)
 {
-	char *data_chunk = xmallocz_gently(size * 2);
+	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
 	struct strbuf push_cmd = STRBUF_INIT;
 
 	if (!data_chunk)

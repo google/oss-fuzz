@@ -25,8 +25,8 @@ FUZZERS="fuzz-pack-headers fuzz-pack-idx fuzz-commit-graph"
 #FUZZERS="$FUZZERS fuzz-commit-graph-parse-commit fuzz-commit-graph-verify"
 #FUZZERS="$FUZZERS fuzz-commit-graph-get-graph fuzz-commit-graph-open"
 #FUZZERS="$FUZZERS fuzz-commit-graph-handle fuzz-commit-graph-write"
-FUZZERS="$FUZZERS fuzz-cmd-status fuzz-cmd-version"
-#FUZZERS="$FUZZERS fuzz-cmd-add-commit fuzz-cmd-diff fuzz-cmd-branch"
+FUZZERS="$FUZZERS fuzz-cmd-status fuzz-cmd-version fuzz-cmd-diff"
+#FUZZERS="$FUZZERS fuzz-cmd-add-commit fuzz-cmd-branch"
 #FUZZERS="$FUZZERS fuzz-cmd-grep fuzz-cmd-ls fuzz-cmd-mv fuzz-cmd-cherry"
 
 # copy fuzzers

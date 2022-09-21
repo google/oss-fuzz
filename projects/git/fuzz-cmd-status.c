@@ -23,7 +23,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * End this round of fuzzing if the data is not large enough
 	 */
-	if (size <= (HASH_SIZE * 2 + 4))
+	if (size <= (HASH_HEX_SIZE + 4))
 	{
 		repo_clear(the_repository);
 		return 0;
@@ -39,7 +39,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	data += 4;
 	size -= 4;
 
-	data_chunk = xmallocz_gently(HASH_SIZE * 2);
+	data_chunk = xmallocz_gently(HASH_HEX_SIZE);
 
 	if (!data_chunk)
 	{
@@ -49,10 +49,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	for (i = 0; i < no_of_commit; i++)
 	{
-		memcpy(data_chunk, data, HASH_SIZE * 2);
+		memcpy(data_chunk, data, HASH_HEX_SIZE);
 		generate_commit(data_chunk, HASH_SIZE);
-		data += (HASH_SIZE * 2);
-		size -= (HASH_SIZE * 2);
+		data += HASH_HEX_SIZE;
+		size -= HASH_HEX_SIZE;
 	}
 
 	free(data_chunk);
