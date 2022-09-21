@@ -10,16 +10,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <gelf.h>
 #include <inttypes.h>
 #include <libelf.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "libdwfl.h"
+#include "system.h"
 
 static const char *debuginfo_path = "";
 static const Dwfl_Callbacks cb  = {
@@ -31,21 +34,24 @@ static const Dwfl_Callbacks cb  = {
 
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
+  char filename[] = "/tmp/fuzz-libdwfl.XXXXXX";
+  int fd;
+  ssize_t n;
+
+  fd = mkstemp(filename);
+  assert(fd >= 0);
+
+  n = write_retry(fd, data, size);
+  assert(n == (ssize_t) size);
+
+  close(fd);
 
   Dwarf_Addr bias = 0;
   Dwfl *dwfl = dwfl_begin(&cb);
   dwfl_report_begin(dwfl);
 
   Dwfl_Module *mod = dwfl_report_offline(dwfl, filename, filename, -1);
-  Dwarf *res = dwfl_module_getdwarf(mod, &bias);
+  dwfl_module_getdwarf(mod, &bias);
 
   dwfl_end (dwfl);
   unlink(filename);

@@ -112,7 +112,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout c208dcf9c573e3d85990c7dea777646f7fa4961c && \
+    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
 
@@ -134,7 +134,7 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout a976295b2acaff8461a906c461f5bb25dafdf557
+    git checkout baa82e7189677bb9086beb5d9b5e58018d991607
 
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede

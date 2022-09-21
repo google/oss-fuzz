@@ -16,6 +16,19 @@
 ################################################################################
 
 cd $SRC
+cd LibRaw
+TMP_CFLAGS=$CFLAGS
+TMP_CXXFLAGS=$CXXFLAGS
+CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
+CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
+autoreconf --install
+./configure --disable-examples
+make -j$(nproc) 
+make install -j$(nproc)
+CFLAGS=$TMP_CFLAGS
+CXXFLAGS=$TMP_CXXFLAGS
+
+cd $SRC
 cd zlib
 ./configure --static
 make install -j$(nproc)
@@ -102,6 +115,7 @@ HANDLER_TYPES="ANIHandler ani
         SoftimagePICHandler pic
         PSDHandler psd
         RASHandler ras
+        RAWHandler raw
         RGBHandler rgb
         TGAHandler tga
         XCFHandler xcf"
@@ -111,7 +125,7 @@ echo "$HANDLER_TYPES" | while read class format; do
   fuzz_target_name=kimgio_${format}_fuzzer
 
   $SRC/qtbase/bin/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/liblibde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec-static.a $SRC/libjxl/build/third_party/brotli/libbrotlienc-static.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon-static.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/liblibde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec-static.a $SRC/libjxl/build/third_party/brotli/libbrotlienc-static.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon-static.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a
 
   find . -name "*.${format}" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
 )
