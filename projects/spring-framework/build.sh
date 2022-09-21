@@ -57,6 +57,8 @@ install -v  $SRC/JdbcCoreMapperFuzzerBeans.xml $OUT
 
 for fuzzer in $SRC/*Fuzzer.java; do
   fuzzer_basename=$(basename -s .java $fuzzer)
+  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
+  cp $SRC/$fuzzer_basename*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
