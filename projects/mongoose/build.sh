@@ -15,7 +15,7 @@
 #
 
 cd $SRC/mongoose
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DMG_ENABLE_LINES -DMG_ENABLE_LOG=0 mongoose.c -I. test/fuzz.c -o $OUT/fuzz
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz.c -o $OUT/fuzz
 
 # Fuzzer using honggfuzz netdriver.
 if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
