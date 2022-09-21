@@ -33,4 +33,4 @@ RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' 
 COPY build.sh $SRC/
 COPY *.dict *.java *.xml $SRC/
 COPY jdbc $SRC/jdbc/
-WORKDIR $SRC/spring-framework 
+WORKDIR $SRC/spring-framework
