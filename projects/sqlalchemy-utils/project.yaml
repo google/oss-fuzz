@@ -2,8 +2,8 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/kvesteri/sqlalchemy-utils
 language: python
-primary_contact: "kurtmckee@gmail.com"
 main_repo: https://github.com/kvesteri/sqlalchemy-utils
+primary_contact: kurtmckee@gmail.com
 sanitizers:
 - address
 - undefined
@@ -11,3 +11,5 @@ vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
 - arthur.chan@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

@@ -1,17 +1,17 @@
-homepage: "https://developers.google.com/protocol-buffers/"
-language: jvm
-primary_contact: "kfm@google.com"
 auto_ccs:
-  - "meumertzheim@code-intelligence.com"
-  - "acozzette@google.com"
-  - "jgrimes@google.com"
-  - "pzd@google.com"
-  - "sandyzhang@google.com"
-  - "jgm@google.com"
-  - "norbert.schneider@code-intelligence.com"
-  - "hlin@code-intelligence.com"
+- meumertzheim@code-intelligence.com
+- acozzette@google.com
+- jgrimes@google.com
+- pzd@google.com
+- sandyzhang@google.com
+- jgm@google.com
+- norbert.schneider@code-intelligence.com
+- hlin@code-intelligence.com
 fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/protocolbuffers/protobuf"
+- libfuzzer
+homepage: https://developers.google.com/protocol-buffers/
+language: jvm
+main_repo: https://github.com/protocolbuffers/protobuf
+primary_contact: kfm@google.com
 sanitizers:
-  - address
+- address
