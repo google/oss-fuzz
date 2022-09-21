@@ -17,6 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt install -y nodejs
 RUN pip3 install --upgrade pip
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt install -y nodejs
 RUN git clone https://github.com/jupyter-server/jupyter_server/
 COPY build.sh *.py $SRC/
 WORKDIR jupyter_server
