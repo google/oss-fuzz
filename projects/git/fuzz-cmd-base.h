@@ -14,6 +14,7 @@ limitations under the License.
 
 #define HASH_SIZE 20
 #define HASH_HEX_SIZE 40
+#define INT_SIZE 4
 
 int randomize_git_file(char *dir, char *name, char *data, int size);
 void randomize_git_files(char *dir, char *name_set[],
@@ -22,6 +23,6 @@ void generate_random_file(char *data, int size);
 void generate_commit(char *data, int size);
 void generate_commit_in_branch(char *data, int size, char *branch_name);
 void reset_git_folder(void);
-int get_max_commit_count(int data_size, int git_files_count, int hash_size);
+int get_max_commit_count(int data_size, int git_files_count, int reserve_size);
 
 #endif
