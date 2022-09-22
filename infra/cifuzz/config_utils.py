@@ -123,6 +123,8 @@ class BaseConfig:
     self.build_integration_path = (
         constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
 
+    self.parallel_fuzzing = os.environ.get('PARALLEL_FUZZING')
+
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
     if not os.getenv('CIFUZZ_TEST') and not self.validate():
