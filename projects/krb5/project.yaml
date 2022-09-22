@@ -3,6 +3,7 @@ language: c
 primary_contact: "krbcore-security@mit.edu"
 vendor_ccs:
   - "krb5-bugs@mit.edu"
+  - "krbcore@mit.edu"
   - "ghudson@mit.edu"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
