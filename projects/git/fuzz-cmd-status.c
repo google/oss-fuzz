@@ -34,7 +34,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * End this round of fuzzing if the data is not large enough
 	 */
-	if (size <= (HASH_HEX_SIZE + 4))
+	if (size <= (HASH_HEX_SIZE + INT_SIZE))
 	{
 		repo_clear(the_repository);
 		return 0;
@@ -45,7 +45,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Generate random commit
 	 */
-	max_commit_count = get_max_commit_count(size, 0, HASH_SIZE) - 1;
+	max_commit_count = get_max_commit_count(size, 0, INT_SIZE);
 	no_of_commit = (*((int *)data)) % max_commit_count + 1;
 	data += 4;
 	size -= 4;
@@ -74,7 +74,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	repo_clear(the_repository);
 	if (repo_init(the_repository, basedir, "."))
 	{
-		repo_clear(the_repository);
 		return 0;
 	}
 

@@ -175,9 +175,9 @@ void reset_git_folder(void)
  * data to increase randomization of the fuzzing target and allow
  * more path of fuzzing to be covered.
  */
-int get_max_commit_count(int data_size, int git_files_count, int hash_size)
+int get_max_commit_count(int data_size, int git_files_count, int reserve_size)
 {
-	int count = (data_size - 4 - git_files_count * 2) / (hash_size * 2);
+	int count = (data_size - reserve_size  - git_files_count * HASH_SIZE) / (HASH_HEX_SIZE);
 
 	if (count > 20)
 	{
