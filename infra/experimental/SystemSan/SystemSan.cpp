@@ -308,9 +308,15 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     if (root_dir_end != std::string::npos) {
       path_absolute_topdir = path.substr(0, root_dir_end);
     }
-    struct stat dirstat;
-    if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-      log_file_open(path, regs.rdx);
+    for (size_t i = 1; i < path_absolute_topdir.length(); i++) {
+      // the the path top dir has a non-ascii character
+      if (path_absolute_topdir[i] & 0x80) {
+        struct stat dirstat;
+        if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
+          log_file_open(path, regs.rdx);
+        }
+        break;
+      }
     }
   }
 }
