@@ -1,0 +1,20 @@
+diff --git a/build.gradle b/build.gradle
+index 6d1d3c54..a59b2262 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -23,6 +23,7 @@ plugins {
+ 	id 'org.asciidoctor.jvm.pdf' version '3.3.2'
+ 	id 'org.asciidoctor.jvm.gems' version '3.3.2'
+ 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
++	id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ description = 'Spring AMQP'
+@@ -78,6 +79,7 @@ allprojects {
+ 	group = 'org.springframework.amqp'
+ 
+ 	apply plugin: 'io.spring.dependency-management'
++	apply plugin: 'com.github.johnrengelman.shadow'
+ 
+ 	dependencyManagement {
+ 		resolutionStrategy {
