@@ -25,6 +25,9 @@ $CXX $CXXFLAGS -std=c++11 -Isrc/ \
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      $SRC/magic_fuzzer_loaddb.cc -o $OUT/magic_fuzzer_loaddb \
      $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
+$CXX $CXXFLAGS -std=c++11 -Isrc/ \
+     $SRC/magic_fuzzer_fd.cc -o $OUT/magic_fuzzer_loaddb \
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
 
 cp ./magic/magic.mgc $OUT/
 
