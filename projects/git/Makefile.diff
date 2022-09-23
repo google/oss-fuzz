@@ -1,24 +1,25 @@
 diff --git a/Makefile b/Makefile
-index 924b864ae8..bd68d0f05a 100644
+index 924b864ae8..3f0e004a5e 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -689,9 +689,12 @@ SCRIPTS = $(SCRIPT_SH_GEN) \
-
+@@ -689,9 +689,13 @@ SCRIPTS = $(SCRIPT_SH_GEN) \
+ 
  ETAGS_TARGET = TAGS
-
+ 
 -FUZZ_OBJS += fuzz-commit-graph.o
 -FUZZ_OBJS += fuzz-pack-headers.o
 -FUZZ_OBJS += fuzz-pack-idx.o
 +FUZZ_OBJS += oss-fuzz/fuzz-commit-graph.o
 +FUZZ_OBJS += oss-fuzz/fuzz-pack-headers.o
 +FUZZ_OBJS += oss-fuzz/fuzz-pack-idx.o
++FUZZ_OBJS += oss-fuzz/fuzz-command.o
 +FUZZ_OBJS += oss-fuzz/fuzz-cmd-status.o
 +FUZZ_OBJS += oss-fuzz/fuzz-cmd-version.o
 +FUZZ_OBJS += oss-fuzz/fuzz-cmd-diff.o
  .PHONY: fuzz-objs
  fuzz-objs: $(FUZZ_OBJS)
-
-@@ -1012,6 +1015,7 @@ LIB_OBJS += oid-array.o
+ 
+@@ -1012,6 +1016,7 @@ LIB_OBJS += oid-array.o
  LIB_OBJS += oidmap.o
  LIB_OBJS += oidset.o
  LIB_OBJS += oidtree.o
