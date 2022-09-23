@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,16 @@
 #
 ################################################################################
 
-cd $SRC/toml_edit
-cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_document $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven && \
+rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+RUN git clone https://github.com/openjdk/jmh
+
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/jmh

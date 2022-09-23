@@ -318,6 +318,9 @@ then
     cp -R $SRC/wolfssh/ $NEW_SRC
     cp -R $SRC/fuzzing-headers/ $NEW_SRC
     OSS_FUZZ_BUILD=1 SRC="$NEW_SRC" $NEW_SRC/build.sh
+
+    # Copy corpora for SSL/SSH fuzzers
+    cp $SRC/wolf-ssl-ssh-fuzzers/corpora/fuzzer-wolfssl-client-randomize_seed_corpus.zip $OUT/
 fi
 
 if [[ $CFLAGS != *-m32* ]]

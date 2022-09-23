@@ -14,13 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt install -y nodejs
-RUN pip3 install --upgrade pip
-RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
-RUN git clone https://github.com/jupyter/jupyter_events $SRC/jupyter_events
-RUN bash nodesource_setup.sh
-RUN apt install -y nodejs
-RUN git clone https://github.com/jupyter-server/jupyter_server/
-COPY build.sh *.py $SRC/
-WORKDIR jupyter_server
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN git clone --depth 1 https://github.com/greenmail-mail-test/greenmail.git greenmail
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+
+COPY build.sh $SRC/
+COPY *.java $SRC/
+WORKDIR $SRC/greenmail

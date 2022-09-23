@@ -14,8 +14,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/ordian/toml_edit toml_edit
-WORKDIR $SRC
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+RUN apt update && apt install -y openjdk-17-jdk
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-data-redis.git
+
 COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/spring-data-redis
