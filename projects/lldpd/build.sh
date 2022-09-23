@@ -15,7 +15,7 @@
 #
 ################################################################################
 ./autogen.sh
-./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" --disable-shared --disable-hardening --enable-pie
+./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" --disable-shared --disable-hardening --enable-pie
 make
 
 $CC $CFLAGS -fPIE -Wall -Werror -pipe -DHAVE_CONFIG_H -I. -I include/ -c FuzzDecode.c
