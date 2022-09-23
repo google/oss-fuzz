@@ -131,7 +131,8 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 	strbuf_addf(&push_cmd, "git push origin %s", branch_name);
 
 	if (system("git add TEMP-*-TEMP") ||
-		system("git commit -m\"New Commit\""))
+		system("git commit -m\"New Commit\"") ||
+		system(push_cmd.buf))
 	{
 		// Just skip the commit if fails
 		strbuf_release(&push_cmd);

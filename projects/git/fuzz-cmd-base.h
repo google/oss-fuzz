@@ -15,6 +15,23 @@ limitations under the License.
 #define HASH_SIZE 20
 #define HASH_HEX_SIZE 40
 #define INT_SIZE 4
+#define GIT_COMMAND_COUNT 12
+
+typedef enum git_command {
+	GIT_STATUS = 0,
+	GIT_ADD_COMMIT = 1,
+	GIT_VERSION = 2,
+	GIT_CONFIG_RERERE = 3,
+	GIT_DIFF = 4,
+	GIT_DIFF_FILES = 5,
+	GIT_DIFF_TREE = 6,
+	GIT_DIFF_INDEX = 7,
+	GIT_BRANCH = 8,
+	GIT_MV = 9,
+	GIT_LS_FILES = 10,
+	GIT_LS_TREE = 11
+} git_command_t;
+
 
 int randomize_git_file(char *dir, char *name, char *data, int size);
 void randomize_git_files(char *dir, char *name_set[],
