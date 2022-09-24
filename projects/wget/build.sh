@@ -84,14 +84,14 @@ cd $SRC/wget
 autoreconf -fi
 
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
 ./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
 ./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
