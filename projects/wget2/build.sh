@@ -23,13 +23,11 @@ export GNULIB_SRCDIR=$SRC/gnulib
 export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
-./autogen.sh
 ./configure --enable-static --disable-shared --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
 
 cd $SRC/libidn2
-./bootstrap
 ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
