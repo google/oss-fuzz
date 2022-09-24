@@ -76,14 +76,14 @@ export ASAN_OPTIONS=detect_leaks=0
 cd $SRC/wget2
 ./bootstrap
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
   ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc)
 make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
   ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc) -C lib
