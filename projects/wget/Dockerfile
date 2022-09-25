@@ -39,9 +39,10 @@ RUN apt-get update && apt-get install -y \
  libtasn1-bin
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
+ENV GNULIB_SRCDIR $SRC/gnulib
 RUN git clone git://git.savannah.gnu.org/gnulib.git
-RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
+RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar -xz -C /src && mv /src/libunistring-* /src/libunistring
+RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar -xz -C /src && mv /src/libidn2-* /src/libidn2
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
