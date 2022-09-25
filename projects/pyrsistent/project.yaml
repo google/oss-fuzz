@@ -1,10 +1,12 @@
-homepage: "https://github.com/tobgu/pyrsistent"
-language: python
-main_repo: "https://github.com/tobgu/pyrsistent"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/tobgu/pyrsistent
+language: python
+main_repo: https://github.com/tobgu/pyrsistent
 sanitizers:
-  - address
-  - undefined
+- address
+- undefined
 vendor_ccs:
-  - david@adalogics.com
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

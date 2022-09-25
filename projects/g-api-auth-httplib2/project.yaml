@@ -1,8 +1,8 @@
-homepage: "https://github.com/googleapis/google-auth-library-python-httplib2"
-language: python
-main_repo: "https://github.com/googleapis/google-auth-library-python-httplib2/"
 fuzzing_engines:
 - libfuzzer
+homepage: https://github.com/googleapis/google-auth-library-python-httplib2
+language: python
+main_repo: https://github.com/googleapis/google-auth-library-python-httplib2/
 sanitizers:
 - address
 - undefined
@@ -10,3 +10,5 @@ vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
 - arthur.chan@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com
