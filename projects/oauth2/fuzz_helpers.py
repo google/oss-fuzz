@@ -28,8 +28,7 @@ def TestInput(data):
         'Is a symbolic link.',
         'Is a directory',
         'Incorrect padding',
-        'codec can\'t decode byte',
-        'codec can\'t encode character',
+        'Invalid base64-encoded string',
         'could not be converted to'
     ]
 
@@ -46,27 +45,29 @@ def TestInput(data):
 
         helpers.update_query_params(
             fdp.ConsumeString(100),{
-                fdp.ConsumeString(10):fdp.ConsumeString(20),
-                fdp.ConsumeString(10):fdp.ConsumeString(20),
-                fdp.ConsumeString(10):fdp.ConsumeString(20)
+                fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20),
+                fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20),
+                fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20)
         })
 
         helpers._add_query_parameter(
             fdp.ConsumeString(100),
-            fdp.ConsumeString(10),
-            fdp.ConsumeString(20)
+            fdp.ConsumeUnicodeNoSurrogates(10),
+            fdp.ConsumeUnicodeNoSurrogates(20)
         )
 
         helpers.validate_file(fdp.ConsumeString(100))
 
         helpers._json_encode(fdp.ConsumeString(100))
 
-        helpers._to_bytes(fdp.ConsumeString(100))
-        helpers._from_bytes(fdp.ConsumeBytes(100))
+        input = fdp.ConsumeString(100).encode('ascii', errors='ignore').decode()
+        helpers._to_bytes(input)
+        helpers._from_bytes(fdp.ConsumeUnicodeNoSurrogates(100))
 
         helpers._urlsafe_b64encode(fdp.ConsumeString(100))
-        helpers._urlsafe_b64decode(fdp.ConsumeString(100))
-    except (ValueError, UnicodeDecodeError, IOError, binascii.Error) as e:
+        input = fdp.ConsumeString(100).encode('ascii', errors='ignore').decode()
+        helpers._urlsafe_b64decode(input)
+    except (ValueError, IOError, binascii.Error) as e:
         expected = False
         for expected_error in expected_error_list:
             if expected_error in str(e):
