@@ -50,6 +50,7 @@ Content = namedtuple('Content', 'type path name decoded_content')
 logging.basicConfig(level=logging.INFO)
 
 
+# pylint: disable=too-few-public-methods
 class OssFuzzRepo:
   """OSS-Fuzz repo."""
 
@@ -70,6 +71,7 @@ class OssFuzzRepo:
     return os.path.join(self._out_dir, 'oss-fuzz-master')
 
   def get_contents(self, path):
+    """Gets contents of path."""
     contents = []
     list_path = os.path.join(self._repo_dir, path)
     for item in os.listdir(list_path):
@@ -77,15 +79,16 @@ class OssFuzzRepo:
       rel_path = os.path.relpath(full_path, self._repo_dir)
 
       if os.path.isdir(full_path):
-        type = 'dir'
+        file_type = 'dir'
         decoded_content = None
       else:
-        type = 'file'
-        with open(full_path, mode='rb') as f:
-          decoded_content = f.read()
+        file_type = 'file'
+        with open(full_path, mode='rb') as file:
+          decoded_content = file.read()
 
       contents.append(
-          Content(type, rel_path, os.path.basename(rel_path), decoded_content))
+          Content(file_type, rel_path, os.path.basename(rel_path),
+                  decoded_content))
 
     return contents
 
