@@ -11,6 +11,7 @@ auto_ccs:
   - "dgarske80@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
+  - "tim.weller@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
