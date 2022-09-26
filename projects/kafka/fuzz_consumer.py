@@ -50,7 +50,7 @@ def TestInput(data):
 
         partitions = list(
             map(
-                lambda part: TopicPartition(fdp.ConsumeString(10), part),
+                lambda part: TopicPartition(fdp.ConsumeString(10).replace('\x00', ''), part),
                 range(0, 100, 3)
             )
         )
