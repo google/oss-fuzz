@@ -70,9 +70,14 @@ def TestInput(data):
     except IndexError as e:
         if "Unable to parse XPath string:" not in str(e):
             raise e
+    except KeyError:
+        return
 
     try:
         dom = ET.fromstring(generate_sample_xml(fdp))
+    except UnicodeEncodeError as e:
+        if "codec can't encode character" not in str(e):
+            raise e
     except ParseError:
         return
 
