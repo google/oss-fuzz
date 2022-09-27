@@ -56,10 +56,9 @@ def TestInput(data):
             raise e
 
     try:
-        base64_urlsafe_decode(fdp.ConsumeString(100))
-    except (binascii.Error, UnicodeEncodeError) as e:
-        if (("Invalid base64-encoded string" not in str(e)) and
-            ("codec can't encode characters" not in str(e))):
+        base64_urlsafe_decode(fdp.ConsumeUnicodeNoSurrogates(100))
+    except binascii.Error as e:
+        if "Invalid base64-encoded string" not in str(e):
             raise e
 
 def main():
