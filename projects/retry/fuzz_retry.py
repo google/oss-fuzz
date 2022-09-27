@@ -19,30 +19,44 @@ with atheris.instrument_imports():
      from retry import *
 
 IS_ERROR = True
+ERROR_MSG = "TestingError"
+
+class TestingError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
 
 def error_method():
     global IS_ERROR
     IS_ERROR = not IS_ERROR
 
+    global ERROR_MSG
+
     if IS_ERROR:
-        raise ValueError
+        raise TestingError(ERROR_MSG)
     else:
        return
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    global IS_ERROR 
+    global IS_ERROR
     IS_ERROR = fdp.ConsumeBool()
 
-    retry_call(error_method,logger=None)
-    retry_call(
-        error_method,
-        exceptions=ValueError,
-        tries=fdp.ConsumeIntInRange(-1,100),
-        delay=fdp.ConsumeIntInRange(1,10),
-        logger=None
-    )
+    global ERROR_MSG
+    ERROR_MSG = fdp.ConsumeString(20)
+
+    try:
+        retry_call(error_method,logger=None)
+        retry_call(
+            error_method,
+            exceptions=TestingError,
+            tries=fdp.ConsumeIntInRange(-1,100),
+            delay=fdp.ConsumeIntInRange(1,10),
+            logger=None
+        )
+    except TestingError:
+        # Expected when retry limit is reached
+        pass
 
     @retry(logger=None)
     def wrapper_one():
@@ -57,8 +71,12 @@ def TestInput(data):
     def wrapper_two():
         error_method()
 
-    wrapper_one()
-    wrapper_two()
+    try:
+        wrapper_one()
+        wrapper_two()
+    except TestingError:
+        # Expected when retry limit it reached
+        pass
 
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
