@@ -15,7 +15,7 @@
 #
 ################################################################################
 ./bootstrap
-./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" --enable-debug --disable-shared
+./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" --enable-debug --disable-shared
 make -j$(nproc)
 
 $CC $CFLAGS -fPIE -pipe -Wall -Wextra -DHAVE_CONFIG_H -DDEBUG -DIXML_HAVE_SCRIPTSUPPORT \
