@@ -24,6 +24,7 @@ int cmd_diff_tree(int argc, const char **argv, const char *prefix);
 int cmd_ls_files(int argc, const char **argv, const char *prefix);
 int cmd_ls_tree(int argc, const char **argv, const char *prefix);
 int cmd_mv(int argc, const char **argv, const char *prefix);
+int cmd_push(int argc, const char **argv, const char *prefix);
 int cmd_rerere(int argc, const char **argv, const char *prefix);
 int cmd_status(int argc, const char **argv, const char *prefix);
 int cmd_version(int argc, const char **argv, const char *prefix);
@@ -35,6 +36,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	int i;
 	int argc;
 	int no_of_commit;
+	int no_of_loop;
 	int max_commit_count;
 	char *argv[6];
 	char *data_chunk;
@@ -43,31 +45,35 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	struct strbuf name = STRBUF_INIT;
 
 	/*
-	 *  Initialize the repository
+	 *  Determine number of loop to execute
 	 */
-	initialize_the_repository();
+	if (size <= 4)
+	{
+		return 0;
+	}
+	no_of_loop = abs((*((int *)data)) % 20);
+	data += 4;
+	size -= 4;
 
 	/*
 	 * End this round of fuzzing if the data is not large enough
 	 */
-	if (size <= (HASH_HEX_SIZE * 4 + HASH_SIZE + INT_SIZE * 2))
+	if (size <= (HASH_HEX_SIZE * 2 + HASH_SIZE * 3 + INT_SIZE * (no_of_loop + 1)))
 	{
-		repo_clear(the_repository);
 		return 0;
 	}
 
+	/*
+	 *  Initialize the repository
+	 */
+	initialize_the_repository();
 	reset_git_folder();
 
 	/*
 	 * Generate random commit
 	 */
-	max_commit_count = get_max_commit_count(size, 0,
-		HASH_HEX_SIZE * 2 + HASH_SIZE + INT_SIZE * 2);
-	no_of_commit = (*((int *)data)) % max_commit_count + 1;
-	data += 4;
-	size -= 4;
-
-	choice = (*((int *)data)) % GIT_COMMAND_COUNT;
+	max_commit_count = get_max_commit_count(size, 0, HASH_SIZE * 3 + INT_SIZE * (no_of_loop + 1));
+	no_of_commit = abs((*((int *)data)) % max_commit_count) + 1;
 	data += 4;
 	size -= 4;
 
@@ -101,11 +107,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Alter content of TEMP_1 and TEMP_2
 	 */
-	data_chunk = xmallocz_gently(HASH_SIZE);
-	memcpy(data_chunk, data, HASH_SIZE);
-	randomize_git_file(".", "TEMP_1", data_chunk, HASH_SIZE);
-	memcpy(data_chunk, data + HASH_SIZE, HASH_SIZE);
-	randomize_git_file(".", "TEMP_2", data_chunk, HASH_SIZE);
+	data_chunk = xmallocz_gently(HASH_SIZE * 2);
+	memcpy(data_chunk, data, HASH_SIZE * 2);
+	char *nameset[] = {"TEMP_1", "TEMP_2"};
+	randomize_git_files(".", nameset, 2, data_chunk, HASH_SIZE * 2);
 	data += (HASH_SIZE * 2);
 	size -= (HASH_SIZE * 2);
 	free(data_chunk);
@@ -120,184 +125,197 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	size -= HASH_SIZE;
 	free(data_chunk);
 
-	switch(choice) {
-		case GIT_STATUS: default:
-			argv[0] = "status";
-			argv[1] = "-v";
-			argv[2] = NULL;
-			cmd_status(2, (const char **)argv, (const char *)"");
+	for (i = 0 ; i < no_of_loop; i++)
+	{
+		choice = (*((int *)data)) % GIT_COMMAND_COUNT;
+		data += 4;
+		size -= 4;
 
-			break;
+		switch(choice) {
+			case GIT_STATUS: default:
+				argv[0] = "status";
+				argv[1] = "-v";
+				argv[2] = NULL;
+				cmd_status(2, (const char **)argv, (const char *)"");
 
-		case GIT_ADD_COMMIT:
-			argv[0] = "add";
-			argv[1]	= "-u";
-			argv[2] = NULL;
-			cmd_add(2, (const char **)argv, (const char *)"");
+				break;
 
-			argv[0] = "commit";
-			argv[1] = "-m";
-			argv[2] = "\"New Commit\"";
-			argv[3] = NULL;
-			cmd_commit(3, (const char **)argv, (const char *)"");
+			case GIT_ADD_COMMIT_PUSH:
+				argv[0] = "add";
+				argv[1]	= "-u";
+				argv[2] = NULL;
+				cmd_add(2, (const char **)argv, (const char *)"");
 
-			break;
+				argv[0] = "commit";
+				argv[1] = "-m";
+				argv[2] = "\"New Commit\"";
+				argv[3] = NULL;
+				cmd_commit(3, (const char **)argv, (const char *)"");
 
-		case GIT_VERSION:
-			argv[0] = "version";
-			argv[1] = NULL;
-			cmd_version(1, (const char **)argv, (const char *)"");
+				argv[0] = "push";
+				argv[1] = "origin";
+				argv[2] = "master";
+				argv[3] = NULL;
+				cmd_push(3, (const char **)argv, (const char *)"");
 
-			argv[1] = "--build-options";
-			argv[2] = NULL;
-			cmd_version(2, (const char **)argv, (const char *)"");
+				break;
 
-			break;
+			case GIT_VERSION:
+				argv[0] = "version";
+				argv[1] = NULL;
+				cmd_version(1, (const char **)argv, (const char *)"");
 
-		case GIT_CONFIG_RERERE:
-			argv[0] = "config";
-			argv[1] = "--global";
-			argv[2] = "rerere.enabled";
-			argv[3] = "true";
-			argv[4] = NULL;
-			cmd_config(4, (const char **)argv, (const char *)"");
+				argv[1] = "--build-options";
+				argv[2] = NULL;
+				cmd_version(2, (const char **)argv, (const char *)"");
 
-			argv[0] = "rerere";
-			argv[1] = NULL;
-			cmd_rerere(1, (const char **)argv, (const char *)"");
+				break;
 
-			argv[1] = "clear";
-			argv[2] = NULL;
-			cmd_rerere(2, (const char **)argv, (const char *)"");
+			case GIT_CONFIG_RERERE:
+				argv[0] = "config";
+				argv[1] = "--global";
+				argv[2] = "rerere.enabled";
+				argv[3] = "true";
+				argv[4] = NULL;
+				cmd_config(4, (const char **)argv, (const char *)"");
 
-			argv[1] = "diff";
-			cmd_rerere(2, (const char **)argv, (const char *)"");
+				argv[0] = "rerere";
+				argv[1] = NULL;
+				cmd_rerere(1, (const char **)argv, (const char *)"");
 
-			argv[1] = "remaining";
-			cmd_rerere(2, (const char **)argv, (const char *)"");
+				argv[1] = "clear";
+				argv[2] = NULL;
+				cmd_rerere(2, (const char **)argv, (const char *)"");
 
-			argv[1] = "status";
-			cmd_rerere(2, (const char **)argv, (const char *)"");
+				argv[1] = "diff";
+				cmd_rerere(2, (const char **)argv, (const char *)"");
 
-			argv[1] = "gc";
-			cmd_rerere(2, (const char **)argv, (const char *)"");
+				argv[1] = "remaining";
+				cmd_rerere(2, (const char **)argv, (const char *)"");
 
-			break;
+				argv[1] = "status";
+				cmd_rerere(2, (const char **)argv, (const char *)"");
 
-		case GIT_DIFF:
-			argv[0] = "diff";
-			argv[1] = NULL;
-			cmd_diff(1, (const char **)argv, (const char *)"");
+				argv[1] = "gc";
+				cmd_rerere(2, (const char **)argv, (const char *)"");
 
-			argv[1] = "TEMP_1";
-			argv[2] = NULL;
-			cmd_diff(2, (const char **)argv, (const char *)"");
+				break;
 
-			argv[2] = "TEMP_2";
-			argv[3] = NULL;
-			cmd_diff(3, (const char **)argv, (const char *)"");
+			case GIT_DIFF:
+				argv[0] = "diff";
+				argv[1] = NULL;
+				cmd_diff(1, (const char **)argv, (const char *)"");
 
-			break;
+				argv[1] = "TEMP_1";
+				argv[2] = NULL;
+				cmd_diff(2, (const char **)argv, (const char *)"");
 
-		case GIT_DIFF_FILES:
-			argv[0] = "diff-files";
-			argv[1] = NULL;
-			cmd_diff_files(1, (const char **)argv, (const char *)"");
+				argv[2] = "TEMP_2";
+				argv[3] = NULL;
+				cmd_diff(3, (const char **)argv, (const char *)"");
 
-			argv[1] = "TEMP_1";
-			argv[2] = NULL;
-			cmd_diff_files(2, (const char **)argv, (const char *)"");
+				break;
 
-			argv[2] = "TEMP_2";
-			argv[3] = NULL;
-			cmd_diff_files(3, (const char **)argv, (const char *)"");
+			case GIT_DIFF_FILES:
+				argv[0] = "diff-files";
+				argv[1] = NULL;
+				cmd_diff_files(1, (const char **)argv, (const char *)"");
 
-			break;
+				argv[1] = "TEMP_1";
+				argv[2] = NULL;
+				cmd_diff_files(2, (const char **)argv, (const char *)"");
 
-		case GIT_DIFF_TREE:
-			argv[0] = "diff-tree";
-			argv[1] = "master";
-			argv[2] = "--";
-			argv[3] = NULL;
-			cmd_diff_tree(3, (const char **)argv, (const char *)"");
+				argv[2] = "TEMP_2";
+				argv[3] = NULL;
+				cmd_diff_files(3, (const char **)argv, (const char *)"");
 
-			break;
+				break;
 
-		case GIT_DIFF_INDEX:
-			argv[0] = "diff-index";
-			argv[1] = "master";
-			argv[2] = "--";
-			argv[3] = NULL;
-			cmd_diff_index(3, (const char **)argv, (const char *)"");
+			case GIT_DIFF_TREE:
+				argv[0] = "diff-tree";
+				argv[1] = "master";
+				argv[2] = "--";
+				argv[3] = NULL;
+				cmd_diff_tree(3, (const char **)argv, (const char *)"");
 
-			argv[2] = "--";
-			argv[3] = "TEMP_1";
-			argv[4] = NULL;
-			cmd_diff_index(4, (const char **)argv, (const char *)"");
+				break;
 
-			argv[2] = "--";
-			argv[3] = "TEMP_1";
-			argv[4] = "TEMP_2";
-			argv[5] = NULL;
-			cmd_diff_index(5, (const char **)argv, (const char *)"");
+			case GIT_DIFF_INDEX:
+				argv[0] = "diff-index";
+				argv[1] = "master";
+				argv[2] = "--";
+				argv[3] = NULL;
+				cmd_diff_index(3, (const char **)argv, (const char *)"");
 
-			break;
+				argv[2] = "--";
+				argv[3] = "TEMP_1";
+				argv[4] = NULL;
+				cmd_diff_index(4, (const char **)argv, (const char *)"");
 
-		case GIT_BRANCH:
-			argv[0] = "branch";
-			argv[1] = name.buf;
-			argv[2] = NULL;
-			cmd_branch(2, (const char **)argv, (const char *)"");
+				argv[2] = "--";
+				argv[3] = "TEMP_1";
+				argv[4] = "TEMP_2";
+				argv[5] = NULL;
+				cmd_diff_index(5, (const char **)argv, (const char *)"");
 
-			argv[1] = "-d";
-			argv[2] = name.buf;
-			argv[3] = NULL;
-			cmd_branch(3, (const char **)argv, (const char *)"");
+				break;
 
-			break;
+			case GIT_BRANCH:
+				argv[0] = "branch";
+				argv[1] = name.buf;
+				argv[2] = NULL;
+				cmd_branch(2, (const char **)argv, (const char *)"");
 
-		case GIT_MV:
-			argv[0] = "mv";
-			argv[1] = "-k";
-			argv[2] = "TEMP_1";
-			argv[3] = name.buf;
-			argv[4] = NULL;
-			cmd_mv(4, (const char **)argv, (const char *)"");
+				argv[1] = "-d";
+				argv[2] = name.buf;
+				argv[3] = NULL;
+				cmd_branch(3, (const char **)argv, (const char *)"");
 
-			argv[1] = "-k";
-			argv[2] = name.buf;
-			argv[3] = "TEMP_1";
-			argv[4] = NULL;
-			cmd_mv(4, (const char **)argv, (const char *)"");
+				break;
 
-			break;
+			case GIT_MV:
+				argv[0] = "mv";
+				argv[1] = "-k";
+				argv[2] = "TEMP_1";
+				argv[3] = name.buf;
+				argv[4] = NULL;
+				cmd_mv(4, (const char **)argv, (const char *)"");
 
-		case GIT_LS_FILES:
-			argv[0] = "ls-files";
-			argv[1] = NULL;
-			cmd_ls_files(1, (const char **)argv, (const char *)"");
+				argv[1] = "-k";
+				argv[2] = name.buf;
+				argv[3] = "TEMP_1";
+				argv[4] = NULL;
+				cmd_mv(4, (const char **)argv, (const char *)"");
 
-			argv[1] = "TEMP";
-			argv[2] = NULL;
-			cmd_ls_files(2, (const char **)argv, (const char *)"");
+				break;
 
-			argv[1] = "-m";
-			argv[2] = NULL;
-			cmd_ls_files(2, (const char **)argv, (const char *)"");
+			case GIT_LS_FILES:
+				argv[0] = "ls-files";
+				argv[1] = NULL;
+				cmd_ls_files(1, (const char **)argv, (const char *)"");
 
-			argv[1] = name.buf;
-			argv[2] = NULL;
-			cmd_ls_files(2, (const char **)argv, (const char *)"");
+				argv[1] = "TEMP";
+				argv[2] = NULL;
+				cmd_ls_files(2, (const char **)argv, (const char *)"");
 
-			break;
+				argv[1] = "-m";
+				argv[2] = NULL;
+				cmd_ls_files(2, (const char **)argv, (const char *)"");
 
-		case GIT_LS_TREE:
-			argv[0] = "ls-tree";
-			argv[1] = "master";
-			argv[2] = NULL;
-			cmd_ls_tree(2, (const char **)argv, (const char *)"");
+				argv[1] = name.buf;
+				argv[2] = NULL;
+				cmd_ls_files(2, (const char **)argv, (const char *)"");
 
-			break;
+				break;
+
+			case GIT_LS_TREE:
+				argv[0] = "ls-tree";
+				argv[1] = "master";
+				argv[2] = NULL;
+				cmd_ls_tree(2, (const char **)argv, (const char *)"");
+
+				break;
+		}
 	}
 
 	strbuf_release(&name);
