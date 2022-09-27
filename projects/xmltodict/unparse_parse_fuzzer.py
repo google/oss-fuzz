@@ -73,7 +73,11 @@ def _gen_value(fdp: atheris.FuzzedDataProvider, depth: int) -> Any:
 def test_one_input(data: bytes):
     fdp = atheris.FuzzedDataProvider(data)
     original = OrderedDict()
-    original[_gen_string(fdp)] = _gen_value(fdp, depth=0)
+    try:
+        original[_gen_string(fdp)] = _gen_value(fdp, depth=0)
+    except RecursionError:
+        # Not interesting
+        return
 
     try:
         # Not all fuzz-generated data is valid XML.
