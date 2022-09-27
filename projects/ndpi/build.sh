@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+#Disable code instrumentation
+CFLAGS_SAVE="$CFLAGS"
+CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export AFL_NOOPT=1
+
 # build libpcap
 tar -xvzf libpcap-1.9.1.tar.gz
 cd libpcap-1.9.1
@@ -29,6 +36,11 @@ cd build
 cmake -DBUILD_SHARED_LIBS=OFF ..
 make install
 cd ../..
+
+#Re-enable code instrumentation
+export CFLAGS="${CFLAGS_SAVE}"
+export CXXFLAGS="${CXXFLAGS_SAVE}"
+unset AFL_NOOPT
 
 # build project
 cd ndpi
