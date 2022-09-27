@@ -7,12 +7,12 @@ auto_ccs:
   - "john.safranek@gmail.com"
   - "kaleb@wolfssl.com"
   - "kaleb.himes@gmail.com"
-  - "levi@wolfssl.com"
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
-  - "jeffelms.wolfssl@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
+  - "uriah@wolfssl.com"
+  - "tim.weller@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
