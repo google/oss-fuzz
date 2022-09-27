@@ -19,7 +19,7 @@ limitations under the License.
 
 typedef enum git_command {
 	GIT_STATUS = 0,
-	GIT_ADD_COMMIT = 1,
+	GIT_ADD_COMMIT_PUSH = 1,
 	GIT_VERSION = 2,
 	GIT_CONFIG_RERERE = 3,
 	GIT_DIFF = 4,
