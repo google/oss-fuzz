@@ -25,6 +25,7 @@ import (
 	"net"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"runtime"
 	"strings"
 )
@@ -97,6 +98,11 @@ func FuzzH2c(data []byte) int {
 		return -1
 	}
 	r.Header = headerMap
+	u, err := url.Parse("http://localhost:8001")
+	if err != nil {
+		return 0
+	}
+	r.URL = u
 	defer catchPanics()
 	h.ServeHTTP(w, r)
 	return 1
