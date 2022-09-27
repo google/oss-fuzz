@@ -29,7 +29,8 @@ def TestInput(data):
         'Is a directory',
         'Incorrect padding',
         'Invalid base64-encoded string',
-        'could not be converted to'
+        'could not be converted to',
+        'contains invalid characters under NFKC normalization'
     ]
 
     try:
@@ -64,7 +65,7 @@ def TestInput(data):
         helpers._to_bytes(input)
         helpers._from_bytes(fdp.ConsumeUnicodeNoSurrogates(100))
 
-        helpers._urlsafe_b64encode(fdp.ConsumeString(100))
+        helpers._urlsafe_b64encode(fdp.ConsumeUnicodeNoSurrogates(100))
         input = fdp.ConsumeString(100).encode('ascii', errors='ignore').decode()
         helpers._urlsafe_b64decode(input)
     except (ValueError, IOError, binascii.Error) as e:
