@@ -292,6 +292,15 @@ void log_file_open(std::string path, int flags) {
   std::cerr << "===\n";
 }
 
+bool has_unprintable(const std::string &value) {
+  for (size_t i = 0; i < value.length(); i++) {
+    if (value[i] & 0x80) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's register for the sign of arbitrary file open.
   std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
@@ -308,9 +317,11 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     if (root_dir_end != std::string::npos) {
       path_absolute_topdir = path.substr(0, root_dir_end);
     }
-    struct stat dirstat;
-    if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-      log_file_open(path, regs.rdx);
+    if (has_unprintable(path_absolute_topdir)) {
+      struct stat dirstat;
+      if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
+        log_file_open(path, regs.rdx);
+      }
     }
   }
 }

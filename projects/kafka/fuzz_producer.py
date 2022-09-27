@@ -26,9 +26,9 @@ def TestInput(data):
         'message.timeout.ms': fdp.ConsumeIntInRange(10,2000)
     })
 
-    p.produce(fdp.ConsumeString(20))
+    p.produce(fdp.ConsumeString(20).replace('\x00', ''))
     p.produce(
-        fdp.ConsumeString(20),
+        fdp.ConsumeString(20).replace('\x00', ''),
         value=fdp.ConsumeString(20),
         key=fdp.ConsumeString(20)
     )
