@@ -21,6 +21,7 @@ import time
 import functools
 import subprocess
 import traceback
+import importlib
 
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
@@ -31,6 +32,10 @@ def sanitizer_log(msg, log_level):
     global sanitizer_log_level
     if log_level >= sanitizer_log_level:
         print(f"[PYSAN] {msg}")
+
+
+def is_module_present(mod_name):
+    return importlib.find_loader(mod_name) is not None
 
 
 def abort_with_issue(msg):
@@ -169,12 +174,8 @@ def pysan_add_hooks():
 
     # Hack to determine if yaml is elligible, because pkg_resources does
     # not seem to work from pyinstaller.
-    do_yaml = True
-    try:
+    if is_module_present("yaml"):
         import yaml
-    except:
-        do_yaml = False
-    if do_yaml:
         sanitizer_log("Hooking pyyaml.load", 0)
         yaml.load = pysan_add_hook(
             yaml.load,
