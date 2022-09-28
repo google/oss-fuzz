@@ -168,7 +168,7 @@ def add_hooks():
     re.compile = add_hook(
         re.compile,
         pre_exec_hook = redos.hook_pre_exec_re_compile,
-        post_exec_hook = redos.hook_post_exec__re_compile
+        post_exec_hook = redos.hook_post_exec_re_compile
     )
 
 

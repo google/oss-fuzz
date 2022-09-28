@@ -22,7 +22,7 @@ try:
 except:
     pass
 
-def prehook_pyyaml_load(stream, loader):
+def hook_pre_exec_pyyaml_load(stream, loader):
     """Hook for pyyaml.load_yaml
 
     Exits if the loader is unsafe or vanilla loader and the stream passed
