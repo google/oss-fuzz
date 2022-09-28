@@ -16,6 +16,17 @@
 ################################################################################
 
 # build dependencies statically
+if [ "$SANITIZER" = "memory" ]
+then
+    (
+    cd zlib
+    ./configure --static
+    make -j$(nproc) clean
+    make -j$(nproc) all
+    make -j$(nproc) install
+    )
+fi
+
 (
 tar -xvzf pcre2-10.39.tar.gz
 cd pcre2-10.39
