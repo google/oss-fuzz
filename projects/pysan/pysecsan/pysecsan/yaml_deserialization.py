@@ -15,11 +15,30 @@
 ################################################################################
 """Catches vulnerable yaml desrializations that can potentially lead to
 arbitrary code execution."""
+from pysecsan import sanlib
 
+try:
+    import yaml
+except:
+    pass
 
-def prehook_pyyaml_load(s, l):
-    # check value of stream
-    if s == "FUZZ":
-        print("Got it")
-    print("In yaml load")
+def prehook_pyyaml_load(stream, loader):
+    """Hook for pyyaml.load_yaml
 
+    Exits if the loader is unsafe or vanilla loader and the stream passed
+    to the loader is controlled by the fuzz data
+    """
+    # Ensure loader is the unsafe loader or vanilla loader
+    if (
+            type(loader) != yaml.loader.Loader and
+            type(loader) != yaml.loader.UnsafeLoader
+        ):
+        return
+
+    # Check for exact taint in stream
+    if sanlib.is_exact_taint(stream):
+        msg = (
+            "Yaml deserialization issue.\n"
+            "Unsafe deserialization can be used to execute arbitrary commands.\n"
+        )
+        sanlib.abort_with_issue(msg)

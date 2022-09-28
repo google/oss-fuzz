@@ -20,7 +20,7 @@ import sys
 import time
 import functools
 import subprocess
-import pkg_resources
+import traceback
 
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
@@ -32,6 +32,24 @@ def sanitizer_log(msg, log_level):
     if log_level >= sanitizer_log_level:
         print(f"[PYSAN] {msg}")
 
+
+def abort_with_issue(msg):
+    sanitizer_log("Found an issue, pysecsan exiting", 0)
+    sanitizer_log(msg, 0)
+    traceback.print_stack()
+
+    # Use os._exit here to force exit. sys.exit will exit
+    # by throwing a SystemExit exception which the interpreter
+    # handles by exiting. However, code may catch this exception,
+    # and thus to avoid this we exit the process without exceptions.
+    os._exit(1)
+
+def is_exact_taint(stream) -> bool:
+    """Checks if stream is an exact match for taint from fuzzer"""
+    if stream == "FROMFUZZ":
+        return True
+
+    return False
 
 def create_object_wrapper(**methods):
   """Hooks functions in an object
@@ -91,8 +109,6 @@ def create_object_wrapper(**methods):
       return instance.__getattribute__(name)
 
   return Wrapper
-
-
 
 
 def pysan_add_hook(function: Callable[[Any], Any],

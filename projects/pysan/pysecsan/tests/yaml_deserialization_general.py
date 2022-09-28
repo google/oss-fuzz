@@ -21,18 +21,10 @@ import pysecsan
 import yaml
 
 def serialize_with_tainted_data(param, magicval):
-    if magicval == 1337:
-        try:
-            yaml.load(param, yaml.Loader)
-        except:
-            pass
-    elif magicval == 1338:
-        try:
-            yaml.load("FUZZ", yaml.Loader)
-        except:
-            pass
-    else:
-        return 2
+    try:
+        yaml.load(param, yaml.Loader)
+    except yaml.YAMLError:
+        pass
 
 
 def TestOneInput(data):
