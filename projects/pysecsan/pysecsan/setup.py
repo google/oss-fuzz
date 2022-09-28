@@ -13,10 +13,8 @@
 # limitations under the License.
 from setuptools import setup, find_packages
 
-setup(
-    name='pysecsan',
-    version='0.1',
-    author='David Korczynski',
-    author_email='david@adalogics.com',
-    packages=find_packages(exclude="tests")
-)
+setup(name='pysecsan',
+      version='0.1',
+      author='David Korczynski',
+      author_email='david@adalogics.com',
+      packages=find_packages(exclude="tests"))

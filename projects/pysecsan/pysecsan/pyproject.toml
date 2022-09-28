@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysecsan"
-version = "0.2.0"
+version = "0.1.0"
 authors = [
   { name="David Korczynski", email="david@adalogics.com" },
 ]
@@ -18,5 +18,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/google/oss-fuzz"
+"Homepage" = "https://github.com/google/oss-fuzz/tree/master/infra/sanitizers/pysecsan"
 "Bug Tracker" = "https://github.com/google/oss-fuzz/issues"

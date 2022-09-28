@@ -18,27 +18,24 @@ arbitrary code execution."""
 from pysecsan import sanlib
 
 try:
-    import yaml
+  import yaml
 except:
-    pass
+  pass
+
 
 def hook_pre_exec_pyyaml_load(stream, loader):
-    """Hook for pyyaml.load_yaml
+  """Hook for pyyaml.load_yaml
 
     Exits if the loader is unsafe or vanilla loader and the stream passed
     to the loader is controlled by the fuzz data
     """
-    # Ensure loader is the unsafe loader or vanilla loader
-    if (
-            loader != yaml.loader.Loader and
-            loader != yaml.loader.UnsafeLoader
-        ):
-        return
+  # Ensure loader is the unsafe loader or vanilla loader
+  if (loader != yaml.loader.Loader and loader != yaml.loader.UnsafeLoader):
+    return
 
-    # Check for exact taint in stream
-    if sanlib.is_exact_taint(stream):
-        msg = (
-            "Yaml deserialization issue.\n"
-            "Unsafe deserialization can be used to execute arbitrary commands.\n"
-        )
-        sanlib.abort_with_issue(msg)
+  # Check for exact taint in stream
+  if sanlib.is_exact_taint(stream):
+    msg = (
+        "Yaml deserialization issue.\n"
+        "Unsafe deserialization can be used to execute arbitrary commands.\n")
+    sanlib.abort_with_issue(msg)

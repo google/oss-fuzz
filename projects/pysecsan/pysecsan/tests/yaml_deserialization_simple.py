@@ -12,36 +12,43 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets https://github.com/advisories/GHSA-mv2w-4jqc-6fg4"""
 
 import os
 import sys
 import atheris
-import pysecsan
-pysecsan.add_hooks()
 
-from libvcs.shortcuts import create_repo
+import pysecsan
+import yaml
+
+
+def serialize_with_tainted_data(param, magicval):
+  if magicval == 1337:
+    try:
+      yaml.load(param, yaml.Loader)
+    except yaml.YAMLError:
+      pass
+  elif magicval == 1338:
+    try:
+      yaml.load("FROMFUZZ", yaml.Loader)
+    except yaml.YAMLError:
+      pass
+  else:
+    return 2
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    mercurial_repo = create_repo(
-        url=fdp.ConsumeUnicodeNoSurrogates(128), vcs="hg", repo_dir="./"
-    )
-    try:
-    	mercurial_repo.update_repo()
-    except (
-        ValueError,
-        FileNotFoundError
-    ) as e:
-        pass
+  fdp = atheris.FuzzedDataProvider(data)
+  serialize_with_tainted_data(fdp.ConsumeUnicodeNoSurrogates(32),
+                              fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  pysecsan.add_hooks()
+
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
+  main()
