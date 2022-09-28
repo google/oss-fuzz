@@ -6,5 +6,6 @@ auto_ccs:
 - "p.antoine@catenacyber.fr"
 sanitizers:
   - address
+  - memory
   - undefined
 main_repo: 'https://github.com/OISF/suricata.git'
