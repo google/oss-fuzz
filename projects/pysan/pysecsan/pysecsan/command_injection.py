@@ -52,7 +52,7 @@ def check_code_injection_match(
     return None
 
 
-def pysan_hook_subprocess_Popen(cmd, **kwargs):
+def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
     """Hook for subprocess.Popen"""
     if "shell" in kwargs and kwargs["shell"] is True:
         arg_shell = True
@@ -93,7 +93,7 @@ def pysan_hook_subprocess_Popen(cmd, **kwargs):
                 )
 
 
-def pysan_hook_os_system(cmd):
+def hook_pre_exec_os_system(cmd):
     """Hook for os.system"""
     res = check_code_injection_match(cmd)
     if res != None:
@@ -103,7 +103,7 @@ def pysan_hook_os_system(cmd):
         #raise Exception(f"Potential code injection by way of os.system\n{res}")
 
 
-def pysan_hook_eval(cmd):
+def hook_pre_exec_eval(cmd):
     """Hook for eval. Experimental atm."""
     res = check_code_injection_match(cmd)
     if res != None:

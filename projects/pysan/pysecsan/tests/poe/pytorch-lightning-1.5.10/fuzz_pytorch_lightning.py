@@ -27,7 +27,7 @@ import sys
 import atheris
 import pysecsan
 
-pysecsan.pysan_add_hooks()
+pysecsan.add_hooks()
 
 with atheris.instrument_imports():
   from pytorch_lightning import Trainer

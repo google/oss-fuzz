@@ -43,7 +43,7 @@ def TestOneInput(data):
 
 
 def main():
-    pysecsan.pysan_add_hooks()
+    pysecsan.add_hooks()
 
     atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)

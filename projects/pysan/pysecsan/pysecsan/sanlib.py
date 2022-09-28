@@ -118,9 +118,9 @@ def create_object_wrapper(**methods):
   return Wrapper
 
 
-def pysan_add_hook(function: Callable[[Any], Any],
-                   pre_exec_hook: Optional[Callable[[Any], Any]] = None,
-                   post_exec_hook: Optional[Callable[[Any], Any]] = None):
+def add_hook(function: Callable[[Any], Any],
+             pre_exec_hook: Optional[Callable[[Any], Any]] = None,
+             post_exec_hook: Optional[Callable[[Any], Any]] = None):
     """Hook a function.
 
     Hooks can be placed pre and post function call. At least one hook is
@@ -157,18 +157,18 @@ def pysan_add_hook(function: Callable[[Any], Any],
     return run
 
 
-def pysan_add_hooks():
+def add_hooks():
     """Sets up hooks"""
-    os.system = pysan_add_hook(os.system,
-                               pre_exec_hook = command_injection.pysan_hook_os_system)
-    subprocess.Popen = pysan_add_hook(
+    os.system = add_hook(os.system,
+                         pre_exec_hook = command_injection.hook_pre_exec_os_system)
+    subprocess.Popen = add_hook(
         subprocess.Popen,
-        pre_exec_hook = command_injection.pysan_hook_subprocess_Popen
+        pre_exec_hook = command_injection.hook_pre_exec_subprocess_Popen
     )
-    re.compile = pysan_add_hook(
+    re.compile = add_hook(
         re.compile,
-        pre_exec_hook = redos.pysan_hook_re_compile,
-        post_exec_hook = redos.pysan_hook_post_re_compile
+        pre_exec_hook = redos.hook_pre_exec_re_compile,
+        post_exec_hook = redos.hook_post_exec__re_compile
     )
 
 
@@ -177,9 +177,9 @@ def pysan_add_hooks():
     if is_module_present("yaml"):
         import yaml
         sanitizer_log("Hooking pyyaml.load", 0)
-        yaml.load = pysan_add_hook(
+        yaml.load = add_hook(
             yaml.load,
-            pre_exec_hook = yaml_deserialization.prehook_pyyaml_load,
+            pre_exec_hook = yaml_deserialization.hook_pre_exec_pyyaml_load,
         )
     else:
         sanitizer_log("pyyaml not found. No hooks here", 0)

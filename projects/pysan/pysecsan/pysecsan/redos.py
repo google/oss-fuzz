@@ -38,7 +38,7 @@ from pysecsan import sanlib
 #   - for backtracking possbility in PATTERN within re.comile(PATTERN)
 #   - and
 #   - "taint" in findall(XX) calls.
-def pysan_hook_re_pattern_findall_post(self, s):
+def hook_post_exec_re_pattern_findall(self, s):
     global starttime
     try:
         endtime = time.time() - starttime
@@ -50,21 +50,24 @@ def pysan_hook_re_pattern_findall_post(self, s):
         sys.exit(1)
         pass
 
-def pysan_hook_re_pattern_findall_pre(self, s):
+def hook_pre_exec_re_pattern_findall(self, s):
     global starttime
     starttime = time.time()
 
-def pysan_hook_post_re_compile(retval, pattern, flags=None):
+def hook_post_exec_re_compile(retval, pattern, flags=None):
     """Hook for re.compile post execution to hook returned objects functions"""
     sanlib.sanitizer_log("Inside of post compile hook", 0)
     wrapper_object = sanlib.create_object_wrapper(
-            findall = (pysan_hook_re_pattern_findall_pre, pysan_hook_re_pattern_findall_post)
+            findall = (
+                hook_pre_exec_re_pattern_findall,
+                hook_pre_exec_re_pattern_findall
+            )
     )
     hooked_object = wrapper_object(retval)
     return hooked_object
 
 
-def pysan_hook_re_compile(pattern, flags=None):
+def hook_pre_exec_re_compile(pattern, flags=None):
     """Check if tainted input exists in pattern. If so, likely chance of making
     ReDOS possible."""
     sanlib.sanitizer_log("Inside re compile hook", 0)

@@ -15,4 +15,4 @@
 # Import sanlib and expose only neede functionality by way of __all__
 from .sanlib import *
 
-__all__ = ['pysan_add_hooks']
+__all__ = ['add_hooks']

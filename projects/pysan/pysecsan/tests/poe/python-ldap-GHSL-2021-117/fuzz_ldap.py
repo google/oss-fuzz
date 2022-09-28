@@ -19,7 +19,7 @@ import sys
 import atheris
 
 import pysecsan
-pysecsan.pysan_add_hooks()
+pysecsan.add_hooks()
 
 import ldap.schema
 
