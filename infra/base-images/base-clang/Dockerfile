@@ -23,7 +23,7 @@ ARG arch=x86_64
 ARG introspector
 ENV INTROSPECTOR_PATCHES=$introspector
 ENV FUZZINTRO_OUTDIR=$SRC
-ENV FUZZ_INTROSPECTOR=$introspector
+
 
 # Install newer cmake.
 ENV CMAKE_VERSION 3.21.1
