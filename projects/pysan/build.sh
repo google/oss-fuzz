@@ -24,7 +24,8 @@ python3 ./setup.py install
 cd tests
 compile_python_fuzzer os_command_injection.py
 compile_python_fuzzer subprocess_popen_injection.py
-compile_python_fuzzer yaml_deserialization.py
+compile_python_fuzzer yaml_deserialization_general.py
+compile_python_fuzzer yaml_deserialization_simple.py
 
 # libvcs
 # https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
