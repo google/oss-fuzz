@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
   automake \
   libtool \
   python3-dev libldap2-dev libsasl2-dev ldap-utils
-RUN pip3 install --upgrade pip pexpect
+RUN pip3 install --upgrade pip pexpect pyyaml
 
 COPY pysecsan pysecsan-lib
 COPY build.sh *.py $SRC/

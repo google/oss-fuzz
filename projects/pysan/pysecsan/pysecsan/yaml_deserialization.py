@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
+"""Catches vulnerable yaml desrializations that can potentially lead to
+arbitrary code execution."""
 
-cd $SRC/pysecsan-lib
 
-# install pysan
-python3 ./setup.py install
+def prehook_pyyaml_load(s, l):
+    # check value of stream
+    if s == "FUZZ":
+        print("Got it")
+    print("In yaml load")
 
-# poc
-cd tests
-compile_python_fuzzer os_command_injection.py
-compile_python_fuzzer subprocess_popen_injection.py
-compile_python_fuzzer yaml_deserialization.py
-
-# libvcs
-# https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
-cd $SRC/pysecsan-lib/tests/poe/libvcs-cve-2022-21187
-./build.sh
-
-cd $SRC/pysecsan-lib/tests/poe/ansible-runner-cve-2021-4041
-./build.sh
-
-cd $SRC/pysecsan-lib/tests/poe/python-ldap-GHSL-2021-117
-./build.sh

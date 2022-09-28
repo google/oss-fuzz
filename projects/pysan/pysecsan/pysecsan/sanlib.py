@@ -20,9 +20,10 @@ import sys
 import time
 import functools
 import subprocess
+import pkg_resources
 
 from typing import Any, Callable, Optional
-from pysecsan import command_injection, redos
+from pysecsan import command_injection, redos, yaml_deserialization
 
 
 sanitizer_log_level = 0
@@ -135,7 +136,6 @@ def pysan_add_hook(function: Callable[[Any], Any],
 
 def pysan_add_hooks():
     """Sets up hooks"""
-    print("Heyo")
     os.system = pysan_add_hook(os.system,
                                pre_exec_hook = command_injection.pysan_hook_os_system)
     subprocess.Popen = pysan_add_hook(
@@ -147,3 +147,20 @@ def pysan_add_hooks():
         pre_exec_hook = redos.pysan_hook_re_compile,
         post_exec_hook = redos.pysan_hook_post_re_compile
     )
+
+
+    # Hack to determine if yaml is elligible, because pkg_resources does
+    # not seem to work from pyinstaller.
+    do_yaml = True
+    try:
+        import yaml
+    except:
+        do_yaml = False
+    if do_yaml:
+        sanitizer_log("Hooking pyyaml.load", 0)
+        yaml.load = pysan_add_hook(
+            yaml.load,
+            pre_exec_hook = yaml_deserialization.prehook_pyyaml_load,
+        )
+    else:
+        sanitizer_log("pyyaml not found. No hooks here", 0)
