@@ -105,6 +105,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	}
 
 	/*
+	 *  Create branch
+	 */
+	argv[0] = "branch";
+	argv[1] = "-f";
+	argv[2] = "new_branch";
+	argv[3] = NULL;
+	cmd_branch(3, (const char **)argv, (const char *)"");
+
+	/*
 	 * Alter content of TEMP_1 and TEMP_2
 	 */
 	data_chunk = xmallocz_gently(HASH_SIZE * 2);
@@ -202,17 +211,74 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 				break;
 
 			case GIT_DIFF:
-				argv[0] = "diff";
-				argv[1] = NULL;
-				cmd_diff(1, (const char **)argv, (const char *)"");
+				switch(i % 9) {
+					case 0: default:
+						argv[0] = "diff";
+						argv[1] = NULL;
+						cmd_diff(1, (const char **)argv, (const char *)"");
 
-				argv[1] = "TEMP_1";
-				argv[2] = NULL;
-				cmd_diff(2, (const char **)argv, (const char *)"");
+						break;
 
-				argv[2] = "TEMP_2";
-				argv[3] = NULL;
-				cmd_diff(3, (const char **)argv, (const char *)"");
+					case 1:
+						argv[1] = "TEMP_1";
+						argv[2] = NULL;
+						cmd_diff(2, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 2:
+						argv[2] = "TEMP_2";
+						argv[3] = NULL;
+						cmd_diff(3, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 3:
+						argv[1] = "HEAD";
+						argv[2] = NULL;
+						cmd_diff(2, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 4:
+						argv[1] = "--cached";
+						argv[2] = NULL;
+						cmd_diff(2, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 5:
+						argv[1] = "--diff-filter=MRC";
+						argv[2] = "HEAD";
+						argv[3] = NULL;
+						cmd_diff(3, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 6:
+						argv[1] = "--diff-filter=MRC";
+						argv[2] = "HEAD^";
+						argv[3] = NULL;
+						cmd_diff(3, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 7:
+						argv[1] = "-R";
+						argv[2] = "HEAD";
+						argv[3] = NULL;
+						cmd_diff(3, (const char **)argv, (const char *)"");
+
+						break;
+
+					case 8:
+						argv[1] = "master";
+						argv[2] = "new_branch";
+						argv[3] = NULL;
+						cmd_diff(3, (const char **)argv, (const char *)"");
+
+						break;
+				}
 
 				break;
 
@@ -237,6 +303,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 				argv[2] = "--";
 				argv[3] = NULL;
 				cmd_diff_tree(3, (const char **)argv, (const char *)"");
+
+				argv[0] = "diff-tree";
+				argv[1] = "master";
+				argv[2] = "new_branch";
+				argv[3] = "--";
+				argv[4] = NULL;
+				cmd_diff_tree(4, (const char **)argv, (const char *)"");
 
 				break;
 
