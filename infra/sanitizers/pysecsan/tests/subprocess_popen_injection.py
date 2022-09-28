@@ -22,35 +22,30 @@ import pysecsan
 
 
 def list_files_perhaps(param, magicval):
-    try:
-        subprocess.Popen(" ".join(['ls', '-la', param]), shell=True)
-        os.system(param)
-    except ValueError:
-        pass
+  try:
+    subprocess.Popen(" ".join(['ls', '-la', param]), shell=True)
+    os.system(param)
+  except ValueError:
+    pass
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
+  fdp = atheris.FuzzedDataProvider(data)
 
-    if fdp.ConsumeIntInRange(1, 10) == 5:
-        list_files_perhaps(
-            "FROMFUZZ",
-            fdp.ConsumeIntInRange(500, 1500)
-        )
-    else:
-        list_files_perhaps(
-            fdp.ConsumeUnicodeNoSurrogates(24),
-            fdp.ConsumeIntInRange(500, 1500)
-        )
+  if fdp.ConsumeIntInRange(1, 10) == 5:
+    list_files_perhaps("FROMFUZZ", fdp.ConsumeIntInRange(500, 1500))
+  else:
+    list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24),
+                       fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
-    pysecsan.add_hooks()
+  pysecsan.add_hooks()
 
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
+  main()

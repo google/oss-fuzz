@@ -20,29 +20,27 @@ import atheris
 import pysecsan
 import yaml
 
+
 def serialize_with_tainted_data(param, magicval):
-    try:
-        yaml.load(param, yaml.Loader)
-    except yaml.YAMLError:
-        pass
+  try:
+    yaml.load(param, yaml.Loader)
+  except yaml.YAMLError:
+    pass
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    serialize_with_tainted_data(
-        fdp.ConsumeUnicodeNoSurrogates(32),
-        fdp.ConsumeIntInRange(500, 1500)
-    )
+  fdp = atheris.FuzzedDataProvider(data)
+  serialize_with_tainted_data(fdp.ConsumeUnicodeNoSurrogates(32),
+                              fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
-    pysecsan.add_hooks()
+  pysecsan.add_hooks()
 
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
-
+  main()

@@ -19,24 +19,25 @@ import sys
 import atheris
 
 import pysecsan
+
 pysecsan.add_hooks()
 
 import ldap.schema
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    try:
-        ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))
-    except ValueError:
-        pass
+  fdp = atheris.FuzzedDataProvider(data)
+  try:
+    ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))
+  except ValueError:
+    pass
 
 
 def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
+  main()

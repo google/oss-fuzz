@@ -21,35 +21,32 @@ import pysecsan
 
 
 def list_files_perhaps(param, magicval):
-    if magicval == 1337:
-        try:
-            os.system(param)
-        except ValueError:
-            pass
-    elif magicval == 1338:
-        os.system("exec-san")
-    elif magicval == 1339:
-        os.system("ls -la FROMFUZZ")
-    else:
-        return 2
+  if magicval == 1337:
+    try:
+      os.system(param)
+    except ValueError:
+      pass
+  elif magicval == 1338:
+    os.system("exec-san")
+  elif magicval == 1339:
+    os.system("ls -la FROMFUZZ")
+  else:
+    return 2
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    list_files_perhaps(
-        fdp.ConsumeUnicodeNoSurrogates(24),
-        fdp.ConsumeIntInRange(500, 1500)
-    )
+  fdp = atheris.FuzzedDataProvider(data)
+  list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24),
+                     fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
-    pysecsan.add_hooks()
+  pysecsan.add_hooks()
 
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
-
+  main()

@@ -19,6 +19,7 @@ import time
 import sys
 from pysecsan import sanlib
 
+
 # Hooks for regular expressions.
 # Main problem is to identify ReDOS attemps. This is a non-trivial task
 # - https://arxiv.org/pdf/1701.04045.pdf
@@ -34,40 +35,39 @@ from pysecsan import sanlib
 # regexes:
 # - check
 #   - if "taint" exists in re.compile(xx)
-# - check 
+# - check
 #   - for backtracking possbility in PATTERN within re.comile(PATTERN)
 #   - and
 #   - "taint" in findall(XX) calls.
 def hook_post_exec_re_pattern_findall(self, s):
-    global starttime
-    try:
-        endtime = time.time() - starttime
-        if endtime > 4:
-            #print("param: %s"%(s))
-            raise Exception("Potential ReDOS attack")
-    except NameError:
-        #print("For some reason starttime is not set, which it should have")
-        sys.exit(1)
-        pass
+  global starttime
+  try:
+    endtime = time.time() - starttime
+    if endtime > 4:
+      #print("param: %s"%(s))
+      raise Exception("Potential ReDOS attack")
+  except NameError:
+    #print("For some reason starttime is not set, which it should have")
+    sys.exit(1)
+    pass
+
 
 def hook_pre_exec_re_pattern_findall(self, s):
-    global starttime
-    starttime = time.time()
+  global starttime
+  starttime = time.time()
+
 
 def hook_post_exec_re_compile(retval, pattern, flags=None):
-    """Hook for re.compile post execution to hook returned objects functions"""
-    sanlib.sanitizer_log("Inside of post compile hook", 0)
-    wrapper_object = sanlib.create_object_wrapper(
-            findall = (
-                hook_pre_exec_re_pattern_findall,
-                hook_pre_exec_re_pattern_findall
-            )
-    )
-    hooked_object = wrapper_object(retval)
-    return hooked_object
+  """Hook for re.compile post execution to hook returned objects functions"""
+  sanlib.sanitizer_log("Inside of post compile hook", 0)
+  wrapper_object = sanlib.create_object_wrapper(
+      findall=(hook_pre_exec_re_pattern_findall,
+               hook_pre_exec_re_pattern_findall))
+  hooked_object = wrapper_object(retval)
+  return hooked_object
 
 
 def hook_pre_exec_re_compile(pattern, flags=None):
-    """Check if tainted input exists in pattern. If so, likely chance of making
+  """Check if tainted input exists in pattern. If so, likely chance of making
     ReDOS possible."""
-    sanlib.sanitizer_log("Inside re compile hook", 0)
+  sanlib.sanitizer_log("Inside re compile hook", 0)

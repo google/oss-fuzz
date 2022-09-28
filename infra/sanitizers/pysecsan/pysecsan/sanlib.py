@@ -26,37 +26,40 @@ import importlib
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
 
-
 sanitizer_log_level = 0
+
+
 def sanitizer_log(msg, log_level):
-    global sanitizer_log_level
-    if log_level >= sanitizer_log_level:
-        print(f"[PYSAN] {msg}")
+  global sanitizer_log_level
+  if log_level >= sanitizer_log_level:
+    print(f"[PYSAN] {msg}")
 
 
 def is_module_present(mod_name):
-    return importlib.find_loader(mod_name) is not None
+  return importlib.find_loader(mod_name) is not None
 
 
 def abort_with_issue(msg):
-    sanitizer_log("Found an issue, pysecsan exiting", 0)
-    sanitizer_log(msg, 0)
-    traceback.print_stack()
+  sanitizer_log("Found an issue, pysecsan exiting", 0)
+  sanitizer_log(msg, 0)
+  traceback.print_stack()
 
-    # Use os._exit here to force exit. sys.exit will exit
-    # by throwing a SystemExit exception which the interpreter
-    # handles by exiting. However, code may catch this exception,
-    # and thus to avoid this we exit the process without exceptions.
-    os._exit(1)
+  # Use os._exit here to force exit. sys.exit will exit
+  # by throwing a SystemExit exception which the interpreter
+  # handles by exiting. However, code may catch this exception,
+  # and thus to avoid this we exit the process without exceptions.
+  os._exit(1)
+
 
 def is_exact_taint(stream) -> bool:
-    """Checks if stream is an exact match for taint from fuzzer"""
-    # The fuzzer has to get 8 characters right. This may be a bit much,
-    # however, when found it shows a high level of control over the data.
-    if stream == "FROMFUZZ":
-        return True
+  """Checks if stream is an exact match for taint from fuzzer"""
+  # The fuzzer has to get 8 characters right. This may be a bit much,
+  # however, when found it shows a high level of control over the data.
+  if stream == "FROMFUZZ":
+    return True
 
-    return False
+  return False
+
 
 def create_object_wrapper(**methods):
   """Hooks functions in an object
@@ -80,37 +83,35 @@ def create_object_wrapper(**methods):
   """
 
   class Wrapper(object):
+
     def __init__(self, instance):
-      object.__setattr__(self, 'instance',instance)
+      object.__setattr__(self, 'instance', instance)
 
     def __setattr__(self, name, value):
-      object.__setattr__(object.__getattribute__(self,'instance'), name, value)
+      object.__setattr__(object.__getattribute__(self, 'instance'), name, value)
 
     def __getattribute__(self, name):
       instance = object.__getattribute__(self, 'instance')
 
       def _hook_func(self, pre_hook, post_hook, orig, *args, **kargs):
-          if pre_hook is not None:
-              pre_hook(self, *args, **kargs)
-          # No need to pass instance here because when we extracted
-          # the funcion we used instance.__getattribute__(name) which
-          # seems to include it. I think.
-          r = orig(*args, **kargs)
+        if pre_hook is not None:
+          pre_hook(self, *args, **kargs)
+        # No need to pass instance here because when we extracted
+        # the funcion we used instance.__getattribute__(name) which
+        # seems to include it. I think.
+        r = orig(*args, **kargs)
 
-          if post_hook is not None:
-              post_hook(self, *args, **kargs)
-          return r
+        if post_hook is not None:
+          post_hook(self, *args, **kargs)
+        return r
 
       # If this is a wrapped method, return a bound method
       if name in methods:
-          pre_hook = methods[name][0]
-          post_hook = methods[name][1]
-          orig = instance.__getattribute__(name)
-          return (
-            lambda *args, **kargs: _hook_func(
-                self, pre_hook, post_hook, orig, *args, **kargs
-            )
-          )
+        pre_hook = methods[name][0]
+        post_hook = methods[name][1]
+        orig = instance.__getattribute__(name)
+        return (lambda *args, **kargs: _hook_func(self, pre_hook, post_hook,
+                                                  orig, *args, **kargs))
 
       # Otherwise, just return attribute of instance
       return instance.__getattribute__(name)
@@ -121,7 +122,7 @@ def create_object_wrapper(**methods):
 def add_hook(function: Callable[[Any], Any],
              pre_exec_hook: Optional[Callable[[Any], Any]] = None,
              post_exec_hook: Optional[Callable[[Any], Any]] = None):
-    """Hook a function.
+  """Hook a function.
 
     Hooks can be placed pre and post function call. At least one hook is
     needed.
@@ -130,56 +131,53 @@ def add_hook(function: Callable[[Any], Any],
     in objects the `create_object_wrapper` function is used in combination with function
     hooking initialisation functions post execution.
     """
-    if pre_exec_hook is None and post_exec_hook is None:
-        raise Exception("Some hooks must be included")
+  if pre_exec_hook is None and post_exec_hook is None:
+    raise Exception("Some hooks must be included")
 
-    @functools.wraps(function)
-    def run(*args, **kwargs):
-        sanitizer_log(f"Hook start {str(function)}", 0)
+  @functools.wraps(function)
+  def run(*args, **kwargs):
+    sanitizer_log(f"Hook start {str(function)}", 0)
 
-        # Call hook
-        if pre_exec_hook is not None:
-            pre_exec_hook(*args, **kwargs)
+    # Call hook
+    if pre_exec_hook is not None:
+      pre_exec_hook(*args, **kwargs)
 
-        # Call the original function in the even the hook did not indicate
-        # failure.
-        ret = function(*args, **kwargs)
+    # Call the original function in the even the hook did not indicate
+    # failure.
+    ret = function(*args, **kwargs)
 
-        # Post execution hook. Overwrite return value if anything is returned
-        # by post hook.
-        if post_exec_hook is not None:
-            tmp_ret = post_exec_hook(ret, *args, **kwargs)
-            if tmp_ret is not None:
-                #print("Overwriting ret value")
-                ret = tmp_ret
-        sanitizer_log(f"Hook end {str(function)}", 0)
-        return ret
-    return run
+    # Post execution hook. Overwrite return value if anything is returned
+    # by post hook.
+    if post_exec_hook is not None:
+      tmp_ret = post_exec_hook(ret, *args, **kwargs)
+      if tmp_ret is not None:
+        #print("Overwriting ret value")
+        ret = tmp_ret
+    sanitizer_log(f"Hook end {str(function)}", 0)
+    return ret
+
+  return run
 
 
 def add_hooks():
-    """Sets up hooks"""
-    os.system = add_hook(os.system,
-                         pre_exec_hook = command_injection.hook_pre_exec_os_system)
-    subprocess.Popen = add_hook(
-        subprocess.Popen,
-        pre_exec_hook = command_injection.hook_pre_exec_subprocess_Popen
-    )
-    re.compile = add_hook(
-        re.compile,
-        pre_exec_hook = redos.hook_pre_exec_re_compile,
-        post_exec_hook = redos.hook_post_exec_re_compile
-    )
+  """Sets up hooks"""
+  os.system = add_hook(os.system,
+                       pre_exec_hook=command_injection.hook_pre_exec_os_system)
+  subprocess.Popen = add_hook(
+      subprocess.Popen,
+      pre_exec_hook=command_injection.hook_pre_exec_subprocess_Popen)
+  re.compile = add_hook(re.compile,
+                        pre_exec_hook=redos.hook_pre_exec_re_compile,
+                        post_exec_hook=redos.hook_post_exec_re_compile)
 
-
-    # Hack to determine if yaml is elligible, because pkg_resources does
-    # not seem to work from pyinstaller.
-    if is_module_present("yaml"):
-        import yaml
-        sanitizer_log("Hooking pyyaml.load", 0)
-        yaml.load = add_hook(
-            yaml.load,
-            pre_exec_hook = yaml_deserialization.hook_pre_exec_pyyaml_load,
-        )
-    else:
-        sanitizer_log("pyyaml not found. No hooks here", 0)
+  # Hack to determine if yaml is elligible, because pkg_resources does
+  # not seem to work from pyinstaller.
+  if is_module_present("yaml"):
+    import yaml
+    sanitizer_log("Hooking pyyaml.load", 0)
+    yaml.load = add_hook(
+        yaml.load,
+        pre_exec_hook=yaml_deserialization.hook_pre_exec_pyyaml_load,
+    )
+  else:
+    sanitizer_log("pyyaml not found. No hooks here", 0)
