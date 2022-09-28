@@ -25,9 +25,9 @@ we show a way to achieve the same exploit with an arbitrary env variable.
 import os
 import sys
 import atheris
-import pysan
+import pysecsan
 
-pysan.pysan_add_hooks()
+pysecsan.pysan_add_hooks()
 
 with atheris.instrument_imports():
   from pytorch_lightning import Trainer

@@ -17,7 +17,7 @@
 
 import time
 import sys
-from pysan import sanlib
+from pysecsan import sanlib
 
 # Hooks for regular expressions.
 # Main problem is to identify ReDOS attemps. This is a non-trivial task

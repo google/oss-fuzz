@@ -22,7 +22,7 @@ import functools
 import subprocess
 
 from typing import Any, Callable, Optional
-from pysan import command_injection, redos
+from pysecsan import command_injection, redos
 
 
 sanitizer_log_level = 0
@@ -135,6 +135,7 @@ def pysan_add_hook(function: Callable[[Any], Any],
 
 def pysan_add_hooks():
     """Sets up hooks"""
+    print("Heyo")
     os.system = pysan_add_hook(os.system,
                                pre_exec_hook = command_injection.pysan_hook_os_system)
     subprocess.Popen = pysan_add_hook(

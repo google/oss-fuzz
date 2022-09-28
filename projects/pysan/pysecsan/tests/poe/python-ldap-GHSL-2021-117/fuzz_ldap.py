@@ -18,8 +18,8 @@ import os
 import sys
 import atheris
 
-import pysan
-pysan.pysan_add_hooks()
+import pysecsan
+pysecsan.pysan_add_hooks()
 
 import ldap.schema
 

@@ -16,36 +16,34 @@
 import os
 import sys
 import atheris
-import subprocess
 
-import pysan
+import pysecsan
 
 
 def list_files_perhaps(param, magicval):
-    try:
-        subprocess.Popen(" ".join(['ls', '-la', param]), shell=True)
-        os.system(param)
-    except ValueError:
-        pass
+    if magicval == 1337:
+        try:
+            os.system(param)
+        except ValueError:
+            pass
+    elif magicval == 1338:
+        os.system("exec-san")
+    elif magicval == 1339:
+        os.system("ls -la FROMFUZZ")
+    else:
+        return 2
 
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-
-    if fdp.ConsumeIntInRange(1, 10) == 5:
-        list_files_perhaps(
-            "FROMFUZZ",
-            fdp.ConsumeIntInRange(500, 1500)
-        )
-    else:
-        list_files_perhaps(
-            fdp.ConsumeUnicodeNoSurrogates(24),
-            fdp.ConsumeIntInRange(500, 1500)
-        )
+    list_files_perhaps(
+        fdp.ConsumeUnicodeNoSurrogates(24),
+        fdp.ConsumeIntInRange(500, 1500)
+    )
 
 
 def main():
-    pysan.pysan_add_hooks()
+    pysecsan.pysan_add_hooks()
 
     atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
@@ -54,3 +52,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
