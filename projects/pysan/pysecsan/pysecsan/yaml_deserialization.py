@@ -30,8 +30,8 @@ def prehook_pyyaml_load(stream, loader):
     """
     # Ensure loader is the unsafe loader or vanilla loader
     if (
-            type(loader) != yaml.loader.Loader and
-            type(loader) != yaml.loader.UnsafeLoader
+            loader != yaml.loader.Loader and
+            loader != yaml.loader.UnsafeLoader
         ):
         return
 

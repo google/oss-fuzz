@@ -46,6 +46,8 @@ def abort_with_issue(msg):
 
 def is_exact_taint(stream) -> bool:
     """Checks if stream is an exact match for taint from fuzzer"""
+    # The fuzzer has to get 8 characters right. This may be a bit much,
+    # however, when found it shows a high level of control over the data.
     if stream == "FROMFUZZ":
         return True
 
