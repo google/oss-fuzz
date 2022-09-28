@@ -45,6 +45,7 @@ for fuzzer in $FUZZERS ; do
   cat >$OUT/$fuzzer.options << EOF
 [libfuzzer]
 close_fd_mask = 2
+detect_leaks = 0
 EOF
 done
 
