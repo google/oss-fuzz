@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd $SRC/pysan-lib
+cd $SRC/pysecsan-lib
 
 # install pysan
 python3 ./setup.py install
@@ -27,11 +27,11 @@ compile_python_fuzzer subprocess_popen_injection.py
 
 # libvcs
 # https://github.com/advisories/GHSA-mv2w-4jqc-6fg4
-cd $SRC/pysan-lib/tests/poe/libvcs-cve-2022-21187
+cd $SRC/pysecsan-lib/tests/poe/libvcs-cve-2022-21187
 ./build.sh
 
-cd $SRC/pysan-lib/tests/poe/ansible-runner-cve-2021-4041
+cd $SRC/pysecsan-lib/tests/poe/ansible-runner-cve-2021-4041
 ./build.sh
 
-cd $SRC/pysan-lib/tests/poe/python-ldap-GHSL-2021-117
+cd $SRC/pysecsan-lib/tests/poe/python-ldap-GHSL-2021-117
 ./build.sh
