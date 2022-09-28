@@ -17,6 +17,6 @@
 
 git clone --depth 1 --branch 1.5.10 https://github.com/PyTorchLightning/pytorch-lightning.git
 cd pytorch-lightning
-pip3 install .
+python3 -m pip install .
 cd ../
-compile_python_fuzzer fuzz_pytorch_lightning.py
+python3 ./fuzz_pytorch_lightning.py

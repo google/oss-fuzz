@@ -15,9 +15,11 @@
 #
 ################################################################################
 
+python3 -m pip install pysecsan
+
 git clone https://github.com/python-ldap/python-ldap
 cd python-ldap
 git checkout 404c36b702c5b3a7e60729745c8bda16098b1472
-pip3 install .
+python3 -m pip install .
 cd ../
-compile_python_fuzzer fuzz_ldap.py
+python3 ./fuzz_ldap.py
