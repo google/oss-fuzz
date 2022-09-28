@@ -5,5 +5,5 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
-auto_ccs:
+vendor_ccs:
   - maxnair.dev@gmail.com 
