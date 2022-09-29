@@ -19,6 +19,7 @@ from pysecsan import sanlib
 
 try:
   import yaml
+# pylint: disable=broad-except
 except Exception:
   pass
 

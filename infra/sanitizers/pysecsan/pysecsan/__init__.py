@@ -16,4 +16,5 @@
 # Import sanlib and expose only neede functionality by way of __all__
 from .sanlib import *
 
+# pylint: disable=undefined-all-variable
 __all__ = ['add_hooks']
