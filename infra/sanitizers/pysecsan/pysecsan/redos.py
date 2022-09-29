@@ -41,6 +41,7 @@ START_RE_TIME = None
 #   - for backtracking possbility in PATTERN within re.comile(PATTERN)
 #   - and
 #   - "taint" in findall(XX) calls.
+# pylint: disable=global-statement
 def hook_post_exec_re_pattern_findall(self, re_str):
   """Hook post exeution re.compile().findall()"""
   _ = self  # Satisfy lint

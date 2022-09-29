@@ -28,6 +28,7 @@ from pysecsan import command_injection, redos, yaml_deserialization
 PYSECSAN_LOG_LVL = 0
 
 
+# pylint: disable=global-statement
 def sanitizer_log(msg, log_level):
   """Helper printing function"""
   global PYSECSAN_LOG_LVL
@@ -37,6 +38,7 @@ def sanitizer_log(msg, log_level):
 
 def is_module_present(mod_name):
   """Identify if module is importable"""
+  # pylint: disable=deprecated-method
   return importlib.find_loader(mod_name) is not None
 
 
@@ -50,6 +52,7 @@ def abort_with_issue(msg):
   # by throwing a SystemExit exception which the interpreter
   # handles by exiting. However, code may catch this exception,
   # and thus to avoid this we exit the process without exceptions.
+  # pylint: disable=protected-access
   os._exit(1)
 
 
@@ -131,7 +134,7 @@ def add_hook(function: Callable[[Any], Any],
     needed.
 
     This hooking is intended on non-object hooks. In order to hook functions
-    in objects the `create_object_wrapper` function is used in combination 
+    in objects the `create_object_wrapper` function is used in combination
     with function hooking initialisation functions post execution.
     """
   if pre_exec_hook is None and post_exec_hook is None:
@@ -175,6 +178,7 @@ def add_hooks():
 
   # Hack to determine if yaml is elligible, because pkg_resources does
   # not seem to work from pyinstaller.
+  # pylint: disable=import-outside-toplevel
   if is_module_present("yaml"):
     import yaml
     sanitizer_log("Hooking pyyaml.load", 0)

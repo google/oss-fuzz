@@ -52,6 +52,7 @@ def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
   return None
 
 
+# pylint: disable=invalid-name
 def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
   """Hook for subprocess.Popen"""
 
@@ -85,8 +86,7 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
             "command injection likely by way of mercurial. The following"
             f"command {str(cmd)} is executed, and if you substitute {cmd[idx]} "
             "with \"--config=alias.init=!touch HELLO_PY\" then you will "
-            "create HELLO_PY"""
-        )
+            "create HELLO_PY")
 
 
 def hook_pre_exec_os_system(cmd):
