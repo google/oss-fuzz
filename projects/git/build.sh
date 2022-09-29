@@ -21,7 +21,6 @@ make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" \
   LIB_FUZZING_ENGINE="common-main.o $LIB_FUZZING_ENGINE" fuzz-all
 
 FUZZERS="fuzz-pack-headers fuzz-pack-idx fuzz-commit-graph"
-FUZZERS="$FUZZERS fuzz-cmd-status fuzz-cmd-version fuzz-cmd-diff"
 FUZZERS="$FUZZERS fuzz-command"
 
 # copy fuzzers
@@ -45,7 +44,6 @@ for fuzzer in $FUZZERS ; do
   cat >$OUT/$fuzzer.options << EOF
 [libfuzzer]
 close_fd_mask = 2
-detect_leaks = 0
 EOF
 done
 

@@ -33,6 +33,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	 *  Initialize the repository
 	 */
 	initialize_the_repository();
+	if (repo_init(the_repository, basedir, ".") || reset_git_folder())
+	{
+		repo_clear(the_repository);
+		return 0;
+	}
 
 	/*
 	 * End this round of fuzzing if the data is not large enough
@@ -42,8 +47,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		repo_clear(the_repository);
 		return 0;
 	}
-
-	reset_git_folder();
 
 	/*
 	 * Generate random commit
@@ -71,14 +74,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	free(data_chunk);
 
-	/*
-	 * Final preparing of the repository settings
-	 */
-	repo_clear(the_repository);
-	if (repo_init(the_repository, basedir, "."))
-	{
-		return 0;
-	}
+        argv[0] = "branch";
+        argv[1] = "-f";
+        argv[2] = "new_branch";
+        argv[3] = NULL;
+        cmd_branch(3, (const char **)argv, (const char *)"");
 
 	/*
 	 * Generate random file for diff
@@ -109,8 +109,30 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
+	argv[1] = "HEAD";
+	argv[2] = NULL;
+	cmd_diff(2, (const char **)argv, (const char *)"");
+	argv[1] = "--cached";
+	argv[2] = NULL;
+	cmd_diff(2, (const char **)argv, (const char *)"");
+	argv[1] = "--diff-filter=MRC";
+	argv[2] = "HEAD";
+	argv[3] = NULL;
+	cmd_diff(3, (const char **)argv, (const char *)"");
+	argv[1] = "--diff-filter=MRC";
+	argv[2] = "HEAD^";
+	argv[3] = NULL;
+	cmd_diff(3, (const char **)argv, (const char *)"");
+	argv[1] = "-R";
+	argv[2] = "HEAD";
+	argv[3] = NULL;
+	cmd_diff(3, (const char **)argv, (const char *)"");
+	argv[1] = "master";
+	argv[2] = "new_branch";
+	argv[3] = NULL;
+ 	       cmd_diff(3, (const char **)argv, (const char *)"");
 
-        /*
+	/*
          * Calling git diff-files command
          */
 	argv[0] = "diff-files";
@@ -131,6 +153,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "--";
 	argv[3] = NULL;
 	cmd_diff_tree(3, (const char **)argv, (const char *)"");
+	argv[0] = "diff-tree";
+	argv[1] = "master";
+	argv[2] = "new_branch";
+	argv[3] = "--";
+	argv[4] = NULL;
+	cmd_diff_tree(4, (const char **)argv, (const char *)"");
 
         /*
          * Calling git diff-index command

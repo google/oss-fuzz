@@ -24,7 +24,6 @@ int cmd_diff_tree(int argc, const char **argv, const char *prefix);
 int cmd_ls_files(int argc, const char **argv, const char *prefix);
 int cmd_ls_tree(int argc, const char **argv, const char *prefix);
 int cmd_mv(int argc, const char **argv, const char *prefix);
-int cmd_push(int argc, const char **argv, const char *prefix);
 int cmd_rerere(int argc, const char **argv, const char *prefix);
 int cmd_status(int argc, const char **argv, const char *prefix);
 int cmd_version(int argc, const char **argv, const char *prefix);
@@ -67,7 +66,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	 *  Initialize the repository
 	 */
 	initialize_the_repository();
-	reset_git_folder();
+	if (repo_init(the_repository, basedir, ".") || reset_git_folder())
+	{
+		repo_clear(the_repository);
+		return 0;
+	}
 
 	/*
 	 * Generate random commit
@@ -94,15 +97,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	}
 
 	free(data_chunk);
-
-	/*
-	 * Final preparing of the repository settings
-	 */
-	repo_clear(the_repository);
-	if (repo_init(the_repository, basedir, "."))
-	{
-		return 0;
-	}
 
 	/*
 	 *  Create branch
@@ -160,12 +154,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 				argv[2] = "\"New Commit\"";
 				argv[3] = NULL;
 				cmd_commit(3, (const char **)argv, (const char *)"");
-
-				argv[0] = "push";
-				argv[1] = "origin";
-				argv[2] = "master";
-				argv[3] = NULL;
-				cmd_push(3, (const char **)argv, (const char *)"");
 
 				break;
 

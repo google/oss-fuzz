@@ -10,6 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "cache.h"
+#include "builtin.h"
 #include "fuzz-cmd-base.h"
 
 
@@ -115,8 +116,8 @@ void generate_commit(char *data, int size)
  */
 void generate_commit_in_branch(char *data, int size, char *branch_name)
 {
+	char *argv[4];
 	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
-	struct strbuf push_cmd = STRBUF_INIT;
 
 	if (!data_chunk)
 	{
@@ -128,17 +129,15 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 
 	free(data_chunk);
 
-	strbuf_addf(&push_cmd, "git push origin %s", branch_name);
+	argv[0] = "add";
+	argv[1] = "TEMP-*-TEMP";
+	argv[2] = NULL;
+	cmd_add(2, (const char **)argv, (const char *)"");
 
-	if (system("git add TEMP-*-TEMP") ||
-		system("git commit -m\"New Commit\"") ||
-		system(push_cmd.buf))
-	{
-		// Just skip the commit if fails
-		strbuf_release(&push_cmd);
-		return;
-	}
-	strbuf_release(&push_cmd);
+	argv[0] = "commit";
+	argv[1] = "-m\"New Coasdfadafafmmit\"";
+	argv[2] = NULL;
+	cmd_commit(2, (const char **)argv, (const char *)"");
 }
 
 /*
@@ -147,27 +146,48 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
  * This function integrates into the fuzzing processing and
  * reset the git repository into the default
  * base settings before each round of fuzzing.
- * Return values from system are ignored.
+ * Return 0 for success.
  */
-void reset_git_folder(void)
+int reset_git_folder(void)
 {
-	if (system("rm -rf ./.git") ||
-		system("rm -f ./TEMP-*-TEMP") ||
-		system("git init") ||
-		system("git config --global user.name \"FUZZ\"") ||
-		system("git config --global user.email \"FUZZ@LOCALHOST\"") ||
-		system("git config --global --add safe.directory '*'") ||
-		system("rm -rf /tmp/oss-test.git") ||
-		system("mkdir -p /tmp/oss-test.git") ||
-		system("git init --bare /tmp/oss-test.git") ||
-		system("git remote add origin /tmp/oss-test.git") ||
-		system("git add ./TEMP_1 ./TEMP_2") ||
-		system("git commit -m\"First Commit\"") ||
-		system("git push origin master"))
+	char *argv[6];
+
+	if (system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1") ||
+		system("echo \"TEMP2TEMP2TEMP2TEMP2\" > ./TEMP_2"))
 	{
-		// Error in these does not affect git command.
-		return;
+		return -1;
 	}
+
+	argv[0] = "init";
+	argv[1] = NULL;
+	cmd_init_db(1, (const char **)argv, (const char *)"");
+
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "user.name";
+	argv[3] = "\"FUZZ\"";
+	argv[4] = NULL;
+	cmd_config(4, (const char **)argv, (const char *)"");
+
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "user.email";
+	argv[3] = "\"FUZZ@LOCALHOST\"";
+	argv[4] = NULL;
+	cmd_config(4, (const char **)argv, (const char *)"");
+
+	argv[0] = "add";
+	argv[1] = "TEMP_1";
+	argv[2] = "TEMP_2";
+	argv[3] = NULL;
+	cmd_add(3, (const char **)argv, (const char *)"");
+
+	argv[0] = "commit";
+	argv[1] = "-m\"First Commit\"";
+	argv[2] = NULL;
+	cmd_commit(2, (const char **)argv, (const char *)"");
+
+	return 0;
 }
 
 /*
