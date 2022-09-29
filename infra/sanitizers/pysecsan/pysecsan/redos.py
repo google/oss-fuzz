@@ -54,14 +54,14 @@ def hook_post_exec_re_pattern_findall(self, re_str):
     sys.exit(1)
 
 
-def hook_pre_exec_re_pattern_findall(self, s):  # noqa: W0613
+def hook_pre_exec_re_pattern_findall(self, string):
   """Hook pre execution of re.pattern().findall()"""
-  _ = (self, s)  # Satisfy lint
+  _ = (self, string)  # Satisfy lint
   global START_RE_TIME
   START_RE_TIME = time.time()
 
 
-def hook_post_exec_re_compile(retval, pattern, flags=None):  # noqa: W0613
+def hook_post_exec_re_compile(retval, pattern, flags=None):
   """Hook for re.compile post execution to hook returned objects functions"""
   _ = (pattern, flags)  # Satisfy lint
   sanlib.sanitizer_log("Inside of post compile hook", 0)

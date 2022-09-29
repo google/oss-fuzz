@@ -14,18 +14,16 @@
 # limitations under the License.
 """Targets: https://github.com/python-ldap/python-ldap/security/advisories/GHSA-r8wq-qrxc-hmcm"""
 
-import os
 import sys
 import atheris
-
 import pysecsan
+import ldap.schema
 
 pysecsan.add_hooks()
 
-import ldap.schema
 
-
-def TestOneInput(data):
+def test_one_input(data):
+  """Fuzzer targetting regex dos in ldap"""
   fdp = atheris.FuzzedDataProvider(data)
   try:
     ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))
@@ -34,8 +32,9 @@ def TestOneInput(data):
 
 
 def main():
+  """Set up and start fuzzing"""
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, test_one_input, enable_python_coverage=True)
   atheris.Fuzz()
 
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Fuzzer targetting command injection of os.system"""
 
+import os
 import sys
 import atheris
 import pysecsan
@@ -30,8 +31,6 @@ def list_files_perhaps(param, magicval):
     os.system("exec-san")
   elif magicval == 1339:
     os.system("ls -la FROMFUZZ")
-  else:
-    return 2
 
 
 def test_one_input(data):

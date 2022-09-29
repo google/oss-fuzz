@@ -14,6 +14,7 @@
 # limitations under the License.
 """Fuzzer displaying insecure use of subprocess.Popen"""
 
+import os
 import sys
 import subprocess
 import atheris
