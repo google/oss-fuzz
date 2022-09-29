@@ -43,6 +43,7 @@ START_RE_TIME = None
 #   - "taint" in findall(XX) calls.
 def hook_post_exec_re_pattern_findall(self, re_str):
   """Hook post exeution re.compile().findall()"""
+  _ = self  # Satisfy lint
   global START_RE_TIME
   try:
     endtime = time.time() - START_RE_TIME

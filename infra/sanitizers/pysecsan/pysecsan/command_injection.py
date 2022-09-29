@@ -54,15 +54,13 @@ def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
 
 def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
   """Hook for subprocess.Popen"""
-  if "shell" in kwargs and kwargs["shell"] is True:
-    arg_shell = True
-  else:
-    arg_shell = False
+
+  arg_shell = "shell" in kwargs and kwargs["shell"]
 
   # Command injections depend on whether the first argument is a list of
   # strings or a string. Handle this now.
   # Example: tests/poe/ansible-runner-cve-2021-4041
-  if type(cmd) is str:
+  if cmd is isinstance(str):
     res = check_code_injection_match(cmd, check_unquoted=True)
     if res is not None:
       # if shell arg is true and string is tainted and unquoted that's a
@@ -84,10 +82,11 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
         found_dashes = True
       if not found_dashes and check_code_injection_match(cmd[idx]):
         raise Exception(
-            f"""command injection likely by way of mercurial. The following
-                      command {str(cmd)} is executed, and if you substitute {cmd[idx]}
-                      with \"--config=alias.init=!touch HELLO_PY\" then you will
-                      create HELLO_PY""")
+            "command injection likely by way of mercurial. The following"
+            f"command {str(cmd)} is executed, and if you substitute {cmd[idx]} "
+            "with \"--config=alias.init=!touch HELLO_PY\" then you will "
+            "create HELLO_PY"""
+        )
 
 
 def hook_pre_exec_os_system(cmd):

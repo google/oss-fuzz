@@ -131,8 +131,8 @@ def add_hook(function: Callable[[Any], Any],
     needed.
 
     This hooking is intended on non-object hooks. In order to hook functions
-    in objects the `create_object_wrapper` function is used in combination with function
-    hooking initialisation functions post execution.
+    in objects the `create_object_wrapper` function is used in combination 
+    with function hooking initialisation functions post execution.
     """
   if pre_exec_hook is None and post_exec_hook is None:
     raise Exception("Some hooks must be included")
