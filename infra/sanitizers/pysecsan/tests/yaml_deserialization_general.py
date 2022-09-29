@@ -12,33 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Fuzzer for insecure yaml deserialization"""
 
-import os
 import sys
-import atheris
-
-import pysecsan
 import yaml
+import atheris
+import pysecsan
 
 
-def serialize_with_tainted_data(param, magicval):
+def serialize_with_tainted_data(param):
+  """Hit insecure yaml function"""
   try:
     yaml.load(param, yaml.Loader)
   except yaml.YAMLError:
     pass
 
 
-def TestOneInput(data):
+def test_one_input(data):
+  """Fuzzer routine"""
   fdp = atheris.FuzzedDataProvider(data)
-  serialize_with_tainted_data(fdp.ConsumeUnicodeNoSurrogates(32),
-                              fdp.ConsumeIntInRange(500, 1500))
+  serialize_with_tainted_data(fdp.ConsumeUnicodeNoSurrogates(32))
 
 
 def main():
+  """Set up and start fuzzing"""
   pysecsan.add_hooks()
 
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, test_one_input, enable_python_coverage=True)
   atheris.Fuzz()
 
 

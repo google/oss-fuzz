@@ -13,11 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+"""Core routines for pysecsan library"""
 
 import re
 import os
-import sys
-import time
 import functools
 import subprocess
 import traceback
@@ -26,20 +25,23 @@ import importlib
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
 
-sanitizer_log_level = 0
+PYSECSAN_LOG_LVL = 0
 
 
 def sanitizer_log(msg, log_level):
-  global sanitizer_log_level
-  if log_level >= sanitizer_log_level:
+  """Helper printing function"""
+  global PYSECSAN_LOG_LVL
+  if log_level >= PYSECSAN_LOG_LVL:
     print(f"[PYSAN] {msg}")
 
 
 def is_module_present(mod_name):
+  """Identify if module is importable"""
   return importlib.find_loader(mod_name) is not None
 
 
 def abort_with_issue(msg):
+  """Print message, display stacktrace and force process exit"""
   sanitizer_log("Found an issue, pysecsan exiting", 0)
   sanitizer_log(msg, 0)
   traceback.print_stack()
@@ -82,7 +84,8 @@ def create_object_wrapper(**methods):
   re.compile function to return the wrapped/hooked object.
   """
 
-  class Wrapper(object):
+  class Wrapper():
+    """Wrap an object by hiding attributes"""
 
     def __init__(self, instance):
       object.__setattr__(self, 'instance', instance)
@@ -99,11 +102,11 @@ def create_object_wrapper(**methods):
         # No need to pass instance here because when we extracted
         # the funcion we used instance.__getattribute__(name) which
         # seems to include it. I think.
-        r = orig(*args, **kargs)
+        orig_retval = orig(*args, **kargs)
 
         if post_hook is not None:
           post_hook(self, *args, **kargs)
-        return r
+        return orig_retval
 
       # If this is a wrapped method, return a bound method
       if name in methods:

@@ -19,7 +19,7 @@ from pysecsan import sanlib
 
 try:
   import yaml
-except:
+except Exception:
   pass
 
 
@@ -30,7 +30,7 @@ def hook_pre_exec_pyyaml_load(stream, loader):
     to the loader is controlled by the fuzz data
     """
   # Ensure loader is the unsafe loader or vanilla loader
-  if (loader != yaml.loader.Loader and loader != yaml.loader.UnsafeLoader):
+  if loader not in (yaml.loader.Loader, yaml.loader.UnsafeLoader):
     return
 
   # Check for exact taint in stream

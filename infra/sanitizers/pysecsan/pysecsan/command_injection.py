@@ -20,6 +20,7 @@ from typing import Optional
 
 
 def get_all_substr_prefixes(main_str, sub_str):
+  """Yields all strings prefixed with sub_str in main_str"""
   idx = 0
   while True:
     idx = main_str.find(sub_str, idx)
@@ -32,6 +33,7 @@ def get_all_substr_prefixes(main_str, sub_str):
 
 
 def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
+  """identify if elem is an injection match"""
   # Check exact match
   if elem == "exec-sanitizer":
     return "Explicit command injection found."
@@ -62,7 +64,7 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
   # Example: tests/poe/ansible-runner-cve-2021-4041
   if type(cmd) is str:
     res = check_code_injection_match(cmd, check_unquoted=True)
-    if res != None:
+    if res is not None:
       # if shell arg is true and string is tainted and unquoted that's a
       # definite code injection.
       if arg_shell is True:
@@ -91,15 +93,17 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
 def hook_pre_exec_os_system(cmd):
   """Hook for os.system"""
   res = check_code_injection_match(cmd)
-  if res != None:
+  if res is not None:
     print("code injection by way of os.system")
-    # Exceptions are not enough to throw if they are all caught: https://github.com/Lightning-AI/lightning/blob/8b7a12c52e52a06408e9231647839ddb4665e8ae/pytorch_lightning/utilities/argparse.py#L123-L125
+    # Exceptions are not enough to throw if they are all caught:
+    #   https://github.com/Lightning-AI/lightning/blob/8b7a12c52
+    #   e52a06408e9231647839ddb4665e8ae/pytorch_lightning/utilit
+    #   ies/argparse.py#L123-L125
     sys.exit(1337)
-    #raise Exception(f"Potential code injection by way of os.system\n{res}")
 
 
 def hook_pre_exec_eval(cmd):
   """Hook for eval. Experimental atm."""
   res = check_code_injection_match(cmd)
-  if res != None:
+  if res is not None:
     raise Exception(f"Potential code injection by way of eval\n{res}")
