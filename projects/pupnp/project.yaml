@@ -2,7 +2,6 @@ homepage: "https://pupnp.github.io/pupnp/"
 language: c
 primary_contact: "mroberto@users.sourceforge.net"
 vendor_ccs:
-  - "upnp@intel.com"
   - "virtual_worlds@gmx.de"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
