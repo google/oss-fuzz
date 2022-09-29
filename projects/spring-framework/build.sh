@@ -40,6 +40,7 @@ install_shadowJar webmvc;
 install_shadowJar test;
 install_shadowJar tx;
 install_shadowJar messaging;
+install_shadowJar jms;
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -82,5 +83,6 @@ create_fuzz_targets spring-tx
 create_fuzz_targets spring-web
 create_fuzz_targets spring-jdbc
 create_fuzz_targets spring-messaging
+create_fuzz_targets spring-jms
 
 cp $SRC/spring-jdbc/*.xml $OUT/spring-jdbc/

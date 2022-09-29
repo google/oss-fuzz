@@ -13,6 +13,7 @@ auto_ccs:
   - "guidovranken@gmail.com"
   - "uriah@wolfssl.com"
   - "tim.weller@wolfssl.com"
+  - "jordan@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

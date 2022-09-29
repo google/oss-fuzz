@@ -16,20 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt update && apt install -y openjdk-17-jdk
+RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-RUN git clone https://github.com/spring-projects/spring-framework
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
 
-COPY . $SRC/
+RUN git clone --depth 1 https://github.com/eclipse-ee4j/mail.git jakarta-mail
 
-RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' < $i | git apply; done )
-
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/xml.dict $SRC/spring-context/XmlApplicationContextFuzzer.dict && \
-    rm -rf fuzzing
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $SRC/spring-context/XmlApplicationContextFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
-    rm -rf go-fuzz-corpus
-
-WORKDIR $SRC/spring-framework
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/jakarta-mail

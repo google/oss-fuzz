@@ -16,20 +16,26 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+ARG java_home="/out/open-jdk-17"
+RUN mkdir -p $java_home
+
 RUN apt update && apt install -y openjdk-17-jdk
+ENV JAVA_HOME $java_home
+ENV PATH "${java_home}:${PATH}"
+ENV JVM_LD_LIBRARY_PATH "$java_home/lib/server"
 
-RUN git clone https://github.com/spring-projects/spring-framework
-
-COPY . $SRC/
-
-RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' < $i | git apply; done )
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/spring-projects/spring-integration spring-integration     # or use other version control
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/xml.dict $SRC/spring-context/XmlApplicationContextFuzzer.dict && \
+    cp fuzzing/dictionaries/json.dict $SRC/SimpleJsonSerializerFuzzer.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $SRC/spring-context/XmlApplicationContextFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
+    zip -q $SRC/SimpleJsonSerializerFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
-WORKDIR $SRC/spring-framework
+COPY build.sh $SRC/
+COPY *.java $SRC/
+COPY *.patch $SRC/
+WORKDIR spring-integration
