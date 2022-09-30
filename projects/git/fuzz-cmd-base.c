@@ -152,12 +152,6 @@ int reset_git_folder(void)
 {
 	char *argv[6];
 
-	if (system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1") ||
-		system("echo \"TEMP2TEMP2TEMP2TEMP2\" > ./TEMP_2"))
-	{
-		return -1;
-	}
-
 	argv[0] = "init";
 	argv[1] = NULL;
 	cmd_init_db(1, (const char **)argv, (const char *)"");
