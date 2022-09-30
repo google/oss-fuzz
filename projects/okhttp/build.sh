@@ -34,6 +34,18 @@ pushd "${SRC}/okhttp/okhttp"
     CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 popd
 
+pushd "${SRC}/okhttp/okhttp-logging-interceptor"
+	../gradlew jar
+    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
+    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+popd
+
+pushd "${SRC}/okhttp/mockwebserver"
+	../gradlew jar
+    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
+    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+popd
+
 pushd ${SRC}
 	${MVN} package -DokhttpVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
 	install -v target/okhttp-fuzzer-${CURRENT_VERSION}.jar ${OUT}/okhttp-fuzzer-${CURRENT_VERSION}.jar
