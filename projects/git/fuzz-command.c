@@ -66,7 +66,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	 *  Initialize the repository
 	 */
 	initialize_the_repository();
-	if (repo_init(the_repository, basedir, ".") || reset_git_folder())
+	if (repo_init(the_repository, basedir, "."))
+	{
+		return 0;
+	}
+
+	if (reset_git_folder())
 	{
 		repo_clear(the_repository);
 		return 0;

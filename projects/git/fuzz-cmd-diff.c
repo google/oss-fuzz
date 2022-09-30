@@ -30,19 +30,23 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	char *basedir = "./.git";
 
 	/*
-	 *  Initialize the repository
+	 * End this round of fuzzing if the data is not large enough
 	 */
-	initialize_the_repository();
-	if (repo_init(the_repository, basedir, ".") || reset_git_folder())
+	if (size <= (HASH_HEX_SIZE * 2 + INT_SIZE) || reset_git_folder())
 	{
-		repo_clear(the_repository);
 		return 0;
 	}
 
 	/*
-	 * End this round of fuzzing if the data is not large enough
+	 *  Initialize the repository
 	 */
-	if (size <= (HASH_HEX_SIZE * 2 + INT_SIZE))
+	initialize_the_repository();
+	if (repo_init(the_repository, basedir, "."))
+	{
+		return 0;
+	}
+
+	if (reset_git_folder())
 	{
 		repo_clear(the_repository);
 		return 0;
