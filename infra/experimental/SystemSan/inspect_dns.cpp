@@ -48,54 +48,121 @@ void inspect_for_arbitrary_dns_connect(pid_t pid, const user_regs_struct &regs) 
   }
 }
 
-void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data) {
-  if (data.size() < DNS_HEADER_LEN + 1) {
-    return;
-  }
-  // Standard query.
-  if ((uint8_t(data[2]) & 0xFE) != 0 || uint8_t(data[3]) != 0) {
-    return;
-  }
-  // One question.
-  if (uint8_t(data[4]) != 0 || uint8_t(data[5]) != 1) {
-    return;
-  }
-  // Zero answer and other fields.
-  for (size_t i = 6; i < DNS_HEADER_LEN; i++) {
-    if (uint8_t(data[i]) != 0) {
-      return;
+struct DnsHeader {
+  uint16_t tx_id;
+  uint16_t flags;
+  uint16_t questions;
+  uint16_t answers;
+  uint16_t nameservers;
+  uint16_t additional;
+};
+
+struct DnsHeader parse_dns_header(std::vector<std::byte> data) {
+  struct DnsHeader h;
+  h.tx_id = (((uint16_t) data[0]) << 8) | ((uint16_t) data[1]);
+  h.flags = (((uint16_t) data[2]) << 8) | ((uint16_t) data[3]);
+  h.questions = (((uint16_t) data[4]) << 8) | ((uint16_t) data[5]);
+  h.answers = (((uint16_t) data[6]) << 8) | ((uint16_t) data[7]);
+  h.nameservers = (((uint16_t) data[8]) << 8) | ((uint16_t) data[9]);
+  h.additional = (((uint16_t) data[10]) << 8) | ((uint16_t) data[11]);
+  return h;
+}
+
+bool dns_flags_standard_query(uint16_t flags) {
+  if ((flags & 0x8000) == 0) {
+    // Query, not response.
+    if (((flags & 0x7800) >> 11) == 0) {
+      // Opcode 0 is standard query.
+      if ((flags & 0x0200) == 0) {
+        // Message is not truncated.
+        if ((flags & 0x0040) == 0) {
+          // Z-bit reserved flag is unset.
+          return true;
+        }
+      }
     }
   }
-  size_t offset = DNS_HEADER_LEN;
-  uint8_t tld_size = 0;
+  return false;
+}
+
+struct DnsRequest {
+  // Start of name in the byte vector.
+  size_t offset;
+  // End of name in the byte vector.
+  size_t end;
+  // Length of top level domain.
+  uint8_t tld_size;
+  // Number of levels/dots in domain name.
+  size_t nb_levels;
+  // DNS type like A is 1.
+  uint16_t dns_type;
+  // DNS class like IN is 1.
+  uint16_t dns_class;
+};
+
+struct DnsRequest parse_dns_request(std::vector<std::byte> data, size_t offset) {
+  struct DnsRequest r;
+  r.offset = offset;
+  r.tld_size = 0;
+  r.nb_levels = 0;
   while(offset < data.size()) {
     uint8_t rlen = uint8_t(data[offset]);
     if (rlen == 0) {
       break;
     }
+    r.nb_levels++;
     offset += rlen+1;
-    tld_size = rlen;
+    r.tld_size = rlen;
   }
-  // Regular DNS resolution should have 4 more bytes : type and class.
+  if (offset <= 4 + data.size()) {
+    r.end = offset;
+    r.dns_type = (((uint16_t) data[offset]) << 8) | ((uint16_t) data[offset+1]);
+    r.dns_class = (((uint16_t) data[offset+2]) << 8) | ((uint16_t) data[offset+3]);
+  } else {
+    r.end = data.size();
+  }
+  return r;
+}
+
+void log_dns_request(struct DnsRequest r, std::vector<std::byte> data) {
+  size_t offset = r.offset;
+  std::cerr << "===Domain resolved: ";
+  while(offset < r.end) {
+    uint8_t rlen = uint8_t(data[offset]);
+    if (rlen == 0) {
+      break;
+    }
+    std::cerr << '.';
+    for (uint8_t i = 1; i < rlen+1; i++) {
+      std::cerr << (char) data[offset + i];
+    }
+    offset += rlen+1;
+  }
+  std::cerr << "===\n";
+  std::cerr << "===DNS request type: " << r.dns_type << ", class: " << r.dns_class << "===\n";
+}
+
+void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data) {
+  if (data.size() < DNS_HEADER_LEN + 1) {
+    return;
+  }
+  struct DnsHeader h = parse_dns_header(data);
+  if (h.questions != 1) {
+    return;
+  }
+  if (h.answers != 0 || h.nameservers != 0 || h.additional != 0) {
+    return;
+  }
+  if (!dns_flags_standard_query(h.flags)) {
+    return;
+  }
+
+  struct DnsRequest req = parse_dns_request(data, DNS_HEADER_LEN);
   // Alert if the top level domain is only one character and
   // if there is more than just the TLD.
-  if (tld_size == 1 && offset < data.size() && offset > DNS_HEADER_LEN+2) {
+  if (req.tld_size == 1 && req.nb_levels > 1 && req.end < data.size()) {
     report_bug(kArbitraryDomainNameResolution);
-    offset = DNS_HEADER_LEN;
-    std::cerr << "===Domain resolved: ";
-    while(offset < data.size()) {
-      uint8_t rlen = uint8_t(data[offset]);
-      if (rlen == 0) {
-        break;
-      }
-      std::cerr << '.';
-      for (uint8_t i = 1; i < rlen+1; i++) {
-        std::cerr << (char) data[offset + i];
-      }
-      offset += rlen+1;
-      tld_size = rlen;
-    }
-    std::cerr << "===\n";
+    log_dns_request(req, data);
   }
 }
 
