@@ -52,7 +52,8 @@ def TestInput(data):
         copy_url(fdp.ConsumeString(100))
         copy_url(DummyClass())
     except ValueError as e:
-        if "contains invalid characters" not in str(e):
+        if (("contains invalid characters" not in str(e)) and
+            ("Invalid IPv6 URL" not in str(e))):
             raise e
 
     try:
@@ -67,3 +68,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
