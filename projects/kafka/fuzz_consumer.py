@@ -26,7 +26,7 @@ def TestInput(data):
 
     try:
         c = Consumer({
-            'group.id': fdp.ConsumeString(10),
+            'group.id': fdp.ConsumeConsumeUnicodeNoSurrogates(10),
             'socket.timeout.ms': fdp.ConsumeIntInRange(10,2000),
             'session.timeout.ms': fdp.ConsumeIntInRange(10,2000),
             'on_commit': dummy_callback})
@@ -36,7 +36,7 @@ def TestInput(data):
 
     try:
         c.subscribe(
-            [fdp.ConsumeString(10)],
+            [fdp.ConsumeUnicodeNoSurrogates(10)],
             on_assign=dummy_callback,
             on_revoke=dummy_callback
         )
@@ -50,7 +50,7 @@ def TestInput(data):
 
         partitions = list(
             map(
-                lambda part: TopicPartition(fdp.ConsumeString(10).replace('\x00', ''), part),
+                lambda part: TopicPartition(fdp.ConsumeUnicodeNoSurrogates(10).replace('\x00', ''), part),
                 range(0, 100, 3)
             )
         )
