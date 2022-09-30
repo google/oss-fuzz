@@ -35,38 +35,38 @@ def TestInput(data):
 
     try:
         helpers.scopes_to_string([
-            fdp.ConsumeString(20),
-            fdp.ConsumeString(20)
+            fdp.ConsumeUnicodeNoSurrogates(20),
+            fdp.ConsumeUnicodeNoSurrogates(20)
         ])
-        helpers.scopes_to_string(fdp.ConsumeString(20))
+        helpers.scopes_to_string(fdp.ConsumeUnicodeNoSurrogates(20))
 
-        helpers.string_to_scopes(fdp.ConsumeString(100))
+        helpers.string_to_scopes(fdp.ConsumeUnicodeNoSurrogates(100))
 
-        helpers.parse_unique_urlencoded(fdp.ConsumeString(100))
+        helpers.parse_unique_urlencoded(fdp.ConsumeUnicodeNoSurrogates(100))
 
         helpers.update_query_params(
-            fdp.ConsumeString(100),{
+            fdp.ConsumeUnicodeNoSurrogates(100),{
                 fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20),
                 fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20),
                 fdp.ConsumeUnicodeNoSurrogates(10):fdp.ConsumeUnicodeNoSurrogates(20)
         })
 
         helpers._add_query_parameter(
-            fdp.ConsumeString(100),
+            fdp.ConsumeUnicodeNoSurrogates(100),
             fdp.ConsumeUnicodeNoSurrogates(10),
             fdp.ConsumeUnicodeNoSurrogates(20)
         )
 
-        helpers.validate_file(fdp.ConsumeString(100))
+        helpers.validate_file(fdp.ConsumeUnicodeNoSurrogates(100))
 
-        helpers._json_encode(fdp.ConsumeString(100))
+        helpers._json_encode(fdp.ConsumeUnicodeNoSurrogates(100))
 
-        input = fdp.ConsumeString(100).encode('ascii', errors='ignore').decode()
+        input = fdp.ConsumeUnicodeNoSurrogates(100).encode('ascii', errors='ignore').decode()
         helpers._to_bytes(input)
         helpers._from_bytes(fdp.ConsumeUnicodeNoSurrogates(100))
 
         helpers._urlsafe_b64encode(fdp.ConsumeUnicodeNoSurrogates(100))
-        input = fdp.ConsumeString(100).encode('ascii', errors='ignore').decode()
+        input = fdp.ConsumeUnicodeNoSurrogates(100).encode('ascii', errors='ignore').decode()
         helpers._urlsafe_b64decode(input)
     except (ValueError, IOError, binascii.Error) as e:
         expected = False
