@@ -135,7 +135,7 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 	cmd_add(2, (const char **)argv, (const char *)"");
 
 	argv[0] = "commit";
-	argv[1] = "-m\"New Coasdfadafafmmit\"";
+	argv[1] = "-m\"New Commit\"";
 	argv[2] = NULL;
 	cmd_commit(2, (const char **)argv, (const char *)"");
 }
