@@ -21,38 +21,43 @@ export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-
-ALL_JARS="";
+export CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
 function install_shadowJar {
-	./gradlew shadowJar --build-file spring-$1/spring-$1.gradle -x javadoc -x test
-	install -v "spring-$1/build/libs/spring-$1-${CURRENT_VERSION}-all.jar" "$OUT/spring-$1.jar";
-	ALL_JARS="${ALL_JARS} spring-$1.jar";
+    if grep -q shadow $1/$1.gradle; then
+	    ./gradlew shadowJar --build-file $1/$1.gradle -x javadoc -x test
+    	install -v "$1/build/libs/$1-$CURRENT_VERSION-all.jar" "$OUT/$1.jar";
+    else
+        ./gradlew build -x javadoc -x test
+        install -v "$1/build/libs/$1-$CURRENT_VERSION.jar" "$OUT/$1.jar";
+    fi
 }
 
-install_shadowJar context;
-install_shadowJar core;
-install_shadowJar jdbc;
-install_shadowJar orm;
-install_shadowJar web;
-install_shadowJar webmvc;
-install_shadowJar test;
-install_shadowJar tx;
-install_shadowJar messaging;
-install_shadowJar jms;
+install_shadowJar spring-context;
+install_shadowJar spring-core;
+install_shadowJar spring-jdbc;
+install_shadowJar spring-orm;
+install_shadowJar spring-web;
+install_shadowJar spring-webmvc;
+install_shadowJar spring-test;
+install_shadowJar spring-tx;
+install_shadowJar spring-messaging;
+install_shadowJar spring-jms;
+install_shadowJar spring-webflux
+
+ALL_JARS=$(find $OUT -name "spring*.jar" -printf "%f ")
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH:$SRC
+export BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH:$SRC
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+export RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
 function create_fuzz_targets() {
     mkdir -p $SRC/$1
     mkdir -p $OUT/$1
-    javac -cp $BUILD_CLASSPATH $SRC/$1/*.java --release 17
+    javac -cp $BUILD_CLASSPATH --release 17 $(find $SRC/$1/ -name "*.java" -print)
 
     for fuzzer in $SRC/$1/*Fuzzer.java; do
         fuzzer_basename=$(basename -s .java $fuzzer)
@@ -84,5 +89,6 @@ create_fuzz_targets spring-web
 create_fuzz_targets spring-jdbc
 create_fuzz_targets spring-messaging
 create_fuzz_targets spring-jms
+create_fuzz_targets spring-webflux
 
 cp $SRC/spring-jdbc/*.xml $OUT/spring-jdbc/
