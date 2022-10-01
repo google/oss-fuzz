@@ -46,6 +46,7 @@ BASE_IMAGES = {
         'gcr.io/oss-fuzz-base/base-runner-debug',
     ],
     'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
+    'javascript': ['gcr.io/oss-fuzz-base/base-builder-javascript'],
     'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
     'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
     'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
@@ -68,6 +69,7 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -103,11 +105,12 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    if self.is_external:
-      # TODO(metzman): Handle this properly.
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logging.warning('No project.yaml. Assuming c++.')
       return constants.DEFAULT_LANGUAGE
 
-    project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
@@ -115,8 +118,8 @@ class Project:
         if match:
           return match.group(1)
 
-    logging.warning('Language not specified in project.yaml.')
-    return None
+    logging.warning('Language not specified in project.yaml. Assuming c++.')
+    return constants.DEFAULT_LANGUAGE
 
   @property
   def out(self):
@@ -155,10 +158,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    if args.engine == 'dataflow':
-      args.sanitizer = 'dataflow'
-    else:
-      args.sanitizer = constants.DEFAULT_SANITIZER
+    args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -241,6 +241,7 @@ def get_parser():  # pylint: disable=too-many-statements
   build_image_parser.add_argument('--pull',
                                   action='store_true',
                                   help='Pull latest base image.')
+  _add_architecture_args(build_image_parser)
   build_image_parser.add_argument('--cache',
                                   action='store_true',
                                   default=False,
@@ -291,6 +292,7 @@ def get_parser():  # pylint: disable=too-many-statements
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
+  _add_architecture_args(run_fuzzer_parser)
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
@@ -388,9 +390,10 @@ def check_project_exists(project):
   return False
 
 
-def _check_fuzzer_exists(project, fuzzer_name):
+def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
   """Checks if a fuzzer exists."""
-  command = ['docker', 'run', '--rm']
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = ['docker', 'run', '--rm', '--platform', platform]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
 
@@ -454,11 +457,10 @@ def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
   if choices is None:
     choices = constants.SANITIZERS
-  parser.add_argument(
-      '--sanitizer',
-      default=None,
-      choices=choices,
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+  parser.add_argument('--sanitizer',
+                      default=None,
+                      choices=choices,
+                      help='the default is "address"')
 
 
 def _add_environment_args(parser):
@@ -468,7 +470,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(project, cache=True, pull=False):
+def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
   """Builds image."""
   image_name = project.name
 
@@ -488,14 +490,27 @@ def build_image_impl(project, cache=True, pull=False):
     return False
 
   build_args = []
+  image_name = 'gcr.io/%s/%s' % (image_project, image_name)
+  if architecture == 'aarch64':
+    build_args += [
+        'buildx',
+        'build',
+        '--platform',
+        'linux/arm64',
+        '--progress',
+        'plain',
+        '--load',
+    ]
   if not cache:
     build_args.append('--no-cache')
 
-  build_args += [
-      '-t',
-      'gcr.io/%s/%s' % (image_project, image_name), '--file', dockerfile_path
-  ]
+  build_args += ['-t', image_name, '--file', dockerfile_path]
   build_args.append(docker_build_dir)
+
+  if architecture == 'aarch64':
+    command = ['docker'] + build_args
+    subprocess.check_call(command)
+    return True
   return docker_build(build_args)
 
 
@@ -528,10 +543,21 @@ def _workdir_from_dockerfile(project):
   return workdir_from_lines(lines, default=os.path.join('/src', project.name))
 
 
-def docker_run(run_args, print_output=True):
-  """Calls `docker run`."""
-  command = ['docker', 'run', '--rm', '--privileged']
+def prepare_aarch64_emulation():
+  """Run some necessary commands to use buildx to build AArch64 targets using
+  QEMU emulation on an x86_64 host."""
+  subprocess.check_call(
+      ['docker', 'buildx', 'create', '--name', ARM_BUILDER_NAME])
+  subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
+
+def docker_run(run_args, print_output=True, architecture='x86_64'):
+  """Calls `docker run`."""
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = [
+      'docker', 'run', '--rm', '--privileged', '--shm-size=2g', '--platform',
+      platform
+  ]
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
@@ -600,7 +626,10 @@ def build_image(args):
     logging.info('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(args.project, cache=args.cache, pull=pull):
+  if build_image_impl(args.project,
+                      cache=args.cache,
+                      pull=pull,
+                      architecture=args.architecture):
     return True
 
   return False
@@ -614,34 +643,35 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     architecture,
     env_to_add,
     source_path,
-    mount_path=None):
+    mount_path=None,
+    child_dir=''):
   """Builds fuzzers."""
-  if not build_image_impl(project):
+  if not build_image_impl(project, architecture=architecture):
     return False
 
+  project_out = os.path.join(project.out, child_dir)
   if clean:
     logging.info('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
     docker_run([
-        '-v',
-        '%s:/out' % project.out, '-t',
-        'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /out/*'
-    ])
+        '-v', f'{project_out}:/out', '-t', f'gcr.io/oss-fuzz/{project.name}',
+        '/bin/bash', '-c', 'rm -rf /out/*'
+    ],
+               architecture=architecture)
 
     docker_run([
         '-v',
         '%s:/work' % project.work, '-t',
         'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /work/*'
-    ])
+    ],
+               architecture=architecture)
 
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
-      'FUZZING_ENGINE=' + engine,
-      'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture,
-      'GIT_REPO=',  # TODO(navidem): load from main_repo in project.yaml.
+      'FUZZING_ENGINE=' + engine, 'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture, 'PROJECT_NAME=' + project.name
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
@@ -671,13 +701,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v',
-      '%s:/out' % project.out, '-v',
-      '%s:/work' % project.work, '-t',
-      'gcr.io/oss-fuzz/%s' % project.name
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      f'gcr.io/oss-fuzz/{project.name}'
   ]
 
-  result = docker_run(command)
+  result = docker_run(command, architecture=architecture)
   if not result:
     logging.error('Building fuzzers failed.')
     return False
@@ -687,14 +715,28 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 def build_fuzzers(args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project,
-                            args.clean,
-                            args.engine,
-                            args.sanitizer,
-                            args.architecture,
-                            args.e,
-                            args.source_path,
-                            mount_path=args.mount_path)
+  if args.engine == 'centipede':
+    # Centipede always requires separate binaries for sanitizers:
+    # An unsanitized binary, which Centipede requires for fuzzing.
+    # A sanitized binary, placed in the child directory.
+    sanitized_binary_directories = (
+        ('none', ''),
+        (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
+    )
+  else:
+    # Generally, a fuzzer only needs one sanitized binary in the default dir.
+    sanitized_binary_directories = ((args.sanitizer, ''),)
+  return all(
+      build_fuzzers_impl(args.project,
+                         args.clean,
+                         args.engine,
+                         sanitizer,
+                         args.architecture,
+                         args.e,
+                         args.source_path,
+                         mount_path=args.mount_path,
+                         child_dir=child_dir)
+      for sanitizer, child_dir in sanitized_binary_directories)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
@@ -709,28 +751,22 @@ def check_build(args):
   if not check_project_exists(args.project):
     return False
 
-  if (args.fuzzer_name and
-      not _check_fuzzer_exists(args.project, args.fuzzer_name)):
+  if (args.fuzzer_name and not _check_fuzzer_exists(
+      args.project, args.fuzzer_name, args.architecture)):
     return False
-
-  fuzzing_language = args.project.language
-  if not fuzzing_language:
-    fuzzing_language = constants.DEFAULT_LANGUAGE
-    logging.warning('Language not specified in project.yaml. Defaulting to %s.',
-                    fuzzing_language)
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + fuzzing_language,
+      'FUZZING_LANGUAGE=' + args.project.language,
   ]
   _add_oss_fuzz_ci_if_needed(env)
   if args.e:
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
+      '-v', f'{args.project.out}:/out', '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
@@ -738,7 +774,7 @@ def check_build(args):
   else:
     run_args.append('test_all.py')
 
-  result = docker_run(run_args)
+  result = docker_run(run_args, architecture=args.architecture)
   if result:
     logging.info('Check build passed.')
   else:
@@ -950,7 +986,7 @@ def run_fuzzer(args):
       args.fuzzer_name,
   ] + args.fuzzer_args)
 
-  return docker_run(run_args)
+  return docker_run(run_args, architecture=args.architecture)
 
 
 def reproduce(args):
@@ -1138,7 +1174,7 @@ def shell(args):
       'gcr.io/%s/%s' % (image_project, args.project.name), '/bin/bash'
   ])
 
-  docker_run(run_args)
+  docker_run(run_args, architecture=args.architecture)
   return True
 
 

@@ -7,12 +7,10 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:b942129fbed50e87e554a58dbbbbf90382f17c650dc4d4e27b7a9f8e68b1d494
 ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN install_go.sh
@@ -33,7 +33,7 @@ RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
-RUN git clone --depth 1 -b development https://github.com/ARMmbed/mbedtls.git
+RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git

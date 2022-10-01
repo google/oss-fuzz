@@ -14,11 +14,12 @@
 #
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
-
 import logging
+import os
 
 import google.auth
-from googleapiclient.discovery import build
+
+import build_lib
 
 BASE_IMAGES = [
     'base-image',
@@ -26,6 +27,7 @@ BASE_IMAGES = [
     'base-builder',
     'base-builder-go',
     'base-builder-go-codeintelligencetesting',
+    'base-builder-javascript',
     'base-builder-jvm',
     'base-builder-python',
     'base-builder-rust',
@@ -38,62 +40,46 @@ BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
+MANIFEST_IMAGES = [
+    'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner'
+]
+TIMEOUT = str(6 * 60 * 60)
 
 
-def _get_base_image_steps(images, tag_prefix=TAG_PREFIX):
+def get_base_image_path(image_name):
+  """Returns the path to the directory containing the Dockerfile of the base
+  image."""
+  return os.path.join('infra', 'base-images', image_name)
+
+
+def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   """Returns build steps for given images."""
-  steps = [{
-      'args': [
-          'clone',
-          'https://github.com/google/oss-fuzz.git',
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  }]
+  steps = [build_lib.get_git_clone_step()]
 
   for base_image in images:
     image = tag_prefix + base_image
-    steps.append({
-        'args': [
-            'build',
-            '-t',
-            image,
-            '-t',
-            f'{image}:{MAJOR_TAG}',
-            '.',
-        ],
-        'dir': 'oss-fuzz/infra/base-images/' + base_image,
-        'name': 'gcr.io/cloud-builders/docker',
-    })
-
+    tagged_image = image + ':' + MAJOR_TAG
+    image_path = get_base_image_path(base_image)
+    steps.append(
+        build_lib.get_docker_build_step([image, tagged_image], image_path))
   return steps
 
 
-def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
+def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
   """Returns build steps for given images version of introspector"""
-  steps = [{
-      'args': [
-          'clone',
-          'https://github.com/google/oss-fuzz.git',
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  }, {
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['pull', 'gcr.io/oss-fuzz-base/base-clang:introspector'],
-  }, {
-      'name':
-          'gcr.io/cloud-builders/docker',
-      'args': [
-          'tag', 'gcr.io/oss-fuzz-base/base-clang:introspector',
-          'gcr.io/oss-fuzz-base/base-clang:latest'
-      ],
-  }]
+  steps = [build_lib.get_git_clone_step()]
 
-  for base_image in images:
+  for base_image in INTROSPECTOR_BASE_IMAGES:
     image = tag_prefix + base_image
     args_list = ['build']
 
     if base_image == 'base-clang':
       args_list.extend(['--build-arg', 'introspector=1'])
+    elif base_image == 'base-builder':
+      args_list.extend([
+          '--build-arg',
+          'parent_image=gcr.io/oss-fuzz-base/base-clang:introspector'
+      ])
 
     args_list.extend([
         '-t',
@@ -102,56 +88,103 @@ def _get_introspector_base_images_steps(images, tag_prefix=TAG_PREFIX):
     ])
     steps.append({
         'args': args_list,
-        'dir': 'oss-fuzz/infra/base-images/' + base_image,
+        'dir': os.path.join('oss-fuzz', get_base_image_path(base_image)),
         'name': 'gcr.io/cloud-builders/docker',
     })
 
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
-  """Returns url that displays the build logs."""
-  return ('https://console.developers.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
-
-
 # pylint: disable=no-member
-def run_build(steps, images, build_version=MAJOR_TAG):
-  """Execute the retrieved build steps in gcp."""
+def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
+  """Execute the build |steps| in GCB and push |images| to the registry."""
   credentials, _ = google.auth.default()
-  build_body = {
-      'steps': steps,
-      'timeout': str(6 * 3600) + 's',
+  images = [image for image in images if image not in MANIFEST_IMAGES
+           ] + ([f'{image}:{build_version}' for image in images])
+  body_overrides = {
+      'images': images,
       'options': {
-          'machineType': 'N1_HIGHCPU_32'
+          'machineType': 'E2_HIGHCPU_32'
       },
-      'images': images + [f'{image}:{build_version}' for image in images]
   }
-  cloudbuild = build('cloudbuild',
-                     'v1',
-                     credentials=credentials,
-                     cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=BASE_PROJECT,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, BASE_PROJECT))
+  return build_lib.run_build(steps,
+                             credentials,
+                             BASE_PROJECT,
+                             TIMEOUT,
+                             body_overrides,
+                             tags,
+                             use_build_pool=False)
+
+
+def get_images_architecture_manifest_steps():
+  """Returns steps to create manifests for ARM and x86_64 versions of
+  base-runner and base-builder."""
+  images = [f'{TAG_PREFIX}base-builder', f'{TAG_PREFIX}base-runner']
+  steps = []
+  for image in images:
+    steps.extend(get_image_push_architecture_manifest_steps(image))
+  return steps
+
+
+def get_image_push_architecture_manifest_steps(image):
+  """Returns the steps to push a manifest pointing to ARM64 and AMD64 versions
+  of |image|."""
+  arm_testing_image = f'{image}-testing-arm'
+  amd64_manifest_image = f'{image}:manifest-amd64'
+  arm64_manifest_image = f'{image}:manifest-arm64v8'
+  steps = [
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['tag', image, amd64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['push', amd64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['pull', arm_testing_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['tag', arm_testing_image, arm64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['push', arm64_manifest_image],
+      },
+      {
+          'name':
+              'gcr.io/cloud-builders/docker',
+          'args': [
+              'manifest', 'create', image, '--amend', arm64_manifest_image,
+              '--amend', amd64_manifest_image
+          ],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['manifest', 'push', image]
+      },
+  ]
+  return steps
 
 
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
+  logging.basicConfig(level=logging.INFO)
 
-  tag_prefix = f'gcr.io/{BASE_PROJECT}/'
-  steps = _get_base_image_steps(BASE_IMAGES, tag_prefix)
-  images = [tag_prefix + base_image for base_image in BASE_IMAGES]
-
+  steps = get_base_image_steps(BASE_IMAGES)
+  steps.extend(get_images_architecture_manifest_steps())
+  images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 
-  introspector_steps = _get_introspector_base_images_steps(
-      INTROSPECTOR_BASE_IMAGES, tag_prefix)
+  introspector_steps = _get_introspector_base_images_steps()
   introspector_images = [
-      tag_prefix + base_image for base_image in INTROSPECTOR_BASE_IMAGES
+      TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
   ]
 
-  run_build(introspector_steps, introspector_images, INTROSPECTOR_TAG)
+  run_build(introspector_steps,
+            introspector_images,
+            tags=INTROSPECTOR_TAG,
+            build_version=INTROSPECTOR_TAG)

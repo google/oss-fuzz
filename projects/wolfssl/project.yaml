@@ -7,21 +7,20 @@ auto_ccs:
   - "john.safranek@gmail.com"
   - "kaleb@wolfssl.com"
   - "kaleb.himes@gmail.com"
-  - "levi@wolfssl.com"
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
-  - "jeffelms.wolfssl@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
+  - "uriah@wolfssl.com"
+  - "tim.weller@wolfssl.com"
+  - "jordan@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386

@@ -146,9 +146,9 @@ correctly configured, even if it succeeded. To reproduce these locally, run thes
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME
+    --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME
 $ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME \
+    --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME \
     <fuzz_target_name>
 ```
 

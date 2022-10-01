@@ -28,6 +28,8 @@ def TestOneInput(data):
             stream.forward()
     except yaml.reader.ReaderError:
         None
+    except RecursionError:
+        pass
 
     return 
 

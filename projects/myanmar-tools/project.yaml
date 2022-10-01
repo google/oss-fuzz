@@ -9,3 +9,4 @@ sanitizers:
 # - memory
 coverage_extra_args: -ignore-filename-regex=.*/\.hunter/.*
 main_repo: 'https://github.com/google/myanmar-tools.git'
+file_github_issue: True

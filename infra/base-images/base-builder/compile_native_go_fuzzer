@@ -33,6 +33,7 @@ function rewrite_go_fuzz_harness() {
 	# Import https://github.com/AdamKorcz/go-118-fuzz-build.
 	# This changes the line numbers from the original fuzzer.
 	addimport -path "${fuzzer_fn}"
+	echo -e "\nvar _ = testing.Verbose // Ensure testing import remains\n" >>  "${fuzzer_fn}"
 }
 
 function build_native_go_fuzzer() {
@@ -58,7 +59,7 @@ function build_native_go_fuzzer() {
 		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
 		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
 		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-		gotip test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+		go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
 
 		rm ./"${function,,}"_test.go
 	else
@@ -77,7 +78,7 @@ tags="-tags gofuzz"
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
 # TODO(adamkorcz): Get rid of "-r" flag here.
-fuzzer_filename=$(grep -r -l  -s "$function" "${abs_file_dir}")
+fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
 
 # Test if file contains a line with "func $function" and "testing.F".
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]

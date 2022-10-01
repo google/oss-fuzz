@@ -26,6 +26,7 @@ RUN mkdir LPM; \
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
+RUN git clone --depth 1 https://go.googlesource.com/go goroot
 RUN git clone --depth 1 https://github.com/catenacyber/ngolo-fuzzing.git
 
 COPY build.sh $SRC/

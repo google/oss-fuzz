@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+# For fuzz-introspector. This is to exclude all libxml2 code from the
+# fuzz-introspector reports.
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+libxml2
+EOF
+
 # compile libxml2 from source so we can statically link
 DEPS=/deps
 mkdir ${DEPS}
@@ -24,7 +32,8 @@ cd $SRC/libxml2
     --without-ftp \
     --without-http \
     --without-legacy \
-    --without-python
+    --without-python \
+    --enable-static
 make -j$(nproc)
 make install
 cp .libs/libxml2.a ${DEPS}/

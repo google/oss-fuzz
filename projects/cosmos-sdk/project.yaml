@@ -3,6 +3,7 @@ primary_contact: "fuzzing@orijtech.com"
 auto_ccs:
   - emmanuel@orijtech.com
   - cuong@orijtech.com
+  - elias@orijtech.com
 language: go
 fuzzing_engines:
   - libfuzzer

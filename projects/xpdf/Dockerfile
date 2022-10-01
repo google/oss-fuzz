@@ -23,4 +23,4 @@ RUN wget https://dl.xpdfreader.com/xpdf-latest.tar.gz
 WORKDIR $SRC
 COPY fuzz_*.cc $SRC/
 COPY build.sh $SRC/
-COPY fuzz_pdfload.options $SRC/fuzz_pdfload.options
+COPY fuzz_*.options $SRC/

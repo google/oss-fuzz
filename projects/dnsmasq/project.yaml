@@ -4,3 +4,4 @@ primary_contact: "simon@thekelleys.org.uk"
 main_repo: "git://thekelleys.org.uk/dnsmasq.git"
 auto_ccs:
  - "david@adalogics.com"
+ - "pemensik@redhat.com"

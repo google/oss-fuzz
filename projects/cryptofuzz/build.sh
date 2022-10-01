@@ -51,13 +51,15 @@ export INCLUDE_PATH_FLAGS=""
 cd $SRC/cryptofuzz
 python gen_repository.py
 
-go get golang.org/x/crypto/blake2b
-go get golang.org/x/crypto/blake2s
-go get golang.org/x/crypto/md4
-go get golang.org/x/crypto/ripemd160
+git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
+git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+
+# wolfCrypt uses a slightly different ECDH algorithm than Trezor and libsecp256k1.
+# This disables running ECDH in Trezor and libsecp256k1 to prevent mismatches.
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_DISABLE_SPECIAL_ECDH"
 
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
@@ -613,6 +615,10 @@ then
     # Copy seed corpus
     cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl_seed_corpus.zip
 fi
+
+# Compile Cryptofuzz libgmp mini-gmp module
+cd $SRC/cryptofuzz/modules/libgmp
+make -B -f Makefile-mini-gmp
 
 ##############################################################################
 # Compile BoringSSL (with assembly)

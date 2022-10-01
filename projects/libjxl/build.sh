@@ -73,6 +73,7 @@ cmake \
 
 fuzzers=(
   color_encoding_fuzzer
+  cjxl_fuzzer
   djxl_fuzzer
   fields_fuzzer
   icc_codec_fuzzer

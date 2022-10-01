@@ -17,7 +17,7 @@
 
 git clone https://github.com/KhronosGroup/SPIRV-Headers external/spirv-headers --depth=1
 git clone https://github.com/protocolbuffers/protobuf   external/protobuf      --branch v3.13.0.1
-git clone https://dawn.googlesource.com/tint --depth=1
+git clone https://dawn.googlesource.com/dawn --depth=1
 
 mkdir build
 pushd build
@@ -73,7 +73,7 @@ popd
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # SPIRV-Tools and tint repositories.
 mkdir $WORK/tint-binary-corpus
-python3 tint/src/tint/fuzzers/generate_spirv_corpus.py tint/test $WORK/tint-binary-corpus standard-build/tools/spirv-as
+python3 dawn/src/tint/fuzzers/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus standard-build/tools/spirv-as
 mkdir $WORK/spirv-binary-corpus-hashed-names
 tint_test_cases=`ls $WORK/tint-binary-corpus/*.spv`
 spirv_tools_test_cases=`find test/fuzzers/corpora -name "*.spv"`
@@ -92,7 +92,7 @@ done
 
 # Generate a corpus of SPIR-V assembly files from the tint repository.
 mkdir $WORK/spirv-assembly-corpus-hashed-names
-for f in `find tint/test -name "*.spvasm"`
+for f in `find dawn/test/tint -name "*.spvasm"`
 do
   hashed_name=$(sha1sum "$f" | awk '{print $1}')
   cp $f $WORK/spirv-assembly-corpus-hashed-names/$hashed_name

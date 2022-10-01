@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
 RUN git clone --depth 1 https://github.com/jhump/protoreflect
 
 COPY fuzz_protoparse.go $SRC/protoreflect/desc/protoparse/

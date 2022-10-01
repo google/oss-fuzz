@@ -16,27 +16,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex gettext \
-    libffi-dev liblzma-dev libtheora-dev libogg-dev zlib1g-dev libcairo2-dev \
+   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf \
     python3-pip ninja-build && \
    pip3 install meson==0.61.3
 
-# We must install libvorbis from scratch as otherwise we will run into
-# undefined functions in Ubuntu 20.04
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git && \
-    cd $SRC/vorbis && \
-    ./autogen.sh && \
-    ./configure --enable-static && \
-    make clean && \
-    make -j$(nproc) && \
-    make install
-
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.72/glib-2.72.0.tar.xz $SRC
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git vorbis
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git ogg
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git theora
 
 # Checkout repository
 RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
-
-ADD https://people.freedesktop.org/~bilboed/gst-discoverer_seed_corpus.zip $SRC
 
 WORKDIR gstreamer
 COPY build.sh $SRC/

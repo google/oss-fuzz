@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pypa/pip
+language: python
+main_repo: https://github.com/pypa/pip
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

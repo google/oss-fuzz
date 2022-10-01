@@ -14,6 +14,9 @@
 #
 ################################################################################
 
+export CFLAGS="${CFLAGS} -DNDEBUG"
+export CXXFLAGS="${CXXFLAGS} -DNDEBUG -std=c++17"
+
 cd $SRC/LPM
 export PKG_CONFIG_PATH=$PWD:$PWD/external.protobuf/lib/pkgconfig/
 export PATH=$PWD/external.protobuf/bin:$PATH

@@ -117,15 +117,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             (void)splashOut->getBitmap();
 
             delete splashOut;
-
-            Object globals;
-            BaseStream *base_str = doc.getBaseStream();
-            if (base_str) {
-              JBIG2Stream *str = new JBIG2Stream(base_str, &globals);
-              str->reset();
-              delete str;
-            }
-            globals.free();            
         }
     } catch (...) {
 

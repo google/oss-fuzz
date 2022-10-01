@@ -1,0 +1,8 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<Menu>
+  <Name>Apps</Name>
+  <Directory>Apps.dir</Directory>
+  <DefaultDirectoryDirs/>
+  <MergeDir>apps-merged</MergeDir>
+  <DefaultAppDirs/>
+</Menu>

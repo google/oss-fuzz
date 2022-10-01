@@ -1,0 +1,12 @@
+diff --git a/spring-orm/spring-orm.gradle b/spring-orm/spring-orm.gradle
+index c2c5a4afc9..5151f30de5 100644
+--- a/spring-orm/spring-orm.gradle
++++ b/spring-orm/spring-orm.gradle
+@@ -1,5 +1,7 @@
+ description = "Spring Object/Relational Mapping"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
++
+ dependencies {
+ 	api(project(":spring-beans"))
+ 	api(project(":spring-core"))
