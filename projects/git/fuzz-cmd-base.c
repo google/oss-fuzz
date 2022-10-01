@@ -104,9 +104,9 @@ void generate_random_file(char *data, int size)
  * This function provides a shorthand for generate commit in master
  * branch.
  */
-void generate_commit(char *data, int size)
+int generate_commit(char *data, int size)
 {
-	generate_commit_in_branch(data, size, "master");
+	return generate_commit_in_branch(data, size, "master");
 }
 
 /*
@@ -114,14 +114,14 @@ void generate_commit(char *data, int size)
  * worktree with randomization to provide a target for the fuzzing
  * of git command under specific branch.
  */
-void generate_commit_in_branch(char *data, int size, char *branch_name)
+int generate_commit_in_branch(char *data, int size, char *branch_name)
 {
 	char *argv[4];
 	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
 
 	if (!data_chunk)
 	{
-		return;
+		return -1;
 	}
 
 	memcpy(data_chunk, data, size * 2);
@@ -132,12 +132,21 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 	argv[0] = "add";
 	argv[1] = "TEMP-*-TEMP";
 	argv[2] = NULL;
-	cmd_add(2, (const char **)argv, (const char *)"");
+	int r = cmd_add(2, (const char **)argv, (const char *)"");
+  //printf("cmd_add: %d\n", r);
+  if (r != 0 ) {
+    return -1;
+  }
 
 	argv[0] = "commit";
 	argv[1] = "-m\"New Commit\"";
 	argv[2] = NULL;
-	cmd_commit(2, (const char **)argv, (const char *)"");
+	int c = cmd_commit(2, (const char **)argv, (const char *)"");
+  //printf("cmd_commit: %d\n", c);
+  if (c != 0) {
+    return -1;
+  }
+  return 0;
 }
 
 /*

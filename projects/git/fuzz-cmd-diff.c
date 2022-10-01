@@ -9,6 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include <ftw.h>
+
 #include "builtin.h"
 #include "repository.h"
 #include "fuzz-cmd-base.h"
@@ -32,15 +34,27 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * End this round of fuzzing if the data is not large enough
 	 */
-	if (size <= (HASH_HEX_SIZE * 2 + INT_SIZE) || reset_git_folder())
+	if (size <= (HASH_HEX_SIZE * 2 + INT_SIZE))
 	{
 		return 0;
 	}
 
+  /*
+   * Cleanup if needed
+   */
+  system("rm -rf ./.git");
+  system("rm -rf ./TEMP-*");
+  system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
+  system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_2");
+
+	initialize_the_repository();
+  if (reset_git_folder()) {
+    return 0;
+  }
+
 	/*
 	 *  Initialize the repository
 	 */
-	initialize_the_repository();
 	if (repo_init(the_repository, basedir, "."))
 	{
 		return 0;
@@ -68,21 +82,29 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		return 0;
 	}
 
+  //printf("Number of commits: %d\n", no_of_commit);
+  int failure = 0;
 	for (i = 0; i < no_of_commit; i++)
 	{
+    if (failure) {
+      break;
+    }
 		memcpy(data_chunk, data, HASH_HEX_SIZE);
-		generate_commit(data_chunk, HASH_SIZE);
+		failure += generate_commit(data_chunk, HASH_SIZE);
 		data += HASH_HEX_SIZE;
 		size -= HASH_HEX_SIZE;
 	}
-
 	free(data_chunk);
 
-        argv[0] = "branch";
-        argv[1] = "-f";
-        argv[2] = "new_branch";
-        argv[3] = NULL;
-        cmd_branch(3, (const char **)argv, (const char *)"");
+  if (failure) {
+    return 0;
+  }
+
+  argv[0] = "branch";
+  argv[1] = "-f";
+  argv[2] = "new_branch";
+  argv[3] = NULL;
+  cmd_branch(3, (const char **)argv, (const char *)"");
 
 	/*
 	 * Generate random file for diff
@@ -113,6 +135,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
+  /*
 	argv[1] = "HEAD";
 	argv[2] = NULL;
 	cmd_diff(2, (const char **)argv, (const char *)"");
@@ -135,10 +158,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "new_branch";
 	argv[3] = NULL;
  	       cmd_diff(3, (const char **)argv, (const char *)"");
-
+  */
 	/*
          * Calling git diff-files command
          */
+  /*
 	argv[0] = "diff-files";
 	argv[1] = NULL;
 	cmd_diff_files(1, (const char **)argv, (const char *)"");
@@ -148,10 +172,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
 	cmd_diff_files(3, (const char **)argv, (const char *)"");
-
+  */
         /*
          * Calling git diff-tree command
          */
+  /*
 	argv[0] = "diff-tree";
 	argv[1] = "master";
 	argv[2] = "--";
@@ -163,10 +188,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[3] = "--";
 	argv[4] = NULL;
 	cmd_diff_tree(4, (const char **)argv, (const char *)"");
-
+  */
         /*
          * Calling git diff-index command
          */
+  /*
 	argv[0] = "diff-index";
 	argv[1] = "master";
 	argv[2] = "--";
@@ -181,7 +207,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[4] = "TEMP_4";
 	argv[5] = NULL;
 	cmd_diff_index(5, (const char **)argv, (const char *)"");
-
+  */
 	repo_clear(the_repository);
 	return 0;
 }
