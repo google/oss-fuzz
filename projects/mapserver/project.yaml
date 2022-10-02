@@ -5,7 +5,7 @@ vendor_ccs:
   - "max.kellermann@gmail.com"
   - "geographika@gmail.com"
   - "jmckenna@gatewaygeomatics.com"
-  - "even.rouault@spatialys.com"
+  - "even.rouault@gmail.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:

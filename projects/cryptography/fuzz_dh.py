@@ -26,7 +26,7 @@ def TestInput(input_bytes):
     try:
         parameters = dh.generate_parameters(
             generator=(2 if fdp.ConsumeBool() else 5), 
-            key_size=fdp.ConsumeInt(15)
+            key_size=fdp.ConsumeInt(4)
         )
     except ValueError as e:
         if "DH key_size must be at least 512 bits" not in str(e):

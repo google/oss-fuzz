@@ -1,10 +1,12 @@
-homepage: "https://github.com/oauthlib/oauthlib"
-language: python
-main_repo: "https://github.com/oauthlib/oauthlib"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/oauthlib/oauthlib
+language: python
+main_repo: https://github.com/oauthlib/oauthlib
 sanitizers:
-  - address
-  - undefined
+- address
+- undefined
 vendor_ccs:
-  - david@adalogics.com
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

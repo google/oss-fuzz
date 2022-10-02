@@ -14,6 +14,7 @@
 """A module to handle running a fuzz target for a specified amount of time."""
 import collections
 import logging
+import multiprocessing
 import os
 import shutil
 import stat
@@ -50,6 +51,12 @@ COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
 
 FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
+
+
+def get_libfuzzer_parallel_options():
+  """Returns a list containing options to pass to libFuzzer to fuzz using all
+  available cores."""
+  return ['-jobs=' + str(multiprocessing.cpu_count())]
 
 
 class ReproduceError(Exception):
@@ -174,6 +181,9 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
         if not self.config.report_ooms:
           options.arguments.extend(LIBFUZZER_OPTIONS_NO_REPORT_OOM)
+
+        if self.config.parallel_fuzzing:
+          options.arguments.extend(get_libfuzzer_parallel_options())
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)

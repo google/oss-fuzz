@@ -1,12 +1,14 @@
-homepage: "https://github.com/sqlalchemy/mako"
-language: python
-primary_contact: "mike_mp@zzzcomputing.com"
-main_repo: "https://github.com/sqlalchemy/mako"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://github.com/sqlalchemy/mako
+language: python
+main_repo: https://github.com/sqlalchemy/mako
+primary_contact: mike_mp@zzzcomputing.com
 sanitizers:
-  - address
-  - undefined
+- address
+- undefined
 vendor_ccs:
-  - david@adalogics.com
-  - adam@adalogics.com
+- david@adalogics.com
+- adam@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

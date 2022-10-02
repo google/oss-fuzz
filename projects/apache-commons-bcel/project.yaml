@@ -1,0 +1,14 @@
+homepage: "https://commons.apache.org/proper/commons-bcel/"
+language: jvm
+main_repo: "https://github.com/apache/commons-bcel.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"

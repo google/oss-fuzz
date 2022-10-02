@@ -24,13 +24,11 @@ export GNULIB_SRCDIR=$SRC/gnulib
 export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
-./autogen.sh
 ./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
 make -j$(nproc)
 make install
 
 cd $SRC/libidn2
-./bootstrap
 ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
 make -j$(nproc)
 make install
@@ -86,14 +84,14 @@ cd $SRC/wget
 autoreconf -fi
 
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
 ./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
 ./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
