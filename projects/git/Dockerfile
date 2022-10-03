@@ -25,6 +25,7 @@ RUN apt-get update && \
 RUN git clone https://github.com/git/git git
 WORKDIR git
 RUN git checkout origin/next
+RUN git pull origin next
 RUN mkdir -p oss-fuzz
 COPY fuzz-* ./oss-fuzz/
 COPY Makefile.diff ./

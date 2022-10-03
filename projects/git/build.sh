@@ -23,7 +23,7 @@ make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" \
 FUZZERS="fuzz-pack-headers fuzz-pack-idx fuzz-commit-graph"
 #FUZZERS="$FUZZERS fuzz-cmd-status fuzz-cmd-diff fuzz-cmd-version"
 #FUZZERS="$FUZZERS fuzz-command"
-FUZZERS="$FUZZERS fuzz-cmd-diff fuzz-command"
+FUZZERS="$FUZZERS fuzz-cmd-diff"
 # copy fuzzers
 for fuzzer in $FUZZERS ; do
   cp oss-fuzz/$fuzzer $OUT
