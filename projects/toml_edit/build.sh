@@ -16,5 +16,5 @@
 ################################################################################
 
 cd $SRC/toml_edit
-cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_document $OUT/
+cargo fuzz build --fuzz-dir=./crates/toml_edit_fuzz -O
+cp target/x86_64-unknown-linux-gnu/release/parse_document $OUT/
