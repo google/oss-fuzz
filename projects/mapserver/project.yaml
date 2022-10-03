@@ -2,7 +2,6 @@ homepage: "https://mapserver.org"
 language: c++
 primary_contact: "mapserver-security@osgeo.org"
 vendor_ccs:
-  - "max.kellermann@gmail.com"
   - "geographika@gmail.com"
   - "jmckenna@gatewaygeomatics.com"
   - "even.rouault@gmail.com"
