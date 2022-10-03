@@ -132,21 +132,20 @@ int generate_commit_in_branch(char *data, int size, char *branch_name)
 	argv[0] = "add";
 	argv[1] = "TEMP-*-TEMP";
 	argv[2] = NULL;
-	int r = cmd_add(2, (const char **)argv, (const char *)"");
-  //printf("cmd_add: %d\n", r);
-  if (r != 0 ) {
-    return -1;
-  }
+	if (cmd_add(2, (const char **)argv, (const char *)""))
+	{
+		return -1;
+	}
 
 	argv[0] = "commit";
 	argv[1] = "-m\"New Commit\"";
 	argv[2] = NULL;
-	int c = cmd_commit(2, (const char **)argv, (const char *)"");
-  //printf("cmd_commit: %d\n", c);
-  if (c != 0) {
-    return -1;
-  }
-  return 0;
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -2;
+
+	}
+  	return 0;
 }
 
 /*
@@ -163,32 +162,57 @@ int reset_git_folder(void)
 
 	argv[0] = "init";
 	argv[1] = NULL;
-	cmd_init_db(1, (const char **)argv, (const char *)"");
+	if (cmd_init_db(1, (const char **)argv, (const char *)""))
+	{
+		return -1;
+	}
 
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.name";
 	argv[3] = "\"FUZZ\"";
 	argv[4] = NULL;
-	cmd_config(4, (const char **)argv, (const char *)"");
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -2;
+	}
 
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.email";
 	argv[3] = "\"FUZZ@LOCALHOST\"";
 	argv[4] = NULL;
-	cmd_config(4, (const char **)argv, (const char *)"");
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -3;
+	}
+
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "safe.directory";
+	argv[3] = "\"*\"";
+	argv[4] = NULL;
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -4;
+	}
 
 	argv[0] = "add";
 	argv[1] = "TEMP_1";
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
-	cmd_add(3, (const char **)argv, (const char *)"");
+	if (cmd_add(3, (const char **)argv, (const char *)""))
+	{
+		return -5;
+	}
 
 	argv[0] = "commit";
 	argv[1] = "-m\"First Commit\"";
 	argv[2] = NULL;
-	cmd_commit(2, (const char **)argv, (const char *)"");
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -6;
+	}
 
 	return 0;
 }
