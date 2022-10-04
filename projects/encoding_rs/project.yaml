@@ -4,7 +4,7 @@ main_repo: "https://github.com/hsivonen/encoding_rs"
 primary_contact: "hsivonen@gmail.com"
 auto_ccs:
   - hsivonen@mozilla.com
-anitizers:
+sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
