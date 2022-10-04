@@ -30,6 +30,7 @@ function install_shadowJar {
 
 install_shadowJar shell-core;
 install_shadowJar shell-standard;
+install_shadowJar shell-table;
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -66,3 +67,4 @@ function create_fuzz_targets() {
 
 create_fuzz_targets core;
 create_fuzz_targets standard;
+create_fuzz_targets table;

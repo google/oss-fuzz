@@ -31,5 +31,6 @@ RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $
 COPY build.sh $SRC/
 COPY core $SRC/core/
 COPY standard $SRC/standard/
+COPY table $SRC/table/
 
 WORKDIR spring-shell
