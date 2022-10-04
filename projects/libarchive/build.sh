@@ -45,7 +45,7 @@ sed -i 's/-Werror//g' ./CMakeLists.txt
 mkdir build2
 cd build2
 cmake ../
-make
+make -j$(nproc)
 
 # build seed
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
