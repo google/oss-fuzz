@@ -33,15 +33,28 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
     }
+
+    uint8_t *DataFx;
+    size_t SizeFx = Size+1;
+    DataFx = (uint8_t *)calloc(SizeFx,sizeof(uint8_t));
+
+    memcpy((void *)DataFx,(void *)Data,Size);
+
+    char AddCB[] ={0x7b}; //{
+    memcpy((void *)DataFx,(void *)AddCB,sizeof(AddCB));
+//calloc already added 0x00 at the end of DataFx.
+
     int status;
     {
         memset((void *)&gpsdata, 0, sizeof(gpsdata));
-        status = libgps_json_unpack((char *)Data, &gpsdata, NULL);
+        status = libgps_json_unpack((char *)DataFx, &gpsdata, NULL);
     }
     {
         memset((void *)&gpsdata, 0, sizeof(gpsdata));
-        status = json_toff_read((char *)Data, &gpsdata, NULL);
+        status = json_toff_read((char *)DataFx, &gpsdata, NULL);
     }
+
+    free(DataFx);
 
     return status;
 }
