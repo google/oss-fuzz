@@ -41,7 +41,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     memcpy((void *)DataFx,(void *)Data,Size);
 
     char AddCB[] ={0x7b}; //{
-    memcpy((void *)Data,(void *)AddCB,sizeof(AddCB));
+    memcpy((void *)DataFx,(void *)AddCB,sizeof(AddCB));
 //calloc already added 0x00 at the end of DataFx.
 
     int status;
