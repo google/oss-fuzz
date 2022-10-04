@@ -17,6 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/ron-rs/ron ron
-COPY from_str.rs $SRC/ron/fuzz/fuzz_targets/from_str.rs
 WORKDIR ron
 COPY build.sh $SRC/
