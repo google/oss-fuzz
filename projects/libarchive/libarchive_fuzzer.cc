@@ -44,6 +44,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   Buffer buffer = {buf, len};
   archive_read_open(a, &buffer, NULL, reader_callback, NULL);
 
+  (void)archive_read_has_encrypted_entries(a);
+  (void)archive_read_format_capabilities(a);
+  (void)archive_filter_count(a);
+  (void)archive_file_count(a);
+  (void)archive_format_name(a);
+
   std::vector<uint8_t> data_buffer(getpagesize(), 0);
   struct archive_entry *entry;
   while(1) {
