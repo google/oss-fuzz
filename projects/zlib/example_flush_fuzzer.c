@@ -85,9 +85,9 @@ int test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   CHECK_ERR(err, "inflateSync");
 
   err = inflate(&d_stream, Z_FINISH);
-  if (err != Z_DATA_ERROR) {
-    fprintf(stderr, "inflate should report DATA_ERROR\n");
-    /* Because of incorrect adler32 */
+  if (err != Z_DATA_ERROR && err != Z_STREAM_END) {
+    fprintf(stderr, "inflate should report DATA_ERROR or Z_STREAM_END\n");
+    /* v1.1.11= reports DATA_ERROR because of incorrect adler32. v1.1.12+ reports Z_STREAM END because it skips the adler32 check. */
     return 0;
   }
   err = inflateEnd(&d_stream);
