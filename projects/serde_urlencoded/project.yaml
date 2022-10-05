@@ -1,0 +1,10 @@
+homepage: "https://github.com/nox/serde_urlencoded"
+language: rust
+primary_contact: "github@borowski.pw"
+auto_ccs:
+  - "paolo@paolo565.org"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/nox/serde_urlencoded'
