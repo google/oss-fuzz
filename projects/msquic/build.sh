@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-pwsh ./scripts/build.ps1 -Static -DisableTest -DisableTools -DisablePerf -Parallel 1
+pwsh ./scripts/build.ps1 -Static -DisableTools -DisablePerf -Parallel 1
 
 cd $SRC/msquic/src/fuzzing
 
