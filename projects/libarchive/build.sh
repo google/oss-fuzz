@@ -45,11 +45,15 @@ sed -i 's/-Werror//g' ./CMakeLists.txt
 mkdir build2
 cd build2
 cmake ../
-make
+make -j$(nproc)
 
 # build seed
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
         $OUT/libarchive_fuzzer_seed_corpus.zip
+
+# add weird archives
+git clone --depth=1 https://github.com/corkami/pocs
+find $SRC/pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %
 
 # build fuzzer(s)
 $CXX $CXXFLAGS -I../libarchive \
