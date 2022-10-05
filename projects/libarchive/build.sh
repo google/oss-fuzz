@@ -51,6 +51,16 @@ make -j$(nproc)
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
         $OUT/libarchive_fuzzer_seed_corpus.zip
 
+# add the uuencoded test files
+cd $SRC
+mkdir ./uudecoded
+find $SRC/libarchive/ -type f -name "text_extract.*.uu" -print0 | xargs -0 -I % cp -f % ./uudecoded/
+cd ./uudecoded
+find ./ -name "*.uu" -exec uudecode {} \;
+cd ../
+rm -f ./uudecoded/*.uu
+zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip ./uudecoded/*
+
 # add weird archives
 git clone --depth=1 https://github.com/corkami/pocs
 find $SRC/pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %
