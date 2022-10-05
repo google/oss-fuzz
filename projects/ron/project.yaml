@@ -2,6 +2,8 @@ homepage: "https://github.com/ron-rs/ron"
 language: rust
 main_repo: "https://github.com/ron-rs/ron"
 primary_contact: "juniper.tyree@gmail.com"
+auto_ccs:
+ - torkleyy@gmail.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:
