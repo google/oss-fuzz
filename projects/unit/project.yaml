@@ -1,8 +1,8 @@
 homepage: "https://unit.nginx.org"
 language: c
-primary_contact: "security-alert@nginx.org"
+primary_contact: "xim.andrew@gmail.com"
 vendor_ccs:
-  - "unit@nginx.org"
+  - "devrep@nginx.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
