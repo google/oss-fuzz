@@ -2,7 +2,7 @@ TARGET=Fuzzer
 
 #File
 httpEXE=Fuzz_http
-cloneEXE=Fuzz_clone
+jsonEXE=Fuzz_json
 
 #Flags
 INC=-I ../src -I ../build -I../src/test/
@@ -17,10 +17,10 @@ $(TARGET):
 	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(httpEXE).c
 	$(CXX) $(CFLAGS) $(LibINC) -o $(httpEXE) $(httpEXE).o  $(LibFLAGS)
 
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(cloneEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(cloneEXE) $(cloneEXE).o  $(LibFLAGS)
+	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(jsonEXE).c
+	$(CXX) $(CFLAGS) $(LibINC) -o $(jsonEXE) $(jsonEXE).o  $(LibFLAGS)
 
 clean:
-	rm $(cloneEXE) $(httpEXE) *.o
+	rm $(jsonEXE) $(httpEXE) *.o
 
 .PHONY: all clean

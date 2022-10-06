@@ -14,16 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
-./configure --debug --tests --no-regex --no-pcre2
+./configure --debug --no-regex --no-pcre2
 make all
 
 pushd fuzzer/
 make
 cp Fuzz_http $OUT/Fuzz_http
-cp Fuzz_clone $OUT/Fuzz_clone
+cp Fuzz_json $OUT/Fuzz_json
 popd
 
 pushd $SRC/oss-fuzz-bloat/nginx-unit/
 cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
-cp Fuzz_clone_seed_corpus.zip $OUT/Fuzz_clone_seed_corpus.zip
+cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 popd
