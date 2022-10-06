@@ -20,7 +20,6 @@ limitations under the License.
 
 static int DoInit = 0;
 
-nxt_thread_t  *thr;
 extern char  **environ;
 
 nxt_module_init_t  nxt_init_modules[1];
@@ -35,14 +34,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if(!DoInit){
         nxt_lib_start("tests", NULL, &environ);
-        thr = nxt_thread();
         DoInit = 1;
     }
 
     nxt_int_t                   rc;
     nxt_lvlhsh_t                hash;
 
-    nxt_thread_time_update(thr);
     nxt_memzero(&hash, sizeof(nxt_lvlhsh_t));
 
     rc = nxt_http_fields_hash(&hash, nxt_http_test_bench_fields,
@@ -53,13 +50,13 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     nxt_http_request.length = Size;
     nxt_http_request.start = (uint8_t *) Data;
 
-    rc = nxt_http_parse_fuzz(thr, &nxt_http_request,
+    rc = nxt_http_parse_fuzz(&nxt_http_request,
                                   &hash);
 
     return rc;
 }
 
-nxt_int_t nxt_http_parse_fuzz(nxt_thread_t *thr, nxt_str_t *request, nxt_lvlhsh_t *hash){
+nxt_int_t nxt_http_parse_fuzz(nxt_str_t *request, nxt_lvlhsh_t *hash){
 
     nxt_mp_t                  *mp;
     nxt_buf_mem_t             buf;
@@ -68,25 +65,20 @@ nxt_int_t nxt_http_parse_fuzz(nxt_thread_t *thr, nxt_str_t *request, nxt_lvlhsh_
     buf.start = request->start;
     buf.end = request->start + request->length;
 
-    nxt_thread_time_update(thr);
-    {
-        nxt_memzero(&rp, sizeof(nxt_http_request_parse_t));
+    nxt_memzero(&rp, sizeof(nxt_http_request_parse_t));
 
-        mp = nxt_mp_create(1024, 128, 256, 32);
+    mp = nxt_mp_create(1024, 128, 256, 32);
 
-        nxt_http_parse_request_init(&rp, mp);
+    nxt_http_parse_request_init(&rp, mp);
 
-        buf.pos = buf.start;
-        buf.free = buf.end;
+    buf.pos = buf.start;
+    buf.free = buf.end;
 
-        if (nxt_slow_path(nxt_http_parse_request(&rp, &buf) == NXT_DONE)) {
-            nxt_http_fields_process(rp.fields, hash, NULL);
-        }
-
-        nxt_mp_destroy(mp);
+    if (nxt_slow_path(nxt_http_parse_request(&rp, &buf) == NXT_DONE)) {
+        nxt_http_fields_process(rp.fields, hash, NULL);
     }
 
-    nxt_thread_time_update(thr);
+    nxt_mp_destroy(mp);
 
     return NXT_OK;
 }

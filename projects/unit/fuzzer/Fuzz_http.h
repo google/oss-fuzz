@@ -11,7 +11,7 @@ limitations under the License.
 */
 #include <nxt_main.h>
 
-nxt_int_t nxt_http_parse_fuzz(nxt_thread_t *thr, nxt_str_t *request, nxt_lvlhsh_t *hash);
+nxt_int_t nxt_http_parse_fuzz(nxt_str_t *request, nxt_lvlhsh_t *hash);
 
 nxt_int_t
 nxt_http_test_header_return(void *ctx, nxt_http_field_t *field, uintptr_t data)
