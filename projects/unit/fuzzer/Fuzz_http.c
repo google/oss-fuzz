@@ -42,8 +42,8 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     nxt_memzero(&hash, sizeof(nxt_lvlhsh_t));
 
-    rc = nxt_http_fields_hash(&hash, nxt_http_test_bench_fields,
-                              nxt_nitems(nxt_http_test_bench_fields));
+    rc = nxt_http_fields_hash(&hash, nxt_h1p_fields,
+                              nxt_nitems(nxt_h1p_fields));
 
     nxt_str_t nxt_http_request;
 
