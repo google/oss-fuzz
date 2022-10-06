@@ -6,7 +6,6 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
-  - centipede
 sanitizers:
   - address
 main_repo: 'https://github.com/google/snappy'
