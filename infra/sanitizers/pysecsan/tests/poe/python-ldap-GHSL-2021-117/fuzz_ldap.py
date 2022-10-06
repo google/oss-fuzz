@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets: https://github.com/python-ldap/python-ldap/security/advisories/
-GHSA-r8wq-qrxc-hmcm"""
+"""Targets: https://github.com/python-ldap/python-ldap/security/advisories/GHSA-r8wq-qrxc-hmcm"""  # pylint: disable=line-too-long
 
 import sys
 import atheris
@@ -24,7 +23,7 @@ pysecsan.add_hooks()
 
 
 def test_one_input(data):
-  """Fuzzer targetting regex dos in ldap"""
+  """Fuzzer targetting regex dos in ldap."""
   fdp = atheris.FuzzedDataProvider(data)
   try:
     ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))
@@ -33,11 +32,11 @@ def test_one_input(data):
 
 
 def main():
-  """Set up and start fuzzing"""
+  """Set up and start fuzzing."""
   atheris.instrument_all()
   atheris.Setup(sys.argv, test_one_input, enable_python_coverage=True)
   atheris.Fuzz()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

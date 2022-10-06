@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fuzzer displaying insecure use of subprocess.Popen"""
+"""Fuzzer displaying insecure use of subprocess.Popen."""
 
 import os
 import sys
@@ -22,26 +22,26 @@ import pysecsan
 
 
 def list_files_perhaps(param):
-  """Insecure call to Popen"""
+  """Insecure call to Popen."""
   try:
-    subprocess.Popen(" ".join(['ls', '-la', param]), shell=True)
+    subprocess.Popen(' '.join(['ls', '-la', param]), shell=True)
     os.system(param)
   except ValueError:
     pass
 
 
 def test_one_input(data):
-  """Fuzzer entrypoint"""
+  """Fuzzer entrypoint."""
   fdp = atheris.FuzzedDataProvider(data)
 
   if fdp.ConsumeIntInRange(1, 10) == 5:
-    list_files_perhaps("FROMFUZZ")
+    list_files_perhaps('FROMFUZZ')
   else:
     list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24))
 
 
 def main():
-  """Set up and start fuzzing"""
+  """Set up and start fuzzing."""
   pysecsan.add_hooks()
 
   atheris.instrument_all()
@@ -49,5 +49,5 @@ def main():
   atheris.Fuzz()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

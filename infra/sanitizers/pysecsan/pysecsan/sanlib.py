@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Core routines for pysecsan library"""
+"""Core routines for pysecsan library."""
 
 import re
 import os
@@ -30,20 +30,20 @@ PYSECSAN_LOG_LVL = 0
 
 # pylint: disable=global-statement
 def sanitizer_log(msg, log_level):
-  """Helper printing function"""
+  """Helper printing function."""
   global PYSECSAN_LOG_LVL
   if log_level >= PYSECSAN_LOG_LVL:
-    print(f"[PYSAN] {msg}")
+    print(f'[PYSAN] {msg}')
 
 
 def is_module_present(mod_name):
-  """Identify if module is importable"""
+  """Identify if module is importable."""
   # pylint: disable=deprecated-method
   return importlib.find_loader(mod_name) is not None
 
 
 def abort_with_issue(msg):
-  """Print message, display stacktrace and force process exit"""
+  """Print message, display stacktrace and force process exit."""
   sanitizer_log("Found an issue, pysecsan exiting", 0)
   sanitizer_log(msg, 0)
   traceback.print_stack()
@@ -57,17 +57,17 @@ def abort_with_issue(msg):
 
 
 def is_exact_taint(stream) -> bool:
-  """Checks if stream is an exact match for taint from fuzzer"""
+  """Checks if stream is an exact match for taint from fuzzer."""
   # The fuzzer has to get 8 characters right. This may be a bit much,
   # however, when found it shows a high level of control over the data.
-  if stream == "FROMFUZZ":
+  if stream == 'FROMFUZZ':
     return True
 
   return False
 
 
 def create_object_wrapper(**methods):
-  """Hooks functions in an object
+  """Hooks functions in an object.
 
   This is needed for hooking built-in types and object attributes.
 
@@ -88,7 +88,7 @@ def create_object_wrapper(**methods):
   """
 
   class Wrapper():
-    """Wrap an object by hiding attributes"""
+    """Wrap an object by hiding attributes."""
 
     def __init__(self, instance):
       object.__setattr__(self, 'instance', instance)
@@ -138,11 +138,11 @@ def add_hook(function: Callable[[Any], Any],
     with function hooking initialisation functions post execution.
     """
   if pre_exec_hook is None and post_exec_hook is None:
-    raise Exception("Some hooks must be included")
+    raise Exception('Some hooks must be included')
 
   @functools.wraps(function)
   def run(*args, **kwargs):
-    sanitizer_log(f"Hook start {str(function)}", 0)
+    sanitizer_log(f'Hook start {str(function)}', 0)
 
     # Call hook
     if pre_exec_hook is not None:
@@ -159,14 +159,14 @@ def add_hook(function: Callable[[Any], Any],
       if tmp_ret is not None:
         #print("Overwriting ret value")
         ret = tmp_ret
-    sanitizer_log(f"Hook end {str(function)}", 0)
+    sanitizer_log(f'Hook end {str(function)}', 0)
     return ret
 
   return run
 
 
 def add_hooks():
-  """Sets up hooks"""
+  """Sets up hooks."""
   os.system = add_hook(os.system,
                        pre_exec_hook=command_injection.hook_pre_exec_os_system)
   subprocess.Popen = add_hook(
@@ -179,12 +179,12 @@ def add_hooks():
   # Hack to determine if yaml is elligible, because pkg_resources does
   # not seem to work from pyinstaller.
   # pylint: disable=import-outside-toplevel
-  if is_module_present("yaml"):
+  if is_module_present('yaml'):
     import yaml
-    sanitizer_log("Hooking pyyaml.load", 0)
+    sanitizer_log('Hooking pyyaml.load', 0)
     yaml.load = add_hook(
         yaml.load,
         pre_exec_hook=yaml_deserialization.hook_pre_exec_pyyaml_load,
     )
   else:
-    sanitizer_log("pyyaml not found. No hooks here", 0)
+    sanitizer_log('pyyaml not found. No hooks here', 0)

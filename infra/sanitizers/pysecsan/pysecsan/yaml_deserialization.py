@@ -25,7 +25,7 @@ except Exception:
 
 
 def hook_pre_exec_pyyaml_load(stream, loader):
-  """Hook for pyyaml.load_yaml
+  """Hook for pyyaml.load_yaml.
 
     Exits if the loader is unsafe or vanilla loader and the stream passed
     to the loader is controlled by the fuzz data
@@ -37,6 +37,6 @@ def hook_pre_exec_pyyaml_load(stream, loader):
   # Check for exact taint in stream
   if sanlib.is_exact_taint(stream):
     msg = (
-        "Yaml deserialization issue.\n"
-        "Unsafe deserialization can be used to execute arbitrary commands.\n")
+        'Yaml deserialization issue.\n'
+        'Unsafe deserialization can be used to execute arbitrary commands.\n')
     sanlib.abort_with_issue(msg)

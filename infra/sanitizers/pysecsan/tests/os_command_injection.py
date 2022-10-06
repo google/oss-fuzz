@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fuzzer targetting command injection of os.system"""
+"""Fuzzer targetting command injection of os.system."""
 
 import os
 import sys
@@ -21,27 +21,27 @@ import pysecsan
 
 
 def list_files_perhaps(param, magicval):
-  """Pass fuzzer data into os.system"""
+  """Pass fuzzer data into os.system."""
   if magicval == 1337:
     try:
       os.system(param)
     except ValueError:
       pass
   elif magicval == 1338:
-    os.system("exec-san")
+    os.system('exec-san')
   elif magicval == 1339:
-    os.system("ls -la FROMFUZZ")
+    os.system('ls -la FROMFUZZ')
 
 
 def test_one_input(data):
-  """Fuzzer entrypoint"""
+  """Fuzzer entrypoint."""
   fdp = atheris.FuzzedDataProvider(data)
   list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24),
                      fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
-  """Set up and start fuzzing"""
+  """Set up and start fuzzing."""
   pysecsan.add_hooks()
 
   atheris.instrument_all()
@@ -49,5 +49,5 @@ def main():
   atheris.Fuzz()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

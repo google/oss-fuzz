@@ -43,30 +43,30 @@ START_RE_TIME = None
 #   - "taint" in findall(XX) calls.
 # pylint: disable=global-statement
 def hook_post_exec_re_pattern_findall(self, re_str):
-  """Hook post exeution re.compile().findall()"""
+  """Hook post exeution re.compile().findall()."""
   _ = self  # Satisfy lint
   global START_RE_TIME
   try:
     endtime = time.time() - START_RE_TIME
     if endtime > 4:
-      print("param: %s" % (re_str))
-      raise Exception("Potential ReDOS attack")
+      print('param: %s' % (re_str))
+      raise Exception('Potential ReDOS attack')
   except NameError:
     #print("For some reason starttime is not set, which it should have")
     sys.exit(1)
 
 
 def hook_pre_exec_re_pattern_findall(self, string):
-  """Hook pre execution of re.pattern().findall()"""
+  """Hook pre execution of re.pattern().findall()."""
   _ = (self, string)  # Satisfy lint
   global START_RE_TIME
   START_RE_TIME = time.time()
 
 
 def hook_post_exec_re_compile(retval, pattern, flags=None):
-  """Hook for re.compile post execution to hook returned objects functions"""
+  """Hook for re.compile post execution to hook returned objects functions."""
   _ = (pattern, flags)  # Satisfy lint
-  sanlib.sanitizer_log("Inside of post compile hook", 0)
+  sanlib.sanitizer_log('Inside of post compile hook', 0)
   wrapper_object = sanlib.create_object_wrapper(
       findall=(hook_pre_exec_re_pattern_findall,
                hook_pre_exec_re_pattern_findall))
@@ -78,4 +78,4 @@ def hook_pre_exec_re_compile(pattern, flags=None):
   """Check if tainted input exists in pattern. If so, likely chance of making
     ReDOS possible."""
   _ = (pattern, flags)  # Satisfy lint
-  sanlib.sanitizer_log("Inside re compile hook", 0)
+  sanlib.sanitizer_log('Inside re compile hook', 0)

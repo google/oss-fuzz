@@ -13,14 +13,14 @@
 # limitations under the License.
 #
 ################################################################################
-"""Sanitizers for capturing code injections"""
+"""Sanitizers for capturing code injections."""
 
 import sys
 from typing import Optional
 
 
 def get_all_substr_prefixes(main_str, sub_str):
-  """Yields all strings prefixed with sub_str in main_str"""
+  """Yields all strings prefixed with sub_str in main_str."""
   idx = 0
   while True:
     idx = main_str.find(sub_str, idx)
@@ -33,30 +33,30 @@ def get_all_substr_prefixes(main_str, sub_str):
 
 
 def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
-  """identify if elem is an injection match"""
+  """identify if elem is an injection match."""
   # Check exact match
-  if elem == "exec-sanitizer":
-    return "Explicit command injection found."
+  if elem == 'exec-sanitizer':
+    return 'Explicit command injection found.'
 
   # Check potential for injecting into a string
-  if "FROMFUZZ" in elem:
+  if 'FROMFUZZ' in elem:
     if check_unquoted:
       # return true if any index is unquoted
-      for sub_str in get_all_substr_prefixes(elem, "FROMFUZZ"):
-        if sub_str.count("\"") % 2 == 0:
-          return "Fuzzer controlled content in data. Code injection potential."
+      for sub_str in get_all_substr_prefixes(elem, 'FROMFUZZ'):
+        if sub_str.count('\"') % 2 == 0:
+          return 'Fuzzer controlled content in data. Code injection potential.'
 
       # Return None if all fuzzer taints were quoted
       return None
-    return "Fuzzer controlled content in data. Code injection potential."
+    return 'Fuzzer controlled content in data. Code injection potential.'
   return None
 
 
 # pylint: disable=invalid-name
 def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
-  """Hook for subprocess.Popen"""
+  """Hook for subprocess.Popen."""
 
-  arg_shell = "shell" in kwargs and kwargs["shell"]
+  arg_shell = 'shell' in kwargs and kwargs['shell']
 
   # Command injections depend on whether the first argument is a list of
   # strings or a string. Handle this now.
@@ -67,10 +67,10 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
       # if shell arg is true and string is tainted and unquoted that's a
       # definite code injection.
       if arg_shell is True:
-        raise Exception("Code injection in Popen")
+        raise Exception('Code injection in Popen')
 
       # Otherwise it's a maybe.
-      raise Exception(f"Potental code injection in subprocess.Popen\n{res}")
+      raise Exception(f'Potental code injection in subprocess.Popen\n{res}')
 
   # Check for hg command injection
   # Example: tests/poe/libvcs-cve-2022-21187
@@ -83,17 +83,17 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
         found_dashes = True
       if not found_dashes and check_code_injection_match(cmd[idx]):
         raise Exception(
-            "command injection likely by way of mercurial. The following"
-            f"command {str(cmd)} is executed, and if you substitute {cmd[idx]} "
-            "with \"--config=alias.init=!touch HELLO_PY\" then you will "
-            "create HELLO_PY")
+            'command injection likely by way of mercurial. The following'
+            f'command {str(cmd)} is executed, and if you substitute {cmd[idx]} '
+            'with \"--config=alias.init=!touch HELLO_PY\" then you will '
+            'create HELLO_PY')
 
 
 def hook_pre_exec_os_system(cmd):
-  """Hook for os.system"""
+  """Hook for os.system."""
   res = check_code_injection_match(cmd)
   if res is not None:
-    print("code injection by way of os.system")
+    print('code injection by way of os.system')
     # Exceptions are not enough to throw if they are all caught:
     #   https://github.com/Lightning-AI/lightning/blob/8b7a12c52
     #   e52a06408e9231647839ddb4665e8ae/pytorch_lightning/utilit
@@ -105,4 +105,4 @@ def hook_pre_exec_eval(cmd):
   """Hook for eval. Experimental atm."""
   res = check_code_injection_match(cmd)
   if res is not None:
-    raise Exception(f"Potential code injection by way of eval\n{res}")
+    raise Exception(f'Potential code injection by way of eval\n{res}')
