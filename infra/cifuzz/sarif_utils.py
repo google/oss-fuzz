@@ -20,11 +20,11 @@ import os
 
 import requests
 
-
 CFL_VERSION = '1'
 SARIF_SCHEMA_VERSION = '2.1.0'
 NO_CRASHES_NAME = 'NoCrashes'
 NO_CRASHES_ID = f'{NO_CRASHES_NAME}ID'
+
 
 def format_sarif_for_github(sarif_dict):
   sarif_str = json.dumps(sarif_dict)
@@ -36,7 +36,6 @@ def format_sarif_for_github(sarif_dict):
 
 def http_upload_sarif_dict(sarif_dict):
   sarif_data = format_sarif_for_github(sarif_dict)
-
 
 
 def write_sarif_for_upload(cfl_result, config):
@@ -53,69 +52,68 @@ def get_sarif_data(cfl_result):
   run = {
       'tool': {
           'driver': {
-          'name': 'ClusterFuzzLite',
-          'version': CFL_VERSION,
-          'informationUri': 'https://google.github.io/clusterfuzzlite/',
-          'rules': [
-                  {
-                     'id': NO_CRASHES_ID,
-                     'name': NO_CRASHES_NAME,
-                     'helpUri': 'https://google.github.io/clusterfuzzlite',
-                     'shortDescription': {
-                        'text': NO_CRASHES_NAME
-                     },
-                     'fullDescription': {
-                        'text': NO_CRASHES_NAME
-                     },
-                     'help': {
-                        'text': 'Don\'t crash',
-                        'markdown': '**Remediation (click \'Show more\' below)**:\n\n- not-used1\n\n- not-used2\n\n\n\n**Severity**: High\n\n\n\n**Details**:\n\nlong description\n\n other line'
-                     },
-                     'defaultConfiguration': {
-                        'level': 'error'
-                     },
-                     'properties': {
-                        'precision': 'high',
-                        'problem.severity': 'error',
-                        'security-severity': '7.0',
-                        'tags': [
-                           'tag1',
-                           'tag2'
-                        ]
-                     }
+              'name':
+                  'ClusterFuzzLite',
+              'version':
+                  CFL_VERSION,
+              'informationUri':
+                  'https://google.github.io/clusterfuzzlite/',
+              'rules': [{
+                  'id': NO_CRASHES_ID,
+                  'name': NO_CRASHES_NAME,
+                  'helpUri': 'https://google.github.io/clusterfuzzlite',
+                  'shortDescription': {
+                      'text': NO_CRASHES_NAME
+                  },
+                  'fullDescription': {
+                      'text': NO_CRASHES_NAME
+                  },
+                  'help': {
+                      'text':
+                          'Don\'t crash',
+                      'markdown':
+                          '**Remediation (click \'Show more\' below)**:\n\n- not-used1\n\n- not-used2\n\n\n\n**Severity**: High\n\n\n\n**Details**:\n\nlong description\n\n other line'
+                  },
+                  'defaultConfiguration': {
+                      'level': 'error'
+                  },
+                  'properties': {
+                      'precision': 'high',
+                      'problem.severity': 'error',
+                      'security-severity': '7.0',
+                      'tags': ['tag1', 'tag2']
                   }
-          ]
+              }]
+          },
       },
-    },
-      'results': [
-            {
-               'ruleId': NO_CRASHES_ID,
-               'ruleIndex': 0,
-               'message': {
-                  'text': 'score is 5: warn message\nClick Remediation section below to solve this issue'
-               },
-               'locations': [
-                  {
-                     'physicalLocation': {
-                        'region': {
-                           'startLine': start_line,
-                           'endLine': end_line,
-                           'snippet': {
-                              'text': snippet_text
-                           }
-                        },
-                        'artifactLocation': {
-                           'uri': src_file,
-                           'uriBaseId': '%SRCROOT%'
-                        }
-                     },
-                     'message': {
-                        'text': 'warn message'
-                     }
+      'results': [{
+          'ruleId':
+              NO_CRASHES_ID,
+          'ruleIndex':
+              0,
+          'message': {
+              'text':
+                  'score is 5: warn message\nClick Remediation section below to solve this issue'
+          },
+          'locations': [{
+              'physicalLocation': {
+                  'region': {
+                      'startLine': start_line,
+                      'endLine': end_line,
+                      'snippet': {
+                          'text': snippet_text
+                      }
+                  },
+                  'artifactLocation': {
+                      'uri': src_file,
+                      'uriBaseId': '%SRCROOT%'
                   }
-               ]
-            }
-         ]
+              },
+              'message': {
+                  'text': 'warn message'
+              }
+          }]
+      }]
   }
   sarif = {
       '$schema': ('https://raw.githubusercontent.com/oasis-tcs/sarif-spec/'
