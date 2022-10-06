@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake pkg-config libssl-dev:i386
-
-RUN git clone -b develop https://github.com/zlib-ng/minizip-ng
-WORKDIR minizip-ng
-COPY build.sh $SRC/
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/from_str $OUT/
