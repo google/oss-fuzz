@@ -1,0 +1,7 @@
+[user]
+	email = "FUZZ@LOCALHOST"
+	name = "FUZZ"
+[color]
+	ui = auto
+[safe]
+	direcory = *
