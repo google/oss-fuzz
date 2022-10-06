@@ -25,29 +25,29 @@ def get_sarif_data(cfl_result):
           'informationUri': 'https://google.github.io/clusterfuzzlite/',
           'rules': [
                   {
-                     "id": "NoCrashesID",
-                     "name": "NoCrashes",
-                     "helpUri": "https://google.github.io/clusterfuzzlite",
-                     "shortDescription": {
-                        "text": "NoCrashes"
+                     'id': 'NoCrashesID',
+                     'name': 'NoCrashes',
+                     'helpUri': 'https://google.github.io/clusterfuzzlite',
+                     'shortDescription': {
+                        'text': 'NoCrashes'
                      },
-                     "fullDescription": {
-                        "text": "NoCrashes"
+                     'fullDescription': {
+                        'text': 'NoCrashes'
                      },
-                     "help": {
-                        "text": "Don\'t crash",
-                        "markdown": "**Remediation (click \"Show more\" below)**:\n\n- not-used1\n\n- not-used2\n\n\n\n**Severity**: High\n\n\n\n**Details**:\n\nlong description\n\n other line"
+                     'help': {
+                        'text': 'Don\'t crash',
+                        'markdown': '**Remediation (click \'Show more\' below)**:\n\n- not-used1\n\n- not-used2\n\n\n\n**Severity**: High\n\n\n\n**Details**:\n\nlong description\n\n other line'
                      },
-                     "defaultConfiguration": {
-                        "level": "error"
+                     'defaultConfiguration': {
+                        'level': 'error'
                      },
-                     "properties": {
-                        "precision": "high",
-                        "problem.severity": "error",
-                        "security-severity": "7.0",
-                        "tags": [
-                           "tag1",
-                           "tag2"
+                     'properties': {
+                        'precision': 'high',
+                        'problem.severity': 'error',
+                        'security-severity': '7.0',
+                        'tags': [
+                           'tag1',
+                           'tag2'
                         ]
                      }
                   }
@@ -62,30 +62,30 @@ def get_sarif_data(cfl_result):
       # ],
       },
 
-      "results": [
+      'results': [
             {
-               "ruleId": "CheckNameID",
-               "ruleIndex": 0,
-               "message": {
-                  "text": "score is 5: warn message\nClick Remediation section below to solve this issue"
+               'ruleId': 'NoCrashesID',
+               'ruleIndex': 0,
+               'message': {
+                  'text': 'score is 5: warn message\nClick Remediation section below to solve this issue'
                },
-               "locations": [
+               'locations': [
                   {
-                     "physicalLocation": {
-                        "region": {
-                           "startLine": 5,
-                           "endLine": 5,
-                           "snippet": {
-                              "text": "if (bad) {BUG();}"
+                     'physicalLocation': {
+                        'region': {
+                           'startLine': 5,
+                           'endLine': 5,
+                           'snippet': {
+                              'text': 'if (bad) {BUG();}'
                            }
                         },
-                        "artifactLocation": {
-                           "uri": "src/file1.cpp",
-                           "uriBaseId": "%SRCROOT%"
+                        'artifactLocation': {
+                           'uri': 'src/file1.cpp',
+                           'uriBaseId': '%SRCROOT%'
                         }
                      },
-                     "message": {
-                        "text": "warn message"
+                     'message': {
+                        'text': 'warn message'
                      }
                   }
                ]
