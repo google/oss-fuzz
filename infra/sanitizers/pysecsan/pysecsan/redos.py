@@ -52,7 +52,7 @@ def hook_post_exec_re_pattern_findall(self, re_str):
       print('param: %s' % (re_str))
       raise Exception('Potential ReDOS attack')
   except NameError:
-    #print("For some reason starttime is not set, which it should have")
+    sanlib.sanitizer_log('starttime is not set, which it should have', 0)
     sys.exit(1)
 
 

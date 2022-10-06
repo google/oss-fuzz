@@ -157,7 +157,7 @@ def add_hook(function: Callable[[Any], Any],
     if post_exec_hook is not None:
       tmp_ret = post_exec_hook(ret, *args, **kwargs)
       if tmp_ret is not None:
-        #print("Overwriting ret value")
+        sanitizer_log('Overwriting return value', 0)
         ret = tmp_ret
     sanitizer_log(f'Hook end {str(function)}', 0)
     return ret
