@@ -16,13 +16,11 @@ limitations under the License.
 #include <nxt_main.h>
 #include <nxt_conf.h>
 
-
 #define kMinInputLength 2
 #define kMaxInputLength 5120
 
 static int DoInit = 0;
 
-nxt_thread_t  *thr;
 extern char  **environ;
 
 nxt_module_init_t  nxt_init_modules[1];
@@ -37,14 +35,11 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if(!DoInit){
         nxt_lib_start("tests", NULL, &environ);
-        thr = nxt_thread();
         DoInit = 1;
     }
 
     nxt_mp_t                *mp;
     nxt_str_t               map_str;
-
-    nxt_thread_time_update(thr);
 
     mp = nxt_mp_create(1024, 128, 256, 32);
     if (mp == NULL) {
