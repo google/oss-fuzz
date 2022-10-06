@@ -21,7 +21,18 @@ int cmd_diff_files(int argc, const char **argv, const char *prefix);
 int cmd_diff_index(int argc, const char **argv, const char *prefix);
 int cmd_diff_tree(int argc, const char **argv, const char *prefix);
 
+void generateGitConfig(void);
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+
+void generateGitConfig()
+{
+	char *git_config ="[user]\n\temail = \"FUZZ@LOCALHOST\"\n\t"
+				"name = \"FUZZ\"\n[color]\n\tui = auto\n"
+				"[safe]\n\tdirecory = *\n";
+	FILE *fp = fopen("./gitconfig", "wb");
+	fwrite(git_config, sizeof(char), strlen(git_config), fp);
+	fclose(fp);
+}
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -43,6 +54,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Cleanup if needed
 	 */
+	generateGitConfig();
+
 	system("ls -lart ./");
 	system("export GIT_CONFIG_SYSTEM=\"./gitconfig\"");
 	system("cat $GIT_CONFIG_SYSTEM");
