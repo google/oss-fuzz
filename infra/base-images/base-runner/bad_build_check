@@ -434,9 +434,11 @@ function main {
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
-  check_mixed_sanitizers $FUZZER
-  result=$?
-  checks_failed=$(( $checks_failed + $result ))
+  if [[ "$FUZZING_ENGINE" != centipede ]]; then
+    check_mixed_sanitizers $FUZZER
+    result=$?
+    checks_failed=$(( $checks_failed + $result ))
+  fi
 
   check_startup_crash $FUZZER
   result=$?
