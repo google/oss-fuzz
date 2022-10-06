@@ -36,11 +36,11 @@ START_RE_TIME = None
 # Other heuristics without going too technical on identifying super-linear
 # regexes:
 # - check
-#   - if "taint" exists in re.compile(xx)
+#   - if 'taint' exists in re.compile(xx)
 # - check
 #   - for backtracking possbility in PATTERN within re.comile(PATTERN)
 #   - and
-#   - "taint" in findall(XX) calls.
+#   - 'taint' in findall(XX) calls.
 # pylint: disable=global-statement
 def hook_post_exec_re_pattern_findall(self, re_str):
   """Hook post exeution re.compile().findall()."""

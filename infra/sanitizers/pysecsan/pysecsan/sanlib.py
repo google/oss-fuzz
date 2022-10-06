@@ -44,7 +44,7 @@ def is_module_present(mod_name):
 
 def abort_with_issue(msg):
   """Print message, display stacktrace and force process exit."""
-  sanitizer_log("Found an issue, pysecsan exiting", 0)
+  sanitizer_log('Found an issue, pysecsan exiting', 0)
   sanitizer_log(msg, 0)
   traceback.print_stack()
 

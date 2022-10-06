@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Glue for pysecsan library"""
+"""Glue for pysecsan library."""
 
 # Import sanlib and expose only neede functionality by way of __all__
 from .sanlib import *

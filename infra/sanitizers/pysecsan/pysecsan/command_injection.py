@@ -74,12 +74,12 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
 
   # Check for hg command injection
   # Example: tests/poe/libvcs-cve-2022-21187
-  if cmd[0] == "hg":
+  if cmd[0] == 'hg':
     # Check if the arguments are controlled by the fuzzer, and this given
     # arg is not preceded by --
     found_dashes = False
     for idx in range(1, len(cmd)):
-      if cmd[0] == "--":
+      if cmd[0] == '--':
         found_dashes = True
       if not found_dashes and check_code_injection_match(cmd[idx]):
         raise Exception(
