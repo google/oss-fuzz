@@ -17,6 +17,7 @@
 """Does bad_build_check on all fuzz targets in $OUT."""
 
 import contextlib
+import logging
 import multiprocessing
 import os
 import re
@@ -104,6 +105,7 @@ def do_bad_build_check(fuzz_target):
   print('INFO: performing bad build checks for', fuzz_target)
   command = ['bad_build_check', fuzz_target]
   return subprocess.run(command,
+                        env=os.environ,
                         stderr=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         check=False)
@@ -156,9 +158,51 @@ def use_different_out_dir():
       os.environ['OUT'] = initial_out
 
 
+def test_all_centipede(directory, allowed_broken_targets_percentage):
+  """Do bad_build_check on all fuzz targets of centipede."""
+  sanitizer = os.getenv('SANITIZER')
+
+  # For all projects:
+  # Centipede always requires separate non-sanitized binaries as the main fuzz
+  # targets. Script bad_build_check will test if they can run with/without
+  # sanitized binaries and omit them from sanitizer checks.
+  # No need to test sanitized target binaries if this fails.
+  os.environ['SANITIZER'] = 'none'
+  unsanitized_centipede_passed = test_all(directory,
+                                          allowed_broken_targets_percentage)
+  if sanitizer == 'none' or not unsanitized_centipede_passed:
+    return unsanitized_centipede_passed
+
+  # For projects that specify actual sanitizers (i.e., not 'none'):
+  # Centipede places the additional sanitized binaries in a child directory
+  # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if they
+  # are properly built with sanitizers without checking if they can run.
+  os.environ['SANITIZER'] = sanitizer
+
+  child_dirs = []
+  for child_dir_name in os.listdir(directory):
+    child_dir_path = os.path.join(directory, child_dir_name)
+    if not os.path.isdir(child_dir_path):
+      continue
+    if not child_dir_path.endswith(f'_{os.getenv("SANITIZER")}'):
+      continue
+    child_dirs.append(child_dir_path)
+
+  if len(child_dirs) == 1:
+    return test_all(child_dirs[0], allowed_broken_targets_percentage)
+
+  # This should never happen.
+  logging.warning(
+      'Unable to identify Centipede\'s sanitized target directory from '
+      'candidate list: %s', os.listdir(directory))
+  return test_all(directory, allowed_broken_targets_percentage)
+
+
 def test_all_outside_out(allowed_broken_targets_percentage):
   """Wrapper around test_all that changes OUT and returns the result."""
   with use_different_out_dir() as out:
+    if os.getenv('FUZZING_ENGINE') == 'centipede':
+      return test_all_centipede(out, allowed_broken_targets_percentage)
     return test_all(out, allowed_broken_targets_percentage)
 
 
