@@ -12,11 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for outputting SARIF data."""
+import base64
+import gzip
+from io import StringIO
 import json
 
+
 CFL_VERSION = '1'
+SARIF_SCHEMA_VERSION = '2.1.0'
+NO_CRASHES_NAME = 'NoCrashes'
+NO_CRASHES_ID = f'{NO_CRASHES_NAME}ID'
+
+def package_sarif_for_github(sarif_dict):
+  sarif_str = json.dumps(sarif_dict)
+
 
 def get_sarif_data(cfl_result):
+  start_line = end_line = 5
+  snippet_text = 'if (bad) {BUG();}'
+  src_file = 'src/file1.cpp'
   run = {
       'tool': {
           'driver': {
@@ -25,14 +39,14 @@ def get_sarif_data(cfl_result):
           'informationUri': 'https://google.github.io/clusterfuzzlite/',
           'rules': [
                   {
-                     'id': 'NoCrashesID',
-                     'name': 'NoCrashes',
+                     'id': NO_CRASHES_ID,
+                     'name': NO_CRASHES_NAME,
                      'helpUri': 'https://google.github.io/clusterfuzzlite',
                      'shortDescription': {
-                        'text': 'NoCrashes'
+                        'text': NO_CRASHES_NAME
                      },
                      'fullDescription': {
-                        'text': 'NoCrashes'
+                        'text': NO_CRASHES_NAME
                      },
                      'help': {
                         'text': 'Don\'t crash',
@@ -53,18 +67,10 @@ def get_sarif_data(cfl_result):
                   }
           ]
       },
-      # 'artifacts': [
-      #         {
-      #             'location': {
-      #                 'uri': 'file:///C:/dev/sarif/sarif-tutorials/samples/Introduction/simple-example.js'
-      #             }
-      #         }
-      # ],
-      },
-
+    },
       'results': [
             {
-               'ruleId': 'NoCrashesID',
+               'ruleId': NO_CRASHES_ID,
                'ruleIndex': 0,
                'message': {
                   'text': 'score is 5: warn message\nClick Remediation section below to solve this issue'
@@ -73,14 +79,14 @@ def get_sarif_data(cfl_result):
                   {
                      'physicalLocation': {
                         'region': {
-                           'startLine': 5,
-                           'endLine': 5,
+                           'startLine': start_line,
+                           'endLine': end_line,
                            'snippet': {
-                              'text': 'if (bad) {BUG();}'
+                              'text': snippet_text
                            }
                         },
                         'artifactLocation': {
-                           'uri': 'src/file1.cpp',
+                           'uri': src_file,
                            'uriBaseId': '%SRCROOT%'
                         }
                      },
@@ -95,7 +101,7 @@ def get_sarif_data(cfl_result):
   sarif = {
       '$schema': ('https://raw.githubusercontent.com/oasis-tcs/sarif-spec/'
                   'master/Schemata/sarif-schema-2.1.0.json'),
-      'version': '2.1.0', # !!! Delete?
+      'version': SARIF_SCHEMA_VERSION,
       'runs': [run]
   }
 
