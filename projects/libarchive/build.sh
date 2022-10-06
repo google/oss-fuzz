@@ -54,7 +54,7 @@ cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
 # add the uuencoded test files
 cd $SRC
 mkdir ./uudecoded
-find $SRC/libarchive/ -type f -name "text_extract.*.uu" -print0 | xargs -0 -I % cp -f % ./uudecoded/
+find $SRC/libarchive/ -type f -name "test_extract.*.uu" -print0 | xargs -0 -I % cp -f % ./uudecoded/
 cd ./uudecoded
 find ./ -name "*.uu" -exec uudecode {} \;
 cd ../
