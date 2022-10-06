@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,4 @@
 #
 ################################################################################
 
-pwsh ./scripts/build.ps1 -Static -DisableTools -DisablePerf -Parallel 1
-
-cd $SRC/msquic/src/fuzzing
-
-$CXX $CXXFLAGS \
-    -I/src/msquic/src/test \
-    -I/src/msquic/src/inc \
-    -I/src/msquic/src/generated/common \
-    -I/src/msquic/src/generated/linux \
-    -I/src/msquic/build/linux/x64_openssl/_deps/opensslquic-build/openssl/include \
-    -isystem /src/msquic/submodules/googletest/googletest/include \
-    -isystem /src/msquic/submodules/googletest/googletest \
-    -c fuzz.cc -o fuzz.o
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o -o $OUT/fuzz \
-    /src/msquic/artifacts/bin/linux/x64_Debug_openssl/libmsquic.a
+./cryptsetup/tests/fuzz/oss-fuzz-build.sh
