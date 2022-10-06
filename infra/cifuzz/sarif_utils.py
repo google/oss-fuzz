@@ -14,8 +14,11 @@
 """Module for outputting SARIF data."""
 import base64
 import gzip
-from io import StringIO
+import io
 import json
+import os
+
+import requests
 
 
 CFL_VERSION = '1'
@@ -23,8 +26,24 @@ SARIF_SCHEMA_VERSION = '2.1.0'
 NO_CRASHES_NAME = 'NoCrashes'
 NO_CRASHES_ID = f'{NO_CRASHES_NAME}ID'
 
-def package_sarif_for_github(sarif_dict):
+def format_sarif_for_github(sarif_dict):
   sarif_str = json.dumps(sarif_dict)
+  result = io.StringIO()
+  with gzip.GzipFile(fileobj=result, mode='w') as gzip_file:
+    gzip_file.write(sarif_str)
+  return result.getvalue()
+
+
+def http_upload_sarif_dict(sarif_dict):
+  sarif_data = format_sarif_for_github(sarif_dict)
+
+
+
+def write_sarif_for_upload(cfl_result, config):
+  sarif_dict = get_sarif_data(cfl_result)
+  filename = os.path.join(config.project_src_path, 'results.sarif')
+  with open(filename, 'w') as file_handle:
+    file_handle.write(json.dumps(sarif_dict))
 
 
 def get_sarif_data(cfl_result):

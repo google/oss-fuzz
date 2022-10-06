@@ -60,6 +60,7 @@ def run_fuzzers_entrypoint():
   delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.
   result = run_fuzzers.run_fuzzers(config)
+  sarif_utils.write_sarif_for_upload(None, config)
   if result == run_fuzzers.RunFuzzersResult.ERROR:
     logging.error('Error occurred while running in workspace %s.',
                   config.workspace)
