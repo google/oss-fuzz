@@ -27,6 +27,7 @@ case $(uname -m) in
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && go install ./...
+      cd /root/.go/src/cmd/cover && go build && mv cover $GOPATH/bin/gotoolcover
       ;;
     aarch64)
       # Don't install go because installer is not provided.
