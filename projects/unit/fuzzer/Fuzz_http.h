@@ -10,7 +10,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <nxt_main.h>
-#include "nxt_tests.h"
 
 nxt_int_t nxt_http_parse_fuzz(nxt_thread_t *thr, nxt_str_t *request, nxt_lvlhsh_t *hash);
 
