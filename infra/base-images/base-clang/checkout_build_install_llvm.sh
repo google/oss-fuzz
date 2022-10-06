@@ -43,7 +43,7 @@ case $(uname -m) in
       ;;
 esac
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
-LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS"
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
