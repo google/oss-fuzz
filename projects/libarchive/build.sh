@@ -69,7 +69,7 @@ zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip ./uudecoded/*
 
 # add weird archives
 git clone --depth=1 https://github.com/corkami/pocs
-find $SRC/pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %
+find ./pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %
 
 
 
