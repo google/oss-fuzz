@@ -17,7 +17,7 @@ limitations under the License.
 #include <nxt_conf.h>
 
 
-#define kMinInputLength 10
+#define kMinInputLength 2
 #define kMaxInputLength 5120
 
 static int DoInit = 0;
