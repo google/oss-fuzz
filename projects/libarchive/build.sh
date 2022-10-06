@@ -51,6 +51,12 @@ make -j$(nproc)
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
         $OUT/libarchive_fuzzer_seed_corpus.zip
 
+# build fuzzer(s)
+$CXX $CXXFLAGS -I../libarchive \
+    $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
+    $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
+    -Wl,-Bstatic -llzo2 -Wl,-Bdynamic -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+
 # add the uuencoded test files
 cd $SRC
 mkdir ./uudecoded
@@ -66,8 +72,4 @@ git clone --depth=1 https://github.com/corkami/pocs
 find $SRC/pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %
 
 
-# build fuzzer(s)
-$CXX $CXXFLAGS -I../libarchive \
-    $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
-    $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
-    -Wl,-Bstatic -llzo2 -Wl,-Bdynamic -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+
