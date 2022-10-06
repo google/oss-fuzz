@@ -30,7 +30,7 @@ RUN mkdir -p oss-fuzz
 COPY fuzz-* ./oss-fuzz/
 COPY Makefile.diff ./
 RUN git apply Makefile.diff
-COPY build.sh $SRC/
+COPY build.sh gitconfig $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
 ENV OLD_LLVMPASS 1

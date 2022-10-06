@@ -51,3 +51,6 @@ done
 # Generate existing file for temp git repository
 echo "TEMP1TEMP1TEMP1TEMP1" > $OUT/TEMP_1
 echo "TEMP2TEMP2TEMP2TEMP2" > $OUT/TEMP_2
+
+# Prepare gitconfig template
+cp $SRC/gitconfig $OUT/gitconfig
