@@ -1,6 +1,6 @@
 TARGET=Fuzzer
 
-#File
+#FileEXE
 httpEXE=Fuzz_http
 jsonEXE=Fuzz_json
 
