@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake pkg-config libssl-dev:i386
-
-RUN git clone -b develop https://github.com/zlib-ng/minizip-ng
-WORKDIR minizip-ng
+## Install build dependencies.
+RUN apt-get update
+RUN git clone --depth 1 https://github.com/nox/serde_urlencoded
 COPY build.sh $SRC/
+COPY /fuzz $SRC/serde_urlencoded/fuzz

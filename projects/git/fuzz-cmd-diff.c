@@ -21,7 +21,18 @@ int cmd_diff_files(int argc, const char **argv, const char *prefix);
 int cmd_diff_index(int argc, const char **argv, const char *prefix);
 int cmd_diff_tree(int argc, const char **argv, const char *prefix);
 
+void generateGitConfig(void);
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+
+void generateGitConfig()
+{
+	char *git_config ="[user]\n\temail = \"FUZZ@LOCALHOST\"\n\t"
+				"name = \"FUZZ\"\n[color]\n\tui = auto\n"
+				"[safe]\n\tdirecory = *\n";
+	FILE *fp = fopen("./gitconfig", "wb");
+	fwrite(git_config, sizeof(char), strlen(git_config), fp);
+	fclose(fp);
+}
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -31,7 +42,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	char *argv[6];
 	char *data_chunk;
 	char *basedir = "./.git";
-	struct strbuf config = STRBUF_INIT;
 
 	/*
 	 * End this round of fuzzing if the data is not large enough
@@ -44,15 +54,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Cleanup if needed
 	 */
+	generateGitConfig();
+
 	system("ls -lart ./");
-	strbuf_addf(&config, "rm -rf %s", git_system_config());
-	system(config.buf);
+	system("export GIT_CONFIG_SYSTEM=\"./gitconfig\"");
+	system("cat $GIT_CONFIG_SYSTEM");
 	system("rm -rf ./.git");
 	system("rm -rf ./TEMP-*");
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_2");
 	system("ls -lart ./");
-	strbuf_release(&config);
 
 	/*
 	 *  Initialize the repository
