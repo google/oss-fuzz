@@ -167,17 +167,19 @@ def test_all_centipede(directory, allowed_broken_targets_percentage):
   # targets. Script bad_build_check will test if they can run with/without
   # sanitized binaries and omit them from sanitizer checks.
   # No need to test sanitized target binaries if this fails.
-  os.environ['SANITIZER'] = 'none'
-  unsanitized_centipede_passed = test_all(directory,
-                                          allowed_broken_targets_percentage)
-  if sanitizer == 'none' or not unsanitized_centipede_passed:
-    return unsanitized_centipede_passed
-
-  # For projects that specify actual sanitizers (i.e., not 'none'):
-  # Centipede places the additional sanitized binaries in a child directory
-  # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if they
-  # are properly built with sanitizers without checking if they can run.
-  os.environ['SANITIZER'] = sanitizer
+  try:
+    os.environ['SANITIZER'] = 'none'
+    unsanitized_centipede_passed = test_all(directory,
+                                            allowed_broken_targets_percentage)
+    if sanitizer == 'none' or not unsanitized_centipede_passed:
+     logging.error('Testing the none sanitizer when ENV SANITIZER = %', sanitizer)
+     return unsanitized_centipede_passed
+  finally:
+    # For builds that specify actual sanitizers (i.e., not 'none'):
+    # Centipede places the additional sanitized binaries in a child directory
+    # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if they
+    # are properly built with sanitizers without checking if they can run.
+    os.environ['SANITIZER'] = sanitizer
 
   child_dirs = []
   for child_dir_name in os.listdir(directory):
