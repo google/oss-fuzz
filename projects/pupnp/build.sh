@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-./bootstrap
-./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" --enable-debug --disable-shared
+
+export CXXFLAGS="$CFLAGS"
+
+mkdir build
+cd build
+cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
 make -j$(nproc)
 
-$CC $CFLAGS -fPIE -pipe -Wall -Wextra -DHAVE_CONFIG_H -DDEBUG -DIXML_HAVE_SCRIPTSUPPORT \
--I./ixml/inc/ -I./upnp/inc -c FuzzIxml.c
-
-$CXX $CFLAGS -fPIE -pipe -o FuzzIxml FuzzIxml.o $LIB_FUZZING_ENGINE ./ixml/.libs/libixml.a
-
-cp FuzzIxml $OUT/FuzzIxml
+cp fuzzer/FuzzIxml $OUT/FuzzIxml
 
 pushd $SRC/oss-fuzz-bloat/pupnp/
 cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
