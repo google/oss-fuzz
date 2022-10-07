@@ -26,11 +26,9 @@ make
 
 cp FuzzJson $OUT/FuzzJson
 cp FuzzPacket $OUT/FuzzPacket
-cp FuzzLibgps $OUT/FuzzLibgps
 popd
 
 pushd $SRC/oss-fuzz-bloat/gpsd
 cp FuzzJson_seed_corpus.zip $OUT/FuzzJson_seed_corpus.zip
 cp FuzzPacket_seed_corpus.zip $OUT/FuzzPacket_seed_corpus.zip
-cp FuzzLibgps_seed_corpus.zip $OUT/FuzzLibgps_seed_corpus.zip
 popd
