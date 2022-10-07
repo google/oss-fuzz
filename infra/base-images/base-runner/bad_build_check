@@ -422,6 +422,7 @@ function check_architecture {
 
 function main {
   local FUZZER=$1
+  local AUXILIARY_FUZZER=$2
   local checks_failed=0
   local result=0
 
@@ -434,7 +435,11 @@ function main {
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
-  check_mixed_sanitizers $FUZZER
+  if [[ "$FUZZING_ENGINE" == centipede && "$SANITIZER" != none ]]; then
+    check_mixed_sanitizers $AUXILIARY_FUZZER
+   else
+    check_mixed_sanitizers $FUZZER
+  fi
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
@@ -455,6 +460,7 @@ fi
 
 # Fuzz target path.
 FUZZER=$1
+AUXILIARY_FUZZER=$2
 
-main $FUZZER
+main $FUZZER $AUXILIARY_FUZZER
 exit $?

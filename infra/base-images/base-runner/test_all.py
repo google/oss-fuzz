@@ -98,11 +98,13 @@ def find_fuzz_targets(directory):
   return fuzz_targets
 
 
-def do_bad_build_check(fuzz_target):
+def do_bad_build_check(fuzz_target, auxiliary_fuzz_target):
   """Runs bad_build_check on |fuzz_target|. Returns a
   Subprocess.ProcessResult."""
   print('INFO: performing bad build checks for', fuzz_target)
-  command = ['bad_build_check', fuzz_target]
+  if os.getenv('FUZZING_ENGINE') == 'centipede':
+    print('INFO: using auxiliary_fuzz_target', auxiliary_fuzz_target)
+  command = ['bad_build_check', fuzz_target, auxiliary_fuzz_target]
   return subprocess.run(command,
                         env=os.environ,
                         stderr=subprocess.PIPE,
@@ -157,41 +159,20 @@ def use_different_out_dir():
       os.environ['OUT'] = initial_out
 
 
-def test_all_centipede(directory, allowed_broken_targets_percentage):
-  """Do bad_build_check on all fuzz targets of centipede."""
-  sanitizer = os.getenv('SANITIZER')
+def test_all_outside_out(allowed_broken_targets_percentage):
+  """Wrapper around test_all that changes OUT and returns the result."""
+  with use_different_out_dir() as out:
+    return test_all(out, allowed_broken_targets_percentage)
 
-  # For all projects:
-  # Centipede always requires separate non-sanitized binaries as the main fuzz
-  # targets. Script bad_build_check will test if they can run with/without
-  # sanitized binaries and omit them from sanitizer checks.
-  # No need to test sanitized target binaries if this fails.
-  try:
-    os.environ['SANITIZER'] = 'none'
-    unsanitized_centipede_passed = test_all(directory,
-                                            allowed_broken_targets_percentage)
-    if sanitizer == 'none' or not unsanitized_centipede_passed:
-      return unsanitized_centipede_passed
-  finally:
-    logging.error('Testing the none sanitizer when ENV SANITIZER = %s',
-                  sanitizer)
-    # For builds that specify actual sanitizers (i.e., not 'none'):
-    # Centipede places the additional sanitized binaries in a child directory
-    # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if
-    # they are properly built with sanitizers without checking if they can run.
-    os.environ['SANITIZER'] = sanitizer
 
-  child_dirs = []
-  for child_dir_name in os.listdir(directory):
-    child_dir_path = os.path.join(directory, child_dir_name)
-    if not os.path.isdir(child_dir_path):
-      continue
-    if not child_dir_path.endswith(f'_{os.getenv("SANITIZER")}'):
-      continue
-    child_dirs.append(child_dir_path)
-
-  if len(child_dirs) == 1:
-    return test_all(child_dirs[0], allowed_broken_targets_percentage)
+def find_centipede_sanitized_fuzz_targets_directory(directory):
+  """Finds the directory that contains sanitized fuzz targets for Centipede."""
+  # The sanitized binaries are always in a child directory named
+  # f'__CENTIPEDE_{SANITIZER}'.
+  sanitized_binary_dir_path = os.path.join(
+      directory, f'__centipede_{os.getenv("SANITIZER")}')
+  if os.path.isdir(sanitized_binary_dir_path):
+    return sanitized_binary_dir_path
 
   # This should never happen.
   print(
@@ -200,24 +181,51 @@ def test_all_centipede(directory, allowed_broken_targets_percentage):
   return None
 
 
-def test_all_outside_out(allowed_broken_targets_percentage):
-  """Wrapper around test_all that changes OUT and returns the result."""
-  with use_different_out_dir() as out:
-    if os.getenv('FUZZING_ENGINE') == 'centipede':
-      return test_all_centipede(out, allowed_broken_targets_percentage)
-    return test_all(out, allowed_broken_targets_percentage)
+def find_auxiliary_targets(directory, expected_num):
+  """Finds the auxiliary targets for bad_build_check."""
+  centipede_needs_auxiliary = os.getenv(
+      'FUZZING_ENGINE') == 'centipede' and os.environ['SANITIZER'] != 'none'
+  if centipede_needs_auxiliary:
+    # Centipede always requires separate non-sanitized binaries as the main fuzz
+    # targets, and the sanitized binaries as auxiliaries.
+    # Script bad_build_check tests both:
+    # a) if main fuzz targets can run with the auxiliaries,
+    # b) if the auxiliaries are built with sanitizers.
+    auxiliary_directory = find_centipede_sanitized_fuzz_targets_directory(
+        directory)
+    if auxiliary_directory is None:
+      return []
+    return find_fuzz_targets(auxiliary_directory)
+  return [''] * expected_num
+
+
+def organise_fuzz_targets(directory):
+  """Organises fuzz targets in to a list of (main_fuzz_target, auxiliary_target)
+  tuples for bad_build_check."""
+
+  main_fuzz_targets = find_fuzz_targets(directory)
+  if not main_fuzz_targets:
+    print('ERROR: No main fuzz targets found.')
+    return []
+
+  auxiliary_targets = find_auxiliary_targets(directory, len(main_fuzz_targets))
+  if not auxiliary_targets:
+    print('ERROR: Invalid auxiliary fuzz targets found.')
+    return []
+  fuzz_targets = zip(main_fuzz_targets, auxiliary_targets)
+  return fuzz_targets
 
 
 def test_all(out, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
-  fuzz_targets = find_fuzz_targets(out)
+  fuzz_targets = organise_fuzz_targets(out)
   if not fuzz_targets:
     print('ERROR: No fuzz targets found.')
     return False
 
   pool = multiprocessing.Pool()
-  bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
+  bad_build_results = pool.starmap(do_bad_build_check, fuzz_targets)
   pool.close()
   pool.join()
   broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
@@ -230,7 +238,7 @@ def test_all(out, allowed_broken_targets_percentage):
   retry_targets = []
   for broken_target, result in broken_targets:
     retry_targets.append(broken_target)
-  bad_build_results = pool.map(do_bad_build_check, retry_targets)
+  bad_build_results = pool.starmap(do_bad_build_check, retry_targets)
   pool.close()
   pool.join()
   broken_targets = get_broken_fuzz_targets(bad_build_results, broken_targets)
