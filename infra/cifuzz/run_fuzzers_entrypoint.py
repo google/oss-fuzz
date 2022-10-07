@@ -19,6 +19,7 @@ import config_utils
 import docker
 import logs
 import run_fuzzers
+import sarif_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
