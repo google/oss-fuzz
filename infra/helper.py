@@ -721,7 +721,7 @@ def build_fuzzers(args):
     # A sanitized binary, placed in the child directory.
     sanitized_binary_directories = (
         ('none', ''),
-        (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
+        (args.sanitizer, f'__centipede_{args.sanitizer}'),
     )
   else:
     # Generally, a fuzzer only needs one sanitized binary in the default dir.
