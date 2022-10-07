@@ -114,7 +114,7 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
-  elif [[ "$FUZZING_ENGINE" == centipede &&  "$SANITIZER" == "none" ]]; then
+  elif [[ "$FUZZING_ENGINE" == centipede ]]; then
     # Only perform run test on unsanitized binary for now.
     # TODO(Dongge): Support run test for sanitized binaries as well.
     timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT

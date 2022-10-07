@@ -17,7 +17,6 @@
 """Does bad_build_check on all fuzz targets in $OUT."""
 
 import contextlib
-import logging
 import multiprocessing
 import os
 import re
