@@ -40,7 +40,7 @@ def http_upload_sarif_dict(sarif_dict):
 
 def write_sarif_for_upload(cfl_result, config):
   sarif_dict = get_sarif_data(cfl_result)
-  filename = os.path.join(config.project_src_path, 'results.sarif')
+  filename = os.path.join(config.workspace, 'results.sarif')
   with open(filename, 'w') as file_handle:
     file_handle.write(json.dumps(sarif_dict))
 
