@@ -6,6 +6,7 @@ main_repo: https://github.com/astanin/python-tabulate
 sanitizers:
 - address
 - undefined
+primary_contact: "7u7lt5pnx@mozmail.com"
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
