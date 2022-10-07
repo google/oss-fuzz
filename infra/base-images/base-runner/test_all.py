@@ -178,8 +178,8 @@ def test_all_centipede(directory, allowed_broken_targets_percentage):
                   sanitizer)
     # For builds that specify actual sanitizers (i.e., not 'none'):
     # Centipede places the additional sanitized binaries in a child directory
-    # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if they
-    # are properly built with sanitizers without checking if they can run.
+    # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if
+    # they are properly built with sanitizers without checking if they can run.
     os.environ['SANITIZER'] = sanitizer
 
   child_dirs = []
