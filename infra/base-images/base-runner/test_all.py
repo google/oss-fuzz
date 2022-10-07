@@ -194,7 +194,7 @@ def test_all_centipede(directory, allowed_broken_targets_percentage):
     return test_all(child_dirs[0], allowed_broken_targets_percentage)
 
   # This should never happen.
-  logging.warning(
+  logging.error(
       'Unable to identify Centipede\'s sanitized target directory from '
       'candidate list: %s', os.listdir(directory))
   return test_all(directory, allowed_broken_targets_percentage)
