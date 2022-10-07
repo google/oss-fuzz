@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +13,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+cd $SRC/serde_urlencoded
+cargo fuzz build
+cp $SRC/serde_urlencoded/fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/

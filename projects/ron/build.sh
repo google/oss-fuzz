@@ -15,15 +15,5 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/from_str $OUT/

@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +14,8 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/ron-rs/ron ron
+WORKDIR ron
+COPY build.sh $SRC/

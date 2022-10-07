@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +14,8 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
+FROM gcr.io/oss-fuzz-base/base-builder
 
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
+RUN git clone --depth 1 https://gitlab.com/cryptsetup/cryptsetup.git
 
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+COPY build.sh $SRC/

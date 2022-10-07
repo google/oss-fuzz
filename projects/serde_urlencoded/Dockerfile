@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+## Install build dependencies.
+RUN apt-get update
+RUN git clone --depth 1 https://github.com/nox/serde_urlencoded
+COPY build.sh $SRC/
+COPY /fuzz $SRC/serde_urlencoded/fuzz

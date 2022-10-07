@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +13,34 @@
 # limitations under the License.
 #
 ################################################################################
+[package]
+name = "serde_urlencoded-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2018"
 
-export CXXFLAGS="$CFLAGS"
+[package.metadata]
+cargo-fuzz = true
 
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
+[dependencies]
+libfuzzer-sys = "0.4"
+serde = { version = "1.0.100", features = ["derive"] }
 
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
+[dependencies.serde_urlencoded]
+path = ".."
 
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[features]
+debug = []
+
+[[bin]]
+name = "roundtrip"
+path = "fuzz_targets/roundtrip.rs"
+test = false
+doc = false
+
+[profile.release]
+debug = true

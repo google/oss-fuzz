@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Force static linking in i386 by removing dynamically linked libraries.
+if [ "$ARCHITECTURE" = 'i386' ]; then
+  rm /usr/lib/i386-linux-gnu/libssl.so*
+  rm /usr/lib/i386-linux-gnu/libcrypto.so*
+fi
+
 # Build project
 cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TESTS=ON
 make clean
