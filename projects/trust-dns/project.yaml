@@ -1,0 +1,9 @@
+homepage: "https://github.com/bluejekyll/trust-dns"
+language: rust
+main_repo: "https://github.com/bluejekyll/trust-dns"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com
