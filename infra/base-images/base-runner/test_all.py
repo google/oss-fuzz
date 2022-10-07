@@ -172,9 +172,10 @@ def test_all_centipede(directory, allowed_broken_targets_percentage):
     unsanitized_centipede_passed = test_all(directory,
                                             allowed_broken_targets_percentage)
     if sanitizer == 'none' or not unsanitized_centipede_passed:
-     logging.error('Testing the none sanitizer when ENV SANITIZER = %', sanitizer)
-     return unsanitized_centipede_passed
+      return unsanitized_centipede_passed
   finally:
+    logging.error('Testing the none sanitizer when ENV SANITIZER = %s',
+                  sanitizer)
     # For builds that specify actual sanitizers (i.e., not 'none'):
     # Centipede places the additional sanitized binaries in a child directory
     # named as f'{PROJECT_NAME}_{SANITIZER}'. Script bad_build_check test if they
