@@ -7,7 +7,7 @@ packetEXE=FuzzPacket
 #Compiler Flags
 DIR=$(shell ls -d ../gpsd*~dev/)
 INC=-I$(DIR)include/
-EXTCFLAGS=-Wall -Werror -pthread
+EXTCFLAGS=-Wall -Werror -pthread -std=c99
 LibINC=-L$(DIR)
 LibFLAGS=$(LIB_FUZZING_ENGINE) -lgpsd -lgps_static
 
