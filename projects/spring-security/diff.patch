@@ -62,7 +62,7 @@ index fb306f6..b27cd44 100644
 +
  dependencies {
  	api platform("org.springframework:spring-framework-bom:$springFrameworkVersion")
- 	api platform("io.projectreactor:reactor-bom:2022.0.0-M4")
+ 	api platform("io.projectreactor:reactor-bom:$reactorVersion")
 diff --git a/ldap/spring-security-ldap.gradle b/ldap/spring-security-ldap.gradle
 index c4f6c08..39023ed 100644
 --- a/ldap/spring-security-ldap.gradle
