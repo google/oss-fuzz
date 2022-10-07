@@ -32,6 +32,8 @@ GRADLE_ARGS="-x test -x javadoc"
 ./gradlew shadowJar $GRADLE_ARGS -b messaging/spring-security-messaging.gradle
 ./gradlew shadowJar $GRADLE_ARGS -b web/spring-security-web.gradle
 ./gradlew shadowJar $GRADLE_ARGS -b test/spring-security-test.gradle
+./gradlew shadowJar $GRADLE_ARGS -b oauth2/oauth2-core/spring-security-oauth2-core.gradle
+./gradlew shadowJar $GRADLE_ARGS -b acl/spring-security-acl.gradle
 
 # Copy all shadow jars to the $OUT folder
 find . -name "*-all.jar" -print0 | while read -d $'\0' file
