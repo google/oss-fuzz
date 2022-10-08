@@ -43,7 +43,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	int no_of_commit;
 	int max_commit_count;
 	char *argv[6];
-  char current_dir[200];
 	char *data_chunk;
 	char *basedir = "./.git";
 
@@ -54,10 +53,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	{
 		return 0;
 	}
-
-  if (getcwd(current_dir, 200) == NULL) {
-    return 0;
-  }
 
 	/*
 	 * Cleanup if needed
