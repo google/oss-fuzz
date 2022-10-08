@@ -57,7 +57,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Cleanup if needed
 	 */
-	//generateGitConfig(gitconfig_path);
+	generateGitConfig("/tmp/.my_gitconfig");
 	system("ls -lart ./");
   putenv("GIT_CONFIG_NOSYSTEM=true");
   putenv("GIT_AUTHOR_EMAIL=FUZZ@LOCALHOST");
