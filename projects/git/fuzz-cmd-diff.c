@@ -59,26 +59,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     return 0;
   }
 
-  char gitconfig_path[250];
-  snprintf(gitconfig_path, 250,  "/tmp/.my_gitconfig");//, current_dir);
-
 	/*
 	 * Cleanup if needed
 	 */
 	//generateGitConfig(gitconfig_path);
 	system("ls -lart ./");
-	//system("export GIT_CONFIG_SYSTEM=\"./gitconfig\"");
   putenv("GIT_CONFIG_NOSYSTEM=true");
   putenv("GIT_AUTHOR_EMAIL=FUZZ@LOCALHOST");
   putenv("GIT_AUTHOR_NAME=FUZZ");
   putenv("GIT_COMMITTER_NAME=FUZZ");
   putenv("GIT_COMMITTER_EMAIL=FUZZ@LOCALHOST");
 
-  char export_var[300];
-  snprintf(export_var, 300, "GIT_CONFIG_GLOBAL=\"%s\"", gitconfig_path);
-  putenv(export_var);
-  //putenv("GIT_CONFIG_SYSTEM=\"./gitconfig\"");
-	//system("cat $GIT_CONFIG_SYSTEM");
+  putenv("GIT_CONFIG_GLOBAL=/tmp/.my_gitconfig");
 	system("rm -rf ./.git");
 	system("rm -rf ./TEMP-*");
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
@@ -89,7 +81,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	 *  Initialize the repository
 	 */
 	initialize_the_repository();
-	//system("ls -lart ./");
 	if (reset_git_folder())
 	{
 		repo_clear(the_repository);
