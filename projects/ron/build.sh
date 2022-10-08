@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/hyperledger/fabric
-RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
-COPY build.sh ccprovider_fuzzer.go \
-	 persistence_fuzzer.go \
-	 policydsl_fuzzer.go \
-	 fabenc_fuzzer.go \
-	 msp_fuzzer.go $SRC/
-WORKDIR $SRC/fabric
-
-COPY *.options $SRC/
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/from_str $OUT/

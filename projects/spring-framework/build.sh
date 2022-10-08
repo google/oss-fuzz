@@ -43,7 +43,8 @@ install_shadowJar spring-test;
 install_shadowJar spring-tx;
 install_shadowJar spring-messaging;
 install_shadowJar spring-jms;
-install_shadowJar spring-webflux
+install_shadowJar spring-webflux;
+install_shadowJar spring-websocket;
 
 ALL_JARS=$(find $OUT -name "spring*.jar" -printf "%f ")
 
@@ -59,6 +60,11 @@ function create_fuzz_targets() {
     mkdir -p $OUT/$1
     javac -cp $BUILD_CLASSPATH --release 17 $(find $SRC/$1/ -name "*.java" -print)
 
+    # Overwrite class path for some projects
+    if [ $# -eq 2 ]; then
+        RUNTIME_CLASSPATH=$2
+    fi
+
     for fuzzer in $SRC/$1/*Fuzzer.java; do
         fuzzer_basename=$(basename -s .java $fuzzer)
 
@@ -66,13 +72,14 @@ function create_fuzz_targets() {
         echo "#!/bin/sh
         # LLVMFuzzerTestOneInput for fuzzer detection.
         this_dir=\$(dirname \"\$0\")
+        JAVA_OPTS=\"-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
         JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
         LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
         \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
         --cp=$RUNTIME_CLASSPATH \
         --target_class=$fuzzer_basename \
-        --instrumentation_excludes=org.aspectj.weaver.** \
-        --jvm_args=\"-Xmx2048m\" \
+        --instrumentation_includes=org.springframework.** \
+        --jvm_args=\"-Xmx2048m:-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
         \$@" > $OUT/$fuzzer_basename
         chmod u+x $OUT/$fuzzer_basename
     done
@@ -90,5 +97,6 @@ create_fuzz_targets spring-jdbc
 create_fuzz_targets spring-messaging
 create_fuzz_targets spring-jms
 create_fuzz_targets spring-webflux
+create_fuzz_targets spring-websocket "\$this_dir/spring-websocket.jar:\$this_dir" # Overwrite class path to avoid logging to stdout
 
 cp $SRC/spring-jdbc/*.xml $OUT/spring-jdbc/

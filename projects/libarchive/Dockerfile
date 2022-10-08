@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf libtool pkg-config \
         libbz2-dev liblzo2-dev liblzma-dev liblz4-dev libz-dev \
         libssl-dev libacl1-dev libattr1-dev lrzip liblzo2-dev \
-        liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk
+	      liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk sharutils
 RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
     apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone --depth 1 https://github.com/libarchive/libarchive.git

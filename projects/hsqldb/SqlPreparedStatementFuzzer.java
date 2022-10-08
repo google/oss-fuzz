@@ -24,7 +24,7 @@ public class SqlPreparedStatementFuzzer extends TestServer {
 	}
 	
 	public static void fuzzerTestOneInput(FuzzedDataProvider fuzzedDataProvider) throws Exception {
-		try (TestServer fuzzer = new SqlStatementFuzzer(false)) {
+		try (TestServer fuzzer = new SqlPreparedStatementFuzzer(false)) {
 			fuzzer.testOneInput(fuzzedDataProvider.consumeRemainingAsAsciiString());
 		}
 	}
