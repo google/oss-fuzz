@@ -1,0 +1,13 @@
+homepage: "https://github.com/KillingSpark/zstd-rs"
+language: rust
+primary_contact: "yashwanthmaturi@gmail.com"
+auto_ccs:
+  - "paolo@paolo565.org"
+  - "shnatsel@gmail.com"
+  - "Titaniumtown@gmail.com"
+  - "ghpub@cookiesoft.de"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/KillingSpark/zstd-rs'

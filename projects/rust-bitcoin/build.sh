@@ -1,0 +1,28 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+cd $SRC/rust-bitcoin
+cargo afl build
+cp $SRC/rust-bitcoin/fuzz/target/release/deser_net_msg $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_address $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_amount $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialze_block $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_prefilled_transaction $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_psbt $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_script $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_transaction $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/outpoint_string $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/script_bytes_to_asm_fmt $OUT/
+cp $SRC/rust-bitcoin/fuzz/target/release/uint128_fuzz $OUT/
