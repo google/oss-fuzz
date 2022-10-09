@@ -165,9 +165,8 @@ def test_all_outside_out(allowed_broken_targets_percentage):
     return test_all(out, allowed_broken_targets_percentage)
 
 
-def find_centipede_sanitized_fuzz_targets_directory(directory):
+def find_centipede_auxiliary_directory(directory):
   """Finds the directory that contains sanitized fuzz targets for Centipede."""
-  # If built with helper.py (i.e., local or GitHub CI):
   # The sanitized binaries are always in a child directory named
   # f'__CENTIPEDE_{SANITIZER}'.
   sanitized_binary_dir_path = os.path.join(
@@ -175,28 +174,53 @@ def find_centipede_sanitized_fuzz_targets_directory(directory):
   if os.path.isdir(sanitized_binary_dir_path):
     return sanitized_binary_dir_path
 
-  # If in trial builds and production build:
+  # This should never happen.
   print(
-      'INFO: In trial build and production build, Centipede\'s sanitized target'
-      'directory not in', os.listdir(directory))
-  return None
+      'ERROR: Unable to identify Centipede\'s sanitized target directory from',
+      os.listdir(directory))
+  return ''
 
 
-def find_auxiliary_targets(directory, expected_num):
+def centipede_auxiliary_targets_needed():
+  """Check if auxiliary targets are needed for Centipede."""
+  # Centipede always requires unsanitized binaries as the main fuzz targets,
+  # and separate sanitized binaries as auxiliaries.
+  # 1. Building sanitized binaries with helper.py (i.e., local or GitHub CI):
+  # Unsanitized ones will be built automatically into the same docker container.
+  # Script bad_build_check tests both
+  # a) if main fuzz targets can run with the auxiliaries, and
+  # b) if the auxiliaries are built with sanitizers.
+  # 2. In Trial build and production build:
+  # Two kinds of binaries will be in separated docker containers.
+  # Script bad_build_check tests either
+  # a) if the unsanitized binaries can run without the sanitized ones, or
+  # b) if the sanitized binaries are built with sanitizers.
+  centipede_needs_auxiliary = (os.getenv('FUZZING_ENGINE') == 'centipede' and
+                               os.getenv('SANITIZER') != 'none' and
+                               os.getenv('HELPER') == 'True')
+  return centipede_needs_auxiliary
+
+
+def find_auxiliary_targets(directory, num_expected_targets):
   """Finds the auxiliary targets for bad_build_check."""
-  centipede_needs_auxiliary = os.getenv(
-      'FUZZING_ENGINE') == 'centipede' and os.environ['SANITIZER'] != 'none'
-  if centipede_needs_auxiliary:
-    # Centipede always requires separate non-sanitized binaries as the main fuzz
-    # targets, and the sanitized binaries as auxiliaries.
-    # Script bad_build_check tests both:
-    # a) if main fuzz targets can run with the auxiliaries,
-    # b) if the auxiliaries are built with sanitizers.
-    auxiliary_directory = find_centipede_sanitized_fuzz_targets_directory(
-        directory)
-    if auxiliary_directory is not None:
-      return find_fuzz_targets(auxiliary_directory)
-  return [''] * expected_num
+  # Default directory value, indicating auxiliaries are not needed.
+  auxiliary_directory = None
+  if centipede_auxiliary_targets_needed():
+    print('INFO: Finding Centipede\'s auxiliary directory in',
+          os.listdir(directory))
+    auxiliary_directory = find_centipede_auxiliary_directory(directory)
+
+  if auxiliary_directory is None:
+    # Auxiliary directory is not needed, use the default value.
+    print('INFO: No Auxiliary fuzz target needed.')
+    return [''] * num_expected_targets
+
+  if auxiliary_directory == '':
+    print('ERROR: Auxiliary directory is needed but not found.')
+    return []
+
+  # Auxiliary directory is found, find the targets in it.
+  return find_fuzz_targets(auxiliary_directory)
 
 
 def organise_fuzz_targets(directory):
@@ -210,8 +234,9 @@ def organise_fuzz_targets(directory):
 
   auxiliary_targets = find_auxiliary_targets(directory, len(main_fuzz_targets))
   if not auxiliary_targets:
-    print('ERROR: Invalid auxiliary fuzz targets found.')
+    print('ERROR: No auxiliary targets found.')
     return []
+
   fuzz_targets = zip(main_fuzz_targets, auxiliary_targets)
   return fuzz_targets
 
