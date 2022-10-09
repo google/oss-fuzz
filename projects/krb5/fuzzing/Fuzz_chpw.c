@@ -14,7 +14,7 @@ limitations under the License.
 #include <stdint.h>
 #include <string.h>
 
-#include "autoconf.h"
+#include "k5-int.h"
 #include "krb5.h"
 
 #define kMinInputLength 20
