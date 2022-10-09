@@ -167,6 +167,7 @@ def test_all_outside_out(allowed_broken_targets_percentage):
 
 def find_centipede_sanitized_fuzz_targets_directory(directory):
   """Finds the directory that contains sanitized fuzz targets for Centipede."""
+  # If built with helper.py (i.e., local or GitHub CI):
   # The sanitized binaries are always in a child directory named
   # f'__CENTIPEDE_{SANITIZER}'.
   sanitized_binary_dir_path = os.path.join(
@@ -174,10 +175,10 @@ def find_centipede_sanitized_fuzz_targets_directory(directory):
   if os.path.isdir(sanitized_binary_dir_path):
     return sanitized_binary_dir_path
 
-  # This should never happen.
+  # If in trial builds and production build:
   print(
-      'ERROR: Unable to identify Centipede\'s sanitized target directory from',
-      os.listdir(directory))
+      'INFO: In trial build and production build, Centipede\'s sanitized target'
+      'directory not in', os.listdir(directory))
   return None
 
 
@@ -193,9 +194,8 @@ def find_auxiliary_targets(directory, expected_num):
     # b) if the auxiliaries are built with sanitizers.
     auxiliary_directory = find_centipede_sanitized_fuzz_targets_directory(
         directory)
-    if auxiliary_directory is None:
-      return []
-    return find_fuzz_targets(auxiliary_directory)
+    if auxiliary_directory is not None:
+      return find_fuzz_targets(auxiliary_directory)
   return [''] * expected_num
 
 
