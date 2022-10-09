@@ -15,7 +15,7 @@ INC=-I$(DIR)/include/ -I$(DIR)/kdc/ -I$(DIR)/lib/krb5/ccache/ -I$(DIR)/util/prof
 EXTCFLAGS=-DHAVE_CONFIG_H -DKRB5_DEPRECATED=1 -DKRB5_PRIVATE -DHAS_STDARG -fcommon -Wall -Werror 
 
 LibINC=-L$(DIR)/lib/ -fcommon
-LibFLAGS=$(LIB_FUZZING_ENGINE) -lkrb5 -lk5crypto -lcom_err -lkrb5support 
+LibFLAGS=$(LIB_FUZZING_ENGINE) -lkrb5 -lk5crypto -lcom_err -lkrb5support -lresolv
 ndrOBJ=$(DIR)/kdc/ndr.o
 
 all: $(TARGET)
