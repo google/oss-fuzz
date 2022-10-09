@@ -1,6 +1,7 @@
 homepage: "https://github.com/bluejekyll/trust-dns"
 language: rust
 main_repo: "https://github.com/bluejekyll/trust-dns"
+primary_contact: "bluejekyll@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
