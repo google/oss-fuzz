@@ -17,7 +17,7 @@ limitations under the License.
 #include "kdc_util.h"
 
 #define kMinInputLength 10
-#define kMaxInputLength 5120
+#define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 {//src/kdc/t_ndr.c

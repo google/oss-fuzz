@@ -23,14 +23,13 @@ popd
 pushd fuzzing/
 make
 
-cp -r rdreq/ $OUT/.
-
 cp Fuzz_ndr $OUT/Fuzz_ndr
 cp Fuzz_pac $OUT/Fuzz_pac
 cp Fuzz_chpw $OUT/Fuzz_chpw
 cp Fuzz_json $OUT/Fuzz_json
-cp Fuzz_profile $OUT/Fuzz_profile
+cp Fuzz_krb5 $OUT/Fuzz_krb5
 cp Fuzz_marshal $OUT/Fuzz_marshal
+cp Fuzz_profile $OUT/Fuzz_profile
 popd
 
 pushd $SRC/oss-fuzz-bloat/krb5/
@@ -38,6 +37,7 @@ cp Fuzz_ndr_seed_corpus.zip $OUT/Fuzz_ndr_seed_corpus.zip
 cp Fuzz_pac_seed_corpus.zip $OUT/Fuzz_pac_seed_corpus.zip
 cp Fuzz_chpw_seed_corpus.zip $OUT/Fuzz_chpw_seed_corpus.zip
 cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
-cp Fuzz_profile_seed_corpus.zip $OUT/Fuzz_profile_seed_corpus.zip
+cp Fuzz_krb5_seed_corpus.zip $OUT/Fuzz_krb5_seed_corpus.zip
 cp Fuzz_marshal_seed_corpus.zip $OUT/Fuzz_marshal_seed_corpus.zip
+cp Fuzz_profile_seed_corpus.zip $OUT/Fuzz_profile_seed_corpus.zip
 popd
