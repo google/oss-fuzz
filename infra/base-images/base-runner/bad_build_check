@@ -115,8 +115,12 @@ function check_engine {
       return 1
     fi
   elif [[ "$FUZZING_ENGINE" == centipede ]]; then
-    # Only perform run test on unsanitized binary for now.
-    # TODO(Dongge): Support run test for sanitized binaries as well.
+    # Performs run test on unsanitized binaries with auxiliary sanitized
+    # binaries if they are built with helper.py.
+    # Performs run test on unsanitized binaries without auxiliary sanitized
+    # binaries if they are from trial build and production build.
+    # TODO(Dongge): Support run test with sanitized binaries for trial and
+    production build.
     timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "\[0] begin-fuzz: ft: 0 cov: 0" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
