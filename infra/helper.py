@@ -670,8 +670,10 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
-      'FUZZING_ENGINE=' + engine, 'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture, 'PROJECT_NAME=' + project.name,
+      'FUZZING_ENGINE=' + engine,
+      'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture,
+      'PROJECT_NAME=' + project.name,
       'HELPER=True',
   ]
 
