@@ -77,17 +77,17 @@ constexpr int kRootDirMaxLength = 16;
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
 
-// Structure to know which thread in the root process triggered the bug.
+// Structure to know which thread id triggered the bug.
 struct ThreadParent {
-  // Thread ID of the creator in root process
-  pid_t root_tid;
-  // Current thread id is part of the root process
-  bool root = true;
+  // Parent thread ID, ie creator.
+  pid_t parent_tid;
+  // Current thread ID ran exec to become another process.
+  bool ran_exec = false;
 
-  ThreadParent() : root_tid(0) {}
-  ThreadParent(pid_t tid) : root_tid(tid) {}
+  ThreadParent() : parent_tid(0) {}
+  ThreadParent(pid_t tid) : parent_tid(tid) {}
 };
-// Map of a PID/TID its PID/TID creator in the root process
+// Map of a PID/TID its PID/TID creator and wether it ran exec.
 std::map<pid_t, ThreadParent> root_pids;
 
 // Assuming the longest pathname is "/bin/bash".
@@ -191,20 +191,25 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   return content;
 }
 
-void report_bug(std::string bug_type, pid_t pid) {
+void report_bug(std::string bug_type, pid_t tid) {
   // Report the bug found based on the bug code.
   std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
   // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
-  auto parent = root_pids[pid];
-  if (!parent.root) {
-    // pid is not in the root process.
-    // So find the pid/tid in the root process which created it.
-    pid = parent.root_tid;
+  // Find the thread group id, that is the pid.
+  pid_t pid = tid;
+  auto parent = root_pids[tid];
+  while (!parent.ran_exec) {
+    // Find the first parent which ran exec syscall.
+    if (parent.parent_tid == g_root_pid) {
+      break;
+    }
+    pid = parent.parent_tid;
+    parent = root_pids[parent.parent_tid];
   }
-  tgkill(g_root_pid, pid, SIGABRT);
+  tgkill(pid, tid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
@@ -281,7 +286,15 @@ void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
                 << "\n----------------------------------------\n";
-      report_bug(kCorruptionError, pid);
+      // If a shell corruption error happens, kill its parent.
+      auto parent = root_pids[pid];
+      while (!parent.ran_exec) {
+        if (parent.parent_tid == g_root_pid) {
+          break;
+        }
+        parent = root_pids[parent.parent_tid];
+      }
+      report_bug(kCorruptionError, parent.parent_tid);
     }
   }
 }
@@ -422,14 +435,7 @@ int trace(std::map<pid_t, Tracee> pids) {
         }
         debug_log("forked %ld", new_pid);
         new_pids.push_back(new_pid);
-        auto parent = root_pids[pid];
-        if (parent.root) {
-          // Created by the main process.
-          root_pids.emplace(new_pid, ThreadParent(pid));
-        } else {
-          // Created by a child process, same root parent.
-          root_pids.emplace(new_pid, parent);
-        }
+        root_pids.emplace(new_pid, ThreadParent(pid));
       }
 
       if (is_syscall) {
@@ -443,10 +449,8 @@ int trace(std::map<pid_t, Tracee> pids) {
           if (regs.orig_rax == __NR_execve) {
             // This is a new process.
             auto parent = root_pids[pid];
-            if (pid != g_root_pid) {
-              parent.root = false;
-              root_pids[pid] = parent;
-            }
+            parent.ran_exec = true;
+            root_pids[pid] = parent;
             inspect_for_injection(pid, regs);
             std::string shell = get_shell(pid, regs);
             if (shell != "") {
