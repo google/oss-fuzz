@@ -13,18 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
-COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell
+cd $SRC/rust-brotli/fuzz
+cargo fuzz build
+cp $SRC/rust-brotli/fuzz/target/x86_64-unknown-linux-gnu/release/decompress $OUT/
+cp $SRC/rust-brotli/fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/

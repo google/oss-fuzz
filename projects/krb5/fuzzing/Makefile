@@ -5,48 +5,40 @@ ndrEXE=Fuzz_ndr
 pacEXE=Fuzz_pac
 chpwEXE=Fuzz_chpw
 jsonEXE=Fuzz_json
+krb5EXE=Fuzz_krb5
 marshalEXE=Fuzz_marshal
 profileEXE=Fuzz_profile
-rdreqEXE=Fuzz_rdreq
 
-#Compiler Flags
-INC=-I../src/include/ -I../src/kdc/ -I../src/lib/krb5/ccache/ -I../src/util/profile/
-EXTCFLAGS=-DHAVE_CONFIG_H -DKRB5_DEPRECATED=1 -DKRB5_PRIVATE -fcommon -pthread -Wall -Werror 
-LibINC=-L../src/lib/ -Wl,--enable-new-dtags -fcommon
+#header lib obj
+DIR=./../src
+INC=-I$(DIR)/include/ -I$(DIR)/kdc/ -I$(DIR)/lib/krb5/ccache/ -I$(DIR)/util/profile/
+EXTCFLAGS=-DHAVE_CONFIG_H -DKRB5_DEPRECATED=1 -DKRB5_PRIVATE -DHAS_STDARG -fcommon -Wall -Werror 
+
+LibINC=-L$(DIR)/lib/ -fcommon
 LibFLAGS=$(LIB_FUZZING_ENGINE) -lkrb5 -lk5crypto -lcom_err -lkrb5support -lresolv
-
-#Custom
-ndrOBJ=../src/kdc/ndr.o
-pacOBJ=../src/lib/krb5/krb/pac.o ../src/lib/krb5/krb/pac_sign.o ../src/lib/krb5/krb/copy_data.o
-jsonOBJ=../src/util/support/json.o ../src/util/support/base64.o ../src/util/support/k5buf.o ../src/util/support/zap.o
-profileOBJ=../src/util/profile/prof_tree.o ../src/util/profile/prof_file.o ../src/util/profile/prof_parse.o ../src/util/profile/prof_get.o ../src/util/profile/prof_set.o ../src/util/profile/prof_err.o ../src/util/profile/prof_init.o
+ndrOBJ=$(DIR)/kdc/ndr.o
 
 all: $(TARGET)
 
 #SETUP
 $(TARGET):
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(ndrEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(ndrEXE) $(ndrEXE).o  $(ndrOBJ) $(LibFLAGS)
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(ndrEXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(pacEXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(chpwEXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(jsonEXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(krb5EXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(marshalEXE).c
+	$(CC) $(CFLAGS) $(EXTCFLAGS) $(INC) -c $(profileEXE).c
 
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(pacEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(pacEXE) $(pacEXE).o  $(pacOBJ) $(LibFLAGS)
-
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(chpwEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(chpwEXE) $(chpwEXE).o  $(LibFLAGS)
-
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(jsonEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(jsonEXE) $(jsonEXE).o  $(jsonOBJ) $(LibFLAGS)
-
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(marshalEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(marshalEXE) $(marshalEXE).o  $(LibFLAGS)
-
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -DHAS_STDARG -c $(profileEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(profileEXE) $(profileEXE).o  $(profileOBJ) $(LibFLAGS)
-
-	$(CC)  $(CFLAGS) $(INC) $(EXTCFLAGS) -c $(rdreqEXE).c
-	$(CXX) $(CFLAGS) $(LibINC) -o $(rdreqEXE) $(rdreqEXE).o  $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(ndrEXE) $(ndrEXE).o $(ndrOBJ) $(LibFLAGS) 
+	$(CXX) $(CFLAGS) $(LibINC) -o $(pacEXE) $(pacEXE).o $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(chpwEXE) $(chpwEXE).o $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(jsonEXE) $(jsonEXE).o $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(krb5EXE) $(krb5EXE).o  $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(marshalEXE) $(marshalEXE).o $(LibFLAGS)
+	$(CXX) $(CFLAGS) $(LibINC) -o $(profileEXE) $(profileEXE).o $(LibFLAGS)
 
 clean:
-	rm $(ndrEXE) $(pacEXE) $(chpwEXE) $(jsonEXE) $(marshalEXE) $(profileEXE) $(rdreqEXE) *.o
+	rm $(ndrEXE) $(pacEXE) $(chpwEXE) $(jsonEXE)  $(krb5EXE) $(marshalEXE) $(profileEXE) *.o
 
 .PHONY: all clean

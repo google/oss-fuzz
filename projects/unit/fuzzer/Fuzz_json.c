@@ -13,30 +13,45 @@ limitations under the License.
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "k5-int.h"
+#include <nxt_main.h>
+#include <nxt_conf.h>
 
-#define kMinInputLength 10
+#define kMinInputLength 2
 #define kMaxInputLength 5120
 
+static int DoInit = 0;
+
+extern char  **environ;
+
+nxt_module_init_t  nxt_init_modules[1];
+nxt_uint_t         nxt_init_modules_n;
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
-{//src/lib/krb5/krb/t_pac.c
+{//src/test/nxt_clone_test.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
     }
 
-    krb5_context context;
-
-    krb5_init_context(&context);
-    krb5_set_default_realm(context, "WIN2K3.THINKER.LOCAL");
-
-    {
-        krb5_pac pac;
-        krb5_pac_parse(context, Data, Size, &pac);
-
-        krb5_pac_free(context, pac);
+    if(!DoInit){
+        nxt_lib_start("tests", NULL, &environ);
+        DoInit = 1;
     }
 
-    krb5_free_context(context);
+    nxt_mp_t                *mp;
+    nxt_str_t               map_str;
+
+    mp = nxt_mp_create(1024, 128, 256, 32);
+    if (mp == NULL) {
+        return NXT_ERROR;
+    }
+
+    map_str.length = Size;
+    map_str.start = (uint8_t *) Data;
+
+    nxt_conf_json_parse_str(mp,&map_str);
+
+    nxt_mp_destroy(mp);
+
     return 0;
 }
