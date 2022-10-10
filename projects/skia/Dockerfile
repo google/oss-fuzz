@@ -66,6 +66,8 @@ RUN wget -O $SRC/skia_data/api_polyutils_seed_corpus.zip https://storage.googlea
 
 RUN wget -O $SRC/skia_data/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
 
+RUN wget -O $SRC/skia_data/skmeshspecification_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skmeshspecification_seed_corpus.zip
+
 RUN wget -O $SRC/skia_data/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip
 
 RUN wget -O $SRC/skia_data/skp_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skp_seed_corpus.zip
