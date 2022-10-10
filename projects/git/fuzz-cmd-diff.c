@@ -65,6 +65,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   putenv("GIT_COMMITTER_NAME=FUZZ");
   putenv("GIT_COMMITTER_EMAIL=FUZZ@LOCALHOST");
 
+  putenv("GIT_TEMPLATE_DIR=/tmp/");
+
   putenv("GIT_CONFIG_GLOBAL=/tmp/.my_gitconfig");
 	system("rm -rf ./.git");
 	system("rm -rf ./TEMP-*");
@@ -163,10 +165,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		repo_clear(the_repository);
 		return 0;
 	}
-  /*
 	argv[1] = "HEAD";
 	argv[2] = NULL;
-	cmd_diff(2, (const char **)argv, (const char *)"");
+	if (cmd_diff(2, (const char **)argv, (const char *)"")) {
+    repo_clear(the_repository);
+    return 0;
+  }
 	argv[1] = "--cached";
 	argv[2] = NULL;
 	cmd_diff(2, (const char **)argv, (const char *)"");
@@ -185,12 +189,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[1] = "master";
 	argv[2] = "new_branch";
 	argv[3] = NULL;
- 	       cmd_diff(3, (const char **)argv, (const char *)"");
-  */
-	/*
+ 	cmd_diff(3, (const char **)argv, (const char *)"");
+
+        /*
          * Calling git diff-files command
          */
-  /*
 	argv[0] = "diff-files";
 	argv[1] = NULL;
 	cmd_diff_files(1, (const char **)argv, (const char *)"");
@@ -200,11 +203,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
 	cmd_diff_files(3, (const char **)argv, (const char *)"");
-  */
+
         /*
          * Calling git diff-tree command
          */
-  /*
 	argv[0] = "diff-tree";
 	argv[1] = "master";
 	argv[2] = "--";
@@ -216,11 +218,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[3] = "--";
 	argv[4] = NULL;
 	cmd_diff_tree(4, (const char **)argv, (const char *)"");
-  */
+
         /*
          * Calling git diff-index command
          */
-  /*
 	argv[0] = "diff-index";
 	argv[1] = "master";
 	argv[2] = "--";
@@ -235,7 +236,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[4] = "TEMP_4";
 	argv[5] = NULL;
 	cmd_diff_index(5, (const char **)argv, (const char *)"");
-  */
+
 	repo_clear(the_repository);
 	return 0;
 }
