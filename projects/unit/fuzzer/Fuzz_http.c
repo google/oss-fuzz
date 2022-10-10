@@ -17,13 +17,13 @@ limitations under the License.
 
 #define kMinInputLength 10
 #define kMaxInputLength 5120
-
 static int DoInit = 0;
 
-extern char  **environ;
+nxt_lvlhsh_t hash;
 
-nxt_module_init_t  nxt_init_modules[1];
-nxt_uint_t         nxt_init_modules_n;
+extern char  **environ;
+nxt_module_init_t nxt_init_modules[1];
+nxt_uint_t nxt_init_modules_n;
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 {//src/test/nxt_http_parse_test.c
@@ -34,17 +34,14 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if(!DoInit){
         nxt_lib_start("tests", NULL, &environ);
+        nxt_memzero(&hash, sizeof(nxt_lvlhsh_t));
+
+        nxt_http_fields_hash(&hash, nxt_h1p_fields,
+                                nxt_nitems(nxt_h1p_fields));
         DoInit = 1;
     }
 
-    nxt_int_t                   rc;
-    nxt_lvlhsh_t                hash;
-
-    nxt_memzero(&hash, sizeof(nxt_lvlhsh_t));
-
-    rc = nxt_http_fields_hash(&hash, nxt_h1p_fields,
-                              nxt_nitems(nxt_h1p_fields));
-
+    nxt_int_t rc;
     nxt_str_t nxt_http_request;
 
     nxt_http_request.length = Size;
