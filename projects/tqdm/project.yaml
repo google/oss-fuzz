@@ -1,0 +1,11 @@
+homepage: "https://github.com/tqdm/tqdm"
+language: python
+main_repo: "https://github.com/tqdm/tqdm"
+file_github_issue: false
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - "david@adalogics.com"

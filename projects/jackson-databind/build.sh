@@ -23,6 +23,7 @@ cd $SRC/jackson-databind
 
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
+mv $SRC/github-samples/jackson/*.zip $OUT/
 
 # jackson-databind
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"

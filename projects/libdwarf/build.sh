@@ -35,5 +35,5 @@ cp $OUT/fuzz_init_path_seed_corpus.zip $OUT/fuzz_init_binary_seed_corpus.zip
 
 for fuzzName in init_path init_binary; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
-    $SRC/fuzz_${fuzzName}.c -o $OUT/fuzz_${fuzzName} ./src/lib/libdwarf/libdwarf.a
+    $SRC/fuzz_${fuzzName}.c -o $OUT/fuzz_${fuzzName} ./src/lib/libdwarf/libdwarf.a -lz
 done

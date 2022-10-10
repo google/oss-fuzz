@@ -112,9 +112,13 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout c208dcf9c573e3d85990c7dea777646f7fa4961c && \
+    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     chmod 755 oss.sh
+
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -123,14 +127,20 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-# Do precompiles before copying other scripts for better cache efficiency.
-COPY precompile_afl /usr/local/bin/
-RUN precompile_afl
 
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
+RUN cd $SRC && \
+    git clone https://github.com/google/centipede.git && \
+    cd centipede && \
+    git checkout baa82e7189677bb9086beb5d9b5e58018d991607
+
+COPY precompile_centipede /usr/local/bin/
+RUN precompile_centipede
+
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+    compile_centipede \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \

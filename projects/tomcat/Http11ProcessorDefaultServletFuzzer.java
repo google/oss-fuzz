@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import java.io.File;
 import java.io.BufferedReader;
@@ -44,6 +44,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.catalina.LifecycleException;
 
 public class Http11ProcessorDefaultServletFuzzer {
     static Tomcat tomcat = null;
@@ -58,8 +59,8 @@ public class Http11ProcessorDefaultServletFuzzer {
             tomcat.destroy();
             tomcat = null;
             System.gc();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Teardown Error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Teardown Error!");
         }
     }
     
@@ -82,8 +83,8 @@ public class Http11ProcessorDefaultServletFuzzer {
 
         try {
             tomcat.start();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Tomcat Start error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Tomcat Start error!");
         }
 
     }

@@ -21,10 +21,12 @@ make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" \
   LIB_FUZZING_ENGINE="common-main.o $LIB_FUZZING_ENGINE" fuzz-all
 
 FUZZERS="fuzz-pack-headers fuzz-pack-idx fuzz-commit-graph"
-
+#FUZZERS="$FUZZERS fuzz-cmd-status fuzz-cmd-diff fuzz-cmd-version"
+#FUZZERS="$FUZZERS fuzz-command"
+FUZZERS="$FUZZERS fuzz-cmd-diff"
 # copy fuzzers
 for fuzzer in $FUZZERS ; do
-  cp $fuzzer $OUT
+  cp oss-fuzz/$fuzzer $OUT
 done
 
 # build corpora from Git's own packfiles
@@ -42,6 +44,10 @@ zip -j $OUT/fuzz-commit-graph_seed_corpus .git/objects/info/commit-graph
 for fuzzer in $FUZZERS ; do
   cat >$OUT/$fuzzer.options << EOF
 [libfuzzer]
-close_fd_mask = 2
+detect_leaks = 0
 EOF
 done
+
+# Generate existing file for temp git repository
+echo "TEMP1TEMP1TEMP1TEMP1" > $OUT/TEMP_1
+echo "TEMP2TEMP2TEMP2TEMP2" > $OUT/TEMP_2

@@ -3,11 +3,13 @@ fuzzing_engines:
 homepage: https://github.com/googleapis/python-storage
 language: python
 main_repo: https://github.com/googleapis/python-storage
+primary_contact: gorcester@google.com
 sanitizers:
 - address
 - undefined
-primary_contact: "gorcester@google.com"
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
 - arthur.chan@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

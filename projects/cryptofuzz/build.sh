@@ -616,6 +616,10 @@ then
     cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl_seed_corpus.zip
 fi
 
+# Compile Cryptofuzz libgmp mini-gmp module
+cd $SRC/cryptofuzz/modules/libgmp
+make -B -f Makefile-mini-gmp
+
 ##############################################################################
 # Compile BoringSSL (with assembly)
 cd $SRC/boringssl

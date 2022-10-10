@@ -1,7 +1,12 @@
 homepage: "https://www.ruby-lang.org/"
 language: c
-primary_contact: "john@hawthorn.email"
+primary_contact: "yukihiro@gmail.com"
 auto_ccs:
+  - "nobu.nakada@gmail.com"
+  - "shibata.hiroshi@gmail.com"
+  - "kateinoigakukun@gmail.com"
+  - "zn@mbf.nifty.com"
+  - "y.endoh@gmail.com"
+  - "john@hawthorn.email"
   - "kevinbackhouse@github.com"
-  - "mame@ruby-lang.org"
 main_repo: "https://github.com/ruby/ruby"

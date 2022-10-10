@@ -17,6 +17,7 @@ import os
 import sys
 import mock
 import atheris
+import tempfile
 
 import json
 import mock
@@ -25,24 +26,18 @@ from google_auth_oauthlib import helpers
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    config_file = "conf.txt"
+    config_file = tempfile.NamedTemporaryFile(mode="wt")
     try:
         payload = json.loads(fdp.ConsumeUnicodeNoSurrogates(1024))
     except:
         return
-
     if type(payload) is not dict:
         return
-
-    with open(config_file, "w") as f:
-        f.write(json.dumps(payload))
-
-    if not os.path.isfile(config_file):
-        return
+    config_file.write(json.dumps(payload))
 
     try:
         helpers.session_from_client_secrets_file(
-            config_file, scopes=mock.sentinel.scopes
+            config_file.name, scopes=mock.sentinel.scopes
         )
     except ValueError as ve:
         legit_exceptions = [
@@ -55,7 +50,6 @@ def TestOneInput(data):
                 legit = True
         if not legit:
             raise ve
-    os.remove(config_file)
 
 
 def main():

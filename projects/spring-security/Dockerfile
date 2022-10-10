@@ -19,8 +19,11 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN apt update && apt install -y openjdk-17-jdk
 
 RUN git clone --depth 1 https://github.com/spring-projects/spring-security
-RUN git clone --depth 1 https://github.com/spring-projects/spring-ldap spring-ldap
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+COPY oauth2-core/*Fuzzer.java $SRC/
+COPY acl/*Fuzzer.java $SRC/
+COPY *.patch $SRC/
+
 WORKDIR $SRC/spring-security

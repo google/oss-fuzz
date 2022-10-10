@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import org.apache.tomcat.websocket.*;
 
@@ -40,6 +40,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.LifecycleException;
 import org.apache.tomcat.websocket.TesterMessageCountClient.TesterEndpoint;
 import org.apache.tomcat.websocket.TesterMessageCountClient.TesterProgrammaticEndpoint;
 
@@ -57,8 +58,8 @@ public class WsPingPongFuzzer {
             tomcat.destroy();
             tomcat = null;
             System.gc();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Teardown Error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Teardown Error!");
         }
     }
 
@@ -75,8 +76,8 @@ public class WsPingPongFuzzer {
 
         try {
             tomcat.start();
-        } catch (Exception e) {
-            throw new FuzzerSecurityIssueHigh("Tomcat Start error!");
+        } catch (LifecycleException e) {
+            throw new FuzzerSecurityIssueLow("Tomcat Start error!");
         }
 
         wsContainer = ContainerProvider.getWebSocketContainer();
@@ -93,7 +94,7 @@ public class WsPingPongFuzzer {
             wsSession = wsContainer.connectToServer(TesterProgrammaticEndpoint.class, clientEndpointConfig, 
                 new URI("ws://localhost:" + tomcat.getConnector().getLocalPort() + TesterEchoServer.Config.PATH_ASYNC));
         } catch (URISyntaxException | DeploymentException | IOException e) {
-            throw new FuzzerSecurityIssueHigh("wsContainer.connectToServer");
+            return;
         }
         
         CountDownLatch latch = new CountDownLatch(1);
@@ -107,22 +108,19 @@ public class WsPingPongFuzzer {
                 wsSession.getBasicRemote().sendPing(applicationData);
             }
         } catch (IOException e) {
-            throw new FuzzerSecurityIssueHigh("getBasicRemote().sendPing");
         }
 
         try {
             boolean latchResult = handler.getLatch().await(10, TimeUnit.SECONDS);
-            assert latchResult == true : new FuzzerSecurityIssueHigh("latchResult is not true!");
+            assert latchResult == true : new FuzzerSecurityIssueLow("latchResult is not true!");
         } catch (InterruptedException e) {
-            throw new FuzzerSecurityIssueHigh("latchResult");
         }
 
-        assert Arrays.equals(applicationData.array(), (handler.getMessages().peek()).getApplicationData().array()) : new FuzzerSecurityIssueHigh("Not equal!");
+        assert Arrays.equals(applicationData.array(), (handler.getMessages().peek()).getApplicationData().array()) : new FuzzerSecurityIssueLow("Not equal!");
 
         try {
             wsSession.close();
         } catch (IOException e) {
-            throw new FuzzerSecurityIssueHigh("Session close error!");
         }
     }
 

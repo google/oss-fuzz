@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
 ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/fluxcd"
 

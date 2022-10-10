@@ -16,5 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/hyperledger/fabric
-COPY build.sh persistence_fuzzer.go $SRC/
+RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
+COPY build.sh ccprovider_fuzzer.go \
+	 persistence_fuzzer.go \
+	 policydsl_fuzzer.go \
+	 fabenc_fuzzer.go \
+	 msp_fuzzer.go $SRC/
 WORKDIR $SRC/fabric
+
+COPY *.options $SRC/

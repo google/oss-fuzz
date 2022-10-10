@@ -1,0 +1,15 @@
+homepage: "https://gpsd.io"
+language: c
+primary_contact: "gpsd-dev@nongnu.org"
+vendor_ccs:
+  - "gem@rellim.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+main_repo: 'https://gitlab.com/gpsd/gpsd'
