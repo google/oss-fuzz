@@ -12,15 +12,9 @@ limitations under the License.
 
 #include "gpsd_config.h"  /* must be before all includes */
 
-#include <ctype.h>
-#include <errno.h>          // for errno
-#include <fcntl.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>       // for open()
-#include <sys/types.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "gpsd.h"

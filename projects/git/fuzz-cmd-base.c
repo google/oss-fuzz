@@ -159,7 +159,6 @@ int generate_commit_in_branch(char *data, int size, char *branch_name)
 int reset_git_folder(void)
 {
 	char *argv[6];
-
 	argv[0] = "init";
 	argv[1] = NULL;
 	if (cmd_init_db(1, (const char **)argv, (const char *)""))
@@ -167,6 +166,8 @@ int reset_git_folder(void)
 		return -1;
 	}
 
+  /*
+  printf("R2\n");
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.name";
@@ -177,6 +178,7 @@ int reset_git_folder(void)
 		return -2;
 	}
 
+  printf("R3\n");
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.email";
@@ -187,6 +189,7 @@ int reset_git_folder(void)
 		return -3;
 	}
 
+  printf("R4\n");
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "safe.directory";
@@ -196,7 +199,7 @@ int reset_git_folder(void)
 	{
 		return -4;
 	}
-
+  */
 	argv[0] = "add";
 	argv[1] = "TEMP_1";
 	argv[2] = "TEMP_2";

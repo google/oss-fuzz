@@ -12,12 +12,8 @@ limitations under the License.
 
 #include "gpsd_config.h"
 
-#include <getopt.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>              // for struct timespec
 
 #include "gpsd.h"
 #include "gps_json.h"
