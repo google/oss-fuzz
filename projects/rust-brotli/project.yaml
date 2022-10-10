@@ -1,0 +1,11 @@
+homepage: "https://github.com/dropbox/rust-brotli"
+language: rust
+primary_contact: "danielrh@users.sourceforge.net"
+auto_ccs:
+  - "github@nemo157.com"
+  - "vmaturi@asu.edu"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/dropbox/rust-brotli'

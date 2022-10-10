@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
-cd $SRC/mongoose
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz.c -o $OUT/fuzz
-
-# Fuzzer using honggfuzz netdriver.
-#if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
-#then
-#  $CC $LIB_FUZZING_ENGINE $CFLAGS -DMG_ENABLE_LINES=1 \
-#    -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
-#    $LIB_HFND "$HFND_CFLAGS" \
-#    fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
-#    -pthread
-#fi
+## Install build dependencies.
+RUN apt-get update
+RUN git clone --depth 1 https://github.com/dropbox/rust-brotli
+COPY build.sh $SRC/
+COPY /fuzz $SRC/rust-brotli/fuzz

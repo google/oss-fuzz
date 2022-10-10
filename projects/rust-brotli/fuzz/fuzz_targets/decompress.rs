@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2020 Google LLC
+/*
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
+*/
+#![no_main]
+use libfuzzer_sys::fuzz_target;
+use std::io::{Read, Write};
 
-cd $SRC/mongoose
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz.c -o $OUT/fuzz
-
-# Fuzzer using honggfuzz netdriver.
-#if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
-#then
-#  $CC $LIB_FUZZING_ENGINE $CFLAGS -DMG_ENABLE_LINES=1 \
-#    -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
-#    $LIB_HFND "$HFND_CFLAGS" \
-#    fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
-#    -pthread
-#fi
+fuzz_target!(|data: (u16, &[u8])| {
+  let sink = std::io::sink();
+  let mut decompressor = brotli::DecompressorWriter::new(sink, data.0.into());
+  let _ = decompressor.write_all(data.1);
+});

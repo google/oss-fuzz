@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-cd $SRC/mongoose
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz.c -o $OUT/fuzz
-
-# Fuzzer using honggfuzz netdriver.
-#if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
-#then
-#  $CC $LIB_FUZZING_ENGINE $CFLAGS -DMG_ENABLE_LINES=1 \
-#    -DMG_DISABLE_DAV_AUTH -DMG_ENABLE_FAKE_DAVLOCK \
-#    $LIB_HFND "$HFND_CFLAGS" \
-#    fuzz_netdriver_http.c mongoose.c -I. -o $OUT/fuzz_netdriver_http  \
-#    -pthread
-#fi
+################################################################################
+cd $SRC/rust-brotli/fuzz
+cargo fuzz build
+cp $SRC/rust-brotli/fuzz/target/x86_64-unknown-linux-gnu/release/decompress $OUT/
+cp $SRC/rust-brotli/fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/
