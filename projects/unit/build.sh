@@ -19,7 +19,6 @@ make all
 
 pushd fuzzer/
 make
-
 cp Fuzz_http $OUT/Fuzz_http
 cp Fuzz_json $OUT/Fuzz_json
 popd
