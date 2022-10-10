@@ -40,6 +40,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
 
   archive_read_support_filter_all(a);
   archive_read_support_format_all(a);
+  archive_read_support_format_empty(a);
+  archive_read_support_format_raw(a);
 
   Buffer buffer = {buf, len};
   archive_read_open(a, &buffer, NULL, reader_callback, NULL);
