@@ -15,8 +15,10 @@
 #
 ################################################################################
 
+export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
-cp -rL "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+JVM_LD_LIBRARY_PATH="${JAVA_HOME}/lib/server"
 
 git apply $SRC/*.patch
 
