@@ -17,6 +17,8 @@ static int DoInit = 0;
 
 nxt_lvlhsh_t hash;
 
+extern char  **environ;
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {//src/test/nxt_http_parse_test.c
 
@@ -25,6 +27,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     }
 
     if(!DoInit){
+        nxt_lib_start("tests", NULL, &environ);
         nxt_memzero(&hash, sizeof(nxt_lvlhsh_t));
 
         nxt_http_fields_hash(&hash, nxt_h1p_fields,

@@ -15,11 +15,20 @@ limitations under the License.
 #define kMinInputLength 2
 #define kMaxInputLength 5120
 
+static int DoInit = 0;
+
+extern char  **environ;
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {//src/test/nxt_clone_test.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
+    }
+
+    if(!DoInit){
+        nxt_lib_start("tests", NULL, &environ);
+        DoInit = 1;
     }
 
     nxt_mp_t                *mp;
