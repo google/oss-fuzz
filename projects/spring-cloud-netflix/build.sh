@@ -56,7 +56,11 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 MVN_FUZZERS_PREFIX="src/main/java"
 
 for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
-	stripped_path=$(echo ${fuzzer} | sed 's|^.*src/main/java/\(.*\).java$|\1|');
+	# Find our fuzzer inside the maven structure
+	stripped_path=$(echo ${fuzzer} | sed \
+		-e 's|^.*src/main/java/\(.*\).java$|\1|' \
+		-e 's|^.*src/test/java/\(.*\).java$|\1|' \
+	);
 	# The .java suffix was stripped by sed.
 	if (echo ${stripped_path} | grep ".java$"); then
 		continue;
@@ -68,9 +72,12 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
 	
 	echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
+# We need java-17.
+apt-get update && apt-get install -y openjdk-17-jdk-headless
+
 this_dir=\$(dirname \"\$0\")
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+JAVA_HOME=\"/usr/lib/jvm/java-17-openjdk-amd64\" \
+LD_LIBRARY_PATH=\"\$JAVA_HOME/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \
 --target_class=${fuzzer_classname} \
