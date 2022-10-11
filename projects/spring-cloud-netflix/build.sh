@@ -15,7 +15,10 @@
 #
 ################################################################################
 
-MVN_FLAGS="-Dmaven.compiler.source=17.0 -Dmaven.compiler.target=17.0 -DskipTests"
+apt-get update && apt-get install -y openjdk-17-jdk-headless
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+
+MVN_FLAGS="-Dmaven.compiler.source=17 -Dmaven.compiler.target=17 -DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="spring-cloud-netflix"
 

@@ -24,6 +24,7 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone https://github.com/spring-cloud/spring-cloud-netflix.git
 RUN apt-get update && apt-get install -y openjdk-17-jdk-headless
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/
