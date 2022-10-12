@@ -23,6 +23,7 @@ rm -rf maven.zip
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone https://github.com/spring-cloud/spring-cloud-netflix.git
+RUN cd spring-cloud-netflix && git checkout 5ec430efb
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/
