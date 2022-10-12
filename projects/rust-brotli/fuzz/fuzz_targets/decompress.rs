@@ -1,3 +1,4 @@
+/*
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+*/
+#![no_main]
+use libfuzzer_sys::fuzz_target;
+use std::io::{Read, Write};
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
-COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell
+fuzz_target!(|data: (u16, &[u8])| {
+  let sink = std::io::sink();
+  let mut decompressor = brotli::DecompressorWriter::new(sink, data.0.into());
+  let _ = decompressor.write_all(data.1);
+});

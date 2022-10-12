@@ -12,11 +12,12 @@ limitations under the License.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <k5-json.h>
 
 #define kMinInputLength 10
-#define kMaxInputLength 5120
+#define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 {//src/util/support/t_json.c
@@ -25,9 +26,16 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         return 0;
     }
 
-    k5_json_value v;
+//Add Null byte
+    uint8_t *DataFx;
+    size_t SizeFx = Size+1;
+    DataFx = (uint8_t *)calloc(SizeFx,sizeof(uint8_t));
+    memcpy((void *)DataFx,(void *)Data,Size);
 
-    k5_json_decode((char *)Data, &v);
+    k5_json_value v;
+    k5_json_decode((char *)DataFx, &v);
     k5_json_release(v);
+
+    free(DataFx);
     return 0;
 }

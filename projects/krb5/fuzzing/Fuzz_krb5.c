@@ -16,27 +16,26 @@ limitations under the License.
 #include "k5-int.h"
 
 #define kMinInputLength 10
-#define kMaxInputLength 5120
+#define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
-{//src/lib/krb5/krb/t_pac.c
+{//src/kdc/t_ndr.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
     }
 
+    krb5_data data_in;
+    krb5_error_code ret;
+    krb5_ticket *ticket;
     krb5_context context;
 
+    data_in = make_data((void *)Data, Size);
+
     krb5_init_context(&context);
-    krb5_set_default_realm(context, "WIN2K3.THINKER.LOCAL");
-
-    {
-        krb5_pac pac;
-        krb5_pac_parse(context, Data, Size, &pac);
-
-        krb5_pac_free(context, pac);
-    }
-
+    ret = krb5_decode_ticket(&data_in, &ticket);
+    krb5_free_ticket(context, ticket);
     krb5_free_context(context);
-    return 0;
+
+    return ret;
 }
