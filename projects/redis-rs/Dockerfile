@@ -14,8 +14,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
-## Install build dependencies.
-RUN apt-get update
 RUN git clone --depth 1 https://github.com/redis-rs/redis-rs.git
 COPY build.sh $SRC/
 COPY /fuzz $SRC/redis-rs/fuzz
