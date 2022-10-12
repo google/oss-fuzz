@@ -5,7 +5,9 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+primary_contact: "pwebb@vmware.com"
 vendor_ccs:
+  - "wilkinsona@vmware.com"
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
