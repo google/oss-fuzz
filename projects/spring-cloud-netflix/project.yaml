@@ -1,6 +1,6 @@
-homepage: "https://openjdk.org/projects/code-tools/jmh/"
+homepage: "https://cloud.spring.io/spring-cloud-netflix/reference/html/"
 language: jvm
-main_repo: "https://github.com/openjdk/jmh"
+main_repo: "https://github.com/spring-cloud/spring-cloud-netflix.git"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
