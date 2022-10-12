@@ -1,10 +1,22 @@
 auto_ccs:
-- meumertzheim@code-intelligence.com
-- acozzette@google.com
+- buganizer-system+1260285@google.com
+- jgm@google.com
 - jgrimes@google.com
 - pzd@google.com
+- acozzette@google.com
+- deannagarcia@google.com
+- gberg@google.com
+- haberman@google.com
+- jieluo@google.com
+- jorg@google.com
+- mcyoung@google.com
+- mkruskal@google.com
+- salo@google.com
 - sandyzhang@google.com
-- jgm@google.com
+- sbenza@google.com
+- shaod@google.com
+- theodorerose@google.com
+- meumertzheim@code-intelligence.com
 - norbert.schneider@code-intelligence.com
 - hlin@code-intelligence.com
 fuzzing_engines:
