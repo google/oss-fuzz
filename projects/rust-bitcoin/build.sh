@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/rust-bitcoin
-cargo afl build --features=afl --release
+cd $SRC/rust-bitcoin/fuzz
+bash travis-fuzz.sh
 cp $SRC/rust-bitcoin/fuzz/target/release/outpoint_string $OUT/
 cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_address $OUT/
