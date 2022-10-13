@@ -14,6 +14,6 @@
 #
 ################################################################################
 cd $SRC/rust-bitcoin/fuzz
-bash travis-fuzz.sh
+RUSTFLAGS="-Znew-llvm-pass-manager=no" HFUZZ_RUN_ARGS="--run_time $run_time --exit_upon_crash" cargo hfuzz build --features=honggfuzz -release
 cp $SRC/rust-bitcoin/fuzz/target/release/outpoint_string $OUT/
 cp $SRC/rust-bitcoin/fuzz/target/release/deserialize_address $OUT/
