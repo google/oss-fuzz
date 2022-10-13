@@ -25,7 +25,7 @@ export PATH=$PATH:$SRC/goroot/bin/
 
 compile_package () {
     pkg=$1
-    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x/`
+    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x/'`
     args=`cat $SRC/ngolo-fuzzing/std/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
     $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
