@@ -175,8 +175,8 @@ def find_centipede_auxiliary_directory(directory):
 
   # This should never happen, returns an empty string to indicate an error.
   print(
-      'ERROR: Unable to identify Centipede\'s sanitized target directory from',
-      os.listdir(directory))
+      'ERROR: Unable to identify Centipede\'s sanitized target directory '
+      f'{sanitized_binary_dir_path} in {os.listdir(directory)}')
   return ''
 
 
@@ -187,13 +187,13 @@ def centipede_needs_auxiliaries():
   # 1. Building sanitized binaries with helper.py (i.e., local or GitHub CI):
   # Unsanitized ones will be built automatically into the same docker container.
   # Script bad_build_check tests both
-  # a) if main fuzz targets can run with the auxiliaries, and
-  # b) if the auxiliaries are built with the correct sanitizers.
+  # a) If main fuzz targets can run with the auxiliaries, and
+  # b) If the auxiliaries are built with the correct sanitizers.
   # 2. In Trial build and production build:
   # Two kinds of binaries will be in separated buckets / docker containers.
   # Script bad_build_check tests either
-  # a) if the unsanitized binaries can run without the sanitized ones, or
-  # b) if the sanitized binaries are built with the correct sanitizers.
+  # a) If the unsanitized binaries can run without the sanitized ones, or
+  # b) If the sanitized binaries are built with the correct sanitizers.
   return (os.getenv('FUZZING_ENGINE') == 'centipede' and
           os.getenv('SANITIZER') != 'none' and os.getenv('HELPER') == 'True')
 
@@ -220,7 +220,7 @@ def find_auxiliary_targets(directory, num_expected_targets):
   return find_fuzz_targets(auxiliary_directory)
 
 
-def organise_fuzz_targets(directory):
+def organize_fuzz_targets(directory):
   """Organises fuzz targets in to a list of (main_fuzz_target, auxiliary_target)
   tuples for bad_build_check."""
 
@@ -245,7 +245,7 @@ def organise_fuzz_targets(directory):
 def test_all(out, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
-  fuzz_targets = organise_fuzz_targets(out)
+  fuzz_targets = organize_fuzz_targets(out)
   if not fuzz_targets:
     print('ERROR: No fuzz targets found.')
     return False
