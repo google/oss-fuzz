@@ -221,7 +221,7 @@ def test_all(out, allowed_broken_targets_percentage):
     return False
 
   pool = multiprocessing.Pool()
-  bad_build_results = pool.starmap(do_bad_build_check, fuzz_targets)
+  bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
   pool.close()
   pool.join()
   broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
@@ -234,7 +234,7 @@ def test_all(out, allowed_broken_targets_percentage):
   retry_targets = []
   for broken_target, result in broken_targets:
     retry_targets.append(broken_target)
-  bad_build_results = pool.starmap(do_bad_build_check, retry_targets)
+  bad_build_results = pool.map(do_bad_build_check, retry_targets)
   pool.close()
   pool.join()
   broken_targets = get_broken_fuzz_targets(bad_build_results, broken_targets)
