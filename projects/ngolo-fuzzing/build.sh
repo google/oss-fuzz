@@ -119,7 +119,7 @@ find . -type d | while read pkg; do
     fi
 
 done
-cd-
+cd -
 done
 
 echo "Failed packages:"
