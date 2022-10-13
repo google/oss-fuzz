@@ -1,7 +1,7 @@
 package cel
 
 func FuzzCompile(data []byte) int {
-	env, err := NewEnv()
+	env, err := getCELFuzzEnv()
 	if err != nil {
 		panic("impossible to create env")
 	}

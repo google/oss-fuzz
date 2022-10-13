@@ -57,6 +57,8 @@ function compile_fuzzers() {
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzFloatSetString fuzz_float_set_string$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigGobdecode fuzz_big_gobdecode$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer$version

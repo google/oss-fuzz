@@ -1,0 +1,12 @@
+homepage: "https://github.com/bluejekyll/trust-dns"
+language: rust
+main_repo: "https://github.com/bluejekyll/trust-dns"
+primary_contact: "bluejekyll@gmail.com"
+auto_ccs:
+  - djc.ochtman@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com

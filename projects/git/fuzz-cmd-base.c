@@ -104,9 +104,9 @@ void generate_random_file(char *data, int size)
  * This function provides a shorthand for generate commit in master
  * branch.
  */
-void generate_commit(char *data, int size)
+int generate_commit(char *data, int size)
 {
-	generate_commit_in_branch(data, size, "master");
+	return generate_commit_in_branch(data, size, "master");
 }
 
 /*
@@ -114,14 +114,14 @@ void generate_commit(char *data, int size)
  * worktree with randomization to provide a target for the fuzzing
  * of git command under specific branch.
  */
-void generate_commit_in_branch(char *data, int size, char *branch_name)
+int generate_commit_in_branch(char *data, int size, char *branch_name)
 {
 	char *argv[4];
 	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
 
 	if (!data_chunk)
 	{
-		return;
+		return -1;
 	}
 
 	memcpy(data_chunk, data, size * 2);
@@ -132,12 +132,20 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 	argv[0] = "add";
 	argv[1] = "TEMP-*-TEMP";
 	argv[2] = NULL;
-	cmd_add(2, (const char **)argv, (const char *)"");
+	if (cmd_add(2, (const char **)argv, (const char *)""))
+	{
+		return -1;
+	}
 
 	argv[0] = "commit";
 	argv[1] = "-m\"New Commit\"";
 	argv[2] = NULL;
-	cmd_commit(2, (const char **)argv, (const char *)"");
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -2;
+
+	}
+  	return 0;
 }
 
 /*
@@ -151,35 +159,63 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 int reset_git_folder(void)
 {
 	char *argv[6];
-
 	argv[0] = "init";
 	argv[1] = NULL;
-	cmd_init_db(1, (const char **)argv, (const char *)"");
+	if (cmd_init_db(1, (const char **)argv, (const char *)""))
+	{
+		return -1;
+	}
 
+  /*
+  printf("R2\n");
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.name";
 	argv[3] = "\"FUZZ\"";
 	argv[4] = NULL;
-	cmd_config(4, (const char **)argv, (const char *)"");
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -2;
+	}
 
+  printf("R3\n");
 	argv[0] = "config";
 	argv[1] = "--global";
 	argv[2] = "user.email";
 	argv[3] = "\"FUZZ@LOCALHOST\"";
 	argv[4] = NULL;
-	cmd_config(4, (const char **)argv, (const char *)"");
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -3;
+	}
 
+  printf("R4\n");
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "safe.directory";
+	argv[3] = "\"*\"";
+	argv[4] = NULL;
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -4;
+	}
+  */
 	argv[0] = "add";
 	argv[1] = "TEMP_1";
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
-	cmd_add(3, (const char **)argv, (const char *)"");
+	if (cmd_add(3, (const char **)argv, (const char *)""))
+	{
+		return -5;
+	}
 
 	argv[0] = "commit";
 	argv[1] = "-m\"First Commit\"";
 	argv[2] = NULL;
-	cmd_commit(2, (const char **)argv, (const char *)"");
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -6;
+	}
 
 	return 0;
 }
