@@ -10,5 +10,5 @@ auto_ccs:
 sanitizers:
   - address
 fuzzing_engines:
-  - afl
+  - honggfuzz
 main_repo: 'https://github.com/cloud-hypervisor/cloud-hypervisor'
