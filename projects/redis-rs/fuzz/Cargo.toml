@@ -11,20 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
+[package]
+name = "redis-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+[package.metadata]
+cargo-fuzz = true
 
-RUN apt update && apt install -y openjdk-17-jdk
+[dependencies]
+libfuzzer-sys = "0.4"
 
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
+[dependencies.redis]
+path = "../redis"
 
-COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
 
-WORKDIR spring-shell
+[[bin]]
+name = "parser"
+path = "fuzz_targets/parser.rs"
+test = false
+doc = false

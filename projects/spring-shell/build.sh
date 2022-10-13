@@ -15,8 +15,10 @@
 #
 ################################################################################
 
+export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
-cp -rL "/usr/lib/jvm/java-17-openjdk-amd64/." "$JAVA_HOME" || true
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+JVM_LD_LIBRARY_PATH="${JAVA_HOME}/lib/server"
 
 CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
@@ -56,7 +58,6 @@ function create_fuzz_targets() {
     \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
     --cp=$RUNTIME_CLASSPATH \
     --target_class=$fuzzer_basename \
-    --instrumentation_excludes=org.aspectj.weaver.** \
     --jvm_args=\"-Xmx2048m\" \
     \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
