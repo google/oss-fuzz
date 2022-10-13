@@ -187,7 +187,7 @@ def centipede_needs_auxiliaries():
   # a) If the unsanitized binaries can run without the sanitized ones, or
   # b) If the sanitized binaries are built with the correct sanitizers.
   return (os.getenv('FUZZING_ENGINE') == 'centipede' and
-          os.getenv('SANITIZER') != 'none' and os.getenv('HELPER') == 'True')
+          os.getenv('SANITIZER') != 'none' and os.getenv('HELPER'))
 
 
 def find_centipede_auxiliary(main_fuzz_target_path):
