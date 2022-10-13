@@ -440,7 +440,8 @@ function main {
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
-  if [[ "$FUZZING_ENGINE" == centipede && "$SANITIZER" != none ]]; then
+  if [[ "$FUZZING_ENGINE" == centipede \
+        && "$SANITIZER" != none && "${HELPER:-}" == True ]]; then
     check_mixed_sanitizers $AUXILIARY_FUZZER
    else
     check_mixed_sanitizers $FUZZER
