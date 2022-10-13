@@ -114,7 +114,8 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
-  elif [[ "$FUZZING_ENGINE" == centipede && ("$HELPER" || "$SANITIZER" != none ) ]]; then
+  elif [[ "$FUZZING_ENGINE" == centipede \
+          && ("${HELPER:-}" == True || "$SANITIZER" != none ) ]]; then
     # Performs run test on unsanitized binaries with auxiliary sanitized
     # binaries if they are built with helper.py.
     # Performs run test on unsanitized binaries without auxiliary sanitized
@@ -426,7 +427,7 @@ function check_architecture {
 
 function main {
   local FUZZER=$1
-  local AUXILIARY_FUZZER=$2
+  local AUXILIARY_FUZZER=${2:-}
   local checks_failed=0
   local result=0
 
@@ -464,7 +465,7 @@ fi
 
 # Fuzz target path.
 FUZZER=$1
-AUXILIARY_FUZZER=${2:-'auxiliary_not_needed'}
+AUXILIARY_FUZZER=${2:-}
 
 main $FUZZER $AUXILIARY_FUZZER
 exit $?
