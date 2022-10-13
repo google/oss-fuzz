@@ -98,13 +98,21 @@ def find_fuzz_targets(directory):
   return fuzz_targets
 
 
-def do_bad_build_check(fuzz_target, auxiliary_fuzz_target):
+def do_bad_build_check(fuzz_target):
   """Runs bad_build_check on |fuzz_target|. Returns a
   Subprocess.ProcessResult."""
   print('INFO: performing bad build checks for', fuzz_target)
   if centipede_needs_auxiliaries():
-    print('INFO: Using auxiliary_fuzz_target', auxiliary_fuzz_target)
-  command = ['bad_build_check', fuzz_target, auxiliary_fuzz_target]
+    print('INFO: Finding Centipede\'s auxiliary for target', fuzz_target)
+    auxiliary_path = find_centipede_auxiliary(fuzz_target)
+    if not auxiliary_path:
+      return False
+    print('INFO: Using auxiliary binary:', auxiliary_path)
+    auxiliary = [auxiliary_path]
+  else:
+    auxiliary = []
+
+  command = ['bad_build_check', fuzz_target] + auxiliary
   return subprocess.run(command,
                         stderr=subprocess.PIPE,
                         stdout=subprocess.PIPE,
@@ -164,22 +172,6 @@ def test_all_outside_out(allowed_broken_targets_percentage):
     return test_all(out, allowed_broken_targets_percentage)
 
 
-def find_centipede_auxiliary_directory(directory):
-  """Finds the directory that contains sanitized targets for Centipede."""
-  # The sanitized target binaries are always in a child directory named
-  # '__centipede_${SANITIZER}'.
-  sanitized_binary_dir_path = os.path.join(
-      directory, f'__centipede_{os.getenv("SANITIZER")}')
-  if os.path.isdir(sanitized_binary_dir_path):
-    return sanitized_binary_dir_path
-
-  # This should never happen, returns an empty string to indicate an error.
-  print(
-      'ERROR: Unable to identify Centipede\'s sanitized target directory '
-      f'{sanitized_binary_dir_path} in {os.listdir(directory)}')
-  return ''
-
-
 def centipede_needs_auxiliaries():
   """Checks if auxiliaries are needed for Centipede."""
   # Centipede always requires unsanitized binaries as the main fuzz targets,
@@ -198,54 +190,32 @@ def centipede_needs_auxiliaries():
           os.getenv('SANITIZER') != 'none' and os.getenv('HELPER') == 'True')
 
 
-def find_auxiliary_targets(directory, num_expected_targets):
-  """Finds the auxiliary targets for bad_build_check."""
-  # Default directory value, indicating auxiliaries are not needed.
-  auxiliary_directory = None
-  if centipede_needs_auxiliaries():
-    print('INFO: Finding Centipede\'s auxiliary directory in',
-          os.listdir(directory))
-    auxiliary_directory = find_centipede_auxiliary_directory(directory)
+def find_centipede_auxiliary(main_fuzz_target_path):
+  """Finds the sanitized binary path that corresponds to |main_fuzz_target| for
+  bad_build_check."""
+  target_dir, target_name = os.path.split(main_fuzz_target_path)
+  sanitized_binary_dir = os.path.join(target_dir,
+                                      f'__centipede_{os.getenv("SANITIZER")}')
+  sanitized_binary_path = os.path.join(sanitized_binary_dir, target_name)
 
-  if auxiliary_directory is None:
-    # Auxiliary directory is not needed, returns the default value.
-    print('INFO: No Auxiliary fuzz target needed.')
-    return [''] * num_expected_targets
+  if os.path.isfile(sanitized_binary_path):
+    return sanitized_binary_path
 
-  if auxiliary_directory == '':
-    print('ERROR: Auxiliary directory is needed but not found.')
-    return []
-
-  # Auxiliary directory is needed and found, finds the targets in it.
-  return find_fuzz_targets(auxiliary_directory)
-
-
-def organize_fuzz_targets(directory):
-  """Organises fuzz targets in to a list of (main_fuzz_target, auxiliary_target)
-  tuples for bad_build_check."""
-
-  main_fuzz_targets = find_fuzz_targets(directory)
-  if not main_fuzz_targets:
-    print('ERROR: No main fuzz targets found.')
-    return []
-
-  auxiliary_targets = find_auxiliary_targets(directory, len(main_fuzz_targets))
-  if not auxiliary_targets:
-    print('ERROR: No auxiliary targets found.')
-    return []
-  if len(main_fuzz_targets) != len(auxiliary_targets):
-    print('ERROR: Invalid number of auxiliary targets found: expected'
-          f'{len(main_fuzz_targets)}, got {len(auxiliary_targets)} instead')
-    return []
-
-  fuzz_targets = zip(main_fuzz_targets, auxiliary_targets)
-  return fuzz_targets
+  # Neither of the following two should ever happen, returns None to indicate
+  # an error.
+  if os.path.isdir(sanitized_binary_dir):
+    print('ERROR: Unable to identify Centipede\'s sanitized target'
+          f'{sanitized_binary_path} in {os.listdir(sanitized_binary_dir)}')
+  else:
+    print('ERROR: Unable to identify Centipede\'s sanitized target directory'
+          f'{sanitized_binary_dir} in {os.listdir(target_dir)}')
+  return None
 
 
 def test_all(out, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
-  fuzz_targets = organize_fuzz_targets(out)
+  fuzz_targets = find_fuzz_targets(out)
   if not fuzz_targets:
     print('ERROR: No fuzz targets found.')
     return False
