@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,5 @@
 #
 ################################################################################
 
-cd gpac
-./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
-make
-
-cp $SRC/testsuite/oss-fuzzers/fuzz_parse.c .
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_parse.c -o $OUT/fuzz_parse \
-    -I./include -I./ ./bin/gcc/libgpac_static.a \
-    -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H 
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/

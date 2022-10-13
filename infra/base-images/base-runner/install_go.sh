@@ -26,7 +26,8 @@ case $(uname -m) in
       rm $SRC/installer_linux
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
-      cd $GOPATH/gocoverage && go install ./...
+      cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
+      cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
       ;;
     aarch64)
       # Don't install go because installer is not provided.

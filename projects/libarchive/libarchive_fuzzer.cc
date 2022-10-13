@@ -43,7 +43,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   archive_read_support_format_empty(a);
   archive_read_support_format_raw(a);
 
-  archive_read_set_options(a, "zip:ignorecrc32");
+  if (ARCHIVE_OK != archive_read_set_options(a, "zip:ignorecrc32,tar:read_concatenated_archives,tar:mac-ext")) {
+    return 0;
+  }
 
   Buffer buffer = {buf, len};
   archive_read_open(a, &buffer, NULL, reader_callback, NULL);

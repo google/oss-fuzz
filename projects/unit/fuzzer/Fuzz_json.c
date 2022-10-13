@@ -9,10 +9,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
 #include <nxt_main.h>
 #include <nxt_conf.h>
 
@@ -23,10 +19,7 @@ static int DoInit = 0;
 
 extern char  **environ;
 
-nxt_module_init_t  nxt_init_modules[1];
-nxt_uint_t         nxt_init_modules_n;
-
-extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
+extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {//src/test/nxt_clone_test.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
@@ -42,9 +35,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     nxt_str_t               map_str;
 
     mp = nxt_mp_create(1024, 128, 256, 32);
-    if (mp == NULL) {
-        return NXT_ERROR;
-    }
 
     map_str.length = Size;
     map_str.start = (uint8_t *) Data;
