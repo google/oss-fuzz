@@ -84,12 +84,12 @@ find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
         continue
     fi
     if compile_package $pkg; then
-        echo $pkg >> ok.txt
+        echo $pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
         # hard fail if the package is meant to be supported
         grep ^$pkg$ $SRC/ngolo-fuzzing/std/supported.txt && exit 1
-        echo $pkg >> ko.txt
+        echo $pkg >> $SRC/ko.txt
     fi
 
 done
@@ -112,10 +112,10 @@ find . -type d | while read pkg; do
         continue
     fi
     if compile_package $pkg; then
-        echo $pkg >> ok.txt
+        echo $pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
-        echo $pkg >> ko.txt
+        echo $pkg >> $SRC/ko.txt
     fi
 
 done
@@ -123,7 +123,7 @@ cd -
 done
 
 echo "Failed packages:"
-cat ko.txt
+cat $SRC/ko.txt
 
 echo "Succesful packages:"
-cat ok.txt
+cat $SRC/ok.txt
