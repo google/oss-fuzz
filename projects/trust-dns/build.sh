@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
-COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/

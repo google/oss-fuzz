@@ -1,3 +1,4 @@
+/*
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,20 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
+*/
+#![no_main]
+use libfuzzer_sys::fuzz_target;
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+use redis::parse_redis_value;
 
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
-COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell
+fuzz_target!(|data: &[u8]| {
+    let _ = parse_redis_value(data);
+});

@@ -14,17 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/bluejekyll/trust-dns trust-dns
+WORKDIR trust-dns
 COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell

@@ -11,20 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-shell.git spring-shell     # or use other version control
-COPY add-shadow-*.patch $SRC/
-RUN  cd spring-shell && (for i in ${SRC}/add-shadow-*.patch; do tr -d '\015' < $i | git apply; done )
-
+RUN git clone --depth 1 https://github.com/redis-rs/redis-rs.git
 COPY build.sh $SRC/
-COPY core $SRC/core/
-COPY standard $SRC/standard/
-COPY table $SRC/table/
-
-WORKDIR spring-shell
+COPY /fuzz $SRC/redis-rs/fuzz
