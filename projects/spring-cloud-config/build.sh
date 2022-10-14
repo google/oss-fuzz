@@ -72,8 +72,11 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
 	
 	echo "#!/bin/sh
+# LLVMFuzzerTestOneInput Magic String required for infra/base-image/test_all.py. DO NOT REMOVE
+
 # We need java-17.
 apt-get update && apt-get install -y openjdk-17-jdk-headless
+
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"/usr/lib/jvm/java-17-openjdk-amd64\" \
 LD_LIBRARY_PATH=\"\$JAVA_HOME/lib/server\":\$this_dir \
