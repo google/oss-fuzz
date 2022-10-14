@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cargo fuzz build -O
+cargo fuzz build --features simd-accel -O
 fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
 cp $fuzz_release/fuzz_encodings $OUT/
 cp $fuzz_release/fuzz_mem $OUT/
