@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "archive.h"
+#include "archive_entry.h"
 
 struct Buffer {
   const uint8_t *buf;
@@ -58,6 +59,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
       break;
     if (ret == ARCHIVE_RETRY)
       continue;
+
+    (void)archive_entry_pathname(entry);
+    (void)archive_entry_pathname_utf8(entry);
+    (void)archive_entry_pathname_w(entry);
+
+    (void)archive_entry_atime(entry);
+    (void)archive_entry_birthtime(entry);
+    (void)archive_entry_ctime(entry);
+    (void)archive_entry_dev(entry);
+    (void)archive_entry_digest(entry, ARCHIVE_ENTRY_DIGEST_SHA1);
+    (void)archive_entry_filetype(entry);
+    (void)archive_entry_is_encrypted(entry);
+    (void)archive_entry_mode(entry);
+    (void)archive_entry_size(entry);
+    (void)archive_entry_uid(entry);
+    (void)archive_entry_mtime(entry);
+
     while ((r = archive_read_data(a, data_buffer.data(),
             data_buffer.size())) > 0)
       ;
