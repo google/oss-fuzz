@@ -10,6 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <ftw.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "builtin.h"
@@ -65,7 +66,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   putenv("GIT_COMMITTER_NAME=FUZZ");
   putenv("GIT_COMMITTER_EMAIL=FUZZ@LOCALHOST");
 
-  putenv("GIT_TEMPLATE_DIR=/tmp/");
+  /*
+   * Create an empty and accessible template directory.
+   */
+  char template_directory[250];
+  snprintf(template_directory, 250, "/tmp/templatedir-%d", getpid());
+  struct stat stats;
+  stat(template_directory, &stats);
+  if (S_ISDIR(stats.st_mode) == 0) {
+    mkdir(template_directory, 0777);
+  }
+  char template_directory_env[350];
+  snprintf(template_directory_env, 350,
+           "GIT_TEMPLATE_DIR=%s", template_directory);
+  putenv(template_directory_env);
 
   putenv("GIT_CONFIG_GLOBAL=/tmp/.my_gitconfig");
 	system("rm -rf ./.git");
