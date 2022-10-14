@@ -1,0 +1,74 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+workspace(name = "fuzztest_codelab")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+################################################################################
+# Transitive dependencies (not directly required by the codelab)
+#
+# TODO(b/245360431): Add a function for loading transitive dependencies.
+################################################################################
+
+# Required by com_google_absl.
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+    ],
+)
+
+# Required by com_google_fuzztest.
+http_archive(
+    name = "com_google_absl",
+    sha256 = "da79745569dd8767ebd8f738fd3eec55ccd23e45b0e680a7b5b6bab7624de77b",
+    strip_prefix = "abseil-cpp-6acb60c161f1203e6eca929b87f2041da7714bfe",
+    url = "https://github.com/abseil/abseil-cpp/archive/6acb60c161f1203e6eca929b87f2041da7714bfe.tar.gz",
+)
+
+# Required by com_google_fuzztest.
+http_archive(
+    name = "com_googlesource_code_re2",
+    sha256 = "f89c61410a072e5cbcf8c27e3a778da7d6fd2f2b5b1445cd4f4508bee946ab0f",
+    strip_prefix = "re2-2022-06-01",
+    url = "https://github.com/google/re2/archive/refs/tags/2022-06-01.tar.gz",
+)
+
+################################################################################
+# Direct dependencies
+################################################################################
+
+http_archive(
+    name = "com_google_googletest",
+    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
+    strip_prefix = "googletest-release-1.12.1",
+    url = "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
+)
+
+# TODO(fniksic): Replace this with an http_archive after we release FuzzTest.
+FUZZTEST_COMMIT = "62cf00c7341eb05d128d0a3cbce79ac31dbda032"
+
+#http_archive(
+#    name = "com_google_fuzztest",
+#    strip_prefix = "fuzztest-" + FUZZTEST_COMMIT,
+#    url = "https://github.com/google/fuzztest/archive/" + FUZZTEST_COMMIT + ".zip",
+#)
+
+local_repository(
+    name = "com_google_fuzztest",
+    path = "..",
+)

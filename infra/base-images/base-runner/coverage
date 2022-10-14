@@ -91,7 +91,7 @@ function run_fuzz_target {
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
   local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
-
+  echo "E1 $target"
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
@@ -100,26 +100,45 @@ function run_fuzz_target {
   fi
 
   rm -rf $corpus_dummy
+  echo "E2 $target"
 
   if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce profile dumps.
     return 0
   fi
 
+  echo "E3 $target"
   # If necessary translate to latest profraw version.
-  profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
+  if [[ $target == *"GFUZZTEST"* ]]; then
+    echo "--- $OUT/$($target//_GFUZZTEST_/ })"
+    sp=(${target//_GFUZZTEST_/ })
+    echo "-2"
+    echo "TT: ${sp[0]}"
+    echo "-3"
+    #real_target="${sp[0]}"
+    target="${sp[0]}"
+    echo "real target $target"
+    profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
+  else
+    profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
+  fi
+  echo "E4 $target"
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
   rm $profraw_file_mask
 
+  echo "COVE5 $target"
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
 
+  echo "COVE6"
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
+  echo "COVE7"
   # For introspector.
-  llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
+  #llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
+  echo "COVE8"
 }
 
 function run_go_fuzz_target {
@@ -212,20 +231,25 @@ function generate_html {
   local shared_libraries=$2
   local objects=$3
   local output_dir=$4
-
+  echo "G-1"
   rm -rf "$output_dir"
   mkdir -p "$output_dir/$PLATFORM"
 
+  echo "G-2"
   local llvm_cov_args="-instr-profile=$profdata $objects $LLVM_COV_COMMON_ARGS"
   llvm-cov show -format=html -output-dir=$output_dir -Xdemangler rcfilt $llvm_cov_args
 
+  echo "G-3"
   # Export coverage summary in JSON format.
   local summary_file=$output_dir/$PLATFORM/summary.json
 
+  echo "G-4"
   llvm-cov export -summary-only $llvm_cov_args > $summary_file
+  echo "G-5 $output_dir"
 
-  coverage_helper -v post_process -src-root-dir=/ -summary-file=$summary_file \
-      -output-dir=$output_dir $PATH_EQUIVALENCE_ARGS
+  #coverage_helper -v post_process -src-root-dir=/ -summary-file=$summary_file \
+  #    -output-dir=$output_dir $PATH_EQUIVALENCE_ARGS
+  echo "G-6"
 }
 
 export SYSGOPATH=$GOPATH
@@ -257,7 +281,16 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
-    run_fuzz_target $fuzz_target &
+    run_fuzz_target $fuzz_target
+    if [[ $fuzz_target == *"GFUZZTEST"* ]]; then
+      echo "--- $OUT/$($target//_GFUZZTEST_/ })"
+      sp=(${fuzz_target//_GFUZZTEST_/ })
+      echo "-2"
+      echo "TT: ${sp[0]}"
+      echo "-3"
+      #real_target="${sp[0]}"
+      fuzz_target="${sp[0]}"
+    fi
 
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
@@ -280,7 +313,7 @@ wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
-  gotoolcover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
   $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.cpu.prof
@@ -313,6 +346,7 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   mv htmlcov/* $REPORT_PLATFORM_DIR/
 
   # Create an empty summary file for now
+  echo "objects: $objects"
   echo "{}" >> $SUMMARY_FILE
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
@@ -362,18 +396,34 @@ else
   set -e
 
   # Merge all dumps from the individual targets.
+  echo "PP-1"
   rm -f $PROFILE_FILE
   llvm-profdata merge -sparse $DUMPS_DIR/*.profdata -o $PROFILE_FILE
+  echo "PP-1.1"
+  echo "objects: $objects"
 
   # TODO(mmoroz): add script from Chromium for rendering directory view reports.
   # The first path in $objects does not have -object= prefix (llvm-cov format).
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
+  echo "PP-1.2"
   objects="$objects $shared_libraries"
+  echo "PP-2"
 
   generate_html $PROFILE_FILE "$shared_libraries" "$objects" "$REPORT_ROOT_DIR"
+  echo "PP-3"
 
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
+    if [[ $fuzz_target == *"GFUZZTEST"* ]]; then
+      #echo "--- $OUT/$($fuzz_target//_GFUZZTEST_/ })"
+      sp=(${fuzz_target//_GFUZZTEST_/ })
+      echo "-2"
+      echo "TT: ${sp[0]}"
+      echo "-3"
+      #real_target="${sp[0]}"
+      fuzz_target="${sp[0]}"
+    fi
+
     profdata_path=$DUMPS_DIR/$fuzz_target.profdata
     if [[ ! -f "$profdata_path" ]]; then
       echo "WARNING: $fuzz_target has no profdata generated."
@@ -381,8 +431,11 @@ else
     fi
 
     report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    echo "PP-4"
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
+    echo "PP-4.1"
   done
+  echo "PP-5"
 fi
 
 # Make sure report is readable.
