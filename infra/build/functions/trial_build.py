@@ -201,9 +201,9 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch}']))
-    except Exception:  # pylint: disable=broad-except
+    except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
-      print('Failed to start build', project_name)
+      print('Failed to start build', project_name, error)
 
   return build_ids
 
