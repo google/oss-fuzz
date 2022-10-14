@@ -107,22 +107,40 @@ echo "
 build:oss-fuzz --config=fuzztest-common
 build:oss-fuzz --copt=-DFUZZTEST_COMPATIBILITY_MODE
 build:oss-fuzz --dynamic_mode=off
+build:oss-fuzz --action_env=CC=${CC}
+build:oss-fuzz --action_env=CXX=${CXX}
 "
-if [ "$SANITIZER" = "address" ]; then
-  echo "build:oss-fuzz --copt=-fsanitize=fuzzer-no-link"
-  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fsanitize=address"
-fi
+for flag in $CFLAGS; do
+  # whenever we have something along -fno-sanitize-recover=bool,array,...,.. we
+  # need to split them out and write each assignment without use of commas. Otherwise
+  # the per_file_copt option splits the comma string with spaces, which causes the
+  # build command to be erroneous.
+  if [[ $flag == *","* && $flag == *"="* ]]; then
+    # Find the first occurence of equals
+    sp=(${flag//=/ })
+    comma_values=($(echo ${sp[1]} | tr ',' " "))
+    for vv in "${comma_values[@]}"; do
+      echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@${sp[0]}=${vv}"
+    done
+  else
+    if [[ $flag != *"no-as-needed"* ]]; then
+      echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@$flag"
+    fi
+  fi
+done
+
 if [ "$SANITIZER" = "undefined" ]; then
-  echo "build:oss-fuzz --copt=-fsanitize=fuzzer-no-link"
-  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fsanitize=undefined"
   echo "build:oss-fuzz --linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
 fi
-if [ "$SANITIZER" = "coverage" ]; then
-  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fprofile-instr-generate"
-  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fcoverage-mapping"
-  echo "build:oss-fuzz --linkopt=-fprofile-instr-generate"
-  echo "build:oss-fuzz --linkopt=-fcoverage-mapping"
+#if [ "$SANITIZER" = "coverage" ]; then
+#  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fprofile-instr-generate"
+#  echo "build:oss-fuzz --per_file_copt=+//,-${FUZZTEST_FILTER},-googletest/.*,-googlemock/.*@-fcoverage-mapping"
+#  echo "build:oss-fuzz --linkopt=-fprofile-instr-generate"
+#  echo "build:oss-fuzz --linkopt=-fcoverage-mapping"
+#fi
+if [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
+  echo "build:oss-fuzz --linkopt=$(find $(${LLVM_CONFIG} --libdir) -name libclang_rt.fuzzer_no_main-x86_64.a | head -1)"
 fi
-echo "
-build:oss-fuzz --linkopt=$(find $(${LLVM_CONFIG} --libdir) -name libclang_rt.fuzzer_no_main-x86_64.a | head -1)
-"
+#if [ "$FUZZING_ENGINE" = "afl" ]; then
+#  echo "build:oss-fuzz --linkopt=${LIB_FUZZING_ENGINE}"
+#fi
