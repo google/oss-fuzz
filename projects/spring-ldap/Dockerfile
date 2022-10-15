@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,18 @@
 #
 ################################################################################
 
-# Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install --upgrade pip
-pip3 install colorlog
-pip3 install .
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-# Build fuzzers in $OUT.
-cd $SRC
-compile_python_fuzzer dag_fuzz.py --add-data airflow:airflow --add-data airflow/airflow:airflow --add-data /usr/local/lib/python3.8/site-packages/cron_descriptor:cron_descriptor
+RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+
+RUN apt update && apt install -y openjdk-17-jdk
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-ldap.git
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/spring-ldap
