@@ -15,21 +15,26 @@
 #
 ################################################################################
 
+BAZEL_FLAGS="-c dbg"
+if [[ $CFLAGS = *sanitize=address* ]]
+then
+    BAZEL_FLAGS="$BAZEL_FLAGS --config=asan"
+fi
+
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
-mkdir $SRC/protobuf-install/
-cmake $SRC/protobuf -Dprotobuf_BUILD_TESTS=OFF
-make -j$(nproc)
-make install
-ldconfig
+cd $SRC/protobuf
+bazel build $BAZEL_FLAGS //:protoc @upb//python/dist:binary_wheel
+PROTOC=$(realpath bazel-bin/protoc)
 
-cd $SRC/protobuf/python
-python3 setup.py build
-pip3 install .
+# Install the protobuf python runtime.
+mkdir $SRC/wheels
+find -L bazel-out -name 'protobuf*.whl' -exec mv '{}' $SRC/wheels ';'
+pip3 install -vvv --no-index --find-links $SRC/wheels protobuf
 
 # Compile test protos with protoc.
 cd $SRC/
-protoc --python_out=. --proto_path=. test-full.proto
+$PROTOC --python_out=. --proto_path=. test-full.proto
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
