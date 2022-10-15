@@ -32,10 +32,6 @@ mkdir $SRC/wheels
 find -L bazel-out -name 'protobuf*.whl' -exec mv '{}' $SRC/wheels ';'
 pip3 install -vvv --no-index --find-links $SRC/wheels protobuf
 
-# Make sure we're using the default upb implementation.
-# This will give a warning if something went wrong.
-export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb
-
 # Compile test protos with protoc.
 cd $SRC/
 $PROTOC --python_out=. --proto_path=. test-full.proto
