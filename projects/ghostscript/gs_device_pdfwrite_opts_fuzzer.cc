@@ -15,6 +15,13 @@ limitations under the License.
 #include "gs_fuzzlib.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	fuzz_gs_device(data, size, 1, "pdfwrite", "/dev/null", 0);
+	if (size < 2) {
+		return 0;
+	}
+	int color_scheme = ((int)data[0] % 63);
+	int do_interpolation = ((int)data[1] % 2);
+  data += 2;
+  size -= 2;
+	fuzz_gs_device(data, size, color_scheme, "pdfwrite", "/dev/null", do_interpolation);
 	return 0;
 }
