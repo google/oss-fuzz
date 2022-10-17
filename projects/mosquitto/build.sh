@@ -18,15 +18,11 @@ export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 make WITH_STATIC_LIBRARIES=yes -j$(nproc)
 
-mkdir fuzzing/
-cp FuzzPropRecv.c fuzzing/FuzzPropRecv.c
-cp FuzzReqRes.c fuzzing/FuzzReqRes.c
-cp Makefile.fuzz fuzzing/Makefile
-
-cd fuzzing/
+pushd fuzzer/
 make
 cp FuzzPropRecv $OUT/FuzzPropRecv
 cp FuzzReqRes $OUT/FuzzReqRes
+popd
 
 pushd $SRC/oss-fuzz-bloat/mosquitto/
 cp FuzzPropRecv_seed_corpus.zip $OUT/FuzzPropRecv_seed_corpus.zip

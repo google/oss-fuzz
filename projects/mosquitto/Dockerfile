@@ -18,8 +18,5 @@ RUN apt-get update && apt-get install -y libtool-bin make libcjson-dev
 RUN git clone https://github.com/eclipse/mosquitto
 RUN git clone https://github.com/0x34d/oss-fuzz-bloat
 COPY build.sh $SRC/
-
-COPY FuzzPropRecv.c/ $SRC/mosquitto/FuzzPropRecv.c
-COPY FuzzReqRes.c/ $SRC/mosquitto/FuzzReqRes.c
-COPY Makefile/ $SRC/mosquitto/Makefile.fuzz
+COPY fuzzer/ $SRC/mosquitto/fuzzer/
 WORKDIR $SRC/mosquitto/
