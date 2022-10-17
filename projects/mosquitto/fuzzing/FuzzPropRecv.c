@@ -147,7 +147,9 @@ void
     shutdown(client,SHUT_RDWR);
     close(client);
 
-	fuzzer->killloop = true;/*To Stop while loop*/
+/*To Stop while loop*/
+    fuzzer->killloop = true;
+
     pthread_exit(NULL);
 }
 
