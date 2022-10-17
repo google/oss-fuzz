@@ -1,0 +1,16 @@
+homepage: "https://mosquitto.org"
+language: c
+primary_contact: "roger@atchoo.org"
+vendor_ccs:
+  - "security@eclipse.org"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/eclipse/mosquitto'
