@@ -30,7 +30,7 @@ struct Fuzzer{
     uint8_t*    buffer;
     size_t      size;
     pthread_t   thread;
-	bool		killloop;
+    bool        killloop;
 };
 typedef struct Fuzzer Fuzzer;
 
@@ -38,61 +38,61 @@ static int run = -1;
 
 void on_connect(struct mosquitto *mosq, void *obj, int rc)
 {
-	if(rc){
-		exit(1);
-	}else{
-		mosquitto_subscribe(mosq, NULL, "request/topic", 0);
-	}
+    if(rc){
+        exit(1);
+    }else{
+        mosquitto_subscribe(mosq, NULL, "request/topic", 0);
+    }
 }
 
 void on_message_v5(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg, const mosquitto_property *props)
 {
-	const mosquitto_property *p_resp, *p_corr = NULL;
-	char *resp_topic = NULL;
+    const mosquitto_property *p_resp, *p_corr = NULL;
+    char *resp_topic = NULL;
 
-	if(!strcmp(msg->topic, "request/topic")){
-		p_resp = mosquitto_property_read_string(props, MQTT_PROP_RESPONSE_TOPIC, &resp_topic, false);
-		if(p_resp){
-			p_corr = mosquitto_property_read_binary(props, MQTT_PROP_CORRELATION_DATA, NULL, NULL, false);
-			mosquitto_publish_v5(mosq, NULL, resp_topic, strlen("a response"), "a response", 0, false, p_corr);
-			free(resp_topic);
-		}
-	}
+    if(!strcmp(msg->topic, "request/topic")){
+        p_resp = mosquitto_property_read_string(props, MQTT_PROP_RESPONSE_TOPIC, &resp_topic, false);
+        if(p_resp){
+            p_corr = mosquitto_property_read_binary(props, MQTT_PROP_CORRELATION_DATA, NULL, NULL, false);
+            mosquitto_publish_v5(mosq, NULL, resp_topic, strlen("a response"), "a response", 0, false, p_corr);
+            free(resp_topic);
+        }
+    }
 }
 
 void on_publish(struct mosquitto *mosq, void *obj, int mid)
 {
-	run = 0;
+    run = 0;
 }
 
 
 int maincall(Fuzzer *fuzzer)
 {
-	struct mosquitto *mosq;
-	int ver = PROTOCOL_VERSION_v5;
+    struct mosquitto *mosq;
+    int ver = PROTOCOL_VERSION_v5;
 
-	int port = fuzzer->port;
+    int port = fuzzer->port;
 
-	mosquitto_lib_init();
+    mosquitto_lib_init();
 
-	mosq = mosquitto_new("response-test", true, NULL);
-	if(mosq == NULL){
-		return 1;
-	}
-	mosquitto_opts_set(mosq, MOSQ_OPT_PROTOCOL_VERSION, &ver);
-	mosquitto_connect_callback_set(mosq, on_connect);
-	mosquitto_publish_callback_set(mosq, on_publish);
-	mosquitto_message_v5_callback_set(mosq, on_message_v5);
+    mosq = mosquitto_new("response-test", true, NULL);
+    if(mosq == NULL){
+        return 1;
+    }
+    mosquitto_opts_set(mosq, MOSQ_OPT_PROTOCOL_VERSION, &ver);
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_publish_callback_set(mosq, on_publish);
+    mosquitto_message_v5_callback_set(mosq, on_message_v5);
 
-	mosquitto_connect(mosq, "localhost", port, 60);
+    mosquitto_connect(mosq, "localhost", port, 60);
 
-	while((run == -1) && (!fuzzer->killloop)){
-		mosquitto_loop(mosq, -1, 1);
-	}
-	mosquitto_destroy(mosq);
+    while((run == -1) && (!fuzzer->killloop)){
+        mosquitto_loop(mosq, -1, 1);
+    }
+    mosquitto_destroy(mosq);
 
-	mosquitto_lib_cleanup();
-	return run;
+    mosquitto_lib_cleanup();
+    return run;
 }
 
 
@@ -122,11 +122,11 @@ void
     char clientData[10240];
     struct sockaddr_in clientAddr;
     uint32_t clientSZ = sizeof(clientAddr);
-	char peer1_0[] = {
-	0x20, 0x09, 0x00, 0x00, 0x06, 0x22, 0x00, 0x0a, 
-	0x21, 0x00, 0x14 };
-	char peer1_1[] = {
-	0x90, 0x04, 0x00, 0x01, 0x00, 0x00 };
+    char peer1_0[] = {
+    0x20, 0x09, 0x00, 0x00, 0x06, 0x22, 0x00, 0x0a, 
+    0x21, 0x00, 0x14 };
+    char peer1_1[] = {
+    0x90, 0x04, 0x00, 0x01, 0x00, 0x00 };
 
     client = accept(fuzzer->socket, (struct sockaddr*)&clientAddr, &clientSZ);
 

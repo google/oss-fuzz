@@ -30,7 +30,7 @@ struct Fuzzer{
     uint8_t*    buffer;
     size_t      size;
     pthread_t   thread;
-	bool		killloop;
+    bool        killloop;
 };
 typedef struct Fuzzer Fuzzer;
 
@@ -38,71 +38,71 @@ static int run = -1;
 
 void on_connect(struct mosquitto *mosq, void *obj, int rc)
 {
-	if(rc){
-		exit(1);
-	}
+    if(rc){
+        exit(1);
+    }
 }
 
 void on_message_v5(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg, const mosquitto_property *properties)
 {
-	int rc;
-	char *str;
+    int rc;
+    char *str;
 
-	if(properties){
-		if(mosquitto_property_read_string(properties, MQTT_PROP_CONTENT_TYPE, &str, false)){
-			rc = strcmp(str, "plain/text");
-			free(str);
+    if(properties){
+        if(mosquitto_property_read_string(properties, MQTT_PROP_CONTENT_TYPE, &str, false)){
+            rc = strcmp(str, "plain/text");
+            free(str);
 
-			if(rc == 0){
-				if(mosquitto_property_read_string(properties, MQTT_PROP_RESPONSE_TOPIC, &str, false)){
-					rc = strcmp(str, "msg/123");
-					free(str);
+            if(rc == 0){
+                if(mosquitto_property_read_string(properties, MQTT_PROP_RESPONSE_TOPIC, &str, false)){
+                    rc = strcmp(str, "msg/123");
+                    free(str);
 
-					if(rc == 0){
-						if(msg->qos == 0){
-							mosquitto_publish(mosq, NULL, "ok", 2, "ok", 0, 0);
-							return;
-						}
-					}
-				}
-			}
-		}
-	}
+                    if(rc == 0){
+                        if(msg->qos == 0){
+                            mosquitto_publish(mosq, NULL, "ok", 2, "ok", 0, 0);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	/* No matching message, so quit with an error */
-	exit(1);
+    /* No matching message, so quit with an error */
+    exit(1);
 }
 
 void on_publish(struct mosquitto *mosq, void *obj, int mid)
 {
-	run = 0;
+    run = 0;
 }
 
 int maincall(Fuzzer *fuzzer)
 {
-	struct mosquitto *mosq;
+    struct mosquitto *mosq;
 
-	int port = fuzzer->port;
+    int port = fuzzer->port;
 
-	mosquitto_lib_init();
+    mosquitto_lib_init();
 
-	mosq = mosquitto_new("prop-test", true, NULL);
-	if(mosq == NULL){
-		return 1;
+    mosq = mosquitto_new("prop-test", true, NULL);
+    if(mosq == NULL){
+        return 1;
+    }
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_message_v5_callback_set(mosq, on_message_v5);
+    mosquitto_int_option(mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+
+    mosquitto_connect(mosq, "localhost", port, 60);
+
+    while((run == -1) && (!fuzzer->killloop)){
+        mosquitto_loop(mosq, -1, 1);
 	}
-	mosquitto_connect_callback_set(mosq, on_connect);
-	mosquitto_message_v5_callback_set(mosq, on_message_v5);
-	mosquitto_int_option(mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+    mosquitto_destroy(mosq);
 
-	mosquitto_connect(mosq, "localhost", port, 60);
-
-	while((run == -1) && (!fuzzer->killloop)){
-		mosquitto_loop(mosq, -1, 1);
-	}
-	mosquitto_destroy(mosq);
-
-	mosquitto_lib_cleanup();
-	return run;
+    mosquitto_lib_cleanup();
+    return run;
 }
 
 //Fuzzer Calls
@@ -131,9 +131,9 @@ void
     char clientData[10240];
     struct sockaddr_in clientAddr;
     uint32_t clientSZ = sizeof(clientAddr);
-	char peer1_0[] = {
-	0x20, 0x09, 0x00, 0x00, 0x06, 0x22, 0x00, 0x0a, 
-	0x21, 0x00, 0x14 };
+    char peer1_0[] = {
+    0x20, 0x09, 0x00, 0x00, 0x06, 0x22, 0x00, 0x0a, 
+    0x21, 0x00, 0x14 };
 
     client = accept(fuzzer->socket, (struct sockaddr*)&clientAddr, &clientSZ);
 
