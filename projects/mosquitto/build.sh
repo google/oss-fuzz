@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 make WITH_STATIC_LIBRARIES=yes WITH_DOCS=no
 
