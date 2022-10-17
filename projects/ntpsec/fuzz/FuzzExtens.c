@@ -16,8 +16,8 @@ limitations under the License.
 #include "ntpd.h"
 #include "nts.h"
 
-#define kMinInputLength 4
-#define kMaxInputLength 2048
+#define kMinInputLength 20
+#define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/tests/ntpd/nts_extens.c
 	

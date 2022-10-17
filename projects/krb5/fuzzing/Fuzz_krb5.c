@@ -9,37 +9,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-#include "gpsd_config.h"  /* must be before all includes */
-
-#include <ctype.h>
-#include <errno.h>
-#include <getopt.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include <stdint.h>
 
-#include "gps.h"
-#include "libgps.h"
-#include "gpsdclient.h"
+#include "k5-int.h"
 
 #define kMinInputLength 10
-#define kMaxInputLength 8192
-
-static struct gps_data_t gpsdata;
+#define kMaxInputLength 1024
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
-{//gpsd/tests//test_libgps.c
+{//src/kdc/t_ndr.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
         return 0;
     }
 
-    gps_unpack((char*)Data, &gpsdata);
+    krb5_data data_in;
+    krb5_error_code ret;
+    krb5_ticket *ticket;
+    krb5_context context;
 
-    return 0;
+    data_in = make_data((void *)Data, Size);
+
+    krb5_init_context(&context);
+    ret = krb5_decode_ticket(&data_in, &ticket);
+    krb5_free_ticket(context, ticket);
+    krb5_free_context(context);
+
+    return ret;
 }
