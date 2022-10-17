@@ -670,8 +670,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
   env = [
-      'FUZZING_ENGINE=' + engine, 'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture, 'PROJECT_NAME=' + project.name
+      'FUZZING_ENGINE=' + engine,
+      'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture,
+      'PROJECT_NAME=' + project.name,
+      'HELPER=True',
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
@@ -715,13 +718,13 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 def build_fuzzers(args):
   """Builds fuzzers."""
-  if args.engine == 'centipede':
+  if args.engine == 'centipede' and args.sanitizer != 'none':
     # Centipede always requires separate binaries for sanitizers:
     # An unsanitized binary, which Centipede requires for fuzzing.
     # A sanitized binary, placed in the child directory.
     sanitized_binary_directories = (
         ('none', ''),
-        (args.sanitizer, f'{args.project.name}_{args.sanitizer}'),
+        (args.sanitizer, f'__centipede_{args.sanitizer}'),
     )
   else:
     # Generally, a fuzzer only needs one sanitized binary in the default dir.
@@ -760,6 +763,7 @@ def check_build(args):
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
       'FUZZING_LANGUAGE=' + args.project.language,
+      'HELPER=True',
   ]
   _add_oss_fuzz_ci_if_needed(env)
   if args.e:
@@ -902,6 +906,7 @@ def coverage(args):
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
+      'HELPER=True',
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
@@ -959,6 +964,7 @@ def run_fuzzer(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'RUN_FUZZER_MODE=interactive',
+      'HELPER=True',
   ]
 
   if args.e:
@@ -1012,7 +1018,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     return err_result
 
   debugger = ''
-  env = []
+  env = ['HELPER=True']
   image_name = 'base-runner'
 
   if valgrind:
@@ -1145,6 +1151,7 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'HELPER=True',
   ]
 
   if args.project.name != 'base-runner-debug':
