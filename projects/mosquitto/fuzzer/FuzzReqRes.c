@@ -14,6 +14,7 @@ limitations under the License.
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,7 +22,7 @@ limitations under the License.
 #include <mosquitto.h>
 #include <mqtt_protocol.h>
 
-#define kMinInputLength 2
+#define kMinInputLength 5
 #define kMaxInputLength 1024
 
 struct Fuzzer{
@@ -137,6 +138,12 @@ void
 
     send(client, peer1_1, sizeof(peer1_1), 0);
     send(client, fuzzer->buffer, fuzzer->size, 0);
+
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 50000;
+    setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
     recv(client, clientData, sizeof(clientData), 0);
 
 

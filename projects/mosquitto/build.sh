@@ -15,8 +15,7 @@
 #
 ################################################################################
 export LDFLAGS="$CFLAGS"
-make WITH_STATIC_LIBRARIES=yes 
-#WITH_DOCS=no
+make WITH_STATIC_LIBRARIES=yes WITH_DOCS=no
 
 pushd fuzzer/
 make
