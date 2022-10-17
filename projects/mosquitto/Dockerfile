@@ -14,7 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y libtool-bin make libcjson-dev
+RUN apt-get update && apt-get install -y libtool-bin make libcjson-dev xsltproc
 RUN git clone https://github.com/eclipse/mosquitto
 RUN git clone https://github.com/0x34d/oss-fuzz-bloat
 COPY build.sh $SRC/
