@@ -16,7 +16,7 @@
 ################################################################################
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
-make WITH_STATIC_LIBRARIES=yes -j$(nproc)
+make WITH_STATIC_LIBRARIES=yes 
 
 pushd fuzzer/
 
