@@ -18,7 +18,7 @@ export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 make WITH_STATIC_LIBRARIES=yes -j$(nproc)
 
-cd fuzzing/
+pushd $SRC/mosquitto/fuzzing/
 make
 cp FuzzPropRecv $OUT/FuzzPropRecv
 cp FuzzReqRes $OUT/FuzzReqRes
