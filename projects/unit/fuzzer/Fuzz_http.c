@@ -62,7 +62,7 @@ nxt_int_t nxt_http_parse_fuzz(nxt_str_t *request, nxt_lvlhsh_t *hash){
     buf.free = buf.end;
 
     if (nxt_slow_path(nxt_http_parse_request(&rp, &buf) == NXT_DONE)) {
-        nxt_http_fields_process(rp.fields, hash, NULL);
+        nxt_http_fields_process(rp.fields, hash, &rp);
     }
 
     nxt_mp_destroy(mp);
