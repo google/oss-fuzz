@@ -19,9 +19,11 @@ export LDFLAGS="$CFLAGS"
 make WITH_STATIC_LIBRARIES=yes -j$(nproc)
 
 pushd fuzzer/
+
 make
 cp FuzzPropRecv $OUT/FuzzPropRecv
 cp FuzzReqRes $OUT/FuzzReqRes
+
 popd
 
 pushd $SRC/oss-fuzz-bloat/mosquitto/

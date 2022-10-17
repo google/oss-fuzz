@@ -4,8 +4,7 @@ PropRecvEXE=FuzzPropRecv
 ReqResEXE=FuzzReqRes
 
 INC=-I../include/
-EXTCFLAGS=-g -Wall -pthread
-#-Werror
+EXTCFLAGS=-g -Wall -Werror -pthread
 LibINC=-L../lib/
 LibFLAGS=$(LIB_FUZZING_ENGINE) -lmosquitto -lssl -lcrypto
 
