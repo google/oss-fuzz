@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-cargo install honggfuzz
+cargo install honggfuzz --version 0.5.55
 cd $SRC/polkadot/erasure-coding/fuzzer/
 cargo hfuzz build
 cd $SRC/polkadot/xcm/xcm-simulator/fuzzer/
