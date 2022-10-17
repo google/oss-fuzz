@@ -15,14 +15,13 @@
 #
 ################################################################################
 export LDFLAGS="$CFLAGS"
-make WITH_STATIC_LIBRARIES=yes WITH_DOCS=no
+make WITH_STATIC_LIBRARIES=yes 
+#WITH_DOCS=no
 
 pushd fuzzer/
-
 make
 cp FuzzPropRecv $OUT/FuzzPropRecv
 cp FuzzReqRes $OUT/FuzzReqRes
-
 popd
 
 pushd $SRC/oss-fuzz-bloat/mosquitto/
