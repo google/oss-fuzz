@@ -21,6 +21,6 @@ limitations under the License.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	char filename[256];
 	sprintf(filename, "/tmp/libfuzzer.%d.tiff", getpid());
-	fuzz_gs_device(data, size, 1, "tiffsep1", filename);
+	fuzz_gs_device(data, size, 1, "tiffsep1", filename, 0);
 	return 0;
 }

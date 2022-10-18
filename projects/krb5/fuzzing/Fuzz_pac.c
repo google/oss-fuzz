@@ -18,7 +18,6 @@ limitations under the License.
 #define kMinInputLength 10
 #define kMaxInputLength 5120
 
-
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 {//src/lib/krb5/krb/t_pac.c
 

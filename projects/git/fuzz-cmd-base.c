@@ -10,6 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "cache.h"
+#include "builtin.h"
 #include "fuzz-cmd-base.h"
 
 
@@ -103,9 +104,9 @@ void generate_random_file(char *data, int size)
  * This function provides a shorthand for generate commit in master
  * branch.
  */
-void generate_commit(char *data, int size)
+int generate_commit(char *data, int size)
 {
-	generate_commit_in_branch(data, size, "master");
+	return generate_commit_in_branch(data, size, "master");
 }
 
 /*
@@ -113,14 +114,14 @@ void generate_commit(char *data, int size)
  * worktree with randomization to provide a target for the fuzzing
  * of git command under specific branch.
  */
-void generate_commit_in_branch(char *data, int size, char *branch_name)
+int generate_commit_in_branch(char *data, int size, char *branch_name)
 {
+	char *argv[4];
 	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
-	struct strbuf push_cmd = STRBUF_INIT;
 
 	if (!data_chunk)
 	{
-		return;
+		return -1;
 	}
 
 	memcpy(data_chunk, data, size * 2);
@@ -128,17 +129,23 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
 
 	free(data_chunk);
 
-	strbuf_addf(&push_cmd, "git push origin %s", branch_name);
-
-	if (system("git add TEMP-*-TEMP") ||
-		system("git commit -m\"New Commit\"") ||
-		system(push_cmd.buf))
+	argv[0] = "add";
+	argv[1] = "TEMP-*-TEMP";
+	argv[2] = NULL;
+	if (cmd_add(2, (const char **)argv, (const char *)""))
 	{
-		// Just skip the commit if fails
-		strbuf_release(&push_cmd);
-		return;
+		return -1;
 	}
-	strbuf_release(&push_cmd);
+
+	argv[0] = "commit";
+	argv[1] = "-m\"New Commit\"";
+	argv[2] = NULL;
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -2;
+
+	}
+  	return 0;
 }
 
 /*
@@ -147,27 +154,70 @@ void generate_commit_in_branch(char *data, int size, char *branch_name)
  * This function integrates into the fuzzing processing and
  * reset the git repository into the default
  * base settings before each round of fuzzing.
- * Return values from system are ignored.
+ * Return 0 for success.
  */
-void reset_git_folder(void)
+int reset_git_folder(void)
 {
-	if (system("rm -rf ./.git") ||
-		system("rm -f ./TEMP-*-TEMP") ||
-		system("git init") ||
-		system("git config --global user.name \"FUZZ\"") ||
-		system("git config --global user.email \"FUZZ@LOCALHOST\"") ||
-		system("git config --global --add safe.directory '*'") ||
-		system("rm -rf /tmp/oss-test.git") ||
-		system("mkdir -p /tmp/oss-test.git") ||
-		system("git init --bare /tmp/oss-test.git") ||
-		system("git remote add origin /tmp/oss-test.git") ||
-		system("git add ./TEMP_1 ./TEMP_2") ||
-		system("git commit -m\"First Commit\"") ||
-		system("git push origin master"))
+	char *argv[6];
+	argv[0] = "init";
+	argv[1] = NULL;
+	if (cmd_init_db(1, (const char **)argv, (const char *)""))
 	{
-		// Error in these does not affect git command.
-		return;
+		return -1;
 	}
+
+  /*
+  printf("R2\n");
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "user.name";
+	argv[3] = "\"FUZZ\"";
+	argv[4] = NULL;
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -2;
+	}
+
+  printf("R3\n");
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "user.email";
+	argv[3] = "\"FUZZ@LOCALHOST\"";
+	argv[4] = NULL;
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -3;
+	}
+
+  printf("R4\n");
+	argv[0] = "config";
+	argv[1] = "--global";
+	argv[2] = "safe.directory";
+	argv[3] = "\"*\"";
+	argv[4] = NULL;
+	if (cmd_config(4, (const char **)argv, (const char *)""))
+	{
+		return -4;
+	}
+  */
+	argv[0] = "add";
+	argv[1] = "TEMP_1";
+	argv[2] = "TEMP_2";
+	argv[3] = NULL;
+	if (cmd_add(3, (const char **)argv, (const char *)""))
+	{
+		return -5;
+	}
+
+	argv[0] = "commit";
+	argv[1] = "-m\"First Commit\"";
+	argv[2] = NULL;
+	if (cmd_commit(2, (const char **)argv, (const char *)""))
+	{
+		return -6;
+	}
+
+	return 0;
 }
 
 /*

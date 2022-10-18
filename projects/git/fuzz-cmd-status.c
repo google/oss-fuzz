@@ -27,20 +27,27 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	char *basedir = "./.git";
 
 	/*
+	 * End this round of fuzzing if the data is not large enough
+	 */
+	if (size <= (HASH_HEX_SIZE + INT_SIZE) || reset_git_folder())
+	{
+		return 0;
+	}
+
+	/*
 	 *  Initialize the repository
 	 */
 	initialize_the_repository();
+	if (repo_init(the_repository, basedir, "."))
+	{
+		return 0;
+	}
 
-	/*
-	 * End this round of fuzzing if the data is not large enough
-	 */
-	if (size <= (HASH_HEX_SIZE + INT_SIZE))
+	if (reset_git_folder())
 	{
 		repo_clear(the_repository);
 		return 0;
 	}
-
-	reset_git_folder();
 
 	/*
 	 * Generate random commit
@@ -67,15 +74,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	}
 
 	free(data_chunk);
-
-	/*
-	 * Final preparing of the repository settings
-	 */
-	repo_clear(the_repository);
-	if (repo_init(the_repository, basedir, "."))
-	{
-		return 0;
-	}
 
 	/*
 	 * Calling target git command

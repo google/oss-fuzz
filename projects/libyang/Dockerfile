@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake libtool subversion
 RUN git clone https://github.com/CESNET/libyang
 
-RUN svn co svn://vcs.exim.org/pcre2/code/trunk pcre2 && \
+RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
     cd pcre2 && \
     ./autogen.sh && \
     ./configure && \

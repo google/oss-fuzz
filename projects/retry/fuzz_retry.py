@@ -54,7 +54,7 @@ def TestInput(data):
             delay=fdp.ConsumeIntInRange(1,10),
             logger=None
         )
-    except TestingError:
+    except (TestingError, ValueError):
         # Expected when retry limit is reached
         pass
 
@@ -74,7 +74,7 @@ def TestInput(data):
     try:
         wrapper_one()
         wrapper_two()
-    except TestingError:
+    except (TestingError, ValueError):
         # Expected when retry limit it reached
         pass
 
