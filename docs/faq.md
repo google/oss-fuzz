@@ -152,6 +152,23 @@ In either case, look at the
 [coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports)
 for your target(s) and figure out why some parts of the code are not covered. 
 
+## What if my fuzzer does not find new coverage or bugs after a while?
+
+It is common that the fuzzer gets saturated and cannot find new coverage or bugs after a while.
+We have designed and developed [Fuzz Introspector](https://github.com/ossf/fuzz-introspector)
+to give developers a tool to evaluate the fuzzers performance. Fuzz Introspector aims to improve 
+fuzzing experience by guiding developer on determining their fuzzer's bottlenecks. It helps by providing
+aggregated and individual fuzzers reachability and coverage reports. Developer can either introduce a new 
+fuzz target or modify an existing one to improve the quality of the harness. To check some example cases 
+where Fuzz Introspector improved a fuzzing project refere to these 
+[case studies](https://github.com/ossf/fuzz-introspector/blob/main/doc/CaseStudies.md). Fuzz Introspector 
+reports are available on [OSS-Fuzz report page](https://oss-fuzz.com/) or through this 
+[index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+
+Developer can also utilize Fuzz Introspector for their new fuzz target developement by trying it on their 
+local machines. Detailed instructions are available 
+[here](https://github.com/ossf/fuzz-introspector/tree/main/oss_fuzz_integration#build-fuzz-introspector-with-oss-fuzz).
+
 ## Why are code coverage reports public?
 
 We work with open source projects and try to keep as much information public as

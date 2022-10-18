@@ -9,10 +9,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
 #include "Fuzz_http.h"
 
 #define kMinInputLength 10
@@ -22,10 +18,8 @@ static int DoInit = 0;
 nxt_lvlhsh_t hash;
 
 extern char  **environ;
-nxt_module_init_t nxt_init_modules[1];
-nxt_uint_t nxt_init_modules_n;
 
-extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
+extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {//src/test/nxt_http_parse_test.c
 
     if (Size < kMinInputLength || Size > kMaxInputLength){
@@ -41,16 +35,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         DoInit = 1;
     }
 
-    nxt_int_t rc;
     nxt_str_t nxt_http_request;
 
     nxt_http_request.length = Size;
     nxt_http_request.start = (uint8_t *) Data;
 
-    rc = nxt_http_parse_fuzz(&nxt_http_request,
-                                  &hash);
-
-    return rc;
+    return nxt_http_parse_fuzz(&nxt_http_request, &hash);
 }
 
 nxt_int_t nxt_http_parse_fuzz(nxt_str_t *request, nxt_lvlhsh_t *hash){

@@ -114,9 +114,14 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
-  elif [[ "$FUZZING_ENGINE" == centipede &&  "$SANITIZER" == "none" ]]; then
-    # Only perform run test on unsanitized binary for now.
-    # TODO(Dongge): Support run test for sanitized binaries as well.
+  elif [[ "$FUZZING_ENGINE" == centipede \
+          && ("${HELPER:-}" == True || "$SANITIZER" == none ) ]]; then
+    # Performs run test on unsanitized binaries with auxiliary sanitized
+    # binaries if they are built with helper.py.
+    # Performs run test on unsanitized binaries without auxiliary sanitized
+    # binaries if they are from trial build and production build.
+    # TODO(Dongge): Support run test with sanitized binaries for trial and
+    # production build.
     timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "\[0] begin-fuzz: ft: 0 cov: 0" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
@@ -422,6 +427,7 @@ function check_architecture {
 
 function main {
   local FUZZER=$1
+  local AUXILIARY_FUZZER=${2:-}
   local checks_failed=0
   local result=0
 
@@ -434,7 +440,12 @@ function main {
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
-  check_mixed_sanitizers $FUZZER
+  if [[ "$FUZZING_ENGINE" == centipede \
+        && "$SANITIZER" != none && "${HELPER:-}" == True ]]; then
+    check_mixed_sanitizers $AUXILIARY_FUZZER
+   else
+    check_mixed_sanitizers $FUZZER
+  fi
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
@@ -448,13 +459,14 @@ function main {
 }
 
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <fuzz_target_binary>"
+if [ $# -ne 1 -a $# -ne 2 ]; then
+  echo "Usage: $0 <fuzz_target_binary> [<auxiliary_binary>]"
   exit 1
 fi
 
 # Fuzz target path.
 FUZZER=$1
+AUXILIARY_FUZZER=${2:-}
 
-main $FUZZER
+main $FUZZER $AUXILIARY_FUZZER
 exit $?

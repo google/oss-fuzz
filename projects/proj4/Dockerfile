@@ -18,13 +18,13 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config wget
 
-RUN git clone --depth 1 https://github.com/OSGeo/proj proj
+RUN git clone --depth 1 https://github.com/OSGeo/PROJ PROJ
 
-RUN git clone --depth 1 https://github.com/curl/curl.git proj/curl
+RUN git clone --depth 1 https://github.com/curl/curl.git PROJ/curl
 
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git proj/libtiff
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git PROJ/libtiff
 
-WORKDIR proj
+WORKDIR PROJ
 
 RUN cp test/fuzzers/build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
