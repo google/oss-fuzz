@@ -17,8 +17,7 @@
 FROM ubuntu:20.04 as builder
 
 ## Install build dependencies.
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y git-all cmake clang curl binutils-dev libunwind8-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git-all cmake clang curl binutils-dev libunwind8-dev
 RUN curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN ${HOME}/.cargo/bin/rustup default nightly
 RUN ${HOME}/.cargo/bin/cargo install honggfuzz --version 0.5.55
@@ -30,7 +29,6 @@ RUN cd xcm/xcm-simulator/fuzzer && \
 	${HOME}/.cargo/bin/cargo hfuzz build
 RUN cd erasure-coding/fuzzer && \
 	${HOME}/.cargo/bin/cargo hfuzz build
-
 #package stage 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
