@@ -17,7 +17,7 @@
 FROM ubuntu:20.04 as builder
 
 ## Install build dependencies.
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git-all cmake clang curl binutils-dev libunwind8-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git cmake clang curl binutils-dev libunwind8-dev
 RUN curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN ${HOME}/.cargo/bin/rustup default nightly
 RUN ${HOME}/.cargo/bin/cargo install honggfuzz --version 0.5.55
