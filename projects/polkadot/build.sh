@@ -15,10 +15,10 @@
 ################################################################################
 cargo install honggfuzz --version 0.5.55
 cd $SRC/polkadot/erasure-coding/fuzzer/
-CC=gcc make clean all
+CC=gcc
 cargo hfuzz build
 cd $SRC/polkadot/xcm/xcm-simulator/fuzzer/
-CC=gcc make clean all
+CC=gcc
 cargo hfuzz build
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/balloon $OUT/
 
