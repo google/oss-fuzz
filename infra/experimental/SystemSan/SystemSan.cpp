@@ -177,27 +177,6 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   return content;
 }
 
-void report_bug(std::string bug_type, pid_t tid) {
-  // Report the bug found based on the bug code.
-  std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
-  // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
-  // to the root process.
-  // Note: this may not be reliable or consistent if shell injection happens
-  // in an async way.
-  // Find the thread group id, that is the pid.
-  pid_t pid = tid;
-  auto parent = root_pids[tid];
-  while (!parent.ran_exec) {
-    // Find the first parent which ran exec syscall.
-    if (parent.parent_tid == g_root_pid) {
-      break;
-    }
-    pid = parent.parent_tid;
-    parent = root_pids[parent.parent_tid];
-  }
-  tgkill(pid, tid, SIGABRT);
-}
-
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for the sign of shell injection.
   std::string path = read_string(pid, regs.rdi, kTripWire.length());

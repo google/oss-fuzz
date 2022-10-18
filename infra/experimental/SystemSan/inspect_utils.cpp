@@ -29,6 +29,7 @@
 #include <vector>
 
 extern pid_t g_root_pid;
+extern std::map<pid_t, ThreadParent> root_pids;
 
 std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
                                    size_t size) {
@@ -47,12 +48,23 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
   return memory;
 }
 
-void report_bug(std::string bug_type) {
+void report_bug(std::string bug_type, pid_t tid) {
   // Report the bug found based on the bug code.
   std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
   // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
-  tgkill(g_root_pid, g_root_pid, SIGABRT);
+  // Find the thread group id, that is the pid.
+  pid_t pid = tid;
+  auto parent = root_pids[tid];
+  while (!parent.ran_exec) {
+    // Find the first parent which ran exec syscall.
+    if (parent.parent_tid == g_root_pid) {
+      break;
+    }
+    pid = parent.parent_tid;
+    parent = root_pids[parent.parent_tid];
+  }
+  tgkill(pid, tid, SIGABRT);
 }
