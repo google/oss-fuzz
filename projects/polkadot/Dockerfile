@@ -17,7 +17,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 ## Install build dependencies.
 RUN apt-get update
-RUN apt-get install -y cmake clang curl binutils-dev libunwind8-dev
+RUN apt-get install -y cmake clang curl binutils-dev libunwind8-dev libblocksruntime-dev
 RUN git clone --depth 1 https://github.com/paritytech/polkadot.git
 COPY build.sh $SRC/
 
