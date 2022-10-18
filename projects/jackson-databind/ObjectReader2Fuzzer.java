@@ -74,7 +74,18 @@ public class ObjectReader2Fuzzer {
 
         ObjectMapper mapper = new ObjectMapper();
         int idx = data.consumeInt(0, classes.length - 1);
-        r = mapper.readerFor(classes[idx]);
+        r = mapper.readerFor(classes[idx]); // To initialize
+        switch (data.consumeInt(0, 3)) {
+        case 0:
+            r = mapper.readerFor(classes[idx]);
+        case 1:
+            r = mapper.readerForMapOf(classes[idx]);
+        case 2:
+            r = mapper.readerForListOf(classes[idx]);
+        case 3:
+            r = mapper.readerForArrayOf(classes[idx]);
+
+        }
 
         // set reader settings
         for (int i = 0; i < deserializationfeatures.length; i++) {
@@ -88,7 +99,7 @@ public class ObjectReader2Fuzzer {
         try {
             // Select a method and call it
             int callType = data.consumeInt();
-            switch (callType%19) {
+            switch (callType%23) {
             case 0:
                 r.readValue(data.consumeRemainingAsString());
             case 1:
@@ -99,7 +110,7 @@ public class ObjectReader2Fuzzer {
                 r.readTree(data.consumeRemainingAsBytes());
             case 4:
                 doThis = data.consumeBoolean();
-                jp = r.createParser(data.consumeRemainingAsBytes());
+                jp = _createParser(data, mapper, r);
                 o = r.readValue(jp);
                 if (doThis) {
                     r3 = r.withValueToUpdate(o);
@@ -116,14 +127,14 @@ public class ObjectReader2Fuzzer {
                 r.readValue(data.consumeRemainingAsBytes());
             case 9:
                 doThis = data.consumeBoolean();
-                jp = r.createParser(data.consumeRemainingAsBytes());
+                jp = _createParser(data, mapper, r);
                 o = r.readValues(jp);
                 if (doThis) {
                     r3 = r.withValueToUpdate(o);
                 }
             case 10:
                 doThis = data.consumeBoolean();
-                jp = r.createParser(data.consumeRemainingAsBytes());
+                jp = _createParser(data, mapper, r);
                 o = r.readTree(jp);
                 if (doThis) {
                     r3 = r.withValueToUpdate(o);
@@ -144,11 +155,7 @@ public class ObjectReader2Fuzzer {
                 out.close();
                 r.readValues(new File("fuzzFile"));
             case 14:
-                fileData = data.consumeRemainingAsBytes();
-                out = new FileOutputStream("fuzzFile");
-                out.write(fileData);
-                out.close();
-                jp = r.createParser(new File("fuzzFile"));
+                jp = _createParser(data, mapper, r);
                 o = r.readTree(jp);
             case 15:
                 fuzzInt1 = data.consumeInt();
@@ -163,9 +170,24 @@ public class ObjectReader2Fuzzer {
                 fuzzInt2 = data.consumeInt();
                 r.readTree(data.consumeRemainingAsBytes(), fuzzInt1, fuzzInt2);
             case 18:
-                fuzzInt1 = data.consumeInt();
-                fuzzInt2 = data.consumeInt();
-                jp = r.createParser(data.consumeRemainingAsBytes(), fuzzInt1, fuzzInt2);
+                jp = _createParser(data, mapper, r);
+            case 19:
+                int idx2 = data.consumeInt(0, classes.length - 1);
+                switch (data.consumeInt()%4) {
+                case 0:
+                    r.readValue(data.consumeRemainingAsBytes(), classes[idx]);
+                case 1:
+                    r.readValue(data.consumeRemainingAsString(), classes[idx]);
+                }
+            case 20:
+                fuzzInt1 = data.consumeInt(0, classes.length - 1);
+                mapper.readValue(data.consumeBytes(1000000), data.consumeInt(), data.consumeInt(), classes[fuzzInt1]);
+            case 21:
+                int idx3 = data.consumeInt(0, classes.length - 1);
+                mapper.readValue(data.consumeBytes(1000000), mapper.constructType(classes[idx]));
+            case 22:
+                int idx4 = data.consumeInt(0, classes.length - 1);
+                mapper.readValue(data.consumeString(1000000), mapper.constructType(classes[idx]));
             }
             
             // target with();
@@ -178,6 +200,34 @@ public class ObjectReader2Fuzzer {
         try {
             Files.delete(Paths.get("fuzzFile"));
         } catch (IOException e) { }
+    }
+
+    public static JsonParser _createParser(FuzzedDataProvider data, ObjectMapper mapper, ObjectReader r) throws IOException {
+        int fuzzInt1, fuzzInt2;
+        byte[] fileData;
+        switch (data.consumeInt(0, 5)) {
+        case 0:
+            return r.createParser(data.consumeBytes(100000));
+        case 1:
+            fileData = data.consumeBytes(100000);
+            FileOutputStream out = new FileOutputStream("fuzzFile");
+            out.write(fileData);
+            out.close();
+            return r.createParser(new File("fuzzFile"));
+        case 2:
+            fuzzInt1 = data.consumeInt();
+            fuzzInt2 = data.consumeInt();
+            return r.createParser(data.consumeBytes(100000), fuzzInt1, fuzzInt2);
+        case 3:
+            mapper.createParser(data.consumeBytes(100000));
+        case 4:
+            return mapper.createParser(data.consumeString(1000000));
+        case 5:            
+            fuzzInt1 = data.consumeInt();
+            fuzzInt2 = data.consumeInt();
+            return mapper.createParser(data.consumeBytes(100000), fuzzInt1, fuzzInt2);
+        }
+        return r.createParser(data.consumeBytes(100000));
     }
 
     public static Class[] classes = { DummyClass.class, Integer.class, String.class, Byte.class, List.class, Map.class,
