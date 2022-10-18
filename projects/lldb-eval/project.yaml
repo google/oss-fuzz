@@ -6,6 +6,7 @@ auto_ccs:
   - "tsabolcec@google.com"
 fuzzing_engines:
   - libfuzzer
+  - centipede
 sanitizers:
   - address
   - undefined
