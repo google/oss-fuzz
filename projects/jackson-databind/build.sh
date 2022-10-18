@@ -63,6 +63,10 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
     cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
   fi
+  if [ "$fuzzer_basename" == "AdaLObjectReader3Fuzzer" ]; then
+    cp $SRC/$fuzzer_basename\$NoCheckSubTypeValidator.class $OUT/
+    cp $SRC/$fuzzer_basename\$MockFuzzDataInput.class $OUT/
+  fi
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/sh
