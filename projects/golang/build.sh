@@ -45,6 +45,8 @@ function setup_golang_fuzzers() {
 
 	cp $SRC/strings_fuzzer.go $SRC/golang/strings/
 
+	cp $SRC/multipart_fuzzer.go $SRC/golang/multipart/main.go
+
 	go mod init "github.com/dvyukov/go-fuzz-corpus"
 }
 
