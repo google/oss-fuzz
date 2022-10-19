@@ -34,12 +34,17 @@ public class EnvironmentFuzzer {
 	
 	void test()
 	{
-		String[] fuzzedArray = {fuzzedDataProvider.consumeString(10), fuzzedDataProvider.consumeString(10)};
-		Environment environment = new Environment(fuzzedDataProvider.consumeString(10),
-												  fuzzedArray,
-												  fuzzedDataProvider.consumeString(10),
-												  fuzzedDataProvider.consumeString(10),
-												  fuzzedDataProvider.consumeString(10));
+		String[] fuzzedArray = {
+			fuzzedDataProvider.consumeString(10),
+			fuzzedDataProvider.consumeString(10)
+		};
+		Environment environment = new Environment(
+			fuzzedDataProvider.consumeString(10),
+			fuzzedArray,
+			fuzzedDataProvider.consumeString(10),
+			fuzzedDataProvider.consumeString(10),
+			fuzzedDataProvider.consumeString(10)
+		);
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		int n = fuzzedDataProvider.consumeInt(0, 10);
 		for(int i = 0; i < n; i++)
