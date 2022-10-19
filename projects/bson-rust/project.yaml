@@ -1,0 +1,9 @@
+homepage: "https://github.com/mongodb/bson-rust"
+language: rust
+main_repo: "https://github.com/mongodb/bson-rust"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com
