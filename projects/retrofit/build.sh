@@ -50,7 +50,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-11/\" \
-if [[ "$@" =~ (^| )-runs=\d+($| ) ]]; then
+if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
   mem_settings='-Xmx1900m:-Xss900k'
 else
   mem_settings='-Xmx2048m:-Xss1024k'
