@@ -17,10 +17,11 @@
 ################################################################################
 
 export MAVEN_OPTS="-Xmx1G"
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
+
 cp "tool/target/antlr4-$CURRENT_VERSION.jar" $OUT/antlr4.jar
 
 ALL_JARS="antlr4.jar"
