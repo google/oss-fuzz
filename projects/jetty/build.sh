@@ -27,9 +27,8 @@ cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-server-$JETTY_VERSI
 cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-util-$JETTY_VERSION.jar $OUT/jetty-util.jar
 cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-io-$JETTY_VERSION.jar $OUT/jetty-io.jar
 cp $SRC/jetty.project/jetty-runner/target/jetty-runner-$JETTY_VERSION.jar $OUT/jetty-runner.jar
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/logging/slf4j-api-2.0.0.jar $OUT/slf4j-api.jar
 
-ALL_JARS="jetty-util.jar jetty-server.jar jetty-http.jar jetty-io.jar jetty-runner.jar slf4j-api.jar"
+ALL_JARS="jetty-util.jar jetty-server.jar jetty-http.jar jetty-io.jar jetty-runner.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
