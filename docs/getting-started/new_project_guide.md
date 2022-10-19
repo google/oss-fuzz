@@ -85,6 +85,7 @@ This configuration file stores project metadata. The following attributes are su
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
+- [file_github_issue](#file_github_issue) (optional)
 
 ### homepage
 You project's homepage.
@@ -201,6 +202,10 @@ builds_per_day: 2
 ```
 
 Will build the project twice per day.
+
+### file_github_issue (optional) {#file_github_issue}
+Whether to mirror issues on github instead of having them only in the OSS-Fuzz
+tracker.
 
 ## Dockerfile {#dockerfile}
 
