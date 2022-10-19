@@ -68,7 +68,9 @@ OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
 Security access control is important for the kind of issues that OSS-Fuzz detects,
 hence why by default issues are only opened on the OSS-Fuzz tracker.
 You can opt-in to have them on Github as well by adding the `file_github_issue`
-attribute to your `project.yaml` file.
+attribute to your `project.yaml` file. Note that this is only for visibility's
+purpose, and that the actual details can be found by following the link to the
+OSS-Fuzz tracker.
 
 ## Why do you require a Google account for authentication?
 
