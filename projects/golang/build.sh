@@ -42,12 +42,16 @@ function setup_golang_fuzzers() {
 
 	mkdir $SRC/golang/fp
 	cp $SRC/filepath_fuzzer.go $SRC/golang/fp/
+
+	cp $SRC/strings_fuzzer.go $SRC/golang/strings/
+
 	go mod init "github.com/dvyukov/go-fuzz-corpus"
 }
 
 function compile_fuzzers() {
 	# version is used as suffix for the binaries
 	version=$1
+	compile_go_fuzzer $FUZZ_ROOT/strings FuzzStringsSplit fuzz_strings_split$version
 	compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt$version

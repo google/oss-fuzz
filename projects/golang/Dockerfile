@@ -41,6 +41,7 @@ COPY build.sh text_fuzzer.go \
      openpgp_fuzzer.go \
      webp_fuzzer.go \
      filepath_fuzzer.go \
+     strings_fuzzer.go \
      glob_fuzzer.options $SRC/
 
 WORKDIR $SRC/golang
