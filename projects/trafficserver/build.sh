@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
+export CFLAGS="$(CFLAGS)"
+export CXXFLAGS="$(CFLAGS)"
+export LDFLAGS="$(CFLAGS)"
+
 autoreconf -if
 ./configure
 make -j$(nproc)
