@@ -16,6 +16,7 @@
 ################################################################################
 autoreconf -if
 ./configure
+make -j$(nproc)
 
 pushd fuzzer/
 make
