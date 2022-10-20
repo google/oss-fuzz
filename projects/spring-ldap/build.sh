@@ -30,10 +30,10 @@ index d6119e9..1ffa9a1 100644
      id 'com.intershop.gradle.javacc'
 +    id 'com.github.johnrengelman.shadow' version '7.0.0'
  }
- 
+
  javacc {
 @@ -54,4 +55,4 @@ compileTestJava {
- 
+
  test {
      jvmArgs '--add-exports', 'java.naming/com.sun.jndi.ldap=ALL-UNNAMED'
 -}
@@ -62,15 +62,20 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
 LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

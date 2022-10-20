@@ -65,9 +65,12 @@ OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
 
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
-Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider the GitHub issue tracker once the
-[access control feature](https://github.com/isaacs/github/issues/37) is available.
+Security access control is important for the kind of issues that OSS-Fuzz detects,
+hence why by default issues are only opened on the OSS-Fuzz tracker.
+You can opt-in to have them on Github as well by adding the `file_github_issue`
+attribute to your `project.yaml` file. Note that this is only for visibility's
+purpose, and that the actual details can be found by following the link to the
+OSS-Fuzz tracker.
 
 ## Why do you require a Google account for authentication?
 
@@ -151,6 +154,23 @@ coverage, it may mean several things:
 In either case, look at the
 [coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports)
 for your target(s) and figure out why some parts of the code are not covered. 
+
+## What if my fuzzer does not find new coverage or bugs after a while?
+
+It is common that the fuzzer gets saturated and cannot find new coverage or bugs after a while.
+We have designed and developed [Fuzz Introspector](https://github.com/ossf/fuzz-introspector)
+to give developers a tool to evaluate the fuzzers performance. Fuzz Introspector aims to improve 
+fuzzing experience by guiding developer on determining their fuzzer's bottlenecks. It helps by providing
+aggregated and individual fuzzers reachability and coverage reports. Developer can either introduce a new 
+fuzz target or modify an existing one to improve the quality of the harness. To check some example cases 
+where Fuzz Introspector improved a fuzzing project refere to these 
+[case studies](https://github.com/ossf/fuzz-introspector/blob/main/doc/CaseStudies.md). Fuzz Introspector 
+reports are available on [OSS-Fuzz report page](https://oss-fuzz.com/) or through this 
+[index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+
+Developer can also utilize Fuzz Introspector for their new fuzz target developement by trying it on their 
+local machines. Detailed instructions are available 
+[here](https://github.com/ossf/fuzz-introspector/tree/main/oss_fuzz_integration#build-fuzz-introspector-with-oss-fuzz).
 
 ## Why are code coverage reports public?
 

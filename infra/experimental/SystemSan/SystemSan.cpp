@@ -76,6 +76,20 @@ constexpr int kRootDirMaxLength = 16;
 
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
+
+// Structure to know which thread id triggered the bug.
+struct ThreadParent {
+  // Parent thread ID, ie creator.
+  pid_t parent_tid;
+  // Current thread ID ran exec to become another process.
+  bool ran_exec = false;
+
+  ThreadParent() : parent_tid(0) {}
+  ThreadParent(pid_t tid) : parent_tid(tid) {}
+};
+// Map of a PID/TID its PID/TID creator and wether it ran exec.
+std::map<pid_t, ThreadParent> root_pids;
+
 // Assuming the longest pathname is "/bin/bash".
 constexpr int kShellPathnameLength = 20;
 
@@ -177,14 +191,25 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   return content;
 }
 
-void report_bug(std::string bug_type) {
+void report_bug(std::string bug_type, pid_t tid) {
   // Report the bug found based on the bug code.
   std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
   // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
   // in an async way.
-  tgkill(g_root_pid, g_root_pid, SIGABRT);
+  // Find the thread group id, that is the pid.
+  pid_t pid = tid;
+  auto parent = root_pids[tid];
+  while (!parent.ran_exec) {
+    // Find the first parent which ran exec syscall.
+    if (parent.parent_tid == g_root_pid) {
+      break;
+    }
+    pid = parent.parent_tid;
+    parent = root_pids[parent.parent_tid];
+  }
+  tgkill(pid, tid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
@@ -195,7 +220,7 @@ void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   }
   debug_log("inspecting");
   if (path == kTripWire) {
-    report_bug(kInjectionError);
+    report_bug(kInjectionError, pid);
   }
 }
 
@@ -252,7 +277,7 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
   return match_shell(binary_pathname);
 }
 
-void match_error_pattern(std::string buffer, std::string shell) {
+void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
   for (const auto &pattern : error_patterns) {
     debug_log("Pattern : %s\n", pattern.c_str());
@@ -261,7 +286,15 @@ void match_error_pattern(std::string buffer, std::string shell) {
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
                 << "\n----------------------------------------\n";
-      report_bug(kCorruptionError);
+      // If a shell corruption error happens, kill its parent.
+      auto parent = root_pids[pid];
+      while (!parent.ran_exec) {
+        if (parent.parent_tid == g_root_pid) {
+          break;
+        }
+        parent = root_pids[parent.parent_tid];
+      }
+      report_bug(kCorruptionError, parent.parent_tid);
     }
   }
 }
@@ -270,11 +303,11 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
   std::string buffer = read_string(pid, regs.rsi, regs.rdx);
   debug_log("Write buffer: %s\n", buffer.c_str());
-  match_error_pattern(buffer, g_shell_pids[pid]);
+  match_error_pattern(buffer, g_shell_pids[pid], pid);
 }
 
-void log_file_open(std::string path, int flags) {
-  report_bug(kArbitraryFileOpenError);
+void log_file_open(std::string path, int flags, pid_t pid) {
+  report_bug(kArbitraryFileOpenError, pid);
   std::cerr << "===File opened: " << path << ", flags = " << flags << ",";
   switch (flags & 3) {
     case O_RDONLY:
@@ -308,7 +341,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     return;
   }
   if (path.substr(0, kFzAbsoluteDirectory.length()) == kFzAbsoluteDirectory) {
-    log_file_open(path, regs.rdx);
+    log_file_open(path, regs.rdx, pid);
     return;
   }
   if (path[0] == '/' && path.length() > 1) {
@@ -320,7 +353,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     if (has_unprintable(path_absolute_topdir)) {
       struct stat dirstat;
       if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-        log_file_open(path, regs.rdx);
+        log_file_open(path, regs.rdx, pid);
       }
     }
   }
@@ -357,6 +390,7 @@ int trace(std::map<pid_t, Tracee> pids) {
         it = pids.erase(it);
         // Remove pid from the watchlist when it exits
         g_shell_pids.erase(pid);
+        root_pids.erase(pid);
         continue;
       }
 
@@ -401,6 +435,7 @@ int trace(std::map<pid_t, Tracee> pids) {
         }
         debug_log("forked %ld", new_pid);
         new_pids.push_back(new_pid);
+        root_pids.emplace(new_pid, ThreadParent(pid));
       }
 
       if (is_syscall) {
@@ -412,6 +447,10 @@ int trace(std::map<pid_t, Tracee> pids) {
 
         if (tracee.syscall_enter) {
           if (regs.orig_rax == __NR_execve) {
+            // This is a new process.
+            auto parent = root_pids[pid];
+            parent.ran_exec = true;
+            root_pids[pid] = parent;
             inspect_for_injection(pid, regs);
             std::string shell = get_shell(pid, regs);
             if (shell != "") {
@@ -488,5 +527,6 @@ int main(int argc, char **argv) {
   g_root_pid = pid;
   std::map<pid_t, Tracee> pids;
   pids.emplace(pid, Tracee(pid));
+  root_pids.emplace(pid, ThreadParent(pid));
   return trace(pids);
 }

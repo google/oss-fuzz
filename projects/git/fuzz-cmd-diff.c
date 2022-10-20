@@ -193,7 +193,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
 	argv[1] = "--diff-filter=MRC";
-	argv[2] = "HEAD^";
+	argv[2] = "HEAD";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
 	argv[1] = "-R";

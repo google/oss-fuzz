@@ -102,7 +102,17 @@ def do_bad_build_check(fuzz_target):
   """Runs bad_build_check on |fuzz_target|. Returns a
   Subprocess.ProcessResult."""
   print('INFO: performing bad build checks for', fuzz_target)
-  command = ['bad_build_check', fuzz_target]
+  if centipede_needs_auxiliaries():
+    print('INFO: Finding Centipede\'s auxiliary for target', fuzz_target)
+    auxiliary_path = find_centipede_auxiliary(fuzz_target)
+    if not auxiliary_path:
+      return False
+    print('INFO: Using auxiliary binary:', auxiliary_path)
+    auxiliary = [auxiliary_path]
+  else:
+    auxiliary = []
+
+  command = ['bad_build_check', fuzz_target] + auxiliary
   return subprocess.run(command,
                         stderr=subprocess.PIPE,
                         stdout=subprocess.PIPE,
@@ -160,6 +170,46 @@ def test_all_outside_out(allowed_broken_targets_percentage):
   """Wrapper around test_all that changes OUT and returns the result."""
   with use_different_out_dir() as out:
     return test_all(out, allowed_broken_targets_percentage)
+
+
+def centipede_needs_auxiliaries():
+  """Checks if auxiliaries are needed for Centipede."""
+  # Centipede always requires unsanitized binaries as the main fuzz targets,
+  # and separate sanitized binaries as auxiliaries.
+  # 1. Building sanitized binaries with helper.py (i.e., local or GitHub CI):
+  # Unsanitized ones will be built automatically into the same docker container.
+  # Script bad_build_check tests both
+  # a) If main fuzz targets can run with the auxiliaries, and
+  # b) If the auxiliaries are built with the correct sanitizers.
+  # 2. In Trial build and production build:
+  # Two kinds of binaries will be in separated buckets / docker containers.
+  # Script bad_build_check tests either
+  # a) If the unsanitized binaries can run without the sanitized ones, or
+  # b) If the sanitized binaries are built with the correct sanitizers.
+  return (os.getenv('FUZZING_ENGINE') == 'centipede' and
+          os.getenv('SANITIZER') != 'none' and os.getenv('HELPER') == 'True')
+
+
+def find_centipede_auxiliary(main_fuzz_target_path):
+  """Finds the sanitized binary path that corresponds to |main_fuzz_target| for
+  bad_build_check."""
+  target_dir, target_name = os.path.split(main_fuzz_target_path)
+  sanitized_binary_dir = os.path.join(target_dir,
+                                      f'__centipede_{os.getenv("SANITIZER")}')
+  sanitized_binary_path = os.path.join(sanitized_binary_dir, target_name)
+
+  if os.path.isfile(sanitized_binary_path):
+    return sanitized_binary_path
+
+  # Neither of the following two should ever happen, returns None to indicate
+  # an error.
+  if os.path.isdir(sanitized_binary_dir):
+    print('ERROR: Unable to identify Centipede\'s sanitized target'
+          f'{sanitized_binary_path} in {os.listdir(sanitized_binary_dir)}')
+  else:
+    print('ERROR: Unable to identify Centipede\'s sanitized target directory'
+          f'{sanitized_binary_dir} in {os.listdir(target_dir)}')
+  return None
 
 
 def test_all(out, allowed_broken_targets_percentage):
