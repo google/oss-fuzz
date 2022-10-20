@@ -1,7 +1,7 @@
 TARGET=Fuzzing
 INCDIR=-I..
 LIBDIR=-L..
-EXTCFLAGS=-g -Wall -Werror -pipe
+EXTFLAGS=-Wall -Werror
 LibFLAGS=$(LIB_FUZZING_ENGINE)
 
 BaseINC=$(INCDIR)/proxy/api $(INCDIR)/proxy/api $(INCDIR)/include/cppapi/include \
@@ -19,8 +19,8 @@ EsiLIB=$(LibFLAGS) -ltest -lesicore -lz
 all: $(TARGET)
 
 $(TARGET):
-	$(CXX) $(CFLAGS) $(EXTCFLAGS) $(BaseMACRO) $(EsiINC) $(BaseINC) -c $(EsiEXE).cc
-	$(CXX) $(CFLAGS) $(EXTCFLAGS) $(EsiLib) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
+	$(CXX) $(CXXFLAGS) $(EXTFLAGS) $(BaseMACRO) $(EsiINC) $(BaseINC) -c $(EsiEXE).cc
+	$(CXX) $(CXXFLAGS) $(EsiLib) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
 
 clean:
 	rm $(EsiEXE) *.o
