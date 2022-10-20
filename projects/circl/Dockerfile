@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+# Held back because of github.com/google/oss-fuzz/pull/8313
+# Please fix failure and upgrade.
+FROM gcr.io/oss-fuzz-base/base-builder-go@sha256:b602c177fc34e8237e7a8a6211dc6e2a9570477e6c74c8d379ddab6961b8f39c
 
 ENV GO111MODULE off
 

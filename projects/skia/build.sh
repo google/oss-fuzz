@@ -151,6 +151,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   webp_encoder
 
 $SRC/depot_tools/ninja -C out/FuzzDebug \
+  skmeshspecification \
   skruntimeeffect \
   sksl2glsl \
   sksl2metal \
@@ -245,6 +246,11 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
+
+# skmeshspecification uses the SkSL dictionary but has its own corpus.
+mv out/FuzzDebug/skmeshspecification $OUT/skmeshspecification
+cp ../skia_data/sksl.dict $OUT/skmeshspecification.dict
+mv ../skia_data/skmeshspecification_seed_corpus.zip $OUT/skmeshspecification_seed_corpus.zip
 
 # All five SkSL tests share the same sksl_seed_corpus and dictionary.
 mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl

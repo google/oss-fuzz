@@ -1,7 +1,24 @@
 homepage: "https://github.com/protocolbuffers/upb"
 language: c++
 primary_contact: "haberman@google.com"
-
+auto_ccs:
+- protobuf-oss-fuzz@google.com
+- jgm@google.com
+- jgrimes@google.com
+- kfm@google.com
+- pzd@google.com
+- acozzette@google.com
+- deannagarcia@google.com
+- gberg@google.com
+- jieluo@google.com
+- jorg@google.com
+- mcyoung@google.com
+- mkruskal@google.com
+- salo@google.com
+- sandyzhang@google.com
+- sbenza@google.com
+- shaod@google.com
+- theodorerose@google.com
 sanitizers:
 - address
 - memory

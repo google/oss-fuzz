@@ -36,7 +36,9 @@ do
   # Prepare the project source for build.
   ./synclibs.sh
   ./autogen.sh
-  ./configure --enable-shared=no
+  # OSSFuzz cross-compiles certain architectures which can lead to a partial
+  # installed dependencies.
+  ./configure --enable-shared=no --with-openssl=no --with-zlib=no
 
   # Build the project and fuzzer binaries.
   make -j$(nproc) LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE}

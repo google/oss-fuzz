@@ -15,64 +15,93 @@
 #
 ################################################################################
 
-mv $SRC/{*.zip,*.dict} $OUT
+find $SRC/spring* -name *.dict -o -name *zip -exec cp {} $OUT/ \;
 
 export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-cat > patch.diff <<- EOM
-diff --git a/spring-core/spring-core.gradle b/spring-core/spring-core.gradle
-index 6546aa7..3e83242 100644
---- a/spring-core/spring-core.gradle
-+++ b/spring-core/spring-core.gradle
-@@ -4,6 +4,7 @@ import org.springframework.build.shadow.ShadowSource
- description = "Spring Core"
- 
- apply plugin: "kotlin"
-+apply plugin: 'com.github.johnrengelman.shadow'
- 
- def javapoetVersion = "1.13.0"
- def objenesisVersion = "3.2"
-EOM
+export CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 
-git apply patch.diff
+function install_shadowJar {
+    if grep -q shadow $1/$1.gradle; then
+	    ./gradlew shadowJar --build-file $1/$1.gradle -x javadoc -x test
+    	install -v "$1/build/libs/$1-$CURRENT_VERSION-all.jar" "$OUT/$1.jar";
+    else
+        ./gradlew build -x javadoc -x test
+        install -v "$1/build/libs/$1-$CURRENT_VERSION.jar" "$OUT/$1.jar";
+    fi
+}
 
-CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+install_shadowJar spring-context;
+install_shadowJar spring-core;
+install_shadowJar spring-jdbc;
+install_shadowJar spring-orm;
+install_shadowJar spring-web;
+install_shadowJar spring-webmvc;
+install_shadowJar spring-test;
+install_shadowJar spring-tx;
+install_shadowJar spring-messaging;
+install_shadowJar spring-jms;
+install_shadowJar spring-webflux;
+install_shadowJar spring-websocket;
 
-./gradlew build -x test -i -x javadoc
-./gradlew shadowJar --build-file spring-core/spring-core.gradle -x javadoc -x test
-cp "spring-core/build/libs/spring-core-$CURRENT_VERSION-all.jar" "$OUT/spring-core.jar"
-cp "spring-web/build/libs/spring-web-$CURRENT_VERSION.jar" "$OUT/spring-web.jar"
-cp "spring-context/build/libs/spring-context-$CURRENT_VERSION.jar" "$OUT/spring-context.jar"
-cp "spring-beans/build/libs/spring-beans-$CURRENT_VERSION.jar" "$OUT/spring-beans.jar"
-
-ALL_JARS="spring-web.jar spring-core.jar spring-context.jar spring-beans.jar"
+ALL_JARS=$(find $OUT -name "spring*.jar" -printf "%f ")
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+export BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH:$SRC
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+export RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
-  fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
-  cp $SRC/$fuzzer_basename.class $OUT/
+function create_fuzz_targets() {
+    mkdir -p $SRC/$1
+    mkdir -p $OUT/$1
+    javac -cp $BUILD_CLASSPATH --release 17 $(find $SRC/$1/ -name "*.java" -print)
 
-  # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---cp=$RUNTIME_CLASSPATH \
---target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
-\$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
-done
+    # Overwrite class path for some projects
+    if [ $# -eq 2 ]; then
+        RUNTIME_CLASSPATH=$2
+    fi
 
-cp $SRC/BeanWrapperFuzzer\$Bean.class $OUT/
+    for fuzzer in $SRC/$1/*Fuzzer.java; do
+        fuzzer_basename=$(basename -s .java $fuzzer)
+
+        # Create an execution wrapper that executes Jazzer with the correct arguments.
+        echo "#!/bin/bash
+        # LLVMFuzzerTestOneInput for fuzzer detection.
+        this_dir=\$(dirname \"\$0\")
+        JAVA_OPTS=\"-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
+        JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+        LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+        if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+            mem_settings='-Xmx1900m:-Xss900k'
+        else
+            mem_settings='-Xmx2048m:-Xss1024k'
+        fi
+        \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+        --cp=$RUNTIME_CLASSPATH \
+        --target_class=$fuzzer_basename \
+        --instrumentation_includes=org.springframework.** \
+        --jvm_args=\"\$mem_settings:-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
+        \$@" > $OUT/$fuzzer_basename
+        chmod u+x $OUT/$fuzzer_basename
+    done
+
+    cp $SRC/$1/*.class $OUT/
+}
+
+create_fuzz_targets spring-aop
+create_fuzz_targets spring-beans
+create_fuzz_targets spring-context
+create_fuzz_targets spring-expression
+create_fuzz_targets spring-tx
+create_fuzz_targets spring-web
+create_fuzz_targets spring-jdbc
+create_fuzz_targets spring-messaging
+create_fuzz_targets spring-jms
+create_fuzz_targets spring-webflux
+create_fuzz_targets spring-websocket "\$this_dir/spring-websocket.jar:\$this_dir" # Overwrite class path to avoid logging to stdout
+
+cp $SRC/spring-jdbc/*.xml $OUT/spring-jdbc/

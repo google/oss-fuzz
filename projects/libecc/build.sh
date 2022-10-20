@@ -71,6 +71,8 @@ export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
 cd $SRC/wolfssl/
 # Checkout at commit that's known to be bug-free
 git checkout 4b0c8c07f42abc545761c2c775c6cf22599e9b05
+# Fix Curve448 bug (https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=52254)
+git merge 4d9aacbe879a96f0a26b4c146906b5b9bca473f7
 # Note (to self):
 # Compiling wolfCrypt with SP math instead of normal math due to symbol collisions (specifically fp_* functions) between libecc and wolfCrypt otherwise.
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"

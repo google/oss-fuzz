@@ -65,9 +65,21 @@ function get_dictionary() {
      printf -- "-x %s" "$dict"
   elif [[ "$FUZZING_ENGINE" = "honggfuzz" ]]; then
      printf -- "--dict %s" "$dict"
+  elif [[ "$FUZZING_ENGINE" = "centipede" ]]; then
+     printf -- "--dictionary %s" "$dict"
   else
      printf "Unexpected FUZZING_ENGINE: $FUZZING_ENGINE, ignoring\n" >&2
   fi
+}
+
+function get_extra_binaries() {
+  [[ "$FUZZING_ENGINE" != "centipede" ]] && return
+
+  extra_binaries="$OUT/__centipede_${SANITIZER}/${FUZZER}"
+  if compgen -G "$extra_binaries" >> /dev/null; then
+    printf -- "--extra_binaries %s" \""$extra_binaries\""
+  fi
+
 }
 
 rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
@@ -151,6 +163,31 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -V -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 
+  if [[ $(LC_ALL=C grep -P "\x01_LIBHFUZZ_NETDRIVER_BINARY_SIGNATURE_\x02\xFF" "$FUZZER" ) ]]; then
+    # Honggfuzz Netdriver port. This must match the port in Clusterfuzz.
+    export HFND_TCP_PORT=8666
+  fi
+elif [[ "$FUZZING_ENGINE" = centipede ]]; then
+
+  # Create the work and corpus directory for Centipede.
+  mkdir -p "$OUT/workdir"
+
+  # Centipede only saves crashes to crashes/ in workdir.
+  rm -rf $FUZZER_OUT
+
+  # --workdir: Dir that stores corpus&features in Centipede's own format.
+  # --corpus_dir: Location of the initial (and destination) file corpus.
+  # --fork_server: Execute the target(s) via the fork server.
+  #   Run in fork mode to continue fuzzing indefinitely in case of
+  #   OOMs, timeouts, and crashes.
+  # --exit_on_crash=0: Do not exit on crash.
+  # --timeout=1200: The process that executes target binary will abort
+  #   if an input runs >= 1200s.
+  # --rss_limit_mb=0: Disable RSS limit.
+  # --address_space_limit_mb=0: No address space limit.
+  # --binary: The target binary under test without sanitizer.
+  # --extra_binary: The target binaries under test with sanitizers.
+  CMD_LINE="$OUT/centipede --workdir=\"$OUT/workdir\" --corpus_dir=\"$CORPUS_DIR\" --fork_server=1 --exit_on_crash=1 --timeout=1200 --rss_limit_mb=4096 --address_space_limit_mb=5120 $(get_dictionary) --binary=\"$OUT/${FUZZER}\" $(get_extra_binaries) $*"
 else
 
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"

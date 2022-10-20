@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libdbus-1-dev  libreadline8 libreadline-dev python-docutils libudev-dev udev libical-dev libdbus-1-dev 
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libdbus-1-dev  libreadline8 libreadline-dev python-docutils libudev-dev udev libical-dev libdbus-1-dev systemd
 RUN git clone --depth 1 https://github.com/bluez/bluez bluez
 WORKDIR bluez
 COPY build.sh $SRC/

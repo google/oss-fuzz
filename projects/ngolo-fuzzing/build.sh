@@ -25,9 +25,9 @@ export PATH=$PATH:$SRC/goroot/bin/
 
 compile_package () {
     pkg=$1
-    pkg_flat=`echo $pkg | sed 's/\//_/g'`
+    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x/'`
     args=`cat $SRC/ngolo-fuzzing/std/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
-    ./ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
+    $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
     ls $SRC/ngolo-fuzzing/std/$pkg_flat.py && (
         python $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
@@ -55,7 +55,7 @@ compile_package () {
         cd fuzz_ng_$pkg_flat
         compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
         )
-        ./go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
+        $SRC/ngolo-fuzzing/go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
 
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
     fi
@@ -84,18 +84,46 @@ find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
         continue
     fi
     if compile_package $pkg; then
-        echo $pkg >> ok.txt
+        echo $pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
         # hard fail if the package is meant to be supported
         grep ^$pkg$ $SRC/ngolo-fuzzing/std/supported.txt && exit 1
-        echo $pkg >> ko.txt
+        echo $pkg >> $SRC/ko.txt
     fi
 
 done
 
+# compile x packages
+cd $SRC/x
+ls | while read repo; do
+cd $repo
+find . -type d | while read pkg; do
+    if [[ `ls $pkg/*.go | wc -l` == '0' ]]; then
+        continue
+    fi
+    if [[ `echo $pkg | grep internal | wc -l` == '1' ]]; then
+        continue
+    fi
+    if [[ `echo $pkg | grep vendor | wc -l` == '1' ]]; then
+        continue
+    fi
+    if [[ `echo $pkg | grep testdata | wc -l` == '1' ]]; then
+        continue
+    fi
+    if compile_package $pkg; then
+        echo $pkg >> $SRC/ok.txt
+    else
+        echo "Failed for $pkg"
+        echo $pkg >> $SRC/ko.txt
+    fi
+
+done
+cd -
+done
+
 echo "Failed packages:"
-cat ko.txt
+cat $SRC/ko.txt
 
 echo "Succesful packages:"
-cat ok.txt
+cat $SRC/ok.txt

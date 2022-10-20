@@ -26,26 +26,6 @@ diff --git a/pom.xml b/pom.xml
 index 831f5a1..855a43e 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -32,6 +32,19 @@
- 	</properties>
- 	<build>
- 		<plugins>
-+			<plugin>
-+				<groupId>org.apache.maven.plugins</groupId>
-+				<artifactId>maven-shade-plugin</artifactId>
-+				<version>3.3.0</version>
-+				<executions>
-+				  <execution>
-+				    <phase>package</phase>
-+				    <goals>
-+				      <goal>shade</goal>
-+				    </goals>
-+				  </execution>
-+				</executions>
-+			</plugin>
- 			<plugin>
- 				<groupId>org.codehaus.mojo</groupId>
- 				<artifactId>flatten-maven-plugin</artifactId>
 @@ -61,10 +74,6 @@
  				<groupId>io.spring.javaformat</groupId>
  				<artifactId>spring-javaformat-maven-plugin</artifactId>
@@ -58,7 +38,7 @@ index 831f5a1..855a43e 100644
  				<groupId>org.basepom.maven</groupId>
  				<artifactId>duplicate-finder-maven-plugin</artifactId>
 @@ -74,10 +83,6 @@
- 
+
  	<reporting>
  		<plugins>
 -			<plugin>
@@ -67,7 +47,7 @@ index 831f5a1..855a43e 100644
 -			</plugin>
  		</plugins>
  	</reporting>
- 
+
 
 EOM
 
@@ -78,6 +58,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout)
 
 $MVN clean package $MAVEN_ARGS
+$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 cp "spring-cloud-commons/target/spring-cloud-commons-$CURRENT_VERSION.jar" "$OUT/spring-cloud-commons.jar"
 cp "spring-cloud-context/target/spring-cloud-context-$CURRENT_VERSION.jar" "$OUT/spring-cloud-context.jar"
 cp "spring-cloud-starter-bootstrap/target/spring-cloud-starter-bootstrap-$CURRENT_VERSION.jar" "$OUT/spring-cloud-starter-bootstrap.jar"
@@ -97,16 +78,21 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
 LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=org.springframework.security.**:org.bouncycastle.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
-done 
+done

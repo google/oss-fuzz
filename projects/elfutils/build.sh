@@ -32,7 +32,8 @@
 #  $ cd oss-fuzz/projects/elfutils
 #  $ git clone git://sourceware.org/git/elfutils.git
 #  $ ./build.sh
-#  $ unzip -d CORPUS fuzz-dwfl-core_seed_corpus.zip
+#  $ wget -O fuzz-dwfl-core-corpus.zip "https://storage.googleapis.com/elfutils-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/elfutils_fuzz-dwfl-core/public.zip"
+#  $ unzip -d CORPUS fuzz-dwfl-core-corpus.zip
 #  $ ./out/fuzz-dwfl-core CORPUS/
 
 set -eux
@@ -113,6 +114,11 @@ zlib=zlib/libz.a
 # and so on. Also since a lot of bug reports coming out of the blue aren't exactly helpful
 # fuzz targets should probably be added one at a time to make it easier to keep track
 # of them.
+CFLAGS+=" -Werror -Wall -Wextra"
+CXXFLAGS+=" -Werror -Wall -Wextra"
+
+# fuzz-dwfl-core is kind of a systemd fuzz target in the sense that it resembles the
+# code systemd uses to parse coredumps. Please ping @evverx if it's changed.
 $CC $CFLAGS \
 	-D_GNU_SOURCE -DHAVE_CONFIG_H \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
@@ -138,6 +144,3 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdwfl.o \
 	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
   ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-libdwfl"
-
-# Corpus
-cp "$SRC/fuzz-dwfl-core_seed_corpus.zip" "$OUT"

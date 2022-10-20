@@ -52,7 +52,7 @@ if [ -n "$INTROSPECTOR_PATCHES" ]; then
 fi
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-14-init-7378-gaee49255
+OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
@@ -193,6 +193,7 @@ function free_disk_space {
       /usr/local/bin/clang-refactor \
       /usr/local/bin/clang-offload-wrapper \
       /usr/local/bin/clang-offload-bundler \
+      /usr/local/bin/clang-repl \
       /usr/local/bin/clang-check \
       /usr/local/bin/clang-refactor \
       /usr/local/bin/c-index-test \

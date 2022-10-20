@@ -27,6 +27,7 @@ BASE_IMAGES = [
     'base-builder',
     'base-builder-go',
     'base-builder-go-codeintelligencetesting',
+    'base-builder-javascript',
     'base-builder-jvm',
     'base-builder-python',
     'base-builder-rust',
@@ -39,6 +40,9 @@ BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 INTROSPECTOR_TAG = 'introspector'
+MANIFEST_IMAGES = [
+    'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner'
+]
 TIMEOUT = str(6 * 60 * 60)
 
 
@@ -95,8 +99,10 @@ def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
 def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
   """Execute the build |steps| in GCB and push |images| to the registry."""
   credentials, _ = google.auth.default()
+  images = [image for image in images if image not in MANIFEST_IMAGES
+           ] + ([f'{image}:{build_version}' for image in images])
   body_overrides = {
-      'images': images + [f'{image}:{build_version}' for image in images],
+      'images': images,
       'options': {
           'machineType': 'E2_HIGHCPU_32'
       },
@@ -110,12 +116,66 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
                              use_build_pool=False)
 
 
+def get_images_architecture_manifest_steps():
+  """Returns steps to create manifests for ARM and x86_64 versions of
+  base-runner and base-builder."""
+  images = [f'{TAG_PREFIX}base-builder', f'{TAG_PREFIX}base-runner']
+  steps = []
+  for image in images:
+    steps.extend(get_image_push_architecture_manifest_steps(image))
+  return steps
+
+
+def get_image_push_architecture_manifest_steps(image):
+  """Returns the steps to push a manifest pointing to ARM64 and AMD64 versions
+  of |image|."""
+  arm_testing_image = f'{image}-testing-arm'
+  amd64_manifest_image = f'{image}:manifest-amd64'
+  arm64_manifest_image = f'{image}:manifest-arm64v8'
+  steps = [
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['tag', image, amd64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['push', amd64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['pull', arm_testing_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['tag', arm_testing_image, arm64_manifest_image],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['push', arm64_manifest_image],
+      },
+      {
+          'name':
+              'gcr.io/cloud-builders/docker',
+          'args': [
+              'manifest', 'create', image, '--amend', arm64_manifest_image,
+              '--amend', amd64_manifest_image
+          ],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['manifest', 'push', image]
+      },
+  ]
+  return steps
+
+
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
   logging.basicConfig(level=logging.INFO)
 
   steps = get_base_image_steps(BASE_IMAGES)
+  steps.extend(get_images_architecture_manifest_steps())
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
 

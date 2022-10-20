@@ -83,5 +83,8 @@ class TrialBuildMainTest(unittest.TestCase):
     with open(expected_build_steps_path, 'r') as file_handle:
       expected_build_steps = json.load(file_handle)
 
+    # Snippet for updating this:
+    # f=open('/tmp/a', 'w')
+    # json.dump(mock_run_build.call_args_list[0][0][1], f); f.close()
     self.assertEqual(mock_run_build.call_args_list[0][0][1],
                      expected_build_steps)

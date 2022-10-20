@@ -12,6 +12,7 @@ auto_ccs:
   - "skia-bugs-central@skia-public.iam.gserviceaccount.com"
   - "fuzz@skia.org"
   - "armansito@google.com"
+  - "drott@chromium.org"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"

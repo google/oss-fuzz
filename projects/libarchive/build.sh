@@ -44,8 +44,8 @@ sed -i 's/-Werror//g' ./CMakeLists.txt
 
 mkdir build2
 cd build2
-cmake ../
-make
+cmake -DCHECK_CRC_ON_SOLID_SKIP=1 -DDONT_FAIL_ON_CRC_ERROR=1 ../
+make -j$(nproc)
 
 # build seed
 cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
@@ -55,4 +55,18 @@ cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
 $CXX $CXXFLAGS -I../libarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
     $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
-    -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+    -Wl,-Bstatic -llzo2 -Wl,-Bdynamic -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+
+# add the uuencoded test files
+cd $SRC
+mkdir ./uudecoded
+find $SRC/libarchive/ -type f -name "test_extract.*.uu" -print0 | xargs -0 -I % cp -f % ./uudecoded/
+cd ./uudecoded
+find ./ -name "*.uu" -exec uudecode {} \;
+cd ../
+rm -f ./uudecoded/*.uu
+zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip ./uudecoded/*
+
+# add weird archives
+git clone --depth=1 https://github.com/corkami/pocs
+find ./pocs/ -type f -print0 | xargs -0 -I % zip -jr $OUT/libarchive_fuzzer_seed_corpus.zip %

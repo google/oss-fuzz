@@ -16,13 +16,22 @@
 ################################################################################
 
 autoreconf -i
-./configure --enable-static
+./configure --enable-static --enable-fsect-man5
 make V=1 all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
-     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
+$CXX $CXXFLAGS -std=c++11 -Isrc/ \
+     $SRC/magic_fuzzer_loaddb.cc -o $OUT/magic_fuzzer_loaddb \
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
+$CXX $CXXFLAGS -std=c++11 -Isrc/ \
+     $SRC/magic_fuzzer_fd.cc -o $OUT/magic_fuzzer_fd \
+     $LIB_FUZZING_ENGINE ./src/.libs/libmagic.a -l:libz.a -l:liblz4.a -l:libbz2.a -l:liblzma.a -l:libzstd.a
 
 cp ./magic/magic.mgc $OUT/
 
-zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-*
+mkdir pocs_all
+find $SRC/pocs/ -type f -print0 | xargs -0 -I % mv -f % ./pocs_all
+
+zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile $SRC/binary-samples/{elf,pe}-* $SRC/pocs_all

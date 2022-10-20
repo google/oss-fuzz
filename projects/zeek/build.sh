@@ -69,8 +69,8 @@ for f in ${fuzzers}; do
         cp ../src/fuzzers/${fuzzer_name}.dict ${OUT}/${fuzzer_exe}.dict
     fi
 
-    if [[ -e ../src/fuzzers/${fuzzer_name}-corpus.zip ]]; then
-        cp ../src/fuzzers/${fuzzer_name}-corpus.zip ${OUT}/${fuzzer_exe}_seed_corpus.zip
+    if [[ -e ../src/fuzzers/corpora/${fuzzer_name}-corpus.zip ]]; then
+        cp ../src/fuzzers/corpora/${fuzzer_name}-corpus.zip ${OUT}/${fuzzer_exe}_seed_corpus.zip
     fi
 
     fuzzer_count=$((fuzzer_count + 1))

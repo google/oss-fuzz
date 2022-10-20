@@ -109,9 +109,13 @@ def get_args(args=None):
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
-                      default=['afl', 'libfuzzer', 'honggfuzz'],
+                      default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
                       nargs='+',
                       help='Fuzzing engines.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=build_project.DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
@@ -196,10 +200,11 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=['trial-build']))
-    except Exception:  # pylint: disable=broad-except
+          extra_tags=['trial-build', f'branch-{args.branch}']))
+      time.sleep(1)  # Avoid going over 75 requests per second limit.
+    except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
-      print('Failed to start build', project_name)
+      print('Failed to start build', project_name, error)
 
   return build_ids
 
@@ -275,6 +280,7 @@ def _do_test_builds(args, test_image_suffix):
                                      args.force_build)
     config = build_project.Config(testing=True,
                                   test_image_suffix=test_image_suffix,
+                                  repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
                                   upload=False)

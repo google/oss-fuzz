@@ -58,6 +58,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       }
     }
 
+    // Read profile info
+    cmsInfoType info = data[0] % 4;
+    char outBuffer[100];
+
+    cmsGetProfileInfoASCII(hProfile, info, "DEN", "DEN", outBuffer, 100);
+    cmsGetTagCount(hProfile);
+    if (size > 2) {
+      cmsGetTagSignature(hProfile, (cmsUInt32Number)data[1]);
+    }
+    if (size > 40) {
+      cmsTagSignature tag = *((uint32_t *)(data+5));
+      cmsTagLinkedTo(hProfile, tag);
+    }
+
     // Save to random file
     cmsSaveProfileToFile(hProfile, "random.icc");
     cmsCloseProfile(hProfile);

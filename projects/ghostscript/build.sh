@@ -45,22 +45,26 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   CUPSCONFIG=$CUPSCONFIG \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
-  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m,tiffsep1,faxg3,psdcmyk,eps2write
+  --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m,tiffsep1,faxg3,psdcmyk,eps2write,bmpmono,xpswrite
 make -j$(nproc) libgs
 
-fuzzers="gstoraster_fuzzer            \
-         gstoraster_fuzzer_all_colors \
-         gstoraster_ps_fuzzer         \
-         gstoraster_pdf_fuzzer        \
-         gs_device_pdfwrite_fuzzer    \
-         gs_device_pxlmono_fuzzer     \
-         gs_device_pgmraw_fuzzer      \
-         gs_device_ps2write_fuzzer    \
-         gs_device_png16m_fuzzer      \
-         gs_device_psdcmyk_fuzzer     \
-         gs_device_eps2write_fuzzer   \
-         gs_device_faxg3_fuzzer       \
-         gs_device_tiffsep1_fuzzer"
+fuzzers="gstoraster_fuzzer                \
+         gstoraster_fuzzer_all_colors     \
+         gstoraster_ps_fuzzer             \
+         gstoraster_pdf_fuzzer            \
+         gs_device_pdfwrite_fuzzer        \
+         gs_device_pxlmono_fuzzer         \
+         gs_device_pgmraw_fuzzer          \
+         gs_device_ps2write_fuzzer        \
+         gs_device_png16m_fuzzer          \
+         gs_device_psdcmyk_fuzzer         \
+         gs_device_eps2write_fuzzer       \
+         gs_device_faxg3_fuzzer           \
+         gs_device_bmpmono_fuzzer         \
+         gs_device_xpswrite_fuzzer        \
+         gs_device_pxlcolor_fuzzer        \
+         gs_device_tiffsep1_fuzzer        \
+         gs_device_pdfwrite_opts_fuzzer"
 
 for fuzzer in $fuzzers; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
@@ -86,6 +90,17 @@ for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
 done
 zip -j "$OUT/gstoraster_fuzzer_all_colors_seed_corpus.zip" "$WORK"/all_color_seeds/*
 
+# Do the same thing with pdfwrites opt fuzzer, but multiple bytes
+mkdir -p "$WORK/gs_device_pdfwrite_opts_fuzzer_seeds"
+for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
+  # Prepend the number of bytes used for picking options in the opts fuzzer
+  printf "\x01\x01" | cat - "$f" > tmp_file.txt
+  mv tmp_file.txt $f
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/gs_device_pdfwrite_opts_fuzzer_seeds/$s"
+done
+zip -j "$OUT/gs_device_pdfwrite_opts_fuzzer_seed_corpus.zip" "$WORK"/gs_device_pdfwrite_opts_fuzzer_seeds/*
+
 # Create seeds for gstoraster_fuzzer
 mkdir -p "$WORK/seeds"
 for f in examples/*.{ps,pdf}; do
@@ -98,10 +113,23 @@ zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pdfwrite_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlmono_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_eps2write_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_bmpmono_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_xpswrite_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlcolor_fuzzer_seed_corpus.zip"
 
 # Copy out options
 cp $SRC/*.options $OUT/
 
 # Copy out dictionary
-cp $SRC/dicts/pdf.dict $OUT/gstoraster_pdf_fuzzer.dict
+fuzzers_with_dict="gstoraster_fuzzer  \
+         gstoraster_fuzzer_all_colors \
+         gstoraster_pdf_fuzzer        \
+         gs_device_pdfwrite_fuzzer    \
+         gs_device_faxg3_fuzzer       \
+         gs_device_bmpmono_fuzzer     \
+         gs_device_xpswrite_fuzzer"
+
+for fuzzer in $fuzzers_with_dict; do
+  cp $SRC/dicts/pdf.dict $OUT/${fuzzer}.dict
+done
 cp $SRC/dicts/ps.dict $OUT/gstoraster_ps_fuzzer.dict

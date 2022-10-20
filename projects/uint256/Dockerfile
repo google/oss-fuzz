@@ -16,10 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN go get -u -d github.com/holiman/uint256/...
-
 RUN git clone --depth 1 https://github.com/holiman/uint256.git uint256
-
 RUN cp uint256/oss-fuzz.sh $SRC/build.sh
 
-WORKDIR $SRC/
+WORKDIR $SRC/uint256

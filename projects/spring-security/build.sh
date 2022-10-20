@@ -19,48 +19,32 @@ export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-cat > patch.diff <<- EOM
-diff --git a/ldap/spring-security-ldap.gradle b/ldap/spring-security-ldap.gradle
-index c4f6c08..413b992 100644
---- a/ldap/spring-security-ldap.gradle
-+++ b/ldap/spring-security-ldap.gradle
-@@ -1,4 +1,9 @@
-+plugins {
-+	id 'com.github.johnrengelman.shadow' version '7.1.2'
-+}
-+
- apply plugin: 'io.spring.convention.spring-module'
-+apply plugin: 'com.github.johnrengelman.shadow'
- 
- dependencies {
- 	management platform(project(":spring-security-dependencies"))
-@@ -10,7 +15,7 @@ dependencies {
- 
- 	optional 'com.fasterxml.jackson.core:jackson-databind'
- 	optional 'ldapsdk:ldapsdk'
--	optional "com.unboundid:unboundid-ldapsdk"
-+	api "com.unboundid:unboundid-ldapsdk"
- 	optional "org.apache.directory.server:apacheds-core"
- 	optional "org.apache.directory.server:apacheds-core-entry"
- 	optional "org.apache.directory.server:apacheds-protocol-shared"
-EOM
+CURRENT_VERSION=$(sed -nr "s/^version=(.*)/\1/p" gradle.properties)
 
-git apply patch.diff
+GRADLE_ARGS="-x test -x javadoc"
 
+./gradlew shadowJar $GRADLE_ARGS -b ldap/spring-security-ldap.gradle
+./gradlew shadowJar $GRADLE_ARGS -b config/spring-security-config.gradle
+./gradlew shadowJar $GRADLE_ARGS -b core/spring-security-core.gradle
+./gradlew build -b dependencies/spring-security-dependencies.gradle
+./gradlew shadowJar $GRADLE_ARGS -b messaging/spring-security-messaging.gradle
+./gradlew shadowJar $GRADLE_ARGS -b web/spring-security-web.gradle
+./gradlew shadowJar $GRADLE_ARGS -b test/spring-security-test.gradle
+./gradlew shadowJar $GRADLE_ARGS -b oauth2/oauth2-core/spring-security-oauth2-core.gradle
+./gradlew shadowJar $GRADLE_ARGS -b acl/spring-security-acl.gradle
+./gradlew shadowJar $GRADLE_ARGS -b oauth2/oauth2-client/spring-security-oauth2-client.gradle
+./gradlew shadowJar $GRADLE_ARGS -b oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
 
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+# Copy all shadow jars to the $OUT folder
+find . -name "*-all.jar" -print0 | while read -d $'\0' file
+do
+    file_name=`echo $file | sed "s/-$CURRENT_VERSION-all//g" | egrep "[^\/]*.jar" -o`
+    cp $file $OUT/$file_name
+done
 
-./gradlew build -PbuildSrc.skipTests -x test -i -x javadoc -x :spring-security-docs:api -x :spring-security-itest-ldap-embedded-none:integrationTest -x :spring-security-config:integrationTest
-./gradlew shadowJar --build-file ldap/spring-security-ldap.gradle -PbuildSrc.skipTests -x test -x javadoc -x :spring-security-itest-ldap-embedded-none:integrationTest
-cp "core/build/libs/spring-security-core-$CURRENT_VERSION.jar" "$OUT/spring-security-core.jar"
-cp "ldap/build/libs/spring-security-ldap-$CURRENT_VERSION-all.jar" "$OUT/spring-security-ldap.jar"
-cp "build/libs/spring-security-$CURRENT_VERSION.jar" "$OUT/spring-security.jar"
-cp "config/build/libs/spring-security-config-$CURRENT_VERSION.jar" "$OUT/spring-security-config.jar"
-cp "config/build/libs/spring-security-config-$CURRENT_VERSION-test.jar" "$OUT/spring-security-config-test.jar"
+ALL_JARS=`ls $OUT/*.jar -I jazzer_agent_deploy.jar -1 | tr "\n" " " | egrep "[^\/]*.jar" -o`
 
-ALL_JARS="spring-security-ldap.jar spring-security-core.jar spring-security.jar spring-security-config.jar spring-security-config-test.jar"
-
-# The classpath at build-time includes the project jars in $OUT as well as the
+# The class path at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 
@@ -70,19 +54,26 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer --release 17
-  cp $SRC/$fuzzer_basename.class $OUT/
+  cp $SRC/[$fuzzer_basename]*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
 LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=com.unboundid.ldap.**:org.springframework.ldap.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
+
+cp $SRC/StrictHttpFirewallFuzzer\$Header.class $OUT/

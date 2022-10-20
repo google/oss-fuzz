@@ -85,6 +85,7 @@ This configuration file stores project metadata. The following attributes are su
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
+- [file_github_issue](#file_github_issue) (optional)
 
 ### homepage
 You project's homepage.
@@ -181,7 +182,7 @@ to identify since they will manifest as crashes in ASAN rather than your code.
 
 ### fuzzing_engines (optional) {#fuzzing_engines}
 The list of fuzzing engines to use.
-By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
+By default, `libfuzzer`, `afl`, `honggfuzz`, and `centipede` are used. It is recommended to
 use all of them if possible. `libfuzzer` is required by OSS-Fuzz.
 
 ### help_url (optional) {#help_url}
@@ -201,6 +202,10 @@ builds_per_day: 2
 ```
 
 Will build the project twice per day.
+
+### file_github_issue (optional) {#file_github_issue}
+Whether to mirror issues on github instead of having them only in the OSS-Fuzz
+tracker.
 
 ## Dockerfile {#dockerfile}
 
@@ -266,7 +271,7 @@ If your project is written in Go, check out the [Integrating a Go project]({{ si
 
 **Note:**
 
-1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL++ and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
+1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL++, Honggfuzz, and Centipede fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
@@ -524,3 +529,10 @@ Adding it is super easy, just follow this template:
 ```markdown
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
 ```
+
+## Monitoring performance via Fuzz Introspector
+
+As soon as your project is run with ClusterFuzz (< 1 day), you can check the Fuzz Introspector report for your project. [Fuzz Introspector](https://github.com/ossf/fuzz-introspector) is a tool to help you understand your fuzzer’s performance and identify any potential blockers. It provides individual and aggregated fuzzer reachability and coverage reports. You can monitor each fuzzer's static reachability potential and compare it against dynamic coverage and identify any potential bottlenecks. Fuzz Introspector can improve your fuzzer's performance by guiding you to decide whether to add a new fuzz target or modify an existing one to improve the quality or your harness. 
+The report is accessible through the [OSS-Fuzz report page](https://oss-fuzz.com/) for the C/C++ projects or through this [index](http://oss-fuzz-introspector.storage.googleapis.com/index.html). Support for Java and Python projects is in the pipeline. 
+
+As an example you can check Fuzz Introspector [report for bzip2](https://storage.googleapis.com/oss-fuzz-introspector/bzip2/inspector-report/20221017/fuzz_report.html).

@@ -1,0 +1,9 @@
+--- a/spring-test/spring-test.gradle
++++ b/spring-test/spring-test.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring TestContext Framework"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ 
+ dependencies {

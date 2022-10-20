@@ -1,0 +1,9 @@
+--- a/spring-web/spring-web.gradle
++++ b/spring-web/spring-web.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring Web"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ apply plugin: "kotlinx-serialization"
+ 
