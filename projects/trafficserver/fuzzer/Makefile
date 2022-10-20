@@ -1,7 +1,7 @@
 TARGET=Fuzzing
 INCDIR=-I..
 LIBDIR=-L..
-EXTCFLAGS=-g -Wall -Werror -std=c++17 -pipe
+EXTCFLAGS=-g -Wall -Werror -pipe
 LibFLAGS=$(LIB_FUZZING_ENGINE)
 
 BaseINC=$(INCDIR)/proxy/api $(INCDIR)/proxy/api $(INCDIR)/include/cppapi/include \
