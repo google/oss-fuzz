@@ -26,9 +26,9 @@ def TestInput(data):
         'message.timeout.ms': fdp.ConsumeIntInRange(10,2000)
     })
 
-    p.produce(fdp.ConsumeString(20).replace('\x00', ''))
+    p.produce(fdp.ConsumeUnicodeNoSurrogates(20).replace('\x00', ''))
     p.produce(
-        fdp.ConsumeString(20).replace('\x00', ''),
+        fdp.ConsumeUnicodeNoSurrogates(20).replace('\x00', ''),
         value=fdp.ConsumeString(20),
         key=fdp.ConsumeString(20)
     )
@@ -37,8 +37,8 @@ def TestInput(data):
         pass
 
     p.produce(
-        topic=fdp.ConsumeString(20),
-        value=fdp.ConsumeString(20),
+        topic=fdp.ConsumeUnicodeNoSurrogates(20),
+        value=fdp.ConsumeUnicodeNoSurrogates(20),
         partition=fdp.ConsumeIntInRange(1,10),
         callback=on_delivery
     )

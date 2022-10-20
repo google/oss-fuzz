@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build libglib2.0-dev \
-    libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget \
+    libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
     libattr1 libattr1-dev libcap-ng-dev pkg-config
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu

@@ -26,7 +26,7 @@
 
 struct Environment {
   Environment(std::string data_dir) {
-    magic = magic_open(MAGIC_COMPRESS|MAGIC_CONTINUE);
+    magic = magic_open(MAGIC_COMPRESS|MAGIC_CONTINUE|MAGIC_NO_COMPRESS_FORK);
     std::string magic_path = data_dir + "/magic";
     if (magic_load(magic, magic_path.c_str())) {
       fprintf(stderr, "error loading magic file: %s\n", magic_error(magic));

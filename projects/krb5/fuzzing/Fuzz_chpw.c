@@ -12,12 +12,13 @@ limitations under the License.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
-#include "autoconf.h"
+#include "k5-int.h"
 #include "krb5.h"
 
-#define kMinInputLength 10
-#define kMaxInputLength 5120
+#define kMinInputLength 20
+#define kMaxInputLength 100
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 {//src/tests/misc/test_chpw_message.c
@@ -26,20 +27,25 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         return 0;
     }
 
+//Add Null byte
+    uint8_t *DataFx;
+    size_t SizeFx = Size+1;
+    DataFx = (uint8_t *)calloc(SizeFx,sizeof(uint8_t));
+    memcpy((void *)DataFx,(void *)Data,Size);
+
     char *msg;
+    krb5_data DataInput;
     krb5_context context;
 
     krb5_init_context(&context);
 
-    krb5_data DataInput;
-    DataInput.magic = 0;
-    DataInput.length = Size;
-    DataInput.data = (char *)Data;
+    DataInput = make_data((void *)DataFx, SizeFx);
 
     krb5_chpw_message(context, &DataInput, &msg);
 
     free(msg);
     krb5_free_context(context);
 
+    free(DataFx);
     return 0;
 }

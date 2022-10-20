@@ -9,4 +9,5 @@ auto_ccs:
   - "y.endoh@gmail.com"
   - "john@hawthorn.email"
   - "kevinbackhouse@github.com"
+  - "oss-fuzz@ruby-lang.org"
 main_repo: "https://github.com/ruby/ruby"

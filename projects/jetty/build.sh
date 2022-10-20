@@ -27,9 +27,8 @@ cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-server-$JETTY_VERSI
 cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-util-$JETTY_VERSION.jar $OUT/jetty-util.jar
 cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-io-$JETTY_VERSION.jar $OUT/jetty-io.jar
 cp $SRC/jetty.project/jetty-runner/target/jetty-runner-$JETTY_VERSION.jar $OUT/jetty-runner.jar
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/logging/slf4j-api-2.0.0.jar $OUT/slf4j-api.jar
 
-ALL_JARS="jetty-util.jar jetty-server.jar jetty-http.jar jetty-io.jar jetty-runner.jar slf4j-api.jar"
+ALL_JARS="jetty-util.jar jetty-server.jar jetty-http.jar jetty-io.jar jetty-runner.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -44,15 +43,21 @@ for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java'); do
   cp $SRC/[$fuzzer_basename]*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 JAVA_HOME=\"\$this_dir/open-jdk/\" \
+if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
 -rss_limit_mb=0 \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

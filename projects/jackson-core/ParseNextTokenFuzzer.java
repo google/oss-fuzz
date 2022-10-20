@@ -20,7 +20,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.io.SerializedString;
 
+import java.io.Writer;
+import java.io.StringWriter;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
@@ -33,20 +36,49 @@ public class ParseNextTokenFuzzer {
         
     try {
         jp = jf.createParser(data.consumeRemainingAsBytes());
-      if (data.consumeBoolean()) {
-      } else {
-        InputStream myInputStream = new ByteArrayInputStream(data.consumeRemainingAsBytes());
-        jp = jf.createParser(myInputStream);
-      }
-      jp.nextFieldName();
-
-      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-      Base64Variant orig = Base64Variants.PEM;
-      while (jp.nextToken() != null) {
-            ;
+        for (int i = 0;i < data.consumeInt(3, 1000); i++) {
+          int execType = data.consumeInt(0, 17);
+          if (execType==0) {
+            InputStream myInputStream = new ByteArrayInputStream(data.consumeRemainingAsBytes());
+            jp = jf.createParser(myInputStream);
+          } else if(execType==1) {
+            jp.nextToken();
+          } else if(execType==2) {
+            jp.nextTextValue();
+          } else if(execType==3) {
+            jp.nextBooleanValue();
+          } else if(execType==4) {
+            jp.nextFieldName();
+          } else if(execType==5) {
+            jp.nextFieldName(new SerializedString(data.consumeString(10000)));
+          } else if(execType==6) {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            Base64Variant orig = Base64Variants.PEM;
+            jp.readBinaryValue(orig, bytes);
+          } else if(execType==7) {
+            String outString = jp.getValueAsString();
+          } else if(execType==8) {
+            int outInt = jp.getValueAsInt();
+          } else if(execType==9) {
+            Writer writer = new StringWriter();
+            int len = jp.getText(writer);
+          } else if(execType==10) {
+            char[] textChars = jp.getTextCharacters();
+          } else if(execType==11) {
+            int textLen = jp.getTextLength();
+          } else if(execType==12) {
+            int textOffset = jp.getTextOffset();
+          } else if(execType==13) {
+            jp.getBinaryValue(Base64Variants.PEM);
+          } else if(execType==14) {
+            jp.nextIntValue(data.consumeInt());
+          } else if(execType==15) {
+            jp.nextLongValue(data.consumeLong());
+          } else if(execType==16) {
+            jp.finishToken();
+          }
         }
-      jp.readBinaryValue(orig, bytes);
     } catch (IOException | IllegalArgumentException ignored) {
-    }
   }
+}
 }

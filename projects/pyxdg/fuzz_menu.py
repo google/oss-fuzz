@@ -17,6 +17,9 @@ import os
 import sys
 import atheris
 
+import pysecsan
+pysecsan.add_hooks()
+
 with atheris.instrument_imports(enable_loader_override=False):
   from lxml import etree as et
   import xml.etree.ElementTree as etree

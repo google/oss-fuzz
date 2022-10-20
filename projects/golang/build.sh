@@ -42,12 +42,18 @@ function setup_golang_fuzzers() {
 
 	mkdir $SRC/golang/fp
 	cp $SRC/filepath_fuzzer.go $SRC/golang/fp/
+
+	cp $SRC/strings_fuzzer.go $SRC/golang/strings/
+
+	cp $SRC/multipart_fuzzer.go $SRC/golang/multipart/main.go
+
 	go mod init "github.com/dvyukov/go-fuzz-corpus"
 }
 
 function compile_fuzzers() {
 	# version is used as suffix for the binaries
 	version=$1
+	compile_go_fuzzer $FUZZ_ROOT/strings FuzzStringsSplit fuzz_strings_split$version
 	compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt$version
@@ -57,6 +63,8 @@ function compile_fuzzers() {
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzFloatSetString fuzz_float_set_string$version
+	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigGobdecode fuzz_big_gobdecode$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2$version
 	compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer$version
