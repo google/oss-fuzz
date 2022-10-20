@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-export CFLAGS="$(CFLAGS)"
-export CXXFLAGS="$(CFLAGS)"
-export LDFLAGS="$(CFLAGS)"
-
 autoreconf -if
-./configure
+./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(CXXFLAGS)"
+
 make -j$(nproc)
 
 pushd fuzzer/
