@@ -23,4 +23,12 @@ make -j$(nproc)
 
 pushd fuzzer/
 make
+cp FuzzEsi $OUT/FuzzEsi
+cp FuzzHTTP $OUT/FuzzHTTP
 popd
+
+pushd $SRC/oss-fuzz-bloat/trafficserver/
+cp FuzzEsi_seed_corpus.zip $OUT/FuzzEsi_seed_corpus.zip
+cp FuzzHTTP_seed_corpus.zip $OUT/FuzzHTTP_seed_corpus.zip
+popd
+
