@@ -35,6 +35,7 @@ import java.net.URI;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -46,6 +47,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.lang.ClassCastException;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 
 // For NoCheckSubTypeValidator
 import com.fasterxml.jackson.databind.JavaType;
@@ -65,85 +67,98 @@ public class AdaLObjectReader3Fuzzer {
         JsonParser jp;
 
         MapperFeature[] mapperfeatures = new MapperFeature[]{MapperFeature.AUTO_DETECT_CREATORS,
-                                        MapperFeature.AUTO_DETECT_FIELDS,
-                                        MapperFeature.AUTO_DETECT_GETTERS,
-                                        MapperFeature.AUTO_DETECT_IS_GETTERS,
-                                        MapperFeature.AUTO_DETECT_SETTERS,
-                                        MapperFeature.REQUIRE_SETTERS_FOR_GETTERS,
-                                        MapperFeature.USE_GETTERS_AS_SETTERS,
-                                        MapperFeature.INFER_CREATOR_FROM_CONSTRUCTOR_PROPERTIES,
-                                        MapperFeature.INFER_PROPERTY_MUTATORS,
-                                        MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS,
-                                        MapperFeature.ALLOW_VOID_VALUED_PROPERTIES,
-                                        MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS,
-                                        MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS,
-                                        MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
-                                        MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES,
-                                        MapperFeature.ALLOW_EXPLICIT_PROPERTY_RENAMING,
-                                        MapperFeature.USE_STD_BEAN_NAMING,
-                                        MapperFeature.ALLOW_COERCION_OF_SCALARS,
-                                        MapperFeature.DEFAULT_VIEW_INCLUSION,
-                                        MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS,
-                                        MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE,
-                                        MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL,
-                                        MapperFeature.USE_STATIC_TYPING,
-                                        MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES};
+            MapperFeature.AUTO_DETECT_FIELDS,
+            MapperFeature.AUTO_DETECT_GETTERS,
+            MapperFeature.AUTO_DETECT_IS_GETTERS,
+            MapperFeature.AUTO_DETECT_SETTERS,
+            MapperFeature.REQUIRE_SETTERS_FOR_GETTERS,
+            MapperFeature.USE_GETTERS_AS_SETTERS,
+            MapperFeature.INFER_CREATOR_FROM_CONSTRUCTOR_PROPERTIES,
+            MapperFeature.INFER_PROPERTY_MUTATORS,
+            MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS,
+            MapperFeature.ALLOW_VOID_VALUED_PROPERTIES,
+            MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS,
+            MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS,
+            MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
+            MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES,
+            MapperFeature.ALLOW_EXPLICIT_PROPERTY_RENAMING,
+            MapperFeature.USE_STD_BEAN_NAMING,
+            MapperFeature.ALLOW_COERCION_OF_SCALARS,
+            MapperFeature.DEFAULT_VIEW_INCLUSION,
+            MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS,
+            MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE,
+            MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL,
+            MapperFeature.USE_STATIC_TYPING,
+            MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES};
 
         SerializationFeature[] serializationfeatures = new SerializationFeature[]{SerializationFeature.INDENT_OUTPUT,
-                                        SerializationFeature.CLOSE_CLOSEABLE,
-                                        SerializationFeature.WRAP_ROOT_VALUE,
-                                        SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS,
-                                        SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS,
-                                        SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
-                                        SerializationFeature.WRITE_ENUMS_USING_INDEX,
-                                        SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED,
-                                        SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN,
-                                        SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
-                                        SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID,
-                                        SerializationFeature.FAIL_ON_EMPTY_BEANS,
-                                        SerializationFeature.WRAP_EXCEPTIONS,
-                                        SerializationFeature.FLUSH_AFTER_WRITE_VALUE,
-                                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-                                        SerializationFeature.WRITE_NULL_MAP_VALUES,
-                                        SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
-                                        SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS,
-                                        SerializationFeature.EAGER_SERIALIZER_FETCH};
+            SerializationFeature.CLOSE_CLOSEABLE,
+            SerializationFeature.WRAP_ROOT_VALUE,
+            SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS,
+            SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS,
+            SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
+            SerializationFeature.WRITE_ENUMS_USING_INDEX,
+            SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED,
+            SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN,
+            SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
+            SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID,
+            SerializationFeature.FAIL_ON_EMPTY_BEANS,
+            SerializationFeature.WRAP_EXCEPTIONS,
+            SerializationFeature.FLUSH_AFTER_WRITE_VALUE,
+            SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
+            SerializationFeature.WRITE_NULL_MAP_VALUES,
+            SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
+            SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS,
+            SerializationFeature.EAGER_SERIALIZER_FETCH};
 
         DeserializationFeature[] deserializationfeatures = new DeserializationFeature[]{DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS,
-                                        DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
-                                        DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY,
-                                        DeserializationFeature.READ_ENUMS_USING_TO_STRING,
-                                        DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
-                                        DeserializationFeature.UNWRAP_ROOT_VALUE,
-                                        DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS,
-                                        DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT,
-                                        DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
-                                        DeserializationFeature.ACCEPT_FLOAT_AS_INT,
-                                        DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE,
-                                        DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS,
-                                        DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,
-                                        DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE,
-                                        DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES,
-                                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                                        DeserializationFeature.FAIL_ON_INVALID_SUBTYPE,
-                                        DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
-                                        DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS,
-                                        DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
-                                        DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS,
-                                        DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
-                                        DeserializationFeature.WRAP_EXCEPTIONS,
-                                        DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
-                                        DeserializationFeature.EAGER_DESERIALIZER_FETCH};
+            DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
+            DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY,
+            DeserializationFeature.READ_ENUMS_USING_TO_STRING,
+            DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
+            DeserializationFeature.UNWRAP_ROOT_VALUE,
+            DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS,
+            DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT,
+            DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
+            DeserializationFeature.ACCEPT_FLOAT_AS_INT,
+            DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE,
+            DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS,
+            DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,
+            DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE,
+            DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES,
+            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+            DeserializationFeature.FAIL_ON_INVALID_SUBTYPE,
+            DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
+            DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS,
+            DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
+            DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS,
+            DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
+            DeserializationFeature.WRAP_EXCEPTIONS,
+            DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
+            DeserializationFeature.EAGER_DESERIALIZER_FETCH};
 
         ObjectMapper.DefaultTyping[] typings = new ObjectMapper.DefaultTyping[]{ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT,
-                        ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE,
-                        ObjectMapper.DefaultTyping.NON_CONCRETE_AND_ARRAYS,
-                        ObjectMapper.DefaultTyping.NON_FINAL,
-                        ObjectMapper.DefaultTyping.EVERYTHING};
+            ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE,
+            ObjectMapper.DefaultTyping.NON_CONCRETE_AND_ARRAYS,
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            ObjectMapper.DefaultTyping.EVERYTHING};
+
+        JsonReadFeature[] rfeatures = new JsonReadFeature[]{JsonReadFeature.ALLOW_JAVA_COMMENTS,
+            JsonReadFeature.ALLOW_YAML_COMMENTS,
+            JsonReadFeature.ALLOW_SINGLE_QUOTES,
+            JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES,
+            JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
+            JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS,
+            JsonReadFeature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS,
+            JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
+            JsonReadFeature.ALLOW_TRAILING_DECIMAL_POINT_FOR_NUMBERS,
+            JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS,
+            JsonReadFeature.ALLOW_MISSING_VALUES,
+            JsonReadFeature.ALLOW_TRAILING_COMMA};
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -176,9 +191,23 @@ public class AdaLObjectReader3Fuzzer {
             }
         }
 
+        if (data.consumeBoolean()) {
+            DeserializationConfig config = mapper.getDeserializationConfig();            
+
+            for (int i = 0; i < rfeatures.length; i++) {
+                if (data.consumeBoolean()) {
+                    config = config.with(rfeatures[i]);
+                } else {
+                    config = config.without(rfeatures[i]);
+                }
+            }
+            mapper.setConfig(config);
+        }
+
 
         int idx = data.consumeInt(0, classes.length - 1);
-        r = mapper.readerFor(classes[idx]); // To initialize-
+        r = mapper.readerFor(classes[idx]); // To initialize
+
         switch (data.consumeInt(0, 4)) {
         case 0:
             r = mapper.readerFor(classes[idx]);
@@ -208,7 +237,7 @@ public class AdaLObjectReader3Fuzzer {
             switch (callType%7) {
             case 0:
                 // readValue
-                switch (data.consumeInt(0, 12)){
+                switch (data.consumeInt(0, 14)){
                 case 0:
                     r.readValue(data.consumeString(100000));
                 case 1:
@@ -258,10 +287,12 @@ public class AdaLObjectReader3Fuzzer {
                 case 13:
                     fuzzInt1 = data.consumeInt(0, classes.length - 1);
                     mapper.readValue(data.consumeString(1000000), mapper.constructType(classes[fuzzInt1]));
+                case 14:                    
+                    r.readValue(new ByteArrayInputStream(data.consumeBytes(100000)));
                 }
             case 1:
                 // readTree
-                switch (data.consumeInt(0, 6)){
+                switch (data.consumeInt(0, 7)){
                 case 0:
                     jp = _createParser(data, mapper, r);
                     o = r.readTree(jp);
@@ -294,7 +325,7 @@ public class AdaLObjectReader3Fuzzer {
                 }
             case 2:
                 // readValues
-                switch (data.consumeInt(0, 7)){
+                switch (data.consumeInt(0, 8)){
                 case 0:
                     stringR = new StringReader(new String(data.consumeRemainingAsBytes()));
                     r.readValues(stringR);
@@ -324,9 +355,11 @@ public class AdaLObjectReader3Fuzzer {
                 case 6:
                     fuzzInt1 = data.consumeInt(0, classes.length - 1);
                     jp = _createParser(data, mapper, r);
-                    mapper.readValues(jp, classes[fuzzInt1]);   
+                    mapper.readValues(jp, classes[fuzzInt1]);
                 case 7:
                     r.readValues(new MockFuzzDataInput(data.consumeString(1000000)));
+                case 8:
+                    r.readValues(new ByteArrayInputStream(data.consumeBytes(100000)));
                 }
             case 3:
                 fuzzInt1 = data.consumeInt(0, classes.length - 1);
@@ -355,7 +388,7 @@ public class AdaLObjectReader3Fuzzer {
                     r.readValue(node, classes[fuzzInt1]);
                 }
             case 5:
-                switch (data.consumeInt(0, 1)){
+                switch (data.consumeInt(0, 2)){
                 case 0:
                     mapper.readTree(new ByteArrayInputStream(data.consumeBytes(100000)));
                 case 1:
@@ -407,6 +440,8 @@ public class AdaLObjectReader3Fuzzer {
             fuzzInt1 = data.consumeInt();
             fuzzInt2 = data.consumeInt();
             return mapper.createParser(data.consumeBytes(100000), fuzzInt1, fuzzInt2);
+        case 6:
+            return r.createParser(new ByteArrayInputStream(data.consumeBytes(100000)));
         }
         return r.createParser(data.consumeBytes(100000));
     }
