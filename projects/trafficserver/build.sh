@@ -14,12 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-export CXXFLAGS="$CFLAGS"
-export LDFLAGS="$CFLAGS"
 
 autoreconf -if
 ./configure
 make -j$(nproc)
+
+mkdir $OUT/lib
+cp src/tscore/.libs/libtscore.so* $OUT/lib/.
+cp src/tscpp/util/.libs/libtscpputil.so* $OUT/lib/.
 
 pushd fuzzer/
 make
@@ -31,4 +33,3 @@ pushd $SRC/oss-fuzz-bloat/trafficserver/
 cp FuzzEsi_seed_corpus.zip $OUT/FuzzEsi_seed_corpus.zip
 cp FuzzHTTP_seed_corpus.zip $OUT/FuzzHTTP_seed_corpus.zip
 popd
-

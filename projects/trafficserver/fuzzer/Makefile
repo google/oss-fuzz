@@ -52,16 +52,17 @@ CoreLib=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/iocore/eventsystem/ -linkevent \
 	$(LIBDIR)/src/records/ -lrecords_p \
 	$(LIBDIR)/mgmt/.libs/ -lmgmt_p \
-	$(LIBDIR)/proxy/shared/ -lUglyLogStubs 
+	$(LIBDIR)/proxy/shared/ -lUglyLogStubs \
+	-Wl,-rpath=lib/
 
 all: $(TARGET)
 
 $(TARGET):
-	$(CXX) $(CFLAGS) $(AM_CXXFLAGS) $(MACROS) $(EsiINC) -c $(EsiEXE).cc
-	$(CXX) $(CFLAGS) $(AM_CXXFLAGS) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(EsiINC) -c $(EsiEXE).cc
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
 
-	$(CXX) $(CFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
-	$(CXX) $(CFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
 
 clean:
 	rm $(EsiEXE) $(HttpEXE) *.o
