@@ -163,8 +163,7 @@ public class AdaLObjectReader3Fuzzer {
         ObjectMapper mapper = new ObjectMapper();
 
         // Maybe create a mapper with different typing settings. Let the fuzzer decide
-        doThis = data.consumeBoolean();
-        if (doThis) {
+        if (data.consumeBoolean()) {
             JsonMapper.Builder b = JsonMapper.builder();
 
             for (int i = 0; i < typings.length; i++) {
@@ -486,6 +485,15 @@ public class AdaLObjectReader3Fuzzer {
     {
         private static final long serialVersionUID = 1L;
 
+        protected final static Set<String> DEFAULT_NO_DESER_CLASS_NAMES;
+        static {
+            Set<String> s = new HashSet<String>();        
+            s.add("jaz.Zer");
+            DEFAULT_NO_DESER_CLASS_NAMES = Collections.unmodifiableSet(s);
+        }
+
+        protected Set<String> _cfgIllegalClassNames = DEFAULT_NO_DESER_CLASS_NAMES;
+
         public static final NoCheckSubTypeValidator instance = new NoCheckSubTypeValidator(); 
 
         @Override
@@ -496,12 +504,20 @@ public class AdaLObjectReader3Fuzzer {
         @Override
         public Validity validateSubClassName(MapperConfig<?> config,
                 JavaType baseType, String subClassName) {
+            if (_cfgIllegalClassNames.contains(subClassName)) {
+                return Validity.DENIED;
+            }
             return Validity.ALLOWED;
         }
 
         @Override
         public Validity validateSubType(MapperConfig<?> config, JavaType baseType,
                 JavaType subType) {
+            final Class<?> raw = baseType.getRawClass();
+            String full = raw.getName();
+            if (_cfgIllegalClassNames.contains(full)) {
+                return Validity.DENIED;
+            }
             return Validity.ALLOWED;
         }
     }
