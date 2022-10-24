@@ -34,6 +34,18 @@ pushd "${SRC}/okhttp/okhttp"
     CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 popd
 
+pushd "${SRC}/okhttp/okhttp-logging-interceptor"
+	../gradlew jar
+    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
+    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+popd
+
+pushd "${SRC}/okhttp/mockwebserver"
+	../gradlew jar
+    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
+    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+popd
+
 pushd ${SRC}
 	${MVN} package -DokhttpVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
 	install -v target/okhttp-fuzzer-${CURRENT_VERSION}.jar ${OUT}/okhttp-fuzzer-${CURRENT_VERSION}.jar
@@ -62,14 +74,19 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
   fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \
 --target_class=${fuzzer_classname} \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/${fuzzer_basename}
   chmod u+x $OUT/${fuzzer_basename}
 done

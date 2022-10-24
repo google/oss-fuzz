@@ -22,7 +22,7 @@ RUN git clone https://github.com/spring-projects/spring-framework
 
 COPY . $SRC/
 
-RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' < $i | git apply; done )
+RUN  cd spring-framework && (for i in ${SRC}/add-shadow-*.diff; do tr -d '\015' < $i | git apply -v; done )
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     mv fuzzing/dictionaries/xml.dict $SRC/spring-context/XmlApplicationContextFuzzer.dict && \

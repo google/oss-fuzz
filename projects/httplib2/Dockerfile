@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y libffi-dev
 RUN git clone --depth 1 https://github.com/httplib2/httplib2
-
+RUN python3 -m pip install --upgrade pip
 COPY build.sh $SRC/
 
 WORKDIR $SRC/httplib2
