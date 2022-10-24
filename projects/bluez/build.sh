@@ -38,3 +38,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
 $CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
  $SRC/fuzz_gobex.c ./gobex/gobex*.o -o $OUT/fuzz_gobex \
  $STATIC_LIBS -ldl -lpthread
+
+$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
+ $SRC/fuzz_hci.c ./gobex/gobex*.o -o $OUT/fuzz_hci \
+ $STATIC_LIBS -ldl -lpthread
