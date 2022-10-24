@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.filter.TokenFilter;
@@ -160,6 +161,27 @@ public class AdaLObjectReader3Fuzzer {
             JsonReadFeature.ALLOW_MISSING_VALUES,
             JsonReadFeature.ALLOW_TRAILING_COMMA};
 
+        Feature[] jpFeatures = new Feature[]{
+            Feature.AUTO_CLOSE_SOURCE,
+            Feature.ALLOW_COMMENTS,
+            Feature.ALLOW_YAML_COMMENTS,
+            Feature.ALLOW_UNQUOTED_FIELD_NAMES,
+            Feature.ALLOW_SINGLE_QUOTES,
+            Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
+            Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
+            Feature.ALLOW_NUMERIC_LEADING_ZEROS,
+            Feature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS,
+            Feature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
+            Feature.ALLOW_TRAILING_DECIMAL_POINT_FOR_NUMBERS,
+            Feature.ALLOW_NON_NUMERIC_NUMBERS,
+            Feature.ALLOW_MISSING_VALUES,
+            Feature.ALLOW_TRAILING_COMMA,
+            Feature.STRICT_DUPLICATE_DETECTION,
+            Feature.IGNORE_UNDEFINED,
+            Feature.INCLUDE_SOURCE_IN_LOCATION,
+            Feature.USE_FAST_DOUBLE_PARSER,
+        };
+
         ObjectMapper mapper = new ObjectMapper();
 
         // Maybe create a mapper with different typing settings. Let the fuzzer decide
@@ -174,11 +196,27 @@ public class AdaLObjectReader3Fuzzer {
             mapper = b.build();
         }
 
-        for (int i = 0; i < mapperfeatures.length; i++) {
-            if (data.consumeBoolean()) {
-                mapper.enable(mapperfeatures[i]);
-            } else {
-                mapper.disable(mapperfeatures[i]);
+        if (data.consumeBoolean()) {
+            for (int i = 0; i < jpFeatures.length; i++) {
+                if (data.consumeBoolean()) {
+                    mapper.enable(new Feature[]{jpFeatures[i]});
+                } else {
+                    mapper.disable(new Feature[]{jpFeatures[i]});
+                }
+            }
+        }
+
+        if(data.consumeBoolean()){
+            for (int i = 0; i < mapperfeatures.length; i++) {
+                if (data.consumeBoolean()) {
+                    mapper.enable(mapperfeatures[i]);
+                } else {
+                    mapper.disable(mapperfeatures[i]);
+                }
+            }
+        } else {
+            for (int i = 0; i < mapperfeatures.length; i++) {
+                mapper.configure(mapperfeatures[i], data.consumeBoolean());
             }
         }
 
@@ -249,6 +287,7 @@ public class AdaLObjectReader3Fuzzer {
                     doThis = data.consumeBoolean();
                     if (doThis) {
                         r3 = r.withValueToUpdate(o);
+                        mapper.valueToTree(o);
                     }
                 case 4:
                     jp = _createParser(data, mapper, r);
@@ -297,11 +336,23 @@ public class AdaLObjectReader3Fuzzer {
                     o = r.readTree(jp);
                     if (data.consumeBoolean()) {
                         r3 = r.withValueToUpdate(o);
+                        mapper.valueToTree(o);
+                        mapper.readerForUpdating(o);
                     }
                 case 1:
-                    r.readTree(data.consumeString(100000));
+                    o = r.readTree(data.consumeString(100000));
+                    if (data.consumeBoolean()) {
+                        r3 = r.withValueToUpdate(o);
+                        mapper.valueToTree(o);
+                        mapper.readerForUpdating(o);
+                    }
                 case 2:
-                    r.readTree(data.consumeBytes(100000));
+                    o = r.readTree(data.consumeBytes(100000));
+                    if (data.consumeBoolean()) {
+                        r3 = r.withValueToUpdate(o);
+                        mapper.valueToTree(o);
+                        mapper.readerForUpdating(o);
+                    }
                 case 3:
                     stringR = new StringReader(new String(data.consumeRemainingAsBytes()));
                     r.readTree(stringR);
@@ -323,43 +374,7 @@ public class AdaLObjectReader3Fuzzer {
                     }
                 }
             case 2:
-                // readValues
-                switch (data.consumeInt(0, 8)){
-                case 0:
-                    stringR = new StringReader(new String(data.consumeRemainingAsBytes()));
-                    r.readValues(stringR);
-                case 1:
-                    r.readValues(data.consumeRemainingAsString());
-                case 2:
-                    doThis = data.consumeBoolean();
-                    jp = _createParser(data, mapper, r);
-                    o = r.readValues(jp);
-                    if (doThis) {
-                        r3 = r.withValueToUpdate(o);
-                    }
-                case 3:
-                    fileData = data.consumeRemainingAsBytes();
-                    out = new FileOutputStream("fuzzFile");
-                    out.write(fileData);
-                    out.close();
-                    r.readValues(new File("fuzzFile"));
-                case 4:
-                    fuzzInt1 = data.consumeInt();
-                    fuzzInt2 = data.consumeInt();
-                    r.readValues(data.consumeBytes(1000000), fuzzInt1, fuzzInt2);
-                case 5:
-                    fuzzInt1 = data.consumeInt(0, classes.length - 1);
-                    jp = _createParser(data, mapper, r);
-                    mapper.readValues(jp, mapper.constructType(classes[fuzzInt1]));
-                case 6:
-                    fuzzInt1 = data.consumeInt(0, classes.length - 1);
-                    jp = _createParser(data, mapper, r);
-                    mapper.readValues(jp, classes[fuzzInt1]);
-                case 7:
-                    r.readValues(new MockFuzzDataInput(data.consumeString(1000000)));
-                case 8:
-                    r.readValues(new ByteArrayInputStream(data.consumeBytes(100000)));
-                }
+                _readValues(data, mapper, r);                
             case 3:
                 fuzzInt1 = data.consumeInt(0, classes.length - 1);
                 fuzzInt2 = data.consumeInt(0, classes.length - 1);
@@ -413,6 +428,57 @@ public class AdaLObjectReader3Fuzzer {
         try {
             Files.delete(Paths.get("fuzzFile"));
         } catch (IOException e) { }
+    }
+
+    public static void _readValues(FuzzedDataProvider data, ObjectMapper mapper, ObjectReader r) throws IOException {
+        Object o;
+        ObjectReader r3;
+        int fuzzInt1, fuzzInt2;
+        JsonParser jp;
+        byte[] fileData;
+        FileOutputStream out;
+        Reader stringR;
+        
+        // readValues
+        switch (data.consumeInt(0, 8)){
+        case 0:
+            stringR = new StringReader(new String(data.consumeRemainingAsBytes()));
+            o = r.readValues(stringR);
+        case 1:
+            o = r.readValues(data.consumeRemainingAsString());
+        case 2:
+            jp = _createParser(data, mapper, r);
+            o = r.readValues(jp);
+        case 3:
+            fileData = data.consumeRemainingAsBytes();
+            out = new FileOutputStream("fuzzFile");
+            out.write(fileData);
+            out.close();
+            o = r.readValues(new File("fuzzFile"));
+        case 4:
+            fuzzInt1 = data.consumeInt();
+            fuzzInt2 = data.consumeInt();
+            o = r.readValues(data.consumeBytes(1000000), fuzzInt1, fuzzInt2);
+        case 5:
+            fuzzInt1 = data.consumeInt(0, classes.length - 1);
+            jp = _createParser(data, mapper, r);
+            o = mapper.readValues(jp, mapper.constructType(classes[fuzzInt1]));
+        case 6:
+            fuzzInt1 = data.consumeInt(0, classes.length - 1);
+            jp = _createParser(data, mapper, r);
+            o = mapper.readValues(jp, classes[fuzzInt1]);
+        case 7:
+            o = r.readValues(new MockFuzzDataInput(data.consumeString(1000000)));
+        case 8:
+            o = r.readValues(new ByteArrayInputStream(data.consumeBytes(100000)));
+        default:
+            o = r.readValues(data.consumeRemainingAsString()); // To avoid "variable o might not have been initialized"
+        }
+        if (data.consumeBoolean()) {
+            r3 = r.withValueToUpdate(o);
+            mapper.valueToTree(o);
+            mapper.readerForUpdating(o);
+        }
     }
 
     public static JsonParser _createParser(FuzzedDataProvider data, ObjectMapper mapper, ObjectReader r) throws IOException {
