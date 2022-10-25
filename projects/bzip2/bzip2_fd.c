@@ -37,54 +37,59 @@ static void fuzzer_write_data(FILE *file, const uint8_t *data, size_t size) {
   BZFILE* bzf = BZ2_bzWriteOpen ( &bzerr, file,
                            blockSize100k, verbosity, workFactor );
 
-  BZ2_bzWrite (&bzerr, bzf, (void*)data, size);
+  BZ2_bzwrite(bzf, (void*)data, size);
 
   BZ2_bzWriteClose64 ( &bzerr, bzf, 0,
                         &nbytes_in_lo32, &nbytes_in_hi32,
                         &nbytes_out_lo32, &nbytes_out_hi32 );
-  return;
 }
 
-static void fuzzer_read_data(char *filename) {
-  int    bzerr          = 0;
+static void fuzzer_read_data(const int file_descriptor) {
+  int    bzerr         = 0;
+  int    nUnused       = 0;
   char   obuf[BZ_MAX_UNUSED];
- 
-  BZFILE* bzf2 = BZ2_bzopen(filename,"rb");
+  void*  unusedTmpV;
+
+  BZFILE* bzf2 = BZ2_bzdopen(file_descriptor, "rb");
 
   while (bzerr == BZ_OK) {
-      BZ2_bzRead ( &bzerr, bzf2, obuf, BZ_MAX_UNUSED);
+      BZ2_bzread(bzf2, obuf, BZ_MAX_UNUSED);
+      BZ2_bzReadGetUnused( &bzerr, bzf2, &unusedTmpV, &nUnused);
   }
 
-  BZ2_bzReadClose ( &bzerr, bzf2);
-  return;
+  BZ2_bzclose(bzf2);
 }
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+  int*  bzerror;
   char* filename = strdup("/tmp/generate_temporary_file.XXXXXX");
+
   if (!filename) {
-    perror("Failed to allocate file name buffer.");
+    perror("Failed to allocate file name buffer.\n");
     abort();
   }
   const int file_descriptor = mkstemp(filename);
   if (file_descriptor < 0) {
-    perror("Failed to make temporary file.");
+    perror("Failed to make temporary file.\n");
     abort();
   }
   FILE* file = fdopen(file_descriptor, "wb");
+  
   if (!file) {
     perror("Failed to open file descriptor.");
     close(file_descriptor);
+    BZ2_bzerror(file,bzerror);
     abort();
   }
 
   fuzzer_write_data(file, data, size);
 
-  fuzzer_read_data(filename);
+  fuzzer_read_data(file_descriptor);
 
   BZ2_bzlibVersion();
-
+  
   BZ2_bzflush(file);
   fclose(file);
 
