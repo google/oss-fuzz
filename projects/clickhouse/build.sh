@@ -48,7 +48,11 @@ export MSAN_OPTIONS=exit_code=0
 
 printenv
 
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) / 2))
+NUM_JOBS=$(nproc || grep -c ^processor /proc/cpuinfo)
+
+if (( $NUM_JOBS > 10 )); then
+    NUM_JOBS=$(expr $NUM_JOBS / 2)
+fi
 
 CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
