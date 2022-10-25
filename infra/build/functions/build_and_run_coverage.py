@@ -318,18 +318,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
     return []
   build_steps.extend(download_coverage_steps)
 
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder:introspector'],
-  })
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/docker',
-      'args': [
-          'tag', 'gcr.io/oss-fuzz-base/base-builder:introspector',
-          'gcr.io/oss-fuzz-base/base-builder:latest'
-      ],
-  })
+  env.append('FUZZ_INTROSPECTOR=1')
 
   build_steps.append({
       'name': 'gcr.io/cloud-builders/docker',
