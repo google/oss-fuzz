@@ -112,7 +112,7 @@ Currently we do not offer ways to change the memory and time limits.
 
 No. In order to get all the benefits of in-process, coverage-guided fuzz testing,
 it is required to run everything inside a single process. Any child processes
-created outside the main process introduces heavy launch overhead and is not 
+created outside the main process introduces heavy launch overhead and is not
 monitored for code coverage.
 
 Another rule of thumb is: "the smaller fuzz target is, the better it is". It is
@@ -126,7 +126,7 @@ helps to test millions of data permutations rather than just one.
 Every bug report has a crash stack-trace that shows where the crash happened.
 Using that, you can debug the root cause and see which category the bug falls in:
 
-- If this is a bug is due to an incorrect usage of the dependent project's API 
+- If this is a bug is due to an incorrect usage of the dependent project's API
 in your project, then you need to fix your usage to call the API correctly.
 - If this is a real bug in the dependent project, then you should CC the
 maintainers of that project on the bug. Once CCed, they will get automatic
@@ -134,15 +134,15 @@ access to all the information necessary to reproduce the issue. If this project
 is maintained in OSS-Fuzz, you can search for contacts in the respective
 project.yaml file.
 
-## What if my fuzzer does not find anything? 
+## What if my fuzzer does not find anything?
 
 If your fuzz target is running for many days and does not find bugs or new
-coverage, it may mean several things: 
+coverage, it may mean several things:
 - We've covered all reachable code. In order to cover more code we need more
   fuzz targets.
 - The [seed corpus]({{ site.baseurl }}/getting-started/new-project-guide#seed-corpus) is not good enough and the
   fuzzing engine(s) are not able to go deeper based on the existing seeds.
-  Need to add more seeds. 
+  Need to add more seeds.
 - There is some crypto/crc stuff in the code that will prevent any fuzzing
   engine from going deeper, in which case the crypto should be disabled in
   [fuzzing mode](http://libfuzzer.info#fuzzer-friendly-build-mode).
@@ -153,23 +153,25 @@ coverage, it may mean several things:
 
 In either case, look at the
 [coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports)
-for your target(s) and figure out why some parts of the code are not covered. 
+for your target(s) and figure out why some parts of the code are not covered.
 
 ## What if my fuzzer does not find new coverage or bugs after a while?
 
-It is common that the fuzzer gets saturated and cannot find new coverage or bugs after a while.
-We have designed and developed [Fuzz Introspector](https://github.com/ossf/fuzz-introspector)
-to give developers a tool to evaluate the fuzzers performance. Fuzz Introspector aims to improve 
-fuzzing experience by guiding developer on determining their fuzzer's bottlenecks. It helps by providing
-aggregated and individual fuzzers reachability and coverage reports. Developer can either introduce a new 
-fuzz target or modify an existing one to improve the quality of the harness. To check some example cases 
-where Fuzz Introspector improved a fuzzing project refere to these 
-[case studies](https://github.com/ossf/fuzz-introspector/blob/main/doc/CaseStudies.md). Fuzz Introspector 
-reports are available on [OSS-Fuzz report page](https://oss-fuzz.com/) or through this 
-[index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+It is common for fuzzers to plateau and stop finding new coverage or bugs.
+[Fuzz Introspector](https://github.com/ossf/fuzz-introspector) helps you
+evaluate your fuzzers' performance.
+It can help you identify bottlenecks causing your fuzzers to plateau.
+It provides aggregated and individual fuzzer reachability and coverage reports.
+Developers can either introduce a new fuzz target or modify an existing one to
+reach previously unreachable code.
+Here are
+[case studies](https://github.com/ossf/fuzz-introspector/blob/main/doc/CaseStudies.md)
+where Fuzz Introspector helped developers improve fuzzing of a project.
+Fuzz Introspector reports are available on the [OSS-Fuzz homepage](https://oss-fuzz.com/)
+or through this [index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
 
-Developer can also utilize Fuzz Introspector for their new fuzz target developement by trying it on their 
-local machines. Detailed instructions are available 
+Developers can also use Fuzz Introspector on their local machines.
+Detailed instructions are available
 [here](https://github.com/ossf/fuzz-introspector/tree/main/oss_fuzz_integration#build-fuzz-introspector-with-oss-fuzz).
 
 ## Why are code coverage reports public?
