@@ -13,12 +13,14 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pest/meta
-RUSTFLAGS="" cargo bootstrap
-cargo +nightly fuzz build
-cd $SRC/pest/grammars
-cargo +nightly fuzz build
-cp $SRC/pest/meta/fuzz/target/x86_64-unknown-linux-gnu/release/parser $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/toml $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/json $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/http $OUT/
+
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN apt update && apt install -y openjdk-17-jdk
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-webflow.git
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+COPY build.patch $SRC/spring-webflow
+WORKDIR $SRC/spring-webflow

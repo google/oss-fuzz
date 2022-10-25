@@ -13,12 +13,21 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pest/meta
-RUSTFLAGS="" cargo bootstrap
-cargo +nightly fuzz build
-cd $SRC/pest/grammars
-cargo +nightly fuzz build
-cp $SRC/pest/meta/fuzz/target/x86_64-unknown-linux-gnu/release/parser $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/toml $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/json $OUT/
-cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/http $OUT/
+
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.6.3 && \
+rm -rf maven.zip
+
+ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+
+WORKDIR ${SRC}
+#
+# clone repository
+#
+RUN git clone https://github.com/spring-cloud/spring-cloud-config.git
+
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/spring-cloud-config
