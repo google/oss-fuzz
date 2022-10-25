@@ -335,7 +335,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   env.append(f'COVERAGE_URL={coverage_url}')
   env.append(f'PROJECT_NAME={project.name}')
 
-
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
 
