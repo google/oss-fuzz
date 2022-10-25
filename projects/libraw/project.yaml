@@ -4,6 +4,7 @@ primary_contact: "jesteele@google.com"
 auto_ccs:
     - "nchusid@google.com"
     - "pinheirojamie@google.com"
+    - "yulongzhang@google.com"
     - "info@libraw.org"
 sanitizers:
     - address
