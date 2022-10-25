@@ -85,4 +85,7 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
+
+# Build up jar for fuzz-introspector
+jar cvf $OUT/$fuzzer_basename.jar $SRC/$fuzzer_basename*.class
 done
