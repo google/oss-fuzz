@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-ARG parent_image=gcr.io/oss-fuzz-base/base-clang
-FROM $parent_image
+FROM gcr.io/oss-fuzz-base/base-clang
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh

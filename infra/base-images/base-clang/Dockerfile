@@ -20,8 +20,6 @@ FROM gcr.io/oss-fuzz-base/base-image
 
 ARG arch=x86_64
 
-ARG introspector
-ENV INTROSPECTOR_PATCHES=$introspector
 ENV FUZZINTRO_OUTDIR=$SRC
 
 
