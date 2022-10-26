@@ -47,6 +47,8 @@
       "linux/amd64",
       "-v",
       "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
       "-e",
       "ARCHITECTURE=x86_64",
       "-e",
