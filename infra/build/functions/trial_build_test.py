@@ -89,5 +89,6 @@ class TrialBuildMainTest(unittest.TestCase):
     self.assertEqual(mock_run_build.call_args_list[0][0][1],
                      expected_build_steps)
 
+
 if __name__ == '__main__':
   unittest.main(exit=False)
