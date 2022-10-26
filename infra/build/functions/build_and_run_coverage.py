@@ -310,10 +310,11 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
         project.name)
     return []
   build_steps.extend(download_coverage_steps)
-  build_steps.extend(build_lib.get_project_image_steps(project.name,
-                                                       project.image,
-                                                       project.fuzzing_language,
-                                                       config=config))
+  build_steps.extend(
+      build_lib.get_project_image_steps(project.name,
+                                        project.image,
+                                        project.fuzzing_language,
+                                        config=config))
   env = build_project.get_env(project.fuzzing_language, build)
   env.append('FUZZ_INTROSPECTOR=1')
   env.append(f'GIT_REPO={project.main_repo}')
