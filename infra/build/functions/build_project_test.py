@@ -109,7 +109,6 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                                                 test_utils.IMAGE_PROJECT,
                                                 test_utils.BASE_IMAGES_PROJECT,
                                                 config)
-    import pdb; pdb.set_trace()
     self.assertEqual(build_steps, expected_build_steps)
 
 
