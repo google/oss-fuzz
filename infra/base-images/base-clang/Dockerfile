@@ -32,14 +32,15 @@ RUN apt-get update && apt-get install -y wget sudo && \
     chmod +x cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     ./cmake-$CMAKE_VERSION-Linux-$arch.sh --skip-license --prefix="/usr/local" && \
     rm cmake-$CMAKE_VERSION-Linux-$arch.sh && \
-    SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo && \
+    SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
     git checkout b0e2a4327197b0064ba28892489423013148bd0d && \
-    apt-get remove --purge -y git
+    apt-get autoremove --purge -y git && \
+    rm -rf .git
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate

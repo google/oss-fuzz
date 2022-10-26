@@ -4,15 +4,17 @@ primary_contact: "Chisato.Kenmochi@sony.com"
 auto_ccs:
   - twsmith@mozilla.com
 vendor_ccs:
-  - bcreasey@google.com
-  - hamzeh@google.com
-  - geuteneier@google.com
-  - maverickm@google.com
-  - warrenwright@google.com
+  - adambacchus@google.com
   - ailport@google.com
-  - kimtony@google.com
+  - bcreasey@google.com
+  - ejorgensen@google.com
   - faerber@google.com
   - greendonald@google.com
+  - hamzeh@google.com
+  - jaredkidd@google.com
+  - kimtony@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
 fuzzing_engines:
   - libfuzzer
   - afl
