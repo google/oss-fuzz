@@ -89,7 +89,7 @@ def get_image_tags(image, test_image_suffix=None):
   return main_tag, test_tag
 
 
-def gcb_build_and_push_images(test_image_suffix, introspector):
+def gcb_build_and_push_images(test_image_suffix):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_tags = []
