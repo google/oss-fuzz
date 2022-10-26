@@ -298,7 +298,6 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  introspector = 'introspector' in args.sanitizers
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
@@ -308,7 +307,7 @@ def trial_build_main(args=None, local_base_build=True):
         test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(
-        test_image_suffix, introspector=introspector)
+        test_image_suffix)
 
   return _do_test_builds(args, test_image_suffix)
 
