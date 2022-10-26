@@ -304,13 +304,20 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     mv $OUT/.coverage_$fuzzer .coverage
     python3 /usr/local/bin/python_coverage_runner_help.py translate /pythoncovmergedfiles/medio
     cp .new_coverage $PYCOVDIR/.coverage_$fuzzer
+    cp .new_coverage $OUT/coverage_d_$fuzzer
   done
 
   # Combine coverage
   cd $PYCOVDIR
   python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
   python3 /usr/local/bin/python_coverage_runner_help.py html
+  python3 /usr/local/bin/python_coverage_runner_help.py json -o ${TEXTCOV_REPORT_DIR}/all_cov.json
+
+  # Copy coverage date out
+  cp htmlcov/status.json ${TEXTCOV_REPORT_DIR}/html_status.json
+
   mv htmlcov/* $REPORT_PLATFORM_DIR/
+  mv .coverage_* $REPORT_PLATFORM_DIR/
 
   # Create an empty summary file for now
   echo "{}" >> $SUMMARY_FILE
