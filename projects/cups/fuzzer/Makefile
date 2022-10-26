@@ -15,11 +15,9 @@ all: $(TARGET)
 $(TARGET):
 	$(CC) $(CFLAGS) $(EXTFLAGS) $(MACRO) $(INCDIR) -c $(CUPS).c
 	$(CC) $(CFLAGS) $(EXTFLAGS) $(MACRO) $(INCDIR) -c $(IPP).c
-	$(CC) $(CFLAGS) $(EXTFLAGS) $(MACRO) $(INCDIR) -c $(PPD).c
 
 	$(CXX) $(CFLAGS) -o $(CUPS) $(CUPS).o $(LibFLAGS)
 	$(CXX) $(CFLAGS) -o $(IPP) $(IPP).o $(LibFLAGS)
-	$(CXX) $(CFLAGS) -o $(PPD) $(PPD).o $(LibFLAGS)
 
 clean:
 	rm $(CUPS) $(IPP) $(PPD) *.o

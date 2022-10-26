@@ -25,11 +25,9 @@ pushd fuzzer/
 make
 cp FuzzCUPS $OUT/FuzzCUPS
 cp FuzzIPP $OUT/FuzzIPP
-cp FuzzPPD $OUT/FuzzPPD
 popd
 
 pushd $SRC/oss-fuzz-bloat/cups
 cp FuzzCUPS_seed_corpus.zip $OUT/FuzzCUPS_seed_corpus.zip
 cp FuzzIPP_seed_corpus.zip $OUT/FuzzIPP_seed_corpus.zip
-cp FuzzPPD_seed_corpus.zip $OUT/FuzzPPD_seed_corpus.zip
 popd
