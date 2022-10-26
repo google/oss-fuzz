@@ -63,17 +63,26 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
     cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
   fi
+  if [ "$fuzzer_basename" == "AdaLObjectReader3Fuzzer" ]; then
+    cp $SRC/$fuzzer_basename\$NoCheckSubTypeValidator.class $OUT/
+    cp $SRC/$fuzzer_basename\$MockFuzzDataInput.class $OUT/
+  fi
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=com.fasterxml.jackson.core.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

@@ -59,6 +59,7 @@ make sub-gui -j$(nproc)
 
 cd $SRC
 cd karchive
+rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
 make install -j$(nproc)
 

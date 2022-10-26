@@ -85,6 +85,7 @@ This configuration file stores project metadata. The following attributes are su
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
+- [file_github_issue](#file_github_issue) (optional)
 
 ### homepage
 You project's homepage.
@@ -201,6 +202,10 @@ builds_per_day: 2
 ```
 
 Will build the project twice per day.
+
+### file_github_issue (optional) {#file_github_issue}
+Whether to mirror issues on github instead of having them only in the OSS-Fuzz
+tracker.
 
 ## Dockerfile {#dockerfile}
 
@@ -524,3 +529,23 @@ Adding it is super easy, just follow this template:
 ```markdown
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
 ```
+
+## Monitoring performance via Fuzz Introspector
+
+As soon as your project is run with ClusterFuzz (< 1 day), you can view the Fuzz
+Introspector report for your project.
+[Fuzz Introspector](https://github.com/ossf/fuzz-introspector) helps you
+understand your fuzzers' performance and identify any potential blockers.
+It provides individual and aggregated fuzzer reachability and coverage reports.
+You can monitor each fuzzer's static reachability potential and compare it
+against dynamic coverage and identify any potential bottlenecks.
+Fuzz Introspector can offer suggestions on increasing coverage by adding new
+fuzz targets or modify existing ones.
+Fuzz Introspector reports can be viewed from the [OSS-Fuzz
+homepage](https://oss-fuzz.com/) or through this
+[index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+Fuzz Introspector support C and C++ projects.
+Support for Java and Python projects is in the progress.
+
+You can view the [Fuzz Introspector report for bzip2](https://storage.googleapis.com/oss-fuzz-introspector/bzip2/inspector-report/20221017/fuzz_report.html)
+as an example.

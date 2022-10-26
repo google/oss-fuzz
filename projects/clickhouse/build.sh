@@ -16,8 +16,10 @@
 ################################################################################
 
 
-mkdir $SRC/ClickHouse/build
-cd $SRC/ClickHouse/build
+mkdir -p $SRC/ClickHouse/build && cd $SRC/ClickHouse/build
+
+[ -e CMakeLists ] && rm -rf CMakeFiles
+[ -e CMakeCache.txt ] && rm -rf CMakeCache.txt
 
 sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 
@@ -27,8 +29,12 @@ sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
 sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 
 # ClickHouse uses libcxx from contrib.
-# Enabling this manually will cause duplicate symbols at linker stage.
-CXXFLAGS=${CXXFLAGS//-stdlib=libc++/}
+# Enabling libstdc++ manually will cause duplicate symbols at linker stage.
+# Plus we want to fuzz the same binary as we have in our CI
+# https://github.com/ClickHouse/ClickHouse/blob/2e2ef087129ed072404bdc084e8028a5c5869dc0/PreLoad.cmake#L23
+unset CFLAGS
+unset CXXFLAGS
+unset LDFLAGS
 
 # ClickHouse builds `protoc` from sources to be dependent only on compiler
 # but if we build ClickHouse with any kind of sanitizer, then `protoc`
@@ -42,6 +48,12 @@ export MSAN_OPTIONS=exit_code=0
 
 printenv
 
+NUM_JOBS=$(nproc || grep -c ^processor /proc/cpuinfo)
+
+if (( $NUM_JOBS > 10 )); then
+    NUM_JOBS=$(expr $NUM_JOBS / 2)
+fi
+
 CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/bin/ccache"
     "-DCMAKE_C_COMPILER=$CC"
@@ -51,7 +63,7 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DENABLE_FUZZING=1"
     "-DWITH_COVERAGE=1"
     "-DENABLE_PROTOBUF=1"
-    "-DUSE_INTERNAL_PROTOBUF_LIBRARY=1"
+    "-DPARALLEL_COMPILE_JOBS=$NUM_JOBS"
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
@@ -59,8 +71,6 @@ if [ "$SANITIZER" = "coverage" ]; then
 else
     cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
 fi
-
-NUM_JOBS=$(($(nproc || grep -c ^processor /proc/cpuinfo) * 2))
 
 TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
 
@@ -84,10 +94,10 @@ cp $SRC/ClickHouse/tests/fuzz/*.dict $OUT/
 cp $SRC/ClickHouse/tests/fuzz/*.options $OUT/
 
 # prepare corpus dirs
-mkdir $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
-mkdir $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
-mkdir $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
-mkdir $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
+mkdir -p $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
+mkdir -p $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
+mkdir -p $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
+mkdir -p $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
 
 # prepare corpus
 cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
@@ -111,7 +121,6 @@ if [ "$SANITIZER" = "coverage" ]; then
     mkdir -p $OUT/src/ClickHouse/
     cp -rL --parents $SRC/ClickHouse/src $OUT
     cp -rL --parents $SRC/ClickHouse/base $OUT
-    cp -rL --parents $SRC/ClickHouse/programs $OUT
 fi
 
 # Just check binaries size
