@@ -309,7 +309,7 @@ def trial_build_main(args=None, local_base_build=True):
   else:
     if list(args.sanitizers) != ['introspector']:
       build_and_push_test_images.gcb_build_and_push_images(
-          test_image_suffix)
+          test_image_suffix, False)
     if introspector:
       build_and_push_test_images.gcb_build_and_push_images(
         test_image_suffix, introspector=introspector)
