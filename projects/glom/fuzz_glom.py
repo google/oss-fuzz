@@ -17,8 +17,7 @@ import atheris
 import sys
 
 with atheris.instrument_imports():
-  from glom import glom
-  import glom.core as glom_core
+  from glom import *
   import json
 
 
@@ -27,8 +26,8 @@ def TestOneInput(data):
 
   val = {'d': {'e': ['f']}}
   try:
-    glom(val, fdp.ConsumeString(30))
-  except glom_core.PathAccessError:
+    core.glom(val, fdp.ConsumeString(30))
+  except core.PathAccessError:
     pass
 
   # Create a random dictionary. In this case if any
@@ -43,8 +42,8 @@ def TestOneInput(data):
 
   # Use random dict as input to glom
   try:
-    glom(data, fdp.ConsumeString(30))
-  except glom_core.PathAccessError:
+    core.glom(data, fdp.ConsumeString(30))
+  except core.PathAccessError:
     pass
 
 

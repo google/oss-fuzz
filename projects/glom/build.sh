@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# For fuzz-introspector
+export PYFUZZPACKAGE=$PWD/glom/
+
 pip3 install .
 
 # Build fuzzers in $OUT.
