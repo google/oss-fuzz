@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+EXTRA_CONFIGS="oss-fuzz" bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
 
 # Bazel target names of the fuzz binaries.
 FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
@@ -36,13 +36,13 @@ bazel build --subcommands --config=oss-fuzz ${FUZZ_TEST_BINARIES[*]}
 # each entrypoint create a wrapper script that calls into the binaries the
 # given entrypoint as argument.
 # The scripts will be named:
-# {binary_name}_GFUZZTEST_{fuzztest_entrypoint}
+# {binary_name}_@_{fuzztest_entrypoint}
 for fuzz_main_file in $FUZZ_TEST_BINARIES_OUT_PATHS; do
   FUZZ_TESTS=$($fuzz_main_file --list_fuzz_tests)
   cp ${fuzz_main_file} $OUT/
   fuzz_basename=$(basename $fuzz_main_file)
   for fuzz_entrypoint in $FUZZ_TESTS; do
-    TARGET_FUZZER="${fuzz_basename}_GFUZZTEST_$fuzz_entrypoint"
+    TARGET_FUZZER="${fuzz_basename}_@_$fuzz_entrypoint"
 
     # Write executer script
     echo "#!/bin/sh
