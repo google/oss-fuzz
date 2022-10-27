@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/google/fuzztest fuzztest
-COPY escaping_test.cc $SRC/fuzztest/codelab/escaping_test.cc
-COPY setup_configs.sh $SRC
+RUN git clone https://github.com/DavidKorczynski/fuzztest fuzztest && \
+    cd fuzztest && \
+    git checkout oss-fuzz-integration
 COPY build.sh $SRC/
+COPY fuzztest-enable-fuzzers.diff $SRC/
