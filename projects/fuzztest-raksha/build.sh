@@ -15,7 +15,6 @@
 #
 ################################################################################
 # Extend with oss-fuzz settings. To be upsteamed?
-cat $SRC/setup_configs.sh >> $SRC/fuzztest/bazel/setup_configs.sh
 cd $SRC/raksha
 cp $SRC/BUILD_f ./src/ir/datalog/BUILD
 
