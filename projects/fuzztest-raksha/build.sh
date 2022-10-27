@@ -16,7 +16,7 @@
 ################################################################################
 # Extend with oss-fuzz settings. To be upsteamed?
 cd $SRC/raksha
-cp $SRC/BUILD_f ./src/ir/datalog/BUILD
+git apply  --ignore-space-change --ignore-whitespace $SRC/raksha-fuzztest.diff
 
 # Compile gfuzztests
 compile_fuzztests.sh
