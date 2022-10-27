@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-# Extend with oss-fuzz settings. To be upsteamed?
-cat $SRC/setup_configs.sh >> fuzztest/bazel/setup_configs.sh
+
+cd fuzztest
+git apply  --ignore-space-change --ignore-whitespace $SRC/fuzztest-enable-fuzzers.diff
 
 # Compile gfuzztests
-cd fuzztest/codelab
+cd codelab
 compile_fuzztests.sh
