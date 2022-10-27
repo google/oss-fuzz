@@ -306,7 +306,6 @@ def trial_build_main(args=None, local_base_build=True):
         test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
-
   return _do_test_builds(args, test_image_suffix)
 
 

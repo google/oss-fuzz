@@ -43,6 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size -= to_copy;
   data += to_copy;
 
+  /*
   uint8_t cmds[64];
   bzero(cmds, 64);
   for (int i = 0; i < 64 && i < size; i++) {
@@ -52,7 +53,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (tmp) {
     free(tmp);
   }
-
+  */
   if (size > 4) {
     uint16_t id = *(uint16_t*)data;
     bt_compidtostr(id);

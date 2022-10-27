@@ -35,7 +35,7 @@ public class TestServer {
 		m_verbose = verbose;
 		m_password = password;
 
-		String args[] = new String[]{ "-tcpPassword", g_shutdownPassword, "-ifNotExists" };
+		String args[] = new String[]{ "-tcpPassword", g_shutdownPassword, "-ifNotExists", "-tcpDaemon" };
 		m_server = Server.createTcpServer(args).start();
 		diagnostic("Server started");
 
