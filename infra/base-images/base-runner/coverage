@@ -383,16 +383,19 @@ else
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
     if [[ $fuzz_target == *"_@_"* ]]; then
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
       sp=(${fuzz_target//_@_/ })
       fuzz_target="${sp[0]}"
+    else
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
     fi
-    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
     if [[ ! -f "$profdata_path" ]]; then
       echo "WARNING: $fuzz_target has no profdata generated."
       continue
     fi
 
-    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
 fi
