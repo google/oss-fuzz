@@ -34,7 +34,7 @@ bazel build --subcommands --config=oss-fuzz ${FUZZ_TEST_BINARIES[*]}
 
 # Iterate the fuzz binaries and list each fuzz entrypoint in the binary. For
 # each entrypoint create a wrapper script that calls into the binaries the
-# gien entrypoint as argument.
+# given entrypoint as argument.
 # The scripts will be named:
 # {binary_name}_GFUZZTEST_{fuzztest_entrypoint}
 for fuzz_main_file in $FUZZ_TEST_BINARIES_OUT_PATHS; do
