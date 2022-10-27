@@ -33,9 +33,10 @@ RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildi
     -O /usr/local/bin/buildifier && chmod a+x /usr/local/bin/buildifier
 
 RUN git clone https://github.com/google-research/raksha raksha
-#RUN git clone --depth 1 https://github.com/google/fuzztest fuzztest
-COPY fuzztest fuzztest
-COPY setup_configs.sh $SRC
+RUN git clone https://github.com/DavidKorczynski/fuzztest/ && \
+    cd fuzztest && \
+    git checkout oss-fuzz-integration
+
 COPY build.sh $SRC/
 COPY WORKSPACE $SRC/raksha/WORKSPACE
 COPY BUILD_f $SRC/BUILD_f
