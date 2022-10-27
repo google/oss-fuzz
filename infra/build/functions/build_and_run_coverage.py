@@ -273,6 +273,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
     project_name, project_yaml, dockerfile_lines, image_project,
     base_images_project, config):
   """Returns build steps of fuzz introspector for project"""
+
   project = build_project.Project(project_name, project_yaml, dockerfile_lines,
                                   image_project)
   if project.disabled:
@@ -287,7 +288,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
-  env = build_project.get_env(project.fuzzing_language, build)
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
@@ -295,13 +295,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
-  build_steps.append({
-      'args': [
-          'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  })
-
   bucket_name = 'oss-fuzz-coverage'
   if config.testing:
     bucket_name += '-testing'
@@ -317,20 +310,13 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
         project.name)
     return []
   build_steps.extend(download_coverage_steps)
-
+  build_steps.extend(
+      build_lib.get_project_image_steps(project.name,
+                                        project.image,
+                                        project.fuzzing_language,
+                                        config=config))
+  env = build_project.get_env(project.fuzzing_language, build)
   env.append('FUZZ_INTROSPECTOR=1')
-
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': [
-          'build',
-          '-t',
-          f'gcr.io/oss-fuzz/{project.name}',
-          '.',
-      ],
-      'dir': os.path.join('oss-fuzz', 'projects', project.name),
-  })
-
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
   env.append(f'PROJECT_NAME={project.name}')
