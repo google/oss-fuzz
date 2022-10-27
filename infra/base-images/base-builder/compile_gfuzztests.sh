@@ -17,10 +17,10 @@
 
 bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
 
-# Bazel target names of the fuzz binaries
+# Bazel target names of the fuzz binaries.
 FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
 
-# Bazel output paths of the fuzz binaries
+# Bazel output paths of the fuzz binaries.
 FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))' --output=files)
 
 #echo "Fuzz test binaries:"
@@ -57,11 +57,11 @@ done
 # synchronise coverage directory to bazel generated code.
 if [ "$SANITIZER" = "coverage" ]
 then 
-  # syncing bazel source files to coverage collection
+  # Synchronize bazel source files to coverage collection.
   declare -r REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
   
-  # Synchronize the folder bazel-BAZEL_OUT_PROJECT
+  # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
     "--exclude" "*")
@@ -77,7 +77,7 @@ then
    fi
   done
 
-  # Delete symlinks and sync the current folder
+  # Delete symlinks and sync the current folder.
   find . -type l -ls -delete
   rsync -av ${PWD}/ "${REMAP_PATH}"
 fi
