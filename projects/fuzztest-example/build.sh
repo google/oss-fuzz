@@ -19,4 +19,4 @@ cat $SRC/setup_configs.sh >> fuzztest/bazel/setup_configs.sh
 
 # Compile gfuzztests
 cd fuzztest/codelab
-compile_gfuzztests.sh
+compile_fuzztests.sh

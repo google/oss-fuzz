@@ -20,5 +20,4 @@ cd $SRC/raksha
 cp $SRC/BUILD_f ./src/ir/datalog/BUILD
 
 # Compile gfuzztests
-#cd fuzztest/codelab
-compile_gfuzztests.sh
+compile_fuzztests.sh
