@@ -38,6 +38,4 @@ RUN git clone https://github.com/DavidKorczynski/fuzztest/ && \
     git checkout oss-fuzz-integration
 
 COPY build.sh $SRC/
-COPY WORKSPACE $SRC/raksha/WORKSPACE
-COPY BUILD_f $SRC/BUILD_f
-COPY bazel_rc_raksha $SRC/raksha/.bazelrc
+COPY *.diff $SRC/
