@@ -43,7 +43,7 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
     exit 1
   fi
   if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "introspector" ]; then
-    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer or Coverage only."
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer or Coverage or Fuzz Introspector only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
