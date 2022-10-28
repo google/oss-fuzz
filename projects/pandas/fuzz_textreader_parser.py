@@ -31,7 +31,7 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)), engine="python")
+        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
     except (
         EmptyDataError,
         ParserError,
