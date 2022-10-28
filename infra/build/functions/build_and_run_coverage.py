@@ -316,7 +316,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
                                         project.fuzzing_language,
                                         config=config))
   env = build_project.get_env(project.fuzzing_language, build)
-  env.append('FUZZ_INTROSPECTOR=1')
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
   env.append(f'PROJECT_NAME={project.name}')
