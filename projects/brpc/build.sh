@@ -40,8 +40,8 @@ popd
 
 pushd $OUT/
 mkdir $OUT/lib/
-patchelf --set-rpath '$ORIGIN/lib' Fuzz_json
-patchelf --set-rpath '$ORIGIN/lib' Fuzz_http
+patchelf --set-rpath ./lib/:$ORIGIN Fuzz_json
+patchelf --set-rpath ./lib/:$ORIGIN Fuzz_http
 popd
 
 pushd /lib/x86_64-linux-gnu/
