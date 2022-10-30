@@ -9,5 +9,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - memory
 main_repo: 'https://github.com/apache/incubator-brpc'
