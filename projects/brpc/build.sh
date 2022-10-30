@@ -37,3 +37,16 @@ pushd $SRC/oss-fuzz-bloat/brpc/
 cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
 popd
+
+pushd $OUT/
+mkdir $OUT/lib/
+patchelf --set-rpath '$ORIGIN/lib' Fuzz_json
+patchelf --set-rpath '$ORIGIN/lib' Fuzz_http
+popd
+
+pushd /lib/x86_64-linux-gnu/
+cp libgflags* $OUT/lib/.
+cp libprotobuf* $OUT/lib/.
+cp libleveldb* $OUT/lib/.
+cp libprotoc* $OUT/lib/.
+popd
