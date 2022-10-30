@@ -49,4 +49,5 @@ cp libgflags* $OUT/lib/.
 cp libprotobuf* $OUT/lib/.
 cp libleveldb* $OUT/lib/.
 cp libprotoc* $OUT/lib/.
+cp libsnappy* $OUT/lib/.
 popd
