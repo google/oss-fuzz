@@ -23,13 +23,11 @@ export GNULIB_SRCDIR=$SRC/gnulib
 export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
-./autogen.sh
 ./configure --enable-static --disable-shared --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
 
 cd $SRC/libidn2
-./bootstrap
 ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
@@ -78,14 +76,14 @@ export ASAN_OPTIONS=detect_leaks=0
 cd $SRC/wget2
 ./bootstrap
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
   ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc)
 make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
   ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc) -C lib

@@ -1,0 +1,13 @@
+homepage: "https://github.com/google/skia"
+language: c++
+primary_contact: "brendandg@nyu.edu"
+auto_ccs:
+  - "metzman@google.com"
+  - "bd52@nyu.edu"
+
+sanitizers:
+ - address
+ - undefined
+ - memory
+help_url: "https://skia.org/dev/testing/fuzz"
+main_repo: 'https://skia.googlesource.com/skia.git'

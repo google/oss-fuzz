@@ -15,12 +15,18 @@
 #
 ################################################################################
 
+# Force static linking in i386 by removing dynamically linked libraries.
+if [ "$ARCHITECTURE" = 'i386' ]; then
+  rm /usr/lib/i386-linux-gnu/libssl.so*
+  rm /usr/lib/i386-linux-gnu/libcrypto.so*
+fi
+
 # Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TEST=ON
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TESTS=ON
 make clean
 make -j$(nproc)
 
-# Package seed corpus 
+# Package seed corpus
 zip -j $OUT/unzip_fuzzer_seed_corpus.zip test/fuzz/unzip_fuzzer_seed_corpus/*
 
 # Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT

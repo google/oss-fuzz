@@ -1,0 +1,316 @@
+[
+  {
+    "args": [
+      "clone",
+      "https://github.com/google/oss-fuzz.git",
+      "--depth",
+      "1"
+    ],
+    "name": "gcr.io/cloud-builders/git"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "build",
+      "--tag",
+      "gcr.io/oss-fuzz/test-project",
+      "."
+    ],
+    "dir": "oss-fuzz/projects/test-project"
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json"
+    ],
+    "env": [
+      "OSSFUZZ_REVISION=$REVISION_ID",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "id": "srcmap"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=centipede",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/centipede-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz/test-project",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-centipede-address-x86_64"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=centipede",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/centipede-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-centipede-address-x86_64"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.address"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "cd /workspace/out/centipede-address-x86_64 && zip -r test-project-address-202001010000.zip *"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/srcmap.json",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/out/centipede-address-x86_64/test-project-address-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/targets.list.address",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/curl",
+    "args": [
+      "-H",
+      "Content-Type: text/plain",
+      "-X",
+      "PUT",
+      "-d",
+      "test-project-address-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /workspace/out/centipede-address-x86_64"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-none-x86_64",
+      "SANITIZER=none"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=centipede",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/centipede-none-x86_64",
+      "-e",
+      "SANITIZER=none",
+      "-t",
+      "gcr.io/oss-fuzz/test-project",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-none-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-centipede-none-x86_64"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-none-x86_64",
+      "SANITIZER=none"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=centipede",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/centipede-none-x86_64",
+      "-e",
+      "SANITIZER=none",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-centipede-none-x86_64"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=centipede",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/centipede-none-x86_64",
+      "SANITIZER=none"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.none"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "cd /workspace/out/centipede-none-x86_64 && zip -r test-project-none-202001010000.zip *"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/srcmap.json",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/out/centipede-none-x86_64/test-project-none-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/uploader",
+    "args": [
+      "/workspace/targets.list.none",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/curl",
+    "args": [
+      "-H",
+      "Content-Type: text/plain",
+      "-X",
+      "PUT",
+      "-d",
+      "test-project-none-202001010000.zip",
+      "test_url"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /workspace/out/centipede-none-x86_64"
+    ]
+  }
+]

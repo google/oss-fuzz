@@ -1,5 +1,6 @@
 homepage: "http://www.xmlsoft.org/libxslt/"
 language: c++
+primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "ddkilzer@apple.com"
   - "product-security@apple.com"

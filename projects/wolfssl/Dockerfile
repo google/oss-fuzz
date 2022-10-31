@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Held back because of github.com/google/oss-fuzz/pull/8313
+# Please fix failure and upgrade.
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python
 RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
@@ -60,3 +62,6 @@ RUN gsutil cp gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFu
 WORKDIR wolfssl
 
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

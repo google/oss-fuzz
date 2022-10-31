@@ -1,7 +1,7 @@
 package cel
 
 import (
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/google/cel-go/checker/decls"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
@@ -18,7 +18,12 @@ func FuzzEval(data []byte) int {
 	for k, _ := range gen.Inputs {
 		declares = append(declares, decls.NewVar(k, decls.String))
 	}
-	env, err := NewEnv(Declarations(declares...))
+	env, err := getCELFuzzEnv()
+	if err != nil {
+		panic("impossible to create env")
+	}
+
+	env, err = env.Extend(Declarations(declares...))
 	if err != nil {
 		panic("impossible to create env")
 	}

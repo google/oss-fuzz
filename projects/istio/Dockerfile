@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+# Setup the builder for Istio. The standard Go builder is sufficient.
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/istio/istio
 COPY build.sh $SRC/

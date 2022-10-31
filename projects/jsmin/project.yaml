@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/tikitu/jsmin
+language: python
+main_repo: https://github.com/tikitu/jsmin
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

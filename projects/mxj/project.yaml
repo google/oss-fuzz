@@ -1,0 +1,9 @@
+homepage: "https://github.com/clbanning/mxj"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/clbanning/mxj"
+vendor_ccs:
+  - maxnair.dev@gmail.com

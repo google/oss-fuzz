@@ -14,6 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
+
+# For fuzz-introspector, cxclude all functions in the fluent-bit/lib/ directory
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+fluent-bit/lib
+EOF
+
 cd fluent-bit
 sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
 sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
@@ -55,7 +63,7 @@ OUTPUT_PLUGINS="-DFLB_OUT_AZURE=OFF  \
   -DFLB_OUT_FLOWCOUNTER=OFF   \
   -DFLB_OUT_FORWARD=OFF       \
   -DFLB_OUT_GELF=OFF          \
-  -DFLB_OUT_HTTP=OFF          \
+  -DFLB_OUT_HTTP=ON           \
   -DFLB_OUT_INFLUXDB=OFF      \
   -DFLB_OUT_KAFKA=OFF         \
   -DFLB_OUT_KAFKA_REST=OFF    \
@@ -90,7 +98,8 @@ EXTRA_FLAGS="-DFLB_BINARY=OFF \
   -DFLB_EXAMPLES=OFF \
   -DFLB_METRICS=ON   \
   -DFLB_DEBUG=ON     \
-  -DMBEDTLS_FATAL_WARNINGS=OFF"
+  -DMBEDTLS_FATAL_WARNINGS=OFF \
+  -DFLB_CONFIG_YAML=OFF"
 
 cmake -DFLB_TESTS_INTERNAL=ON \
       -DFLB_TESTS_INTERNAL_FUZZ=ON \

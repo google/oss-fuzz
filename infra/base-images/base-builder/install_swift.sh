@@ -37,13 +37,14 @@ apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends  
 
 
-wget https://swift.org/builds/swift-5.4.2-release/ubuntu2004/swift-5.4.2-RELEASE/swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
-tar xzf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
-cp -r swift-5.4.2-RELEASE-ubuntu20.04/usr/* /usr/
-rm -rf swift-5.4.2-RELEASE-ubuntu20.04.tar.gz
+wget https://download.swift.org/swift-5.7-release/ubuntu2004/swift-5.7-RELEASE/swift-5.7-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-5.7-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-5.7-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-5.7-RELEASE-ubuntu20.04.tar.gz
 # TODO: Move to a seperate work dir
-git clone --depth 1 https://github.com/llvm/llvm-project.git
+git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
+git checkout 63bf228450b8403e0c5e828d276be47ffbcd00d0 # TODO: Keep in sync with base-clang.
 git apply ../llvmsymbol.diff --verbose
 cmake -G "Ninja" \
     -DLIBCXX_ENABLE_SHARED=OFF \

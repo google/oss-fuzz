@@ -41,7 +41,9 @@ INTROSPECTOR_BUILD_TYPE = 'introspector'
 LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
+LANGUAGES_WITH_COVERAGE_SUPPORT = [
+    'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
+]
 
 LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
 
@@ -80,11 +82,11 @@ class IntrospectorBucket(Bucket):  # pylint: disable=too-few-public-methods
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, project_yaml_contents, dockerfile_lines, image_project,
+    project_name, project_yaml, dockerfile_lines, image_project,
     base_images_project, config):
   """Returns build steps for project."""
-  project = build_project.Project(project_name, project_yaml_contents,
-                                  dockerfile_lines, image_project)
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
+                                  image_project)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
@@ -98,19 +100,17 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
 
-  build_steps = build_lib.project_image_steps(
-      project.name,
-      project.image,
-      project.fuzzing_language,
-      branch=config.branch,
-      test_image_suffix=config.test_image_suffix)
+  build_steps = build_lib.get_project_image_steps(project.name,
+                                                  project.image,
+                                                  project.fuzzing_language,
+                                                  config=config)
 
   build = build_project.Build(FUZZING_ENGINE, 'coverage', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
   download_corpora_steps = build_lib.download_corpora_steps(
-      project.name, testing=config.testing)
+      project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
     logging.info('Skipping code coverage build for %s.', project.name)
     return []
@@ -129,13 +129,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'HTTP_PORT=',
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ]
-  if 'dataflow' in project.fuzzing_engines:
-    coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
       'name':
-          build_project.get_runner_image_name(base_images_project,
-                                              config.test_image_suffix),
+          build_lib.get_runner_image_name(base_images_project,
+                                          config.test_image_suffix),
       'env':
           coverage_env,
       'args': [
@@ -157,6 +155,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('reports')
+  upload_report_by_target_url = bucket.get_upload_url('reports-by-target')
 
   # Delete the existing report as gsutil cannot overwrite it in a useful way due
   # to the lack of `-T` option (it creates a subdir in the destination dir).
@@ -172,6 +171,20 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           upload_report_url,
       ],
   })
+
+  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+    build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
+    build_steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'args': [
+            '-m',
+            'cp',
+            '-r',
+            os.path.join(build.out, 'report_target'),
+            upload_report_by_target_url,
+        ],
+    })
 
   # Upload the fuzzer stats. Delete the old ones just in case.
   upload_fuzzer_stats_url = bucket.get_upload_url('fuzzer_stats')
@@ -257,11 +270,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
 
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
-    project_name, project_yaml_contents, dockerfile_lines, image_project,
+    project_name, project_yaml, dockerfile_lines, image_project,
     base_images_project, config):
   """Returns build steps of fuzz introspector for project"""
-  project = build_project.Project(project_name, project_yaml_contents,
-                                  dockerfile_lines, image_project)
+
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
+                                  image_project)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
@@ -274,7 +288,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
-  env = build_project.get_env(project.fuzzing_language, build)
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
@@ -282,13 +295,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
-  build_steps.append({
-      'args': [
-          'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  })
-
   bucket_name = 'oss-fuzz-coverage'
   if config.testing:
     bucket_name += '-testing'
@@ -297,41 +303,22 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
                   f'/reports/{coverage_report_latest}/linux')
 
   download_coverage_steps = build_lib.download_coverage_data_steps(
-      project.name, coverage_report_latest, bucket_name, build.out,
-      config.testing)
+      project.name, coverage_report_latest, bucket_name, build.out)
   if not download_coverage_steps:
     logging.warning(
         'Skipping introspector build for %s. No coverage data found.',
         project.name)
     return []
   build_steps.extend(download_coverage_steps)
-
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder:introspector'],
-  })
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/docker',
-      'args': [
-          'tag', 'gcr.io/oss-fuzz-base/base-builder:introspector',
-          'gcr.io/oss-fuzz-base/base-builder:latest'
-      ],
-  })
-
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': [
-          'build',
-          '-t',
-          f'gcr.io/oss-fuzz/{project.name}',
-          '.',
-      ],
-      'dir': os.path.join('oss-fuzz', 'projects', project.name),
-  })
-
+  build_steps.extend(
+      build_lib.get_project_image_steps(project.name,
+                                        project.image,
+                                        project.fuzzing_language,
+                                        config=config))
+  env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
+  env.append(f'PROJECT_NAME={project.name}')
 
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))

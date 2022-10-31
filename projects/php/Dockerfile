@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# The current clang revision is broken, pin to older one.
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
 RUN apt-get update && \
     apt-get install -y autoconf automake libtool bison re2c pkg-config
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src

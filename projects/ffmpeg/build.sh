@@ -164,7 +164,7 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
-CONDITIONALS=`grep 'BSF 1$' config.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
+CONDITIONALS=`grep 'BSF 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )
@@ -178,7 +178,7 @@ for c in $CONDITIONALS ; do
 done
 
 # Build fuzzers for decoders.
-CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
+CONDITIONALS=`grep 'DECODER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )
@@ -241,7 +241,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-demuxers \
     --disable-demuxer=rtp,rtsp,sdp \
 
-CONDITIONALS=`grep 'DEMUXER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/'`
+CONDITIONALS=`grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/'`
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
   CONDITIONALS=( ${CONDITIONALS[@]:0:2} )

@@ -30,7 +30,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   ext2_filsys fs;
   errcode_t retval = ext2fs_open(
       fname,
-      0, 0, 0,
+      EXT2_FLAG_IGNORE_CSUM_ERRORS, 0, 0,
       unix_io_manager,
       &fs);
 
