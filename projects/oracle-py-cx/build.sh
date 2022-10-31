@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+cd $SRC/oracle-py-cx
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
    compile_python_fuzzer $fuzzer --add-binary /opt/oracle/instantclient_21_6:./ --add-binary /usr/lib/x86_64-linux-gnu/:./
