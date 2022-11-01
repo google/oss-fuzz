@@ -114,7 +114,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
     platform = 'linux/arm64'
   else:
     platform = 'linux/amd64'
-  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  new_args = [
+      'run', '--platform', platform, '-v', '/workspace:/workspace',
+      '--privileged', '--cap-add=all'
+  ]
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
