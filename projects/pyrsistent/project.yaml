@@ -6,7 +6,8 @@ main_repo: https://github.com/tobgu/pyrsistent
 sanitizers:
 - address
 - undefined
-vendor_ccs:
+primary_contact: "tobias.l.gustafsson@gmail.com"
+auto_ccs:
 - david@adalogics.com
 - riccardo.schirone@trailofbits.com
 - facundo.tuesca@trailofbits.com

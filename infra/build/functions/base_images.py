@@ -35,11 +35,9 @@ BASE_IMAGES = [
     'base-runner',
     'base-runner-debug',
 ]
-INTROSPECTOR_BASE_IMAGES = ['base-clang', 'base-builder']
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
-INTROSPECTOR_TAG = 'introspector'
 MANIFEST_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner'
 ]
@@ -62,34 +60,6 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
     image_path = get_base_image_path(base_image)
     steps.append(
         build_lib.get_docker_build_step([image, tagged_image], image_path))
-  return steps
-
-
-def _get_introspector_base_images_steps(tag_prefix=TAG_PREFIX):
-  """Returns build steps for given images version of introspector"""
-  steps = [build_lib.get_git_clone_step()]
-
-  for base_image in INTROSPECTOR_BASE_IMAGES:
-    image = tag_prefix + base_image
-    args_list = ['build']
-
-    if base_image == 'base-clang':
-      args_list.extend(['--build-arg', 'introspector=1'])
-    elif base_image == 'base-builder':
-      args_list.extend(
-          ['--build-arg', 'parent_image=gcr.io/oss-fuzz-base/base-clang'])
-
-    args_list.extend([
-        '-t',
-        f'{image}',  # Skips tagging the image.
-        '.',
-    ])
-    steps.append({
-        'args': args_list,
-        'dir': os.path.join('oss-fuzz', get_base_image_path(base_image)),
-        'name': 'gcr.io/cloud-builders/docker',
-    })
-
   return steps
 
 
@@ -176,13 +146,3 @@ def base_builder(event, context):
   steps.extend(get_images_architecture_manifest_steps())
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
-
-  introspector_steps = _get_introspector_base_images_steps()
-  introspector_images = [
-      TAG_PREFIX + base_image for base_image in INTROSPECTOR_BASE_IMAGES
-  ]
-
-  run_build(introspector_steps,
-            introspector_images,
-            tags=INTROSPECTOR_TAG,
-            build_version=INTROSPECTOR_TAG)

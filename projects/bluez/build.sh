@@ -20,8 +20,8 @@ autoreconf -f
 ./configure
 make
 
-INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/include/glib-2.0/ -I/usr/lib/x86_64-linux-gnu/glib-2.0/include/"
-STATIC_LIBS="./src/.libs/libshared-glib.a ./lib/.libs/libbluetooth-internal.a  -l:libical.a -l:libicalss.a -l:libicalvcal.a -l:libdbus-1.a -l:libglib-2.0.a"
+INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/local/include/glib-2.0/ -I/src/glib/_build/glib/"
+STATIC_LIBS="./src/.libs/libshared-glib.a ./lib/.libs/libbluetooth-internal.a  -l:libical.a -l:libicalss.a -l:libicalvcal.a -l:libdbus-1.a /src/glib/_build/glib/libglib-2.0.a"
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
  $SRC/fuzz_xml.c ./src/bluetoothd-sdp-xml.o -o $OUT/fuzz_xml \

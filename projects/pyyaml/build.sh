@@ -15,6 +15,10 @@
 #
 ################################################################################
 cd pyyaml
+
+# For fuzz-introspector
+export PYFUZZPACKAGE=$PWD/lib/
+
 python3 ./setup.py --without-libyaml install
 
 # Build fuzzers in $OUT.

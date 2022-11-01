@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf
+RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf python
 RUN pip3 install meson ninja gyp-next
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
