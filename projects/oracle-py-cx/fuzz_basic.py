@@ -29,10 +29,10 @@ def SetFuzzedInput(input_bytes):
 
 
 class ServerThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, port):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind(("127.0.0.1", 8009))
+        self.s.bind(("127.0.0.1", port))
         self.s.settimeout(0.4)
         self.s.listen(1)
 
@@ -55,14 +55,26 @@ class ServerThread(threading.Thread):
 
 @atheris.instrument_func
 def TestInput(data):
-    t1 = ServerThread()
+    port = None
+    for i in range(8009, 8100):
+        try:
+            t1 = ServerThread(i)
+        except OSError:
+            # If the address is already in use by another
+            continue
+        port = i
+        break
+
+    if port == None:
+        return
+
     t1.start()
 
     fdp = atheris.FuzzedDataProvider(data)
     args = dict()
     args['user'] = fdp.ConsumeUnicodeNoSurrogates(64)
     args['password'] = fdp.ConsumeUnicodeNoSurrogates(64)
-    args['dsn'] = "127.0.0.1:8009"
+    args['dsn'] = f"127.0.0.1:{port}"
     if fdp.ConsumeBool():
         args['newpassword'] = fdp.ConsumeUnicodeNoSurrogates(64)
     if fdp.ConsumeBool():
