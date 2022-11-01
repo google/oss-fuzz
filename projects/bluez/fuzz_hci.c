@@ -33,12 +33,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *null_terminated = malloc(to_copy+1);
   memcpy(null_terminated, data, to_copy);
   null_terminated[to_copy] = '\0';
-
+/*
   char *tmp = lmp_featurestostr(features, null_terminated, to_copy);
   if (tmp) {
     free(tmp);
   }
-  tmp = NULL;
+*/
+  char *tmp = NULL;
 
   size -= to_copy;
   data += to_copy;
