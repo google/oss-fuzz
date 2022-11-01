@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://github.com/bazelbuild/rules_fuzzing.git
-WORKDIR $SRC/rules_fuzzing/
+RUN git clone https://github.com/google/jwt_verify_lib.git
+WORKDIR $SRC/jwt_verify_lib/
 COPY build.sh $SRC/
