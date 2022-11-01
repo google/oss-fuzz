@@ -42,8 +42,8 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ]; then
-    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer or Coverage only."
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "introspector" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer or Coverage or Fuzz Introspector only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
@@ -214,25 +214,44 @@ if [ "$SANITIZER" = "introspector" ]; then
   pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve matplotlib
   mkdir -p $SRC/inspector
 
-  find $SRC/ -name "*.data" -exec cp {} $SRC/inspector/ \;
-  find $SRC/ -name "*.data.yaml" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "fuzzerLogFile-*.data.yaml" -exec cp {} $SRC/inspector/ \;
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]
   then
-    cp $OUT/textcov_reports/*.covreport $SRC/inspector/
+    find $OUT/textcov_reports/ -name *.covreport -exec cp {} $SRC/inspector/ \;
+    find $OUT/textcov_reports/ -name *.json -exec cp {} $SRC/inspector/ \;
   fi
 
   cd $SRC/inspector
 
-  # Correlate fuzzer binaries to fuzz-introspector's raw data
-  python3 /fuzz-introspector/src/main.py correlate --binaries_dir=$OUT/
+  # Do different things depending on languages
+  if [ "$FUZZING_LANGUAGE" = "python" ]; then
+    echo "GOING python route"
+    set -x
+    REPORT_ARGS="--target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --language=python"
+    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    cp -rf $SRC/inspector $OUT/inspector
+  else
+    # C/C++
 
-  # Generate fuzz-introspector HTML report, this generates
-  # the file exe_to_fuzz_introspector_logs.yaml
-  REPORT_ARGS="--target_dir=$SRC/inspector"
-  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
-  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
-    REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+    # Correlate fuzzer binaries to fuzz-introspector's raw data
+    python3 /fuzz-introspector/src/main.py correlate --binaries_dir=$OUT/
+
+    # Generate fuzz-introspector HTML report, this generates
+    # the file exe_to_fuzz_introspector_logs.yaml
+    REPORT_ARGS="--target_dir=$SRC/inspector"
+    # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+    if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+      REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+    fi
+    # Use the just-generated correlation file
+    REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
+    REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
+    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS || true
+
+    cp -rf $SRC/inspector $OUT/inspector
   fi
   # Use the just-generated correlation file
   REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
