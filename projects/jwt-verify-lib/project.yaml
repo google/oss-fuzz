@@ -5,4 +5,8 @@ auto_ccs:
 - "nareddyt@google.com"
 - "yangshuo@google.com"
 - "taoxuy@google.com"
+sanitizers:
+- address
+- undefined
+- memory
 main_repo: 'https://github.com/google/jwt_verify_lib.git'
