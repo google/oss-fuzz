@@ -22,6 +22,9 @@ cp $SRC/tailfile_fuzzer.go $SRC/moby/pkg/tailfile/
 cp $SRC/archive_fuzzers.go $SRC/moby/pkg/archive/
 cp $SRC/jsonfilelog_fuzzer.go $SRC/moby/daemon/logger/jsonfilelog/
 cp $SRC/etchosts_fuzzer.go $SRC/moby/libnetwork/etchosts/
+cp $SRC/oci_fuzzer.go $SRC/moby/oci/
+cp $SRC/jsonlogbytes_fuzzer.go $SRC/moby/daemon/logger/jsonfilelog/jsonlog/
+
 
 rm $SRC/moby/pkg/archive/example_changes.go
 rm $SRC/moby/daemon/logger/plugin_unsupported.go
@@ -42,5 +45,7 @@ compile_go_fuzzer github.com/docker/docker/pkg/tailfile FuzzTailfile FuzzTailfil
 compile_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
 
 compile_go_fuzzer github.com/docker/docker/libnetwork/etchosts FuzzAdd FuzzAdd
+compile_go_fuzzer github.com/docker/docker/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
+compile_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 
 cp $SRC/*.options $OUT/
