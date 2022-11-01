@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz --quiet && rm -rf /root/.go && mkdir /root/tmpgo && tar -C /root/tmpgo -xzf go1.17.5.linux-amd64.tar.gz && mv /root/tmpgo/go /root/.go && ldconfig
 RUN git clone --depth 1 https://github.com/kubeedge/kubeedge
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 COPY build.sh $SRC/
