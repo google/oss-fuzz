@@ -211,7 +211,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CFLAGS
   apt-get install -y libjpeg-dev zlib1g-dev
   pip3 install --upgrade setuptools
-  pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve matplotlib
+  pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
+  pip3 install --prefer-binary matplotlib
   mkdir -p $SRC/inspector
 
   find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
