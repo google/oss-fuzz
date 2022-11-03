@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-# TODO: workaroudn https://github.com/google/oss-fuzz/issues/8915
+# TODO: workaround https://github.com/google/oss-fuzz/issues/8915
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:a723398a016b23d0e2b29f5c0203a6734900e404d09fdd44a555c1514ca513fa
 
 RUN git clone https://github.com/google/jwt_verify_lib.git
