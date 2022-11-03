@@ -293,9 +293,6 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
   Returns:
     A RunFuzzersResult enum value indicating what happened during fuzzing.
   """
-  print('RECURSIVE LS')
-  os.system('ls -R /home/runner/work/')
-  os.system('ls -R ' + config.workspace)
   fuzz_target_runner = get_fuzz_target_runner(config)
   if not fuzz_target_runner.initialize():
     # We didn't fuzz at all because of internal (CIFuzz) errors. And we didn't
@@ -304,13 +301,7 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
 
   if not fuzz_target_runner.run_fuzz_targets():
     # We fuzzed successfully, but didn't find any bugs (in the fuzz target).
-    print('2')
-    os.system('ls -Rl /home/runner/work/')
-    os.system('ls -Rl ' + config.workspace)
     return RunFuzzersResult.NO_BUG_FOUND
 
-  print('3')
-  os.system('ls -Rl /home/runner/work/')
-  os.system('ls -Rl ' + config.workspace)
   # We fuzzed successfully and found bug(s) in the fuzz targets.
   return RunFuzzersResult.BUG_FOUND
