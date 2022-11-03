@@ -134,6 +134,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with open(bug_summary_artifact_path, 'w') as handle:
       handle.write(crash.stacktrace)
 
+    # Set permissions of testcase to be the same as summary so that we're sure
+    # it can be read by necessary users.
+    permissions_mode = os.stat(bug_summary_artifact_path)
+    os.chmod(target_reproducer_path, permissions_mode)
+
     return target_reproducer_path
 
   def prune(self):
