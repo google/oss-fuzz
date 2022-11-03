@@ -149,7 +149,6 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                            self._target_artifact_path(),
                                            self.duration)
 
-
     print(result.logs)
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
