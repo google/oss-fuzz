@@ -22,7 +22,6 @@ RUN apt-get update && apt-get install -y \
   curl \
   gettext \
   glib2.0-dev \
-  libbrotli-dev \
   libexpat1-dev \
   libffi-dev \
   libfftw3-dev \
@@ -46,7 +45,6 @@ RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/lovell/libimagequant.git
 RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 

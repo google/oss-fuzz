@@ -158,33 +158,6 @@ make -j$(nproc)
 make install
 popd
 
-# jpeg-xl (libjxl)
-pushd $SRC/libjxl
-# Ensure libvips finds JxlEncoderInitBasicInfo
-sed -i '/^Libs.private:/ s/$/ -lc++/' lib/jxl/libjxl.pc.in
-# CMake ignores the CPPFLAGS env, so prepend it to -DCMAKE_C{XX,}_FLAGS instead
-cmake \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_C_FLAGS="$CPPFLAGS $CFLAGS" \
-  -DCMAKE_CXX_FLAGS="$CPPFLAGS $CXXFLAGS" \
-  -DCMAKE_INSTALL_PREFIX=$WORK \
-  -DZLIB_ROOT=$WORK \
-  -DBUILD_SHARED_LIBS=0 \
-  -DBUILD_TESTING=0 \
-  -DJPEGXL_FORCE_SYSTEM_LCMS2=1 \
-  -DJPEGXL_FORCE_SYSTEM_BROTLI=1 \
-  -DJPEGXL_ENABLE_FUZZERS=0 \
-  -DJPEGXL_ENABLE_TOOLS=0 \
-  -DJPEGXL_ENABLE_MANPAGES=0 \
-  -DJPEGXL_ENABLE_BENCHMARK=0 \
-  -DJPEGXL_ENABLE_EXAMPLES=0 \
-  -DJPEGXL_ENABLE_SKCMS=0 \
-  -DJPEGXL_ENABLE_SJPEG=0 \
-  .
-make -j$(nproc)
-make install
-popd
-
 # libimagequant
 pushd $SRC/libimagequant
 meson setup build --prefix=$WORK --libdir=lib --default-library=static --buildtype=debugoptimized
@@ -252,10 +225,10 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $LDFLAGS \
     -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
     -ltiff -lwebpmux -lwebpdemux -lwebp -lsharpyuv -lheif -laom \
-    -ljxl -ljxl_threads -lhwy -limagequant -lcgif -lpdfium \
+    -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
-    -lfftw3 -lexpat -lbrotlienc -lbrotlidec -lbrotlicommon \
+    -lfftw3 -lexpat \
     -lgio-2.0 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 \
     -lresolv -lmount -lblkid -lselinux -lsepol -lpcre \
     -Wl,-Bdynamic -pthread \
