@@ -107,8 +107,8 @@ function run_fuzz_target {
 
   # If necessary translate to latest profraw version.
   if [[ $target == *"@"* ]]; then
-    sp=(${target//@/ })
-    target="${sp[0]}"
+    # Extract fuzztest binary name from fuzztest wrapper script.
+    target=(${target//@/ }[0])
   fi
   profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
@@ -264,10 +264,8 @@ for fuzz_target in $FUZZ_TARGETS; do
 
     # Rewrite object if its a FUZZTEST target
     if [[ $fuzz_target == *"@"* ]]; then
-      # Split fuzztest script name into [fuzztest binary, entrypoint] array.
-      split_target_name=(${fuzz_target//@/ })
-      # Use fuzztest binary as object for extracting coverage from.
-      fuzz_target="${split_target_name[0]}"
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
     fi
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
@@ -276,6 +274,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       objects="$objects -object=$fuzz_target"
     fi
   fi
+
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
@@ -387,8 +386,8 @@ else
     if [[ $fuzz_target == *"@"* ]]; then
       profdata_path=$DUMPS_DIR/$fuzz_target.profdata
       report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
-      sp=(${fuzz_target//@/ })
-      fuzz_target="${sp[0]}"
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
     else
       profdata_path=$DUMPS_DIR/$fuzz_target.profdata
       report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
