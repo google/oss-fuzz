@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-EXTRA_CONFIGS="oss-fuzz" bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+# Trigger setup_configs rule of fuzztest as it generates the necessary
+# configuration file based on OSS-Fuzz environment variables.
+bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
 
 # Bazel target names of the fuzz binaries.
 FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
