@@ -19,6 +19,8 @@ auto_ccs:
 - meumertzheim@code-intelligence.com
 - norbert.schneider@code-intelligence.com
 - hlin@code-intelligence.com
+- copybara-watcher-pod-watcher-git@system.gserviceaccount.com
+- copybara-worker@system.gserviceaccount.com
 fuzzing_engines:
 - libfuzzer
 homepage: https://developers.google.com/protocol-buffers/
@@ -27,3 +29,6 @@ main_repo: https://github.com/protocolbuffers/protobuf
 primary_contact: kfm@google.com
 sanitizers:
 - address
+labels:
+  "*":
+    - ossfuzz-bugz-1260285

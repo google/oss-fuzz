@@ -19,8 +19,13 @@ auto_ccs:
 - sbenza@google.com
 - shaod@google.com
 - theodorerose@google.com
+- copybara-watcher-pod-watcher-git@system.gserviceaccount.com
+- copybara-worker@system.gserviceaccount.com
 sanitizers:
 - address
 - memory
 - undefined
 main_repo: 'https://github.com/protocolbuffers/upb.git'
+labels:
+  "*":
+    - ossfuzz-bugz-1260285
