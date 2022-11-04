@@ -264,8 +264,10 @@ for fuzz_target in $FUZZ_TARGETS; do
 
     # Rewrite object if its a FUZZTEST target
     if [[ $fuzz_target == *"@"* ]]; then
-      sp=(${fuzz_target//@/ })
-      fuzz_target="${sp[0]}"
+      # Split fuzztest script name into [fuzztest binary, entrypoint] array.
+      split_target_name=(${fuzz_target//@/ })
+      # Use fuzztest binary as object for extracting coverage from.
+      fuzz_target="${split_target_name[0]}"
     fi
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
