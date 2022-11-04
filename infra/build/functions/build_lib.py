@@ -32,7 +32,7 @@ import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 
-BUILD_TIMEOUT = 16 * 60 * 60
+BUILD_TIMEOUT = 20 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
