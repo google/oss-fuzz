@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:a723398a016b23d0e2b29f5c0203a6734900e404d09fdd44a555c1514ca513fa
 RUN curl -L -O https://raw.githubusercontent.com/protobuf-c/protobuf-c/39cd58f5ff06048574ed5ce17ee602dc84006162/t/test-full.proto
 RUN git clone https://github.com/protocolbuffers/protobuf.git
 RUN cd protobuf && bazel build --nobuild //:protoc @upb//python/dist:binary_wheel
