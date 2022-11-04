@@ -106,8 +106,8 @@ function run_fuzz_target {
   fi
 
   # If necessary translate to latest profraw version.
-  if [[ $target == *"_@_"* ]]; then
-    sp=(${target//_@_/ })
+  if [[ $target == *"@"* ]]; then
+    sp=(${target//@/ })
     target="${sp[0]}"
   fi
   profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
@@ -263,8 +263,8 @@ for fuzz_target in $FUZZ_TARGETS; do
     run_fuzz_target $fuzz_target &
 
     # Rewrite object if its a FUZZTEST target
-    if [[ $fuzz_target == *"_@_"* ]]; then
-      sp=(${fuzz_target//_@_/ })
+    if [[ $fuzz_target == *"@"* ]]; then
+      sp=(${fuzz_target//@/ })
       fuzz_target="${sp[0]}"
     fi
     if [[ -z $objects ]]; then
@@ -382,10 +382,10 @@ else
 
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
-    if [[ $fuzz_target == *"_@_"* ]]; then
+    if [[ $fuzz_target == *"@"* ]]; then
       profdata_path=$DUMPS_DIR/$fuzz_target.profdata
       report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
-      sp=(${fuzz_target//_@_/ })
+      sp=(${fuzz_target//@/ })
       fuzz_target="${sp[0]}"
     else
       profdata_path=$DUMPS_DIR/$fuzz_target.profdata

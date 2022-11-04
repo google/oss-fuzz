@@ -36,13 +36,13 @@ bazel build --subcommands --config=oss-fuzz ${FUZZ_TEST_BINARIES[*]}
 # each entrypoint create a wrapper script that calls into the binaries the
 # given entrypoint as argument.
 # The scripts will be named:
-# {binary_name}_@_{fuzztest_entrypoint}
+# {binary_name}@{fuzztest_entrypoint}
 for fuzz_main_file in $FUZZ_TEST_BINARIES_OUT_PATHS; do
   FUZZ_TESTS=$($fuzz_main_file --list_fuzz_tests)
   cp ${fuzz_main_file} $OUT/
   fuzz_basename=$(basename $fuzz_main_file)
   for fuzz_entrypoint in $FUZZ_TESTS; do
-    TARGET_FUZZER="${fuzz_basename}_@_$fuzz_entrypoint"
+    TARGET_FUZZER="${fuzz_basename}@$fuzz_entrypoint"
 
     # Write executer script
     echo "#!/bin/sh
