@@ -20,6 +20,7 @@ import logging
 import sys
 import subprocess
 
+
 def main():
   if len(sys.argv) < 3:
     logging.error('Usage: %s <test_app> <testcase>.', sys.argv[0])
