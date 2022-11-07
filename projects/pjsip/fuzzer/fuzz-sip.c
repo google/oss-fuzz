@@ -29,7 +29,7 @@ pj_caching_pool caching_pool;
 #define PJSIP_TEST_MEM_SIZE	    (2*1024*1024)
 
 #define kMinInputLength 10
-#define kMaxInputLength 1024
+#define kMaxInputLength 5120
 
 int sipParser(char *DataFx,size_t Size){
 

@@ -20,7 +20,7 @@ limitations under the License.
 #include <pjmedia/sdp_neg.h>
 
 #define kMinInputLength 10
-#define kMaxInputLength 1024
+#define kMaxInputLength 5120
 
 pj_pool_factory *mem;
 

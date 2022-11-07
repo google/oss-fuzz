@@ -18,7 +18,7 @@ export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 
 ./configure \
---disable-ffmpeg --disable-ssl --disable-opus --disable-libuuid \
+--disable-ffmpeg --disable-ssl \
 --disable-speex-aec --disable-speex-codec \
 --disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
 --disable-resample --disable-libsrtp --disable-libwebrtc --disable-libyuv
