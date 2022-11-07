@@ -18,7 +18,8 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime/pprof"
-	"github.com/AdamKorcz/go-118-fuzz-build/testing"
+	"testing"
+	aTesting "github.com/AdamKorcz/go-118-fuzz-build/testing"
 )
 
 func TestFuzzCorpus(t *testing.T) {
@@ -53,7 +54,7 @@ func TestFuzzCorpus(t *testing.T) {
 		if err != nil {
 			t.Error("Failed to read corpus file", err)
 		}
-		fuzzerF := &utils.F{Data:data, T:&testing.T{}}
+		fuzzerF := &aTesting.F{Data:data, T:&aTesting.T{}}
 		FuzzFunction(fuzzerF)
 	}
 	if profname != "" {
