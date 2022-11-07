@@ -22,23 +22,10 @@ function build_native_go_fuzzer() {
 	tags="-tags gofuzz"
 
 	if [[ $SANITIZER = *coverage* ]]; then
-		echo "here we perform coverage build"
-		fuzzed_package=`go list $tags -f '{{.Name}}' $path`
-		abspath=`go list $tags -f {{.Dir}} $path`
-		cd $abspath
-		cp $GOPATH/native_ossfuzz_coverage_runner.go ./"${function,,}"_test.go
-		sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
-		sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
-		sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
-
-		# The repo is the module path/name, which is already created above
-		# in case it doesn't exist, but not always the same as the module
-		# path. This is necessary to handle SIV properly.
-		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
-		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
-		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
-		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-		go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
+		# TODO(AdamKorcz): rewrite the coverage part
+		# to a more native-Go-friendly implementation.
+		# The seed should be passed directly to the naitve
+		# go fuzzer instead of using a wrapper.
 	else
 		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
 		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
