@@ -18,8 +18,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime/pprof"
-	"testing"
-	"github.com/AdamKorcz/go-118-fuzz-build/utils"
+	"github.com/AdamKorcz/go-118-fuzz-build/testing"
 )
 
 func TestFuzzCorpus(t *testing.T) {
