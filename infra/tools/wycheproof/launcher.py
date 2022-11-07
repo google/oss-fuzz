@@ -27,7 +27,7 @@ def main():
     return 1
 
   test_app = sys.argv[1]
-  return subprocess.run([test_app], check=False).return_code
+  return subprocess.run([test_app], check=False).returncode
 
 
 if __name__ == '__main__':
