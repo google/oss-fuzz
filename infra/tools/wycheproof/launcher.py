@@ -22,6 +22,7 @@ import subprocess
 
 
 def main():
+  """Runs whycheproof."""
   if len(sys.argv) < 3:
     logging.error('Usage: %s <test_app> <testcase>.', sys.argv[0])
     return 1
