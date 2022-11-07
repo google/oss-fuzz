@@ -17,6 +17,11 @@
 
 git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 
+zip "${OUT}/FuzzLoadCertificates_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzUnmarshalCertificatesFromPEM_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzUnmarshalPEMToPublicKey_seed_corpus.zip" corpus/pem/*
+zip "${OUT}/FuzzED25529SignerVerfier_seed_corpus.zip" corpus/ed25519/*
+
 rm go.mod
 rm go.sum
 cd $SRC/sigstore
