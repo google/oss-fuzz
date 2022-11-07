@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-git clone https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
+git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
@@ -208,6 +208,9 @@ go mod tidy
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
+
+# golangs build from source currently breaks.
+exit 0
 
 # Install latest Go from master branch and build fuzzers again
 cd $SRC

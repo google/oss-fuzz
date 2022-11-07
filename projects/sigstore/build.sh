@@ -15,12 +15,11 @@
 #
 ################################################################################
 
-git clone https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
+git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 
-zip "${OUT}/FuzzLoadCertificates_seed_corpus.zip" corpus/pem/*
-zip "${OUT}/FuzzUnmarshalCertificatesFromPEM_seed_corpus.zip" corpus/pem/*
-zip "${OUT}/FuzzUnmarshalPEMToPublicKey_seed_corpus.zip" corpus/pem/*
-zip "${OUT}/FuzzED25529SignerVerfier_seed_corpus.zip" corpus/ed25519/*
+rm go.mod
+rm go.sum
+cd $SRC/sigstore
 
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go install github.com/AdamKorcz/go-118-fuzz-build@dev

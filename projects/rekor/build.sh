@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-git clone https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
+git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go install github.com/AdamKorcz/go-118-fuzz-build@dev
