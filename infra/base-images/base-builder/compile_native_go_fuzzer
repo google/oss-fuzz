@@ -21,12 +21,11 @@ function build_native_go_fuzzer() {
 	path=$3
 	tags="-tags gofuzz"
 
-	if [[ $SANITIZER = *coverage* ]]; then
-		# TODO(AdamKorcz): rewrite the coverage part
+	if [[ $SANITIZER != *coverage* ]]; then
+		# TODO(AdamKorcz): rewrite the coverage build
 		# to a more native-Go-friendly implementation.
 		# The seed should be passed directly to the naitve
 		# go fuzzer instead of using a wrapper.
-	else
 		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
 		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
