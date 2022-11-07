@@ -22,6 +22,7 @@ import sys
 
 
 def get_args():
+  """Returns parsed program arguments."""
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--input_dir',
@@ -35,6 +36,7 @@ def get_args():
 
 
 def main():
+  """Generates a dummy testcase for use by a ClusterFuzz blackbox fuzzer."""
   args = get_args()
   if not os.path.exists(args.output_dir):
     os.mkdir(args.output_dir)
