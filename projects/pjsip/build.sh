@@ -23,7 +23,7 @@ export LDFLAGS="$CFLAGS"
 --disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
 --disable-resample --disable-libsrtp --disable-libwebrtc --disable-libyuv
 
-make -j$(nproc)
+make -j$(nproc) --ignore-errors
 
 pushd fuzzer/
 make
