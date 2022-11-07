@@ -24,8 +24,13 @@ auto_ccs:
 - sbenza@google.com
 - shaod@google.com
 - theodorerose@google.com
+- copybara-watcher-pod-watcher-git@system.gserviceaccount.com
+- copybara-worker@system.gserviceaccount.com
 primary_contact: kfm@google.com
 vendor_ccs:
 - david@adalogics.com
 - riccardo.schirone@trailofbits.com
 - facundo.tuesca@trailofbits.com
+labels:
+  "*":
+    - ossfuzz-bugz-1260285
