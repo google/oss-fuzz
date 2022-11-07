@@ -45,7 +45,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
 ]
 
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
