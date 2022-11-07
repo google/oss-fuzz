@@ -141,8 +141,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self._download_corpus()
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             self.target_path,
-                                             interactive=True):
+                                             self.target_path):
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
       result = engine_impl.minimize_corpus(self.target_path, [],
                                            [self.latest_corpus_path],
@@ -150,6 +149,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                            self._target_artifact_path(),
                                            self.duration)
 
+    print(result.logs)
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
   def fuzz(self, batch=False):
@@ -167,8 +167,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with tempfile.TemporaryDirectory() as artifacts_dir:
       with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                                self.config.sanitizer,
-                                               self.target_path,
-                                               interactive=True) as env:
+                                               self.target_path) as env:
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         options = engine_impl.prepare(corpus_path, env.target_path,
                                       env.build_dir)
@@ -187,6 +186,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
+        print(result.logs)
 
       if not result.crashes:
         # Libfuzzer max time was reached.
@@ -219,8 +219,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     """Minimizes the testcase located at |testcase_path|."""
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             self.target_path,
-                                             interactive=False):
+                                             self.target_path):
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
       minimized_testcase_path = testcase_path + '-minimized'
       return engine_impl.minimize_testcase(self.target_path, [],
@@ -277,8 +276,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     logging.info('Trying to reproduce crash using: %s.', testcase)
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             target_path,
-                                             interactive=False):
+                                             target_path):
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         try:
