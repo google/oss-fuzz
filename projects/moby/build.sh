@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+cd $SRC/instrumentation
+go run main.go $SRC/moby
+cd $SRC/moby
+
 mv $SRC/moby/vendor.mod $SRC/moby/go.mod
 
 cp $SRC/mounts_fuzzer.go $SRC/moby/volume/mounts/
