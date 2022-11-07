@@ -7,6 +7,8 @@ auto_ccs:
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
   - asraa@sigstore.dev
+  - adam@adalogics.com
+  - david@adalogics.com
 language: go
 fuzzing_engines:
   - libfuzzer
