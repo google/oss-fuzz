@@ -31,4 +31,4 @@ sanitizers:
 - address
 labels:
   "*":
-    - ossfuzz-bugz-1260285
+    - protobuf-ossfuzz-bugz-1260285
