@@ -33,4 +33,4 @@ vendor_ccs:
 - facundo.tuesca@trailofbits.com
 labels:
   "*":
-    - ossfuzz-bugz-1260285
+    - protobuf-ossfuzz-bugz-1260285
