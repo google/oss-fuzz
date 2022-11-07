@@ -75,7 +75,7 @@ function create_fuzz_targets() {
         JAVA_OPTS=\"-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
         JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
         LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-        if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+        if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
             mem_settings='-Xmx1900m:-Xss900k'
         else
             mem_settings='-Xmx2048m:-Xss1024k'
