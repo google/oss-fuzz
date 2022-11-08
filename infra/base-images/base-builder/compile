@@ -220,8 +220,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]
   then
-    find $OUT/textcov_reports/ -name *.covreport -exec cp {} $SRC/inspector/ \;
-    find $OUT/textcov_reports/ -name *.json -exec cp {} $SRC/inspector/ \;
+    find $OUT/textcov_reports/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
+    find $OUT/textcov_reports/ -name "*.json" -exec cp {} $SRC/inspector/ \;
   fi
 
   cd $SRC/inspector
