@@ -1,9 +1,6 @@
 homepage: "https://github.com/tinyobjloader/tinyobjloader"
 language: c++
-primary_contact: "syoyo@lighttransport.com"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
-
+primary_contact: "p.antoine@catenacyber.fr"
 sanitizers:
 - address
 - undefined
