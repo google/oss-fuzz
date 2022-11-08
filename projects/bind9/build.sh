@@ -17,7 +17,7 @@
 
 # build the project
 autoreconf -fi
-./configure --disable-shared --enable-static --enable-developer --without-cmocka --without-zlib --disable-linux-caps --prefix="$WORK" --enable-fuzzing=ossfuzz
+./configure --disable-shared --enable-static --enable-developer --without-cmocka --without-zlib --prefix="$WORK" --enable-fuzzing=ossfuzz
 (cd lib/isc && make -j"$(nproc)" all V=1)
 (cd lib/dns && make -j"$(nproc)" all V=1)
 
