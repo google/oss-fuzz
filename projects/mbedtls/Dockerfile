@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     python3-all-dev \
     python3-pip
 RUN pip3 install jinja2
+RUN pip3 install jsonschema
 
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl

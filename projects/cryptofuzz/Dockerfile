@@ -58,5 +58,6 @@ RUN apt-get install -y libssl-dev
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
 RUN pip3 install jinja2
+RUN pip3 install jsonschema
 
 COPY build.sh xxd.c $SRC/
