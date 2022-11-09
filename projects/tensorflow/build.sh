@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+# Overwrite compiler flags that break the oss-fuzz build
+sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
+sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelrc
+sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.bazelrc
+
 # Force Python3, run configure.py to pick the right build config
 PYTHON=python3
 yes "" | ${PYTHON} configure.py

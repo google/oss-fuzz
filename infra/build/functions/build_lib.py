@@ -32,7 +32,7 @@ import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 
-BUILD_TIMEOUT = 16 * 60 * 60
+BUILD_TIMEOUT = 20 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
@@ -114,7 +114,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
     platform = 'linux/arm64'
   else:
     platform = 'linux/amd64'
-  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  new_args = [
+      'run', '--platform', platform, '-v', '/workspace:/workspace',
+      '--privileged', '--cap-add=all'
+  ]
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]

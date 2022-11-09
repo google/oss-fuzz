@@ -18,7 +18,9 @@ cargo fuzz build -O
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/balloon $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/block $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/cmos $OUT/
+cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/console $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/http_api $OUT/
+cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/iommu $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/mem $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/pmem $OUT/
 cp $SRC/cloud-hypervisor/fuzz/target/x86_64-unknown-linux-gnu/release/qcow $OUT/

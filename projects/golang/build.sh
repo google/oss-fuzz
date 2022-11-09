@@ -47,12 +47,15 @@ function setup_golang_fuzzers() {
 
 	cp $SRC/multipart_fuzzer.go $SRC/golang/multipart/main.go
 
+	mkdir $SRC/golang/encoding && cp $SRC/encoding_fuzzer.go $SRC/golang/encoding/
+
 	go mod init "github.com/dvyukov/go-fuzz-corpus"
 }
 
 function compile_fuzzers() {
 	# version is used as suffix for the binaries
 	version=$1
+	compile_go_fuzzer $FUZZ_ROOT/encoding FuzzEncoding fuzz_encoding$version
 	compile_go_fuzzer $FUZZ_ROOT/strings FuzzStringsSplit fuzz_strings_split$version
 	compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version

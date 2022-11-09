@@ -43,6 +43,7 @@ COPY build.sh text_fuzzer.go \
      filepath_fuzzer.go \
      strings_fuzzer.go \
      multipart_fuzzer.go \
+     encoding_fuzzer.go \
      glob_fuzzer.options $SRC/
 
 WORKDIR $SRC/golang

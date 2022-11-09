@@ -42,14 +42,12 @@ case $(uname -m) in
       exit 1
       ;;
 esac
-# zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
-LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS"
-apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
-if [ -n "$INTROSPECTOR_PATCHES" ]; then
-  apt-get install -y $INTROSPECTOR_DEP_PACKAGES
-fi
+# zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
+LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS $INTROSPECTOR_DEP_PACKAGES"
+
+apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # For manual bumping.
 OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
@@ -122,20 +120,17 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-if [ -n "$INTROSPECTOR_PATCHES" ]; then
-  # For fuzz introspector.
-  echo "Applying introspector changes"
-  OLD_WORKING_DIR=$PWD
-  cd $LLVM_SRC
-  cp -rf /fuzz-introspector/frontends/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
-  cp -rf /fuzz-introspector/frontends/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
+# For fuzz introspector.
+echo "Applying introspector changes"
+OLD_WORKING_DIR=$PWD
+cd $LLVM_SRC
+cp -rf /fuzz-introspector/frontends/llvm/include/llvm/Transforms/FuzzIntrospector/ ./llvm/include/llvm/Transforms/FuzzIntrospector
+cp -rf /fuzz-introspector/frontends/llvm/lib/Transforms/FuzzIntrospector ./llvm/lib/Transforms/FuzzIntrospector
 
-  # LLVM currently does not support dynamically loading LTO passes. Thus,
-  # we hardcode it into Clang instead.
-  # Ref: https://reviews.llvm.org/D77704
-  /fuzz-introspector/sed_cmds.sh
-  cd $OLD_WORKING_DIR
-fi
+# LLVM currently does not support dynamically loading LTO passes. Thus, we
+# hardcode it into Clang instead. Ref: https://reviews.llvm.org/D77704
+/fuzz-introspector/sed_cmds.sh
+cd $OLD_WORKING_DIR
 
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
@@ -154,11 +149,7 @@ CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
 function free_disk_space {
     rm -rf $LLVM_SRC $SRC/chromium_tools
-    apt-get remove --purge -y $LLVM_DEP_PACKAGES
-    if [ -n "$INTROSPECTOR_PATCHES" ]; then
-      apt-get remove --purge -y $INTROSPECTOR_DEP_PACKAGES
-    fi
-    apt-get autoremove -y
+    apt-get autoremove --purge -y $LLVM_DEP_PACKAGES
     # Delete unneeded parts of LLVM to reduce image size.
     # See https://github.com/google/oss-fuzz/issues/5170
     LLVM_TOOLS_TMPDIR=/tmp/llvm-tools

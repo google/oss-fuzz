@@ -21,7 +21,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-public class YamlFuzzer {
+public class SecureYamlFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       LoaderOptions options = new LoaderOptions();
