@@ -4,4 +4,3 @@ primary_contact: "david@adalogics.com"
 main_repo: "https://github.com/google/fuzztest"
 fuzzing_engines:
  - libfuzzer
- - centipede
