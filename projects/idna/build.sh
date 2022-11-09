@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# For fuzz-introspector
-export PYFUZZPACKAGE=$PWD/
-
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer

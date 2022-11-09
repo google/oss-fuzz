@@ -15,11 +15,7 @@
 #
 ################################################################################
 cd pyyaml
-
-# For fuzz-introspector
-export PYFUZZPACKAGE=$PWD/lib/
-
-python3 ./setup.py --without-libyaml install
+pip3 install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
