@@ -25,6 +25,11 @@ PYFUZZ_WORKPATH=$SRC/pyfuzzworkdir/
 FUZZ_WORKPATH=$PYFUZZ_WORKPATH/$fuzzer_basename
 
 if [[ $SANITIZER = *introspector* ]]; then
+    # Extract the source package the fuzzer targets. This must happen before
+    # we enter the virtual environment in the following lines because we need
+    # to use the same python environment that installed the fuzzer dependencies.
+    python3 /fuzz-introspector/frontends/python/prepare_fuzz_imports.py $fuzzer_path isossfuzz
+    
     # We must ensure python3.9, this is because we use certain
     # AST logic from there.
     # The below should probably be refined
