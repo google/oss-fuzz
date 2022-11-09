@@ -1,28 +1,15 @@
 diff --git a/.bazelrc b/.bazelrc
-index e3aa9f3..0c3db1f 100644
+index 6bc032b..f4d9da6 100644
 --- a/.bazelrc
 +++ b/.bazelrc
-@@ -26,12 +26,6 @@ build --host_cxxopt='-std=c++17'
- # build --host_cxxopt='-Werror' --host_cxxopt='-Wall'
- build --host_cxxopt='-Wno-deprecated-declarations'
- 
--# These are needed on systems with GLIBC > 2.34-8 to build google-fuzztest
--# which has these errors.
--build --cxxopt='-Wno-error=sign-compare'
--build --cxxopt='-Wno-error=attributes'
--build --host_cxxopt='-Wno-error=sign-compare'
--build --host_cxxopt='-Wno-error=attributes'
- # Annoyingly, in the fuzztest library, their attempt to turn off the `-Wpsabi`
- # warning in Clang causes Clang to complain about an unknown warning flag. This
- # is our attempt to work around that.
-@@ -55,3 +49,5 @@ build:asan --copt -O1
+@@ -85,3 +85,5 @@ build:asan --copt -O1
  build:asan --copt -g
  build:asan --copt -fno-omit-frame-pointer
  build:asan --linkopt -fsanitize=address
 +
 +try-import %workspace%/fuzztest.bazelrc
 diff --git a/WORKSPACE b/WORKSPACE
-index d545b2c..62cc472 100644
+index 4d48310..6ceee4e 100644
 --- a/WORKSPACE
 +++ b/WORKSPACE
 @@ -3,13 +3,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -81,7 +68,7 @@ index d545b2c..62cc472 100644
  #--------------------
  # Bison
  #--------------------
-@@ -306,9 +306,10 @@ http_archive(
+@@ -282,11 +282,12 @@ http_archive(
  fuzztest_commit_hash = "4a8253b7299cf1764550054fae55f1b58a65bbaa"
  
  # Fuzztest
@@ -97,6 +84,8 @@ index d545b2c..62cc472 100644
 +    #strip_prefix = "fuzztest-" + fuzztest_commit_hash,
 +    #:urls = ["https://github.com/google/fuzztest/archive/" + fuzztest_commit_hash + ".zip"],
  )
+ 
+ #zetasql
 diff --git a/src/ir/datalog/BUILD b/src/ir/datalog/BUILD
 index 6b3a0c7..62155ec 100644
 --- a/src/ir/datalog/BUILD
