@@ -43,15 +43,16 @@ for fuzz_main_file in $FUZZ_TEST_BINARIES_OUT_PATHS; do
   FUZZ_TESTS=$($fuzz_main_file --list_fuzz_tests)
   cp ${fuzz_main_file} $OUT/
   fuzz_basename=$(basename $fuzz_main_file)
+  chmod -x $OUT/$fuzz_basename
   for fuzz_entrypoint in $FUZZ_TESTS; do
     TARGET_FUZZER="${fuzz_basename}@$fuzz_entrypoint"
 
     # Write executer script
     echo "#!/bin/sh
-  # LLVMFuzzerTestOneInput for fuzzer detection.
-  this_dir=\$(dirname \"\$0\")
-  chmod +x \$this_dir/
-  $fuzz_basename --fuzz=$fuzz_entrypoint -- \$@" > $OUT/$TARGET_FUZZER
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+chmod +x \$this_dir/$fuzz_basename
+$fuzz_basename --fuzz=$fuzz_entrypoint -- \$@" > $OUT/$TARGET_FUZZER
     chmod +x $OUT/$TARGET_FUZZER
   done
 done
