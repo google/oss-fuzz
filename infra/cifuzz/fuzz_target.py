@@ -134,6 +134,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with open(bug_summary_artifact_path, 'w') as handle:
       handle.write(crash.stacktrace)
 
+    # Set permissions of testcase to be the same as summary so that we're sure
+    # it can be read by necessary users.
+    permissions_mode = os.stat(bug_summary_artifact_path)
+    os.chmod(target_reproducer_path, permissions_mode)
+
     return target_reproducer_path
 
   def prune(self):
@@ -202,6 +207,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                                crash.reproduce_args,
                                                batch=batch)
       if is_reportable or self.config.upload_all_crashes:
+        logging.info('SAVING CRASH')
         fuzzer_logs = result.logs
         testcase_path = self._save_crash(crash)
         if is_reportable and self.config.minimize_crashes:
@@ -209,6 +215,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
           # Use is_reportable to decide this even though reportable crashes
           # are a subset of reproducible ones.
           self.minimize_testcase(testcase_path)
+        else:
+          logging.info('NOT MINIMIZED')
       else:
         fuzzer_logs = None
         testcase_path = None
