@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/openssl/openssl.git
+RUN git clone --depth 1 --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl.git openssl111
 WORKDIR openssl
 COPY build.sh *.options $SRC/
 ENV AFL_SKIP_OSSFUZZ=1
