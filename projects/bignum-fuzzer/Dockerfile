@@ -24,9 +24,9 @@ RUN apt-get update && apt-get install -y \
     python3-all-dev \
     python3-pip
 
+RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls
 # Install Python packages from PyPI
-RUN pip3 install jinja2
-RUN pip3 install jsonschema
+RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
