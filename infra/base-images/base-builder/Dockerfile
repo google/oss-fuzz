@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-ARG parent_image=gcr.io/oss-fuzz-base/base-clang
-FROM $parent_image
+FROM gcr.io/oss-fuzz-base/base-clang
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -114,6 +113,7 @@ RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
     git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    rm -rf .git && \
     chmod 755 oss.sh
 
 # Do precompiles before copying other scripts for better cache efficiency.

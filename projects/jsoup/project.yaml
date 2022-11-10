@@ -5,6 +5,7 @@ auto_ccs:
   - "wagner@code-intelligence.com"
   - "hlin@code-intelligence.com"
   - "ffrr33aakk@gmail.com"
+  - "bug-disclosure@code-intelligence.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/jhy/jsoup/"

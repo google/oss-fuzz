@@ -201,6 +201,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch}']))
+      time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
       print('Failed to start build', project_name, error)
@@ -262,7 +263,6 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
 def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
-  # TODO(metzman): Make this handle concurrent builds.
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
@@ -297,7 +297,6 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  introspector = 'introspector' in args.sanitizers
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
@@ -306,9 +305,7 @@ def trial_build_main(args=None, local_base_build=True):
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         test_image_suffix)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(
-        test_image_suffix, introspector=introspector)
-
+    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 

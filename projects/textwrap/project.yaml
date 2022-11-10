@@ -1,0 +1,12 @@
+homepage: "https://crates.io/crates/textwrap"
+language: rust
+primary_contact: "martin@geisler.net"
+auto_ccs:
+  - "github@ireas.org"
+  - "guillaume1.gomez@gmail.com"
+  - "venkatamaturi98@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/mgeisler/textwrap.git'
