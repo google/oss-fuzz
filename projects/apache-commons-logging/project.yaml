@@ -1,6 +1,7 @@
 homepage: https://commons.apache.org/proper/commons-collections/
 language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-logging.git
+primary_contact: "security@commons.apache.org"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

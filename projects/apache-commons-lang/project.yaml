@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://github.com/apache/commons-lang
 language: jvm
 main_repo: https://github.com/apache/commons-lang.git
+primary_contact: "security@commons.apache.org"
 sanitizers:
 - address
 vendor_ccs:

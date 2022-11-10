@@ -1,6 +1,7 @@
 homepage: "https://commons.apache.org/proper/commons-cli/"
 language: jvm
 main_repo: "https://github.com/apache/commons-cli.git"
+primary_contact: "security@commons.apache.org"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

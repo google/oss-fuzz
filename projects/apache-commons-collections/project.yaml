@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://commons.apache.org/proper/commons-collections/
 language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-codellections.git
+primary_contact: "security@commons.apache.org"
 sanitizers:
 - address
 vendor_ccs:
