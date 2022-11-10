@@ -44,7 +44,6 @@ if [[ $SANITIZER = *introspector* ]]; then
     ARGS="--fuzzer $fuzzer_path"
     if [ -n "${PYFUZZPACKAGE-}" ]; then
       ARGS="$ARGS --package=${PYFUZZPACKAGE}"
-      ARGS="$ARGS --scan"
     fi
     python /fuzz-introspector/frontends/python/main.py $ARGS
     ls -la ./
