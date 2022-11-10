@@ -24,6 +24,15 @@ if [[ $CFLAGS != *-m32* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS enable-ec_nistp_64_gcc_128"
 fi
+if [[ $CFLAGS = *-m32* ]]
+then
+  # Prevent error:
+  #
+  # error while loading shared libraries:
+  # libatomic.so.1: cannot open shared object file:
+  # No such file or directory
+  CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-threads"
+fi
 
 function build_fuzzers() {
     SUFFIX=$1
@@ -43,7 +52,7 @@ function build_fuzzers() {
         zip -j $OUT/${fuzzer}${SUFFIX}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
     done
 
-    options=$(find $SRC/ -maxdepth 1 -name '*.options' -maxdepth 1)
+    options=$(find $SRC/ -maxdepth 1 -name '*.options')
     for o in $options; do
         o_base=$(basename $o)
         fuzzer=${o_base%".options"}
