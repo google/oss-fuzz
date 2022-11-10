@@ -8,6 +8,7 @@ auto_ccs:
   - "evverx@gmail.com"
   - "kerolasa@gmail.com"
   - "gmazyland@gmail.com"
+  - "thomas@t-8ch.de"
 architectures:
   - x86_64
 sanitizers:
