@@ -308,7 +308,7 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
 
 void log_file_open(std::string path, int flags, pid_t pid) {
   report_bug(kArbitraryFileOpenError, pid);
-  std::cerr << "===File opened: " << path << ", flags = " << flags << ",";
+  std::cerr << "===File opened: " << path.c_str() << ", flags = " << flags << ",";
   switch (flags & 3) {
     case O_RDONLY:
       std::cerr << "O_RDONLY";
