@@ -300,8 +300,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
   bucket_name = 'oss-fuzz-coverage'
-  if config.testing:
-    bucket_name += '-testing'
 
   coverage_url = (f'{build_lib.GCS_URL_BASENAME}{bucket_name}/{project.name}'
                   f'/reports/{coverage_report_latest}/linux')
