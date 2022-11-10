@@ -172,7 +172,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   })
 
-  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+  # TODO(navidem):
+  # Currently python coverage does not produce per_target reports.
+  # Skipping python for now to avoid breakage.
+  if (project.fuzzing_language != 'python' and
+      project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT):
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
     build_steps.append({
         'name':
