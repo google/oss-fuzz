@@ -86,7 +86,7 @@ int FuzzerInitialize(char *dbname, char ***argv){
   InitProcess();
   BaseInit();
   PG_SETMASK(&UnBlockSig);
-  InitPostgres("dbfuzz", InvalidOid, username, InvalidOid, NULL, false);
+  InitPostgres("dbfuzz", InvalidOid, username, InvalidOid, false, false,  NULL);
  
   SetProcessingMode(NormalProcessing);
 
