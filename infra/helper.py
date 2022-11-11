@@ -331,6 +331,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                'pass to llvm-cov utility.',
                                nargs='*')
   _add_external_project_args(coverage_parser)
+  _add_architecture_args(coverage_parser)
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -912,6 +913,7 @@ def coverage(args):
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
+      'ARCHITECTURE=' + args.architecture,
   ]
 
   run_args = _env_to_docker_args(env)
@@ -943,7 +945,7 @@ def coverage(args):
   if args.fuzz_target:
     run_args.append(args.fuzz_target)
 
-  result = docker_run(run_args)
+  result = docker_run(run_args, architecture=args.architecture)
   if result:
     logging.info('Successfully generated clang code coverage report.')
   else:
