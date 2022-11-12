@@ -66,3 +66,5 @@ cd $SRC/openssl/
 build_fuzzers ""
 cd $SRC/openssl111/
 build_fuzzers "_111"
+cd $SRC/openssl30/
+build_fuzzers "_30"
