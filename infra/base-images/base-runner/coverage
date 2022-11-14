@@ -100,13 +100,16 @@ function run_fuzz_target {
   fi
 
   rm -rf $corpus_dummy
-
   if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce profile dumps.
     return 0
   fi
 
   # If necessary translate to latest profraw version.
+  if [[ $target == *"@"* ]]; then
+    # Extract fuzztest binary name from fuzztest wrapper script.
+    target=(${target//@/ }[0])
+  fi
   profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
@@ -259,6 +262,11 @@ for fuzz_target in $FUZZ_TARGETS; do
     echo "Running $fuzz_target"
     run_fuzz_target $fuzz_target &
 
+    # Rewrite object if its a FUZZTEST target
+    if [[ $fuzz_target == *"@"* ]]; then
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    fi
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
       objects="$fuzz_target"
@@ -266,6 +274,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       objects="$objects -object=$fuzz_target"
     fi
   fi
+
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
@@ -381,13 +390,20 @@ else
 
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
-    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+    if [[ $fuzz_target == *"@"* ]]; then
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    else
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    fi
     if [[ ! -f "$profdata_path" ]]; then
       echo "WARNING: $fuzz_target has no profdata generated."
       continue
     fi
 
-    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
 fi
