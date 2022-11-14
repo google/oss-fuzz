@@ -300,10 +300,8 @@ done
 wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
-  ls $DUMPS_DIR
   echo $DUMPS_DIR
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
-  #TODO(AdamKorcz): Get rid of this sed command
   gotoolcover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
