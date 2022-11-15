@@ -14,17 +14,26 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool default-jdk bison m4 \
+    build-essential\
+    curl \
+    doxygen \
+    flex \
+    libffi-dev \
+    libncurses5-dev \
+    libtool \
+    libsqlite3-dev \
+    mcpp \
+    sqlite \
+    uuid-runtime \
+    zlib1g-dev 
 
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven && \
-rm -rf maven.zip
+RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildifier-linux-amd64 \
+    -O /usr/local/bin/buildifier && chmod a+x /usr/local/bin/buildifier
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-
-RUN git clone https://github.com/apache/commons-logging
+RUN git clone https://github.com/google-research/raksha raksha
+RUN git clone --depth=1 https://github.com/google/fuzztest/
 
 COPY build.sh $SRC/
-COPY *.java *.xml $SRC/
-COPY Package $SRC/Package/
-WORKDIR $SRC/commons-logging
+COPY *.diff $SRC/

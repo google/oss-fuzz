@@ -13,18 +13,12 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven && \
-rm -rf maven.zip
-
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-
-RUN git clone https://github.com/apache/commons-logging
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y cmake libgflags-dev libprotobuf-dev libprotoc-dev protobuf-compiler libleveldb-dev libgtest-dev libgoogle-perftools-dev libsnappy-dev
+RUN git clone --depth 1 https://github.com/apache/incubator-brpc brpc
+RUN git clone https://github.com/0x34d/oss-fuzz-bloat
 COPY build.sh $SRC/
-COPY *.java *.xml $SRC/
-COPY Package $SRC/Package/
-WORKDIR $SRC/commons-logging
+COPY Fuzz_http.cpp $SRC/brpc/test/Fuzz_http.cpp
+COPY Fuzz_json.cpp $SRC/brpc/test/Fuzz_json.cpp
+COPY CMakeLists.txt.patch $SRC/brpc/test/CMakeLists.txt.patch
+WORKDIR $SRC/brpc/
