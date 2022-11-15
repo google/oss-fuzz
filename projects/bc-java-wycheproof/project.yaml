@@ -7,4 +7,3 @@ fuzzing_engines:
 sanitizers:
   - "none"
 file_github_issue: false
-disabled: true
