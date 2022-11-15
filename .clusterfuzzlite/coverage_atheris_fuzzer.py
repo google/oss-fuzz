@@ -5,29 +5,27 @@ from unittest import mock
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cifuzz'))
-
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cifuzz'))
 
 with atheris.instrument_imports():
   import get_coverage
 
 REPO_PATH = '/src/curl'
 PROJECT_NAME = 'curl'
-oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(
-    REPO_PATH, PROJECT_NAME)
+oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(REPO_PATH, PROJECT_NAME)
+
 
 def TestOneInput(data):
   try:
     decoded_json = json.loads(data)
   except (json.decoder.JSONDecodeError, UnicodeDecodeError):
     # Wart
-    return oss_fuzz_coverage.get_files_covered_by_target(
-          'fuzz-target')
+    return oss_fuzz_coverage.get_files_covered_by_target('fuzz-target')
 
   with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
                   return_value=decoded_json):
-    oss_fuzz_coverage.get_files_covered_by_target(
-          'fuzz-target')
+    oss_fuzz_coverage.get_files_covered_by_target('fuzz-target')
   return 0
 
 
