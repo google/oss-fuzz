@@ -2,7 +2,7 @@ name: ClusterFuzzLite PR fuzzing
 on:
   pull_request:
     paths:
-      - '**'
+      - 'infra/*'
 permissions: read-all
 jobs:
   PR:
