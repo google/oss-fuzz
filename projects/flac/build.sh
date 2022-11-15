@@ -61,7 +61,7 @@ make -j$(nproc)
 
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder fuzzer_seek fuzzer_metadata $OUT
+cp fuzzer_decoder fuzzer_seek fuzzer_metadata fuzzer_reencoder $OUT
 cp fuzzer_*.dict $OUT
 cd $SRC
 
