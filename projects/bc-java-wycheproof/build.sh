@@ -18,5 +18,5 @@
 bazel build BouncyCastleAllTests
 rsync -aLkR bazel-bin/* $OUT
 # Add dummy fuzzer to fool bad build check.
-printf "#!/bin/bash\necho'LLVMFuzzerTestOneInput'" > $OUT/DummyFuzzer.bash
+printf "#!/bin/bash\n./bazel-bin/BouncyCastleAllTests" > $OUT/BouncyCastle.bash
 chmod +x $OUT/DummyFuzzer.bash
