@@ -3,11 +3,15 @@ fuzzing_engines:
 homepage: https://github.com/apache/commons-lang
 language: jvm
 main_repo: https://github.com/apache/commons-lang.git
+primary_contact: "security@commons.apache.org"
 sanitizers:
 - address
 vendor_ccs:
-- wagner@code-intelligence.com
-- yakdan@code-intelligence.com
-- glendowne@code-intelligence.com
-- patrice.salathe@code-intelligence.com
-- hlin@code-intelligence.com
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
