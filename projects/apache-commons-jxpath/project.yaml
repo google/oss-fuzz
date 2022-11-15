@@ -5,10 +5,11 @@ language: jvm
 main_repo: https://github.com/apache/commons-jxpath.git
 sanitizers:
 - address
+auto_ccs:
+  - bharath_mohanraj@persistent.com
 vendor_ccs:
 - wagner@code-intelligence.com
 - yakdan@code-intelligence.com
 - glendowne@code-intelligence.com
 - patrice.salathe@code-intelligence.com
 - hlin@code-intelligence.com
-- bharath_mohanraj@persistent.com
