@@ -1,20 +1,24 @@
 homepage: "https://commons.apache.org"
 language: jvm
-primary_contact: "boards@gmail.com"
+main_repo: "https://github.com/apache/commons-compress"
+primary_contact: "security@commons.apache.org"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
 auto_ccs:
   - "fuzz-testing@commons.apache.org"
   - "brunodepaulak@gmail.com"
-  - "meumertzheim@code-intelligence.com"
   - "peteralfredlee@gmail.com"
-  - "norbert.schneider@code-intelligence.com"
+  - "boards@gmail.com"
+vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
   - "schaich@code-intelligence.com"
-fuzzing_engines:
-  - libfuzzer
-main_repo: "https://gitbox.apache.org/repos/asf/commons-compress.git"
-sanitizers:
-  - address
+  - "norbert.schneider@code-intelligence.com"
+  - "meumertzheim@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,29 +15,18 @@
 #
 ################################################################################
 
+# Move seed corpus and dictionary.
+mv $SRC/{*.zip,*.dict} $OUT
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests -Drat.ignoreErrors=true"
-
-ALL_JARS=""
-
-pushd "${SRC}/commons-logging"
-	$MVN package $MAVEN_ARGS
-	CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
-		-Dexpression=project.version -q -DforceStdout)
-	cp -v target/commons-logging-${CURRENT_VERSION}.jar "$OUT/commons-logging.jar"
-	ALL_JARS="${ALL_JARS} commons-logging.jar"
+pushd "$SRC/commons-compress"
+  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+  CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+   -Dexpression=project.version -q -DforceStdout)
+  cp "target/commons-compress-$CURRENT_VERSION.jar" $OUT/commons-compress.jar
 popd
 
-LOG4J_VERSION=$(echo $(curl -s 'https://api.github.com/repos/apache/logging-log4j2/tags?per_page=1' | jq -r .[].name) | sed 's/^[^0-9]*//')
-curl "https://dlcdn.apache.org/logging/log4j/$LOG4J_VERSION/apache-log4j-$LOG4J_VERSION-bin.tar.gz" -o apache-log4j-bin.tar.gz
-tar xf apache-log4j-bin.tar.gz
-unlink apache-log4j-bin.tar.gz
-mv apache-log4j-$LOG4J_VERSION-bin $SRC
-
-for jarFile in ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-api-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-core-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-1.2-api-$LOG4J_VERSION.jar ; do
-	cp -v ${jarFile} "$OUT/$(basename ${jarFile})"
-	ALL_JARS="${ALL_JARS} $(basename ${jarFile})"
-done
+ALL_JARS="commons-compress.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -46,15 +35,10 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-# compile all java files and copy them to $OUT
-javac -cp $SRC:$BUILD_CLASSPATH -g $SRC/*.java $SRC/Package/*.java
-mkdir -p $OUT/Package
-cp -vr $SRC/Package/*.class $OUT/Package
-cp -v $SRC/*.class $OUT/
-cp -v $SRC/*.xml $OUT/
-
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
+  javac -cp $BUILD_CLASSPATH $fuzzer
+  cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash

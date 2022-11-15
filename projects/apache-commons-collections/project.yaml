@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: https://commons.apache.org/proper/commons-collections/
 language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-codellections.git
+primary_contact: "security@commons.apache.org"
 sanitizers:
 - address
 vendor_ccs:
@@ -12,3 +13,5 @@ vendor_ccs:
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
   - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

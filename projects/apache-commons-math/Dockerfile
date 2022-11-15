@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven && \
-rm -rf maven.zip
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
-RUN git clone https://github.com/apache/commons-logging
+# Math
+RUN git clone --depth 1 https://gitbox.apache.org/repos/asf/commons-math.git
 
+# Copy build script and all fuzzers
 COPY build.sh $SRC/
-COPY *.java *.xml $SRC/
-COPY Package $SRC/Package/
-WORKDIR $SRC/commons-logging
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/
