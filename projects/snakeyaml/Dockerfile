@@ -29,5 +29,5 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 RUN git clone --depth 1 https://bitbucket.org/snakeyaml/snakeyaml.git snakeyaml
 
 COPY build.sh $SRC/
-COPY YamlFuzzer.java $SRC/
+COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/snakeyaml

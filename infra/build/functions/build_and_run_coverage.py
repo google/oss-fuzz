@@ -45,7 +45,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
 ]
 
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
@@ -172,7 +172,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   })
 
-  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+  # TODO(navidem):
+  # Currently python coverage does not produce per_target reports.
+  # Skipping python for now to avoid breakage.
+  if (project.fuzzing_language != 'python' and
+      project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT):
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
     build_steps.append({
         'name':
@@ -296,8 +300,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
   bucket_name = 'oss-fuzz-coverage'
-  if config.testing:
-    bucket_name += '-testing'
 
   coverage_url = (f'{build_lib.GCS_URL_BASENAME}{bucket_name}/{project.name}'
                   f'/reports/{coverage_report_latest}/linux')

@@ -20,9 +20,9 @@ RUN apt-get update && apt-get install -y \
     python-all-dev \
     python3-all-dev \
     python3-pip
-RUN pip3 install jinja2
-
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
+RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
+
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 WORKDIR mbedtls

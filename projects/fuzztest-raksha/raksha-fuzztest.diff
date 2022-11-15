@@ -1,0 +1,139 @@
+diff --git a/.bazelrc b/.bazelrc
+index 6bc032b..f4d9da6 100644
+--- a/.bazelrc
++++ b/.bazelrc
+@@ -85,3 +85,5 @@ build:asan --copt -O1
+ build:asan --copt -g
+ build:asan --copt -fno-omit-frame-pointer
+ build:asan --linkopt -fsanitize=address
++
++try-import %workspace%/fuzztest.bazelrc
+diff --git a/WORKSPACE b/WORKSPACE
+index 4d48310..6ceee4e 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -3,13 +3,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+ #--------------------
+ # googletest
+ #--------------------
++#http_archive(
++#    name = "com_google_googletest",
++#    sha256 = "5cf189eb6847b4f8fc603a3ffff3b0771c08eec7dd4bd961bfd45477dd13eb73",
++#    strip_prefix = "googletest-609281088cfefc76f9d0ce82e1ff6c30cc3591e5",
++#    urls = ["https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip"],
++#)
+ http_archive(
+     name = "com_google_googletest",
+-    sha256 = "5cf189eb6847b4f8fc603a3ffff3b0771c08eec7dd4bd961bfd45477dd13eb73",
+-    strip_prefix = "googletest-609281088cfefc76f9d0ce82e1ff6c30cc3591e5",
+-    urls = ["https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip"],
++    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
++    strip_prefix = "googletest-release-1.12.1",
++    url = "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
+ )
+-
+ # Protobuf:
+ #
+ # (See https://github.com/rules-proto-grpc/rules_proto_grpc)
+@@ -55,17 +60,15 @@ rules_foreign_cc_dependencies()
+ #--------------------
+ # Rules_m4
+ #--------------------
+-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+-
+ http_archive(
+     name = "rules_m4",
+-    sha256 = "b0309baacfd1b736ed82dc2bb27b0ec38455a31a3d5d20f8d05e831ebeef1a8e",
+-    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.2/rules_m4-v0.2.2.tar.xz"],
++    sha256 = "c67fa9891bb19e9e6c1050003ba648d35383b8cb3c9572f397ad24040fb7f0eb",
++    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2/rules_m4-v0.2.tar.xz"],
+ )
+ 
+ load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
+ 
+-m4_register_toolchains(version = "1.4.18")
++m4_register_toolchains()
+ 
+ #--------------------
+ # flex
+@@ -75,11 +78,8 @@ http_archive(
+     sha256 = "f1685512937c2e33a7ebc4d5c6cf38ed282c2ce3b7a9c7c0b542db7e5db59d52",
+     urls = ["https://github.com/jmillikin/rules_flex/releases/download/v0.2/rules_flex-v0.2.tar.xz"],
+ )
+-
+ load("@rules_flex//flex:flex.bzl", "flex_register_toolchains")
+-
+ flex_register_toolchains()
+-
+ #--------------------
+ # Bison
+ #--------------------
+@@ -282,11 +282,12 @@ http_archive(
+ fuzztest_commit_hash = "4a8253b7299cf1764550054fae55f1b58a65bbaa"
+ 
+ # Fuzztest
+-http_archive(
+-    name = "fuzztest",
+-    sha256 = "72ae2d28323748d2c466396fa47038351ae81bedc50b8a3c6f1de6a9f02cde33",
+-    strip_prefix = "fuzztest-" + fuzztest_commit_hash,
+-    urls = ["https://github.com/google/fuzztest/archive/" + fuzztest_commit_hash + ".zip"],
++local_repository(
++    name = "com_google_fuzztest",
++    path = "/src/fuzztest",
++    #sha256 = "72ae2d28323748d2c466396fa47038351ae81bedc50b8a3c6f1de6a9f02cde33",
++    #strip_prefix = "fuzztest-" + fuzztest_commit_hash,
++    #:urls = ["https://github.com/google/fuzztest/archive/" + fuzztest_commit_hash + ".zip"],
+ )
+ 
+ #zetasql
+diff --git a/src/ir/datalog/BUILD b/src/ir/datalog/BUILD
+index 6b3a0c7..62155ec 100644
+--- a/src/ir/datalog/BUILD
++++ b/src/ir/datalog/BUILD
+@@ -24,7 +24,6 @@ cc_library(
+     name = "program",
+     hdrs = ["program.h"],
+     deps = [
+-        "@com_google_absl//absl/container:flat_hash_set",
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/strings:str_format",
+     ],
+@@ -48,25 +47,6 @@ cc_test(
+     ],
+ )
+ 
+-cc_test(
+-    name = "is_numeric_operator_test",
+-    srcs = ["is_numeric_operator_test.cc"],
+-    deps = [
+-        ":program",
+-        "//src/common/testing:gtest",
+-    ],
+-)
+-
+-cc_test(
+-    name = "hash_test",
+-    srcs = ["hash_test.cc"],
+-    deps = [
+-        ":program",
+-        "//src/common/testing:gtest",
+-        "@com_google_absl//absl/hash:hash_testing",
+-    ],
+-)
+-
+ # This library contains our C++ model of the value types of Souffle.
+ cc_library(
+     name = "value",
+@@ -131,9 +111,10 @@ cc_test(
+     srcs = ["value_test.cc"],
+     deps = [
+         ":value",
+-        "//src/common/testing:gtest",
+         "@com_google_absl//absl/strings",
+-        "@fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "//src/common/testing:gtest",
+     ],
+ )
+ 

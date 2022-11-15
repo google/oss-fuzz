@@ -3,6 +3,7 @@ language: c++
 primary_contact: "skau@google.com"
 auto_ccs:
   - "henry.stiles@artifex.com"
+  - "bmgordon@google.com"
   - "skau@google.com"
   - "sebastian.rasmussen@artifex.com"
   - "julians.artifex@gmail.com"

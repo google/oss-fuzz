@@ -320,6 +320,11 @@ function check_mixed_sanitizers {
     return 0
   fi
 
+  # For fuzztest fuzzers point to the binary instead of launcher script.
+  if [[ $FUZZER == *"@"* ]]; then
+    FUZZER=(${FUZZER//@/ }[0])
+  fi
+
   CALL_INSN=
   if [[ $ARCHITECTURE == "x86_64" ]]
   then
@@ -399,6 +404,11 @@ function check_architecture {
 
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     FUZZER=${FUZZER}.pkg
+  fi
+
+  # For fuzztest fuzzers point to the binary instead of launcher script.
+  if [[ $FUZZER == *"@"* ]]; then
+    FUZZER=(${FUZZER//@/ }[0])
   fi
 
   FILE_OUTPUT=$(file $FUZZER)
