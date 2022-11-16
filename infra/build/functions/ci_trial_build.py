@@ -50,6 +50,7 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
+    logging.info('body %s', body)
     if body.startswith(SKIP_COMMAND_STR):
       return None
     if not body.startswith(TRIAL_BUILD_COMMAND_STR):
