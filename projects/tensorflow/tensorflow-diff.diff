@@ -1,0 +1,121 @@
+diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
+index c5d6217f0d2..eacc8f813ec 100644
+--- a/tensorflow/security/fuzzing/cc/BUILD
++++ b/tensorflow/security/fuzzing/cc/BUILD
+@@ -16,12 +16,13 @@ package(
+ tf_cc_test(
+     name = "status_fuzz",
+     srcs = ["status_fuzz.cc"],
+-    tags = ["no_oss"],
++    #tags = ["no_oss"],
+     deps = [
+         ":fuzz_helpers",
+         "//tensorflow/core/platform:status",
+         "@com_google_fuzztest//fuzztest",
+-        "@com_google_googletest//:gtest_main",
++    #    "@com_google_googletest//:gtest_main",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
+ )
+ 
+@@ -209,14 +210,16 @@ tf_cc_test(
+ tf_cc_test(
+     name = "parseURI_fuzz",
+     srcs = ["parseURI_fuzz.cc"],
+-    tags = ["no_oss"],
++    #tags = ["no_oss"],
+     deps = [
+         "//tensorflow/core/platform:path",
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_absl//absl/strings",
+         "@com_google_fuzztest//fuzztest",
+-        "@com_google_googletest//:gtest_main",
++        #"@com_google_googletest//:gtest_main",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
++    linkstatic = 1,
+ )
+ 
+ cc_library(
+diff --git a/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc b/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
+index 6438f01984d..fc538a90175 100644
+--- a/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
++++ b/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
+@@ -17,7 +17,7 @@ limitations under the License.
+ #include <cstdlib>
+ #include <string_view>
+ 
+-#include "testing/fuzzing/fuzztest.h"
++#include "fuzztest/fuzztest.h"
+ #include "absl/strings/match.h"
+ #include "tensorflow/core/platform/path.h"
+ #include "tensorflow/core/platform/stringpiece.h"
+diff --git a/tensorflow/security/fuzzing/cc/status_fuzz.cc b/tensorflow/security/fuzzing/cc/status_fuzz.cc
+index a5ef8789341..d414790bda3 100644
+--- a/tensorflow/security/fuzzing/cc/status_fuzz.cc
++++ b/tensorflow/security/fuzzing/cc/status_fuzz.cc
+@@ -16,7 +16,8 @@ limitations under the License.
+ #include <string>
+ #include <string_view>
+ 
+-#include "testing/fuzzing/fuzztest.h"
++//#include "testing/fuzzing/fuzztest.h"
++#include "fuzztest/fuzztest.h"
+ #include "tensorflow/core/platform/status.h"
+ #include "tensorflow/security/fuzzing/cc/fuzz_helpers.h"
+ 
+diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
+index 0236c258bf5..a1e8782c4a6 100644
+--- a/tensorflow/workspace2.bzl
++++ b/tensorflow/workspace2.bzl
+@@ -1,5 +1,7 @@
+ """TensorFlow workspace initialization. Consult the WORKSPACE on how to use it."""
+ 
++load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
++
+ # Import third party config rules.
+ load("@bazel_skylib//lib:versions.bzl", "versions")
+ load("//third_party/gpus:cuda_configure.bzl", "cuda_configure")
+@@ -470,18 +472,35 @@ def _tf_repositories():
+         urls = tf_mirror_urls("https://github.com/google/nsync/archive/1.25.0.tar.gz"),
+     )
+ 
++    #tf_http_archive(
++    #    name = "com_google_googletest",
++    #    sha256 = "bc1cc26d1120f5a7e9eb450751c0b24160734e46a02823a573f3c6b6c0a574a7",
++    #    strip_prefix = "googletest-e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b",
++    #    urls = tf_mirror_urls("https://github.com/google/googletest/archive/e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b.zip"),
++    #)
+     tf_http_archive(
+         name = "com_google_googletest",
+-        sha256 = "bc1cc26d1120f5a7e9eb450751c0b24160734e46a02823a573f3c6b6c0a574a7",
+-        strip_prefix = "googletest-e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b",
+-        urls = tf_mirror_urls("https://github.com/google/googletest/archive/e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b.zip"),
++        sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
++        strip_prefix = "googletest-release-1.12.1",
++        urls = tf_mirror_urls("https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz"),
+     )
+-
++    #git_repository(
++    #    name="com_google_fuzztest",
++    #    remote="https://github.com/google/fuzztest",
++    #    commit="18f1083f8a2ae5b91aff16dcf42929df8173c6be"
++    #)
+     tf_http_archive(
+         name = "com_google_fuzztest",
+-        sha256 = "3fe79ede8e860ba7331987b2c1f84d3eeaf5bea00fd76398d6ff0006635586c6",
+-        strip_prefix = "fuzztest-6d79ceb1dc2398e02a39efc23ce40d68baa16a42",
+-        urls = tf_mirror_urls("https://github.com/google/fuzztest/archive/6d79ceb1dc2398e02a39efc23ce40d68baa16a42.zip"),
++        #sha256 = "3fe79ede8e860ba7331987b2c1f84d3eeaf5bea00fd76398d6ff0006635586c6",
++        #sha256 = "775563165415271b09cf679055f3e9267186be1e3c63a8cb0beed82101489ca2",
++        #sha256 = "c0b6df65509f625971c6f631a8a8271a4127cb28726a6f105d0daa0c3d17fb4c",
++        sha256 = "726684da6517df70b069dc920e6db7a742573fcade4ef0e4144cc38db54aa986",
++        #sha256 = "d53a772a52afd4cb9be7dd39f54cef942fea4205",
++        #strip_prefix = "fuzztest-6d79ceb1dc2398e02a39efc23ce40d68baa16a42",
++        strip_prefix = "fuzztest-621a79cb27151e5f651e2027e525efa0b6a7464c",
++        #strip_prefix = "fuzztest-18f1083f8a2ae5b91aff16dcf42929df8173c6be",
++        #urls = tf_mirror_urls("https://github.com/google/fuzztest/archive/6d79ceb1dc2398e02a39efc23ce40d68baa16a42.zip"),
++        urls = tf_mirror_urls("https://github.com/DavidKorczynski/fuzztest/archive/621a79cb27151e5f651e2027e525efa0b6a7464c.zip"),
+     )
+ 
+     tf_http_archive(

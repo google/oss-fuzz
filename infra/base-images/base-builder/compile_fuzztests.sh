@@ -15,15 +15,34 @@
 #
 ################################################################################
 
+set -x
+
+if [[ ${FUZZTEST_TARGET_FOLDER:-"unset"} == "unset" ]];
+then
+  export TARGET_FOLDER="..."
+else
+  TARGET_FOLDER=${FUZZTEST_TARGET_FOLDER}
+fi
+
+BUILD_ARGS="--config=oss-fuzz --subcommands"
+if [[ ${FUZZTEST_EXTRA_ARGS:-"unset"} != "unset" ]];
+then
+  BUILD_ARGS="$BUILD_ARGS ${FUZZTEST_EXTRA_ARGS}"
+fi
+
 # Trigger setup_configs rule of fuzztest as it generates the necessary
 # configuration file based on OSS-Fuzz environment variables.
-bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
+echo "bazel.bazelrc: "
+cat /etc/bazel.bazelrc
+echo "------------------------"
 
 # Bazel target names of the fuzz binaries.
-FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
+#FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
+FUZZ_TEST_BINARIES=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))")
 
 # Bazel output paths of the fuzz binaries.
-FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))' --output=files)
+FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))" --output=files)
 
 #echo "Fuzz test binaries:"
 #echo ${FUZZ_TEST_BINARIES}
@@ -32,7 +51,7 @@ FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery 'kind("cc_test", rdeps(..., @com_goo
 #echo "-----------------------------"
 
 # Build the project and fuzz binaries
-bazel build --subcommands --config=oss-fuzz ${FUZZ_TEST_BINARIES[*]}
+bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]}
 
 # Iterate the fuzz binaries and list each fuzz entrypoint in the binary. For
 # each entrypoint create a wrapper script that calls into the binaries the
@@ -68,10 +87,10 @@ then
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
     "--exclude" "*")
+                    #-e 'bazel-out' \
   project_folders="$(find . -name 'bazel-*' -type l -printf '%P\n' | \
                     grep -v -x -F \
                     -e 'bazel-bin' \
-                    -e 'bazel-out' \
                     -e 'bazel-testlogs')"
   for link in $project_folders; do
    if [[ -d "${PWD}"/$link/external  ]]
