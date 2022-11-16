@@ -73,8 +73,8 @@ cmake_args=(
 
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
-cmake "${cmake_args[@]}" -S . -B build
-make -j$(nproc) VERBOSE=1 -C build fuzzers
+cmake "${cmake_args[@]}" -S . -B build -G Ninja
+cmake --build build --target fuzzers --parallel
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(ls build/test/fuzz/*_fuzzer);
