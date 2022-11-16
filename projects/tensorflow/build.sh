@@ -101,7 +101,59 @@ FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FO
 #export ASAN_OPTIONS="detect_leaks=0"
 export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
 
+#export FUZZTEST_AVOID_SYNC="no"
+
 compile_fuzztests.sh
+exit 0
+if [ "$SANITIZER" = "coverage" ]
+then
+  declare -r RSYNC_CMD="rsync -aLkR"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+  mkdir -p ${REMAP_PATH}
+
+  # Sync existing code.
+  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
+
+  # Sync generated proto files.
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+
+  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
+  pushd bazel-tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+  ${RSYNC_CMD} external/ ${REMAP_PATH}
+  popd
+fi
+
+exit 0
+# For coverage, we need to remap source files to correspond to the Bazel build
+# paths. We also need to resolve all symlinks that Bazel creates.
+if [ "$SANITIZER" = "coverage" ]
+then
+  declare -r RSYNC_CMD="rsync -aLkR"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+  mkdir -p ${REMAP_PATH}
+
+  # compile_fuzztests.sh syncs the current folder, so we just need
+  # auto-generated code and external dependencies.
+  # Sync generated proto files.
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+
+  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
+  pushd bazel-tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+  ${RSYNC_CMD} external/ ${REMAP_PATH}
+  popd
+fi
 #bazel build  --subcommands --config=oss-fuzz ${FUZZTEST_EXTRA_ARGS} -- ${FUZZERS[*]}
 exit 0
 
@@ -133,6 +185,29 @@ done
 
 #cp bazel-out/k8-opt/bin/tensorflow/libtensorflow_framework.so.2.12.0 /out/libtensorflow_framework.so.2
 #patchelf --set-rpath '$ORIGIN' /out/parseURI_fuzz
+if [ "$SANITIZER" = "coverage" ]
+then
+  declare -r RSYNC_CMD="rsync -aLkR"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+  mkdir -p ${REMAP_PATH}
+
+  # Sync existing code.
+  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
+
+  # Sync generated proto files.
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+
+  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
+  pushd bazel-tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+  ${RSYNC_CMD} external/ ${REMAP_PATH}
+  popd
+fi
 
 exit 0
 
