@@ -1,5 +1,5 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index c5d6217f0d2..eacc8f813ec 100644
+index c5d6217f..eacc8f81 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
 @@ -16,12 +16,13 @@ package(
@@ -38,7 +38,7 @@ index c5d6217f0d2..eacc8f813ec 100644
  
  cc_library(
 diff --git a/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc b/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
-index 6438f01984d..fc538a90175 100644
+index 6438f019..fc538a90 100644
 --- a/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
 +++ b/tensorflow/security/fuzzing/cc/parseURI_fuzz.cc
 @@ -17,7 +17,7 @@ limitations under the License.
@@ -51,7 +51,7 @@ index 6438f01984d..fc538a90175 100644
  #include "tensorflow/core/platform/path.h"
  #include "tensorflow/core/platform/stringpiece.h"
 diff --git a/tensorflow/security/fuzzing/cc/status_fuzz.cc b/tensorflow/security/fuzzing/cc/status_fuzz.cc
-index a5ef8789341..d414790bda3 100644
+index a5ef8789..d414790b 100644
 --- a/tensorflow/security/fuzzing/cc/status_fuzz.cc
 +++ b/tensorflow/security/fuzzing/cc/status_fuzz.cc
 @@ -16,7 +16,8 @@ limitations under the License.
@@ -65,7 +65,7 @@ index a5ef8789341..d414790bda3 100644
  #include "tensorflow/security/fuzzing/cc/fuzz_helpers.h"
  
 diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
-index 0236c258bf5..a1e8782c4a6 100644
+index 0236c258..400b0698 100644
 --- a/tensorflow/workspace2.bzl
 +++ b/tensorflow/workspace2.bzl
 @@ -1,5 +1,7 @@
@@ -109,13 +109,13 @@ index 0236c258bf5..a1e8782c4a6 100644
 +        #sha256 = "3fe79ede8e860ba7331987b2c1f84d3eeaf5bea00fd76398d6ff0006635586c6",
 +        #sha256 = "775563165415271b09cf679055f3e9267186be1e3c63a8cb0beed82101489ca2",
 +        #sha256 = "c0b6df65509f625971c6f631a8a8271a4127cb28726a6f105d0daa0c3d17fb4c",
-+        sha256 = "726684da6517df70b069dc920e6db7a742573fcade4ef0e4144cc38db54aa986",
++        sha256 = "0cc4a49745ac0514f50db9334ee68064baaef51d00f124f40719be73cf8e99d3",
 +        #sha256 = "d53a772a52afd4cb9be7dd39f54cef942fea4205",
 +        #strip_prefix = "fuzztest-6d79ceb1dc2398e02a39efc23ce40d68baa16a42",
-+        strip_prefix = "fuzztest-621a79cb27151e5f651e2027e525efa0b6a7464c",
++        strip_prefix = "fuzztest-aa9f591301d65f60041ea20f1f8e0756bddec044",
 +        #strip_prefix = "fuzztest-18f1083f8a2ae5b91aff16dcf42929df8173c6be",
 +        #urls = tf_mirror_urls("https://github.com/google/fuzztest/archive/6d79ceb1dc2398e02a39efc23ce40d68baa16a42.zip"),
-+        urls = tf_mirror_urls("https://github.com/DavidKorczynski/fuzztest/archive/621a79cb27151e5f651e2027e525efa0b6a7464c.zip"),
++        urls = tf_mirror_urls("https://github.com/DavidKorczynski/fuzztest/archive/aa9f591301d65f60041ea20f1f8e0756bddec044.zip"),
      )
  
      tf_http_archive(

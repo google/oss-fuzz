@@ -38,7 +38,9 @@ ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk-amd64
 # it fails after installing java due to jazzer env variables missing
 RUN install_java.sh || true
 
-#RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
-COPY tensorflow tensorflow
+RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
+COPY *.diff $SRC/
+RUN cd tensorflow && git apply  --ignore-space-change --ignore-whitespace ../tensorflow-diff.diff
+#COPY tensorflow tensorflow
 WORKDIR $SRC/tensorflow
 COPY build.sh $SRC/
