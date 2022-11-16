@@ -77,7 +77,9 @@ $fuzz_basename --fuzz=$fuzz_entrypoint -- \$@" > $OUT/$TARGET_FUZZER
 done
 
 # synchronise coverage directory to bazel generated code.
-if [ "$SANITIZER" = "coverage" ]
+
+
+if [[ "$SANITIZER" = "coverage" && ${FUZZTEST_DO_SYNC:-"yes"} == "yes" ]]
 then 
   # Synchronize bazel source files to coverage collection.
   declare -r REMAP_PATH="${OUT}/proc/self/cwd"
@@ -96,6 +98,10 @@ then
    if [[ -d "${PWD}"/$link/external  ]]
    then
      rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${PWD}"/$link/external "${REMAP_PATH}"
+   fi
+   if [[ -d "${PWD}"/$link/k8-opt  ]]
+   then
+     rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${PWD}"/$link/k8-opt "${REMAP_PATH}"/$link
    fi
   done
 
