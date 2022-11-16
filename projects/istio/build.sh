@@ -15,15 +15,6 @@
 #
 ################################################################################
 
-cd $SRC
-git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
-cd $SRC/istio
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
-find $SRC/istio -type f -exec sed -i 's/AdamKorcz\/go-118-fuzz-build\/utils/AdamKorcz\/go-118-fuzz-build\/testing/g' {} \;
-sed -i 's/\"testing\"/\"github.com\/AdamKorcz\/go-118-fuzz-build\/testing\"/g' $SRC/istio/pkg/fuzz/util.go
-cat $SRC/istio/pkg/fuzz/util.go
-
-
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
 	echo "Skipping most fuzzers since the OSS-fuzz CI may fail from running out of disk space."
