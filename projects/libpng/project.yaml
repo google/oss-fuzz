@@ -14,4 +14,4 @@ sanitizers:
   - undefined
 architectures:
   - x86_64
-main_repo: 'https://github.com/glennrp/libpng.git'
+main_repo: 'https://github.com/pnggroup/libpng.git'
