@@ -48,9 +48,9 @@ fuzzing more effective and gives you regression testing for free.
 You can integrate CIFuzz into your project using the following steps:
 1. Create a `.github` directory in the root of your project.
 1. Create a `workflows` directory inside of your `.github` directory.
-1. Copy the example [`main.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_main.yml)
+1. Copy the example [`cifuzz.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_cifuzz.yml)
 file over from the OSS-Fuzz repository to the `workflows` directory.
-1. Change the `oss-fuzz-project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
+1. Change the `oss-fuzz-project-name` value in `cifuzz.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
 is the name of your project's subdirectory in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
 1. Set the value of `fuzz-seconds`. The longest time that the project maintainers are acceptable with should be used. This value should be at minimum 600 seconds and scale with project size.
 
@@ -59,11 +59,11 @@ Your directory structure should look like the following:
 project
 |___ .github
 |    |____ workflows
-|          |____ main.yml
+|          |____ cifuzz.yml
 |___ other-files
 ```
 
-main.yml for an example project:
+cifuzz.yml for an example project:
 
 ```yaml
 name: CIFuzz
@@ -85,7 +85,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
+     uses: actions/upload-artifact@v3
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -195,7 +195,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
+     uses: actions/upload-artifact@v3
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
