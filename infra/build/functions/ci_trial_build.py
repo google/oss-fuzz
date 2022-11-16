@@ -28,7 +28,7 @@ import trial_build
 
 TRIGGER_COMMAND = '/gcbrun'
 TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
-SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip '
+SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
 
 
 def get_comments(pull_request_number):
