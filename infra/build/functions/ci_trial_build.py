@@ -62,9 +62,9 @@ def exec_command_from_github(pull_request_number, repo, branch):
   on |pull_request_number|."""
   comments = get_comments(pull_request_number)
   command = get_latest_gcbrun_command(comments)
-  print(command)
+  logging.info(command)
   if command == ['skip']:
-    return
+    return None
   command.extend(['--repo', repo])
   logging.info('Command: %s.', command)
   if command is None:
