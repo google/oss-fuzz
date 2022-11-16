@@ -6,6 +6,8 @@ fuzzing_engines:
 sanitizers:
   - address
 primary_contact: "pwebb@vmware.com"
+auto_ccs:
+  - "wilkinsona@vmware.com"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
@@ -14,3 +16,4 @@ vendor_ccs:
   - "hlin@code-intelligence.com"
   - "jacek.trossen@code-intelligence.com"
   - "peter.samarin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

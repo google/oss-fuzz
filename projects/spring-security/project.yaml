@@ -6,9 +6,10 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-vendor_ccs:
+auto_ccs:
   - "pwebb@vmware.com"
   - "wilkinsona@vmware.com"
+vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "glendowne@code-intelligence.com"
@@ -16,3 +17,4 @@ vendor_ccs:
   - "hlin@code-intelligence.com"
   - "jacek.trossen@code-intelligence.com"
   - "peter.samarin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

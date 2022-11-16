@@ -16,9 +16,6 @@ auto_ccs:
 - sbenza@google.com
 - shaod@google.com
 - theodorerose@google.com
-- meumertzheim@code-intelligence.com
-- norbert.schneider@code-intelligence.com
-- hlin@code-intelligence.com
 - copybara-watcher-pod-watcher-git@system.gserviceaccount.com
 - copybara-worker@system.gserviceaccount.com
 fuzzing_engines:
@@ -32,3 +29,8 @@ sanitizers:
 labels:
   "*":
     - protobuf-ossfuzz-bugz-1260285
+vendor_ccs:
+- meumertzheim@code-intelligence.com
+- norbert.schneider@code-intelligence.com
+- hlin@code-intelligence.com
+- bug-disclosure@code-intelligence.com
