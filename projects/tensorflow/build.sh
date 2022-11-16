@@ -25,6 +25,17 @@ sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.baze
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
 
+# Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
+# and not for other binaries such as protoc
+sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
+
+# Compile fuzztest fuzzers
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
+export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
+compile_fuzztests.sh
+
+# Compile non-fuzztest fuzzers
+
 # Since Bazel passes flags to compilers via `--copt`, `--conlyopt` and
 # `--cxxopt`, we need to move all flags from `$CFLAGS` and `$CXXFLAGS` to these.
 # We don't use `--copt` as warnings issued by C compilers when encountering a
@@ -37,179 +48,25 @@ yes "" | ${PYTHON} configure.py
 # `clang_rt` ubsan library. Since Bazel uses `clang` for linking instead of
 # `clang++`, we need to add the additional `--linkopt` flag.
 # See issue: https://github.com/bazelbuild/bazel/issues/8777
-#declare -r EXTRA_FLAGS="\
-#$(
-#for f in ${CFLAGS}; do
-#  echo "--conlyopt=${f}" "--linkopt=${f}"
-#done
-#for f in ${CXXFLAGS}; do
-#    echo "--cxxopt=${f}" "--linkopt=${f}"
-#done
-#if [ "$SANITIZER" = "undefined" ]
-#then
-#  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
-#  sed -i -e 's/"\/\/conditions:default": \[/"\/\/conditions:default": \[\n"-fno-sanitize=undefined",/' third_party/nasm/nasm.BUILD
-#  sed -i -e 's/includes/linkopts = \["-fno-sanitize=undefined"\],\nincludes/' third_party/nasm/nasm.BUILD
-#fi
-#if [ "$SANITIZER" = "address" ]
-#then
-#  echo "--action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0"
-#fi
-#)"
-#
-# Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
-# and not for other binaries such as protoc
-sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
-
-#bazel run @com_google_fuzztest//bazel:setup_configs >> .bazelrc
-
-#bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-
-
-#fuzztest.bazelrc
-#bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.rc
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
-
-TARGET_FOLDER="${FUZZTEST_TARGET_FOLDER}"
-FUZZERS=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))")
-FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))" --output=files)
-
-#echo $FUZZ_TEST_BINARIES_OUT_PATHS
-
-#FUZZERS=$(bazel query 'kind("cc_test", rdeps(//tensorflow/security/fuzzing/..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
-#echo $FUZZERS
-#exit 0
-
-#compile_fuzztests.sh
-#exit 0
-
-# Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
-# supported fuzzers are in `//tensorflow/security/fuzzing`.
-# Ignore fuzzers tagged with `no_oss` in opensource.
-#declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
-# checkpoint_reader_fuzz seems out of date with the API
-
-#echo "Fuzzer: ${FUZZERS}"
-
-#${EXTRA_FLAGS} \
-# Build the fuzzer targets.
-# Pass in `--config=libc++` to link against libc++.
-# Pass in `--verbose_failures` so it is easy to debug compile crashes.
-# Pass in `--strip=never` to ensure coverage support.
-# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
-#  --config=libc++ \
-#export ASAN_OPTIONS="detect_leaks=0"
-export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
-
-#export FUZZTEST_AVOID_SYNC="no"
-
-compile_fuzztests.sh
-exit 0
-if [ "$SANITIZER" = "coverage" ]
-then
-  declare -r RSYNC_CMD="rsync -aLkR"
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-  mkdir -p ${REMAP_PATH}
-
-  # Sync existing code.
-  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
-
-  # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-
-  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-  # Also, remove `external/org_tensorflow` which is a copy of the entire source
-  # code that Bazel creates. Not removing this would cause `rsync` to expand a
-  # symlink that ends up pointing to itself!
-  pushd bazel-tensorflow
-  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-  ${RSYNC_CMD} external/ ${REMAP_PATH}
-  popd
-fi
-
-exit 0
-# For coverage, we need to remap source files to correspond to the Bazel build
-# paths. We also need to resolve all symlinks that Bazel creates.
-if [ "$SANITIZER" = "coverage" ]
-then
-  declare -r RSYNC_CMD="rsync -aLkR"
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-  mkdir -p ${REMAP_PATH}
-
-  # compile_fuzztests.sh syncs the current folder, so we just need
-  # auto-generated code and external dependencies.
-  # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-
-  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-  # Also, remove `external/org_tensorflow` which is a copy of the entire source
-  # code that Bazel creates. Not removing this would cause `rsync` to expand a
-  # symlink that ends up pointing to itself!
-  pushd bazel-tensorflow
-  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-  ${RSYNC_CMD} external/ ${REMAP_PATH}
-  popd
-fi
-#bazel build  --subcommands --config=oss-fuzz ${FUZZTEST_EXTRA_ARGS} -- ${FUZZERS[*]}
-exit 0
-
-#  --spawn_strategy=sandboxed \
-#  --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 \
-#  --config=oss-fuzz --define force_libcpp=enabled \
-#  --verbose_failures \
-#  --strip=never \
-#  --copt='-UNDEBUG' --linkopt=-stdlib=libc++ --subcommands  --dynamic_mode=off --config=monolithic \
-#  -- ${FUZZERS[*]}
-
-#bazel build  \
-#  --spawn_strategy=sandboxed \
-#  --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 \
-#  --config=oss-fuzz --define force_libcpp=enabled \
-#  --verbose_failures \
-#  --strip=never \
-#  --copt='-UNDEBUG' --linkopt=-stdlib=libc++ --subcommands  --dynamic_mode=off --config=monolithic \
-#  -- ${FUZZERS[*]}
-
-# The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
-# in `$OUT`, so move them accordingly.
-for bazel_target in ${FUZZERS}; do
-  colon_index=$(expr index "${bazel_target}" ":")
-  fuzz_name="${bazel_target:$colon_index}"
-  bazel_location="bazel-bin/${bazel_target/:/\/}"
-  cp ${bazel_location} ${OUT}/$fuzz_name
+declare -r EXTRA_FLAGS="\
+$(
+for f in ${CFLAGS}; do
+  echo "--conlyopt=${f}" "--linkopt=${f}"
 done
-
-#cp bazel-out/k8-opt/bin/tensorflow/libtensorflow_framework.so.2.12.0 /out/libtensorflow_framework.so.2
-#patchelf --set-rpath '$ORIGIN' /out/parseURI_fuzz
-if [ "$SANITIZER" = "coverage" ]
+for f in ${CXXFLAGS}; do
+    echo "--cxxopt=${f}" "--linkopt=${f}"
+done
+if [ "$SANITIZER" = "undefined" ]
 then
-  declare -r RSYNC_CMD="rsync -aLkR"
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-  mkdir -p ${REMAP_PATH}
-
-  # Sync existing code.
-  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
-
-  # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-
-  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-  # Also, remove `external/org_tensorflow` which is a copy of the entire source
-  # code that Bazel creates. Not removing this would cause `rsync` to expand a
-  # symlink that ends up pointing to itself!
-  pushd bazel-tensorflow
-  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-  ${RSYNC_CMD} external/ ${REMAP_PATH}
-  popd
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  sed -i -e 's/"\/\/conditions:default": \[/"\/\/conditions:default": \[\n"-fno-sanitize=undefined",/' third_party/nasm/nasm.BUILD
+  sed -i -e 's/includes/linkopts = \["-fno-sanitize=undefined"\],\nincludes/' third_party/nasm/nasm.BUILD
 fi
-
-exit 0
+if [ "$SANITIZER" = "address" ]
+then
+  echo "--action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0"
+fi
+)"
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
