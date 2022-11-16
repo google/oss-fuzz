@@ -50,7 +50,6 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
-    logging.info('body %s', body)
     if body.startswith(SKIP_COMMAND_STR):
       return None
     if not body.startswith(TRIAL_BUILD_COMMAND_STR):
@@ -85,7 +84,8 @@ def main():
   pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
   branch = os.environ['BRANCH']
   repo = os.environ['REPO']
-  if exec_command_from_github(pull_request_number, repo, branch):
+  result = exec_command_from_github(pull_request_number, repo, branch)
+  if result or result is None:
     return 0
   return 1
 
