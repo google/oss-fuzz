@@ -34,6 +34,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   }
 
   archive_read_open_memory(a, buf, len);
+  archive_read_add_passphrase(a, "secret");
 
   while(1) {
     std::vector<uint8_t> data_buffer(getpagesize(), 0);
@@ -54,11 +55,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
     (void)archive_entry_dev(entry);
     (void)archive_entry_digest(entry, ARCHIVE_ENTRY_DIGEST_SHA1);
     (void)archive_entry_filetype(entry);
+    (void)archive_entry_gid(entry);
+    (void)archive_entry_is_data_encrypted(entry);
     (void)archive_entry_is_encrypted(entry);
+    (void)archive_entry_is_metadata_encrypted(entry);
     (void)archive_entry_mode(entry);
+    (void)archive_entry_mtime(entry);
     (void)archive_entry_size(entry);
     (void)archive_entry_uid(entry);
-    (void)archive_entry_mtime(entry);
 
     ssize_t r;
     while ((r = archive_read_data(a, data_buffer.data(),
@@ -67,6 +71,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
     if (r == ARCHIVE_FATAL)
       break;
   }
+
+  archive_read_has_encrypted_entries(a);
+  archive_read_format_capabilities(a);
+  archive_file_count(a);
+  archive_seek_data(a, 0, SEEK_SET);
 
   archive_read_free(a);
   return 0;
