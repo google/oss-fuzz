@@ -16,6 +16,6 @@
 ################################################################################
 
 ./build_orig_miniz.sh
-RUSTFLAGS='-L./bin/' cargo fuzz build -O
+RUSTFLAGS="$RUSTFLAGS -L./bin/" cargo fuzz build -O
 fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
 cp $fuzz_release/inflate_nonwrapping $OUT/
