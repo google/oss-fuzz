@@ -16,6 +16,8 @@
 ################################################################################
 """Script for generating an OSS-Fuzz job for a wycheproof project."""
 import sys
+
+
 def main():
   """Usage generate_job.py <project>."""
   project = sys.argv[1]
@@ -39,6 +41,7 @@ BACKUP_BUCKET = {project}-backup.clusterfuzz-external.appspot.com
 AUTOMATIC_LABELS = Proj-{project},Engine-wycheproof
 """
   print(job_definition)
+
 
 if __name__ == '__main__':
   main()
