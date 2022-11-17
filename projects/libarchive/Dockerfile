@@ -24,6 +24,19 @@ RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake
     apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone --depth 1 https://github.com/libarchive/libarchive.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+# compile libxml2 from source so we can statically link
+RUN mkdir /deps && \
+  cd $SRC/libxml2 && \
+  ./autogen.sh \
+      --without-debug \
+      --without-ftp \
+      --without-http \
+      --without-legacy \
+      --without-python \
+      --enable-static && \
+  make -j$(nproc) && \
+  make install && \
+  cp .libs/libxml2.a /deps/
 
 COPY build.sh libarchive_fuzzer.cc $SRC/
 WORKDIR $SRC
