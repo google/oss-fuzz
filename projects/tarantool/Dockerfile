@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
 	build-essential cmake make coreutils sed \
 	autoconf automake libtool zlib1g-dev \
 	libreadline-dev libncurses5-dev libssl-dev \
-	libunwind-dev luajit wget ninja-build
+	libunwind-dev luajit wget ninja-build \
+	libzstd-dev libyaml-dev libcurl4-openssl-dev
 
 RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.tar.gz && \
     tar xzvf ./2021-08-25.tar.gz && \
