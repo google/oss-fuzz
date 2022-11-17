@@ -40,7 +40,7 @@ def main():
   args = get_args()
   if not os.path.exists(args.output_dir):
     os.mkdir(args.output_dir)
-  testcase = os.path.join(args.output_dir, 'testcase')
+  testcase = os.path.join(args.output_dir, 'fuzz-0')
   with open(testcase, 'w') as file_handle:
     file_handle.write(' ')
   return 0

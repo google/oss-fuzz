@@ -22,13 +22,12 @@ import subprocess
 
 
 def main():
-  """Runs whycheproof."""
+  """Runs wycheproof."""
   if len(sys.argv) < 3:
     logging.error('Usage: %s <test_app> <testcase>.', sys.argv[0])
     return 1
 
-  test_app = sys.argv[1]
-  return subprocess.run([test_app], check=False).returncode
+  return subprocess.run(sys.argv[1:], check=False).returncode
 
 
 if __name__ == '__main__':
