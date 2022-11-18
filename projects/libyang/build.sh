@@ -27,5 +27,5 @@ static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
 for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
     $CC $CFLAGS $LIB_FUZZING_ENGINE ../tests/fuzz/${fuzzer}.c -o $OUT/${fuzzer} \
-        ./libyang.a -I../src -I./src -I./compat ${static_pcre} 
+        ./libyang.a -I../src -I../src/plugins_exts -I./src -I./compat ${static_pcre}
 done
