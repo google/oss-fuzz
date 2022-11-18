@@ -110,14 +110,14 @@ compile_go_fuzzer regexpPackage FuzzCompilePOSIX fuzz_compile_posix
 compile_go_fuzzer regexpPackage FuzzReplaceAll fuzz_replace_all
 compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 
-cd $SRC/go/src/archive/tar
-go mod init tarPackage
-go mod tidy
-find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
-compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
-zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
+#cd $SRC/go/src/archive/tar
+#go mod init tarPackage
+#go mod tidy
+#find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+#go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+#go get github.com/AdamKorcz/go-118-fuzz-build/utils
+#compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
+#zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
 cd $SRC/instrumentation
 go run main.go $SRC/go/src/archive/tar
@@ -150,18 +150,18 @@ cd $SRC/go/src/archive/tar
 cp $SRC/fuzz_tar_reader.go ./
 rm ./*_test.go
 
-compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
-mv $SRC/fuzz_tar_reader.options $OUT/
-zip $OUT/fuzz_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
+#compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
+#mv $SRC/fuzz_tar_reader.options $OUT/
+#zip $OUT/fuzz_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
-cd $SRC/go/src/archive/zip
-go mod init zipPackage
-go mod tidy
-find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
-compile_native_go_fuzzer zipPackage FuzzReader fuzz_std_lib_zip_reader
-zip $OUT/fuzz_std_lib_zip_reader_seed_corpus.zip $SRC/go/src/archive/zip/testdata/*.zip
+#cd $SRC/go/src/archive/zip
+#go mod init zipPackage
+#go mod tidy
+#find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+#go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+#go get github.com/AdamKorcz/go-118-fuzz-build/utils
+#compile_native_go_fuzzer zipPackage FuzzReader fuzz_std_lib_zip_reader
+#zip $OUT/fuzz_std_lib_zip_reader_seed_corpus.zip $SRC/go/src/archive/zip/testdata/*.zip
 
 cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
