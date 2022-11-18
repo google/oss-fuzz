@@ -11,6 +11,7 @@ auto_ccs:
   - "thomas@t-8ch.de"
 architectures:
   - x86_64
+  - i386
 sanitizers:
   - address
   - undefined
