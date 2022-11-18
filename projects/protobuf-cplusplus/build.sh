@@ -22,4 +22,7 @@ cp /usr/local/bin/python3 /usr/bin/
 # some third party fuzz target not compiling
 rm -Rf third_party/utf8_range/fuzz/
 
+# Avoid infinite recursion by rsync on symlinks on coverage build
+sed -i -e 's/rsync/baserm=`bazel info execution_root`; rm \$baserm\/external\/com_google_protobuf\/bazel-protobuf\nrsync/' /usr/local/bin/bazel_build_fuzz_tests
+
 bazel_build_fuzz_tests
