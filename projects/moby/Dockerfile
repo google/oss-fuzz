@@ -18,6 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/moby/moby
 RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
 WORKDIR moby
-COPY build.sh etchosts_fuzzer.go oci_fuzzer.go jsonlogbytes_fuzzer.go archive_fuzzers.go tailfile_fuzzer.go jsonfilelog_fuzzer.go mounts_fuzzer.go $SRC/
+COPY build.sh $SRC/
+COPY *_fuzzer.go $SRC/
+COPY *_fuzzers.go $SRC/
 
 COPY *.options $SRC/
