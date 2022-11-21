@@ -226,11 +226,19 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   cd $SRC/inspector
 
+  # Make fuzz-introspector HTML report.
+
+  REPORT_ARGS=""
+  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+    REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+  fi
+
   # Do different things depending on languages
   if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "GOING python route"
     set -x
-    REPORT_ARGS="--target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=python"
     python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
     cp -rf $SRC/inspector $OUT/inspector
@@ -242,11 +250,7 @@ if [ "$SANITIZER" = "introspector" ]; then
 
     # Generate fuzz-introspector HTML report, this generates
     # the file exe_to_fuzz_introspector_logs.yaml
-    REPORT_ARGS="--target_dir=$SRC/inspector"
-    # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
-    if [[ ! -z "${COVERAGE_URL+x}" ]]; then
-      REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
-    fi
+    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     # Use the just-generated correlation file
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
     REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
@@ -254,10 +258,4 @@ if [ "$SANITIZER" = "introspector" ]; then
 
     cp -rf $SRC/inspector $OUT/inspector
   fi
-  # Use the just-generated correlation file
-  REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
-  REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
-  python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
-
-  cp -rf $SRC/inspector $OUT/inspector
 fi
