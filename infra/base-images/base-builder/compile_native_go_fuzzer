@@ -15,59 +15,24 @@
 #
 ################################################################################
 
-# Rewrites a copy of the fuzzer to allow for 
-# libFuzzer instrumentation.
-function rewrite_go_fuzz_harness() {
-	fuzzer_filename=$1
-	fuzz_function=$2
-
-	# Create a copy of the fuzzer to not modify the existing fuzzer.
-	cp $fuzzer_filename "${fuzzer_filename}"_fuzz_.go
-	mv $fuzzer_filename /tmp/
-	fuzzer_fn="${fuzzer_filename}"_fuzz_.go
-
-	# Replace *testing.F with *go118fuzzbuildutils.F.
-	echo "replacing *testing.F"
-	sed -i "s/func $fuzz_function(\([a-zA-Z0-9]*\) \*testing\.F)/func $fuzz_function(\1 \*go118fuzzbuildutils\.F)/g" "${fuzzer_fn}"
-
-	# Import https://github.com/AdamKorcz/go-118-fuzz-build.
-	# This changes the line numbers from the original fuzzer.
-	addimport -path "${fuzzer_fn}"
-	echo -e "\nvar _ = testing.Verbose // Ensure testing import remains\n" >>  "${fuzzer_fn}"
-}
-
 function build_native_go_fuzzer() {
 	fuzzer=$1
 	function=$2
 	path=$3
 	tags="-tags gofuzz"
 
-	if [[ $SANITIZER = *coverage* ]]; then
-		echo "here we perform coverage build"
-		fuzzed_package=`go list $tags -f '{{.Name}}' $path`
-		abspath=`go list $tags -f {{.Dir}} $path`
-		cd $abspath
-		cp $GOPATH/native_ossfuzz_coverage_runner.go ./"${function,,}"_test.go
-		sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
-		sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
-		sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
-
-		# The repo is the module path/name, which is already created above
-		# in case it doesn't exist, but not always the same as the module
-		# path. This is necessary to handle SIV properly.
-		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
-		abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
-		# give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
-		echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
-		go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
-
-		rm ./"${function,,}"_test.go
+	if [[ $SANITIZER == *coverage* ]]; then
+		current_dir=$(pwd)
+		mkdir $OUT/rawfuzzers || true
+		cd $abs_file_dir
+		go test -c -run $fuzzer -o $OUT/$fuzzer -cover
+		cp "${fuzzer_filename}" "${OUT}/rawfuzzers/${fuzzer}"
+		cd $current_dir
 	else
 		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
 		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
 }
-
 
 path=$1
 function=$2
@@ -83,13 +48,7 @@ fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
 # Test if file contains a line with "func $function" and "testing.F".
 if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
-
-	rewrite_go_fuzz_harness $fuzzer_filename $function
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
-
-	# Clean up.
-	rm "${fuzzer_filename}_fuzz_.go"
-	mv /tmp/$(basename $fuzzer_filename) $fuzzer_filename
 else
 	echo "Could not find the function: func ${function}(f *testing.F)"
 fi

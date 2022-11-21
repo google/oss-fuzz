@@ -15,9 +15,11 @@
 #
 ################################################################################
 
+git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 
-go install github.com/AdamKorcz/go-118-fuzz-build@latest
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
+go install github.com/AdamKorcz/go-118-fuzz-build@dev
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
 compile_native_go_fuzzer github.com/ossf/scorecard-webapp/app/server FuzzVerifyWorkflow FuzzVerifyWorkflow
 compile_native_go_fuzzer github.com/ossf/scorecard-webapp/app/server FuzzExtractCertInfo FuzzLoadCertificates

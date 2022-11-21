@@ -22,11 +22,12 @@ case $(uname -m) in
       # Download and install the latest stable Go.
       wget https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
-      SHELL="bash" $SRC/installer_linux -version 1.18beta2
+      SHELL="bash" $SRC/installer_linux -version 1.19
       rm $SRC/installer_linux
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
+      cd convertcorpus && /root/.go/bin/go install .
       cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
       ;;
     aarch64)

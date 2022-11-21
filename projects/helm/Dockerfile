@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/helm/helm
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 --branch=helmfixnative https://github.com/AdamKorcz/cncf-fuzzing
 COPY build.sh $SRC/
 WORKDIR $SRC/helm
