@@ -27,6 +27,14 @@ only. In that mode, fuzz targets for Go use the libFuzzer engine with native Go
 coverage instrumentation. Binaries compiled in this mode provide the same
 libFuzzer command line interface as non-Go fuzz targets.
 
+## Go version
+
+Go 1.16 and below is not supported. Projects with an unsupported Go version in their `go.mod` file will need to install a newer version in their OSS-Fuzz build scripts, for example by adding this line to their `Dockerfile`:
+
+```dockerfile
+RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig 
+```
+
 ## Native Go Fuzzing support
 
 OSS-fuzz supports [fuzzers written for the native Go 1.18 engine](https://go.dev/doc/fuzz/). These fuzzers are built as libFuzzer binaries in a similar fashion as fuzzers written for the go-fuzz engine. Because of that, dictionaries and seed corpora should be handled in accordance with [the OSS-fuzz documentation](https://google.github.io/oss-fuzz/getting-started/new-project-guide/#seed-corpus).
