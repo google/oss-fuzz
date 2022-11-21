@@ -23,7 +23,7 @@ RUN git clone --recursive -b develop https://github.com/ethereum/solidity.git so
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 # evmone v0.8.2 fixes: https://github.com/ethereum/evmone/issues/373
-RUN git clone --branch="v0.8.2" --recurse-submodules \
+RUN git clone --branch="v0.9.1" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory
