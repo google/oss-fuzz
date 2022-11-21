@@ -30,7 +30,7 @@ compile_package () {
     $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
     ls $SRC/ngolo-fuzzing/std/$pkg_flat.py && (
-        python $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
+        python3 $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
         mv fuzz_ng_$pkg_flat/fuzz_ngp.go fuzz_ng_$pkg_flat/fuzz_ng.go
     )
     (

@@ -33,7 +33,8 @@ if [[ $SANITIZER = *introspector* ]]; then
     # We must ensure python3.9, this is because we use certain
     # AST logic from there.
     # The below should probably be refined
-    apt install -y python3.9
+    apt-get install -y python3.9
+    apt-get update
     apt-get install -y python3-pip
     python3.9 -m pip install virtualenv
     python3.9 -m virtualenv .venv
@@ -44,7 +45,6 @@ if [[ $SANITIZER = *introspector* ]]; then
     ARGS="--fuzzer $fuzzer_path"
     if [ -n "${PYFUZZPACKAGE-}" ]; then
       ARGS="$ARGS --package=${PYFUZZPACKAGE}"
-      ARGS="$ARGS --scan"
     fi
     python /fuzz-introspector/frontends/python/main.py $ARGS
     ls -la ./

@@ -134,7 +134,8 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout baa82e7189677bb9086beb5d9b5e58018d991607
+    git checkout baa82e7189677bb9086beb5d9b5e58018d991607 && \
+    rm -rf .git
 
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
@@ -144,6 +145,7 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
+    compile_fuzztests.sh \
     python_coverage_helper.py \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \

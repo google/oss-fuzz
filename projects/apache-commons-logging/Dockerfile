@@ -24,10 +24,6 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone https://github.com/apache/commons-logging
 
-RUN curl 'https://dlcdn.apache.org/logging/log4j/2.18.0/apache-log4j-2.18.0-bin.tar.gz' -o apache-log4j-2.18.0-bin.tar.gz && \
-tar xf apache-log4j-2.18.0-bin.tar.gz && \
-unlink apache-log4j-2.18.0-bin.tar.gz
-
 COPY build.sh $SRC/
 COPY *.java *.xml $SRC/
 COPY Package $SRC/Package/

@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+# Extend with oss-fuzz settings. To be upsteamed?
+cd $SRC/raksha
+git apply  --ignore-space-change --ignore-whitespace $SRC/raksha-fuzztest.diff
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/vitessio/vitess
-RUN go install golang.org/dl/gotip@latest \
-    && gotip download
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-COPY build.sh \
-     native_ossfuzz_coverage_runnger.go \
-     fuzzers/tablet_manager_fuzzer_test.go \
-     fuzzers/parser_fuzzer_test.go \
-     fuzzers/ast_fuzzer_test.go \
-     $SRC/
-WORKDIR $SRC/vitess
+# Compile gfuzztests
+compile_fuzztests.sh

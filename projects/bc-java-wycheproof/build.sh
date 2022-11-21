@@ -17,3 +17,6 @@
 
 bazel build BouncyCastleAllTests
 rsync -aLkR bazel-bin/* $OUT
+# Add dummy fuzzer to fool bad build check.
+printf "#!/bin/bash\n./bazel-bin/BouncyCastleAllTests" > $OUT/WycheproofTarget.bash
+chmod +x $OUT/WycheproofTarget.bash

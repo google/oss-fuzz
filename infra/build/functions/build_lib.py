@@ -244,23 +244,12 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
       'args': ['bash', '-c', (f'mkdir -p {out_dir}/textcov_reports')]
   })
 
-  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_coverage_args = []
-    for target_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      bucket_path = (f'/{bucket_name}/{project_name}/textcov_reports/'
-                     f'{latest}/{target_name}.covreport')
-      url = 'https://storage.googleapis.com' + bucket_path
-      coverage_data_path = os.path.join(f'{out_dir}/textcov_reports',
-                                        target_name + '.covreport')
-      download_coverage_args.append('%s %s' % (coverage_data_path, url))
-
-    steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'entrypoint': 'download_corpus',
-        'args': download_coverage_args
-    })
-
+  coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
+  bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+  })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
       'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
