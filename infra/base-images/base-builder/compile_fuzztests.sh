@@ -71,7 +71,7 @@ for fuzz_main_file in $FUZZ_TEST_BINARIES_OUT_PATHS; do
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 chmod +x \$this_dir/$fuzz_basename
-$fuzz_basename --fuzz=$fuzz_entrypoint -- \$@" > $OUT/$TARGET_FUZZER
+\$this_dir/$fuzz_basename --fuzz=$fuzz_entrypoint -- \$@" > $OUT/$TARGET_FUZZER
     chmod +x $OUT/$TARGET_FUZZER
   done
 done
@@ -89,7 +89,7 @@ then
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
     "--exclude" "*")
-                    #-e 'bazel-out' \
+
   project_folders="$(find . -name 'bazel-*' -type l -printf '%P\n' | \
                     grep -v -x -F \
                     -e 'bazel-bin' \
