@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+git apply pom.xml.diff
+mv ./src/main ./src/java
+mkdir ./src/main
+mv ./src/java ./src/main/java
+mv ./src/test ./src/java
+mkdir ./src/test
+mv ./src/java ./src/test/java
 
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
