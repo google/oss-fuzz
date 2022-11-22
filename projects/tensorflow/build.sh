@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-set -x
 
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
@@ -24,17 +23,6 @@ sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.baze
 # Force Python3, run configure.py to pick the right build config
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
-
-# Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
-# and not for other binaries such as protoc
-sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
-
-# Compile fuzztest fuzzers
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
-export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
-compile_fuzztests.sh
-
-# Compile non-fuzztest fuzzers
 
 # Since Bazel passes flags to compilers via `--copt`, `--conlyopt` and
 # `--cxxopt`, we need to move all flags from `$CFLAGS` and `$CXXFLAGS` to these.
@@ -67,6 +55,38 @@ then
   echo "--action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0"
 fi
 )"
+
+# Ugly hack to get LIB_FUZZING_ENGINE only for fuzz targets
+# and not for other binaries such as protoc
+sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
+
+# Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
+# supported fuzzers are in `//tensorflow/security/fuzzing`.
+# Ignore fuzzers tagged with `no_oss` in opensource.
+declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
+# checkpoint_reader_fuzz seems out of date with the API
+
+# Build the fuzzer targets.
+# Pass in `--config=libc++` to link against libc++.
+# Pass in `--verbose_failures` so it is easy to debug compile crashes.
+# Pass in `--strip=never` to ensure coverage support.
+# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
+bazel build \
+  --config=libc++ \
+  ${EXTRA_FLAGS} \
+  --verbose_failures \
+  --strip=never \
+  --copt='-UNDEBUG' \
+  -- ${FUZZERS}
+
+# The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
+# in `$OUT`, so move them accordingly.
+for bazel_target in ${FUZZERS}; do
+  colon_index=$(expr index "${bazel_target}" ":")
+  fuzz_name="${bazel_target:$colon_index}"
+  bazel_location="bazel-bin/${bazel_target/:/\/}"
+  cp ${bazel_location} ${OUT}/$fuzz_name
+done
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
