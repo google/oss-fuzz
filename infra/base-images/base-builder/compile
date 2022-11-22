@@ -133,13 +133,22 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
   jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
   if [ "$SANITIZER" = "address" ]; then
-    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --asan "$@"
+EOF
   elif [ "$SANITIZER" = "undefined" ]; then
-    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --ubsan "$@"
+EOF
   elif [ "$SANITIZER" = "coverage" ]; then
     # Coverage builds require no instrumentation.
     cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
   fi
+  chmod +x $jazzer_driver_with_sanitizer
 
   # Disable leak checking since the JVM triggers too many false positives.
   export CFLAGS="$CFLAGS -fno-sanitize=leak"
