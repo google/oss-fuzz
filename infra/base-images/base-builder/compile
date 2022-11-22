@@ -133,13 +133,22 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
   jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
   if [ "$SANITIZER" = "address" ]; then
-    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --asan "$@"
+EOF
   elif [ "$SANITIZER" = "undefined" ]; then
-    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --ubsan "$@"
+EOF
   elif [ "$SANITIZER" = "coverage" ]; then
     # Coverage builds require no instrumentation.
     cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
   fi
+  chmod +x $jazzer_driver_with_sanitizer
 
   # Disable leak checking since the JVM triggers too many false positives.
   export CFLAGS="$CFLAGS -fno-sanitize=leak"
@@ -226,11 +235,19 @@ if [ "$SANITIZER" = "introspector" ]; then
 
   cd $SRC/inspector
 
+  # Make fuzz-introspector HTML report.
+
+  REPORT_ARGS=""
+  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+    REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+  fi
+
   # Do different things depending on languages
   if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "GOING python route"
     set -x
-    REPORT_ARGS="--target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=python"
     python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
     cp -rf $SRC/inspector $OUT/inspector
@@ -242,11 +259,7 @@ if [ "$SANITIZER" = "introspector" ]; then
 
     # Generate fuzz-introspector HTML report, this generates
     # the file exe_to_fuzz_introspector_logs.yaml
-    REPORT_ARGS="--target_dir=$SRC/inspector"
-    # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
-    if [[ ! -z "${COVERAGE_URL+x}" ]]; then
-      REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
-    fi
+    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     # Use the just-generated correlation file
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
     REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
@@ -254,10 +267,4 @@ if [ "$SANITIZER" = "introspector" ]; then
 
     cp -rf $SRC/inspector $OUT/inspector
   fi
-  # Use the just-generated correlation file
-  REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
-  REPORT_ARGS="$REPORT_ARGS --name=$PROJECT_NAME"
-  python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
-
-  cp -rf $SRC/inspector $OUT/inspector
 fi
