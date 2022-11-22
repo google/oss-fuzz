@@ -68,8 +68,6 @@ chmod +x \$this_dir/$fuzz_basename
 done
 
 # synchronise coverage directory to bazel generated code.
-
-
 if [[ "$SANITIZER" = "coverage" && ${FUZZTEST_DO_SYNC:-"yes"} == "yes" ]]
 then 
   # Synchronize bazel source files to coverage collection.
