@@ -17,8 +17,8 @@
 
 cd $SRC/roaster
 $MVN clean install
-cp ./api/target/roaster-api-2.27.1-SNAPSHOT.jar $OUT/roaster.jar
-cp ./impl/target/roaster-jdt-2.27.1-SNAPSHOT.jar $OUT/roaster-jdt.jar
+cp ./api/target/roaster-api-2.28.1-SNAPSHOT.jar $OUT/roaster.jar
+cp ./impl/target/roaster-jdt-2.28.1-SNAPSHOT.jar $OUT/roaster-jdt.jar
 cd $SRC/jackson-databind
 
 # Move seed corpus and dictionary.
