@@ -33,9 +33,6 @@ fi
 # Trigger setup_configs rule of fuzztest as it generates the necessary
 # configuration file based on OSS-Fuzz environment variables.
 bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-echo "bazel.bazelrc: "
-cat /etc/bazel.bazelrc
-echo "------------------------"
 
 # Bazel target names of the fuzz binaries.
 #FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
@@ -43,12 +40,6 @@ FUZZ_TEST_BINARIES=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com
 
 # Bazel output paths of the fuzz binaries.
 FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))" --output=files)
-
-#echo "Fuzz test binaries:"
-#echo ${FUZZ_TEST_BINARIES}
-#echo "-----------------------------"
-#echo ${FUZZ_TEST_BINARIES3}
-#echo "-----------------------------"
 
 # Build the project and fuzz binaries
 bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]}
