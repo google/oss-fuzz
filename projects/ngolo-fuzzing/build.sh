@@ -54,10 +54,12 @@ compile_package () {
         (
         cd fuzz_ng_$pkg_flat
         compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        rm fuzz_ngo_$pkg_flat.a
         )
         $SRC/ngolo-fuzzing/go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
 
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
+        rm fuzz_ng_$pkg_flat.a
     fi
 }
 
