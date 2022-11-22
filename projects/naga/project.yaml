@@ -1,6 +1,7 @@
 homepage: "https://github.com/gfx-rs/naga"
 language: rust
 main_repo: "https://github.com/gfx-rs/naga"
+primary_contact: "jblandy@mozilla.com"
 sanitizers:
   - address
 fuzzing_engines:
