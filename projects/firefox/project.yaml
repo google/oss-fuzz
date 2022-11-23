@@ -4,6 +4,7 @@ primary_contact: "choller@mozilla.com"
 auto_ccs:
   - twsmith@mozilla.com
   - sledru@mozilla.com
+  - oss-fuzz@fuzzmanager-cluster.iam.gserviceaccount.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:

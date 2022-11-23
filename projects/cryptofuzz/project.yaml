@@ -37,6 +37,7 @@ auto_ccs:
     - "jschwartzentruber@mozilla.com"
     - "nkulatova@mozilla.com"
     - "twsmith@mozilla.com"
+    - "oss-fuzz@fuzzmanager-cluster.iam.gserviceaccount.com"
 sanitizers:
  - address
  - undefined

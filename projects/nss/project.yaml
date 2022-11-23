@@ -12,4 +12,5 @@ auto_ccs:
   - "nkulatova@mozilla.com"
   - "sledru@mozilla.com"
   - "twsmith@mozilla.com"
+  - "oss-fuzz@fuzzmanager-cluster.iam.gserviceaccount.com"
 main_repo: "https://hg.mozilla.org/projects/nss"
