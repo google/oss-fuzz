@@ -3,10 +3,11 @@ fuzzing_engines:
 homepage: https://commons.apache.org/proper/commons-io/
 language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-io.git
-primary_contact: "security@commons.apache.org"
+primary_contact: "fuzz-testing@commons.apache.org"
 sanitizers:
   - address
-auto_ccs: 
+auto_ccs:
+  - "security@commons.apache.org"
   - "garydgregory@gmail.com"
 vendor_ccs:
   - "wagner@code-intelligence.com"

@@ -1,13 +1,13 @@
 homepage: "https://commons.apache.org"
 language: jvm
 main_repo: "https://github.com/apache/commons-geometry"
-primary_contact: "security@commons.apache.org"
+primary_contact: "fuzz-testing@commons.apache.org"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
 auto_ccs:
-  - "fuzz-testing@commons.apache.org"
+  - "security@commons.apache.org"
   - "brunodepaulak@gmail.com"
   - "peteralfredlee@gmail.com"
   - "boards@gmail.com"
