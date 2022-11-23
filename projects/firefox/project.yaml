@@ -1,5 +1,6 @@
 homepage: "https://www.mozilla.org/firefox/"
 language: c++
+main_repo: https://hg.mozilla.org/mozilla-central/
 primary_contact: "choller@mozilla.com"
 auto_ccs:
   - twsmith@mozilla.com
