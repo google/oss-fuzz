@@ -5,6 +5,7 @@ main_repo: "https://github.com/bcgit/bc-java.git"
 auto_ccs:
   - evn@google.com
   - bleichen@google.com
+  - tvdmerwe@google.com
 fuzzing_engines:
   - "wycheproof"
 sanitizers:
