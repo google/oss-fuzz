@@ -15,14 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
-RUN git clone https://github.com/fmtlib/fmt && \
-    cd fmt && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make && \
-    make install
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfmt-dev
 RUN git clone --depth 1 https://github.com/resiprocate/resiprocate.git resiprocate
 WORKDIR resiprocate
 COPY build.sh $SRC/
