@@ -75,7 +75,7 @@ chmod +x \$this_dir/$fuzz_basename
   done
 done
 
-# Synchronise coverage directory to bazel generated code. This is a
+# Synchronise coverage directory to bazel output artifacts. This is a
 # best-effort basis in that it will include source code in common
 # bazel output folders.
 # For projects that store results in non-standard folders or want to
