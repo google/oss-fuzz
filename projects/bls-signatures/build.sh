@@ -164,7 +164,6 @@ fi
 if [[ "$SANITIZER" != "memory" ]]
 then
     cd $SRC/mcl/
-    make bint_header
     mkdir build/
     cd build/
     if [[ $CFLAGS != *-m32* ]]
