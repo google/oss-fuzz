@@ -33,7 +33,7 @@ cp $SRC/jsonmessage_fuzzer.go $SRC/moby/pkg/jsonmessage/
 cp $SRC/backend_build_fuzzer.go $SRC/moby/api/server/backend/build/
 cp $SRC/remotecontext_fuzzer.go $SRC/moby/builder/remotecontext/
 cp $SRC/containerstream_fuzzer.go $SRC/moby/container/stream/
-
+cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
 rm $SRC/moby/pkg/archive/example_changes.go
 rm $SRC/moby/daemon/logger/plugin_unsupported.go
@@ -45,9 +45,19 @@ go mod vendor
 
 mv $SRC/moby/volume/mounts/parser_test.go $SRC/moby/volume/mounts/parser_test_fuzz.go
 mv $SRC/moby/volume/mounts/validate_unix_test.go $SRC/moby/volume/mounts/validate_unix_test_fuzz.go
+
+rm vendor/github.com/cilium/ebpf/internal/btf/fuzz.go
+
+if [ "$SANITIZER" != "coverage" ] ; then
+	go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/docker/docker/daemon
+
+	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
+        /src/LVM2.2.03.15/libdm/ioctl/libdevmapper.a \
+        -o $OUT/FuzzDaemonSimple
+fi
+
 compile_go_fuzzer github.com/docker/docker/volume/mounts FuzzParseLinux FuzzParseLinux
 compile_go_fuzzer github.com/docker/docker/pkg/jsonmessage FuzzDisplayJSONMessagesStream FuzzDisplayJSONMessagesStream
-rm $SRC/moby/vendor/github.com/cilium/ebpf/internal/btf/fuzz.go
 compile_go_fuzzer github.com/docker/docker/api/server/backend/build FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
 compile_go_fuzzer github.com/docker/docker/builder/remotecontext FuzzreadAndParseDockerfile FuzzreadAndParseDockerfile
 compile_go_fuzzer github.com/docker/docker/container/stream FuzzcopyEscapable FuzzcopyEscapable
