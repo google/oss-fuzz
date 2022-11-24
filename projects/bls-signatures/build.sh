@@ -161,7 +161,7 @@ then
 fi
 
 # Build mcl
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" && $CFLAGS != *-m32* ]]
 then
     cd $SRC/mcl/
     mkdir build/
@@ -224,7 +224,7 @@ then
     make -B
 fi
 
-if [[ "$SANITIZER" != "memory" ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/mcl/
     make -B
