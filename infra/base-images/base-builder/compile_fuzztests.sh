@@ -17,6 +17,15 @@
 
 set -x
 
+# In order to identify fuzztest test case "bazel query" is used to search
+# the project. A search of the entire project is done with a default "...",
+# however, some projects may fail to, or have very long processing time, if
+# searching the entire project. Additionally, it may include fuzzers in
+# dependencies, which should not be build as part of a given project.
+# Tensorflow is an example project that will fail when the entire project is
+# queried. FUZZTEST_TARGET_FOLDER makes it posible to specify the folder
+# where fuzztest fuzzers should be search for. FUZZTEST_TARGET_FOLDER is passed
+# to "bazel query" below.
 if [[ ${FUZZTEST_TARGET_FOLDER:-"unset"} == "unset" ]];
 then
   export TARGET_FOLDER="..."
@@ -35,7 +44,6 @@ fi
 bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
 
 # Bazel target names of the fuzz binaries.
-#FUZZ_TEST_BINARIES=$(bazel query 'kind("cc_test", rdeps(..., @com_google_fuzztest//fuzztest:fuzztest_gtest_main))')
 FUZZ_TEST_BINARIES=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))")
 
 # Bazel output paths of the fuzz binaries.
@@ -67,7 +75,16 @@ chmod +x \$this_dir/$fuzz_basename
   done
 done
 
-# synchronise coverage directory to bazel generated code.
+# Synchronise coverage directory to bazel generated code. This is a
+# best-effort basis in that it will include source code in common
+# bazel output folders.
+# For projects that store results in non-standard folders or want to
+# manage what code to include in the coverage report more specifically,
+# the FUZZTEST_DO_SYNC environment variable is made available. Projects
+# can then implement a custom way of synchronising source code with the
+# coverage build. Set FUZZTEST_DO_SYNC to something other than "yes" and
+# no effort will be made to automatically synchronise the source code with
+# the code coverage visualisation utility.
 if [[ "$SANITIZER" = "coverage" && ${FUZZTEST_DO_SYNC:-"yes"} == "yes" ]]
 then 
   # Synchronize bazel source files to coverage collection.
@@ -88,6 +105,11 @@ then
    then
      rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${PWD}"/$link/external "${REMAP_PATH}"
    fi
+   # k8-opt is a common path for storing bazel output artifacts, e.g. bazel-out/k8-opt.
+   # It's the output folder for default amd-64 builds, but projects may specify custom
+   # platform output directories, see: https://github.com/bazelbuild/bazel/issues/13818
+   # We support the default at the moment, and if a project needs custom synchronizing of
+   # output artifacts and code coverage we currently recommend using FUZZTEST_DO_SYNC.
    if [[ -d "${PWD}"/$link/k8-opt  ]]
    then
      rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${PWD}"/$link/k8-opt "${REMAP_PATH}"/$link
