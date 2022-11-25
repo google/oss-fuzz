@@ -16,14 +16,20 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/fluxcd"
+# cmake and pkg-config are only needed whilst libgit2 is in use.
+# The project aims to deprecate libgit2 at some point in Q1 2023,
+# by which point this can be removed.
+RUN apt-get update && apt-get install -y cmake pkg-config
 
-RUN mkdir -p "${PROJECT_ROOT}"
+ENV GOPATH="${GOPATH:-/root/go}"
+ENV ORG_ROOT="${ORG_ROOT:-${GOPATH}/src/github.com/fluxcd}"
+
+RUN mkdir -p "${ORG_ROOT}"
 
 # Flux has its components scattered around multiple repositories due to its architecture. 
 # Here we clone all of them. The build process happens as build.sh iterate over each one of them.
 ARG REPOSITORIES="pkg notification-controller kustomize-controller helm-controller image-reflector-controller source-controller image-automation-controller"
-RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/fluxcd/${repo}" "${PROJECT_ROOT}/${repo}"; done
+RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/fluxcd/${repo}" "${ORG_ROOT}/${repo}"; done
 
 COPY build.sh $SRC/
 WORKDIR $SRC
