@@ -42,7 +42,7 @@ mkdir fuzz
 cp ../fuzz_*.c fuzz/
 cd fuzz
 
-LIBS="../opcodes/libopcodes.a ../libctf/.libs/libctf.a ../bfd/libbfd.a ../zlib/libz.a ../libiberty/libiberty.a"
+LIBS="../opcodes/libopcodes.a ../libctf/.libs/libctf.a ../bfd/libbfd.a ../zlib/libz.a ../libsframe/.libs/libsframe.a ../libiberty/libiberty.a"
 for i in fuzz_disassemble fuzz_bfd fuzz_bfd_ext; do
     $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c $i.c -o $i.o
     $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE -Wl,--start-group ${LIBS} -Wl,--end-group
@@ -166,7 +166,7 @@ then
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./../zlib -o $OUT/fuzz_as ./fuzz_as.o \
       libar.a config/tc-i386.o config/obj-elf.o config/atof-ieee.o  \
       ../opcodes/.libs/libopcodes.a ../bfd/.libs/libbfd.a \
-      -L/src/binutils-gdb/zlib ../libiberty/libiberty.a -lz
+      -L/src/binutils-gdb/zlib ../libsframe/.libs/libsframe.a ../libiberty/libiberty.a -lz
 fi
 
 # Copy seeds out
