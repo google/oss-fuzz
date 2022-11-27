@@ -18,7 +18,12 @@
 # build project
 mkdir build
 cd build
-cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../
+cmake -DEVENT__DISABLE_MBEDTLS=ON \
+      -DEVENT__DISABLE_OPENSSL=ON \
+      -DEVENT__LIBRARY_TYPE=STATIC \
+      -DEVENT__DISABLE_TESTS=ON \
+      -DEVENT__DISABLE_SAMPLES=ON \
+      ../
 make
 make install
 
