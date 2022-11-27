@@ -3,12 +3,17 @@ fuzzing_engines:
 homepage: https://commons.apache.org/proper/commons-io/
 language: jvm
 main_repo: https://gitbox.apache.org/repos/asf/commons-io.git
+primary_contact: "security@commons.apache.org"
 sanitizers:
-- address
-primary_contact: "garydgregory@gmail.com"
+  - address
+auto_ccs: 
+  - "garydgregory@gmail.com"
 vendor_ccs:
-- glendowne@code-intelligence.com
-- wagner@code-intelligence.com
-- patrice.salathe@code-intelligence.com
-- yakdan@code-intelligence.com
-- hlin@code-intelligence.com
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

@@ -2,6 +2,7 @@ homepage: "https://pganalyze.com/"
 language: c
 primary_contact: "team@pganalyze.com"
 main_repo: "https://github.com/pganalyze/pg_query"
-auto_ccs: 
+auto_ccs:
+  - "marko@pganalyze.com"
   - "lukas@pganalyze.com"
   - "david@adalogics.com"

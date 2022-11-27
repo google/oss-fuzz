@@ -15,9 +15,19 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN apt-get update && apt-get install -y clang libbtrfs-dev pkg-config libdevmapper-dev
 RUN git clone --depth 1 https://github.com/moby/moby
 RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
-WORKDIR moby
-COPY build.sh etchosts_fuzzer.go oci_fuzzer.go jsonlogbytes_fuzzer.go archive_fuzzers.go tailfile_fuzzer.go jsonfilelog_fuzzer.go mounts_fuzzer.go $SRC/
+COPY build.sh $SRC/
+COPY *_fuzzer.go $SRC/
+COPY *_fuzzers.go $SRC/
 
 COPY *.options $SRC/
+
+RUN wget https://sourceware.org/ftp/lvm2/LVM2.2.03.15.tgz \
+    && tar -xvzf ./LVM2.2.03.15.tgz \
+    && cd LVM2.2.03.15 \
+    && ./configure --disable-selinux --enable-static_link \
+    && make device-mapper
+
+WORKDIR $SRC/moby

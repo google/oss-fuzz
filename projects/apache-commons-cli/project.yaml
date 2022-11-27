@@ -1,6 +1,7 @@
 homepage: "https://commons.apache.org/proper/commons-cli/"
 language: jvm
 main_repo: "https://github.com/apache/commons-cli.git"
+primary_contact: "security@commons.apache.org"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
@@ -11,3 +12,6 @@ vendor_ccs:
   - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

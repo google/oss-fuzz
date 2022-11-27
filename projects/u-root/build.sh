@@ -61,7 +61,6 @@ cp $SRC/u-root/pkg/boot/grub/testdata/fuzz/*.dict $SRC/u-root/cmds/boot/localboo
 
 ## FuzzParseGrubCfg
 find $SRC/u-root/pkg/boot/grub/testdata_new -name "grub.cfg" -exec zip $OUT/fuzz_parse_grub_cfg_seed_corpus.zip {} +
-
 compile_native_go_fuzzer $SRC/u-root/cmds/boot/localboot FuzzParseGrubCfg fuzz_parse_grub_cmd_cfg
 
 # syslinux pkg
@@ -76,5 +75,61 @@ cp $SRC/u-root/pkg/boot/syslinux/testdata/fuzz/*.dict $SRC/u-root/pkg/boot/sysli
 
 ## FuzzParseSyslinuxConfig
 find $SRC/u-root/pkg/boot/syslinux/testdata -name "isolinux.cfg" -exec zip $OUT/fuzz_parse_syslinux_config_seed_corpus.zip {} +
-
 compile_native_go_fuzzer $SRC/u-root/pkg/boot/syslinux FuzzParseSyslinuxConfig fuzz_parse_syslinux_config
+
+# gosh cmd
+cd $SRC/u-root/cmds/exp/gosh
+go mod init gosh
+go get github.com/u-root/prompt@v0.0.0-20221110083427-a2ad3c8339a8
+go mod tidy
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+go get github.com/AdamKorcz/go-118-fuzz-build/utils
+
+cp $SRC/u-root/cmds/exp/gosh/testdata/fuzz/*.dict $SRC/u-root/cmds/exp/gosh/testdata/fuzz/*.options $OUT
+
+## FuzzRun
+find $SRC/u-root/cmds/exp/gosh/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_gosh_run_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/cmds/exp/gosh FuzzRun fuzz_gosh_run
+
+# esxi pkg
+cd $SRC/u-root/pkg/boot/esxi
+go mod init esxi
+go mod tidy
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+go get github.com/AdamKorcz/go-118-fuzz-build/utils
+
+cp $SRC/u-root/pkg/boot/esxi/testdata/fuzz/*.dict $SRC/u-root/pkg/boot/esxi/testdata/fuzz/*.options $OUT
+
+## FuzzParse
+find $SRC/u-root/pkg/boot/esxi/testdata -name "*.cfg" -exec zip $OUT/fuzz_esxi_parse_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/pkg/boot/esxi FuzzParse fuzz_esxi_parse
+
+# ipxe pkg
+cd $SRC/u-root/pkg/boot/netboot/ipxe
+go mod init ipxe
+go mod tidy
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+go get github.com/AdamKorcz/go-118-fuzz-build/utils
+
+cp $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/*.dict $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/*.options $OUT
+
+## FuzzParseIpxeConfig
+find $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_ipxe_parse_config_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/pkg/boot/netboot/ipxe FuzzParseIpxeConfig fuzz_ipxe_parse_config
+
+# smbios pkg
+cd $SRC/u-root/pkg/smbios
+go mod init smbios
+go mod tidy
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+go get github.com/AdamKorcz/go-118-fuzz-build/utils
+
+cp $SRC/u-root/pkg/smbios/testdata/fuzz/*.dict $SRC/u-root/pkg/smbios/testdata/fuzz/*.options $OUT
+
+## FuzzParseInfo
+find $SRC/u-root/pkg/smbios/testdata -name "*.bin" -exec zip $OUT/fuzz_smbios_parse_info_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/pkg/smbios FuzzParseInfo fuzz_smbios_parse_info

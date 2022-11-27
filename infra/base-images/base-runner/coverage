@@ -131,6 +131,15 @@ function run_go_fuzz_target {
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
+  
+  # setup for native go fuzzers
+  cd $OUT
+  mkdir -p "testdata/fuzz/${target}"
+  cp -r "${FUZZ_CORPUS_DIR}*" "testdata/fuzz/${target}/"
+
+  # rewrite libFuzzer corpus to Std Go corpus
+  $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
+  cd -
 
   timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
@@ -138,12 +147,15 @@ function run_go_fuzz_target {
     cat $LOGS_DIR/$target.log
   fi
 
+  # cleanup after native go fuzzers
+  rm -r "${OUT}/testdata/fuzz/${target}"
+
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
   # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during
   # the coverage build, we change the references in the .profdata files
   # to the original file names.
-  sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
+  #sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS
@@ -239,7 +251,7 @@ for fuzz_target in $FUZZ_TARGETS; do
   if [[ $FUZZING_LANGUAGE == "go" ]]; then
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
+      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || grep "testing\.T" $fuzz_target > /dev/null 2>&1 || continue
     fi
     run_go_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "python" ]]; then
@@ -288,6 +300,7 @@ done
 wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  echo $DUMPS_DIR
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
   gotoolcover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
