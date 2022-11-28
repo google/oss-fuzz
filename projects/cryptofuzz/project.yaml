@@ -2,45 +2,47 @@ homepage: "https://github.com/guidovranken/cryptofuzz"
 language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
-    - "openssl-security@openssl.org"
-    - "kurt@roeckx.be"
-    - "caswell.matt@googlemail.com"
-    - "agl@google.com"
-    - "davidben@google.com"
-    - "svaldez@google.com"
-    - "beck@obtuse.com"
-    - "joel.sing@gmail.com"
-    - "kinichiro.inoguchi@gmail.com"
-    - "github@pureftpd.org"
-    - "jussi.kivilinna@gmail.com"
-    - "szanella@gmail.com"
-    - "karthik.bhargavan@gmail.com"
-    - "jonathan.protzenko@gmail.com"
-    - "richard@levitte.org"
-    - "ppzgs1@gmail.com"
-    - "jack.lloyd@gmail.com"
-    - "shane.lontis@hotmail.com"
-    - "david@wolfssl.com"
-    - "kaleb@wolfssl.com"
-    - "jacob@wolfssl.com"
-    - "sledru@mozilla.com"
-    - "bbeurdouche@mozilla.com"
-    - "matthias.st.pierre@gmail.com"
-    - "kaleb.himes@gmail.com"
-    - "polubelovam@gmail.com"
-    - "mbed-tls-security@lists.trustedfirmware.org"
-    - "choller@mozilla.com"
-    - "djackson@mozilla.com"
-    - "dkeeler@mozilla.com"
-    - "jkratzer@mozilla.com"
-    - "jschanck@mozilla.com"
-    - "jschwartzentruber@mozilla.com"
-    - "nkulatova@mozilla.com"
-    - "twsmith@mozilla.com"
+  - openssl-security@openssl.org
+  - kurt@roeckx.be
+  - caswell.matt@googlemail.com
+  - agl@google.com
+  - davidben@google.com
+  - svaldez@google.com
+  - beck@obtuse.com
+  - joel.sing@gmail.com
+  - kinichiro.inoguchi@gmail.com
+  - github@pureftpd.org
+  - jussi.kivilinna@gmail.com
+  - szanella@gmail.com
+  - karthik.bhargavan@gmail.com
+  - jonathan.protzenko@gmail.com
+  - richard@levitte.org
+  - ppzgs1@gmail.com
+  - jack.lloyd@gmail.com
+  - shane.lontis@hotmail.com
+  - david@wolfssl.com
+  - kaleb@wolfssl.com
+  - jacob@wolfssl.com
+  - sledru@mozilla.com
+  - bbeurdouche@mozilla.com
+  - matthias.st.pierre@gmail.com
+  - kaleb.himes@gmail.com
+  - polubelovam@gmail.com
+  - mbed-tls-security@lists.trustedfirmware.org
+  - choller@mozilla.com
+  - djackson@mozilla.com
+  - dkeeler@mozilla.com
+  - jkratzer@mozilla.com
+  - jschanck@mozilla.com
+  - jschwartzentruber@mozilla.com
+  - nkulatova@mozilla.com
+  - twsmith@mozilla.com
+vendor_ccs:
+  - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
 architectures:
- - x86_64
+  - x86_64
 main_repo: 'https://github.com/guidovranken/cryptofuzz'
