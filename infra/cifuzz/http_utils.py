@@ -82,9 +82,8 @@ def get_json_from_url(url):
   Returns:
     A dictionary deserialized from JSON or None on failure.
   """
-  response = requests.get(url, timeout=_HTTP_REQUEST_TIMEOUT)
   try:
-    return response.json()
+    return requests.get(url, timeout=_HTTP_REQUEST_TIMEOUT).json()
   except (ValueError, TypeError, json.JSONDecodeError,
           requests.exceptions.ReadTimeout) as err:
     logging.error('Loading json from url %s failed with: %s.', url, str(err))
