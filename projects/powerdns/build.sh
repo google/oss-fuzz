@@ -63,3 +63,6 @@ fi
 if [ -d ../fuzzing/corpus/zones/ ]; then
     zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*
 fi
+if [ -d ../fuzzing/corpus/http-raw-payloads/ ]; then
+    zip -j "${OUT}/fuzz_target_yahttp_seed_corpus.zip" ../fuzzing/corpus/http-raw-payloads/*
+fi
