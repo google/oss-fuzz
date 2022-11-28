@@ -84,7 +84,8 @@ def get_json_from_url(url):
   response = requests.get(url, timeout=10)
   try:
     return response.json()
-  except (ValueError, TypeError, json.JSONDecodeError, requests.exceptions.ReadTimeout) as err:
+  except (ValueError, TypeError, json.JSONDecodeError,
+          requests.exceptions.ReadTimeout) as err:
     logging.error('Loading json from url %s failed with: %s.', url, str(err))
     return None
 
