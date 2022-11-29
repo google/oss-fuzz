@@ -1,11 +1,13 @@
 homepage: "https://commons.apache.org/proper/commons-beanutils/"
 language: jvm
 main_repo: "https://github.com/apache/commons-beanutils.git"
-primary_contact: "security@commons.apache.org"
+primary_contact: "fuzz-testing@commons.apache.org"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+auto_ccs:
+  - "security@commons.apache.org"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
