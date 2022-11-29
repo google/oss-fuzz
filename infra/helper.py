@@ -76,6 +76,7 @@ ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
 CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
 CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
+CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -747,20 +748,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 
 def run_clusterfuzzlite(args):
-  # if not build_fuzzers_impl(args.project,
-  #                            args.clean,
-  #                            CLUSTERFUZZLITE_ENGINE,
-  #                            args.sanitizer,
-  #                            CLUSTERFUZZLITE_ARCHITECTURE,
-  #                            args.e):
-  #   return False
-
-  # if not run_fuzzers_impl(args.project,
-  #                         args.clean,
-  #                         CLUSTERFUZZLITE_ENGINE,
-  #                         args.sanitizer,
-  #                         CLUSTERFUZZLITE_ARCHITECTURE,
-  #                         args.e):
   if not os.path.exists(CLUSTERFUZZLITE_FILESTORE_DIR):
     os.mkdir(CLUSTERFUZZLITE_FILESTORE_DIR)
 
@@ -771,10 +758,10 @@ def run_clusterfuzzlite(args):
       shutil.copytree(args.project.path, project_src_path)
 
       build_command = ['docker', 'build', '--tag',
-                       'gcr.io/oss-fuzz-base/cifuzz-build-fuzzers',
+                       'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers',
                        '--file',
-                       'infra/build_fuzzers.Dockerfile',
-                       '.']
+                       'infra/run_fuzzers.Dockerfile',
+                       'infra']
       retval = subprocess.run(build_command, check=False).returncode
       if retval != 0:
         return False
@@ -787,21 +774,19 @@ def run_clusterfuzzlite(args):
                              '-e', f'WORKSPACE={workspace}',
                              '-e', f'REPOSITORY={args.project.name}',
                              '-e', 'CFL_PLATFORM=standalone',
-                             '-e', f'BRANCH={args.branch}',
                              '-e', f'PROJECT_SRC_PATH={project_src_path}',
-                             '-e', f'GIT_BASE_REF={args.branch}', # !!!
                              '--entrypoint', '',
                              '-v', '/var/run/docker.sock:/var/run/docker.sock',
-                             'gcr.io/oss-fuzz-base/cifuzz-build-fuzzers',
+                             CLUSTERFUZZLITE_DOCKER_IMAGE,
                              'python3',
-                             '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py'
+                             '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
                              ], check=False).returncode == 0
   except PermissionError as error:
     logging.error('PermissionError: %s', error)
+    docker_run(['-v', f'{workspace}:{workspace}', '--entrypoint', '',
+                CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
+                os.path.join(workspace, '*')])
     return False
-
-
-
 
 
 
