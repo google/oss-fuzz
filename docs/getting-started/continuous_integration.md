@@ -230,7 +230,7 @@ To download the artifact, do the following steps:
 
 ![github-actions-summary]
 
-1. Click on the artifact you wish to download from the summary page, as
+2. Click on the artifact you wish to download from the summary page, as
    illustrated in the screenshot below:
 
 ![github-actions-download-crash]
