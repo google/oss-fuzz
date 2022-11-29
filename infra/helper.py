@@ -383,20 +383,20 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_environment_args(run_clusterfuzzlite_parser)
   run_clusterfuzzlite_parser.add_argument('project')
   run_clusterfuzzlite_parser.add_argument('--clean',
-                                    dest='clean',
-                                    action='store_true',
-                                    help='clean existing artifacts.')
-  run_clusterfuzzlite_parser.add_argument('--no-clean',
-                                    dest='clean',
-                                    action='store_false',
-                                    help='do not clean existing artifacts '
-                                    '(default).')
+                                          dest='clean',
+                                          action='store_true',
+                                          help='clean existing artifacts.')
+  run_clusterfuzzlite_parser.add_argument(
+      '--no-clean',
+      dest='clean',
+      action='store_false',
+      help='do not clean existing artifacts '
+      '(default).')
   run_clusterfuzzlite_parser.add_argument('--branch',
                                           default='master',
                                           required=True)
   _add_external_project_args(run_clusterfuzzlite_parser)
   run_clusterfuzzlite_parser.set_defaults(clean=False)
-
 
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
@@ -757,37 +757,48 @@ def run_clusterfuzzlite(args):
       project_src_path = os.path.join(workspace, args.project.name)
       shutil.copytree(args.project.path, project_src_path)
 
-      build_command = ['docker', 'build', '--tag',
-                       'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers',
-                       '--file',
-                       'infra/run_fuzzers.Dockerfile',
-                       'infra']
+      build_command = [
+          'docker', 'build', '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers',
+          '--file', 'infra/run_fuzzers.Dockerfile', 'infra'
+      ]
       retval = subprocess.run(build_command, check=False).returncode
       if retval != 0:
         return False
       filestore_path = os.path.abspath(CLUSTERFUZZLITE_FILESTORE_DIR)
-      return subprocess.run(['docker', 'run',
-                             '-v', f'{filestore_path}:{filestore_path}',
-                             '-v', f'{workspace}:{workspace}',
-                             '-e',
-                             f'FILESTORE_ROOT_DIR={filestore_path}',
-                             '-e', f'WORKSPACE={workspace}',
-                             '-e', f'REPOSITORY={args.project.name}',
-                             '-e', 'CFL_PLATFORM=standalone',
-                             '-e', f'PROJECT_SRC_PATH={project_src_path}',
-                             '--entrypoint', '',
-                             '-v', '/var/run/docker.sock:/var/run/docker.sock',
-                             CLUSTERFUZZLITE_DOCKER_IMAGE,
-                             'python3',
-                             '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
-                             ], check=False).returncode == 0
+      return subprocess.run([
+          'docker',
+          'run',
+          '-v',
+          f'{filestore_path}:{filestore_path}',
+          '-v',
+          f'{workspace}:{workspace}',
+          '-e',
+          f'FILESTORE_ROOT_DIR={filestore_path}',
+          '-e',
+          f'WORKSPACE={workspace}',
+          '-e',
+          f'REPOSITORY={args.project.name}',
+          '-e',
+          'CFL_PLATFORM=standalone',
+          '-e',
+          f'PROJECT_SRC_PATH={project_src_path}',
+          '--entrypoint',
+          '',
+          '-v',
+          '/var/run/docker.sock:/var/run/docker.sock',
+          CLUSTERFUZZLITE_DOCKER_IMAGE,
+          'python3',
+          '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
+      ],
+                            check=False).returncode == 0
   except PermissionError as error:
     logging.error('PermissionError: %s', error)
-    docker_run(['-v', f'{workspace}:{workspace}', '--entrypoint', '',
-                CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
-                os.path.join(workspace, '*')])
+    docker_run([
+        '-v', f'{workspace}:{workspace}', '--entrypoint', '',
+        CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
+        os.path.join(workspace, '*')
+    ])
     return False
-
 
 
 def build_fuzzers(args):
