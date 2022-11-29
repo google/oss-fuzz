@@ -226,12 +226,12 @@ The results of CIFuzz can be found in two different places.
 When the fuzzer crashes the input file that causes the crash is uploaded as an
 artifact.
 To download the artifact, do the following steps:
-- Click on the summary from the run, as illustrated in the screenshot below:
+1. Click on the summary from the run, as illustrated in the screenshot below:
 
 ![github-actions-summary]
 
-- Click on the artifact you wish to download from the summary page, as
-  illustrated in the screenshot below:
+1. Click on the artifact you wish to download from the summary page, as
+   illustrated in the screenshot below:
 
 ![github-actions-download-crash]
 
