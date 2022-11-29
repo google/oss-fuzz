@@ -16,7 +16,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config
 RUN git clone https://github.com/pjsip/pjproject pjsip
-RUN git clone https://github.com/0x34d/oss-fuzz-bloat
 COPY build.sh $SRC/
-COPY fuzzer/ $SRC/pjsip/fuzzer/
 WORKDIR $SRC/pjsip/

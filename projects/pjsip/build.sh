@@ -23,10 +23,11 @@ export LDFLAGS="$CFLAGS"
 --disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
 --disable-resample --disable-libsrtp --disable-libwebrtc --disable-libyuv
 
+make dep
 make -j$(nproc) --ignore-errors
+make fuzz
 
-pushd fuzzer/
-make
+pushd tests/fuzz/
 cp fuzz-json $OUT/fuzz-json
 cp fuzz-xml $OUT/fuzz-xml
 cp fuzz-sdp $OUT/fuzz-sdp
@@ -34,7 +35,7 @@ cp fuzz-stun $OUT/fuzz-stun
 cp fuzz-sip $OUT/fuzz-sip
 popd
 
-pushd $SRC/oss-fuzz-bloat/pjsip/
+pushd tests/fuzz/seed/
 cp fuzz-json_seed_corpus.zip $OUT/fuzz-json_seed_corpus.zip
 cp fuzz-xml_seed_corpus.zip $OUT/fuzz-xml_seed_corpus.zip
 cp fuzz-sdp_seed_corpus.zip $OUT/fuzz-sdp_seed_corpus.zip
