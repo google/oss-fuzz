@@ -48,8 +48,8 @@ class BaseCoverage:
       A list of files that the fuzz target covers or None.
     """
     target_cov = self.get_target_coverage(target)
-    if not target_cov:
-      logging.info('No coverage available for %s', target)
+    if not target_cov or not isinstance(target_cov, dict):
+      logging.info('No coverage available for %s.', target)
       return None
 
     coverage_per_file = get_coverage_per_file(target_cov)
