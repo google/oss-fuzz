@@ -221,16 +221,22 @@ The results of CIFuzz can be found in two different places.
 ![Finding fuzzer output](../images/run_fuzzers.png)
 
 
+
 *  Artifacts:
-    1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
-    1. This will cause a pop up in the right hand corner, allowing
-    you to download a zip file called `artifacts`.
-    1. `artifacts` contains two files for each crash:
-        * A test case that can be used to reproduce the crash.
-        * The sanitizer stack trace of the crash.
+When the fuzzer crashes the input file that causes the crash is uploaded as an
+artifact.
+To download the artifact, do the following steps:
+1. Click on the summary from the run, as illustrated in the screenshot below:
 
-![Finding uploaded artifacts](../images/artifacts.png)
+![github-actions-summary]
 
+2. Click on the artifact you wish to download from the summary page, as
+   illustrated in the screenshot below:
+
+![github-actions-download-crash]
+
+[github-actions-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-crash.png
+[github-actions-coverage-report]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-coverage-report.png
 
 ## Feedback/Questions/Issues
 
