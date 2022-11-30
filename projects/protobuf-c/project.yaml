@@ -9,6 +9,5 @@ sanitizers:
 #  - memory
 architectures:
  - x86_64
- - i386
 main_repo: 'https://github.com/protobuf-c/protobuf-c.git'
 coverage_extra_args: -ignore-filename-regex=.*/protobuf-install/.*

@@ -34,6 +34,7 @@ autoreconf -vi
     --enable-fuzz-targets \
     --disable-dependency-tracking \
     --disable-silent-rules || /bin/bash
+make -j$(nproc) -C ext/yahttp/
 cd pdns
 make -j$(nproc) fuzz_targets
 
@@ -61,4 +62,7 @@ if [ -d ../fuzzing/corpus/proxy-protocol-raw-packets/ ]; then
 fi
 if [ -d ../fuzzing/corpus/zones/ ]; then
     zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*
+fi
+if [ -d ../fuzzing/corpus/http-raw-payloads/ ]; then
+    zip -j "${OUT}/fuzz_target_yahttp_seed_corpus.zip" ../fuzzing/corpus/http-raw-payloads/*
 fi

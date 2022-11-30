@@ -1,8 +1,10 @@
 homepage: 'https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/README'
 language: c++
+main_repo: https://hg.mozilla.org/mozilla-central/
 primary_contact: 'choller@mozilla.com'
+vendor_ccs:
+  - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-
