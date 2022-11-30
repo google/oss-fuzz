@@ -747,6 +747,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 
 def run_clusterfuzzlite(args):
+  """Runs ClusterFuzzLite on a local repo."""
   if not os.path.exists(CLUSTERFUZZLITE_FILESTORE_DIR):
     os.mkdir(CLUSTERFUZZLITE_FILESTORE_DIR)
 
