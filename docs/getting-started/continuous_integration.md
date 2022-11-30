@@ -235,8 +235,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-crash.png
-[github-actions-coverage-report]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-coverage-report.png
+[github-actions-summary]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-summary.png
+[github-actions-download-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-download-crash.png
 
 ## Feedback/Questions/Issues
 
