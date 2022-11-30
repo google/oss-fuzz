@@ -27,6 +27,7 @@ make dep
 make -j$(nproc) --ignore-errors
 make fuzz
 
+
 pushd tests/fuzz/
 cp fuzz-json $OUT/fuzz-json
 cp fuzz-xml $OUT/fuzz-xml
