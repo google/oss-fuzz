@@ -48,7 +48,7 @@ class BaseCoverage:
       A list of files that the fuzz target covers or None.
     """
     target_cov = self.get_target_coverage(target)
-    if not target_cov or not isinstance(target_cov, dict):
+    if not target_cov:
       logging.info('No coverage available for %s.', target)
       return None
 
@@ -192,7 +192,11 @@ def is_file_covered(file_cov):
 
 def get_coverage_per_file(target_cov):
   """Returns the coverage per file within |target_cov|."""
-  return target_cov['data'][0]['files']
+  try:
+    return target_cov['data'][0]['files']
+  except (IndexError, TypeError, KeyError):
+    logging.error('target_cov: %s is malformed.', target_cov)
+    return None
 
 
 def _normalize_repo_path(repo_path):
