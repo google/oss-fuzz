@@ -454,8 +454,7 @@ def _get_project_build_subdir(project, subdir_name):
   """Creates the |subdir_name| subdirectory of the |project| subdirectory in
   |BUILD_DIR| and returns its path."""
   directory = os.path.join(BUILD_DIR, subdir_name, project)
-  if not os.path.exists(directory):
-    os.makedirs(directory)
+  os.makedirs(directory, exist_ok=True)
 
   return directory
 
@@ -754,20 +753,32 @@ def run_clusterfuzzlite(args):
   try:
     with tempfile.TemporaryDirectory() as workspace:
 
-      project_src_path = os.path.join(workspace, args.project.name)
-      shutil.copytree(args.project.path, project_src_path)
+      if args.external:
+        project_src_path = os.path.join(workspace, args.project.name)
+        shutil.copytree(args.project.path, project_src_path)
 
       build_command = [
-          'docker', 'build', '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers',
-          '--file', 'infra/run_fuzzers.Dockerfile', 'infra'
+          '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers', '--file',
+          'infra/run_fuzzers.Dockerfile', 'infra'
       ]
-      retval = subprocess.run(build_command, check=False).returncode
-      if retval != 0:
+      if not docker_build(build_command):
         return False
       filestore_path = os.path.abspath(CLUSTERFUZZLITE_FILESTORE_DIR)
-      return subprocess.run([
+      docker_run_command = [
           'docker',
           'run',
+      ]
+      if args.external:
+        docker_run_command += [
+            '-e',
+            f'PROJECT_SRC_PATH={project_src_path}',
+        ]
+      else:
+        docker_run_command += [
+            '-e',
+            f'OSS_FUZZ_PROJECT_NAME={args.project.name}',
+        ]
+      docker_run_command += [
           '-v',
           f'{filestore_path}:{filestore_path}',
           '-v',
@@ -780,8 +791,6 @@ def run_clusterfuzzlite(args):
           f'REPOSITORY={args.project.name}',
           '-e',
           'CFL_PLATFORM=standalone',
-          '-e',
-          f'PROJECT_SRC_PATH={project_src_path}',
           '--entrypoint',
           '',
           '-v',
@@ -789,10 +798,15 @@ def run_clusterfuzzlite(args):
           CLUSTERFUZZLITE_DOCKER_IMAGE,
           'python3',
           '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
-      ],
-                            check=False).returncode == 0
+      ]
+      return docker_run(docker_run_command)
+
   except PermissionError as error:
-    logging.error('PermissionError: %s', error)
+    logging.error('PermissionError: %s.', error)
+    # Tempfile can't delete the workspace because of a permissions issue. This
+    # is because docker creates files in the workspace that are owned by root
+    # but this process is probably being run as another user. Use a docker image
+    # to delete the temp directory (workspace) so that we have permission.
     docker_run([
         '-v', f'{workspace}:{workspace}', '--entrypoint', '',
         CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
@@ -895,8 +909,7 @@ def _get_fuzz_targets(project):
 def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   """Downloads the latest corpus for the given fuzz target."""
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
-  if not os.path.exists(corpus_dir):
-    os.makedirs(corpus_dir)
+  os.makedirs(corpus_dir, exist_ok=True)
 
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
