@@ -28,17 +28,18 @@ make -j$(nproc) --ignore-errors
 make fuzz
 
 pushd tests/fuzz/
-cp fuzz-json $OUT/fuzz-json
-cp fuzz-xml $OUT/fuzz-xml
-cp fuzz-sdp $OUT/fuzz-sdp
-cp fuzz-stun $OUT/fuzz-stun
-cp fuzz-sip $OUT/fuzz-sip
+FuzzBins=$(find . -name "*.c")
+
+for File in $FuzzBins; do
+    FuzzBin=$(basename $File .c)
+    cp $FuzzBin $OUT/$FuzzBin
+done
 popd
 
 pushd tests/fuzz/seed/
-cp fuzz-json_seed_corpus.zip $OUT/fuzz-json_seed_corpus.zip
-cp fuzz-xml_seed_corpus.zip $OUT/fuzz-xml_seed_corpus.zip
-cp fuzz-sdp_seed_corpus.zip $OUT/fuzz-sdp_seed_corpus.zip
-cp fuzz-stun_seed_corpus.zip $OUT/fuzz-stun_seed_corpus.zip
-cp fuzz-sip_seed_corpus.zip $OUT/fuzz-sip_seed_corpus.zip
+FuzzSeed=$(find . -name "*.zip")
+
+for Seed in $FuzzSeed; do
+    cp $Seed $OUT/$Seed
+done
 popd
