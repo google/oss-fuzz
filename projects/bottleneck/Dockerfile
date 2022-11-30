@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install cython
+RUN pip3 install --upgrade pip && pip3 install cython
 RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
 RUN cd $SRC/numpy && \
     pip3 install . && \
