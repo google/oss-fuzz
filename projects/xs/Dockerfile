@@ -27,12 +27,25 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 #RUN git clone --depth 1 https://github.com/tc39/test262-parser-tests && \
 #    zip -q $SRC/xst_seed_corpus.zip test262-parser-tests/pass-explicit/*
 
+# install npm tool to strip comments
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt install -yqq npm 
+# && rm -rf /var/lib/apt/lists/*
+RUN npm i -g @prasadrajandran/strip-comments-cli
+
 #test262 built-ins
 #BSD license
 RUN git clone --depth 1 https://github.com/tc39/test262 && \
+    # strip comments
+    find test262/test/built-ins -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+ && \
+    # strip empty lines
+    find test262/test/built-ins -iname '*.js' -exec sed -i '/^[[:space:]]*$/d' '{}' \+ && \
     find test262/test/built-ins -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
 
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable
 WORKDIR moddable
 
 COPY target.c build.sh xst.options $SRC/
+
+# clean up
+RUN npm rm @prasadrajandran/strip-comments-cli && apt purge -yqq npm && apt autoremove -yqq && rm -rf /var/lib/apt/lists/*
