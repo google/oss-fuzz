@@ -14,13 +14,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip3 install cython
-RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
-RUN cd $SRC/numpy && \
-    pip3 install . && \
-    python3 setup.py install
-RUN git clone --depth 1 https://github.com/pydata/bottleneck
-WORKDIR bottleneck
-COPY build.sh *.py $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.6.3 && \
+rm -rf maven.zip
+
+ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+
+WORKDIR ${SRC}
+#
+# clone repository
+#
+RUN git clone https://github.com/json-path/JsonPath.git
+
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/JsonPath
