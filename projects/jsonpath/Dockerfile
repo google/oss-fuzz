@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,4 +14,20 @@
 #
 ################################################################################
 
-$SRC/rekor/tests/oss_fuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.6.3 && \
+rm -rf maven.zip
+
+ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+
+WORKDIR ${SRC}
+#
+# clone repository
+#
+RUN git clone https://github.com/json-path/JsonPath.git
+
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/JsonPath

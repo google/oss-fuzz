@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-$SRC/rekor/tests/oss_fuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-python:v1
+COPY . $SRC/oss-fuzz
+WORKDIR oss-fuzz
+COPY .clusterfuzzlite/build.sh $SRC/
+RUN cp .clusterfuzzlite/coverage_atheris_fuzzer.py infra
+WORKDIR infra/
+RUN pip3 install --upgrade pip
+RUN pip3 install -r cifuzz/requirements.txt
+RUN cp -r cifuzz/* .
