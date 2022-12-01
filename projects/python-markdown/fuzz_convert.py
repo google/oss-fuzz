@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,16 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+import sys
+import atheris
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip3 install cython
-RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
-RUN cd $SRC/numpy && \
-    pip3 install . && \
-    python3 setup.py install
-RUN git clone --depth 1 https://github.com/pydata/bottleneck
-WORKDIR bottleneck
-COPY build.sh *.py $SRC/
+import markdown
+
+import pysecsan
+pysecsan.sanlib.sanitizer_log_level = 30
+pysecsan.add_hooks()
+
+@atheris.instrument_func
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+
+  md = markdown.core.Markdown()
+  try:
+    md.convert(fdp.ConsumeUnicodeNoSurrogates(1024))
+  except NotImplementedError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

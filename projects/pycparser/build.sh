@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+pip3 install .
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip3 install cython
-RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
-RUN cd $SRC/numpy && \
-    pip3 install . && \
-    python3 setup.py install
-RUN git clone --depth 1 https://github.com/pydata/bottleneck
-WORKDIR bottleneck
-COPY build.sh *.py $SRC/
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

@@ -7,6 +7,10 @@ all: clean SystemSan target target_file
 SystemSan: SystemSan.cpp
 	$(CXX) $(CFLAGS) -lpthread -o $@ $^
 
+# Needs atheris.
+python-test: all
+	./SystemSan python shell_injection_poc_fuzzer.py
+
 target: target.cpp
 	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
 
