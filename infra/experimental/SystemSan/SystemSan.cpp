@@ -40,9 +40,6 @@
 #include <string>
 #include <vector>
 
-#include "inspect_utils.h"
-#include "inspect_dns.h"
-
 #define DEBUG_LOGS 0
 
 #if DEBUG_LOGS
@@ -165,6 +162,23 @@ pid_t run_child(char **argv) {
   return pid;
 }
 
+std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
+                                   size_t size) {
+  std::vector<std::byte> memory;
+
+  for (size_t i = 0; i < size; i += sizeof(long)) {
+    long word = ptrace(PTRACE_PEEKTEXT, pid, address + i, 0);
+    if (word == -1) {
+      return memory;
+    }
+
+    std::byte *word_bytes = reinterpret_cast<std::byte *>(&word);
+    memory.insert(memory.end(), word_bytes, word_bytes + sizeof(long));
+  }
+
+  return memory;
+}
+
 // Construct a string with the memory specified in a register.
 std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   auto memory = read_memory(pid, reg, length);
@@ -175,6 +189,27 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   std::string content(reinterpret_cast<char *>(memory.data()),
                       std::min(memory.size(), length));
   return content;
+}
+
+void report_bug(std::string bug_type, pid_t tid) {
+  // Report the bug found based on the bug code.
+  std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
+  // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
+  // to the root process.
+  // Note: this may not be reliable or consistent if shell injection happens
+  // in an async way.
+  // Find the thread group id, that is the pid.
+  pid_t pid = tid;
+  auto parent = root_pids[tid];
+  while (!parent.ran_exec) {
+    // Find the first parent which ran exec syscall.
+    if (parent.parent_tid == g_root_pid) {
+      break;
+    }
+    pid = parent.parent_tid;
+    parent = root_pids[parent.parent_tid];
+  }
+  tgkill(pid, tid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
@@ -423,8 +458,6 @@ int trace(std::map<pid_t, Tracee> pids) {
               g_shell_pids.insert(std::make_pair(pid, shell));
             }
           }
-
-          inspect_dns_syscalls(pid, regs);
 
           if (regs.orig_rax == __NR_openat) {
             inspect_for_arbitrary_file_open(pid, regs);
