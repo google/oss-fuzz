@@ -15,6 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config
-RUN git clone https://github.com/0x34d/pjproject pjsip
+RUN git clone https://github.com/pjsip/pjproject pjsip
 COPY build.sh $SRC/
 WORKDIR $SRC/pjsip/
