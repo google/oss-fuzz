@@ -22,14 +22,15 @@ sed -i 's/check_inconsistencies=yes/check_inconsistencies=no/' common/acx_pthrea
 ./autogen.sh --disable-stack-protector --disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 --disable-dbus --disable-gdbm --disable-libdaemon --disable-python --disable-manpages --disable-mono --disable-monodoc --disable-glib --disable-gobject --disable-libevent
 make -j "$(nproc)" V=1
 
-$CXX $CXXFLAGS -std=c++11 -I. \
-    "$SRC/avahi_packet_consume_record_fuzzer.cc" \
-    -o "$OUT/avahi_packet_consume_record_fuzzer" \
-    $LIB_FUZZING_ENGINE \
-    "avahi-core/.libs/libavahi-core.a" "avahi-common/.libs/libavahi-common.a"
+for f in "$SRC/"*_fuzzer.c; do
+    fuzz_target=$(basename "$f" .c)
+    $CC -c $CFLAGS -I. \
+        "$SRC/$fuzz_target.c" \
+        -o "$fuzz_target.o"
 
-$CXX $CXXFLAGS -std=c++11 -I. \
-    "$SRC/avahi_packet_consume_key_fuzzer.cc" \
-    -o "$OUT/avahi_packet_consume_key_fuzzer" \
-    $LIB_FUZZING_ENGINE \
-    "avahi-core/.libs/libavahi-core.a" "avahi-common/.libs/libavahi-common.a"
+    $CXX $CXXFLAGS \
+        "$fuzz_target.o" \
+        -o "$OUT/$fuzz_target" \
+        $LIB_FUZZING_ENGINE \
+        "avahi-core/.libs/libavahi-core.a" "avahi-common/.libs/libavahi-common.a"
+done
