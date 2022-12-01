@@ -11,16 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip3 install cython
-RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
-RUN cd $SRC/numpy && \
-    pip3 install . && \
-    python3 setup.py install
-RUN git clone --depth 1 https://github.com/pydata/bottleneck
-WORKDIR bottleneck
-COPY build.sh *.py $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python:v1
+COPY . $SRC/oss-fuzz
+WORKDIR oss-fuzz
+COPY .clusterfuzzlite/build.sh $SRC/
+RUN cp .clusterfuzzlite/coverage_atheris_fuzzer.py infra
+WORKDIR infra/
+RUN pip3 install --upgrade pip
+RUN pip3 install -r cifuzz/requirements.txt
+RUN cp -r cifuzz/* .
