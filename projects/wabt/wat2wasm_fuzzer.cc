@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "wabt/src/ir.h"
-#include "wabt/src/wast-lexer.h"
-#include "wabt/src/wast-parser.h"
+#include "wabt/ir.h"
+#include "wabt/wast-lexer.h"
+#include "wabt/wast-parser.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  wabt::Errors Lexerrors;
   std::unique_ptr<wabt::WastLexer> lexer =
-      wabt::WastLexer::CreateBufferLexer("fake_file", data, size);
+      wabt::WastLexer::CreateBufferLexer("fake_file", data, size, &Lexerrors);
 
   if (!lexer) {
     return 0;

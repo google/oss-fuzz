@@ -15,12 +15,14 @@
 #
 ################################################################################
 
-#Disable code instrumentation
-CFLAGS_SAVE="$CFLAGS"
-CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
-export AFL_NOOPT=1
+if [[ "$SANITIZER" != "memory" ]]; then
+	#Disable code instrumentation
+	CFLAGS_SAVE="$CFLAGS"
+	CXXFLAGS_SAVE="$CXXFLAGS"
+	unset CFLAGS
+	unset CXXFLAGS
+	export AFL_NOOPT=1
+fi
 
 # build libpcap
 tar -xvzf libpcap-1.9.1.tar.gz
@@ -37,10 +39,12 @@ cmake -DBUILD_SHARED_LIBS=OFF ..
 make install
 cd ../..
 
-#Re-enable code instrumentation
-export CFLAGS="${CFLAGS_SAVE}"
-export CXXFLAGS="${CXXFLAGS_SAVE}"
-unset AFL_NOOPT
+if [[ "$SANITIZER" != "memory" ]]; then
+	#Re-enable code instrumentation
+	export CFLAGS="${CFLAGS_SAVE}"
+	export CXXFLAGS="${CXXFLAGS_SAVE}"
+	unset AFL_NOOPT
+fi
 
 # build project
 cd ndpi
