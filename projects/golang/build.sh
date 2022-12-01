@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-git clone --branch=dev https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
-
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
 cd $SRC/text
@@ -181,14 +179,12 @@ zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
 
 cd $SRC/go/src/image/png
 go mod init pngPackage
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer pngPackage FuzzDecode fuzz_png_decode
 zip $OUT/fuzz_png_decode_seed_corpus.zip ./testdata/*.png
 
 cd $SRC/go/src/image/gif
 go mod init gifPackage
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gifPackage FuzzDecode fuzz_gif_decode
 zip $OUT/fuzz_gif_decode_seed_corpus.zip $SRC/go/src/image/testdata/*.gif
@@ -197,7 +193,6 @@ cd $SRC/go/src/compress/gzip
 go mod init gzipPackage
 go mod tidy
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
@@ -205,7 +200,6 @@ zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/test
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=/src/go-118-fuzz-build
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
 
