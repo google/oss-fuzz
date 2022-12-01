@@ -53,7 +53,7 @@ make install
 cd $SRC/fdk-aac
 autoreconf -fiv
 CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
-      ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
+./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
 make clean
 make -j$(nproc) all
 make install
@@ -81,23 +81,20 @@ make install
 
 cd $SRC/libvpx
 if [[ "$ARCHITECTURE" == i386 ]]; then
-      LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-              --disable-examples --disable-unit-tests \
-              --size-limit=12288x12288 \
-              --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
-              --target=x86-linux-gcc
-      make clean
-      make -j$(nproc) all
-      make install
+      TARGET="--target=x86-linux-gcc"
 else
-      LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-              --disable-examples --disable-unit-tests \
-              --size-limit=12288x12288 \
-              --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824"
-      make clean
-      make -j$(nproc) all
-      make install
+      TARGET=""
 fi
+
+LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
+        --disable-examples --disable-unit-tests \
+        --size-limit=12288x12288 \
+        --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
+        $TARGET
+
+make clean
+make -j$(nproc) all
+make install
 
 cd $SRC/ogg
 ./autogen.sh
@@ -147,65 +144,38 @@ rm $FFMPEG_DEPS_PATH/lib/*.so.*
 # Build ffmpeg.
 cd $SRC/ffmpeg
 if [[ "$ARCHITECTURE" == i386 ]]; then
-      PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
-              --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
-              --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
-              --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
-              --prefix="$FFMPEG_DEPS_PATH" \
-              --pkg-config-flags="--static" \
-              --enable-ossfuzz \
-              --libfuzzer=$LIB_FUZZING_ENGINE \
-              --optflags=-O1 \
-              --enable-gpl \
-              --enable-nonfree \
-              --enable-libass \
-              --enable-libfdk-aac \
-              --enable-libfreetype \
-              --enable-libopus \
-              --enable-libtheora \
-              --enable-libvorbis \
-              --enable-libvpx \
-              --enable-libxml2 \
-              --enable-nonfree \
-              --disable-muxers \
-              --disable-protocols \
-              --disable-demuxer=rtp,rtsp,sdp \
-              --disable-devices \
-              --disable-shared \
-              --arch="i386" \
-              --cpu="i386" \
-              --disable-inline-asm \
-              --disable-asm \
-              --disable-neon \
-              ;
+
+      FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm --disable-neon'
 else
-      PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
-              --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
-              --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
-              --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
-              --prefix="$FFMPEG_DEPS_PATH" \
-              --pkg-config-flags="--static" \
-              --enable-ossfuzz \
-              --libfuzzer=$LIB_FUZZING_ENGINE \
-              --optflags=-O1 \
-              --enable-gpl \
-              --enable-nonfree \
-              --enable-libass \
-              --enable-libfdk-aac \
-              --enable-libfreetype \
-              --enable-libopus \
-              --enable-libtheora \
-              --enable-libvorbis \
-              --enable-libvpx \
-              --enable-libxml2 \
-              --enable-nonfree \
-              --disable-muxers \
-              --disable-protocols \
-              --disable-demuxer=rtp,rtsp,sdp \
-              --disable-devices \
-              --disable-shared \
-              ;
+      FFMPEG_BUILD_ARGS=''
 fi
+
+PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
+        --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
+        --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
+        --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
+        --prefix="$FFMPEG_DEPS_PATH" \
+        --pkg-config-flags="--static" \
+        --enable-ossfuzz \
+        --libfuzzer=$LIB_FUZZING_ENGINE \
+        --optflags=-O1 \
+        --enable-gpl \
+        --enable-nonfree \
+        --enable-libass \
+        --enable-libfdk-aac \
+        --enable-libfreetype \
+        --enable-libopus \
+        --enable-libtheora \
+        --enable-libvorbis \
+        --enable-libvpx \
+        --enable-libxml2 \
+        --enable-nonfree \
+        --disable-muxers \
+        --disable-protocols \
+        --disable-demuxer=rtp,rtsp,sdp \
+        --disable-devices \
+        --disable-shared \
+        $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install
 
@@ -276,74 +246,36 @@ mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
 patchelf --set-rpath '$ORIGIN/lib' $OUT/$fuzzer_name
 
 #Build fuzzers for individual demuxers
-if [[ "$ARCHITECTURE" == i386 ]]; then
-      PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
-              --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
-              --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
-              --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
-              --prefix="$FFMPEG_DEPS_PATH" \
-              --pkg-config-flags="--static" \
-              --enable-ossfuzz \
-              --libfuzzer=$LIB_FUZZING_ENGINE \
-              --optflags=-O1 \
-              --enable-gpl \
-              --enable-libxml2 \
-              --disable-muxers \
-              --disable-protocols \
-              --disable-devices \
-              --disable-shared \
-              --disable-encoders \
-              --disable-filters \
-              --disable-muxers \
-              --disable-parsers \
-              --disable-decoders \
-              --disable-hwaccels \
-              --disable-bsfs \
-              --disable-vaapi \
-              --disable-vdpau \
-              --disable-crystalhd \
-              --disable-v4l2_m2m \
-              --disable-cuda_llvm \
-              --enable-demuxers \
-              --disable-demuxer=rtp,rtsp,sdp \
-              --arch="i386" \
-              --cpu="i386" \
-              --disable-inline-asm \
-              --disable-asm \
-              --disable-neon \
-              ;
-else
-      PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
-              --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
-              --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
-              --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
-              --prefix="$FFMPEG_DEPS_PATH" \
-              --pkg-config-flags="--static" \
-              --enable-ossfuzz \
-              --libfuzzer=$LIB_FUZZING_ENGINE \
-              --optflags=-O1 \
-              --enable-gpl \
-              --enable-libxml2 \
-              --disable-muxers \
-              --disable-protocols \
-              --disable-devices \
-              --disable-shared \
-              --disable-encoders \
-              --disable-filters \
-              --disable-muxers \
-              --disable-parsers \
-              --disable-decoders \
-              --disable-hwaccels \
-              --disable-bsfs \
-              --disable-vaapi \
-              --disable-vdpau \
-              --disable-crystalhd \
-              --disable-v4l2_m2m \
-              --disable-cuda_llvm \
-              --enable-demuxers \
-              --disable-demuxer=rtp,rtsp,sdp \
-              ;
-fi
+PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
+        --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
+        --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
+        --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
+        --prefix="$FFMPEG_DEPS_PATH" \
+        --pkg-config-flags="--static" \
+        --enable-ossfuzz \
+        --libfuzzer=$LIB_FUZZING_ENGINE \
+        --optflags=-O1 \
+        --enable-gpl \
+        --enable-libxml2 \
+        --disable-muxers \
+        --disable-protocols \
+        --disable-devices \
+        --disable-shared \
+        --disable-encoders \
+        --disable-filters \
+        --disable-muxers \
+        --disable-parsers \
+        --disable-decoders \
+        --disable-hwaccels \
+        --disable-bsfs \
+        --disable-vaapi \
+        --disable-vdpau \
+        --disable-crystalhd \
+        --disable-v4l2_m2m \
+        --disable-cuda_llvm \
+        --enable-demuxers \
+        --disable-demuxer=rtp,rtsp,sdp \
+        $FFMPEG_BUILD_ARGS
 
 CONDITIONALS=$(grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
