@@ -15,11 +15,12 @@
 #
 ################################################################################
 
+set -eux
 
 sed -i 's/check_inconsistencies=yes/check_inconsistencies=no/' common/acx_pthread.m4
 
 ./autogen.sh --disable-stack-protector --disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 --disable-dbus --disable-gdbm --disable-libdaemon --disable-python --disable-manpages --disable-mono --disable-monodoc --disable-glib --disable-gobject --disable-libevent
-make -j "$(nproc)"
+make -j "$(nproc)" V=1
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     "$SRC/avahi_packet_consume_record_fuzzer.cc" \
