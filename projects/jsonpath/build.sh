@@ -66,7 +66,7 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
 	
 	echo "#!/bin/sh
-# LLVMFuzzerTestOneInput Magic String required for infra/base-image/test_all.py. DO NOT REMOVE
+# LLVMFuzzerTestOneInput Magic String required for infra/base-images/base-runner/test_all.py. DO NOT REMOVE
 
 this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
