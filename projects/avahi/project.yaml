@@ -3,6 +3,8 @@ language: c++
 primary_contact: trent@lloyd.id.au
 auto_ccs:
   - alex.gaynor@gmail.com
+  - pemensik@redhat.com
+  - evverx@gmail.com
 sanitizers:
   - address
   - memory
