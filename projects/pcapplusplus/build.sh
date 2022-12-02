@@ -20,7 +20,7 @@ TARGETS_DIR=Tests/Fuzzers/Bin
 
 # Build libpcap
 cd $SRC/libpcap/
-./configure
+./configure --enable-shared=no
 make -j$(nproc)
 
 # Build PcapPlusPlus linking statically against the built libpcap
