@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/knative/pkg
+RUN git clone --depth 1 https://github.com/knative/serving
 WORKDIR $SRC/pkg
-COPY build.sh json_fuzzer.go $SRC/
+COPY build.sh json_fuzzer.go fuzz_activatornet.go $SRC/
