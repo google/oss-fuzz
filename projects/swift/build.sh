@@ -17,7 +17,7 @@
 
 
 # build project
-git apply ../../patch.diff
+# git apply ../../patch.diff
 unset CFLAGS
 unset CXXFLAGS
 utils/build-script --skip-build-benchmarks \
