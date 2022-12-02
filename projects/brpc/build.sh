@@ -33,6 +33,7 @@ pushd test/
 cp Fuzz_json $OUT/Fuzz_json
 cp Fuzz_http $OUT/Fuzz_http
 popd
+
 pushd $SRC/oss-fuzz-bloat/brpc/
 cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
