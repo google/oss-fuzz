@@ -43,7 +43,7 @@ func NewFuzzLogger() *zap.SugaredLogger {
 	if err != nil {
 		panic(err)
 	}
-	return logger.Named("argo-events").Sugar()
+	return logger.Named("knative-log").Sugar()
 }
 
 func FuzzNewRevisionThrottler(f *testing.F) {
