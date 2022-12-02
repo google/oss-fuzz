@@ -1,0 +1,14 @@
+homepage: "https://openprinting.github.io/cups/"
+language: c
+primary_contact: "security@msweet.org"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/OpenPrinting/cups'
