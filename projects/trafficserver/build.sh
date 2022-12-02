@@ -21,7 +21,7 @@ make -j$(nproc) --ignore-errors
 pushd fuzzer/
 make
 cp FuzzEsi $OUT/FuzzEsi
-#cp FuzzHTTP $OUT/FuzzHTTP
+cp FuzzHTTP $OUT/FuzzHTTP
 popd
 
 pushd $SRC/oss-fuzz-bloat/trafficserver/
