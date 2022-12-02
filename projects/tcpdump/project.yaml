@@ -6,7 +6,6 @@ language: c
 
 sanitizers:
 - address
-- memory
 - undefined
 
 main_repo: https://github.com/the-tcpdump-group/tcpdump
