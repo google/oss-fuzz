@@ -2,8 +2,11 @@ homepage: "https://www.tcpdump.org"
 primary_contact: "security@tcpdump.org"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
+language: c
 
 sanitizers:
 - address
 - memory
 - undefined
+
+main_repo: https://github.com/the-tcpdump-group/tcpdump
