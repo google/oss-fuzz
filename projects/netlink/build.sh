@@ -16,6 +16,7 @@
 ################################################################################
 
 cp $SRC/route_linux_fuzzer.go $SRC/netlink
+cp $SRC/fuzz_test.go $SRC/netlink/
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 go get golang.org/x/sys
@@ -29,3 +30,4 @@ else
 fi
 
 compile_native_go_fuzzer github.com/vishvananda/netlink FuzzParseRawData FuzzParseRawData
+compile_native_go_fuzzer github.com/vishvananda/netlink FuzzLinkByName FuzzLinkByName

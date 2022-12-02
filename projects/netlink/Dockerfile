@@ -17,4 +17,4 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/vishvananda/netlink
 WORKDIR $SRC/netlink
-COPY build.sh route_linux_fuzzer.go $SRC/
+COPY build.sh fuzz_test.go route_linux_fuzzer.go $SRC/
