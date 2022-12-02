@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "wabt/src/binary-reader-objdump.h"
-#include "wabt/src/binary-reader.h"
+#include "wabt/binary-reader-objdump.h"
+#include "wabt/binary-reader.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   wabt::ObjdumpOptions objdump_options{};

@@ -17,8 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y btrfs-progs libc-dev pkg-config libseccomp-dev gcc wget libbtrfs-dev
 RUN git clone --depth 1 https://github.com/containerd/containerd
-RUN git clone https://github.com/AdamKorcz/instrumentation \
-    && cd $SRC/instrumentation \
-    && git checkout cca41747087a403a1dfcbdf064e52d3e073d174f
+RUN git clone --depth=1 --branch=dev https://github.com/AdamKorcz/instrumentation
 COPY build.sh $SRC/
 WORKDIR $SRC/containerd

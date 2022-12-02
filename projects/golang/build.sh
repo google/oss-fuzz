@@ -179,15 +179,13 @@ zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
 
 cd $SRC/go/src/image/png
 go mod init pngPackage
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer pngPackage FuzzDecode fuzz_png_decode
 zip $OUT/fuzz_png_decode_seed_corpus.zip ./testdata/*.png
 
 cd $SRC/go/src/image/gif
 go mod init gifPackage
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gifPackage FuzzDecode fuzz_gif_decode
 zip $OUT/fuzz_gif_decode_seed_corpus.zip $SRC/go/src/image/testdata/*.gif
 
@@ -195,17 +193,18 @@ cd $SRC/go/src/compress/gzip
 go mod init gzipPackage
 go mod tidy
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
+
+# golangs build from source currently breaks.
+exit 0
 
 # Install latest Go from master branch and build fuzzers again
 cd $SRC

@@ -17,10 +17,10 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "wabt/src/binary-reader-ir.h"
-#include "wabt/src/binary-reader.h"
-#include "wabt/src/ir.h"
-#include "wabt/src/option-parser.h"
+#include "wabt/binary-reader-ir.h"
+#include "wabt/binary-reader.h"
+#include "wabt/ir.h"
+#include "wabt/option-parser.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   wabt::Errors errors;
@@ -29,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider data_provider(data, size);
 #define WABT_FEATURE(variable, flag, default_, help) \
   if (data_provider.ConsumeBool()) { features.enable_##variable(); }
-#include "wabt/src/feature.def"
+#include "wabt/feature.def"
 #undef WABT_FEATURE
   // Add only feature related options, but no logging, stop_on_first_error, etc.
   wabt::ReadBinaryOptions options(features, nullptr, false, false, false);

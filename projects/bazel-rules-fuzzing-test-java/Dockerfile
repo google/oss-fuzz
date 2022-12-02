@@ -16,6 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+RUN apt-get update && \
+    apt-get install -y python-is-python3
+
 RUN git clone https://github.com/bazelbuild/rules_fuzzing.git
 WORKDIR $SRC/rules_fuzzing/
 COPY build.sh $SRC/
