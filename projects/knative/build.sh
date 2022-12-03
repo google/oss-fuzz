@@ -15,9 +15,18 @@
 #
 ################################################################################
 
+printf "package metrics\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/pkg/metrics/registerfuzzdep.go
+go mod tidy && go mod vendor
 cp $SRC/json_fuzzer.go $SRC/pkg/webhook/json/
 mv $SRC/pkg/webhook/json/decode_test.go $SRC/pkg/webhook/json/decode_test_fuzz.go
 compile_go_fuzzer knative.dev/pkg/webhook/json FuzzJsonDecode fuzz_json_decode
+
+cp $SRC/fuzz_pkg_metrics.go $SRC/pkg/metrics/
+compile_native_go_fuzzer knative.dev/pkg/metrics FuzzNewObservabilityConfigFromConfigMap FuzzNewObservabilityConfigFromConfigMap
+
+cp $SRC/fuzz_pkg_websocket.go $SRC/pkg/websocket/
+mv $SRC/pkg/websocket/connection_test.go $SRC/pkg/websocket/connection_fuzz.go
+compile_native_go_fuzzer knative.dev/pkg/websocket FuzzSendRawMessage FuzzSendRawMessage
 
 cp $SRC/fuzz_activatornet.go $SRC/serving/pkg/activator/net/
 cd $SRC/serving
