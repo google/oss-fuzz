@@ -33,7 +33,6 @@ RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildi
     -O /usr/local/bin/buildifier && chmod a+x /usr/local/bin/buildifier
 
 RUN git clone https://github.com/google-research/raksha raksha
-RUN git clone --depth=1 https://github.com/google/fuzztest/
 
 COPY build.sh $SRC/
 COPY *.diff $SRC/
