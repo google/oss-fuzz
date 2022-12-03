@@ -23,4 +23,4 @@ unset CXXFLAGS
 utils/build-script --skip-build-benchmarks \
   --skip-ios --skip-watchos --skip-tvos --swift-darwin-supported-archs "x86_64" \
   --release-debuginfo --enable-sanitize-coverage --enable-asan
-cp ../build/Ninja-RelWithDebInfoAssert/swift-linux-x86_64/bin/*fuzzer $OUT/
+find ../build/ -name "*fuzzer" | while read i; do cp $i $OUT/; done
