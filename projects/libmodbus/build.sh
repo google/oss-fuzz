@@ -15,11 +15,14 @@
 #
 ################################################################################
 
-cd fuzz
-make all
+git checkout oss-fuzz
 
+./configure --disable-shared CC=clang --with-sanitizer="$CFLAGS" --with-fuzzer-engine="$LIB_FUZZING_ENGINE"
+make -j$(nproc)
+
+cd fuzzers
 cp FuzzClient $OUT/FuzzClient
 cp FuzzServer $OUT/FuzzServer
-cp input.zip $OUT/FuzzClient_seed_corpus.zip
-cp input.zip $OUT/FuzzServer_seed_corpus.zip
 
+cp FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
+cp FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip

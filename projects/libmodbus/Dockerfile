@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-bin
-RUN git clone https://github.com/stephane/libmodbus/
+RUN git clone https://github.com/0x34d/libmodbus/
 COPY build.sh $SRC/
-COPY fuzz/ $SRC/libmodbus/fuzz/
 WORKDIR $SRC/libmodbus/
