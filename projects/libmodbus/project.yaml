@@ -12,5 +12,6 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+  - memory
 main_repo: 'https://github.com/stephane/libmodbus'
 

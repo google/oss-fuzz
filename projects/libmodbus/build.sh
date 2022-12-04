@@ -17,6 +17,7 @@
 
 git checkout oss-fuzz
 
+./autogen.sh
 ./configure --disable-shared CC=clang --with-sanitizer="$CFLAGS" --with-fuzzer-engine="$LIB_FUZZING_ENGINE"
 make -j$(nproc)
 
