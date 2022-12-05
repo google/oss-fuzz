@@ -1,6 +1,7 @@
 homepage: "https://netty.io/"
 language: jvm
 main_repo: "https://github.com/netty/netty.git"
+primary_contact: "mr.chrisvest@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
