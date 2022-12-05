@@ -20,7 +20,6 @@ RUN git clone --depth 1 https://github.com/moby/moby
 RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
 COPY build.sh $SRC/
 COPY *_fuzzer.go $SRC/
-COPY *_fuzzers.go $SRC/
 
 COPY *.options $SRC/
 
