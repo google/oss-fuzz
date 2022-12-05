@@ -48,7 +48,8 @@ fi
 
 # build project
 cd ndpi
-sh autogen.sh
-./configure --enable-fuzztargets
+# Set LDFLAGS variable and `--with-only-libndpi` option as workaround for the
+# "missing dependencies errors" in the introspector build. See #8939
+LDFLAGS="-lpcap" ./autogen.sh --enable-debug-messages --enable-fuzztargets --with-only-libndpi
 make
-ls fuzz/fuzz* | grep -v "\." | grep -v "with_main" | while read i; do cp $i $OUT/; done
+ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
