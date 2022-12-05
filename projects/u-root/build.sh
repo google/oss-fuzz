@@ -98,10 +98,9 @@ cd $SRC/u-root/pkg/boot/netboot/ipxe
 go mod init ipxe
 printf "package ipxe\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdep.go
 
-# uncomment after merging https://github.com/u-root/u-root/pull/2571
-#sed 's/log\: ulogtest\.Logger/\/\/log\: ulogtest\.Logger/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/fuzz_test.go
-#sed 's/c\.log\.Printf/\/\/c\.log\.Printf/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/ipxe.go
-#sed 's/"github\.com\/u-root\/u-root\/pkg\/ulog\/ulogtest/\/\/"github.com\/u-root\/u-root\/pkg\/ulog\/ulogtest/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/fuzz_test.go
+sed 's/log\: ulogtest\.Logger/\/\/log\: ulogtest\.Logger/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/fuzz_test.go
+sed 's/c\.log\.Printf/\/\/c\.log\.Printf/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/ipxe.go
+sed 's/"github\.com\/u-root\/u-root\/pkg\/ulog\/ulogtest/\/\/"github.com\/u-root\/u-root\/pkg\/ulog\/ulogtest/g' -i $SRC/u-root/pkg/boot/netboot/ipxe/fuzz_test.go
 
 go mod tidy
 
@@ -109,8 +108,7 @@ cp $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/*.dict $SRC/u-root/pkg/boot/n
 
 ## FuzzParseIpxeConfig
 find $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_ipxe_parse_config_seed_corpus.zip {} +
-# uncomment after merging https://github.com/u-root/u-root/pull/2571
-#compile_native_go_fuzzer $SRC/u-root/pkg/boot/netboot/ipxe FuzzParseIpxeConfig fuzz_ipxe_parse_config
+compile_native_go_fuzzer $SRC/u-root/pkg/boot/netboot/ipxe FuzzParseIpxeConfig fuzz_ipxe_parse_config
 
 # smbios pkg
 cd $SRC/u-root/pkg/smbios
@@ -122,3 +120,14 @@ cp $SRC/u-root/pkg/smbios/testdata/fuzz/*.dict $SRC/u-root/pkg/smbios/testdata/f
 ## FuzzParseInfo
 find $SRC/u-root/pkg/smbios/testdata -name "*.bin" -exec zip $OUT/fuzz_smbios_parse_info_seed_corpus.zip {} +
 compile_native_go_fuzzer $SRC/u-root/pkg/smbios FuzzParseInfo fuzz_smbios_parse_info
+
+# ip cmd
+cd $SRC/u-root/cmds/core/ip
+go mod init ip
+printf "package main\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdep.go
+go mod tidy
+cp $SRC/u-root/cmds/core/ip/testdata/fuzz/*.dict $SRC/u-root/cmds/core/ip/testdata/fuzz/*.options $OUT
+
+## FuzzIPCmd
+find $SRC/u-root/cmds/core/ip/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_ip_cmd_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/cmds/core/ip FuzzIPCmd fuzz_ip_cmd
