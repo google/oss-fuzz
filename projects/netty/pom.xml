@@ -11,7 +11,7 @@
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>4.0.0-SNAPSHOT</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>4.1.42.Final</fuzzedLibaryVersion>
 		<exec.mainClass>ServerCookieDecoderFuzzer</exec.mainClass>
 	</properties>
 
