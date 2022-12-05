@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/usr/bin/python3
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config
-RUN git clone --depth 1 https://github.com/libevent/libevent.git libevent
-WORKDIR libevent
-COPY build.sh *.cc *.c $SRC/
+import io
+import sys
+import json
+import ijson
+import atheris
+
+import pysecsan
+pysecsan.add_hooks()
+
+
+def TestOneInput(data):
+  try:
+    parse_items = ijson.parse(io.BytesIO(data))
+    for obj in ijson.items(parse_items, 'item'):
+      pass
+  except (
+    ijson.common.JSONError,
+    json.JSONDecodeError
+  ):
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()
