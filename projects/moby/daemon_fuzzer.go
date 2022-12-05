@@ -15,16 +15,24 @@
 package daemon
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
 	"github.com/moby/sys/mount"
+	"github.com/sirupsen/logrus"
 
+	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/container"
 	"github.com/docker/docker/daemon/config"
+	"github.com/docker/docker/daemon/images"
 
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
+
+func init() {
+	logrus.SetLevel(logrus.ErrorLevel)
+}
 
 func FuzzDaemonSimple(data []byte) int {
 	if os.Getuid() != 0 {
@@ -36,6 +44,14 @@ func FuzzDaemonSimple(data []byte) int {
 	f.GenerateStruct(c)
 	if c.ID == "" {
 		return 0
+	}
+
+	options := imagetypes.GetImageOpts{}
+	f.GenerateStruct(&options)
+
+	refOrID, err := f.GetString()
+	if err != nil || refOrID == "" {
+		return -1
 	}
 
 	getContainer, err := f.GetString()
@@ -68,7 +84,10 @@ func FuzzDaemonSimple(data []byte) int {
 		return 0
 	}
 
-	d := &Daemon{configStore: cfg, root: cfg.Root}
+	d := &Daemon{configStore: cfg,
+		root:         cfg.Root,
+		imageService: images.NewImageService(images.ImageServiceConfig{}),
+	}
 
 	store := container.NewMemoryStore()
 	store.Add(c.ID, c)
@@ -81,6 +100,7 @@ func FuzzDaemonSimple(data []byte) int {
 	d.containers = store
 	d.containersReplica = containersReplica
 
+	_, _ = d.imageService.GetImage(context.Background(), refOrID, options)
 	_, _ = d.GetContainer(getContainer)
 	return 1
 }
