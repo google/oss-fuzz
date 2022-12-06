@@ -28,7 +28,7 @@
 
 #include "inspect_utils.h"
 
-// Arbitrary domain name resolution
+// Arbitrary domain name resolution.
 const std::string kArbitraryDomainNameResolution = "Arbitrary domain name resolution";
 
 // Global constant for one file descriptor about of a DNS socket
