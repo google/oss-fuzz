@@ -150,7 +150,7 @@ void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data, pid_t pid) {
   if (h.questions != 1) {
     return;
   }
-  if (h.answers != 0 || h.nameservers != 0 || h.additional != 0) {
+  if (h.answers != 0 || h.nameservers != 0 || h.additional > 1) {
     return;
   }
   if (!dns_flags_standard_query(h.flags)) {
