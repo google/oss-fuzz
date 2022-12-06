@@ -87,49 +87,20 @@ std::map<pid_t, ThreadParent> root_pids;
 // Assuming the longest pathname is "/bin/bash".
 constexpr int kShellPathnameLength = 20;
 
-// Syntax error messages of each shell.
-const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
-    {"bash",
-     {
-         ": command not found",  // General
-         ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
-         ": missing `]'",        // Unfinished [
-         ": event not found",    // ! leads large numbers
-         ": No such file or directory",  // Leading < or /
-     }},
-    {"csh",
-     {
-         ": Command not found.",         // General
-         ": Missing }.",                 // Unfinished {
-         "Too many ('s.",                // Unfinished (
-         "Invalid null command.",        // Leading | or < or >
-         "Missing name for redirect.",   // Single < or >
-         ": No match.",                  // Leading ? or [ or *
-         "Modifier failed.",             // Leading ^
-         "No previous left hand side.",  // A ^
-         ": No such job.",               // Leading %
-         ": No current job.",            // A %
-         ": Undefined variable.",        // Containing $
-         ": Event not found.",           // ! leads large numbers
-         // TODO: Make this more specific.
-         "Unmatched",  // Unfinished " or ' or `, leading ;
-     }},
-    {"dash",
-     {
-         "not found",     // General
-         "Syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &
-         "missing ]",     // Unfinished [
-         "No such file",  // Leading <
-     }},
-    {"zsh",
-     {
-         ": command not found",                // General
-         ": syntax error",                     // Unfinished " or ' or `
-         ": ']' expected",                     // Unfinished [
-         ": no such file or directory",        // Leading < or /
-         ": parse error near",                 // Leading |, or &
-         ": no such user or named directory",  // Leading ~
-     }},
+std::set<std::string> kShellSyntaxErrors = {
+  // bash
+  ": syntax error",       // Unfinished " or ' or ` or if, leading | or ;
+  ": missing `]'",        // Unfinished [
+  ": event not found",    // ! leads large numbers
+  ": No such file or directory",  // Leading < or /
+  // dash
+  ": not found",     // General. Also matches bash's !!!
+  // Also matches bash's.
+  "syntax error",  // Unfinished " or ' or ` or if, leading | or ; or &.
+  "missing ]",     // Unfinished [
+  "No such file",  // Leading <
+  ": not found",
+  ": Syntax error: EOF in backquote substitution",
 };
 
 // Shells used by Processes.
@@ -189,84 +160,21 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 
 std::string match_shell(std::string binary_pathname);
 
-// Identify the exact shell behind sh
-std::string identify_sh(std::string binary_name) {
-  // char shell_pathname[kShellPathnameLength];
-  const char* shell_pathname = getenv("SHELL");
-  // if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
-  //     -1) {
-  //   std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
-  //   std::cerr << "Assuming the shell is dash\n";
-  //   return "dash";
-  // }
-  if (shell_pathname == NULL) {
-    return "dash";
-  }
-  printf("shell_pathname_str: %s\n", shell_pathname);
-  fflush(0);
-  debug_log("sh links to %s\n", shell_pathname);
-  std::string shell_pathname_str(shell_pathname);
-
-  return match_shell(shell_pathname_str);
-}
-
-std::string match_shell(std::string binary_pathname) {
-  // Identify the name of the shell used in the pathname.
-  if (!binary_pathname.length()) {
-    return "";
-  }
-  for (const auto &item : kShellSyntaxErrors) {
-    std::string known_shell = item.first;
-    std::string binary_name = binary_pathname.substr(
-        binary_pathname.find_last_of("/") + 1, known_shell.length());
-    debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
-              binary_name.length());
-    if (!binary_name.compare(0, 2, "sh")) {
-      debug_log("Matched sh: Needs to identify which specific shell it is.\n");
-      return identify_sh(binary_pathname);
-    }
-    if (binary_name == known_shell) {
-      debug_log("Matched %s\n", binary_name.c_str());
-      return known_shell;
-    }
-  }
-  return "";
-}
-
-std::string get_shell(pid_t pid, const user_regs_struct &regs) {
-  // Get shell name used in a process.
-  std::string binary_pathname = get_pathname(pid, regs);
-  return match_shell(binary_pathname);
-}
 
 void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
-  // printf("H\n");
-  fflush(0);
-  auto error_patterns = kShellSyntaxErrors.at("dash");
-  for (const auto &pattern : error_patterns) {
+  for (const auto &pattern : kShellSyntaxErrors) {
     auto position = buffer.find(pattern);
 
     // Check that we are ending with the syntax error.
     if (position != std::string::npos) {
       auto pattern_end = position + pattern.length();
-      printf("Pattern : %s %lu %lu\n", pattern.c_str());
-      printf("Found at: %lu %lu %lu end %lu %lu\n", position, buffer.length(), buffer.end(), pattern_end, buffer.length());
-      fflush(0);
-      std::cerr << "ALL " << buffer << std::endl;
       if (pattern_end != buffer.length()) {
         printf("continue\n");
         continue;
       }
       printf("not continue\n");
-      // exit(1);
-
-
-      std::string x = "chacha";
-      printf("Found2 at: %lu %lu\n", x.find(pattern), std::string::npos);
-
-
       std::cerr << "--- Found a sign of shell corruption ---\n"
-                << buffer.c_str()
+                << buffer
                 << "\n----------------------------------------\n";
       // If a shell corruption error happens, kill its parent.
       auto parent = root_pids[pid];
@@ -434,7 +342,7 @@ int trace(std::map<pid_t, Tracee> pids) {
             parent.ran_exec = true;
             root_pids[pid] = parent;
             inspect_for_injection(pid, regs);
-            std::string shell = get_shell(pid, regs);
+            std::string shell = "bash";
             if (shell != "") {
               debug_log("Shell parsed: %s", shell.c_str());
               printf("SHELL PID: %ul\n", pid);
