@@ -93,6 +93,7 @@ std::set<std::string> kShellSyntaxErrors = {
   ": missing `]'",        // Unfinished [
   ": event not found",    // ! leads large numbers
   ": No such file or directory",  // Leading < or /
+  ": command not found",     // General. Also matches bash's !!!
   // dash
   ": not found",     // General. Also matches bash's !!!
   // Also matches bash's.
@@ -167,8 +168,10 @@ void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
 
     // Check that we are ending with the syntax error.
     if (position != std::string::npos) {
+      std::cerr << "pattern: " << pattern << " buffer: " << buffer << std::endl;
       auto pattern_end = position + pattern.length();
-      if (pattern_end != buffer.length()) {
+      if (pattern_end != buffer.length() && ((pattern_end != buffer.length() - 1) && buffer.back() != '\n') ) {
+        std::cerr << "pattern_end: " << pattern_end << " buffer.length(): " << buffer.length() << std::endl;
         printf("continue\n");
         continue;
       }
