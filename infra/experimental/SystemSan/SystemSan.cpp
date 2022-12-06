@@ -460,7 +460,8 @@ int trace(std::map<pid_t, Tracee> pids) {
           }
 
           if (regs.orig_rax == __NR_openat) {
-            inspect_for_arbitrary_file_open(pid, regs);
+            // TODO(metzman): Re-enable this once we have config/flag support.
+            // inspect_for_arbitrary_file_open(pid, regs);
           }
 
           if (regs.orig_rax == __NR_write &&
