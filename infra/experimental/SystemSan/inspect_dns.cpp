@@ -20,9 +20,9 @@
 #include <unistd.h>
 
 /* Linux */
-#include <sys/ptrace.h>
-#include <syscall.h>
 #include <arpa/inet.h>
+#include <syscall.h>
+#include <sys/ptrace.h>
 
 #include <iostream>
 
