@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-/* A sample target program under test,
- * /tmp/tripwire or other commands will be injected into its shell command */
 
 #include <stdlib.h>
 #include <stdio.h>
