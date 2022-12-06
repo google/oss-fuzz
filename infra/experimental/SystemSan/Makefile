@@ -1,6 +1,6 @@
 .POSIX:
 CXX     = clang++
-CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3
+CFLAGS = -std=c++17 -Wall -Wextra -O0 -g3
 
 all: clean SystemSan target target_file target_dns
 

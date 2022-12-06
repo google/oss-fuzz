@@ -32,6 +32,7 @@
 #include <syscall.h>
 #include <fcntl.h>
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -190,13 +191,19 @@ std::string match_shell(std::string binary_pathname);
 
 // Identify the exact shell behind sh
 std::string identify_sh(std::string binary_name) {
-  char shell_pathname[kShellPathnameLength];
-  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
-      -1) {
-    std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
-    std::cerr << "Assuming the shell is dash\n";
+  // char shell_pathname[kShellPathnameLength];
+  const char* shell_pathname = getenv("SHELL");
+  // if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
+  //     -1) {
+  //   std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
+  //   std::cerr << "Assuming the shell is dash\n";
+  //   return "dash";
+  // }
+  if (shell_pathname == NULL) {
     return "dash";
   }
+  printf("shell_pathname_str: %s\n", shell_pathname);
+  fflush(0);
   debug_log("sh links to %s\n", shell_pathname);
   std::string shell_pathname_str(shell_pathname);
 
@@ -233,11 +240,31 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 }
 
 void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
-  auto error_patterns = kShellSyntaxErrors.at(shell);
+  // printf("H\n");
+  fflush(0);
+  auto error_patterns = kShellSyntaxErrors.at("dash");
   for (const auto &pattern : error_patterns) {
-    debug_log("Pattern : %s\n", pattern.c_str());
-    debug_log("Found at: %lu\n", buffer.find(pattern));
-    if (buffer.find(pattern) != std::string::npos) {
+    auto position = buffer.find(pattern);
+
+    // Check that we are ending with the syntax error.
+    if (position != std::string::npos) {
+      auto pattern_end = position + pattern.length();
+      printf("Pattern : %s %lu %lu\n", pattern.c_str());
+      printf("Found at: %lu %lu %lu end %lu %lu\n", position, buffer.length(), buffer.end(), pattern_end, buffer.length());
+      fflush(0);
+      std::cerr << "ALL " << buffer << std::endl;
+      if (pattern_end != buffer.length()) {
+        printf("continue\n");
+        continue;
+      }
+      printf("not continue\n");
+      // exit(1);
+
+
+      std::string x = "chacha";
+      printf("Found2 at: %lu %lu\n", x.find(pattern), std::string::npos);
+
+
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
                 << "\n----------------------------------------\n";
@@ -258,7 +285,7 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
   std::string buffer = read_string(pid, regs.rsi, regs.rdx);
   debug_log("Write buffer: %s\n", buffer.c_str());
-  match_error_pattern(buffer, g_shell_pids[pid], pid);
+  match_error_pattern(buffer, "dash", pid);
 }
 
 void log_file_open(std::string path, int flags, pid_t pid) {
@@ -342,10 +369,10 @@ int trace(std::map<pid_t, Tracee> pids) {
 
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         debug_log("%d exited", pid);
-        it = pids.erase(it);
+        // it = pids.erase(it);
         // Remove pid from the watchlist when it exits
-        g_shell_pids.erase(pid);
-        root_pids.erase(pid);
+        // g_shell_pids.erase(pid);
+        // root_pids.erase(pid);
         continue;
       }
 
@@ -410,6 +437,7 @@ int trace(std::map<pid_t, Tracee> pids) {
             std::string shell = get_shell(pid, regs);
             if (shell != "") {
               debug_log("Shell parsed: %s", shell.c_str());
+              printf("SHELL PID: %ul\n", pid);
               g_shell_pids.insert(std::make_pair(pid, shell));
             }
           }
@@ -421,8 +449,9 @@ int trace(std::map<pid_t, Tracee> pids) {
             // inspect_for_arbitrary_file_open(pid, regs);
           }
 
-          if (regs.orig_rax == __NR_write &&
-              g_shell_pids.find(pid) != g_shell_pids.end()) {
+          if (regs.orig_rax == __NR_write//  &&
+              // g_shell_pids.find(pid) != g_shell_pids.end()
+              ) {
             debug_log("Inspecting the `write` buffer of shell process %d.",
                       pid);
             inspect_for_corruption(pid, regs);
@@ -463,6 +492,7 @@ int main(int argc, char **argv) {
   std::ofstream tripwire(kTripWire);
   tripwire.close();
   chmod(kTripWire.c_str(), 0755);
+  setenv("SHELL", "dash", 1);
 
   pid_t pid = run_child(argv + 1);
 
