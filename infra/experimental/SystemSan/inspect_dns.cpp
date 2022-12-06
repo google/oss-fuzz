@@ -28,13 +28,13 @@
 
 #include "inspect_utils.h"
 
+
 // Arbitrary domain name resolution.
 const std::string kArbitraryDomainNameResolution = "Arbitrary domain name resolution";
 
 // Global constant for one file descriptor about of a DNS socket
 int kFdDns = 0;
-
-#define DNS_HEADER_LEN 12
+#define kDnsHeaderLen 12
 
 
 void inspect_for_arbitrary_dns_connect(pid_t pid, const user_regs_struct &regs) {
