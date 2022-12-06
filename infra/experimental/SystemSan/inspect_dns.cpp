@@ -143,7 +143,7 @@ void log_dns_request(struct DnsRequest r, std::vector<std::byte> data) {
 }
 
 void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data, pid_t pid) {
-  if (data.size() < DNS_HEADER_LEN + 1) {
+  if (data.size() < kDnsHeaderLen + 1) {
     return;
   }
   struct DnsHeader h = parse_dns_header(data);
@@ -157,7 +157,7 @@ void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data, pid_t pid) {
     return;
   }
 
-  struct DnsRequest req = parse_dns_request(data, DNS_HEADER_LEN);
+  struct DnsRequest req = parse_dns_request(data, kDnsHeaderLen);
   // Alert if the top level domain is only one character and
   // if there is more than just the TLD.
   if (req.tld_size == 1 && req.nb_levels > 1 && req.end < data.size()) {
