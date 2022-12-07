@@ -20,13 +20,16 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN git clone --depth 1 --recursive https://github.com/protocolbuffers/protobuf.git
 
-COPY WORKSPACE .bazelrc BUILD $SRC/
+COPY WORKSPACE .bazelrc BUILD BUILD2 $SRC/
 RUN cat WORKSPACE >> $SRC/protobuf/WORKSPACE
 RUN cat .bazelrc >> $SRC/protobuf/.bazelrc
 RUN cat BUILD >> $SRC/protobuf/src/google/protobuf/BUILD.bazel
+RUN cat BUILD2 >> $SRC/protobuf/src/google/protobuf/compiler/BUILD.bazel
 
 RUN mkdir $SRC/protobuf/src/google/protobuf/fuzz
+RUN mkdir $SRC/protobuf/src/google/protobuf/compiler/fuzz
 COPY fuzz*.cc $SRC/protobuf/src/google/protobuf/fuzz/
+COPY fuzz_compiler*.cc $SRC/protobuf/src/google/protobuf/compiler/fuzz/
 
 WORKDIR $SRC/protobuf
 COPY build.sh $SRC/

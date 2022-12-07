@@ -14,23 +14,13 @@
 #
 ################################################################################
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
-http_archive(
-    name = "rules_fuzzing",
-    sha256 = "d9002dd3cd6437017f08593124fdd1b13b3473c7b929ceb0e60d317cb9346118",
-    strip_prefix = "rules_fuzzing-0.3.2",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.zip"],
+
+cc_fuzz_test(
+    name = "fuzz_compiler_parser",
+    deps = [
+        "//:protobuf",
+    ],
+    srcs = ["fuzz/fuzz_compiler_parser.cc"],
 )
-
-load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
-
-rules_fuzzing_dependencies()
-
-pip_parse(
-    name = "fuzzing_py_deps",
-    requirements = "@rules_fuzzing//fuzzing:requirements.txt",
-    )
-
-load("@fuzzing_py_deps//:requirements.bzl", "install_deps")
-install_deps()
