@@ -30,7 +30,16 @@ def TestOneInput(data):
     pass
 
   # Target regex.sub
-  regex.sub('a', fdp.ConsumeUnicodeNoSurrogates(sys.maxsize), 'v')
+  try:
+    s1 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    s2 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    s3 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    regex.sub(s1, s2, s3)
+  except regex._regex_core.error:
+    pass
+  except ValueError:
+    # Compile throws several ValueErrors
+    pass
 
 
 def main():
