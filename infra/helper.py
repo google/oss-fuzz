@@ -71,7 +71,9 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
-OSS_FUZZ_PUBLIC_CORPUS = "https://storage.googleapis.com/%s-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/%s/public.zip"
+COV_BASE_URL = 'https://storage.googleapis.com/'
+COV_BACKUP_URL = '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
+
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -862,9 +864,6 @@ def _get_latest_public_corpus(args, fuzzer):
 
   target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
 
-  # Same as https://github.com/google/oss-fuzz/blob/7797279c274d10197d62841dc43834238fd483a1/infra/cifuzz/clusterfuzz_deployment.py#L295-L298
-  COV_BASE_URL = 'https://storage.googleapis.com/'
-  COV_BACKUP_URL = '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
   project_qualified_fuzz_target_name = fuzzer
   qualified_name_prefix = args.project.name + '_'
   if not fuzzer.startswith(qualified_name_prefix):
@@ -875,9 +874,11 @@ def _get_latest_public_corpus(args, fuzzer):
   logging.info(f'Downloading corpus from {download_url}')
 
   cmd = ['wget', download_url, '-O', target_zip]
-  if subprocess.run(cmd).returncode != 0:
-    subprocess.run(f"rm -f {target_zip}")
-    return False
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(cmd, stdout=stdout)
+  except OSError:
+    logging.error('Failed to download corpus')
 
   target_fuzzer_dir = os.path.join(target_corpus_dir, fuzzer)
   if not os.path.isdir(target_fuzzer_dir):
@@ -890,6 +891,9 @@ def _get_latest_public_corpus(args, fuzzer):
                             stdout=stdout)
   except:
     logging.error('Failed to unzip corpus')
+
+  # Remove the downloaded zip
+  os.remove(target_zip)
   return True
 
 
