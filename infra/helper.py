@@ -74,7 +74,6 @@ ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 COV_BASE_URL = 'https://storage.googleapis.com/'
 COV_BACKUP_URL = '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
 
-
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
 
