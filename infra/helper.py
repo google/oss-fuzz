@@ -862,13 +862,17 @@ def _get_latest_public_corpus(args, fuzzer):
 
   target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
 
-  # There is a special case where the names of projects aren't added to links to public
-  # corpora if the names of fuzz targets already start with their project's name + "_":
-  # https://github.com/google/oss-fuzz/blob/7797279c274d10197d62841dc43834238fd483a1/infra/cifuzz/clusterfuzz_deployment.py#L295-L298
-  if fuzzer.startswith(f"{args.project.name}_"):
-    download_url = OSS_FUZZ_PUBLIC_CORPUS % (args.project.name, fuzzer)
-  else:
-    download_url = OSS_FUZZ_PUBLIC_CORPUS % (args.project.name, f"{args.project.name}_{fuzzer}")
+  # Same as https://github.com/google/oss-fuzz/blob/7797279c274d10197d62841dc43834238fd483a1/infra/cifuzz/clusterfuzz_deployment.py#L295-L298
+  COV_BASE_URL='https://storage.googleapis.com/'
+  COV_BACKUP_URL='-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
+  project_qualified_fuzz_target_name = fuzzer
+  qualified_name_prefix = args.project.name + '_'
+  if not fuzzer.startswith(qualified_name_prefix):
+    project_qualified_fuzz_target_name = qualified_name_prefix + fuzzer
+
+  download_url = (f'{COV_BASE_URL}{args.project.name}{COV_BACKUP_URL}'
+                f'{project_qualified_fuzz_target_name}/public.zip')
+  logging.info(f'Downloading corpus from {download_url}')
 
   cmd = ['wget', download_url, '-O', target_zip]
   if subprocess.run(cmd).returncode != 0:
@@ -880,7 +884,12 @@ def _get_latest_public_corpus(args, fuzzer):
     os.mkdir(target_fuzzer_dir)
 
   target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
-  subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir])
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir],
+                            stdout=stdout)
+  except:
+    logging.error('Failed to unzip corpus')
   return True
 
 
