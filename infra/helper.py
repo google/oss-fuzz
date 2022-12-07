@@ -871,7 +871,7 @@ def _get_latest_public_corpus(args, fuzzer):
 
   download_url = (f'{COV_BASE_URL}{args.project.name}{COV_BACKUP_URL}'
                   f'{project_qualified_fuzz_target_name}/public.zip')
-  logging.info(f'Downloading corpus from {download_url}')
+  logging.info('Downloading corpus from %s' % download_url)
 
   cmd = ['wget', download_url, '-O', target_zip]
   try:
@@ -889,7 +889,7 @@ def _get_latest_public_corpus(args, fuzzer):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir],
                             stdout=stdout)
-  except:
+  except OSError:
     logging.error('Failed to unzip corpus')
 
   # Remove the downloaded zip
