@@ -26,9 +26,13 @@ LIBDNS_CFLAGS="-Ilib/dns/include"
 LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -lssl -lcrypto -luv -lnghttp2 -Wl,-Bdynamic"
 LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
 
+# dns_name_fromwire needs old.c/old.h code to be linked in
+sed -i 's/#include "old.h"/#include "old.c"/' fuzz/dns_name_fromwire.c
+
 for fuzzer in fuzz/*.c; do
     output=$(basename "${fuzzer%.c}")
     [ "$output" = "main" ] && continue
+    [ "$output" = "old" ] && continue
     # We need to try little bit harder to link everything statically
     (cd fuzz && make -j"$(nproc)" "${output}.o" V=1)
     ${CXX} ${CXXFLAGS} \
