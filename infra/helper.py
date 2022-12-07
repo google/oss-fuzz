@@ -863,15 +863,15 @@ def _get_latest_public_corpus(args, fuzzer):
   target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
 
   # Same as https://github.com/google/oss-fuzz/blob/7797279c274d10197d62841dc43834238fd483a1/infra/cifuzz/clusterfuzz_deployment.py#L295-L298
-  COV_BASE_URL='https://storage.googleapis.com/'
-  COV_BACKUP_URL='-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
+  COV_BASE_URL = 'https://storage.googleapis.com/'
+  COV_BACKUP_URL = '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
   project_qualified_fuzz_target_name = fuzzer
   qualified_name_prefix = args.project.name + '_'
   if not fuzzer.startswith(qualified_name_prefix):
     project_qualified_fuzz_target_name = qualified_name_prefix + fuzzer
 
   download_url = (f'{COV_BASE_URL}{args.project.name}{COV_BACKUP_URL}'
-                f'{project_qualified_fuzz_target_name}/public.zip')
+                  f'{project_qualified_fuzz_target_name}/public.zip')
   logging.info(f'Downloading corpus from {download_url}')
 
   cmd = ['wget', download_url, '-O', target_zip]
