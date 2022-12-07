@@ -26,3 +26,8 @@ rm -Rf third_party/utf8_range/fuzz/
 sed -i -e 's/rsync/baserm=`bazel info execution_root`; rm \$baserm\/external\/com_google_protobuf\/bazel-protobuf\nrsync/' /usr/local/bin/bazel_build_fuzz_tests
 
 bazel_build_fuzz_tests
+
+mkdir /tmp/corpus
+find . -name "*.proto" | while read i; do cp $i /tmp/corpus/; done
+cd /tmp
+zip -r $OUT/fuzz_compiler_parser_seed_corpus.zip corpus
