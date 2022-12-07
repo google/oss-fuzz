@@ -71,6 +71,8 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
+OSS_FUZZ_PUBLIC_CORPUS = "https://storage.googleapis.com/%s-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/%s/public.zip"
+
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
 
@@ -337,6 +339,10 @@ def get_parser():  # pylint: disable=too-many-statements
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
                                        help='specify name of a fuzz target')
+  download_corpora_parser.add_argument('--public',
+                                       action='store_true',
+                                       help='if set, will download public '
+                                       'corpus using wget')
   download_corpora_parser.add_argument(
       'project', help='name of the project or path (external)')
 
@@ -848,18 +854,57 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
+def _get_latest_public_corpus(args, fuzzer):
+  """Downloads the public corpus"""
+  target_corpus_dir = "build/corpus/%s" % args.project.name
+  if not os.path.isdir(target_corpus_dir):
+    os.makedirs(target_corpus_dir)
+
+  target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
+
+  # There is a special case where the names of projects aren't added to links to public
+  # corpora if the names of fuzz targets already start with their project's name + "_":
+  # https://github.com/google/oss-fuzz/blob/7797279c274d10197d62841dc43834238fd483a1/infra/cifuzz/clusterfuzz_deployment.py#L295-L298
+  if fuzzer.startswith(f"{args.project.name}_"):
+    download_url = OSS_FUZZ_PUBLIC_CORPUS % (args.project.name, fuzzer)
+  else:
+    download_url = OSS_FUZZ_PUBLIC_CORPUS % (args.project.name, f"{args.project.name}_{fuzzer}")
+
+  cmd = ['wget', download_url, '-O', target_zip]
+  if subprocess.run(cmd).returncode != 0:
+    subprocess.run(f"rm -f {target_zip}")
+    return False
+
+  target_fuzzer_dir = os.path.join(target_corpus_dir, fuzzer)
+  if not os.path.isdir(target_fuzzer_dir):
+    os.mkdir(target_fuzzer_dir)
+
+  target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
+  subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir])
+  return True
+
+
 def download_corpora(args):
   """Downloads most recent corpora from GCS for the given project."""
   if not check_project_exists(args.project):
     return False
 
-  try:
-    with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(['gsutil', '--version'], stdout=stdout)
-  except OSError:
-    logging.error('gsutil not found. Please install it from '
-                  'https://cloud.google.com/storage/docs/gsutil_install')
-    return False
+  if args.public:
+    logging.info("Downloading public corpus")
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['wget', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('wget not found')
+      return False
+  else:
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['gsutil', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('gsutil not found. Please install it from '
+                    'https://cloud.google.com/storage/docs/gsutil_install')
+      return False
 
   if args.fuzz_target:
     fuzz_targets = [args.fuzz_target]
@@ -870,7 +915,10 @@ def download_corpora(args):
 
   def _download_for_single_target(fuzz_target):
     try:
-      _get_latest_corpus(args.project, fuzz_target, corpus_dir)
+      if args.public:
+        _get_latest_public_corpus(args, fuzz_target)
+      else:
+        _get_latest_corpus(args.project, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
       logging.error('Corpus download for %s failed: %s.', fuzz_target,
