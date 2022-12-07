@@ -45,6 +45,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         if (fd) {
             fd->DebugString();
         }
+        delete pool;
     }
+    delete parser;
+    delete input;
+    delete input1;
     return 0;
 }
