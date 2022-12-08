@@ -25,15 +25,24 @@ import importlib
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
 
-PYSECSAN_LOG_LVL = 0
+LOG_DEBUG = 0
+LOG_INFO = 1
+PYSECSAN_LOG_LVL = LOG_INFO
 
+# Message that will be printed to stdout when an issue is found.
+PYSECSAN_ISSUE_LOG_MSG = 'Found an issue: PySecSan will exit shortly.'
 
 # pylint: disable=global-statement
-def sanitizer_log(msg, log_level):
+def sanitizer_log(msg, log_level, force=False):
   """Helper printing function."""
   global PYSECSAN_LOG_LVL
-  if log_level >= PYSECSAN_LOG_LVL:
-    print(f'[PYSAN] {msg}')
+  if log_level >= PYSECSAN_LOG_LVL or force:
+    print(f'[PYSECSAN] {msg}')
+
+
+def sanitizer_log_always(msg):
+  """Wrapper for sanitizer logging. Will always log"""
+  sanitizer_log(msg, 0, force=True)
 
 
 def is_module_present(mod_name):
@@ -43,16 +52,29 @@ def is_module_present(mod_name):
 
 
 def abort_with_issue(msg):
-  """Print message, display stacktrace and force process exit."""
-  sanitizer_log('Found an issue, pysecsan exiting', 0)
-  sanitizer_log(msg, 0)
+  """Print message, display stacktrace and force process exit.
+
+  Use this function for signalling an issue is found and use the messages
+  logged from this function to determine if a fuzzer found a bug.
+  """
+  # Show breaker string using an ASAN approach (uses 65 =)
+  sanitizer_log_always("="*65)
+
+  # Log issue message
+  sanitizer_log_always(PYSECSAN_ISSUE_LOG_MSG)
+  sanitizer_log_always(msg)
+
+  # Log stacktrace
+  sanitizer_log_always("Stacktrace:")
   traceback.print_stack()
 
+  # Force exit
   # Use os._exit here to force exit. sys.exit will exit
   # by throwing a SystemExit exception which the interpreter
   # handles by exiting. However, code may catch this exception,
   # and thus to avoid this we exit the process without exceptions.
   # pylint: disable=protected-access
+  sanitizer_log_always("Exiting")
   os._exit(1)
 
 
@@ -142,7 +164,7 @@ def add_hook(function: Callable[[Any], Any],
 
   @functools.wraps(function)
   def run(*args, **kwargs):
-    sanitizer_log(f'Hook start {str(function)}', 0)
+    sanitizer_log(f'Hook start {str(function)}', LOG_DEBUG)
 
     # Call hook
     if pre_exec_hook is not None:
@@ -157,9 +179,9 @@ def add_hook(function: Callable[[Any], Any],
     if post_exec_hook is not None:
       tmp_ret = post_exec_hook(ret, *args, **kwargs)
       if tmp_ret is not None:
-        sanitizer_log('Overwriting return value', 0)
+        sanitizer_log('Overwriting return value', LOG_DEBUG)
         ret = tmp_ret
-    sanitizer_log(f'Hook end {str(function)}', 0)
+    sanitizer_log(f'Hook end {str(function)}', LOG_DEBUG)
     return ret
 
   return run
@@ -167,11 +189,16 @@ def add_hook(function: Callable[[Any], Any],
 
 def add_hooks():
   """Sets up hooks."""
+  sanitizer_log('Starting', LOG_INFO)
   os.system = add_hook(os.system,
                        pre_exec_hook=command_injection.hook_pre_exec_os_system)
   subprocess.Popen = add_hook(
       subprocess.Popen,
       pre_exec_hook=command_injection.hook_pre_exec_subprocess_Popen)
+
+  __builtins__['eval'] = add_hook(__builtins__['eval'],
+                                  pre_exec_hook=command_injection.hook_pre_exec_eval)
+
   re.compile = add_hook(re.compile,
                         pre_exec_hook=redos.hook_pre_exec_re_compile,
                         post_exec_hook=redos.hook_post_exec_re_compile)
@@ -181,10 +208,8 @@ def add_hooks():
   # pylint: disable=import-outside-toplevel
   if is_module_present('yaml'):
     import yaml
-    sanitizer_log('Hooking pyyaml.load', 0)
+    sanitizer_log('Hooking pyyaml.load', LOG_DEBUG)
     yaml.load = add_hook(
         yaml.load,
         pre_exec_hook=yaml_deserialization.hook_pre_exec_pyyaml_load,
     )
-  else:
-    sanitizer_log('pyyaml not found. No hooks here', 0)
