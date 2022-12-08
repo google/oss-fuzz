@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export ENABLE_PYSECSAN="YES"
+
 fuzzer_path=$1
 shift 1
 
@@ -72,6 +74,30 @@ EOF
 
   # Overwrite existing fuzzer with new fuzzer that has stub
   mv tmp_fuzzer_coverage.py $fuzzer_path
+fi
+
+# If PYSECSAN is enabled, ensure that we can build with it.
+if [[ ${ENABLE_PYSECSAN:-"NO"} != "NO" ]];
+  # Make sure pysecsan is installed
+  if [[ ! -d "/pysecsan" ]];
+  then
+    git clone --depth=1 https://github.com/google/oss-fuzz /oss-fuzz-tmp
+    mv /oss-fuzz-tmp/infra/sanitizers/pysecsan /pysecsan/
+    pushd /pysecsan
+    python3 setup.py install
+    popd
+  fi
+
+then
+  cat <<EOF > pysecsan_wrapper.py
+import pysecsan; pysecsan.add_hooks();
+EOF
+
+  # Prepend stub and create tmp file
+  cat pysecsan_wrapper.py $fuzzer_path > tmp_fuzzer_pysecsan.py
+
+  # Overwrite existing fuzzer with new fuzzer that has stub
+  mv tmp_fuzzer_pysecsan.py $fuzzer_path
 fi
 
 rm -rf $PYFUZZ_WORKPATH
