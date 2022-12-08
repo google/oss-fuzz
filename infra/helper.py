@@ -68,6 +68,8 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
+FUZZTEST_CORPUS_URL_REPLACE_CHARS = [ '@', '.' ]
+
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
@@ -818,7 +820,7 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
 
   # Replace chars from fuzztest fuzzers that are replaced in coverage URLs.
-  for c in ['@', '.']:
+  for c in FUZZTEST_CORPUS_URL_REPLACE_CHARS:
     if c in fuzz_target:
       fuzz_target = fuzz_target.replace(c, '-')
 
