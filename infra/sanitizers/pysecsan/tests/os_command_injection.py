@@ -22,15 +22,14 @@ import pysecsan
 
 def list_files_perhaps(param, magicval):
   """Pass fuzzer data into os.system."""
-  if magicval == 1337:
-    try:
-      os.system(param)
-    except ValueError:
-      pass
-  elif magicval == 1338:
+  if 'B' not in param:
+    return
+  if magicval == 1338:
     os.system('exec-san')
   elif magicval == 1339:
     os.system('ls -la FROMFUZZ')
+  else:
+    os.system('ls -la ./')
 
 
 def test_one_input(data):
