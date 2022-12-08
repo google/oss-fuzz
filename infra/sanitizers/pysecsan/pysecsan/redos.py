@@ -16,7 +16,7 @@
 """Sanitizer for regular expression dos."""
 
 import time
-import sys
+import os
 from pysecsan import sanlib
 
 START_RE_TIME = None
@@ -49,10 +49,11 @@ def hook_post_exec_re_pattern_findall(self, re_str):
   try:
     endtime = time.time() - START_RE_TIME
     if endtime > 4:
-      sanlib.abort_with_issue('Potential ReDOS attack.')
+      sanlib.abort_with_issue(f'Potential ReDOS attack.\n {re_str}')
   except NameError:
     sanlib.sanitizer_log(
-        'starttime is not set, which it should have. Error in PySecSan', sanlib.LOG_INFO)
+        'starttime is not set, which it should have. Error in PySecSan',
+        sanlib.LOG_INFO)
     os._exit(1)
 
 

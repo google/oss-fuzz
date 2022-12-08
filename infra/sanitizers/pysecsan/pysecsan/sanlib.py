@@ -32,6 +32,7 @@ PYSECSAN_LOG_LVL = LOG_INFO
 # Message that will be printed to stdout when an issue is found.
 PYSECSAN_ISSUE_LOG_MSG = 'Found an issue: PySecSan will exit shortly.'
 
+
 # pylint: disable=global-statement
 def sanitizer_log(msg, log_level, force=False):
   """Helper printing function."""
@@ -58,7 +59,7 @@ def abort_with_issue(msg):
   logged from this function to determine if a fuzzer found a bug.
   """
   # Show breaker string using an ASAN approach (uses 65 =)
-  sanitizer_log_always("="*65)
+  sanitizer_log_always("=" * 65)
 
   # Log issue message
   sanitizer_log_always(PYSECSAN_ISSUE_LOG_MSG)
@@ -196,8 +197,8 @@ def add_hooks():
       subprocess.Popen,
       pre_exec_hook=command_injection.hook_pre_exec_subprocess_Popen)
 
-  __builtins__['eval'] = add_hook(__builtins__['eval'],
-                                  pre_exec_hook=command_injection.hook_pre_exec_eval)
+  __builtins__['eval'] = add_hook(
+      __builtins__['eval'], pre_exec_hook=command_injection.hook_pre_exec_eval)
 
   re.compile = add_hook(re.compile,
                         pre_exec_hook=redos.hook_pre_exec_re_compile,

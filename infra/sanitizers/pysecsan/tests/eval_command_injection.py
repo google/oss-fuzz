@@ -12,17 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fuzzer targetting command injection of os.system."""
+"""Fuzzer targetting command injection of eval."""
 
-import os
 import sys
 import atheris
 import pysecsan
+
 pysecsan.add_hooks()
 
 
 def list_files_perhaps(param, magicval):
-  """Pass fuzzer data into os.system."""
+  """Pass fuzzer data into eval."""
   if magicval == 1337:
     try:
       eval("FROMFUZZ")
