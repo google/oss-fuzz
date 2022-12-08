@@ -817,8 +817,7 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
 
-  # Escape characters that exist in fuzztest fuzzers, which are replace in
-  # coverage corpus URLs.
+  # Replace chars from fuzztest fuzzers that are replaced in coverage URLs.
   for c in ['@', '.']:
     if c in fuzz_target:
       fuzz_target = fuzz_target.replace(c, '-')
