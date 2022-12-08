@@ -35,7 +35,7 @@ make install -j$(nproc)
 
 cd $SRC
 cd libzip
-cmake . -DBUILD_SHARED_LIBS=OFF
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_DOC=OFF
 make install -j$(nproc)
 
 cd $SRC
