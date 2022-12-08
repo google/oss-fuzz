@@ -17,6 +17,6 @@
 
 mkdir build
 cd build
-cmake .. -DBUILD_FUZZING=ON
+cmake .. -DBUILD_FUZZING=ON -DBUILD_SHARED_LIBS=OFF
 make -j$(nproc)
 cp fuzz_* $OUT/
