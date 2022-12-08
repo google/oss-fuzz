@@ -14,7 +14,6 @@
 # limitations under the License.
 """Fuzzer displaying insecure use of subprocess.Popen."""
 
-import os
 import sys
 import subprocess
 import atheris
@@ -36,7 +35,7 @@ def test_one_input(data):
   if fdp.ConsumeIntInRange(1, 10) == 5:
     list_files_perhaps('FROMFUZZ')
   else:
-    list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24))
+    list_files_perhaps('.')
 
 
 def main():

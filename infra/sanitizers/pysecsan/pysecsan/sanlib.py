@@ -15,6 +15,8 @@
 ################################################################################
 """Core routines for pysecsan library."""
 
+# pylint: disable=protected-access
+
 import re
 import os
 import functools

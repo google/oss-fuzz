@@ -15,9 +15,7 @@
 ################################################################################
 """Sanitizers for capturing code injections."""
 
-import sys
 from typing import Optional
-
 from pysecsan import sanlib
 
 

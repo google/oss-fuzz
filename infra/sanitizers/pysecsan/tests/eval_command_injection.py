@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Fuzzer targetting command injection of eval."""
+# pylint: disable=eval-used
 
 import sys
 import atheris
@@ -23,6 +24,8 @@ pysecsan.add_hooks()
 
 def list_files_perhaps(param, magicval):
   """Pass fuzzer data into eval."""
+  if len(param) < 3:
+    return
   if magicval == 1337:
     try:
       eval("FROMFUZZ")

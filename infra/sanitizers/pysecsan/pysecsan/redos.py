@@ -15,6 +15,8 @@
 ################################################################################
 """Sanitizer for regular expression dos."""
 
+# pylint: disable=protected-access
+
 import time
 import os
 from pysecsan import sanlib
