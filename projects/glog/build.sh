@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-# bazel needs python in /usr/bin instead of $PATH somehow
-cp /usr/local/bin/python3 /usr/bin/python3
-
-bazel_build_fuzz_tests
+mkdir build
+cd build
+cmake .. -DBUILD_FUZZING=ON
+make -j$(nproc)
+cp fuzz_* $OUT/
