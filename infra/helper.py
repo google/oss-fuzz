@@ -817,6 +817,12 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
 
+  # Escape characters that exist in fuzztest fuzzers, which are escaped in
+  # coverage corpus URLs.
+  for c in ['@', '.']:
+    if c in fuzz_target:
+      fuzz_target = fuzz_target.replace(c, '-')
+
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project.name,
                                                       fuzz_target=fuzz_target)
   command = ['gsutil', 'ls', corpus_backup_url]
