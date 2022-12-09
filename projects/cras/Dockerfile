@@ -62,9 +62,9 @@ RUN cd /tmp && git clone https://github.com/google/googletest.git -b v1.8.x && \
 
 # Need to build and install alsa so there is a static lib.
 RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
-      wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.4.1.tar.bz2 && \
-      bzip2 -f -d alsa-lib-* && \
-      tar xf alsa-lib-* && \
+      wget https://alsa-project.org/files/pub/lib/alsa-lib-1.1.4.1.tar.bz2 && \
+      echo 91bb870c14d1c7c269213285eeed874fa3d28112077db061a3af8010d0885b76 alsa-lib-1.1.4.1.tar.bz2 | sha256sum -c && \
+      tar xjf alsa-lib-* && \
       cd alsa-lib-* && \
       ./configure --enable-static --disable-shared && \
       make clean && \
