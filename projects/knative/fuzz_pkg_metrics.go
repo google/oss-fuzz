@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC. All Rights Reserved.
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,39 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package etchosts
+package metrics
 
 import (
-	"os"
-
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
+	corev1 "k8s.io/api/core/v1"
+	"testing"
 )
 
-func FuzzAdd(data []byte) int {
-	f := fuzz.NewConsumer(data)
-	fileBytes, err := f.GetBytes()
-	if err != nil {
-		return 0
-	}
-	noOfRecords, err := f.GetInt()
-	if err != nil {
-		return 0
-	}
-
-	recs := make([]Record, 0)
-	for i := 0; i < noOfRecords%40; i++ {
-		r := Record{}
-		err = f.GenerateStruct(&r)
-		if err != nil {
-			return 0
-		}
-		recs = append(recs, r)
-	}
-	defer os.Remove("testFile")
-	err = os.WriteFile("testFile", fileBytes, 0644)
-	if err != nil {
-		return 0
-	}
-	Add("testFile", recs)
-	return 1
+func FuzzNewObservabilityConfigFromConfigMap(f *testing.F) {
+	f.Fuzz(func(t *testing.T, configMapData []byte) {
+		ff := fuzz.NewConsumer(configMapData)
+		cm := &corev1.ConfigMap{}
+		ff.GenerateStruct(cm)
+		_, _ = NewObservabilityConfigFromConfigMap(cm)
+	})
 }

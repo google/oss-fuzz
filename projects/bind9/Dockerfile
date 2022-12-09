@@ -23,6 +23,7 @@ RUN apt-get -y install		\
 	autotools-dev		\
 	bison			\
 	build-essential		\
+	libcap-dev		\
 	libnghttp2-dev		\
 	libssl-dev		\
 	libtool			\

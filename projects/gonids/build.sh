@@ -15,22 +15,9 @@
 #
 ################################################################################
 
-# recompile go from git
-(
-cd $SRC/goroot/src
-export bisect_good=`cat $SRC/gobughunt/good`
-export bisect_bad=`cat $SRC/gobughunt/bad`
-git log $bisect_good..$bisect_bad --oneline --reverse > gitlog.txt
-# take one commit in the range good..bad based on the day of the month
-expr '(' `date +"%d"` - 1 ')' '*' `wc -l gitlog.txt | cut -d' ' -f1` / 31 + 1 > logline.txt
-cat gitlog.txt | sed -n `cat logline.txt`p | cut -d' ' -f1 | xargs git checkout
-./make.bash
-)
-rm -Rf /root/.go/
-mv $SRC/goroot /root/.go
-
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
 
+# output it in logs to compare with local builds for https://github.com/golang/go/issues/49075
 base64 $OUT/fuzz_parserule
 
 cd $SRC
@@ -43,3 +30,6 @@ set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
 zip -q -r $OUT/fuzz_parserule_seed_corpus.zip corpus
+
+# use different GODEBUG env variables for https://github.com/golang/go/issues/49075
+cp $SRC/gobughunt/fuzz_parserule.options $OUT/
