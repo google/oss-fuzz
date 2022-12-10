@@ -29,6 +29,8 @@ def TestOneInput(data):
     p.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
   except exceptions.JMESPathError:
     pass
+  except RecursionError:
+    pass
 
 
 def main():
