@@ -28,6 +28,9 @@ def TestOneInput(data):
   except ValueError:
     # Compile throws several ValueErrors
     pass
+  except RecursionError:
+    # uninteresting
+    pass
 
   # Target regex.sub
   try:
@@ -40,7 +43,9 @@ def TestOneInput(data):
   except ValueError:
     # Compile throws several ValueErrors
     pass
-
+  except RecursionError:
+    # uninteresting
+    pass
 
 def main():
   atheris.instrument_all()
