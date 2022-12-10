@@ -63,6 +63,10 @@ CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
     'libFuzzer/{fuzz_target}/')
 
+HTTPS_CORPUS_BACKUP_URL_FORMAT = (
+    'https://storage.googleapis.com/{project_name}-backup.clusterfuzz-external'
+    '.appspot.com/corpus/libFuzzer/{fuzz_target}/public.zip')
+
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
@@ -70,9 +74,6 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
-
-COV_BASE_URL = 'https://storage.googleapis.com/'
-COV_BACKUP_URL = '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -868,8 +869,9 @@ def _get_latest_public_corpus(args, fuzzer):
   if not fuzzer.startswith(qualified_name_prefix):
     project_qualified_fuzz_target_name = qualified_name_prefix + fuzzer
 
-  download_url = (f'{COV_BASE_URL}{args.project.name}{COV_BACKUP_URL}'
-                  f'{project_qualified_fuzz_target_name}/public.zip')
+  download_url = HTTPS_CORPUS_BACKUP_URL_FORMAT.format(
+      project_name=args.project.name,
+      fuzz_target=project_qualified_fuzz_target_name)
 
   cmd = ['wget', download_url, '-O', target_zip]
   try:
