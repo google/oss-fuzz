@@ -101,7 +101,7 @@ echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
 echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
 echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict
 
-git grep tag rust | grep '"' | cut -d '"' -f2 | sort | uniq | awk 'length($0) > 2' | awk '{print "\""$0"\""}' > generic.dict
+git grep tag rust | grep '"' | cut -d '"' -f2 | sort | uniq | awk 'length($0) > 2' | awk '{print "\""$0"\""}' | grep -v '\\' > generic.dict
 cat generic.dict >> $OUT/fuzz_siginit.dict
 cat generic.dict >> $OUT/fuzz_applayerparserparse.dict
 cat generic.dict >> $OUT/fuzz_sigpcap.dict
