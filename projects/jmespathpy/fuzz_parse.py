@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+import sys
+import atheris
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool libffi-dev
-RUN pip3 install --upgrade pip Cython numpy versioneer
-RUN git clone --depth 1 https://github.com/pandas-dev/pandas pandas && \
-    cd pandas && \
-    python3 -m pip install -r requirements-dev.txt
-WORKDIR pandas
-COPY build.sh *.py $SRC/
+from jmespath import parser
+from jmespath import exceptions
+
+import pysecsan
+pysecsan.add_hooks()
+
+
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+  p = parser.Parser()
+  try:
+    p.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except exceptions.JMESPathError:
+    pass
+  except RecursionError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

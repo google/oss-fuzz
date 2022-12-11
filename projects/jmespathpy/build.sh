@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+pip3 install .
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool libffi-dev
-RUN pip3 install --upgrade pip Cython numpy versioneer
-RUN git clone --depth 1 https://github.com/pandas-dev/pandas pandas && \
-    cd pandas && \
-    python3 -m pip install -r requirements-dev.txt
-WORKDIR pandas
-COPY build.sh *.py $SRC/
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
