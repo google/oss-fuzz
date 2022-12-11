@@ -45,7 +45,7 @@ RUN git clone --depth 1 https://github.com/tc39/test262 && \
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable
 WORKDIR moddable
 
-COPY target.c build.sh xst.options $SRC/
+COPY build.sh xst.options $SRC/
 
 # clean up
 RUN npm rm @prasadrajandran/strip-comments-cli && apt purge -yqq npm && apt autoremove -yqq && rm -rf /var/lib/apt/lists/*
