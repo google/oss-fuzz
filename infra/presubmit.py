@@ -17,6 +17,7 @@
 """Checks code for common issues before submitting."""
 
 import argparse
+import configparser
 import os
 import subprocess
 import sys
@@ -222,10 +223,46 @@ def check_project_yaml(paths):
   return all([_check_one_project_yaml(path) for path in paths])
 
 
+def _check_one_options_file(options_file_path):
+  """Checks that a single options file is valid."""
+  if os.path.basename(os.path.dirname(
+      os.path.dirname(options_file_path))) != 'projects':
+    # Is this a project file?
+    return True
+
+  _, extension = os.path.splitext(options_file_path)
+  if extension != '.options':
+    # Don't check it if it isn't an options file.
+    return True
+
+  config = configparser.ConfigParser()
+  config.read(options_file_path)
+
+  try:
+    config.get('libfuzzer', 'max_len')
+    print('Options file: {file_path} is invalid. max_len cannot be enforced '
+          'by honggfuzz and AFL. Enforce this in code instead. '
+          'See https://github.com/google/oss-fuzz/issues/5421 for more '
+          'details'.format(file_path=options_file_path))
+    return False
+  except (configparser.NoSectionError, configparser.NoOptionError):
+    return True
+
+
+def check_options(paths):
+  """Checks that all options files are valid."""
+  return all([_check_one_options_file(path) for path in paths])
+
+
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
+      check_license,
+      yapf,
+      lint,
+      check_project_yaml,
+      check_lib_fuzzing_engine,
+      check_options,
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more
