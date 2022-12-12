@@ -18,6 +18,7 @@ import base64
 import collections
 import logging
 import os
+import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
