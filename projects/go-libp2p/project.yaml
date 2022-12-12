@@ -1,0 +1,10 @@
+homepage: "https://github.com/libp2p/go-libp2p"
+primary_contact: ""
+auto_ccs :
+  - "bhargava.shastry@ethereum.org"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/libp2p/go-libp2p'
