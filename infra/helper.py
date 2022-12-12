@@ -365,6 +365,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 nargs='*')
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
+  _add_architecture_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -1074,7 +1075,7 @@ def run_fuzzer(args):
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
-                        args.fuzzer_args, args.testcase_path)
+                        args.fuzzer_args, args.testcase_path, args.architecture)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
@@ -1084,6 +1085,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
+    architecture='x86_64',
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
@@ -1094,7 +1096,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     return err_result
 
   debugger = ''
-  env = ['HELPER=True']
+  env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
   image_name = 'base-runner'
 
   if valgrind:
@@ -1119,7 +1121,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       '-runs=100',
   ] + fuzzer_args
 
-  return run_function(run_args)
+  return run_function(run_args, architecture=architecture)
 
 
 def _validate_project_name(project_name):
