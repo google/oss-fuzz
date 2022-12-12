@@ -43,6 +43,9 @@ GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
 
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
+
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
 
@@ -193,6 +196,13 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
+
+
 def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
@@ -210,6 +220,9 @@ def download_corpora_steps(project_name, test_image_suffix):
       qualified_name_prefix = '%s_' % project_name
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
+      
+      # Normalize qualified_name name.
+      qualified_name = _normalized_name(qualified_name)
 
       url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
                                                     fuzzer=qualified_name),
