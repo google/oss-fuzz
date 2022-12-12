@@ -221,7 +221,7 @@ def download_corpora_steps(project_name, test_image_suffix):
       qualified_name_prefix = '%s_' % project_name
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
-      
+
       # Normalize qualified_name name.
       qualified_name = _normalized_name(qualified_name)
 
