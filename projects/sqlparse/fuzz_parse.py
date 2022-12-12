@@ -19,7 +19,11 @@ import sqlparse
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  sqlparse.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  try:
+    sqlparse.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except RecursionError:
+    # Not interesting
+    pass
 
 
 def main():
