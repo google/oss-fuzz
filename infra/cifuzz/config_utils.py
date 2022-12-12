@@ -63,6 +63,12 @@ def _get_language():
   return os.getenv('LANGUAGE', constants.DEFAULT_LANGUAGE)
 
 
+def _get_extra_environment_variables():
+  """Gets extra environment variables specified by the user with
+  CFL_EXTRA_$NAME=$VALUE."""
+  return [key for key in os.environ if key.startswith('CFL_EXTRA_')]
+
+
 # pylint: disable=too-many-instance-attributes
 
 
@@ -124,6 +130,7 @@ class BaseConfig:
         constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
 
     self.parallel_fuzzing = os.environ.get('PARALLEL_FUZZING')
+    self.extra_environment_variables = _get_extra_environment_variables()
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.
