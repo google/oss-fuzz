@@ -1,9 +1,10 @@
 homepage: "www.pjsip.org"
 language: c
 primary_contact: "security@pjsip.org"
-vendor_ccs:
-  - "Nanang mail on"
 auto_ccs:
+  - "nanang@teluu.com"
+  - "ming@teluu.com"
+  - "riza@teluu.com"
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
   - libfuzzer
