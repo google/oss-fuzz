@@ -189,14 +189,18 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 std::string match_shell(std::string binary_pathname);
 
 // Identify the exact shell behind sh
-std::string identify_sh(std::string binary_name) {
+std::string identify_sh(std::string path) {
   char shell_pathname[kShellPathnameLength];
-  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
-      -1) {
-    std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
+  auto written = readlink(path.c_str(), shell_pathname, kShellPathnameLength - 1);
+  if (written == -1) {
+    std::cerr << "Cannot query which shell is behind sh: readlink failed on "
+              << path << ": "
+              << strerror(errno) << "\n";
     std::cerr << "Assuming the shell is dash\n";
     return "dash";
   }
+  shell_pathname[written] = '\0';
+
   debug_log("sh links to %s\n", shell_pathname);
   std::string shell_pathname_str(shell_pathname);
 
@@ -208,13 +212,17 @@ std::string match_shell(std::string binary_pathname) {
   if (!binary_pathname.length()) {
     return "";
   }
+
+  // We use c_str() to accept only the null terminated string.
+  std::string binary_name = binary_pathname.substr(
+      binary_pathname.find_last_of("/") + 1).c_str();
+
+  debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
+            binary_name.length());
+
   for (const auto &item : kShellSyntaxErrors) {
     std::string known_shell = item.first;
-    std::string binary_name = binary_pathname.substr(
-        binary_pathname.find_last_of("/") + 1, known_shell.length());
-    debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
-              binary_name.length());
-    if (!binary_name.compare(0, 2, "sh")) {
+    if (binary_name == "sh") {
       debug_log("Matched sh: Needs to identify which specific shell it is.\n");
       return identify_sh(binary_pathname);
     }
@@ -235,8 +243,6 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
   for (const auto &pattern : error_patterns) {
-    debug_log("Pattern : %s\n", pattern.c_str());
-    debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
@@ -338,8 +344,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         continue;
       }
 
-      debug_log("finished waiting %d", pid);
-
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         debug_log("%d exited", pid);
         it = pids.erase(it);
@@ -437,7 +441,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         tracee.syscall_enter = !tracee.syscall_enter;
       }
 
-      debug_log("tracing %d %d", pid, sig);
       if (ptrace(PTRACE_SYSCALL, pid, nullptr, sig) == -1) {
         debug_log("ptrace(PTRACE_SYSCALL, %d): %s", pid, strerror(errno));
         continue;
