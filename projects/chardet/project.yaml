@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/erikrose/chardet
+language: python
+main_repo: https://github.com/erikrose/chardet
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
