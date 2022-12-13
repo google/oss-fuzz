@@ -87,6 +87,7 @@ std::map<pid_t, ThreadParent> root_pids;
 constexpr int kShellPathnameLength = 20;
 
 std::string kEvilLinkBombfile = "/tmp/evil-link-bombfile";
+const std:: string kEvilLinkError = "Symbolic link followed";
 
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
@@ -332,8 +333,9 @@ std::string read_evil_link_bombfile() {
 }
 
 void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
-  if ((read_evil_link_bombfile().compare("original")) == 0) {
-    std::cout << "BOOOM" << std::endl;
+  std::string contents = read_evil_link_bombfile();
+  if ((contents.compare("original")) != 0) {
+    report_bug(kEvilLinkError, pid);
     exit(1);
   }
 }
