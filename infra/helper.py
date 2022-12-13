@@ -63,10 +63,17 @@ CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
     'libFuzzer/{fuzz_target}/')
 
+HTTPS_CORPUS_BACKUP_URL_FORMAT = (
+    'https://storage.googleapis.com/{project_name}-backup.clusterfuzz-external'
+    '.appspot.com/corpus/libFuzzer/{fuzz_target}/public.zip')
+
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
@@ -337,6 +344,10 @@ def get_parser():  # pylint: disable=too-many-statements
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
                                        help='specify name of a fuzz target')
+  download_corpora_parser.add_argument('--public',
+                                       action='store_true',
+                                       help='if set, will download public '
+                                       'corpus using wget')
   download_corpora_parser.add_argument(
       'project', help='name of the project or path (external)')
 
@@ -354,6 +365,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 nargs='*')
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
+  _add_architecture_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -408,6 +420,13 @@ def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
     return False
 
   return True
+
+
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
 
 
 def _get_absolute_path(path):
@@ -817,6 +836,9 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
 
+  # Normalise fuzz target name.
+  fuzz_target = _normalized_name(fuzz_target)
+
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project.name,
                                                       fuzz_target=fuzz_target)
   command = ['gsutil', 'ls', corpus_backup_url]
@@ -848,18 +870,68 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
+def _get_latest_public_corpus(args, fuzzer):
+  """Downloads the public corpus"""
+  target_corpus_dir = "build/corpus/%s" % args.project.name
+  if not os.path.isdir(target_corpus_dir):
+    os.makedirs(target_corpus_dir)
+
+  target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
+
+  project_qualified_fuzz_target_name = fuzzer
+  qualified_name_prefix = args.project.name + '_'
+  if not fuzzer.startswith(qualified_name_prefix):
+    project_qualified_fuzz_target_name = qualified_name_prefix + fuzzer
+
+  download_url = HTTPS_CORPUS_BACKUP_URL_FORMAT.format(
+      project_name=args.project.name,
+      fuzz_target=project_qualified_fuzz_target_name)
+
+  cmd = ['wget', download_url, '-O', target_zip]
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(cmd, stdout=stdout)
+  except OSError:
+    logging.error('Failed to download corpus')
+
+  target_fuzzer_dir = os.path.join(target_corpus_dir, fuzzer)
+  if not os.path.isdir(target_fuzzer_dir):
+    os.mkdir(target_fuzzer_dir)
+
+  target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir],
+                            stdout=stdout)
+  except OSError:
+    logging.error('Failed to unzip corpus')
+
+  # Remove the downloaded zip
+  os.remove(target_zip)
+  return True
+
+
 def download_corpora(args):
   """Downloads most recent corpora from GCS for the given project."""
   if not check_project_exists(args.project):
     return False
 
-  try:
-    with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(['gsutil', '--version'], stdout=stdout)
-  except OSError:
-    logging.error('gsutil not found. Please install it from '
-                  'https://cloud.google.com/storage/docs/gsutil_install')
-    return False
+  if args.public:
+    logging.info("Downloading public corpus")
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['wget', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('wget not found')
+      return False
+  else:
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['gsutil', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('gsutil not found. Please install it from '
+                    'https://cloud.google.com/storage/docs/gsutil_install')
+      return False
 
   if args.fuzz_target:
     fuzz_targets = [args.fuzz_target]
@@ -870,7 +942,10 @@ def download_corpora(args):
 
   def _download_for_single_target(fuzz_target):
     try:
-      _get_latest_corpus(args.project, fuzz_target, corpus_dir)
+      if args.public:
+        _get_latest_public_corpus(args, fuzz_target)
+      else:
+        _get_latest_corpus(args.project, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
       logging.error('Corpus download for %s failed: %s.', fuzz_target,
@@ -1000,7 +1075,7 @@ def run_fuzzer(args):
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
-                        args.fuzzer_args, args.testcase_path)
+                        args.fuzzer_args, args.testcase_path, args.architecture)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
@@ -1010,6 +1085,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
+    architecture='x86_64',
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
@@ -1020,7 +1096,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     return err_result
 
   debugger = ''
-  env = ['HELPER=True']
+  env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
   image_name = 'base-runner'
 
   if valgrind:
@@ -1045,7 +1121,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       '-runs=100',
   ] + fuzzer_args
 
-  return run_function(run_args)
+  return run_function(run_args, architecture=architecture)
 
 
 def _validate_project_name(project_name):

@@ -1,0 +1,50 @@
+diff --git a/pom.xml b/pom.xml
+index f41397b..645d95c 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -26,7 +26,7 @@
+   <properties>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+-    <project.felix.version>2.3.7</project.felix.version>
++    <project.felix.version>5.1.8</project.felix.version>
+     <project.javadoc.version>3.4.1</project.javadoc.version>
+     <maven.compiler.source>1.5</maven.compiler.source>
+     <maven.compiler.target>1.5</maven.compiler.target>
+@@ -212,8 +212,6 @@
+           <debug>true</debug>
+           <optimize>true</optimize>
+           <showDeprecation>true</showDeprecation>
+-          <source>1.5</source>
+-          <target>1.5</target>
+         </configuration>
+       </plugin>
+       <plugin>
+@@ -304,19 +302,6 @@
+           <docencoding>UTF-8</docencoding>
+         </configuration>
+       </plugin>
+-      <plugin>
+-        <artifactId>maven-surefire-plugin</artifactId>
+-        <version>2.22.1</version>
+-        <configuration>
+-          <includes>
+-            <include>**/*Test.java</include>
+-          </includes>
+-          <forkCount>3</forkCount>
+-          <reuseForks>true</reuseForks>
+-          <useSystemClassLoader>false</useSystemClassLoader>
+-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+-        </configuration>
+-      </plugin>
+       <plugin>
+         <groupId>org.codehaus.mojo</groupId>
+         <artifactId>cobertura-maven-plugin</artifactId>
+@@ -376,7 +361,6 @@
+         <version>3.19.0</version>
+         <configuration>
+           <sourceEncoding>utf-8</sourceEncoding>
+-          <targetJdk>1.5</targetJdk>
+         </configuration>
+       </plugin> 
+       <plugin>

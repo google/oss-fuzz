@@ -44,6 +44,8 @@ def TestOneInput(data):
       pass
   except ParserSyntaxError:
     pass
+  except RecursionError:
+    pass
 
 
 def main():
