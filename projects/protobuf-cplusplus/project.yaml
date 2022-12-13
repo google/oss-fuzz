@@ -1,8 +1,26 @@
 homepage: "https://developers.google.com/protocol-buffers"
 language: c++
-primary_contact: "p.antoine@catenacyber.fr"
+primary_contact: kfm@google.com
 auto_ccs:
 - protobuf-oss-fuzz@google.com
+- jgm@google.com
+- jgrimes@google.com
+- pzd@google.com
+- acozzette@google.com
+- deannagarcia@google.com
+- gberg@google.com
+- haberman@google.com
+- jieluo@google.com
+- jorg@google.com
+- mcyoung@google.com
+- mkruskal@google.com
+- salo@google.com
+- sandyzhang@google.com
+- sbenza@google.com
+- shaod@google.com
+- theodorerose@google.com
+- copybara-watcher-pod-watcher-git@system.gserviceaccount.com
+- copybara-worker@system.gserviceaccount.com
 
 architectures:
 - x86_64
@@ -12,9 +30,15 @@ sanitizers:
   - address
   - memory
   - undefined
+labels:
+  "*":
+    - protobuf-ossfuzz-bugz-1260285
 
 fuzzing_engines:
   - libfuzzer
   - afl
 
 main_repo: https://github.com/protocolbuffers/protobuf
+
+vendor_ccs:
+- p.antoine@catenacyber.fr
