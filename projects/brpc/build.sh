@@ -20,7 +20,7 @@ popd
 
 mkdir build && cd build
 
-cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON -DBUILD_SHARED_LIBS=OFF \
+cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON -DBUILD_SHARED_LIBS=OFF -DWITH_SNAPPY=OFF \
 -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
 -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CFLAGS" \
 -DCMAKE_CPP_FLAGS="$CFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" \
@@ -50,5 +50,4 @@ cp libgflags* $OUT/lib/.
 cp libprotobuf* $OUT/lib/.
 cp libleveldb* $OUT/lib/.
 cp libprotoc* $OUT/lib/.
-cp libsnappy* $OUT/lib/.
 popd
