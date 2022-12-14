@@ -274,7 +274,7 @@ if [ "$SANITIZER" = "introspector" ]; then
     REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     # Use the just-generated correlation file
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS || true
+    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
 
     cp -rf $SRC/inspector $OUT/inspector
   fi
