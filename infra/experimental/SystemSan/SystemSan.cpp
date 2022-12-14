@@ -333,6 +333,7 @@ std::string read_evil_link_bombfile() {
 }
 
 void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
+  (void) regs;
   std::string contents = read_evil_link_bombfile();
   if ((contents.compare("original")) != 0) {
     report_bug(kEvilLinkError, pid);
