@@ -21,4 +21,4 @@ go install github.com/AdamKorcz/go-118-fuzz-build@latest
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
 COPY build.sh $SRC/
-WORKDIR $SRC/dns
+WORKDIR $SRC/compiler
