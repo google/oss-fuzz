@@ -784,10 +784,7 @@ def run_clusterfuzzlite(args):
       if not docker_build(build_command):
         return False
       filestore_path = os.path.abspath(CLUSTERFUZZLITE_FILESTORE_DIR)
-      docker_run_command = [
-          'docker',
-          'run',
-      ]
+      docker_run_command = []
       if args.external:
         docker_run_command += [
             '-e',
