@@ -40,6 +40,10 @@ def TestOneInput(data):
     sv.select(soupsieve_str, the_soup)
   except sv.SelectorSyntaxError:
     pass
+  except NotImplementedError:
+    # Not implemented
+    # Catches e.g. https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=54276
+    pass
 
 
 def main():
