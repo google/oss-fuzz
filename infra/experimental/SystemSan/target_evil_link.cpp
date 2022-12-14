@@ -31,9 +31,6 @@ extern "C" int LLVMFuzzerTestOneInput(char* data, size_t size) {
     return 0;
   }
   std::string contents = "hello";
-  const char* contents_c_str = contents.c_str();
-  printf("contents_c_str, fp: %p %p\n", contents_c_str);
-  fflush(0);
   fwrite(contents.data(), 1, contents.size(), fp);
   if (fp) {
     fclose(fp);
