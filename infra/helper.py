@@ -26,11 +26,13 @@ import logging
 import os
 import pipes
 import re
+import shutil
 import subprocess
 import sys
-import templates
+import tempfile
 
 import constants
+import templates
 
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
@@ -77,6 +79,11 @@ SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
+
+CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
+CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
+CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
+CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -187,6 +194,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = shell(args)
   elif args.command == 'pull_images':
     result = pull_images()
+  elif args.command == 'run_clusterfuzzlite':
+    result = run_clusterfuzzlite(args)
   else:
     # Print help string if no arguments provided.
     parser.print_help()
@@ -380,6 +389,27 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_environment_args(shell_parser)
   _add_external_project_args(shell_parser)
 
+  run_clusterfuzzlite_parser = subparsers.add_parser(
+      'run_clusterfuzzlite', help='Run ClusterFuzzLite on a project.')
+  _add_sanitizer_args(run_clusterfuzzlite_parser)
+  _add_environment_args(run_clusterfuzzlite_parser)
+  run_clusterfuzzlite_parser.add_argument('project')
+  run_clusterfuzzlite_parser.add_argument('--clean',
+                                          dest='clean',
+                                          action='store_true',
+                                          help='clean existing artifacts.')
+  run_clusterfuzzlite_parser.add_argument(
+      '--no-clean',
+      dest='clean',
+      action='store_false',
+      help='do not clean existing artifacts '
+      '(default).')
+  run_clusterfuzzlite_parser.add_argument('--branch',
+                                          default='master',
+                                          required=True)
+  _add_external_project_args(run_clusterfuzzlite_parser)
+  run_clusterfuzzlite_parser.set_defaults(clean=False)
+
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
 
@@ -443,8 +473,7 @@ def _get_project_build_subdir(project, subdir_name):
   """Creates the |subdir_name| subdirectory of the |project| subdirectory in
   |BUILD_DIR| and returns its path."""
   directory = os.path.join(BUILD_DIR, subdir_name, project)
-  if not os.path.exists(directory):
-    os.makedirs(directory)
+  os.makedirs(directory, exist_ok=True)
 
   return directory
 
@@ -736,6 +765,76 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   return True
 
 
+def run_clusterfuzzlite(args):
+  """Runs ClusterFuzzLite on a local repo."""
+  if not os.path.exists(CLUSTERFUZZLITE_FILESTORE_DIR):
+    os.mkdir(CLUSTERFUZZLITE_FILESTORE_DIR)
+
+  try:
+    with tempfile.TemporaryDirectory() as workspace:
+
+      if args.external:
+        project_src_path = os.path.join(workspace, args.project.name)
+        shutil.copytree(args.project.path, project_src_path)
+
+      build_command = [
+          '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers', '--file',
+          'infra/run_fuzzers.Dockerfile', 'infra'
+      ]
+      if not docker_build(build_command):
+        return False
+      filestore_path = os.path.abspath(CLUSTERFUZZLITE_FILESTORE_DIR)
+      docker_run_command = [
+          'docker',
+          'run',
+      ]
+      if args.external:
+        docker_run_command += [
+            '-e',
+            f'PROJECT_SRC_PATH={project_src_path}',
+        ]
+      else:
+        docker_run_command += [
+            '-e',
+            f'OSS_FUZZ_PROJECT_NAME={args.project.name}',
+        ]
+      docker_run_command += [
+          '-v',
+          f'{filestore_path}:{filestore_path}',
+          '-v',
+          f'{workspace}:{workspace}',
+          '-e',
+          f'FILESTORE_ROOT_DIR={filestore_path}',
+          '-e',
+          f'WORKSPACE={workspace}',
+          '-e',
+          f'REPOSITORY={args.project.name}',
+          '-e',
+          'CFL_PLATFORM=standalone',
+          '--entrypoint',
+          '',
+          '-v',
+          '/var/run/docker.sock:/var/run/docker.sock',
+          CLUSTERFUZZLITE_DOCKER_IMAGE,
+          'python3',
+          '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
+      ]
+      return docker_run(docker_run_command)
+
+  except PermissionError as error:
+    logging.error('PermissionError: %s.', error)
+    # Tempfile can't delete the workspace because of a permissions issue. This
+    # is because docker creates files in the workspace that are owned by root
+    # but this process is probably being run as another user. Use a docker image
+    # to delete the temp directory (workspace) so that we have permission.
+    docker_run([
+        '-v', f'{workspace}:{workspace}', '--entrypoint', '',
+        CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
+        os.path.join(workspace, '*')
+    ])
+    return False
+
+
 def build_fuzzers(args):
   """Builds fuzzers."""
   if args.engine == 'centipede' and args.sanitizer != 'none':
@@ -830,8 +929,7 @@ def _get_fuzz_targets(project):
 def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   """Downloads the latest corpus for the given fuzz target."""
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
-  if not os.path.exists(corpus_dir):
-    os.makedirs(corpus_dir)
+  os.makedirs(corpus_dir, exist_ok=True)
 
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
