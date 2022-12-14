@@ -111,13 +111,19 @@ make -j$(nproc) all
 make install
 
 cd $SRC/theora
+if [[ "$ARCHITECTURE" == i386 ]]; then
+
+      THEORA_BUILD_ARGS='--disable-asm'
+else
+      THEORA_BUILD_ARGS=''
+fi
 # theora requires ogg, need to pass its location to the "configure" script.
 CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
       CPPFLAGS="$CXXFLAGS -I$FFMPEG_DEPS_PATH/include/" \
       LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib/" \
       ./autogen.sh
 ./configure --with-ogg="$FFMPEG_DEPS_PATH" --prefix="$FFMPEG_DEPS_PATH" \
-      --enable-static --disable-examples --disable-asm
+      --enable-static --disable-examples $THEORA_BUILD_ARGS
 make clean
 make -j$(nproc)
 make install
@@ -145,7 +151,7 @@ rm $FFMPEG_DEPS_PATH/lib/*.so.*
 cd $SRC/ffmpeg
 if [[ "$ARCHITECTURE" == i386 ]]; then
 
-      FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm --disable-neon'
+      FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm'
 else
       FFMPEG_BUILD_ARGS=''
 fi
