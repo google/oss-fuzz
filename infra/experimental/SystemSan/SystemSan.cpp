@@ -86,6 +86,9 @@ std::map<pid_t, ThreadParent> root_pids;
 // Assuming the longest pathname is "/bin/bash".
 constexpr int kShellPathnameLength = 20;
 
+std::string kEvilLinkBombfile = "/tmp/evil-link-bombfile";
+const std:: string kEvilLinkError = "Symbolic link followed";
+
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
     {"bash",
@@ -320,6 +323,46 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   }
 }
 
+std::string read_evil_link_bombfile() {
+    const std::ifstream bombfile(kEvilLinkBombfile, std::ios_base::binary);
+    if (bombfile.fail())
+      return "";
+    std::stringstream stream;
+    stream << bombfile.rdbuf();
+    return stream.str();
+}
+
+void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
+  std::string contents = read_evil_link_bombfile();
+  if ((contents.compare("original")) != 0) {
+    report_bug(kEvilLinkError, pid);
+    exit(1);
+  }
+}
+
+void evil_open_hook(pid_t pid, const user_regs_struct &regs) {
+  // Inspect a PID's register for the sign of arbitrary file open.
+  std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
+  if (!path.length()) {
+    return;
+  }
+  size_t slash_idx = path.rfind('/');
+  if (slash_idx == std::string::npos)
+    return;
+
+  std::string dir = path.substr(0, slash_idx);
+  std::cout << "DIR" << slash_idx << " " << dir << std::endl;
+  if ((dir.compare("/tmp")) != 0)
+    return;
+  std::string command = "ln -s " + kEvilLinkBombfile + " " + path;
+  std::cout << "COMMAND" << command << std::endl;
+  system(command.c_str());
+}
+
+void initialize_evil_link_bombfile() {
+  system(("printf 'original' > " + kEvilLinkBombfile).c_str());
+}
+
 int trace(std::map<pid_t, Tracee> pids) {
   unsigned long exit_status = 0;
   while (!pids.empty()) {
@@ -423,6 +466,13 @@ int trace(std::map<pid_t, Tracee> pids) {
           if (regs.orig_rax == __NR_openat) {
             // TODO(metzman): Re-enable this once we have config/flag support.
             // inspect_for_arbitrary_file_open(pid, regs);
+            evil_open_hook(pid, regs);
+          }
+
+          if (regs.orig_rax == __NR_close) {
+            // TODO(metzman): Re-enable this once we have config/flag support.
+            // inspect_for_arbitrary_file_open(pid, regs);
+            inspect_for_evil_link(pid, regs);
           }
 
           if (regs.orig_rax == __NR_write &&
@@ -460,6 +510,8 @@ int main(int argc, char **argv) {
   if (argc <= 1) {
     fatal_log("Expecting at least one arguments, received %d", argc - 1);
   }
+
+  initialize_evil_link_bombfile();
 
   // Create an executable tripwire file, as programs may check for existence
   // before actually calling exec.
