@@ -514,6 +514,20 @@ export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
 cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
 
+# Compile Java module
+if [ "$SANITIZER" = undefined ]; then
+    mv $SRC/openjdk-18.0.1_linux-x64_bin.tar.gz $OUT/
+    cd $OUT/
+    tar zxf openjdk-18.0.1_linux-x64_bin.tar.gz
+    export JDK_PATH=$(realpath jdk-18.0.1)
+    export LINK_FLAGS="$LINK_FLAGS -L$JDK_PATH/lib/server/ -ljvm -Wl,-rpath=$JDK_PATH/lib/server/"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_JAVA"
+
+    cd $SRC/cryptofuzz/modules/java/
+    make -f Makefile-OSS-Fuzz -j$(nproc)
+    cp CryptofuzzJavaHarness.class $OUT/
+fi
+
 # OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
 export SAVE_CXXFLAGS="$CXXFLAGS"
 export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_WOLFCRYPT/}
