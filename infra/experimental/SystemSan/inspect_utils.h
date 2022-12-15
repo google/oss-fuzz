@@ -37,3 +37,4 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
                                    size_t size);
 
 void report_bug(std::string bug_type, pid_t tid);
+bool check_enabled(std::string feature);
