@@ -28,7 +28,7 @@ import build_lib
 import build_project
 
 SANITIZER = 'thread'
-FUZZING_ENGINE = 'centipede'
+FUZZING_ENGINE = 'libfuzzer'
 ARCHITECTURE = 'x86_64'
 
 PLATFORM = 'linux'
@@ -105,7 +105,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                                   project.fuzzing_language,
                                                   config=config)
 
-  build = build_project.Build(FUZZING_ENGINE, 'coverage', ARCHITECTURE)
+  build = build_project.Build(FUZZING_ENGINE, 'thread', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
