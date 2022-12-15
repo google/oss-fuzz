@@ -12,7 +12,7 @@
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<fuzzedLibaryVersion>4.1.85.Final</fuzzedLibaryVersion>
-		<exec.mainClass>ByteBufUtilFuzzer</exec.mainClass>
+		<exec.mainClass>io.netty.handler.codec.http.cookie.ServerCookieDecoderFuzzer</exec.mainClass>
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
