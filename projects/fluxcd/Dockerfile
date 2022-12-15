@@ -16,11 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-# cmake and pkg-config are only needed whilst libgit2 is in use.
-# The project aims to deprecate libgit2 at some point in Q1 2023,
-# by which point this can be removed.
-RUN apt-get update && apt-get install -y cmake pkg-config
-
 ENV GOPATH="${GOPATH:-/root/go}"
 ENV ORG_ROOT="${ORG_ROOT:-${GOPATH}/src/github.com/fluxcd}"
 

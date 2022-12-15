@@ -24,7 +24,6 @@ GOPATH="${GOPATH:-/root/go}"
 ORG_ROOT="${ORG_ROOT:-${GOPATH}/src/github.com/fluxcd}"
 PREBUILD_SCRIPT_PATH="${PREBUILD_SCRIPT_PATH:-tests/fuzz/oss_fuzz_prebuild.sh}"
 POSTBUILD_SCRIPT_PATH="${POSTBUILD_SCRIPT_PATH:-tests/fuzz/oss_fuzz_postbuild.sh}"
-FLUX_CI="${FLUX_CI:-false}"
 
 # source_prebuild_script sources the prebuild script, which executes project-specific
 # code and exposes environment variables that are needed during the generic build process.
@@ -70,7 +69,25 @@ function go_native_build_all_fuzzers(){
 		fi
 
 		# go-118-fuzz-build is required for each module.
-		go get github.com/AdamKorcz/go-118-fuzz-build/testing
+		go get -u github.com/AdamKorcz/go-118-fuzz-build/testing
+
+		# The go get command above can affect transient dependencies, may lead
+		# to the go.sym to become out of sync, which would cause build to break.
+		# go mod tidy will only work if the current module has a reference
+		# to the above dependency, so we create one.
+		local pkgName
+		pkgName="$(grep -h '^package ' -- *.go | head -n 1)"
+		if [ -z "${test_files}" ]; then
+			pkgName="package fuzz"
+		fi
+		
+		cat <<EOF > dep-placeholder.go
+${pkgName}
+
+import _ "github.com/AdamKorcz/go-118-fuzz-build/testing"
+EOF
+		# With the reference above, this updates go.sum.
+		go mod tidy
 
 		# Iterate through all Go Fuzz targets, compiling each into a fuzzer.
 		for file in ${test_files}; do
@@ -113,13 +130,15 @@ function loop_through_org_repositories(){
 }
 
 function main(){
-	if [[ "${FLUX_CI}" == "true" ]]; then
-		echo "Building Go Native fuzzers for Flux CI"
+	# If SRC is set to a Flux project, only its fuzzers will be built.
+	if grep -h '^module github.com/fluxcd/' "${SRC}/go.mod"; then
+		echo "Building Go Native fuzzers for ${SRC}"
 		go_native_build_all_fuzzers "${SRC}"
-	else
-		echo "Going through all repositories in ${ORG_ROOT}"
-		loop_through_org_repositories 
+		exit $?
 	fi
+	
+	echo "Going through all repositories in ${ORG_ROOT}"
+	loop_through_org_repositories 
 }
 
 main
