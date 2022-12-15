@@ -53,7 +53,7 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
 
 void report_bug(std::string bug_type, pid_t tid) {
   // Report the bug found based on the bug code.
-  std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
+  std::cerr << "===BUG DETECTED: " << bug_type << "===" << std::endl;
   // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
   // to the root process.
   // Note: this may not be reliable or consistent if shell injection happens
