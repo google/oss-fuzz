@@ -70,7 +70,25 @@ function go_native_build_all_fuzzers(){
 		fi
 
 		# go-118-fuzz-build is required for each module.
-		go get github.com/AdamKorcz/go-118-fuzz-build/testing
+		go get -u github.com/AdamKorcz/go-118-fuzz-build/testing
+
+		# The go get command above can affect transient dependencies, may lead
+		# to the go.sym to become out of sync, which would cause build to break.
+		# go mod tidy will only work if the current module has a reference
+		# to the above dependency, so we create one.
+		local pkgName
+		pkgName="$(grep -h '^package ' -- *.go | head -n 1)"
+		if [ -z "${test_files}" ]; then
+			pkgName="package fuzz"
+		fi
+		
+		cat <<EOF > dep-placeholder.go
+${pkgName}
+
+import _ "github.com/AdamKorcz/go-118-fuzz-build/testing"
+EOF
+		# With the reference above, this updates go.sum.
+		go mod tidy
 
 		# Iterate through all Go Fuzz targets, compiling each into a fuzzer.
 		for file in ${test_files}; do
