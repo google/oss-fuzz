@@ -131,7 +131,7 @@ function run_go_fuzz_target {
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
-  
+
   # setup for native go fuzzers
   cd $OUT
   mkdir -p "testdata/fuzz/${target}"
