@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+#!/bin/bash -uxe
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,27 @@
 # limitations under the License.
 #
 ################################################################################
+cd $OUT
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
-cp /opt/tsan_harness.o $LIB_FUZZING_ENGINE_DEPRECATED
-echo " done."
+if (( $# > 0 )); then
+  FUZZ_TARGETS="$@"
+else
+  FUZZ_TARGETS="$(find . -maxdepth 1 -type f -executable -printf '%P\n' | \
+      grep -v -x -F \
+      -e 'llvm-symbolizer' \
+      -e 'jazzer_agent_deploy.jar' \
+      -e 'centipede' \
+      -e 'jazzer_driver' \
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
+fi
+
+export AFL_BENCH_JUST_ONE=1
+for fuzz_target in $FUZZ_TARGETS; do
+  export CORPUS_DIR=/corpus/$fuzz_target
+  echo $fuzz_target
+  run_fuzzer $fuzz_target
+done
+
+# Wait for background processes to finish.
+wait

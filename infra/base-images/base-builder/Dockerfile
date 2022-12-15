@@ -140,6 +140,9 @@ RUN cd $SRC && \
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
+COPY tsan_harness.cc /opt
+RUN clang++ -std=c++17 -stdlib=libc++ -O3 -c -fsanitize=thread /opt/tsan_harness.cc -o /opt/tsan_harness.o
+
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_centipede \
     compile_go_fuzzer \

@@ -27,8 +27,8 @@ import posixpath
 import build_lib
 import build_project
 
-SANITIZER = 'coverage'
-FUZZING_ENGINE = 'libfuzzer'
+SANITIZER = 'thread'
+FUZZING_ENGINE = 'centipede'
 ARCHITECTURE = 'x86_64'
 
 PLATFORM = 'linux'
@@ -139,13 +139,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%%.*}). '
-           'This usually means that corpus backup for a particular fuzz '
-           'target does not exist. If a fuzz target was added in the last '
-           '24 hours, please wait one more day. Otherwise, something is '
-           'wrong with the fuzz target or the infrastructure, and corpus '
-           'pruning task does not finish successfully." && exit 1'
-           '); done && coverage || (echo "' + failure_msg + '" && false)')
+           ' && exit 1'
+           '); done && run_on_corpora || (echo "' + failure_msg + '" && false)')
       ],
       'volumes': [{
           'name': 'corpus',
