@@ -32,6 +32,8 @@
 #include <syscall.h>
 #include <fcntl.h>
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -87,7 +89,9 @@ std::map<pid_t, ThreadParent> root_pids;
 constexpr int kShellPathnameLength = 20;
 
 std::string kEvilLinkBombfile = "/tmp/evil-link-bombfile";
+std::string kEvilLinkBombfileContents = "initial";
 const std:: string kEvilLinkError = "Symbolic link followed";
+const size_t kPathMax = 4096;
 
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
@@ -165,8 +169,10 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
     return "";
   }
 
+  auto location = std::find(memory.begin(), memory.end(), static_cast<std::byte>(NULL));
+  size_t str_length = location - memory.begin();
   std::string content(reinterpret_cast<char *>(memory.data()),
-                      std::min(memory.size(), length));
+                      std::min(str_length, length));
   return content;
 }
 
@@ -324,7 +330,8 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
 }
 
 std::string read_evil_link_bombfile() {
-    const std::ifstream bombfile(kEvilLinkBombfile, std::ios_base::binary);
+    const std::ifstream bombfile(kEvilLinkBombfile,
+                                 std::ios_base::binary);
     if (bombfile.fail())
       return "";
     std::stringstream stream;
@@ -332,36 +339,47 @@ std::string read_evil_link_bombfile() {
     return stream.str();
 }
 
+// https://oss-fuzz.com/testcase-detail/4882113260552192
+void report_bug_in_process(std::string bug_type, pid_t pid) {
+  std::cerr << "===BUG DETECTED: " << bug_type << "===" << std::endl;
+  tgkill(root_pids[pid].parent_tid, pid, SIGABRT);
+}
+
 void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
   (void) regs;
   std::string contents = read_evil_link_bombfile();
-  if ((contents.compare("original")) != 0) {
-    report_bug(kEvilLinkError, pid);
-    exit(1);
+  if ((contents.compare(kEvilLinkBombfileContents)) != 0) {
+
+    report_bug_in_process(kEvilLinkError, pid);
   }
 }
 
-void evil_open_hook(pid_t pid, const user_regs_struct &regs) {
-  // Inspect a PID's register for the sign of arbitrary file open.
-  std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
+void evil_openat_hook(pid_t pid, const user_regs_struct &regs) {
+  std::string path = read_string(pid, regs.rsi, kPathMax);
   if (!path.length()) {
     return;
   }
+  if (std::filesystem::exists(path))
+    return;
   size_t slash_idx = path.rfind('/');
   if (slash_idx == std::string::npos)
     return;
 
   std::string dir = path.substr(0, slash_idx);
-  std::cout << "DIR" << slash_idx << " " << dir << std::endl;
   if ((dir.compare("/tmp")) != 0)
     return;
-  std::string command = "ln -s " + kEvilLinkBombfile + " " + path;
-  std::cout << "COMMAND" << command << std::endl;
+
+  std::string command = "rm -f " + path + " && ln -s " + kEvilLinkBombfile + " " + path;
+  std::cout << "COMMAND " << command << std::endl;
   system(command.c_str());
 }
 
 void initialize_evil_link_bombfile() {
-  system(("printf 'original' > " + kEvilLinkBombfile).c_str());
+  std::string command = ("printf " + kEvilLinkBombfileContents + " > " +
+                         kEvilLinkBombfile);
+  std::cout << "COMMAND " << command << std::endl;
+  system(command.c_str());
+  system(("cat " + kEvilLinkBombfile).c_str());
 }
 
 int trace(std::map<pid_t, Tracee> pids) {
@@ -467,7 +485,7 @@ int trace(std::map<pid_t, Tracee> pids) {
           if (regs.orig_rax == __NR_openat) {
             // TODO(metzman): Re-enable this once we have config/flag support.
             // inspect_for_arbitrary_file_open(pid, regs);
-            evil_open_hook(pid, regs);
+            evil_openat_hook(pid, regs);
           }
 
           if (regs.orig_rax == __NR_close) {
@@ -511,6 +529,7 @@ int main(int argc, char **argv) {
   if (argc <= 1) {
     fatal_log("Expecting at least one arguments, received %d", argc - 1);
   }
+
 
   initialize_evil_link_bombfile();
 
