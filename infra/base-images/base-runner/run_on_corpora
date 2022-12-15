@@ -29,6 +29,7 @@ else
       -e 'sanitizer_with_fuzzer.so')"
 fi
 
+export RUN_FUZZER_MODE=interactive
 export AFL_BENCH_JUST_ONE=1
 for fuzz_target in $FUZZ_TARGETS; do
   export CORPUS_DIR=/corpus/$fuzz_target
