@@ -74,8 +74,16 @@ echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
 echo -n "Misc " >>extra_options.h
 echo -n "--digests=SHA256 " >>extra_options.h
+echo -n "--curves=BLS12_381 " >>extra_options.h
 echo -n '"' >>extra_options.h
 
+# Build arkworks-algebra
+if [[ $CFLAGS != *-m32* && "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/cryptofuzz/modules/arkworks-algebra/
+    make
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
+fi
 
 if [[ $CFLAGS = *-m32* ]]
 then
