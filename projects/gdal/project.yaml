@@ -14,6 +14,3 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/OSGeo/gdal'
-additional_vars:
-  all:
-    SYSTEMSAN_ARBITRARY_DNS_RESOLUTION=0
