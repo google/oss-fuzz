@@ -14,10 +14,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package ossfuzz;
+package io.netty.handler.codec.http.cookie;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 
 public class ServerCookieDecoderFuzzer {
 

@@ -5,6 +5,9 @@ main_repo: "https://github.com/knative"
 vendor_ccs:
   - "adam@adalogics.com"
   - "david@adalogics.com"
+auto_ccs:
+  - "evana@vmware.com"
+  - "evan.k.anderson@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
