@@ -909,6 +909,8 @@ def _get_fuzz_targets(project):
   for name in os.listdir(project.out):
     if name.startswith('afl-'):
       continue
+    if name == 'centipede':
+      continue
     if name.startswith('jazzer_'):
       continue
     if name == 'llvm-symbolizer':
