@@ -78,10 +78,16 @@ echo -n "--curves=BLS12_381 " >>extra_options.h
 echo -n '"' >>extra_options.h
 
 # Build arkworks-algebra
-if [[ $CFLAGS != *-m32* && "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" ]]
 then
     cd $SRC/cryptofuzz/modules/arkworks-algebra/
-    make
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        rustup target add i686-unknown-linux-gnu
+        make -f Makefile-i386
+    fi
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
 fi
 
