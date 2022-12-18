@@ -340,6 +340,10 @@ def get_parser():  # pylint: disable=too-many-statements
   coverage_parser.add_argument('--corpus-dir',
                                help='specify location of corpus'
                                ' to be used (requires --fuzz-target argument)')
+  coverage_parser.add_argument('--public',
+                               action='store_true',
+                               help='if set, will download public '
+                               'corpus using wget')
   coverage_parser.add_argument('project',
                                help='name of the project or path (external)')
   coverage_parser.add_argument('extra_args',
@@ -998,8 +1002,9 @@ def _get_latest_public_corpus(args, fuzzer):
   target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
   try:
     with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(['unzip', target_zip, '-d', target_fuzzer_dir],
-                            stdout=stdout)
+      subprocess.check_call(
+          ['unzip', '-q', '-o', target_zip, '-d', target_fuzzer_dir],
+          stdout=stdout)
   except OSError:
     logging.error('Failed to unzip corpus')
 
