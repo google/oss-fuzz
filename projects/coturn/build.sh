@@ -18,9 +18,12 @@
 mkdir my_build
 
 pushd my_build/
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE -Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../.
+cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../.
 make -j$(nproc)
 popd
+
+
 
 pushd my_build/fuzzing/
 cp FuzzStun $OUT/FuzzStun
