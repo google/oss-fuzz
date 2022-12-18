@@ -27,8 +27,8 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "ERROR: JVM projects can be fuzzed with libFuzzer or tested with wycheproof engines only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "none" ]; then
-    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "none" ] && [ "$SANITIZER" != "introspector" ]; then
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer or Introspector only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
@@ -214,10 +214,23 @@ if [ "$SANITIZER" = "introspector" ]; then
   pip3 install --upgrade setuptools
   pip3 install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
   pip3 install --prefer-binary matplotlib
-  mkdir -p $SRC/inspector
 
+  if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+    echo "GOING jvm route"
+
+    set -x
+    # Output will be put in /out/
+    python3 /fuzz-introspector/frontends/java/oss-fuzz-main.py
+    # Move files temporarily to fit workflow of other languages.
+    mkdir -p $SRC/my-fi-data
+    find $OUT/ -name *.data -exec mv {} $SRC/my-fi-data/ \;
+    find $OUT/ -name *.data.yaml -exec mv {} $SRC/my-fi-data/ \;
+  fi
+
+  mkdir -p $SRC/inspector
   find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "fuzzerLogFile-*.data.yaml" -exec cp {} $SRC/inspector/ \;
+
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]
   then
@@ -242,6 +255,14 @@ if [ "$SANITIZER" = "introspector" ]; then
     REPORT_ARGS="$REPORT_ARGS --language=python"
     python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
     cp -rf $SRC/inspector $OUT/inspector
+  elif [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+    echo "GOING jvm route"
+    set -x
+    find $OUT/ -name "jacoco.xml" -exec cp {} $SRC/inspector/ \;
+    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --language=jvm"
+    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    cp -rf $SRC/inspector $OUT/inspector
   else
     # C/C++
 
@@ -253,7 +274,7 @@ if [ "$SANITIZER" = "introspector" ]; then
     REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
     # Use the just-generated correlation file
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS || true
+    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
 
     cp -rf $SRC/inspector $OUT/inspector
   fi
