@@ -23,8 +23,6 @@ cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
 make -j$(nproc)
 popd
 
-
-
 pushd my_build/fuzzing/
 cp FuzzStun $OUT/FuzzStun
 cp FuzzStunClient $OUT/FuzzStunClient
