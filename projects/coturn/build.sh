@@ -33,5 +33,6 @@ cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
 popd
 
 pushd /lib/x86_64-linux-gnu/
+mkdir $OUT/lib/
 cp libevent* $OUT/lib/.
 popd
