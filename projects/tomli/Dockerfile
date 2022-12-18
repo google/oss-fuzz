@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/usr/bin/python3
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake ninja-build pkg-config libfmt-dev
-RUN git clone --depth 1 --single-branch --branch master https://github.com/resiprocate/resiprocate.git resiprocate
-WORKDIR resiprocate
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN git clone --depth=1 https://github.com/hukkinj1/tomli tomli
+RUN git clone --depth=1 https://github.com/hukkin/tomli-w tomli-w
+COPY *.sh $SRC/
+WORKDIR $SRC/tomli

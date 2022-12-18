@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake ninja-build pkg-config libfmt-dev
-RUN git clone --depth 1 --single-branch --branch master https://github.com/resiprocate/resiprocate.git resiprocate
-WORKDIR resiprocate
-COPY build.sh $SRC/
+pip3 install .
+
+cd $SRC/tomli-w
+pip3 install .
+
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz*.py'); do
+  compile_python_fuzzer $fuzzer
+done
