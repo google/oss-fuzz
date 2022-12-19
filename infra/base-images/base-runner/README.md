@@ -12,6 +12,7 @@ docker run -ti gcr.io/oss-fuzz-base/base-runner <command> <args>
 | `reproduce <fuzzer_name> <fuzzer_options>` | build all fuzz targets and run specified one with testcase `/testcase` and given options.
 | `run_fuzzer <fuzzer_name> <fuzzer_options>` | runs specified fuzzer combining options with `.options` file |
 | `test_all.py` | runs every binary in `/out` as a fuzzer for a while to ensure it works. |
+| `coverage <fuzzer_name>` | generate a coverage report for the given fuzzer. |
 
 # Examples
 
