@@ -68,7 +68,7 @@ declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/.
 # Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
 echo 'try-import %workspace%/fuzztest.bazelrc' >> tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc
 
-git apply ../dependecies.diff
+git apply ../dependencies.diff
 
 mkdir -p /tf/pkg
 mkdir -p /tf/cache
