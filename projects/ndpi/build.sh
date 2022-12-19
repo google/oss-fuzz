@@ -48,7 +48,17 @@ fi
 
 # build project
 cd ndpi
-sh autogen.sh
-./configure --enable-fuzztargets
-make
-ls fuzz/fuzz* | grep -v "\." | grep -v "with_main" | while read i; do cp $i $OUT/; done
+# Set LDFLAGS variable and `--with-only-libndpi` option as workaround for the
+# "missing dependencies errors" in the introspector build. See #8939
+LDFLAGS="-lpcap" ./autogen.sh --enable-fuzztargets --with-only-libndpi
+make -j$(nproc)
+# Copy fuzzers
+ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
+# Copy seed corpus
+cp fuzz/*.zip $OUT/
+# Copy configuration files
+cp example/protos.txt $OUT/
+cp example/categories.txt $OUT/
+cp example/risky_domains.txt $OUT/
+cp example/ja3_fingerprints.csv $OUT/
+cp example/sha1_fingerprints.csv $OUT/

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/go-redis/redis redis
 COPY build.sh $SRC/
 WORKDIR $SRC/redis
