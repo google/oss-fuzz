@@ -147,7 +147,7 @@ def get_args(args=None):
   return parsed_args
 
 
-@functools.cache
+@functools.lru_cache
 def get_all_projects():
   """Returns a list of all OSS-Fuzz projects."""
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
@@ -158,7 +158,7 @@ def get_all_projects():
   ])
 
 
-@functools.cache
+@functools.lru_cache
 def get_project_languages():
   """Returns a dictionary mapping languages to projects."""
   all_projects = get_all_projects()
