@@ -109,6 +109,16 @@ if [ "$SANITIZER" = undefined ]; then
     cp CryptofuzzJavaHarness.class $OUT/
 fi
 
+if [[ $CFLAGS != *-m32* ]]
+then
+    cd $SRC/
+    tar Jxf zig-latest.tar.xz
+    export ZIG_BIN=$(realpath zig-linux-x86_64*/zig)
+
+    cd $SRC/cryptofuzz/modules/zig/
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ZIG"
+fi
 
 # Compile NSS
 if [[ $CFLAGS != *-m32* ]]
