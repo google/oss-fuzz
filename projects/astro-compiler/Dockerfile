@@ -17,8 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/withastro/astro.git
 
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-RUN go get github.com/AdamKorcz/go-118-fuzz-build/testing
-
 COPY build.sh $SRC/
 WORKDIR $SRC/compiler

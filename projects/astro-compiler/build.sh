@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+go install github.com/AdamKorcz/go-118-fuzz-build@latest
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
 compile_native_go_fuzzer github.com/withastro/compiler FuzzScopeHTML fuzz_scope_html
 compile_native_go_fuzzer github.com/withastro/compiler FuzzTransformScoping fuzz_transform_scoping
