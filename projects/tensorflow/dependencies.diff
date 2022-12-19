@@ -1,14 +1,8 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index 8f49e6503d0..7280c91cf1a 100644
+index 8f49e6503d0..3cfa5e837f1 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
-@@ -17,11 +17,12 @@ package(
- tf_cc_test(
-     name = "status_fuzz",
-     srcs = ["status_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -22,6 +22,7 @@ tf_cc_test(
          ":fuzz_helpers",
          "//tensorflow/core/platform:status",
          "@com_google_fuzztest//fuzztest",
@@ -16,13 +10,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -29,11 +30,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "arg_def_case_fuzz",
-     srcs = ["arg_def_case_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -34,6 +35,7 @@ tf_cc_test(
          "//tensorflow/core/platform:str_util",
          "//tensorflow/core/platform:stringpiece",
          "@com_google_fuzztest//fuzztest",
@@ -30,14 +18,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -41,12 +43,13 @@ tf_cc_test(
- tf_cc_test(
-     name = "base64_fuzz",
-     srcs = ["base64_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
-         "//tensorflow/core/platform:base64",
+@@ -47,6 +49,7 @@ tf_cc_test(
          "//tensorflow/core/platform:status",
          "//tensorflow/core/platform:stringpiece",
          "@com_google_fuzztest//fuzztest",
@@ -45,13 +26,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -54,11 +57,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "bfloat16_fuzz",
-     srcs = ["bfloat16_fuzz.cc"],
--    tags = ["no_oss"],  # b/175698644
-+  # b/175698644
-     deps = [
+@@ -59,6 +62,7 @@ tf_cc_test(
          "//tensorflow/core:test",
          "//tensorflow/core/framework:bfloat16",
          "@com_google_fuzztest//fuzztest",
@@ -59,31 +34,15 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -67,7 +71,7 @@ tf_cc_test(
-     name = "checkpoint_reader_fuzz",
-     srcs = ["checkpoint_reader_fuzz.cc"],
-     data = glob(["checkpoint_reader_testdata/*"]),
--    tags = ["no_oss"],
-+
-     deps = [
-         ":checkpoint_reader_fuzz_input_proto_cc",
-         "//tensorflow/c:checkpoint_reader",
-@@ -79,7 +83,7 @@ tf_cc_test(
+@@ -79,6 +83,7 @@ tf_cc_test(
          "//tensorflow/core/platform:resource_loader",
          "//tensorflow/core/platform:status",
          "@com_google_fuzztest//fuzztest",
--        "@com_google_googletest//:gtest_main",
 +        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
      ],
  )
- 
-@@ -96,11 +100,12 @@ tf_proto_library(
- tf_cc_test(
-     name = "cleanpath_fuzz",
-     srcs = ["cleanpath_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -101,6 +106,7 @@ tf_cc_test(
          "//tensorflow/core/platform:path",
          "@com_google_absl//absl/strings",
          "@com_google_fuzztest//fuzztest",
@@ -91,13 +50,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -108,11 +113,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "consume_leading_digits_fuzz",
-     srcs = ["consume_leading_digits_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -113,6 +119,7 @@ tf_cc_test(
          "//tensorflow/core/platform:str_util",
          "//tensorflow/core/platform:stringpiece",
          "@com_google_fuzztest//fuzztest",
@@ -105,13 +58,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -120,11 +126,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "joinpath_fuzz",
-     srcs = ["joinpath_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -125,6 +132,7 @@ tf_cc_test(
          "//tensorflow/core/platform:path",
          "@com_google_absl//absl/strings",
          "@com_google_fuzztest//fuzztest",
@@ -119,13 +66,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -132,11 +139,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "status_group_fuzz",
-     srcs = ["status_group_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -137,6 +145,7 @@ tf_cc_test(
          ":fuzz_helpers",
          "//tensorflow/core/platform:status",
          "@com_google_fuzztest//fuzztest",
@@ -133,12 +74,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -152,10 +160,11 @@ cc_library(
- tf_cc_test(
-     name = "stringprintf_fuzz",
-     srcs = ["stringprintf_fuzz.cc"],
--    tags = ["no_oss"],
-+
+@@ -156,6 +165,7 @@ tf_cc_test(
      deps = [
          "//tensorflow/core/platform:stringprintf",
          "@com_google_fuzztest//fuzztest",
@@ -146,13 +82,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -163,11 +172,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "string_replace_fuzz",
-     srcs = ["string_replace_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
+@@ -168,6 +178,7 @@ tf_cc_test(
          "//tensorflow/core/platform:str_util",
          "//tensorflow/core/platform:stringpiece",
          "@com_google_fuzztest//fuzztest",
@@ -160,12 +90,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -175,10 +185,11 @@ tf_cc_test(
- tf_cc_test(
-     name = "tstring_fuzz",
-     srcs = ["tstring_fuzz.cc"],
--    tags = ["no_oss"],
-+
+@@ -179,6 +190,7 @@ tf_cc_test(
      deps = [
          "//tensorflow/core/platform:tstring",
          "@com_google_fuzztest//fuzztest",
@@ -173,13 +98,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -186,11 +197,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "AreAttrValuesEqual_fuzz",
-     srcs = ["AreAttrValuesEqual_fuzz.cc"],
--    tags = ["no_oss"],  # b/175698644
-+  # b/175698644
-     deps = [
+@@ -191,6 +203,7 @@ tf_cc_test(
          "//tensorflow/core/framework:attr_value_proto_cc",
          "//tensorflow/core/framework:attr_value_util",
          "@com_google_fuzztest//fuzztest",
@@ -187,13 +106,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -198,11 +210,12 @@ tf_cc_test(
- tf_cc_test(
-     name = "ParseAttrValue_fuzz",
-     srcs = ["ParseAttrValue_fuzz.cc"],
--    tags = ["no_oss"],  # b/175698644
-+  # b/175698644
-     deps = [
+@@ -203,6 +216,7 @@ tf_cc_test(
          "//tensorflow/core/framework:attr_value_proto_cc",
          "//tensorflow/core/framework:attr_value_util",
          "@com_google_fuzztest//fuzztest",
@@ -201,14 +114,7 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -210,12 +223,13 @@ tf_cc_test(
- tf_cc_test(
-     name = "parseURI_fuzz",
-     srcs = ["parseURI_fuzz.cc"],
--    tags = ["no_oss"],
-+
-     deps = [
-         "//tensorflow/core/platform:path",
+@@ -216,6 +230,7 @@ tf_cc_test(
          "//tensorflow/core/platform:stringpiece",
          "@com_google_absl//absl/strings",
          "@com_google_fuzztest//fuzztest",
@@ -216,31 +122,11 @@ index 8f49e6503d0..7280c91cf1a 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -224,7 +238,7 @@ cc_library(
-     name = "fuzz_session",
-     testonly = 1,
-     hdrs = ["fuzz_session.h"],
--    tags = ["no_oss"],
-+
-     visibility = [
-         "//tensorflow/cc/framework/fuzzing:__subpackages__",
-         "//tensorflow/security/fuzzing:__subpackages__",
 diff --git a/tensorflow/security/fuzzing/cc/ops/BUILD b/tensorflow/security/fuzzing/cc/ops/BUILD
-index 16ec298b5c0..6f062c04641 100644
+index 16ec298b5c0..46c1f7ab814 100644
 --- a/tensorflow/security/fuzzing/cc/ops/BUILD
 +++ b/tensorflow/security/fuzzing/cc/ops/BUILD
-@@ -12,16 +12,16 @@ load(
- # copybara:uncomment package(default_applicable_licenses = ["//tensorflow:license"])
- 
- # A trivial fuzzer with no pre-specified corpus.
--tf_cc_shared_test(
-+tf_cc_test(
-     name = "identity_fuzz",
-     srcs = ["identity_fuzz.cc"],
--    tags = ["no_oss"],
-     deps = [
-         "//tensorflow/cc:cc_ops",
-         "//tensorflow/core/framework:types_proto_cc",
+@@ -22,6 +22,7 @@ tf_cc_shared_test(
          "//tensorflow/core/kernels:array",
          "//tensorflow/security/fuzzing/cc:fuzz_session",
          "@com_google_fuzztest//fuzztest",
@@ -248,14 +134,7 @@ index 16ec298b5c0..6f062c04641 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -29,13 +29,13 @@ tf_cc_shared_test(
- tf_cc_test(
-     name = "concat_fuzz",
-     srcs = ["concat_fuzz.cc"],
--    tags = ["no_oss"],
-     deps = [
-         "//tensorflow/cc:cc_ops",
-         "//tensorflow/core/framework:types_proto_cc",
+@@ -36,6 +37,7 @@ tf_cc_test(
          "//tensorflow/core/kernels:array",
          "//tensorflow/security/fuzzing/cc:fuzz_session",
          "@com_google_fuzztest//fuzztest",
@@ -263,14 +142,7 @@ index 16ec298b5c0..6f062c04641 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -43,13 +43,13 @@ tf_cc_test(
- tf_cc_test(
-     name = "add_fuzz",
-     srcs = ["add_fuzz.cc"],
--    tags = ["no_oss"],
-     deps = [
-         "//tensorflow/cc:cc_ops",
-         "//tensorflow/core/framework:types_proto_cc",
+@@ -50,6 +52,7 @@ tf_cc_test(
          "//tensorflow/core/kernels:array",
          "//tensorflow/security/fuzzing/cc:fuzz_session",
          "@com_google_fuzztest//fuzztest",
@@ -278,15 +150,7 @@ index 16ec298b5c0..6f062c04641 100644
          "@com_google_googletest//:gtest_main",
      ],
  )
-@@ -57,7 +57,6 @@ tf_cc_test(
- tf_cc_test(
-     name = "matmul_fuzz",
-     srcs = ["matmul_fuzz.cc"],
--    tags = ["no_oss"],
-     deps = [
-         "//tensorflow/cc:cc_ops",
-         "//tensorflow/core/framework:types_proto_cc",
-@@ -65,6 +64,7 @@ tf_cc_test(
+@@ -65,6 +68,7 @@ tf_cc_test(
          "//tensorflow/core/kernels:matmul_op",
          "//tensorflow/security/fuzzing/cc:fuzz_session",
          "@com_google_fuzztest//fuzztest",
@@ -316,7 +180,7 @@ index 086648fe671..4ef356095a0 100644
  # Test-related settings below this point.
  test --build_tests_only --keep_going --test_output=errors --verbose_failures=true
 diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
-index a1075f0a8b2..514da6d2f69 100644
+index 2766913e73b..f4842aa9841 100644
 --- a/tensorflow/workspace2.bzl
 +++ b/tensorflow/workspace2.bzl
 @@ -1,5 +1,6 @@
@@ -326,7 +190,7 @@ index a1075f0a8b2..514da6d2f69 100644
  # Import third party config rules.
  load("@bazel_skylib//lib:versions.bzl", "versions")
  load("//third_party/gpus:cuda_configure.bzl", "cuda_configure")
-@@ -472,11 +473,11 @@ def _tf_repositories():
+@@ -476,11 +477,11 @@ def _tf_repositories():
          urls = tf_mirror_urls("https://github.com/google/nsync/archive/1.25.0.tar.gz"),
      )
  
