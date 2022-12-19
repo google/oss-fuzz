@@ -188,6 +188,11 @@ elif [[ "$FUZZING_ENGINE" = centipede ]]; then
   # --binary: The target binary under test without sanitizer.
   # --extra_binary: The target binaries under test with sanitizers.
   CMD_LINE="$OUT/centipede --workdir=\"$OUT/workdir\" --corpus_dir=\"$CORPUS_DIR\" --fork_server=1 --exit_on_crash=1 --timeout=1200 --rss_limit_mb=4096 --address_space_limit_mb=5120 $(get_dictionary) --binary=\"$OUT/${FUZZER}\" $(get_extra_binaries) $*"
+elif [[ "$FUZZING_ENGINE" = fuzztest ]]; then
+  TESTS=`$OUT/$FUZZER --list_fuzz_tests 2> /dev/null`
+  for TEST in "$TESTS"; do
+    CMD_LINE="$OUT/$FUZZER --fuzz="$TEST" $*"
+  done
 else
 
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"

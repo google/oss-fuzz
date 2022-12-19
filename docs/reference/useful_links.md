@@ -45,3 +45,4 @@ parent: Reference
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
 * [Chromium Efficient Fuzzing Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzing.md)
 * [ClusterFuzz documentation](https://google.github.io/clusterfuzz/)
+* [FuzzTest documentation](https://github.com/google/fuzztest/blob/main/README.md)
