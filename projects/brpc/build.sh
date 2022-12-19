@@ -23,7 +23,7 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON -DBUILD_SHARED_LIBS=OFF -DWITH_SNAPPY=ON \
 -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
 -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CFLAGS" \
--DCMAKE_CPP_FLAGS="$CFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" \
+-DCMAKE_CPP_FLAGS="$CFLAGS" -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS -Wl,-rpath,'\$ORIGIN/lib'" \
 -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
 ../
 
@@ -39,13 +39,8 @@ cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
 popd
 
-pushd $OUT/
-mkdir $OUT/lib/
-patchelf --set-rpath '$ORIGIN/lib' Fuzz_json
-patchelf --set-rpath '$ORIGIN/lib' Fuzz_http
-popd
-
 pushd /lib/x86_64-linux-gnu/
+mkdir $OUT/lib/
 cp libgflags* $OUT/lib/.
 cp libprotobuf* $OUT/lib/.
 cp libleveldb* $OUT/lib/.
