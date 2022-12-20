@@ -12,6 +12,7 @@ auto_ccs:
   - hengqi.chen@gmail.com
   - yulia.kartseva@gmail.com
   - evverx@gmail.com
+  - shunghsiyu@gmail.com
 main_repo: "https://github.com/libbpf/libbpf"
 builds_per_day: 4
 view_restrictions: none
