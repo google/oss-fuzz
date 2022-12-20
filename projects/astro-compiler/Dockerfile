@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/withastro/astro.git
+RUN git clone --depth 1 https://github.com/withastro/compiler.git
 
 COPY build.sh $SRC/
 WORKDIR $SRC/compiler
