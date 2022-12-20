@@ -366,7 +366,11 @@ def get_parser():  # pylint: disable=too-many-statements
       'introspector')
   introspector_parser.add_argument('project', help='name of the project')
   introspector_parser.add_argument('--seconds',
-                                   help='number of seconds to run fuzzers')
+                                   help='number of seconds to run fuzzers',
+                                   default=10)
+  introspector_parser.add_argument('source_path',
+                                   help='path of local source',
+                                   nargs='?')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1150,10 +1154,14 @@ def introspector(args):
   """Runs a complete end-to-end run of introspector"""
   parser = get_parser()
 
+  args_to_append = []
+  if args.source_path:
+    args_to_append(args.source_path)
+
   # build fuzzers command
   build_fuzzers_command = [
       'build_fuzzers', args.project.name, '--sanitizer', 'address'
-  ]
+  ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
   build_fuzzers(parsed_args)
 
@@ -1180,25 +1188,46 @@ def introspector(args):
   parser = get_parser()
   build_fuzzers_command = [
       'build_fuzzers', args.project.name, '--sanitizer', 'coverage'
-  ]
+  ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
   build_fuzzers(parsed_args)
 
   # Collect coverage
   parser = get_parser()
-  build_fuzzers_command = [
-      'coverage', '--no-corpus-download', '--port \'\'', args.project.name
+  coverage_command = [
+      'coverage', '--no-corpus-download', '--port', '', args.project.name
   ]
-  parsed_args = parse_args(parser, build_fuzzers_command)
+  parsed_args = parse_args(parser, coverage_command)
   coverage(parsed_args)
 
   # Build introspector
   parser = get_parser()
   build_fuzzers_command = [
       'build_fuzzers', args.project.name, '--sanitizer', 'introspector'
-  ]
+  ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
   build_fuzzers(parsed_args)
+
+  inspector_src = os.path.join(args.project.out, "inspector")
+  inspector_dst = os.path.join(args.project.out, "introspector-report")
+  if not os.path.isdir(inspector_src):
+      return False
+
+  if os.path.isdir(inspector_dst):
+    os.rmdir(inspector_dst)
+  shutil.copytree(inspector_src, inspector_dst)
+
+  # Copy the coverage reports into the introspector report
+  src_cov_report = os.path.join(args.project.out, "report")
+  dst_cov_report = os.path.join(inspector_dst, "covreport")
+  shutil.copytree(src_cov_report, dst_cov_report)
+
+  # Copy per-target coverage reports
+  src_target_cov_report = os.path.join(args.project.out, "report_target")
+  for target_cov_dir in os.listdir(src_target_cov_report):
+      dst_target_cov_report = os.path.join(dst_cov_report, target_cov_dir)
+      shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir), dst_target_cov_report)
+
 
   return True
 
