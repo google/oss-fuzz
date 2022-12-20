@@ -1200,6 +1200,8 @@ def introspector(args):
   parsed_args = parse_args(parser, build_fuzzers_command)
   build_fuzzers(parsed_args)
 
+  return True
+
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
