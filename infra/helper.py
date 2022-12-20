@@ -371,6 +371,16 @@ def get_parser():  # pylint: disable=too-many-statements
   introspector_parser.add_argument('source_path',
                                    help='path of local source',
                                    nargs='?')
+  introspector_parser.add_argument(
+      '--public-corpora',
+      help='if specified, will use public corpora for code coverage',
+      default=False,
+      action='store_true')
+  introspector_parser.add_argument(
+      '--private-corpora',
+      help='if specified, will use private corpora',
+      default=False,
+      action='store_true')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1166,24 +1176,36 @@ def introspector(args):
   if not build_fuzzers(parsed_args):
     return False
 
-  # Run all fuzzers
-  fuzzer_targets = _get_fuzz_targets(args.project)
-  for fuzzer_name in fuzzer_targets:
-    # Make a corpus directory
-    fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
-    if not os.path.isdir(fuzzer_corpus_dir):
-      os.makedirs(fuzzer_corpus_dir)
-    run_fuzzer_command = [
-        'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
-        fuzzer_corpus_dir, args.project.name, fuzzer_name
-    ]
+  # Generate corpus, either by downloading or running fuzzers
+  if args.private_corpora or args.public_corpora:
+    corpora_command = ['download_corpora']
+    if args.public_corpora:
+      corpora_command.append('--public')
+    corpora_command.append(args.project.name)
+    parsed_args = parse_args(parser, corpora_command)
+    if not download_corpora(parsed_args):
+      return False
+  else:
+    fuzzer_targets = _get_fuzz_targets(args.project)
+    for fuzzer_name in fuzzer_targets:
+      # Make a corpus directory
+      fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
+      if not os.path.isdir(fuzzer_corpus_dir):
+        os.makedirs(fuzzer_corpus_dir)
+      run_fuzzer_command = [
+          'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+          fuzzer_corpus_dir, args.project.name, fuzzer_name
+      ]
 
-    parser = get_parser()
-    parsed_args = parse_args(parser, run_fuzzer_command)
-    parsed_args.fuzzer_args = [
-        f'-max_total_time={args.seconds}', '-detect_leaks=0'
-    ]
-    run_fuzzer(parsed_args)
+      parser = get_parser()
+      parsed_args = parse_args(parser, run_fuzzer_command)
+      parsed_args.fuzzer_args = [
+          f'-max_total_time={args.seconds}', '-detect_leaks=0'
+      ]
+      # Continue even if run command fails, because we do not have 100%
+      # accuracy in fuzz target detection, i.e. we might try to run something
+      # that is not a target.
+      run_fuzzer(parsed_args)
 
   # Build code coverage
   parser = get_parser()
