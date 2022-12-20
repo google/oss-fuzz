@@ -1169,8 +1169,8 @@ def _introspector_prepare_corpus(args):
     if args.public_corpora:
       corpora_command.append('--public')
     corpora_command.append(args.project.name)
-    #parsed_args = parse_args(parser, corpora_command)
     if not download_corpora(parse_args(parser, corpora_command)):
+      logging.error('Failed to download corpora')
       return False
   else:
     fuzzer_targets = _get_fuzz_targets(args.project)
@@ -1208,6 +1208,7 @@ def introspector(args):
       'build_fuzzers', '--sanitizer=address', args.project.name
   ] + args_to_append
   if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with ASAN')
     return False
 
   if not _introspector_prepare_corpus(args):
@@ -1218,6 +1219,7 @@ def introspector(args):
       'build_fuzzers', '--sanitizer=coverage', args.project.name
   ] + args_to_append
   if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with coverage instrumentation')
     return False
 
   # Collect coverage
@@ -1225,6 +1227,7 @@ def introspector(args):
       'coverage', '--no-corpus-download', '--port', '', args.project.name
   ]
   if not coverage(parse_args(parser, coverage_command)):
+    logging.error('Failed to extract coverage')
     return False
 
   # Build introspector
@@ -1232,6 +1235,7 @@ def introspector(args):
       'build_fuzzers', '--sanitizer=introspector', args.project.name
   ] + args_to_append
   if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with introspector')
     return False
 
   introspector_dst = os.path.join(args.project.out, "introspector-report")
