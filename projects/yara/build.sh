@@ -27,7 +27,7 @@ for f in $fuzzers; do
   fuzzer_name=$(basename -s ".cc" $f)
   echo "Building $fuzzer_name"
   $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$fuzzer_name \
-    ./libyara/.libs/libyara.a \
+    ./.libs/libyara.a \
     $LIB_FUZZING_ENGINE
   if [ -d "$SRC/yara/tests/oss-fuzz/${fuzzer_name}_corpus" ]; then
     zip -j $OUT/${fuzzer_name}_seed_corpus.zip $SRC/yara/tests/oss-fuzz/${fuzzer_name}_corpus/*
