@@ -1160,30 +1160,17 @@ def coverage(args):
   return result
 
 
-def introspector(args):
-  """Runs a complete end-to-end run of introspector"""
+def _introspector_prepare_corpus(args):
+  """Helper function for introspector runs to generate corpora"""
   parser = get_parser()
-
-  args_to_append = []
-  if args.source_path:
-    args_to_append.append(_get_absolute_path(args.source_path))
-
-  # build fuzzers with ASAN
-  build_fuzzers_command = [
-      'build_fuzzers', '--sanitizer=address', args.project.name
-  ] + args_to_append
-  parsed_args = parse_args(parser, build_fuzzers_command)
-  if not build_fuzzers(parsed_args):
-    return False
-
   # Generate corpus, either by downloading or running fuzzers
   if args.private_corpora or args.public_corpora:
     corpora_command = ['download_corpora']
     if args.public_corpora:
       corpora_command.append('--public')
     corpora_command.append(args.project.name)
-    parsed_args = parse_args(parser, corpora_command)
-    if not download_corpora(parsed_args):
+    #parsed_args = parse_args(parser, corpora_command)
+    if not download_corpora(parse_args(parser, corpora_command)):
       return False
   else:
     fuzzer_targets = _get_fuzz_targets(args.project)
@@ -1197,7 +1184,6 @@ def introspector(args):
           fuzzer_corpus_dir, args.project.name, fuzzer_name
       ]
 
-      parser = get_parser()
       parsed_args = parse_args(parser, run_fuzzer_command)
       parsed_args.fuzzer_args = [
           f'-max_total_time={args.seconds}', '-detect_leaks=0'
@@ -1206,46 +1192,56 @@ def introspector(args):
       # accuracy in fuzz target detection, i.e. we might try to run something
       # that is not a target.
       run_fuzzer(parsed_args)
+  return True
+
+
+def introspector(args):
+  """Runs a complete end-to-end run of introspector"""
+  parser = get_parser()
+
+  args_to_append = []
+  if args.source_path:
+    args_to_append.append(_get_absolute_path(args.source_path))
+
+  # build fuzzers with ASAN
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=address', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    return False
+
+  if not _introspector_prepare_corpus(args):
+    return False
 
   # Build code coverage
-  parser = get_parser()
   build_fuzzers_command = [
       'build_fuzzers', '--sanitizer=coverage', args.project.name
   ] + args_to_append
-  parsed_args = parse_args(parser, build_fuzzers_command)
-  build_fuzzers(parsed_args)
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    return False
 
   # Collect coverage
-  parser = get_parser()
   coverage_command = [
       'coverage', '--no-corpus-download', '--port', '', args.project.name
   ]
-  parsed_args = parse_args(parser, coverage_command)
-  if not coverage(parsed_args):
+  if not coverage(parse_args(parser, coverage_command)):
     return False
 
   # Build introspector
-  parser = get_parser()
   build_fuzzers_command = [
       'build_fuzzers', '--sanitizer=introspector', args.project.name
   ] + args_to_append
-  parsed_args = parse_args(parser, build_fuzzers_command)
-  if not build_fuzzers(parsed_args):
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
     return False
 
-  inspector_src = os.path.join(args.project.out, "inspector")
   inspector_dst = os.path.join(args.project.out, "introspector-report")
-  if not os.path.isdir(inspector_src):
-    return False
-
   if os.path.isdir(inspector_dst):
     os.rmdir(inspector_dst)
-  shutil.copytree(inspector_src, inspector_dst)
+  shutil.copytree(os.path.join(args.project.out, "inspector"), inspector_dst)
 
   # Copy the coverage reports into the introspector report
-  src_cov_report = os.path.join(args.project.out, "report")
   dst_cov_report = os.path.join(inspector_dst, "covreport")
-  shutil.copytree(src_cov_report, dst_cov_report)
+  shutil.copytree(os.path.join(args.project.out, "report"), dst_cov_report)
 
   # Copy per-target coverage reports
   src_target_cov_report = os.path.join(args.project.out, "report_target")
