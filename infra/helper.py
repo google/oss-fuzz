@@ -355,16 +355,16 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
 
-  introspector_parser = subparsers.add_parser('introspector',
-                                   help='Run a complete end-to-end run of '
-                                   'fuzz introspector. This involves (1) '
-                                   'building the fuzzers with ASAN; (2) '
-                                   'running all fuzzers; (3) building '
-                                   'fuzzers with coverge; (4) extracting '
-                                   'coverage; (5) building fuzzers using '
-                                   'introspector')
-  introspector_parser.add_argument('project',
-                                    help='name of the project')
+  introspector_parser = subparsers.add_parser(
+      'introspector',
+      help='Run a complete end-to-end run of '
+      'fuzz introspector. This involves (1) '
+      'building the fuzzers with ASAN; (2) '
+      'running all fuzzers; (3) building '
+      'fuzzers with coverge; (4) extracting '
+      'coverage; (5) building fuzzers using '
+      'introspector')
+  introspector_parser.add_argument('project', help='name of the project')
   introspector_parser.add_argument('--seconds',
                                    help='number of seconds to run fuzzers')
 
@@ -1152,58 +1152,54 @@ def introspector(args):
 
   # build fuzzers command
   build_fuzzers_command = [
-    'build_fuzzers', args.project.name, '--sanitizer', 'address'
+      'build_fuzzers', args.project.name, '--sanitizer', 'address'
   ]
   parsed_args = parse_args(parser, build_fuzzers_command)
-  print("parsed args: %s"%(parsed_args))
   build_fuzzers(parsed_args)
 
   # Run all fuzzers
   fuzzer_targets = _get_fuzz_targets(args.project)
-  print("Fuzz targets: %s" % str(fuzzer_targets))
   for fuzzer_name in fuzzer_targets:
-      # Make a corpus directory
-      fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
-      if not os.path.isdir(fuzzer_corpus_dir):
-          os.makedirs(fuzzer_corpus_dir)
-      run_fuzzer_command = [
-          'run_fuzzer', args.project.name, fuzzer_name, '--sanitizer', 'address', '--corpus-dir', fuzzer_corpus_dir
-      ]
-      
-      parser = get_parser()
-      parsed_args = parse_args(parser, run_fuzzer_command)
-      parsed_args.fuzzer_args = ['-max_total_time=3', '-detect_leaks=0']
-      print("parsed args: %s"%(parsed_args))
-      run_fuzzer(parsed_args)
+    # Make a corpus directory
+    fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
+    if not os.path.isdir(fuzzer_corpus_dir):
+      os.makedirs(fuzzer_corpus_dir)
+    run_fuzzer_command = [
+        'run_fuzzer', args.project.name, fuzzer_name, '--sanitizer', 'address',
+        '--corpus-dir', fuzzer_corpus_dir
+    ]
 
+    parser = get_parser()
+    parsed_args = parse_args(parser, run_fuzzer_command)
+    parsed_args.fuzzer_args = [
+        f'-max_total_time={args.seconds}', '-detect_leaks=0'
+    ]
+    run_fuzzer(parsed_args)
 
   # Build code coverage
   parser = get_parser()
   build_fuzzers_command = [
-    'build_fuzzers', args.project.name, '--sanitizer', 'coverage'
+      'build_fuzzers', args.project.name, '--sanitizer', 'coverage'
   ]
   parsed_args = parse_args(parser, build_fuzzers_command)
-  print("parsed args: %s"%(parsed_args))
   build_fuzzers(parsed_args)
 
   # Collect coverage
   parser = get_parser()
   build_fuzzers_command = [
-    'coverage', '--no-corpus-download', '--port \'\'', args.project.name
+      'coverage', '--no-corpus-download', '--port \'\'', args.project.name
   ]
   parsed_args = parse_args(parser, build_fuzzers_command)
-  print("parsed args: %s"%(parsed_args))
   coverage(parsed_args)
 
   # Build introspector
   parser = get_parser()
   build_fuzzers_command = [
-    'build_fuzzers', args.project.name, '--sanitizer', 'introspector'
+      'build_fuzzers', args.project.name, '--sanitizer', 'introspector'
   ]
   parsed_args = parse_args(parser, build_fuzzers_command)
-  print("parsed args: %s"%(parsed_args))
   build_fuzzers(parsed_args)
-  
+
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
