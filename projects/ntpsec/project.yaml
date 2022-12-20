@@ -7,6 +7,7 @@ vendor_ccs:
   - "rlaager@coderich.net"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
+  - selsky@gmail.com
 fuzzing_engines:
   - libfuzzer
   - afl
