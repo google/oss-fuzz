@@ -1250,10 +1250,10 @@ def introspector(args):
     shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir),
                     dst_target_cov_report)
 
-  logging.info('Introspector run complete. Report in %s' % introspector_dst)
+  logging.info('Introspector run complete. Report in %s', introspector_dst)
   logging.info(
       'To browse the report, run: `python3 -m http.server 8008 --directory %s`'
-      'and navigate to localhost:8008/fuzz_report.html in your browser' %
+      'and navigate to localhost:8008/fuzz_report.html in your browser',
       introspector_dst)
   return True
 
