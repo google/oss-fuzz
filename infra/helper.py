@@ -1156,14 +1156,15 @@ def introspector(args):
 
   args_to_append = []
   if args.source_path:
-    args_to_append(args.source_path)
+    args_to_append.append(_get_absolute_path(args.source_path))
 
-  # build fuzzers command
+  # build fuzzers with ASAN
   build_fuzzers_command = [
-      'build_fuzzers', args.project.name, '--sanitizer', 'address'
+      'build_fuzzers', '--sanitizer=address', args.project.name
   ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
-  build_fuzzers(parsed_args)
+  if not build_fuzzers(parsed_args):
+    return False
 
   # Run all fuzzers
   fuzzer_targets = _get_fuzz_targets(args.project)
@@ -1173,8 +1174,8 @@ def introspector(args):
     if not os.path.isdir(fuzzer_corpus_dir):
       os.makedirs(fuzzer_corpus_dir)
     run_fuzzer_command = [
-        'run_fuzzer', args.project.name, fuzzer_name, '--sanitizer', 'address',
-        '--corpus-dir', fuzzer_corpus_dir
+        'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+        fuzzer_corpus_dir, args.project.name, fuzzer_name
     ]
 
     parser = get_parser()
@@ -1187,7 +1188,7 @@ def introspector(args):
   # Build code coverage
   parser = get_parser()
   build_fuzzers_command = [
-      'build_fuzzers', args.project.name, '--sanitizer', 'coverage'
+      'build_fuzzers', '--sanitizer=coverage', args.project.name
   ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
   build_fuzzers(parsed_args)
@@ -1198,20 +1199,22 @@ def introspector(args):
       'coverage', '--no-corpus-download', '--port', '', args.project.name
   ]
   parsed_args = parse_args(parser, coverage_command)
-  coverage(parsed_args)
+  if not coverage(parsed_args):
+    return False
 
   # Build introspector
   parser = get_parser()
   build_fuzzers_command = [
-      'build_fuzzers', args.project.name, '--sanitizer', 'introspector'
+      'build_fuzzers', '--sanitizer=introspector', args.project.name
   ] + args_to_append
   parsed_args = parse_args(parser, build_fuzzers_command)
-  build_fuzzers(parsed_args)
+  if not build_fuzzers(parsed_args):
+    return False
 
   inspector_src = os.path.join(args.project.out, "inspector")
   inspector_dst = os.path.join(args.project.out, "introspector-report")
   if not os.path.isdir(inspector_src):
-      return False
+    return False
 
   if os.path.isdir(inspector_dst):
     os.rmdir(inspector_dst)
@@ -1225,9 +1228,9 @@ def introspector(args):
   # Copy per-target coverage reports
   src_target_cov_report = os.path.join(args.project.out, "report_target")
   for target_cov_dir in os.listdir(src_target_cov_report):
-      dst_target_cov_report = os.path.join(dst_cov_report, target_cov_dir)
-      shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir), dst_target_cov_report)
-
+    dst_target_cov_report = os.path.join(dst_cov_report, target_cov_dir)
+    shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir),
+                    dst_target_cov_report)
 
   return True
 
