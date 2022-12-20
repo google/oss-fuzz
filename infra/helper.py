@@ -1234,13 +1234,13 @@ def introspector(args):
   if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
     return False
 
-  inspector_dst = os.path.join(args.project.out, "introspector-report")
-  if os.path.isdir(inspector_dst):
-    os.rmdir(inspector_dst)
-  shutil.copytree(os.path.join(args.project.out, "inspector"), inspector_dst)
+  introspector_dst = os.path.join(args.project.out, "introspector-report")
+  if os.path.isdir(introspector_dst):
+    os.rmdir(introspector_dst)
+  shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
 
   # Copy the coverage reports into the introspector report
-  dst_cov_report = os.path.join(inspector_dst, "covreport")
+  dst_cov_report = os.path.join(introspector_dst, "covreport")
   shutil.copytree(os.path.join(args.project.out, "report"), dst_cov_report)
 
   # Copy per-target coverage reports
@@ -1250,6 +1250,11 @@ def introspector(args):
     shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir),
                     dst_target_cov_report)
 
+  logging.info('Introspector run complete. Report in %s' % introspector_dst)
+  logging.info(
+      'To browse the report, run: `python3 -m http.server 8008 --directory %s`'
+      'and navigate to localhost:8008/fuzz_report.html in your browser' %
+      introspector_dst)
   return True
 
 
