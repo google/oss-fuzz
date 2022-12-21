@@ -16,7 +16,11 @@
 ################################################################################
 
 go install github.com/AdamKorcz/go-118-fuzz-build@latest
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer github.com/withastro/compiler/internal FuzzScopeHTML fuzz_scope_html
-compile_native_go_fuzzer github.com/withastro/compiler/internal FuzzTransformScoping fuzz_transform_scoping
+# Fuzz internal/transform
+printf "package transform\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/compiler/internal/transform/registerfuzzdep.go
+go mod tidy && go mod vendor
+go get -u github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer github.com/withastro/compiler/internal/transform FuzzScopeHTML fuzz_scope_html
+compile_native_go_fuzzer github.com/withastro/compiler/internal/transform FuzzTransformScoping fuzz_transform_scoping
