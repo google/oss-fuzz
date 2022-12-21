@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,12 @@
 #
 ################################################################################
 
-cd /tmp
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.19
-rm -rf ./installer_linux
+cd $SRC/jinja
+python3 -m build
+pip3 install ./dist/Jinja*.whl
 
-echo 'Set "GOPATH=/root/go"'
-echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
-
-go install github.com/mdempsky/go114-fuzz-build@latest
-ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
-
-cd /tmp
-git clone https://github.com/AdamKorcz/go-118-fuzz-build
-cd go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/
+# Build jinja2 fuzzers
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

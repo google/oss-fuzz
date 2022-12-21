@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +14,20 @@
 #
 ################################################################################
 
-cd /tmp
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.19
-rm -rf ./installer_linux
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-echo 'Set "GOPATH=/root/go"'
-echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.6.3 && \
+rm -rf maven.zip
 
-go install github.com/mdempsky/go114-fuzz-build@latest
-ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
 
-cd /tmp
-git clone https://github.com/AdamKorcz/go-118-fuzz-build
-cd go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/
+WORKDIR ${SRC}
+#
+# clone repository
+#
+RUN git clone https://github.com/mozilla/rhino.git
+
+ADD pom.xml build.sh ${SRC}/
+ADD src/ ${SRC}/src/
+WORKDIR ${SRC}/rhino
