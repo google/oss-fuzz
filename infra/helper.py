@@ -188,6 +188,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = run_fuzzer(args)
   elif args.command == 'coverage':
     result = coverage(args)
+  elif args.command == 'introspector':
+    result = introspector(args)
   elif args.command == 'reproduce':
     result = reproduce(args)
   elif args.command == 'shell':
@@ -352,6 +354,33 @@ def get_parser():  # pylint: disable=too-many-statements
                                nargs='*')
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
+
+  introspector_parser = subparsers.add_parser(
+      'introspector',
+      help='Run a complete end-to-end run of '
+      'fuzz introspector. This involves (1) '
+      'building the fuzzers with ASAN; (2) '
+      'running all fuzzers; (3) building '
+      'fuzzers with coverge; (4) extracting '
+      'coverage; (5) building fuzzers using '
+      'introspector')
+  introspector_parser.add_argument('project', help='name of the project')
+  introspector_parser.add_argument('--seconds',
+                                   help='number of seconds to run fuzzers',
+                                   default=10)
+  introspector_parser.add_argument('source_path',
+                                   help='path of local source',
+                                   nargs='?')
+  introspector_parser.add_argument(
+      '--public-corpora',
+      help='if specified, will use public corpora for code coverage',
+      default=False,
+      action='store_true')
+  introspector_parser.add_argument(
+      '--private-corpora',
+      help='if specified, will use private corpora',
+      default=False,
+      action='store_true')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1129,6 +1158,108 @@ def coverage(args):
     logging.error('Failed to generate clang code coverage report.')
 
   return result
+
+
+def _introspector_prepare_corpus(args):
+  """Helper function for introspector runs to generate corpora."""
+  parser = get_parser()
+  # Generate corpus, either by downloading or running fuzzers.
+  if args.private_corpora or args.public_corpora:
+    corpora_command = ['download_corpora']
+    if args.public_corpora:
+      corpora_command.append('--public')
+    corpora_command.append(args.project.name)
+    if not download_corpora(parse_args(parser, corpora_command)):
+      logging.error('Failed to download corpora')
+      return False
+  else:
+    fuzzer_targets = _get_fuzz_targets(args.project)
+    for fuzzer_name in fuzzer_targets:
+      # Make a corpus directory.
+      fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
+      if not os.path.isdir(fuzzer_corpus_dir):
+        os.makedirs(fuzzer_corpus_dir)
+      run_fuzzer_command = [
+          'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+          fuzzer_corpus_dir, args.project.name, fuzzer_name
+      ]
+
+      parsed_args = parse_args(parser, run_fuzzer_command)
+      parsed_args.fuzzer_args = [
+          f'-max_total_time={args.seconds}', '-detect_leaks=0'
+      ]
+      # Continue even if run command fails, because we do not have 100%
+      # accuracy in fuzz target detection, i.e. we might try to run something
+      # that is not a target.
+      run_fuzzer(parsed_args)
+  return True
+
+
+def introspector(args):
+  """Runs a complete end-to-end run of introspector."""
+  parser = get_parser()
+
+  args_to_append = []
+  if args.source_path:
+    args_to_append.append(_get_absolute_path(args.source_path))
+
+  # Build fuzzers with ASAN.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=address', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with ASAN')
+    return False
+
+  if not _introspector_prepare_corpus(args):
+    return False
+
+  # Build code coverage.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=coverage', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with coverage instrumentation')
+    return False
+
+  # Collect coverage.
+  coverage_command = [
+      'coverage', '--no-corpus-download', '--port', '', args.project.name
+  ]
+  if not coverage(parse_args(parser, coverage_command)):
+    logging.error('Failed to extract coverage')
+    return False
+
+  # Build introspector.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=introspector', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with introspector')
+    return False
+
+  introspector_dst = os.path.join(args.project.out, "introspector-report")
+  if os.path.isdir(introspector_dst):
+    os.rmdir(introspector_dst)
+  shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
+
+  # Copy the coverage reports into the introspector report.
+  dst_cov_report = os.path.join(introspector_dst, "covreport")
+  shutil.copytree(os.path.join(args.project.out, "report"), dst_cov_report)
+
+  # Copy per-target coverage reports
+  src_target_cov_report = os.path.join(args.project.out, "report_target")
+  for target_cov_dir in os.listdir(src_target_cov_report):
+    dst_target_cov_report = os.path.join(dst_cov_report, target_cov_dir)
+    shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir),
+                    dst_target_cov_report)
+
+  logging.info('Introspector run complete. Report in %s', introspector_dst)
+  logging.info(
+      'To browse the report, run: `python3 -m http.server 8008 --directory %s`'
+      'and navigate to localhost:8008/fuzz_report.html in your browser',
+      introspector_dst)
+  return True
 
 
 def run_fuzzer(args):
