@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-go install github.com/AdamKorcz/go-118-fuzz-build@latest
-
 # Fuzz internal/transform
 printf "package transform\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/compiler/internal/transform/registerfuzzdep.go
 go mod tidy
