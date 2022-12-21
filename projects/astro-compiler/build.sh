@@ -22,5 +22,5 @@ printf "package transform\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/tes
 go mod tidy
 go get -u github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer $SRC/internal/transform FuzzScopeHTML fuzz_scope_html
-compile_native_go_fuzzer $SRC/internal/transform FuzzTransformScoping fuzz_transform_scoping
+compile_native_go_fuzzer $SRC/compiler/internal/transform FuzzScopeHTML fuzz_scope_html
+compile_native_go_fuzzer $SRC/compiler/internal/transform FuzzTransformScoping fuzz_transform_scoping
