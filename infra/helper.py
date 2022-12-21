@@ -1161,9 +1161,9 @@ def coverage(args):
 
 
 def _introspector_prepare_corpus(args):
-  """Helper function for introspector runs to generate corpora"""
+  """Helper function for introspector runs to generate corpora."""
   parser = get_parser()
-  # Generate corpus, either by downloading or running fuzzers
+  # Generate corpus, either by downloading or running fuzzers.
   if args.private_corpora or args.public_corpora:
     corpora_command = ['download_corpora']
     if args.public_corpora:
@@ -1175,7 +1175,7 @@ def _introspector_prepare_corpus(args):
   else:
     fuzzer_targets = _get_fuzz_targets(args.project)
     for fuzzer_name in fuzzer_targets:
-      # Make a corpus directory
+      # Make a corpus directory.
       fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
       if not os.path.isdir(fuzzer_corpus_dir):
         os.makedirs(fuzzer_corpus_dir)
@@ -1196,14 +1196,14 @@ def _introspector_prepare_corpus(args):
 
 
 def introspector(args):
-  """Runs a complete end-to-end run of introspector"""
+  """Runs a complete end-to-end run of introspector."""
   parser = get_parser()
 
   args_to_append = []
   if args.source_path:
     args_to_append.append(_get_absolute_path(args.source_path))
 
-  # build fuzzers with ASAN
+  # Build fuzzers with ASAN.
   build_fuzzers_command = [
       'build_fuzzers', '--sanitizer=address', args.project.name
   ] + args_to_append
@@ -1214,7 +1214,7 @@ def introspector(args):
   if not _introspector_prepare_corpus(args):
     return False
 
-  # Build code coverage
+  # Build code coverage.
   build_fuzzers_command = [
       'build_fuzzers', '--sanitizer=coverage', args.project.name
   ] + args_to_append
@@ -1222,7 +1222,7 @@ def introspector(args):
     logging.error('Failed to build project with coverage instrumentation')
     return False
 
-  # Collect coverage
+  # Collect coverage.
   coverage_command = [
       'coverage', '--no-corpus-download', '--port', '', args.project.name
   ]
@@ -1230,7 +1230,7 @@ def introspector(args):
     logging.error('Failed to extract coverage')
     return False
 
-  # Build introspector
+  # Build introspector.
   build_fuzzers_command = [
       'build_fuzzers', '--sanitizer=introspector', args.project.name
   ] + args_to_append
@@ -1243,7 +1243,7 @@ def introspector(args):
     os.rmdir(introspector_dst)
   shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
 
-  # Copy the coverage reports into the introspector report
+  # Copy the coverage reports into the introspector report.
   dst_cov_report = os.path.join(introspector_dst, "covreport")
   shutil.copytree(os.path.join(args.project.out, "report"), dst_cov_report)
 
