@@ -1239,8 +1239,7 @@ def introspector(args):
     return False
 
   introspector_dst = os.path.join(args.project.out, "introspector-report")
-  if os.path.isdir(introspector_dst):
-    os.rmdir(introspector_dst)
+  shutil.rmtree(introspector_dst, ignore_errors=True)
   shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
 
   # Copy the coverage reports into the introspector report.
