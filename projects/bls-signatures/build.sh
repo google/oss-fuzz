@@ -113,17 +113,7 @@ fi
 function build_blst() {
     if [[ "$SANITIZER" == "memory" ]]
     then
-        # Patch to disable assembly
-        touch new_no_asm.h
-        echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-        echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-        echo "#else" >>new_no_asm.h
-        echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-        echo "#endif" >>new_no_asm.h
-        cat src/no_asm.h >>new_no_asm.h
-        mv new_no_asm.h src/no_asm.h
-
-        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__ -Dllimb_t=__uint128_t -D__builtin_assume(x)=(void)(x)" ./build.sh
     else
         ./build.sh
     fi
