@@ -29,7 +29,7 @@ def TestInput(input_bytes):
             key_size=fdp.ConsumeInt(4)
         )
     except ValueError as e:
-        # This can only happen if the key_size isnt't valid
+        # This can only happen if the key_size isn't valid
         return
 
     server_private_key = parameters.generate_private_key()
