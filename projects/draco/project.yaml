@@ -7,5 +7,6 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede
 main_repo: 'https://github.com/google/draco'
 file_github_issue: True

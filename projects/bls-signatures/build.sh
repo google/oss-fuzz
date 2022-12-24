@@ -74,8 +74,22 @@ echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
 echo -n "Misc " >>extra_options.h
 echo -n "--digests=SHA256 " >>extra_options.h
+echo -n "--curves=BLS12_381 " >>extra_options.h
 echo -n '"' >>extra_options.h
 
+# Build arkworks-algebra
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/cryptofuzz/modules/arkworks-algebra/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        rustup target add i686-unknown-linux-gnu
+        make -f Makefile-i386
+    fi
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
+fi
 
 if [[ $CFLAGS = *-m32* ]]
 then
@@ -99,17 +113,7 @@ fi
 function build_blst() {
     if [[ "$SANITIZER" == "memory" ]]
     then
-        # Patch to disable assembly
-        touch new_no_asm.h
-        echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-        echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-        echo "#else" >>new_no_asm.h
-        echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-        echo "#endif" >>new_no_asm.h
-        cat src/no_asm.h >>new_no_asm.h
-        mv new_no_asm.h src/no_asm.h
-
-        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__ -Dllimb_t=__uint128_t -D__builtin_assume(x)=(void)(x)" ./build.sh
     else
         ./build.sh
     fi
@@ -161,10 +165,9 @@ then
 fi
 
 # Build mcl
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" && $CFLAGS != *-m32* ]]
 then
     cd $SRC/mcl/
-    make bint_header
     mkdir build/
     cd build/
     if [[ $CFLAGS != *-m32* ]]
@@ -225,7 +228,7 @@ then
     make -B
 fi
 
-if [[ "$SANITIZER" != "memory" ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/mcl/
     make -B

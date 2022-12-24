@@ -28,7 +28,13 @@ pushd "${SRC}/commons-logging"
 	ALL_JARS="${ALL_JARS} commons-logging.jar"
 popd
 
-for jarFile in ${SRC}/apache-log4j-2.18.0-bin/log4j-api-2.18.0.jar ${SRC}/apache-log4j-2.18.0-bin/log4j-core-2.18.0.jar ${SRC}/apache-log4j-2.18.0-bin/log4j-1.2-api-2.18.0.jar ; do
+LOG4J_VERSION=$(echo $(curl -s 'https://api.github.com/repos/apache/logging-log4j2/tags?per_page=1' | jq -r .[].name) | sed 's/^[^0-9]*//')
+curl "https://dlcdn.apache.org/logging/log4j/$LOG4J_VERSION/apache-log4j-$LOG4J_VERSION-bin.tar.gz" -o apache-log4j-bin.tar.gz
+tar xf apache-log4j-bin.tar.gz
+unlink apache-log4j-bin.tar.gz
+mv apache-log4j-$LOG4J_VERSION-bin $SRC
+
+for jarFile in ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-api-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-core-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-1.2-api-$LOG4J_VERSION.jar ; do
 	cp -v ${jarFile} "$OUT/$(basename ${jarFile})"
 	ALL_JARS="${ALL_JARS} $(basename ${jarFile})"
 done
@@ -51,14 +57,19 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

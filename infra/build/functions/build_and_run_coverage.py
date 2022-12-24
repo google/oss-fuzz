@@ -45,7 +45,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
 ]
 
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
@@ -172,7 +172,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   })
 
-  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
+  # TODO(navidem):
+  # Currently python coverage does not produce per_target reports.
+  # Skipping python for now to avoid breakage.
+  if (project.fuzzing_language != 'python' and
+      project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT):
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
     build_steps.append({
         'name':
@@ -273,6 +277,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
     project_name, project_yaml, dockerfile_lines, image_project,
     base_images_project, config):
   """Returns build steps of fuzz introspector for project"""
+
   project = build_project.Project(project_name, project_yaml, dockerfile_lines,
                                   image_project)
   if project.disabled:
@@ -287,7 +292,6 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
-  env = build_project.get_env(project.fuzzing_language, build)
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = IntrospectorBucket(project.name, report_date, PLATFORM,
@@ -295,16 +299,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   # TODO (navidem): find the latest coverage report.
   coverage_report_latest = report_date
-  build_steps.append({
-      'args': [
-          'clone', 'https://github.com/google/oss-fuzz.git', '--depth', '1'
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  })
-
   bucket_name = 'oss-fuzz-coverage'
-  if config.testing:
-    bucket_name += '-testing'
 
   coverage_url = (f'{build_lib.GCS_URL_BASENAME}{bucket_name}/{project.name}'
                   f'/reports/{coverage_report_latest}/linux')
@@ -317,31 +312,12 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
         project.name)
     return []
   build_steps.extend(download_coverage_steps)
-
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder:introspector'],
-  })
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/docker',
-      'args': [
-          'tag', 'gcr.io/oss-fuzz-base/base-builder:introspector',
-          'gcr.io/oss-fuzz-base/base-builder:latest'
-      ],
-  })
-
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': [
-          'build',
-          '-t',
-          f'gcr.io/oss-fuzz/{project.name}',
-          '.',
-      ],
-      'dir': os.path.join('oss-fuzz', 'projects', project.name),
-  })
-
+  build_steps.extend(
+      build_lib.get_project_image_steps(project.name,
+                                        project.image,
+                                        project.fuzzing_language,
+                                        config=config))
+  env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'GIT_REPO={project.main_repo}')
   env.append(f'COVERAGE_URL={coverage_url}')
   env.append(f'PROJECT_NAME={project.name}')

@@ -5,6 +5,7 @@ auto_ccs :
   - "howardjohn@google.com"
   - "kconner@redhat.com"
   - "bavery@redhat.com"
+  - "gregory.hanson@solo.io"
 language: go
 fuzzing_engines:
   - libfuzzer
