@@ -1238,7 +1238,8 @@ def introspector(args):
     logging.error('Failed to build project with introspector')
     return False
 
-  introspector_dst = os.path.join(args.project.out, "introspector-report")
+  introspector_dst = os.path.join(args.project.out,
+                                  "introspector-report/inspector")
   shutil.rmtree(introspector_dst, ignore_errors=True)
   shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
 
