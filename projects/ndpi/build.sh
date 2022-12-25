@@ -15,12 +15,14 @@
 #
 ################################################################################
 
-#Disable code instrumentation
-CFLAGS_SAVE="$CFLAGS"
-CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
-export AFL_NOOPT=1
+if [[ "$SANITIZER" != "memory" ]]; then
+	#Disable code instrumentation
+	CFLAGS_SAVE="$CFLAGS"
+	CXXFLAGS_SAVE="$CXXFLAGS"
+	unset CFLAGS
+	unset CXXFLAGS
+	export AFL_NOOPT=1
+fi
 
 # build libpcap
 tar -xvzf libpcap-1.9.1.tar.gz
@@ -37,14 +39,26 @@ cmake -DBUILD_SHARED_LIBS=OFF ..
 make install
 cd ../..
 
-#Re-enable code instrumentation
-export CFLAGS="${CFLAGS_SAVE}"
-export CXXFLAGS="${CXXFLAGS_SAVE}"
-unset AFL_NOOPT
+if [[ "$SANITIZER" != "memory" ]]; then
+	#Re-enable code instrumentation
+	export CFLAGS="${CFLAGS_SAVE}"
+	export CXXFLAGS="${CXXFLAGS_SAVE}"
+	unset AFL_NOOPT
+fi
 
 # build project
 cd ndpi
-sh autogen.sh
-./configure --enable-fuzztargets
-make
-ls fuzz/fuzz* | grep -v "\." | grep -v "with_main" | while read i; do cp $i $OUT/; done
+# Set LDFLAGS variable and `--with-only-libndpi` option as workaround for the
+# "missing dependencies errors" in the introspector build. See #8939
+LDFLAGS="-lpcap" ./autogen.sh --enable-fuzztargets --with-only-libndpi
+make -j$(nproc)
+# Copy fuzzers
+ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
+# Copy seed corpus
+cp fuzz/*.zip $OUT/
+# Copy configuration files
+cp example/protos.txt $OUT/
+cp example/categories.txt $OUT/
+cp example/risky_domains.txt $OUT/
+cp example/ja3_fingerprints.csv $OUT/
+cp example/sha1_fingerprints.csv $OUT/

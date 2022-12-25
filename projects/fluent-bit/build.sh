@@ -110,6 +110,7 @@ cmake -DFLB_TESTS_INTERNAL=ON \
       ${MISC_PLUGINS} \
       ${OUTPUT_PLUGINS} \
       ..
-make
+
+make -j$(nproc)
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/

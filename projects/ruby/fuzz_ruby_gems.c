@@ -404,6 +404,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint32_t x = 0;
     BytesStream_get_uint32_t(&bs, &x);
     workaround_UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD(x);
+
+    // Reset the byte stream
+    ByteStream_init(&bs, data, size);
   }
 
   // Choose a function from `target_functions`.

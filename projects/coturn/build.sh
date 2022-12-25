@@ -15,13 +15,25 @@
 #
 ################################################################################
 
-cd fuzz
-make all
+mkdir my_build
 
+pushd my_build/
+cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../.
+make -j$(nproc)
+popd
+
+pushd my_build/fuzzing/
 cp FuzzStun $OUT/FuzzStun
 cp FuzzStunClient $OUT/FuzzStunClient
+popd
 
-pushd $SRC/oss-fuzz-bloat/coturn/
+pushd fuzzing/input/
 cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
 cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
+popd
+
+pushd /lib/x86_64-linux-gnu/
+mkdir $OUT/lib/
+cp libevent* $OUT/lib/.
 popd

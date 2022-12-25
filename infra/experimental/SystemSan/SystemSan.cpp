@@ -32,6 +32,8 @@
 #include <syscall.h>
 #include <fcntl.h>
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -39,6 +41,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "inspect_utils.h"
+#include "inspect_dns.h"
 
 #define DEBUG_LOGS 0
 
@@ -77,21 +82,16 @@ constexpr int kRootDirMaxLength = 16;
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
 
-// Structure to know which thread id triggered the bug.
-struct ThreadParent {
-  // Parent thread ID, ie creator.
-  pid_t parent_tid;
-  // Current thread ID ran exec to become another process.
-  bool ran_exec = false;
-
-  ThreadParent() : parent_tid(0) {}
-  ThreadParent(pid_t tid) : parent_tid(tid) {}
-};
 // Map of a PID/TID its PID/TID creator and wether it ran exec.
 std::map<pid_t, ThreadParent> root_pids;
 
 // Assuming the longest pathname is "/bin/bash".
 constexpr int kShellPathnameLength = 20;
+
+std::string kEvilLinkBombfile = "/tmp/evil-link-bombfile";
+std::string kEvilLinkBombfileContents = "initial";
+const std:: string kEvilLinkError = "Symbolic link followed";
+const size_t kPathMax = 4096;
 
 // Syntax error messages of each shell.
 const std::map<std::string, std::set<std::string>> kShellSyntaxErrors = {
@@ -162,23 +162,6 @@ pid_t run_child(char **argv) {
   return pid;
 }
 
-std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
-                                   size_t size) {
-  std::vector<std::byte> memory;
-
-  for (size_t i = 0; i < size; i += sizeof(long)) {
-    long word = ptrace(PTRACE_PEEKTEXT, pid, address + i, 0);
-    if (word == -1) {
-      return memory;
-    }
-
-    std::byte *word_bytes = reinterpret_cast<std::byte *>(&word);
-    memory.insert(memory.end(), word_bytes, word_bytes + sizeof(long));
-  }
-
-  return memory;
-}
-
 // Construct a string with the memory specified in a register.
 std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   auto memory = read_memory(pid, reg, length);
@@ -186,34 +169,20 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
     return "";
   }
 
+  auto location = std::find(memory.begin(), memory.end(), static_cast<std::byte>(NULL));
+  size_t str_length = location - memory.begin();
   std::string content(reinterpret_cast<char *>(memory.data()),
-                      std::min(memory.size(), length));
+                      std::min(str_length, length));
   return content;
-}
-
-void report_bug(std::string bug_type, pid_t tid) {
-  // Report the bug found based on the bug code.
-  std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
-  // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
-  // to the root process.
-  // Note: this may not be reliable or consistent if shell injection happens
-  // in an async way.
-  // Find the thread group id, that is the pid.
-  pid_t pid = tid;
-  auto parent = root_pids[tid];
-  while (!parent.ran_exec) {
-    // Find the first parent which ran exec syscall.
-    if (parent.parent_tid == g_root_pid) {
-      break;
-    }
-    pid = parent.parent_tid;
-    parent = root_pids[parent.parent_tid];
-  }
-  tgkill(pid, tid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for the sign of shell injection.
+
+  static bool is_enabled = check_enabled("shell_injection");
+  if (not is_enabled)
+    return;
+
   std::string path = read_string(pid, regs.rdi, kTripWire.length());
   if (!path.length()) {
     return;
@@ -234,14 +203,18 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 std::string match_shell(std::string binary_pathname);
 
 // Identify the exact shell behind sh
-std::string identify_sh(std::string binary_name) {
+std::string identify_sh(std::string path) {
   char shell_pathname[kShellPathnameLength];
-  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
-      -1) {
-    std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
+  auto written = readlink(path.c_str(), shell_pathname, kShellPathnameLength - 1);
+  if (written == -1) {
+    std::cerr << "Cannot query which shell is behind sh: readlink failed on "
+              << path << ": "
+              << strerror(errno) << "\n";
     std::cerr << "Assuming the shell is dash\n";
     return "dash";
   }
+  shell_pathname[written] = '\0';
+
   debug_log("sh links to %s\n", shell_pathname);
   std::string shell_pathname_str(shell_pathname);
 
@@ -253,13 +226,17 @@ std::string match_shell(std::string binary_pathname) {
   if (!binary_pathname.length()) {
     return "";
   }
+
+  // We use c_str() to accept only the null terminated string.
+  std::string binary_name = binary_pathname.substr(
+      binary_pathname.find_last_of("/") + 1).c_str();
+
+  debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
+            binary_name.length());
+
   for (const auto &item : kShellSyntaxErrors) {
     std::string known_shell = item.first;
-    std::string binary_name = binary_pathname.substr(
-        binary_pathname.find_last_of("/") + 1, known_shell.length());
-    debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
-              binary_name.length());
-    if (!binary_name.compare(0, 2, "sh")) {
+    if (binary_name == "sh") {
       debug_log("Matched sh: Needs to identify which specific shell it is.\n");
       return identify_sh(binary_pathname);
     }
@@ -280,8 +257,6 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
   for (const auto &pattern : error_patterns) {
-    debug_log("Pattern : %s\n", pattern.c_str());
-    debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
@@ -301,6 +276,11 @@ void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
 
 void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
+
+  static bool is_enabled = check_enabled("shell_corruption");
+  if (not is_enabled)
+    return;
+
   std::string buffer = read_string(pid, regs.rsi, regs.rdx);
   debug_log("Write buffer: %s\n", buffer.c_str());
   match_error_pattern(buffer, g_shell_pids[pid], pid);
@@ -336,6 +316,11 @@ bool has_unprintable(const std::string &value) {
 
 void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's register for the sign of arbitrary file open.
+
+  static bool is_enabled = check_enabled("arbitrary_file_open");
+  if (not is_enabled)
+    return;
+
   std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
   if (!path.length()) {
     return;
@@ -357,6 +342,67 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
       }
     }
   }
+}
+
+std::string read_evil_link_bombfile() {
+    const std::ifstream bombfile(kEvilLinkBombfile,
+                                 std::ios_base::binary);
+    if (bombfile.fail())
+      return "";
+    std::stringstream stream;
+    stream << bombfile.rdbuf();
+    return stream.str();
+}
+
+// https://oss-fuzz.com/testcase-detail/4882113260552192
+void report_bug_in_process(std::string bug_type, pid_t pid) {
+  std::cerr << "===BUG DETECTED: " << bug_type << "===" << std::endl;
+  tgkill(root_pids[pid].parent_tid, pid, SIGABRT);
+}
+
+void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
+  (void) regs;
+
+  static bool is_enabled = check_enabled("malicious_symlink_following");
+  if (not is_enabled)
+    return;
+  std::string contents = read_evil_link_bombfile();
+  if ((contents.compare(kEvilLinkBombfileContents)) != 0) {
+
+    report_bug_in_process(kEvilLinkError, pid);
+  }
+}
+
+void evil_openat_hook(pid_t pid, const user_regs_struct &regs) {
+  static bool is_enabled = check_enabled("malicious_symlink_following");
+  if (not is_enabled)
+    return;
+
+  std::string path = read_string(pid, regs.rsi, kPathMax);
+  if (!path.length()) {
+    return;
+  }
+  if (std::filesystem::exists(path))
+    return;
+  size_t slash_idx = path.rfind('/');
+  if (slash_idx == std::string::npos)
+    return;
+
+  std::string dir = path.substr(0, slash_idx);
+  if ((dir.compare("/tmp")) != 0)
+    return;
+
+  std::string command = "rm -f " + path + " && ln -s " + kEvilLinkBombfile + " " + path;
+  std::cout << "COMMAND " << command << std::endl;
+  system(command.c_str());
+}
+
+void initialize_evil_link_bombfile() {
+  std::string command = ("printf " + kEvilLinkBombfileContents + " > " +
+                         kEvilLinkBombfile);
+  std::cout << "COMMAND " << command << std::endl;
+  system(command.c_str());
+  system(("cat " + kEvilLinkBombfile).c_str());
 }
 
 int trace(std::map<pid_t, Tracee> pids) {
@@ -382,8 +428,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         ++it;
         continue;
       }
-
-      debug_log("finished waiting %d", pid);
 
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         debug_log("%d exited", pid);
@@ -459,8 +503,18 @@ int trace(std::map<pid_t, Tracee> pids) {
             }
           }
 
+          inspect_dns_syscalls(pid, regs);
+
           if (regs.orig_rax == __NR_openat) {
-            inspect_for_arbitrary_file_open(pid, regs);
+            // TODO(metzman): Re-enable this once we have config/flag support.
+            // inspect_for_arbitrary_file_open(pid, regs);
+            evil_openat_hook(pid, regs);
+          }
+
+          if (regs.orig_rax == __NR_close) {
+            // TODO(metzman): Re-enable this once we have config/flag support.
+            // inspect_for_arbitrary_file_open(pid, regs);
+            inspect_for_evil_link(pid, regs);
           }
 
           if (regs.orig_rax == __NR_write &&
@@ -479,7 +533,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         tracee.syscall_enter = !tracee.syscall_enter;
       }
 
-      debug_log("tracing %d %d", pid, sig);
       if (ptrace(PTRACE_SYSCALL, pid, nullptr, sig) == -1) {
         debug_log("ptrace(PTRACE_SYSCALL, %d): %s", pid, strerror(errno));
         continue;
@@ -499,6 +552,9 @@ int main(int argc, char **argv) {
   if (argc <= 1) {
     fatal_log("Expecting at least one arguments, received %d", argc - 1);
   }
+
+
+  initialize_evil_link_bombfile();
 
   // Create an executable tripwire file, as programs may check for existence
   // before actually calling exec.

@@ -402,6 +402,14 @@ def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
   return nonbuild_success and build_success
 
 
+def run_systemsan_tests(_=None):
+  """Runs SystemSan unit tests."""
+  command = ['make', 'test']
+  return subprocess.run(command,
+                        cwd='infra/experimental/SystemSan',
+                        check=False).returncode == 0
+
+
 def get_all_files():
   """Returns a list of absolute paths of files in this repo."""
   get_all_files_command = ['git', 'ls-files']
@@ -413,9 +421,10 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests'],
-                      nargs='?')
+  parser.add_argument(
+      'command',
+      choices=['format', 'lint', 'license', 'infra-tests', 'systemsan-tests'],
+      nargs='?')
   parser.add_argument('-a',
                       '--all-files',
                       action='store_true',
@@ -464,6 +473,10 @@ def main():
                         parallel=args.parallel,
                         build_tests=(not args.skip_build_tests),
                         nonbuild_tests=(not args.skip_nonbuild_tests))
+    return bool_to_returncode(success)
+
+  if args.command == 'systemsan-tests':
+    success = run_systemsan_tests(relevant_files)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).

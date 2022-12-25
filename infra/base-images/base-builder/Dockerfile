@@ -134,7 +134,7 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout baa82e7189677bb9086beb5d9b5e58018d991607 && \
+    git checkout addd6670cc6b56dea43036dc3a0dcb9181f23251 && \
     rm -rf .git
 
 COPY precompile_centipede /usr/local/bin/
@@ -151,7 +151,6 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.
     install_go.sh \
-    install_go_CodeIntelligenceTesting.sh \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \
