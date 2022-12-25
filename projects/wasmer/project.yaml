@@ -1,0 +1,9 @@
+homepage: "https://github.com/wasmerio/wasmer"
+language: rust
+main_repo: "https://github.com/wasmerio/wasmer"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com
