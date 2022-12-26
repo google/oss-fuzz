@@ -38,6 +38,8 @@ def TestOneInput(data):
     pass
   except misc.xmlReader.TTXParseError:
     pass
+  except fontTools.ttLib.TTLibError:
+    pass
 
 
 def main():
