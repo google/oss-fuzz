@@ -1,0 +1,11 @@
+homepage: "https://cncf.pravega.io"
+language: jvm
+main_repo: "https://github.com/pravega/pravega"
+primary_contact: ""
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
