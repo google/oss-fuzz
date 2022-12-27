@@ -34,6 +34,8 @@ def TestOneInput(data):
     pass
   except TypeError:
     pass
+  except RecursionError:
+    pass
 
 
 def main():
