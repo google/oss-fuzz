@@ -8,6 +8,7 @@ vendor_ccs:
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
   - selsky@gmail.com
+  - "gem@rellim.com"
 fuzzing_engines:
   - libfuzzer
   - afl
