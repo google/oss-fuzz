@@ -1,10 +1,9 @@
 homepage: "https://gpsd.io"
 language: c
 primary_contact: "gpsd-dev@nongnu.org"
-vendor_ccs:
-  - "gem@rellim.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
+  - "gem@rellim.com"
 fuzzing_engines:
   - libfuzzer
   - afl
