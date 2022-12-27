@@ -12,8 +12,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip brotli
-RUN git clone https://github.com/behdad/fonttools fonttools
-COPY *.sh *py $SRC/
-WORKDIR $SRC/fonttools
+
+import io
+import sys
+import atheris
+import brotli
+
+from fontTools import ttLib
+from fontTools.ttLib import TTFont
+from fontTools.ttLib.woff2 import WOFF2Reader
+import xml
+
+
+def TestOneInput(data):
+  try:
+    WOFF2Reader(io.BytesIO(data))
+  except ttLib.TTLibError:
+    pass
+  except AssertionError:
+    pass
+  except ImportError:
+    pass
+  except brotli.error:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()
