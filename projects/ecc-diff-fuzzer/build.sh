@@ -96,14 +96,15 @@ cd libecc
 #botan
 (
 cd botan
+export CXXFLAGS="$CXXFLAGS -std=c++20"
 if [ "$ARCHITECTURE" = 'i386' ]; then
     ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-shared --disable-modules=locking_allocator --disable-shared-library \
-               --without-os-features=getrandom,getentropy --cpu x86_32
+               --without-os-features=getrandom,getentropy --unsafe-fuzzer-mode --cpu x86_32
 else
     ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-shared --disable-modules=locking_allocator --disable-shared-library \
-               --without-os-features=getrandom,getentropy
+               --without-os-features=getrandom,getentropy --unsafe-fuzzer-mode
 fi
 make -j$(nproc)
 make install
