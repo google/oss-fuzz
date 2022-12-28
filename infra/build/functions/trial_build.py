@@ -171,7 +171,7 @@ def get_project_languages():
     with open(project_yaml_path, 'r') as project_yaml_file_handle:
       project_yaml_contents = project_yaml_file_handle.read()
       project_yaml = yaml.safe_load(project_yaml_contents)
-    language = project_yaml['language']
+    language = project_yaml.get('language', 'c++')
     project_languages[language].append(project)
   return project_languages
 
