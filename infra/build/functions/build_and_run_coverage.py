@@ -143,7 +143,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
-           ' /out/ && exit 1'
+           ' /out/ && exit 0'
            '); done && run_on_corpora')
       ],
       'volumes': [{
