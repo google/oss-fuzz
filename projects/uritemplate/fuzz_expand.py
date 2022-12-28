@@ -21,7 +21,6 @@ from uritemplate import URITemplate
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   url = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  url = url.replace(":", "")
   t = URITemplate(url)
   t.expand(fuzzVar='1234')
 
