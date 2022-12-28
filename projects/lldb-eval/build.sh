@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+ln -sf /usr/local/bin/python3 /usr/bin/python3
 (
 cd $SRC/
 GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-ubuntu-20.04"
