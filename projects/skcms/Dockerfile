@@ -25,6 +25,5 @@ RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com
 WORKDIR skcms
 
 COPY build.sh $SRC/
-COPY tiny_race $SRC/
 
 COPY iccprofile.options iccprofile.dict $SRC/skcms/
