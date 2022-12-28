@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/PyMySQL/PyMySQL
+language: python
+main_repo: https://github.com/PyMySQL/PyMySQL
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
