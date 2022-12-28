@@ -108,7 +108,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build = build_project.Build(FUZZING_ENGINE, 'thread', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
-      build_project.get_compile_step(project, build, env, config.parallel))
+      build_project.get_compile_step(project,
+                                     build,
+                                     env,
+                                     config.parallel,
+                                     succeed_on_fail=True))
   download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:

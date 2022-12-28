@@ -259,8 +259,8 @@ ninja install-cxx
 rm -rf $WORK/msan
 
 # MemorySanitizer instrumented libraries.
-mkdir -p $WORK/msan
-cd $WORK/msan
+mkdir -p $WORK/tsan
+cd $WORK/tsan
 
 # https://github.com/google/oss-fuzz/issues/1099
 cat <<EOF > $WORK/tsan/blocklist.txt

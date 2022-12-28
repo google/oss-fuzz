@@ -11,6 +11,9 @@ __attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv);
 }
 
 int main(int argc, char** argv) {
+  if (LLVMFuzzerInitialize)
+    LLVMFuzzerInitialize(&argc, &argv);
+
   for (const auto& path :
            std::filesystem::recursive_directory_iterator(argv[1])) {
     if (!path.is_regular_file())

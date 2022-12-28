@@ -237,12 +237,14 @@ def _add_external_project_args(parser):
       action='store_true',
   )
 
+
 def _add_public_option(arg_parser):
   """Adds --public option to |arg_parser|."""
   arg_parser.add_argument('--public',
                           action='store_true',
                           help='if set, will download public '
                           'corpus using wget')
+
 
 def get_parser():  # pylint: disable=too-many-statements
   """Returns an argparse parser."""

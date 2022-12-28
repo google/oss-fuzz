@@ -229,7 +229,7 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel):
+def get_compile_step(project, build, env, parallel, succeed_on_fail=False):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -238,6 +238,11 @@ def get_compile_step(project, build, env, parallel):
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
+
+  if not succeed_on_fail:
+    succeed_on_fail = 'false'
+  else:
+    succeed_on_fail = 'true'
   compile_step = {
       'name': project.image,
       'env': env,
@@ -250,7 +255,7 @@ def get_compile_step(project, build, env, parallel):
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
            f'mkdir -p {build.out} && compile || '
-           f'(echo "{failure_msg}" && false)'),
+           f'(echo "{failure_msg}" && {succeed_on_fail})'),
       ],
       'id': get_id('compile', build),
   }
