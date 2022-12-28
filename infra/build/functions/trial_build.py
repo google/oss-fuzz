@@ -105,7 +105,7 @@ def handle_special_projects(args):
     args.projects = all_projects
     return
   for project in args.projects[:]:
-    if project not in all_projects():
+    if project not in all_projects:
       project_languages = get_project_languages()
       if project in project_languages.keys():
         language = project
@@ -143,7 +143,7 @@ def get_args(args=None):
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
   parsed_args = parser.parse_args(args)
-  handle_special_projects(args)
+  handle_special_projects(parsed_args)
   return parsed_args
 
 
