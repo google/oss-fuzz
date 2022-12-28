@@ -4,3 +4,6 @@ primary_contact: "adaubert@google.com"
 auto_ccs:
   - david@adalogics.com
 main_repo: 'https://android.googlesource.com/platform/external/dng_sdk/'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

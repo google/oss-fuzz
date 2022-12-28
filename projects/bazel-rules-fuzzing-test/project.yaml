@@ -7,6 +7,7 @@ fuzzing_engines:
   - afl
   - honggfuzz
 
+  - centipede
 sanitizers:
   - address
   - undefined

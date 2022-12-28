@@ -9,3 +9,6 @@ auto_ccs:
   - "adrian.bonislawski@intel.com"
   - "michal.wasko@intel.com"
 main_repo: "https://github.com/thesofproject/sof"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

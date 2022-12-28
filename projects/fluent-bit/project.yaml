@@ -6,3 +6,6 @@ auto_ccs:
   - "wppttt@amazon.com"
   - "zh0512xx@gmail.com"
 main_repo: 'https://github.com/fluent/fluent-bit/'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

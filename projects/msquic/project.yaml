@@ -9,6 +9,7 @@ auto_ccs:
   - "nibanks@microsoft.com"
 fuzzing_engines:
   - libfuzzer
+  - centipede
 sanitizers:
   - address
   - undefined

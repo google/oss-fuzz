@@ -2,3 +2,6 @@ homepage: "https://github.com/libxls/libxls"
 language: c++
 primary_contact: "emmiller@gmail.com"
 main_repo: 'https://github.com/libxls/libxls'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

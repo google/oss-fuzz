@@ -8,6 +8,7 @@ fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
+  - centipede
 sanitizers:
   - address
   - memory

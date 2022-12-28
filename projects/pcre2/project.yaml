@@ -4,6 +4,7 @@ primary_contact: "philip.hazel@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl
+  - centipede
 sanitizers:
   - address
   - memory

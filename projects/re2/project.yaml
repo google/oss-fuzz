@@ -9,3 +9,6 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://code.googlesource.com/re2'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

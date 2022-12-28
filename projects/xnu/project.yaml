@@ -13,7 +13,8 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede
 sanitizers:
   - address
   - undefined
-file_github_issue: True
+file_github_issue: true

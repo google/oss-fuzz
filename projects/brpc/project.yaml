@@ -12,6 +12,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
+  - centipede
 sanitizers:
   - address
 main_repo: 'https://github.com/apache/incubator-brpc'

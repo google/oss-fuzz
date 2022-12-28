@@ -2,16 +2,19 @@ homepage: "https://www.openssl.org/"
 language: c++
 primary_contact: "kurt@roeckx.be"
 auto_ccs:
- - "openssl-security@openssl.org"
- - "appronym@gmail.com"
- - "caswell.matt@googlemail.com"
- - "richard@levitte.org"
+  - "openssl-security@openssl.org"
+  - "appronym@gmail.com"
+  - "caswell.matt@googlemail.com"
+  - "richard@levitte.org"
 sanitizers:
- - address
- - memory:
-    experimental: True
- - undefined
+  - address
+  - memory:
+      experimental: true
+  - undefined
 architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/openssl/openssl.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

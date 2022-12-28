@@ -5,6 +5,7 @@ auto_ccs:
   - "p.antoine@catenacyber.fr"
 fuzzing_engines:
   - libfuzzer
+  - centipede
 sanitizers:
   - address
 main_repo: 'https://github.com/openweave/openweave-core'

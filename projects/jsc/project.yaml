@@ -11,6 +11,7 @@ auto_ccs:
   - "ysuzuki@apple.com"
 fuzzing_engines:
   - none
+  - centipede
 sanitizers:
   - address
 blackbox: true

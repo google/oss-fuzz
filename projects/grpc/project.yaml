@@ -8,5 +8,6 @@ auto_ccs:
   - "yashkt@google.com"
 fuzzing_engines:
   - libfuzzer
+  - centipede
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*
 main_repo: 'https://github.com/grpc/grpc'

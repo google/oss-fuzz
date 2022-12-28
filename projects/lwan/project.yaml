@@ -4,3 +4,6 @@ primary_contact: "leandro.pereira@gmail.com"
 sanitizers:
   - address
 main_repo: 'https://github.com/lpereira/lwan.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

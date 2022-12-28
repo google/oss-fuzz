@@ -6,8 +6,9 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
+  - centipede
 sanitizers:
- - address
- - memory
- - undefined
+  - address
+  - memory
+  - undefined
 main_repo: 'https://git.torproject.org/tor.git'

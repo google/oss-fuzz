@@ -3,10 +3,13 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/RustCrypto/hashes.git"
 auto_ccs:
-    - "newpavlov@gmail.com"
-    - "bascule@gmail.com"
+  - "newpavlov@gmail.com"
+  - "bascule@gmail.com"
 sanitizers:
- - address
+  - address
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - centipede

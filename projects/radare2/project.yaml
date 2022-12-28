@@ -5,5 +5,8 @@ auto_ccs:
   - "zlowram@gmail.com"
 sanitizers:
   - address
-run_tests: False
+run_tests: false
 main_repo: 'https://github.com/radareorg/radare2'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -4,12 +4,13 @@ primary_contact: "caolanm@redhat.com"
 sanitizers:
   - address
   - memory:
-     experimental: True
+      experimental: true
   - undefined
 fuzzing_engines:
   # see https://github.com/google/oss-fuzz/issues/6233 for missing afl
   - libfuzzer
   - honggfuzz
+  - centipede
 builds_per_day: 2
 auto_ccs:
   - "damjan.jov@gmail.com"

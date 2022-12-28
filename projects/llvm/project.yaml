@@ -26,5 +26,6 @@ fuzzing_engines:
   - honggfuzz
 
 # Bug reports are public by default:
+  - centipede
 view_restrictions: none
 main_repo: 'https://github.com/llvm/llvm-project.git'

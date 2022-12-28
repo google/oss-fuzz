@@ -12,6 +12,7 @@ vendor_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
+  - centipede
 sanitizers:
   - address
   - undefined

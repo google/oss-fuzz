@@ -8,3 +8,6 @@ auto_ccs:
 sanitizers:
   - address
 main_repo: 'https://github.com/Moddable-OpenSource/moddable.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

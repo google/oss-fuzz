@@ -6,5 +6,8 @@ auto_ccs:
   - "pietro.cerutti@gmail.com"
 main_repo: 'https://github.com/neomutt/neomutt'
 sanitizers:
- - address
- - undefined
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - centipede

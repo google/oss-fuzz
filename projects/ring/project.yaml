@@ -1,6 +1,9 @@
 homepage: "https://github.com/briansmith/ring"
 primary_contact: "brian@briansmith.org"
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - memory
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - centipede

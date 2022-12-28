@@ -8,3 +8,6 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/uNetworking/uWebSockets.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

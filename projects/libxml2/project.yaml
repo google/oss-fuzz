@@ -21,4 +21,5 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+  - centipede
 main_repo: 'https://gitlab.gnome.org/GNOME/libxml2.git'

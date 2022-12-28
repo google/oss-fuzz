@@ -8,6 +8,7 @@ auto_ccs:
 fuzzing_engines:
   - none
 
+  - centipede
 sanitizers:
   - address
   - memory
@@ -17,5 +18,5 @@ architectures:
   - x86_64
   - i386
 
-disabled: True
+disabled: true
 blackbox: true

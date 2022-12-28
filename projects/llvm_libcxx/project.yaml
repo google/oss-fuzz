@@ -7,3 +7,6 @@ auto_ccs:
   - "bigcheesegs@gmail.com"
   - "eric@efcs.ca"
   - "ldionne.2@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

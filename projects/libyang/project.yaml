@@ -10,3 +10,6 @@ auto_ccs:
 sanitizers:
   - address
   - memory
+fuzzing_engines:
+  - libfuzzer
+  - centipede

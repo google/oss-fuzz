@@ -8,3 +8,6 @@ auto_ccs:
   - "bogdan.andrei.iancu@gmail.com"
   - "rvlad.patrascu@gmail.com"
   - "razvan.crainea@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

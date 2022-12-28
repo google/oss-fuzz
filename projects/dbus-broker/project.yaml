@@ -13,4 +13,7 @@ main_repo: "https://github.com/bus1/dbus-broker"
 architectures:
   - x86_64
   - i386
-file_github_issue: True
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+  - centipede

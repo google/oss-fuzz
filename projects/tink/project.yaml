@@ -10,4 +10,7 @@ sanitizers:
   - undefined
   - memory
 main_repo: "https://github.com/google/tink"
-file_github_issue: True
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+  - centipede

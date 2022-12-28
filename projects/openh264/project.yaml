@@ -15,6 +15,9 @@ sanitizers:
   - memory
   - undefined
 architectures:
- - i386
- - x86_64
+  - i386
+  - x86_64
 main_repo: 'https://github.com/cisco/openh264.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

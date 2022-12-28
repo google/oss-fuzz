@@ -5,3 +5,6 @@ auto_ccs:
   - "Adam@adalogics.com"
   - "isty001@gmail.com"
 main_repo: 'https://github.com/clibs/clib'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

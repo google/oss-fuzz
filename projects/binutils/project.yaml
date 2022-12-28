@@ -2,7 +2,7 @@ homepage: "https://www.gnu.org/software/binutils/"
 main_repo: "https://github.com/bminor/binutils-gdb"
 language: c++
 primary_contact: "bug-binutils@gnu.org"
-auto_ccs :
+auto_ccs:
   - "p.antoine@catenacyber.fr"
   - "nickc@redhat.com"
   - "amodra@gmail.com"
@@ -11,6 +11,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
+  - centipede
 sanitizers:
   - address
   - undefined

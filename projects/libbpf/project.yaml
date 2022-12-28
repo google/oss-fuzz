@@ -16,4 +16,7 @@ auto_ccs:
 main_repo: "https://github.com/libbpf/libbpf"
 builds_per_day: 4
 view_restrictions: none
-file_github_issue: True
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+  - centipede

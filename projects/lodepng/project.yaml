@@ -4,6 +4,9 @@ primary_contact: "lvandeve@gmail.com"
 auto_ccs:
   - "singharshdeep@google.com"
 sanitizers:
-- address
-- undefined
+  - address
+  - undefined
 main_repo: 'https://github.com/lvandeve/lodepng.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -4,6 +4,9 @@ auto_ccs:
   - "federico.maggi@gmail.com"
 primary_contact: "mitza@objectcomputing.com"
 sanitizers:
-- address
-- undefined
+  - address
+  - undefined
 main_repo: 'https://github.com/objectcomputing/OpenDDS.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

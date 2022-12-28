@@ -11,6 +11,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
+  - centipede
 architectures:
   - x86_64
 main_repo: 'https://github.com/monero-project/monero.git'

@@ -10,3 +10,6 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/randy408/libspng.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

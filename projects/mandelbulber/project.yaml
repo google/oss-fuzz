@@ -1,9 +1,12 @@
 homepage: "https://github.com/buddhi1980/mandelbulber2/"
 primary_contact: "robertpancoast77@gmail.com"
 auto_ccs:
- - "buddhi1980@gmail.com"
- - "sebastian.jennen@gmx.de"
+  - "buddhi1980@gmail.com"
+  - "sebastian.jennen@gmx.de"
 sanitizers:
-- address
-- undefined
-- memory
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - centipede

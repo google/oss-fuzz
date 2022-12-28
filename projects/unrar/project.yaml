@@ -9,3 +9,6 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/aawc/unrar.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

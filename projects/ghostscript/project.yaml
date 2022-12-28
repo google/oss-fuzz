@@ -19,3 +19,4 @@ main_repo: 'git://git.ghostscript.com/ghostpdl.git'
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede

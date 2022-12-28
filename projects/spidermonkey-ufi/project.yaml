@@ -6,5 +6,6 @@ vendor_ccs:
   - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
 fuzzing_engines:
   - libfuzzer
+  - centipede
 sanitizers:
   - address

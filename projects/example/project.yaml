@@ -2,3 +2,6 @@ disabled: true
 homepage: https://my-api.example.com
 language: c++
 vendor_ccs: []
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -8,8 +8,9 @@ sanitizers:
   - address
   - undefined
   - memory:
-      experimental: True
+      experimental: true
 main_repo: "https://github.com/RoaringBitmap/CRoaring"
 fuzzing_engines:
   - libfuzzer
-  
+
+  - centipede

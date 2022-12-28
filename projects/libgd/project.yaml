@@ -6,3 +6,6 @@ auto_ccs:
   - tim@tim-smith.us
   - cmbecker69@gmx.de
 main_repo: 'https://github.com/libgd/libgd'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

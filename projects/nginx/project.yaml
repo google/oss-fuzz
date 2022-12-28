@@ -7,3 +7,6 @@ auto_ccs:
   - david@adalogics.com
 sanitizers:
   - address
+fuzzing_engines:
+  - libfuzzer
+  - centipede

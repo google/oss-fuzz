@@ -8,3 +8,6 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/hercules-team/augeas'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

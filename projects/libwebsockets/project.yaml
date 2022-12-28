@@ -4,5 +4,6 @@ primary_contact: "andy.warmcat.com@googlemail.com"
 sanitizers:
   - address
 fuzzing_engines:
-- libfuzzer
+  - libfuzzer
+  - centipede
 main_repo: 'https://libwebsockets.org/repo/libwebsockets'

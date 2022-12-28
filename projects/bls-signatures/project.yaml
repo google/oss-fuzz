@@ -3,18 +3,21 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/supranational/blst.git"
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
 auto_ccs:
- - "kelly@supranational.net"
- - "diederik.loerakker@ethereum.org"
- - "hoffmang@chia.net"
- - "bram@chia.net"
- - "mariano@chia.net"
- - "arvid@chia.net"
- - "bill@chia.net"
- - "pratyush795@gmail.com"
+  - "kelly@supranational.net"
+  - "diederik.loerakker@ethereum.org"
+  - "hoffmang@chia.net"
+  - "bram@chia.net"
+  - "mariano@chia.net"
+  - "arvid@chia.net"
+  - "bill@chia.net"
+  - "pratyush795@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

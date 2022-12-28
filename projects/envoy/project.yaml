@@ -28,6 +28,7 @@ main_repo: 'https://github.com/envoyproxy/envoy.git'
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede
 labels:
   "*":
     - ossfuzz-bugz-1149782

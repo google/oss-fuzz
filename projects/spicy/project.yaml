@@ -13,6 +13,7 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/spicy'

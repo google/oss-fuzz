@@ -7,3 +7,6 @@ sanitizers:
 # - memory
   - undefined
 main_repo: 'https://github.com/gabime/spdlog.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

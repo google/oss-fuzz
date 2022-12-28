@@ -10,3 +10,6 @@ sanitizers:
   - address
   - memory
   - undefined
+fuzzing_engines:
+  - libfuzzer
+  - centipede

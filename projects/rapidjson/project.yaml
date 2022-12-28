@@ -2,11 +2,14 @@ homepage: "https://github.com/tencent/rapidjson"
 language: c++
 primary_contact: "guidovranken@gmail.com"
 sanitizers:
- - address
- - undefined
- - memory:
-    experimental: True
+  - address
+  - undefined
+  - memory:
+      experimental: true
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
 main_repo: 'https://github.com/Tencent/rapidjson.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

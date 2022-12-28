@@ -7,3 +7,6 @@ architectures:
   - i386
   - x86_64
 main_repo: 'https://github.com/strukturag/libheif.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

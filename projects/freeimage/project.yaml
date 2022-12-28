@@ -9,3 +9,6 @@ sanitizers:
 labels:
   load_from_memory_fuzzer:
     - sundew
+fuzzing_engines:
+  - libfuzzer
+  - centipede

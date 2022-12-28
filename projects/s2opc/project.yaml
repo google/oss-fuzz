@@ -7,6 +7,9 @@ auto_ccs:
   - "vmo.systerel@gmail.com"
 main_repo: "https://gitlab.com/systerel/S2OPC"
 sanitizers:
- - address
- - memory
- - undefined
+  - address
+  - memory
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - centipede

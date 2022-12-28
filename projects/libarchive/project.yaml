@@ -7,6 +7,9 @@ auto_ccs:
 sanitizers:
   - address
   - memory:
-     experimental: True
+      experimental: true
   - undefined
 main_repo: 'https://github.com/libarchive/libarchive.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

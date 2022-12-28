@@ -6,3 +6,6 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/kkos/oniguruma.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

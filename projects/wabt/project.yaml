@@ -6,10 +6,13 @@ auto_ccs:
   - "winstein@gmail.com"
   - "shravanrn@gmail.com"
 sanitizers:
- - address
- - memory
- - undefined
+  - address
+  - memory
+  - undefined
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
 main_repo: 'https://github.com/WebAssembly/wabt'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

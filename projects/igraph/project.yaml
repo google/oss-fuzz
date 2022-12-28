@@ -11,5 +11,8 @@ sanitizers:
   - undefined
   - memory
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - centipede

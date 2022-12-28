@@ -2,11 +2,12 @@ homepage: "https://w1.fi/cvs.html"
 language: c++
 primary_contact: "j@w1.fi"
 auto_ccs:
-   - "elver@google.com"
+  - "elver@google.com"
 fuzzing_engines:
   - afl
   - libfuzzer
   - honggfuzz
+  - centipede
 sanitizers:
   - address
   - undefined

@@ -1,7 +1,7 @@
 homepage: "http://www.automatak.com/opendnp3/"
 language: c++
 primary_contact: "jadamcrain@gmail.com"
-auto_ccs :
+auto_ccs:
   - "p.antoine@catenacyber.fr"
   - "jadamcrain@gmail.com"
 
@@ -11,3 +11,6 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/dnp3/opendnp3.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -12,3 +12,6 @@ labels:
   data_context_fuzzer:
     - sundew
 main_repo: 'https://github.com/sass/libsass.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

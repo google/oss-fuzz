@@ -12,3 +12,6 @@ labels:
     - sundew
   decode_fuzzer:
     - sundew
+fuzzing_engines:
+  - libfuzzer
+  - centipede

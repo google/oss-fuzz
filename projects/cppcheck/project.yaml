@@ -8,3 +8,6 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/danmar/cppcheck.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -2,6 +2,9 @@ homepage: "https://github.com/tinyobjloader/tinyobjloader"
 language: c++
 primary_contact: "p.antoine@catenacyber.fr"
 sanitizers:
-- address
-- undefined
+  - address
+  - undefined
 main_repo: 'https://github.com/tinyobjloader/tinyobjloader'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

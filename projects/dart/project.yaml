@@ -1,11 +1,12 @@
 homepage: "https://dart.dev"
 language: c++
 primary_contact: "scheglov@google.com"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
 
 sanitizers:
-- address
+  - address
 fuzzing_engines:
-- libfuzzer
+  - libfuzzer
+  - centipede
 main_repo: 'https://github.com/dart-lang/sdk.git'

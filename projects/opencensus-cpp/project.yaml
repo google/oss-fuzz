@@ -1,10 +1,13 @@
 homepage: "https://opencensus.io/"
 language: c++
 primary_contact: "joshuasuereth@google.com"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
 
 sanitizers:
-- address
-- memory
+  - address
+  - memory
 main_repo: 'https://github.com/census-instrumentation/opencensus-cpp'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

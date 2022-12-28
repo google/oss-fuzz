@@ -11,3 +11,6 @@ sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -3,6 +3,7 @@ primary_contact: "security@nodejs.org"
 language: c++
 fuzzing_engines:
   - libfuzzer
+  - centipede
 sanitizers:
   - address
 auto_ccs:

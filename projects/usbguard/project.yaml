@@ -2,12 +2,15 @@ homepage: "https://usbguard.github.io/"
 language: c++
 primary_contact: "rsroka@redhat.com"
 sanitizers:
- - address
- - undefined
+  - address
+  - undefined
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
 auto_ccs:
- - "alakatos@redhat.com"
- - "allenwebb@google.com"
- - "zfridric@redhat.com"
+  - "alakatos@redhat.com"
+  - "allenwebb@google.com"
+  - "zfridric@redhat.com"
 main_repo: "https://github.com/USBGuard/usbguard"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

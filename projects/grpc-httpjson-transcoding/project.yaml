@@ -3,18 +3,19 @@ main_repo: "https://github.com/grpc-ecosystem/grpc-httpjson-transcoding.git"
 language: c++
 primary_contact: "nareddyt@google.com"
 auto_ccs:
-- "yangshuo@google.com"
-- "taoxuy@google.com"
-- "qiwzhang@google.com"
-- "justinmp@google.com"
+  - "yangshuo@google.com"
+  - "taoxuy@google.com"
+  - "qiwzhang@google.com"
+  - "justinmp@google.com"
 
 fuzzing_engines:
-- libfuzzer
-- afl
-- honggfuzz
+  - libfuzzer
+  - afl
+  - honggfuzz
 
+  - centipede
 sanitizers:
-- address
-- undefined
+  - address
+  - undefined
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory

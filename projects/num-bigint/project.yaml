@@ -3,9 +3,12 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/rust-num/num-bigint.git"
 auto_ccs:
-    - "cuviper@gmail.com"
+  - "cuviper@gmail.com"
 sanitizers:
- - address
+  - address
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - centipede

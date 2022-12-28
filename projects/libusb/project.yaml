@@ -10,3 +10,6 @@ sanitizers:
 architectures:
   - x86_64
 main_repo: 'https://github.com/libusb/libusb'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

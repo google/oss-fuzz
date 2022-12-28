@@ -3,7 +3,7 @@ language: c++
 primary_contact: "blp@ovn.org"
 auto_ccs:
   - "jpettit@ovn.org"
-  - "pfaffben@gmail.com" 
+  - "pfaffben@gmail.com"
   - "pkusunyifeng@gmail.com"
   - "bshas3@gmail.com"
   - "cpp.code.lv@gmail.com"
@@ -15,3 +15,6 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/openvswitch/ovs.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

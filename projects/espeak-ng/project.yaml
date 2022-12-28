@@ -2,13 +2,14 @@ homepage: "https://github.com/espeak-ng/espeak-ng"
 language: c++
 primary_contact: "msclrhd@googlemail.com"
 auto_ccs:
-- "valdis.vitolins@gmail.com"
-- "p.antoine@catenacyber.fr"
-- "sascha.brawer@gmail.com"
+  - "valdis.vitolins@gmail.com"
+  - "p.antoine@catenacyber.fr"
+  - "sascha.brawer@gmail.com"
 
 sanitizers:
-- address
+  - address
 fuzzing_engines:
-- libfuzzer
-- afl
+  - libfuzzer
+  - afl
+  - centipede
 main_repo: 'https://github.com/espeak-ng/espeak-ng'

@@ -3,5 +3,8 @@ primary_contact: "xpdf@xpdfreader.com"
 language: c++
 sanitizers:
   - address
-auto_ccs :
+auto_ccs:
   - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

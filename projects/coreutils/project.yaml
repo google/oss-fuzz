@@ -1,2 +1,5 @@
 homepage: "http://www.gnu.org/software/coreutils/"
 primary_contact: "P@draigBrady.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

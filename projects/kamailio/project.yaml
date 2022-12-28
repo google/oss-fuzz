@@ -7,3 +7,6 @@ auto_ccs:
   - "david@adalogics.com"
   - "mail@gilawa.com"
   - "qxork.droid@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

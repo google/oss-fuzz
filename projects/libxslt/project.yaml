@@ -14,3 +14,6 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://gitlab.gnome.org/GNOME/libxslt.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

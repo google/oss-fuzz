@@ -3,11 +3,14 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/ANSSI-FR/libecc.git"
 auto_ccs:
-    - "dev.libecc@gmail.com"
+  - "dev.libecc@gmail.com"
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - centipede

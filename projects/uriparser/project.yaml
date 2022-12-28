@@ -2,11 +2,14 @@ homepage: "https://github.com/uriparser/uriparser"
 language: c++
 primary_contact: "webmaster@hartwork.org"
 sanitizers:
- - address
+  - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
- - undefined
+  - undefined
 architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/uriparser/uriparser'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

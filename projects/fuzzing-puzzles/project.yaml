@@ -11,4 +11,5 @@ sanitizers:
 fuzzing_engines:
   - honggfuzz
 
-disabled: True
+  - centipede
+disabled: true

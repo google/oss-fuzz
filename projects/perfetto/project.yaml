@@ -27,6 +27,7 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+  - centipede
 sanitizers:
   - address
   - undefined

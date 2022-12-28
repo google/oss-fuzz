@@ -4,3 +4,6 @@ primary_contact: "devel@wazuh.com"
 language: c
 auto_ccs:
   - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

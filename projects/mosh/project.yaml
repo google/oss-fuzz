@@ -13,3 +13,4 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+  - centipede

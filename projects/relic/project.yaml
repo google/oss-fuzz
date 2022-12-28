@@ -3,11 +3,14 @@ language: c++
 primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/relic-toolkit/relic"
 auto_ccs:
-    - "dfaranha@gmail.com"
+  - "dfaranha@gmail.com"
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - centipede

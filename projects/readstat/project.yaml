@@ -2,3 +2,6 @@ homepage: "https://github.com/WizardMac/ReadStat"
 language: c++
 primary_contact: "emmiller@gmail.com"
 main_repo: 'https://github.com/WizardMac/ReadStat'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

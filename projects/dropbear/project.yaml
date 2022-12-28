@@ -3,3 +3,6 @@ language: c++
 primary_contact: "matt@ucc.asn.au"
 builds_per_day: 4
 main_repo: "https://github.com/mkj/dropbear"
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -2,7 +2,8 @@ homepage: "https://github.com/syoyo/tinygltf"
 language: c++
 primary_contact: "p.antoine@catenacyber.fr"
 fuzzing_engines:
-- libfuzzer
+  - libfuzzer
+  - centipede
 sanitizers:
-- address
+  - address
 main_repo: 'https://github.com/syoyo/tinygltf.git'

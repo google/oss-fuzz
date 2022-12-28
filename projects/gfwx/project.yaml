@@ -2,6 +2,9 @@ homepage: "http://www.gfwx.org/"
 language: c++
 primary_contact: "fyffe@google.com"
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -16,3 +16,6 @@ auto_ccs:
   - "ethompson@fastly.com"
 
 main_repo: 'https://github.com/h2o/h2o'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

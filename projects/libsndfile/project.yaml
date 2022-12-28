@@ -10,3 +10,6 @@ sanitizers:
   - memory
 coverage_extra_args: -ignore-filename-regex=/usr/lib/jvm/.*
 main_repo: 'https://github.com/libsndfile/libsndfile.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede

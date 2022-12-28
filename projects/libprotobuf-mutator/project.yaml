@@ -2,4 +2,7 @@ homepage: "https://github.com/google/libprotobuf-mutator"
 language: c++
 primary_contact: "vitalybuka@chromium.org"
 main_repo: 'https://github.com/google/libprotobuf-mutator.git'
-file_github_issue: True
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+  - centipede

@@ -5,6 +5,9 @@ auto_ccs:
   - "vincent.ulitzsch@live.de"
   - "bshas3@gmail.com"
 sanitizers:
- - address
- - memory
- - undefined
+  - address
+  - memory
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - centipede

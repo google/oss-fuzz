@@ -2,11 +2,14 @@ homepage: "https://qpid.apache.org/proton/"
 language: c++
 primary_contact: "jross@apache.org"
 auto_ccs:
- - "security@apache.org"
- - "astitcher@apache.org"
- - "jdanek@redhat.com"
+  - "security@apache.org"
+  - "astitcher@apache.org"
+  - "jdanek@redhat.com"
 sanitizers:
- - address
- - memory
- - undefined
+  - address
+  - memory
+  - undefined
 main_repo: 'https://github.com/apache/qpid-proton.git'
+fuzzing_engines:
+  - libfuzzer
+  - centipede
