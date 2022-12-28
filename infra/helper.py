@@ -238,14 +238,6 @@ def _add_external_project_args(parser):
   )
 
 
-def _add_public_option(arg_parser):
-  """Adds --public option to |arg_parser|."""
-  arg_parser.add_argument('--public',
-                          action='store_true',
-                          help='if set, will download public '
-                          'corpus using wget')
-
-
 def get_parser():  # pylint: disable=too-many-statements
   """Returns an argparse parser."""
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
@@ -360,7 +352,6 @@ def get_parser():  # pylint: disable=too-many-statements
                                help='additional arguments to '
                                'pass to llvm-cov utility.',
                                nargs='*')
-  _add_public_option(coverage_parser)
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
 
@@ -395,7 +386,6 @@ def get_parser():  # pylint: disable=too-many-statements
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
                                        help='specify name of a fuzz target')
-  _add_public_option(download_corpora_parser)
   download_corpora_parser.add_argument(
       'project', help='name of the project or path (external)')
 
