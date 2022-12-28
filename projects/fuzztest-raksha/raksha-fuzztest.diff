@@ -2,19 +2,6 @@ diff --git a/WORKSPACE b/WORKSPACE
 index d69494f..ecb2a43 100644
 --- a/WORKSPACE
 +++ b/WORKSPACE
-@@ -5,9 +5,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
- #--------------------
- http_archive(
-     name = "com_google_googletest",
--    sha256 = "5cf189eb6847b4f8fc603a3ffff3b0771c08eec7dd4bd961bfd45477dd13eb73",
--    strip_prefix = "googletest-609281088cfefc76f9d0ce82e1ff6c30cc3591e5",
--    urls = ["https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip"],
-+    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
-+    strip_prefix = "googletest-release-1.12.1",
-+    urls = ["https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz"],
- )
- 
- # Protobuf:
 @@ -267,12 +267,12 @@ http_archive(
      ],
  )
