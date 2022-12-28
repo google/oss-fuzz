@@ -7,6 +7,7 @@ auto_ccs:
   - "axxu@fb.com"
   - "avp@fb.com"
   - "jsx@fb.com"
+  - "luigiconiglio@fb.com"
 vendor_ccs:
   - "oss-fuzz@fb.com"
 fuzzing_engines:
