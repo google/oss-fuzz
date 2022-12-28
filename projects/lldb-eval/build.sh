@@ -27,7 +27,7 @@ then
   LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release-memory.tar.gz"
 elif [ "$SANITIZER" = "undefined" ]
 then
-  LLVM_ARCHIVE="llvm-15.0.1-x86_64-linux-release.tar.gz"
+  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release.tar.gz"
 elif [ "$SANITIZER" = "coverage" ]
 then
   # For coverage we also need the original source code.
