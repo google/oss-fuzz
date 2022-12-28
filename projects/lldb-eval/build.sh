@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-ln -sf /usr/local/bin/python3 /usr/bin/python3
+
 (
 cd $SRC/
 GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-ubuntu-20.04"
@@ -27,7 +27,7 @@ then
   LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release-memory.tar.gz"
 elif [ "$SANITIZER" = "undefined" ]
 then
-  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release.tar.gz"
+  LLVM_ARCHIVE="llvm-15.0.1-x86_64-linux-release.tar.gz"
 elif [ "$SANITIZER" = "coverage" ]
 then
   # For coverage we also need the original source code.
