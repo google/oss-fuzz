@@ -19,6 +19,7 @@ cd $OUT
 if (( $# > 0 )); then
   FUZZ_TARGETS="$@"
 else
+  set +e
   FUZZ_TARGETS="$(find . -maxdepth 1 -type f -executable -printf '%P\n' | \
       grep -v -x -F \
       -e 'llvm-symbolizer' \
@@ -27,6 +28,7 @@ else
       -e 'jazzer_driver' \
       -e 'jazzer_driver_with_sanitizer' \
       -e 'sanitizer_with_fuzzer.so')"
+  set -e
 fi
 
 export RUN_FUZZER_MODE=interactive
