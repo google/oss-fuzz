@@ -76,6 +76,12 @@ then
   echo 'Building without MSan instrumented libraries.'
 fi
 
+if [[ $SANITIZER_FLAGS = *sanitize=thread* ]]
+then
+  # Take all libraries from /usr/tsan/lib/*
+  cp -R /usr/tsan/lib/* /usr/local/lib/
+fi
+
 # Coverage flag overrides.
 COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_${SANITIZER}"
 if [[ -n ${!COVERAGE_FLAGS_VAR+x} ]]

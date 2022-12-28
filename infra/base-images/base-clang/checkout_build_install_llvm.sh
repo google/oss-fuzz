@@ -258,4 +258,22 @@ ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
+# MemorySanitizer instrumented libraries.
+mkdir -p $WORK/msan
+cd $WORK/msan
+
+# https://github.com/google/oss-fuzz/issues/1099
+cat <<EOF > $WORK/tsan/blocklist.txt
+fun:__gxx_personality_*
+EOF
+
+cmake_libcxx $CMAKE_EXTRA_ARGS \
+    -DLLVM_USE_SANITIZER=Thread \
+    -DCMAKE_INSTALL_PREFIX=/usr/tsan/ \
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/tsan/blocklist.txt"
+
+ninja -j $NPROC cxx
+ninja install-cxx
+rm -rf $WORK/tsan
+
 free_disk_space
