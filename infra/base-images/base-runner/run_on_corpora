@@ -32,9 +32,16 @@ fi
 export RUN_FUZZER_MODE=interactive
 export AFL_BENCH_JUST_ONE=1
 for fuzz_target in $FUZZ_TARGETS; do
+
   export CORPUS_DIR=/corpus/$fuzz_target
   echo $fuzz_target
-  run_fuzzer $fuzz_target
+  if [ -d "$CORPUS_DIR" ]; then
+    run_fuzzer $fuzz_target
+  else
+    echo "$CORPUS_DIR does not exist."
+    continue
+  fi
+
 done
 
 # Wait for background processes to finish.
