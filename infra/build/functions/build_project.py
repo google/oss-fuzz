@@ -255,7 +255,7 @@ def get_compile_step(project, build, env, parallel, succeed_on_fail=False):
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
            f'mkdir -p {build.out} && compile || '
-           f'(echo "{failure_msg}" && {succeed_on_fail})'),
+           f'(echo "{failure_msg}" && {succeed_on_fail}) && echo {project}'),
       ],
       'id': get_id('compile', build),
   }
