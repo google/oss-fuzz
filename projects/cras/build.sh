@@ -25,8 +25,9 @@ cd ${SRC}/adhd/cras
 ./git_prepare.sh
 mkdir -p ${WORK}/build && cd ${WORK}/build
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-CFLAGS="${CFLAGS} -DHAVE_FUZZER" ${SRC}/adhd/cras/configure --disable-featured
-make -j$(nproc)
+CFLAGS="${CFLAGS}" ${SRC}/adhd/cras/configure --enable-fuzzer --disable-featured
+make -C src common/cras_dbus_bindings.h
+make -C src -j$(nproc) cras
 cp ${WORK}/build/src/server/rust/target/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
 CRAS_FUZZERS="rclient_message cras_hfp_slc cras_fl_media_fuzzer"
@@ -35,6 +36,7 @@ for fuzzer in ${CRAS_FUZZERS};
 do
 $CXX $CXXFLAGS $FUZZER_LDFLAGS \
   ${SRC}/adhd/cras/src/fuzz/${fuzzer}.cc -o ${OUT}/${fuzzer} \
+  -D HAVE_FUZZER=1 \
   -I ${SRC}/adhd/cras/src/server \
   -I ${SRC}/adhd/cras/src/common \
   $(pkg-config --cflags dbus-1) \
