@@ -12,33 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-import atheris
-
-import markdown
-
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
-@atheris.instrument_func
-def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-
-  md = markdown.core.Markdown()
-  try:
-    md.convert(fdp.ConsumeUnicodeNoSurrogates(1024))
-  except NotImplementedError:
-    pass
-  except RecursionError:
-    pass
-
-
-def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip mock
+RUN git clone https://github.com/PyMySQL/PyMySQL pymysql
+COPY *.sh *py $SRC/
+WORKDIR $SRC/pymysql

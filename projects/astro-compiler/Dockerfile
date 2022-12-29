@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-export USE_BAZEL_VERSION=5.4.0
-bazel_build_fuzz_tests
+
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/withastro/compiler.git
+
+RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
+
+COPY build.sh $SRC/
+WORKDIR $SRC/compiler

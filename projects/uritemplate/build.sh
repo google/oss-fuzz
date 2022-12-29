@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,33 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-import atheris
+#
+################################################################################
+pip3 install .
 
-import markdown
-
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
-@atheris.instrument_func
-def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-
-  md = markdown.core.Markdown()
-  try:
-    md.convert(fdp.ConsumeUnicodeNoSurrogates(1024))
-  except NotImplementedError:
-    pass
-  except RecursionError:
-    pass
-
-
-def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

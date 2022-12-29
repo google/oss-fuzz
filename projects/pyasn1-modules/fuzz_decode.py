@@ -12,29 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import atheris
 
-import proto
-from google.protobuf.json_format import ParseError
+import pyasn1
+from pyasn1.codec.der import decoder as der_decoder
+
+from pyasn1_modules import pem
+from pyasn1_modules import rfc5280
+from pyasn1_modules import rfc3161
+
+pyasn1_module_list = [
+  rfc5280.AlgorithmIdentifier(),
+  rfc3161.TimeStampReq()
+]
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-
-  class FuzzMsg(proto.Message):
-    val1 = proto.Field(proto.FLOAT, number=1)
-    val2 = proto.Field(proto.INT32, number=2)
-    val3 = proto.Field(proto.BOOL, number=3)
-    val4 = proto.Field(proto.STRING, number=4)
-
+  
   try:
-    s = FuzzMsg.from_json(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-    FuzzMsg.to_json(s)
-  except ParseError:
-    pass
-  except TypeError:
-    pass
-  except RecursionError:
+    substrate = pem.readBase64fromText(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except:
+    return # readBase64 is just a wrapper around base64 so we avoid issues
+
+  identifier = fdp.PickValueInList(pyasn1_module_list)
+  try:
+    der_decoder.decode(substrate, asnSpec=identifier)
+  except pyasn1.error.PyAsn1Error:
     pass
 
 
@@ -46,4 +51,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-

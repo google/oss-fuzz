@@ -12,30 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import atheris
+from uritemplate import URITemplate
 
-import proto
-from google.protobuf.json_format import ParseError
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-
-  class FuzzMsg(proto.Message):
-    val1 = proto.Field(proto.FLOAT, number=1)
-    val2 = proto.Field(proto.INT32, number=2)
-    val3 = proto.Field(proto.BOOL, number=3)
-    val4 = proto.Field(proto.STRING, number=4)
-
-  try:
-    s = FuzzMsg.from_json(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-    FuzzMsg.to_json(s)
-  except ParseError:
-    pass
-  except TypeError:
-    pass
-  except RecursionError:
-    pass
+  url = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+  t = URITemplate(url)
+  t.expand(fuzzVar='1234')
 
 
 def main():
@@ -46,4 +33,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-

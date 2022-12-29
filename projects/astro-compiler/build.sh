@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-export USE_BAZEL_VERSION=5.4.0
-bazel_build_fuzz_tests
+
+# Fuzz internal/transform
+printf "package transform\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/compiler/internal/transform/registerfuzzdep.go
+go mod tidy
+go get -u github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer $SRC/compiler/internal/transform FuzzScopeHTML fuzz_scope_html
+compile_native_go_fuzzer $SRC/compiler/internal/transform FuzzTransformScoping fuzz_transform_scoping

@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/jwilk-mirrors/docutils
+language: python
+main_repo: https://github.com/jwilk-mirrors/docutils
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
