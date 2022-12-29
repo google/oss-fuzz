@@ -182,4 +182,4 @@ public class ExampleFuzzer {
 ```
 
 For a list of convenience methods offered by `FuzzedDataProvider`, consult its
-[javadocs](https://codeintelligencetesting.github.io/jazzer-api/com/code_intelligence/jazzer/api/FuzzedDataProvider.html).
+[javadocs](https://codeintelligencetesting.github.io/jazzer-docs/jazzer-api/com/code_intelligence/jazzer/api/FuzzedDataProvider.html).
