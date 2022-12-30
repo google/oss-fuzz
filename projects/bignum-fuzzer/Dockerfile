@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget
+RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget lzip
 RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig
 ENV PATH=$PATH:/usr/local/go/bin
 
@@ -32,5 +32,7 @@ RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.ta
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+#RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN wget --no-check-certificate https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
+RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
 COPY build.sh $SRC/
