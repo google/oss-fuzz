@@ -24,4 +24,5 @@ compile_go_fuzzer github.com/theupdateframework/notary/cryptoservice/fuzz Fuzz f
 
 mv $SRC/notary/trustmanager/keys_test.go $SRC/notary/trustmanager/keys_test_fuzz.go
 mv $SRC/notary/trustmanager/keystore_test.go $SRC/notary/trustmanager/keystore_test_fuzz.go
-compile_native_go_fuzzer github.com/theupdateframework/notary/trustmanager FuzzImportKeys FuzzImportKeys
+compile_native_go_fuzzer github.com/theupdateframework/notary/trustmanager FuzzImportKeysSimple FuzzImportKeysSimple
+compile_native_go_fuzzer github.com/theupdateframework/notary/trustmanager FuzzImportKeysStructured FuzzImportKeysStructured

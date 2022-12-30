@@ -17,10 +17,13 @@ package trustmanager
 
 import (
 	"bytes"
+	"encoding/pem"
 	"sync"
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
+	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
 
 var initter sync.Once
@@ -29,12 +32,42 @@ func muteLogging() {
 	logrus.SetLevel(logrus.PanicLevel)
 }
 
-func FuzzImportKeys(f *testing.F) {
+func FuzzImportKeysSimple(f *testing.F) {
 	f.Fuzz(func(t *testing.T, from []byte, fallbackRole, fallbackGUN string) {
 		initter.Do(muteLogging)
 		s := NewTestImportStore()
 
 		in := bytes.NewReader(from)
 		ImportKeys(in, []Importer{s}, fallbackRole, fallbackGUN, passphraseRetriever)
+	})
+}
+
+func FuzzImportKeysStructured(f *testing.F) {
+	f.Fuzz(func(t *testing.T, from, fuzzData []byte) {
+		initter.Do(muteLogging)
+
+		ff := fuzz.NewConsumer(fuzzData)
+
+		b := &pem.Block{}
+		headerMap1 := make(map[string]string)
+		ff.FuzzMap(&headerMap1)
+		b.Headers = headerMap1
+		b.Bytes = from
+
+		c := &pem.Block{}
+		headerMap2 := make(map[string]string)
+		ff.FuzzMap(&headerMap2)
+		c.Bytes = from
+		c.Headers = headerMap2
+
+		bBytes := pem.EncodeToMemory(b)
+		cBytes := pem.EncodeToMemory(c)
+
+		byt := append(bBytes, cBytes...)
+
+		in := bytes.NewBuffer(byt)
+
+		s := NewTestImportStore()
+		ImportKeys(in, []Importer{s}, "", "", passphraseRetriever)
 	})
 }
