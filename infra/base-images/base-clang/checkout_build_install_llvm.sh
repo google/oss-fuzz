@@ -201,7 +201,6 @@ function free_disk_space {
     # libraries.
     # Note: we need fuzzer_no_main libraries for atheris. Don't delete.
     rm -rf \
-      /usr/local/lib/libclang* \
       /usr/local/lib/liblld* \
       /usr/local/lib/cmake/
 }
