@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/notaryproject/notary
-COPY build.sh $SRC/
+COPY build.sh fuzz_trustmanager_test.go $SRC/
 WORKDIR $SRC/notary
