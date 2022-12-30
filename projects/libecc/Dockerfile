@@ -22,7 +22,8 @@ RUN git clone https://github.com/ANSSI-FR/libecc.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone https://github.com/wolfssl/wolfssl
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
-RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
+RUN wget --no-check-certificate https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
+RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager

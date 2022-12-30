@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+cd $SRC/
+tar --lzip -xvf gmp-6.2.1.tar.lz
+mv $SRC/gmp-6.2.1/ $SRC/libgmp/
+
 # Install Rust nightly
 #curl https://sh.rustup.rs -sSf | sh -s -- -y
 #source $HOME/.cargo/env
