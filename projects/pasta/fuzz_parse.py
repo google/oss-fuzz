@@ -32,7 +32,8 @@ def TestOneInput(data):
     SyntaxError, # thrown by ast fast
     ValueError,  # thrown by ast fast
     pasta.base.annotate.AnnotationError, # pasta-thrown error
-    MemoryError # For stack overflows
+    MemoryError, # For stack overflows
+    RecursionError # Not interesting
   ):
     pass
 
