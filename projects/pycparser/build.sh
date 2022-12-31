@@ -20,3 +20,5 @@ pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+zip $OUT/fuzz_c_parser_seed_corpus.zip ./tests/c_files/*.c
