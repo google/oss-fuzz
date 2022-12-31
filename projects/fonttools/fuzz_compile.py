@@ -15,8 +15,11 @@
 import sys
 import atheris
 
-from fontTools import ttx
-from fontTools import misc
+from fontTools import (
+  ttx,
+  misc,
+  ttLib
+)
 import xml
 
 
@@ -38,7 +41,7 @@ def TestOneInput(data):
     pass
   except misc.xmlReader.TTXParseError:
     pass
-  except fontTools.ttLib.TTLibError:
+  except ttLib.TTLibError:
     pass
 
 
