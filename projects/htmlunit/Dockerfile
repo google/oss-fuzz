@@ -29,11 +29,11 @@ RUN mkdir -p ~/.m2 && \
 #
 # install maven and gradle
 #
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
-	unzip maven.zip -d $SRC/maven-3.8.6 && \
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+	unzip maven.zip -d $SRC/maven-3.8.7 && \
 	rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.8.6/apache-maven-3.8.6/bin/mvn
+ENV MVN $SRC/maven-3.8.7/apache-maven-3.8.7/bin/mvn
 
 RUN curl -L https://services.gradle.org/distributions/gradle-7.6-bin.zip -o gradle.zip && \
     unzip gradle.zip -d $SRC/gradle && \
