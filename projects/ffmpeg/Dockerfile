@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN dpkg --add-architecture i386
 RUN apt-get update && apt-get install -y make autoconf libtool build-essential \
 	libass-dev:i386 libfreetype6-dev:i386 \
 	libvdpau-dev:i386 libxcb1-dev:i386 libxcb-shm0-dev:i386 libdrm-dev:i386 \
