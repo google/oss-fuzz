@@ -32,7 +32,7 @@ LOG_INFO = 1
 PYSECSAN_LOG_LVL = LOG_INFO
 
 # Message that will be printed to stdout when an issue is found.
-PYSECSAN_ISSUE_LOG_MSG = 'Found an issue: PySecSan will exit shortly.'
+PYSECSAN_BUG_LABEL = r'===BUG DETECTED: PySecSan:'
 
 
 # pylint: disable=global-statement
@@ -54,7 +54,11 @@ def is_module_present(mod_name):
   return importlib.find_loader(mod_name) is not None
 
 
-def abort_with_issue(msg):
+def _log_bug(bug_title):
+  sanitizer_log_always('%s %s ===' % (PYSECSAN_BUG_LABEL, bug_title))
+
+
+def abort_with_issue(msg, bug_title):
   """Print message, display stacktrace and force process exit.
 
   Use this function for signalling an issue is found and use the messages
@@ -64,7 +68,7 @@ def abort_with_issue(msg):
   sanitizer_log_always("=" * 65)
 
   # Log issue message
-  sanitizer_log_always(PYSECSAN_ISSUE_LOG_MSG)
+  _log_bug(bug_title)
   sanitizer_log_always(msg)
 
   # Log stacktrace

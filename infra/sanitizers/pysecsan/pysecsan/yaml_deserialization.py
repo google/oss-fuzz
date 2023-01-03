@@ -39,4 +39,4 @@ def hook_pre_exec_pyyaml_load(stream, loader):
     msg = (
         'Yaml deserialization issue.\n'
         'Unsafe deserialization can be used to execute arbitrary commands.\n')
-    sanlib.abort_with_issue(msg)
+    sanlib.abort_with_issue(msg, 'Yaml deserialisation')

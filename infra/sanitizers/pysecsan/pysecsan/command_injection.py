@@ -67,7 +67,7 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
       # if shell arg is true and string is tainted and unquoted that's a
       # definite code injection.
       if arg_shell is True:
-        sanlib.abort_with_issue('Code injection in Popen')
+        sanlib.abort_with_issue('Code injection in Popen', 'Command injection')
 
       # It's a maybe: will not report this to avoid false positives.
       # TODO: add more precise detection here.
@@ -86,18 +86,20 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
             'command injection likely by way of mercurial. The following'
             f'command {str(cmd)} is executed, and if you substitute {cmd[idx]} '
             'with \"--config=alias.init=!touch HELLO_PY\" then you will '
-            'create HELLO_PY')
+            'create HELLO_PY', 'Command injection')
 
 
 def hook_pre_exec_os_system(cmd):
   """Hook for os.system."""
   res = check_code_injection_match(cmd)
   if res is not None:
-    sanlib.abort_with_issue(f'code injection by way of os.system\n{res}')
+    sanlib.abort_with_issue(f'code injection by way of os.system\n{res}',
+                            'Command injection')
 
 
 def hook_pre_exec_eval(cmd):
   """Hook for eval. Experimental atm."""
   res = check_code_injection_match(cmd, check_unquoted=True)
   if res is not None:
-    sanlib.abort_with_issue(f'Potential code injection by way of eval\n{res}')
+    sanlib.abort_with_issue(f'Potential code injection by way of eval\n{res}',
+                            'Command injection')

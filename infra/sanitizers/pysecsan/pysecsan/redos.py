@@ -51,7 +51,7 @@ def hook_post_exec_re_pattern_findall(self, re_str):
   try:
     endtime = time.time() - START_RE_TIME
     if endtime > 4:
-      sanlib.abort_with_issue(f'Potential ReDOS attack.\n {re_str}')
+      sanlib.abort_with_issue(f'Potential ReDOS attack.\n {re_str}', 'ReDOS')
   except NameError:
     sanlib.sanitizer_log(
         'starttime is not set, which it should have. Error in PySecSan',
