@@ -16,7 +16,5 @@
 ################################################################################
 
 echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
-export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
-cp /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-$ARCHITECTURE.a \
-  $LIB_FUZZING_ENGINE_DEPRECATED
+cp /opt/tsan_harness.o $LIB_FUZZING_ENGINE_DEPRECATED
 echo " done."

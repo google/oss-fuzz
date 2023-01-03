@@ -27,7 +27,7 @@ import posixpath
 import build_lib
 import build_project
 
-SANITIZER = 'coverage'
+SANITIZER = 'thread'
 FUZZING_ENGINE = 'libfuzzer'
 ARCHITECTURE = 'x86_64'
 
@@ -105,10 +105,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                                   project.fuzzing_language,
                                                   config=config)
 
-  build = build_project.Build(FUZZING_ENGINE, 'coverage', ARCHITECTURE)
+  build = build_project.Build(FUZZING_ENGINE, 'thread', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
-      build_project.get_compile_step(project, build, env, config.parallel))
+      build_project.get_compile_step(project,
+                                     build,
+                                     env,
+                                     config.parallel,
+                                     succeed_on_fail=True))
   download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
@@ -139,137 +143,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%%.*}). '
-           'This usually means that corpus backup for a particular fuzz '
-           'target does not exist. If a fuzz target was added in the last '
-           '24 hours, please wait one more day. Otherwise, something is '
-           'wrong with the fuzz target or the infrastructure, and corpus '
-           'pruning task does not finish successfully." && exit 1'
-           '); done && coverage || (echo "' + failure_msg + '" && false)')
+           ' /out/ && exit 0'
+           '); done && run_on_corpora')
       ],
       'volumes': [{
           'name': 'corpus',
           'path': '/corpus'
       }],
   })
-
-  # Upload the report.
-  upload_report_url = bucket.get_upload_url('reports')
-  upload_report_by_target_url = bucket.get_upload_url('reports-by-target')
-
-  # Delete the existing report as gsutil cannot overwrite it in a useful way due
-  # to the lack of `-T` option (it creates a subdir in the destination dir).
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'report'),
-          upload_report_url,
-      ],
-  })
-
-  # TODO(navidem):
-  # Currently python coverage does not produce per_target reports.
-  # Skipping python for now to avoid breakage.
-  if (project.fuzzing_language != 'python' and
-      project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT):
-    build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
-    build_steps.append({
-        'name':
-            'gcr.io/cloud-builders/gsutil',
-        'args': [
-            '-m',
-            'cp',
-            '-r',
-            os.path.join(build.out, 'report_target'),
-            upload_report_by_target_url,
-        ],
-    })
-
-  # Upload the fuzzer stats. Delete the old ones just in case.
-  upload_fuzzer_stats_url = bucket.get_upload_url('fuzzer_stats')
-
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_stats_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'fuzzer_stats'),
-          upload_fuzzer_stats_url,
-      ],
-  })
-
-  if project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-    # Upload the text coverage reports. Delete the old ones just in case.
-    upload_textcov_reports_url = bucket.get_upload_url('textcov_reports')
-
-    build_steps.append(build_lib.gsutil_rm_rf_step(upload_textcov_reports_url))
-    build_steps.append({
-        'name':
-            'gcr.io/cloud-builders/gsutil',
-        'args': [
-            '-m',
-            'cp',
-            '-r',
-            os.path.join(build.out, 'textcov_reports'),
-            upload_textcov_reports_url,
-        ],
-    })
-
-  # Upload the fuzzer logs. Delete the old ones just in case
-  upload_fuzzer_logs_url = bucket.get_upload_url('logs')
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'logs'),
-          upload_fuzzer_logs_url,
-      ],
-  })
-
-  # Upload srcmap.
-  srcmap_upload_url = bucket.get_upload_url('srcmap')
-  srcmap_upload_url = srcmap_upload_url.rstrip('/') + '.json'
-  build_steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': [
-          'cp',
-          '/workspace/srcmap.json',
-          srcmap_upload_url,
-      ],
-  })
-
-  # Update the latest report information file for ClusterFuzz.
-  latest_report_info_url = build_lib.get_signed_url(
-      bucket.latest_report_info_url,
-      content_type=LATEST_REPORT_INFO_CONTENT_TYPE)
-  latest_report_info_body = json.dumps({
-      'fuzzer_stats_dir':
-          upload_fuzzer_stats_url,
-      'html_report_url':
-          posixpath.join(bucket.html_report_url, 'index.html'),
-      'report_date':
-          report_date,
-      'report_summary_path':
-          os.path.join(upload_report_url, PLATFORM, 'summary.json'),
-  })
-
-  build_steps.append(
-      build_lib.http_upload_step(latest_report_info_body,
-                                 latest_report_info_url,
-                                 LATEST_REPORT_INFO_CONTENT_TYPE))
-
   return build_steps
 
 

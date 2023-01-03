@@ -384,12 +384,12 @@ def get_parser():  # pylint: disable=too-many-statements
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
-  download_corpora_parser.add_argument('--fuzz-target',
-                                       help='specify name of a fuzz target')
   download_corpora_parser.add_argument('--public',
                                        action='store_true',
                                        help='if set, will download public '
                                        'corpus using wget')
+  download_corpora_parser.add_argument('--fuzz-target',
+                                       help='specify name of a fuzz target')
   download_corpora_parser.add_argument(
       'project', help='name of the project or path (external)')
 

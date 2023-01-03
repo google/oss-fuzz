@@ -1,0 +1,50 @@
+#!/bin/bash -uxe
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+cd $OUT
+
+if (( $# > 0 )); then
+  FUZZ_TARGETS="$@"
+else
+  set +e
+  FUZZ_TARGETS="$(find . -maxdepth 1 -type f -executable -printf '%P\n' | \
+      grep -v -x -F \
+      -e 'llvm-symbolizer' \
+      -e 'jazzer_agent_deploy.jar' \
+      -e 'centipede' \
+      -e 'jazzer_driver' \
+      -e 'jazzer_driver_with_sanitizer' \
+      -e 'sanitizer_with_fuzzer.so')"
+  set -e
+fi
+
+export RUN_FUZZER_MODE=interactive
+export AFL_BENCH_JUST_ONE=1
+for fuzz_target in $FUZZ_TARGETS; do
+
+  export CORPUS_DIR=/corpus/$fuzz_target
+  echo $fuzz_target
+  if [ -d "$CORPUS_DIR" ]; then
+    run_fuzzer $fuzz_target
+  else
+    echo "$CORPUS_DIR does not exist."
+    continue
+  fi
+
+done
+
+# Wait for background processes to finish.
+wait
