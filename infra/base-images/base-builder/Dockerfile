@@ -140,6 +140,8 @@ RUN cd $SRC && \
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
+COPY sanitizers /usr/local/lib/sanitizers
+
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_centipede \
     compile_go_fuzzer \
