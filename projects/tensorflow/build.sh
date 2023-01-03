@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-# Overwrite compiler flags that break the oss-fuzz build
-sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
-sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelrc
-sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.bazelrc
-
 # Force Python3, run configure.py to pick the right build config
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
@@ -71,13 +66,28 @@ declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/.
 # Pass in `--verbose_failures` so it is easy to debug compile crashes.
 # Pass in `--strip=never` to ensure coverage support.
 # Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
-bazel build \
+echo 'try-import %workspace%/fuzztest.bazelrc' >> tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc
+
+git apply ../dependencies.diff
+
+mkdir -p /tf/pkg
+mkdir -p /tf/cache
+
+bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+bazel --bazelrc=tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc \
+  build --config=sigbuild_local_cache \
   --config=libc++ \
+  --config=monolithic \
+  --spawn_strategy=sandboxed \
   ${EXTRA_FLAGS} \
   --verbose_failures \
   --strip=never \
   --copt='-UNDEBUG' \
-  -- ${FUZZERS}
+  --define=framework_shared_object=false \
+  --dynamic_mode=off \
+  --test_output=all \
+  --config=fuzztest \
+  ${FUZZERS}
 
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
 # in `$OUT`, so move them accordingly.

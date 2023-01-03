@@ -114,6 +114,14 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
+  elif [[ "$FUZZING_ENGINE" == fuzztest ]]; then
+    $FUZZER &> $FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "^\[  PASSED  \] ([0-9]{2,}|[1-9]) test" -c $FUZZER_OUTPUT)
+    if (( $CHECK_PASSED == 0 )); then
+      echo "BAD BUILD: fuzzing $FUZZER with fuzztest failed."
+      cat $FUZZER_OUTPUT
+      return 1
+    fi
   elif [[ "$FUZZING_ENGINE" == centipede \
           && ("${HELPER:-}" == True || "$SANITIZER" == none ) ]]; then
     # Performs run test on unsanitized binaries with auxiliary sanitized

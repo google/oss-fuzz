@@ -1,0 +1,208 @@
+diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
+index 8f49e6503d0..3cfa5e837f1 100644
+--- a/tensorflow/security/fuzzing/cc/BUILD
++++ b/tensorflow/security/fuzzing/cc/BUILD
+@@ -22,6 +22,7 @@ tf_cc_test(
+         ":fuzz_helpers",
+         "//tensorflow/core/platform:status",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -34,6 +35,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:str_util",
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -47,6 +49,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:status",
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -59,6 +62,7 @@ tf_cc_test(
+         "//tensorflow/core:test",
+         "//tensorflow/core/framework:bfloat16",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -79,6 +83,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:resource_loader",
+         "//tensorflow/core/platform:status",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -101,6 +106,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:path",
+         "@com_google_absl//absl/strings",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -113,6 +119,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:str_util",
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -125,6 +132,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:path",
+         "@com_google_absl//absl/strings",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -137,6 +145,7 @@ tf_cc_test(
+         ":fuzz_helpers",
+         "//tensorflow/core/platform:status",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -156,6 +165,7 @@ tf_cc_test(
+     deps = [
+         "//tensorflow/core/platform:stringprintf",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -168,6 +178,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:str_util",
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -179,6 +190,7 @@ tf_cc_test(
+     deps = [
+         "//tensorflow/core/platform:tstring",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -191,6 +203,7 @@ tf_cc_test(
+         "//tensorflow/core/framework:attr_value_proto_cc",
+         "//tensorflow/core/framework:attr_value_util",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -203,6 +216,7 @@ tf_cc_test(
+         "//tensorflow/core/framework:attr_value_proto_cc",
+         "//tensorflow/core/framework:attr_value_util",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -216,6 +230,7 @@ tf_cc_test(
+         "//tensorflow/core/platform:stringpiece",
+         "@com_google_absl//absl/strings",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+diff --git a/tensorflow/security/fuzzing/cc/ops/BUILD b/tensorflow/security/fuzzing/cc/ops/BUILD
+index 16ec298b5c0..46c1f7ab814 100644
+--- a/tensorflow/security/fuzzing/cc/ops/BUILD
++++ b/tensorflow/security/fuzzing/cc/ops/BUILD
+@@ -22,6 +22,7 @@ tf_cc_shared_test(
+         "//tensorflow/core/kernels:array",
+         "//tensorflow/security/fuzzing/cc:fuzz_session",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -36,6 +37,7 @@ tf_cc_test(
+         "//tensorflow/core/kernels:array",
+         "//tensorflow/security/fuzzing/cc:fuzz_session",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -50,6 +52,7 @@ tf_cc_test(
+         "//tensorflow/core/kernels:array",
+         "//tensorflow/security/fuzzing/cc:fuzz_session",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+@@ -65,6 +68,7 @@ tf_cc_test(
+         "//tensorflow/core/kernels:matmul_op",
+         "//tensorflow/security/fuzzing/cc:fuzz_session",
+         "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+         "@com_google_googletest//:gtest_main",
+     ],
+ )
+diff --git a/tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc b/tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc
+index 086648fe671..4ef356095a0 100644
+--- a/tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc
++++ b/tensorflow/tools/tf_sig_build_dockerfiles/devel.usertools/cpu.bazelrc
+@@ -13,8 +13,6 @@ build:sigbuild_remote_cache_push --remote_cache="https://storage.googleapis.com/
+ build --action_env=CACHEBUSTER=482629424
+ 
+ # Use Python 3.X as installed in container image
+-build --action_env PYTHON_BIN_PATH="/usr/bin/python3"
+-build --action_env PYTHON_LIB_PATH="/usr/lib/tf_python"
+ build --python_path="/usr/bin/python3"
+ 
+ # Build TensorFlow v2
+@@ -37,7 +35,6 @@ build --copt=-mavx --host_copt=-mavx
+ build --profile=/tf/pkg/profile.json.gz
+ 
+ # Use the NVCC toolchain to compile for manylinux2014
+-build --crosstool_top="@sigbuild-r2.12_config_cuda//crosstool:toolchain"
+ 
+ # Test-related settings below this point.
+ test --build_tests_only --keep_going --test_output=errors --verbose_failures=true
+diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
+index 2766913e73b..f4842aa9841 100644
+--- a/tensorflow/workspace2.bzl
++++ b/tensorflow/workspace2.bzl
+@@ -1,5 +1,6 @@
+ """TensorFlow workspace initialization. Consult the WORKSPACE on how to use it."""
+ 
++load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+ # Import third party config rules.
+ load("@bazel_skylib//lib:versions.bzl", "versions")
+ load("//third_party/gpus:cuda_configure.bzl", "cuda_configure")
+@@ -476,11 +477,11 @@ def _tf_repositories():
+         urls = tf_mirror_urls("https://github.com/google/nsync/archive/1.25.0.tar.gz"),
+     )
+ 
+-    tf_http_archive(
++    http_archive(
+         name = "com_google_googletest",
+-        sha256 = "bc1cc26d1120f5a7e9eb450751c0b24160734e46a02823a573f3c6b6c0a574a7",
+-        strip_prefix = "googletest-e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b",
+-        urls = tf_mirror_urls("https://github.com/google/googletest/archive/e2c06aa2497e330bab1c1a03d02f7c5096eb5b0b.zip"),
++        sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
++        strip_prefix = "googletest-release-1.12.1",
++        url = "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
+     )
+ 
+     tf_http_archive(
