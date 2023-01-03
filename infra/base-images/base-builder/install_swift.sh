@@ -41,7 +41,7 @@ wget https://download.swift.org/swift-5.7-release/ubuntu2004/swift-5.7-RELEASE/s
 tar xzf swift-5.7-RELEASE-ubuntu20.04.tar.gz
 cp -r swift-5.7-RELEASE-ubuntu20.04/usr/* /usr/
 rm -rf swift-5.7-RELEASE-ubuntu20.04.tar.gz
-# TODO: Move to a seperate work dir
+# TODO: Move to a separate work dir
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
 git checkout 63bf228450b8403e0c5e828d276be47ffbcd00d0 # TODO: Keep in sync with base-clang.

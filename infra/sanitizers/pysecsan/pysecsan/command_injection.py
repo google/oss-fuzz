@@ -70,7 +70,7 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
         raise Exception('Code injection in Popen')
 
       # Otherwise it's a maybe.
-      raise Exception(f'Potental code injection in subprocess.Popen\n{res}')
+      raise Exception(f'Potential code injection in subprocess.Popen\n{res}')
 
   # Check for hg command injection
   # Example: tests/poe/libvcs-cve-2022-21187

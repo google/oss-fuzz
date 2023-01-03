@@ -51,7 +51,7 @@ def search_bisect_output(output):
 
 
 class GitRepo:
-  """Class for executing commmands on a git repo."""
+  """Class for executing commands on a git repo."""
 
   def __init__(self, repo_dir):
     self.repo_dir = repo_dir

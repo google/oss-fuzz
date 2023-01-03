@@ -103,7 +103,7 @@ def create_object_wrapper(**methods):
         if pre_hook is not None:
           pre_hook(self, *args, **kargs)
         # No need to pass instance here because when we extracted
-        # the funcion we used instance.__getattribute__(name) which
+        # the function we used instance.__getattribute__(name) which
         # seems to include it. I think.
         orig_retval = orig(*args, **kargs)
 

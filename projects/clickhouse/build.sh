@@ -43,7 +43,7 @@ unset LDFLAGS
 # and everything works in our CI, but not here...
 # We use libprotobuf-mutator and self-written script to generate SQL-based AST from mutated .proto
 # Maybe some of proto files are too complex and this is the cause of `protoc` failures
-# So, this flag only helps to supress error from `protoc` built with any kind of sanitizer
+# So, this flag only helps to suppress error from `protoc` built with any kind of sanitizer
 export MSAN_OPTIONS=exit_code=0
 
 printenv

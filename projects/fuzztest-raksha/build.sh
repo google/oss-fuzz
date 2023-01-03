@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Extend with oss-fuzz settings. To be upsteamed?
+# Extend with oss-fuzz settings. To be upstreamed?
 cd $SRC/raksha
 git apply  --ignore-space-change --ignore-whitespace $SRC/raksha-fuzztest.diff
 

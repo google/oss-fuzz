@@ -152,7 +152,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
 
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
-  # --exit_upon_crash: exit whith a first crash seen
+  # --exit_upon_crash: exit with a first crash seen
   # -V: verify crashes
   # -R (report): save report file to this location
   # -W (working dir): where the crashes go

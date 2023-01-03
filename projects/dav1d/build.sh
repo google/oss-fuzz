@@ -22,7 +22,7 @@ build=${WORK}/build
 rm -rf ${build}
 mkdir -p ${build}
 
-# prepare cross file for i386 compiliation
+# prepare cross file for i386 compilation
 if [ "$ARCHITECTURE" = "i386" ]; then
 	MESON_CFLAGS="'$(echo $CFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"
 	MESON_CXXFLAGS="'$(echo $CXXFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"

@@ -597,7 +597,7 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
 
 
 def _env_to_docker_args(env_list):
-  """Turns envirnoment variable list into docker arguments."""
+  """Turns environment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
 
 
@@ -937,7 +937,7 @@ def check_build(args):
 
 
 def _get_fuzz_targets(project):
-  """Returns names of fuzz targest build in the project's /out directory."""
+  """Returns names of fuzz targets build in the project's /out directory."""
   fuzz_targets = []
   for name in os.listdir(project.out):
     if name.startswith('afl-'):

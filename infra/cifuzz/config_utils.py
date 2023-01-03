@@ -179,7 +179,7 @@ class BaseConfig:
 
   @property
   def platform(self):
-    """Returns the platform CIFuzz is runnning on."""
+    """Returns the platform CIFuzz is running on."""
     if not self.is_internal:
       if not self.is_github:
         return self.Platform.EXTERNAL_GENERIC_CI

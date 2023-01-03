@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>netty-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 	
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>4.1.85.Final</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>4.1.85.Final</fuzzedLibraryVersion>
 		<exec.mainClass>io.netty.handler.codec.http.cookie.ServerCookieDecoderFuzzer</exec.mainClass>
 	</properties>
 
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 	</dependencies>
 
