@@ -30,7 +30,7 @@ START_RE_TIME = None
 # - https://dl.acm.org/doi/pdf/10.1145/3236024.3236027
 # and the current approach we use is simply check for extensive computing time.
 # In essence, this is more of a refinement of traditional timeout checker from
-# the fuzzer, which, effectivelly will detect these types of attacks by way of
+# the fuzzer, which, effectively will detect these types of attacks by way of
 # timeouts.
 #
 # Perhaps the smartest would be to use something like e.g.
