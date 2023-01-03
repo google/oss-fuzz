@@ -1,7 +1,6 @@
 homepage: "https://ci.spring.io/teams/spring-retry/pipelines/spring-retry-2.0.x"
 language: jvm
 main_repo: "https://github.com/spring-projects/spring-retry.git"
-primary_contact: ""
 fuzzing_engines:
   - libfuzzer
 sanitizers:

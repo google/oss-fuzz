@@ -21,7 +21,7 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN install_go.sh
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
+    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
@@ -40,7 +40,9 @@ RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
-RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+#RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN wget --no-check-certificate https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
+RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
@@ -58,6 +60,8 @@ RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
+RUN wget https://download.java.net/java/GA/jdk18.0.1/3f48cabb83014f9fab465e280ccf630b/10/GPL/openjdk-18.0.1_linux-x64_bin.tar.gz
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
+RUN bash -c "wget $(curl https://ziglang.org/download/index.json | jq -r '.master."x86_64-linux".tarball') -O zig-latest.tar.xz"
 
 COPY build.sh xxd.c $SRC/

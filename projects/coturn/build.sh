@@ -18,7 +18,8 @@
 mkdir my_build
 
 pushd my_build/
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" -DWITH_MYSQL=OFF -Wno-dev ../.
+cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../.
 make -j$(nproc)
 popd
 
@@ -32,12 +33,7 @@ cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
 cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
 popd
 
-pushd $OUT/
-mkdir $OUT/lib/
-patchelf --set-rpath '$ORIGIN/lib' FuzzStun
-patchelf --set-rpath '$ORIGIN/lib' FuzzStunClient
-popd
-
 pushd /lib/x86_64-linux-gnu/
+mkdir $OUT/lib/
 cp libevent* $OUT/lib/.
 popd

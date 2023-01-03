@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+cd $SRC/
+tar --lzip -xvf gmp-6.2.1.tar.lz
+mv $SRC/gmp-6.2.1/ $SRC/libgmp/
+
+
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
@@ -92,6 +97,32 @@ then
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTO_JS"
     cd $SRC/cryptofuzz/modules/crypto-js/
     make
+fi
+
+# Compile Java module
+if [ "$SANITIZER" = undefined ]; then
+    mkdir -p $OUT/lib/
+    cd $OUT/lib/
+    tar zxf $SRC/openjdk-18.0.1_linux-x64_bin.tar.gz
+    export JDK_PATH=$(realpath jdk-18.0.1)
+    cp $JDK_PATH/lib/server/libjvm.so $OUT/lib/
+    export LINK_FLAGS="$LINK_FLAGS -L$JDK_PATH/lib/server/ -ljvm"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_JAVA"
+
+    cd $SRC/cryptofuzz/modules/java/
+    make -f Makefile-OSS-Fuzz -j$(nproc)
+    cp CryptofuzzJavaHarness.class $OUT/
+fi
+
+if [[ $CFLAGS != *-m32* ]]
+then
+    cd $SRC/
+    tar Jxf zig-latest.tar.xz
+    export ZIG_BIN=$(realpath zig-linux-x86_64*/zig)
+
+    cd $SRC/cryptofuzz/modules/zig/
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ZIG"
 fi
 
 # Compile NSS
@@ -461,6 +492,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
     # Copy dictionary
@@ -542,6 +578,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl
     # Copy dictionary
@@ -572,6 +613,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 
 # Generate dictionary
 ./generate_dict
+
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
 
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-noasm
@@ -608,6 +654,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl
     # Copy dictionary
@@ -638,6 +689,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 
 # Generate dictionary
 ./generate_dict
+
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
 
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm

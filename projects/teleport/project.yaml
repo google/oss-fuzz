@@ -8,6 +8,7 @@ auto_ccs:
   - "jakub.nyckowski@goteleport.com"
   - "mike.jensen@goteleport.com"
   - "ossfuzz1337@gmail.com"
+  - "adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
