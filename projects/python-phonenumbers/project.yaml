@@ -1,0 +1,9 @@
+homepage: "https://github.com/daviddrysdale/python-phonenumbers"
+language: python
+primary_contact: "rik@purpleguy.nl"
+main_repo: "https://github.com/daviddrysdale/python-phonenumbers.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
