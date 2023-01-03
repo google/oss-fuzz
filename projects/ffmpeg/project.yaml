@@ -1,6 +1,9 @@
 homepage: "https://www.ffmpeg.org"
 language: c++
 primary_contact: "ffmpeg-security@ffmpeg.org"
+architectures:
+ - x86_64
+ - i386
 auto_ccs:
  - "michaelni@gmx.at"
  - "michael@niedermayer.cc"
