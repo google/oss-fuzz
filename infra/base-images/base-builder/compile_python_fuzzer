@@ -81,9 +81,7 @@ if [[ ${ENABLE_PYSECSAN:-"NO"} != "NO" ]];
   # Make sure pysecsan is installed
   if [[ ! -d "/pysecsan" ]];
   then
-    git clone --depth=1 https://github.com/google/oss-fuzz /oss-fuzz-tmp
-    mv /oss-fuzz-tmp/infra/sanitizers/pysecsan /pysecsan/
-    pushd /pysecsan
+    pushd /usr/local/lib/sanitizers/pysecsan
     python3 setup.py install
     popd
   fi
