@@ -17,5 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/daviddrysdale/python-phonenumbers.git python-phonenumbers
+RUN git clone --depth 1 https://github.com/rikfie/python-phonenumbers-fuzzer.git python-phonenumbers-fuzzer
 WORKDIR python-phonenumbers
 COPY build.sh $SRC/
