@@ -20,7 +20,7 @@ set -ex
 (
 cd qpack
 # Fuzz qpack
-compile_go_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+compile_go_fuzzer github.com/quic-go/qpack/fuzzing Fuzz qpack_fuzzer
 )
 
 (
