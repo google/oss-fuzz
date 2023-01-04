@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/
-tar --lzip -xvf gmp-6.2.1.tar.lz
-mv $SRC/gmp-6.2.1/ $SRC/libgmp/
-
-
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
