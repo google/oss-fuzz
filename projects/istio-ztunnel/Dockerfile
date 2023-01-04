@@ -15,6 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get --yes update \
+   && apt-get install --no-install-recommends --yes \
+   librust-clang-sys-dev \
+   protobuf-compiler \
+   libprotobuf-dev \
+   && apt-get clean \
+   && rm --recursive --force /var/lib/apt/lists/*
+
 RUN git clone --depth 1 https://github.com/istio/ztunnel
 COPY build.sh $SRC/
 WORKDIR $SRC/ztunnel
