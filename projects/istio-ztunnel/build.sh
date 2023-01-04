@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+cargo fuzz build --release --debug-assertions
 FUZZ_TARGET_OUTPUT_DIR=out/rust/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
 do
