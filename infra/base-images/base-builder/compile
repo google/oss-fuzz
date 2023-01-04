@@ -59,7 +59,8 @@ fi
 
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
-    cp -R /usr/i386/lib/* /usr/local/lib
+    cp -R /usr/i386/lib/x86_64-unknown-linux-gnu/* /usr/local/lib
+    cp -R /usr/i386/include/x86_64-unknown-linux-gnu/* /usr/local/include
 fi
 # JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
 if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
