@@ -40,9 +40,7 @@ RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
-#RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
-RUN wget --no-check-certificate https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
-RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
+RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
