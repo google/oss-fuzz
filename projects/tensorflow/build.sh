@@ -120,10 +120,28 @@ for fuzzer in ${FUZZERS}; do
     echo cc_tf\(\"${fuzzer}\"\) >> tensorflow/core/kernels/fuzzing/BUILD
 done
 
-declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
+# Build differently depending on whether in CI or OSS-Fuzz build bot.
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # When running in the CI, restrict to a small number of targets to save time
+  # and space. This is to make the CI passable. We do this by having a single
+  # fuzzer compiled in the CI.
+  FUZZERS="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
+  TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
+  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*1.0"
+else
+  declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
+  TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
+
+  # The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
+  # we limit the resources it uses. The RAM will be exhausted. Therefore,
+  # limit the resources to ensure the build passes.
+  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6"
+fi
 
 bazel build \
   --spawn_strategy=sandboxed \
+  ${RESOURCE_LIMITATIONS} \
   --jobs=$(nproc) \
   --config=monolithic \
   --dynamic_mode=off \
@@ -131,7 +149,7 @@ bazel build \
   --verbose_failures \
   --strip=never \
   --define=framework_shared_object=false \
-  -- //tensorflow/core/kernels/fuzzing:all
+  -- $TARGETS_TO_BUILD
 
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
 # in `$OUT`, so move them accordingly.
