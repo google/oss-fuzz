@@ -128,7 +128,7 @@ then
   # fuzzer compiled in the CI.
   FUZZERS="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
   TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
-  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*1.0"
+  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.5 --local_cpu_resources=HOST_CPUS*.5"
 else
   declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
   TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
