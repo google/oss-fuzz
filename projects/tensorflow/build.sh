@@ -136,18 +136,16 @@ else
   # The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
   # we limit the resources it uses. The RAM will be exhausted. Therefore,
   # limit the resources to ensure the build passes.
-  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6"
+  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=never"
 fi
 
 bazel build \
   --spawn_strategy=sandboxed \
   ${RESOURCE_LIMITATIONS} \
-  --jobs=$(nproc) \
   --config=monolithic \
   --dynamic_mode=off \
   ${EXTRA_FLAGS} \
   --verbose_failures \
-  --strip=never \
   --define=framework_shared_object=false \
   -- $TARGETS_TO_BUILD
 
