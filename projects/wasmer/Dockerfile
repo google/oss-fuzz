@@ -24,5 +24,4 @@ RUN git clone --depth 1 https://github.com/wasmerio/wasmer wasmer
 
 WORKDIR wasmer
 
-COPY *.rs fuzz/fuzz_targets/
 COPY build.sh default.options $SRC/
