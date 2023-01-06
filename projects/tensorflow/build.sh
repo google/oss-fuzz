@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
+
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
 sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelrc
@@ -60,33 +62,19 @@ fi
 # and not for other binaries such as protoc
 sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
 
-# Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
-# supported fuzzers are in `//tensorflow/security/fuzzing`.
-# Ignore fuzzers tagged with `no_oss` in opensource.
-declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))' | grep -v checkpoint_reader_fuzz)
-# checkpoint_reader_fuzz seems out of date with the API
+# Compile fuzztest fuzzers
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
+export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
+compile_fuzztests.sh
 
-# Build the fuzzer targets.
-# Pass in `--config=libc++` to link against libc++.
-# Pass in `--verbose_failures` so it is easy to debug compile crashes.
-# Pass in `--strip=never` to ensure coverage support.
-# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
-bazel build \
-  --config=libc++ \
-  ${EXTRA_FLAGS} \
-  --verbose_failures \
-  --strip=never \
-  --copt='-UNDEBUG' \
-  -- ${FUZZERS}
 
-# The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
-# in `$OUT`, so move them accordingly.
-for bazel_target in ${FUZZERS}; do
-  colon_index=$(expr index "${bazel_target}" ":")
-  fuzz_name="${bazel_target:$colon_index}"
-  bazel_location="bazel-bin/${bazel_target/:/\/}"
-  cp ${bazel_location} ${OUT}/$fuzz_name
-done
+# In the CI we bail out after having compiled the first set of fuzzers. This is
+# to save disk and time.
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  echo "In CI, exiting"
+  exit 0
+fi
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
@@ -120,24 +108,13 @@ for fuzzer in ${FUZZERS}; do
     echo cc_tf\(\"${fuzzer}\"\) >> tensorflow/core/kernels/fuzzing/BUILD
 done
 
-# Build differently depending on whether in CI or OSS-Fuzz build bot.
-if [ -n "${OSS_FUZZ_CI-}" ]
-then
-  # When running in the CI, restrict to a small number of targets to save time
-  # and space. This is to make the CI passable. We do this by having a single
-  # fuzzer compiled in the CI.
-  FUZZERS="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
-  TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:string_split_fuzz"
-  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.5 --local_cpu_resources=HOST_CPUS*.5"
-else
-  declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
-  TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
+declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
+TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
 
-  # The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
-  # we limit the resources it uses. The RAM will be exhausted. Therefore,
-  # limit the resources to ensure the build passes.
-  RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=never"
-fi
+# The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
+# we limit the resources it uses. The RAM will be exhausted. Therefore,
+# limit the resources to ensure the build passes.
+RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=never"
 
 bazel build \
   --spawn_strategy=sandboxed \
