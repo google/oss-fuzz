@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pytest-dev/py
+language: python
+main_repo: https://github.com/pytest-dev/py
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
