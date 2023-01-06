@@ -64,7 +64,11 @@ sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensor
 
 # Compile fuzztest fuzzers
 export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
-export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --strip=never --copt=-UNDEBUG --config=monolithic"
+export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic"
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
+fi
 compile_fuzztests.sh
 
 
