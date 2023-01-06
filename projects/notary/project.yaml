@@ -1,8 +1,13 @@
 homepage: "https://github.com/notaryproject/notary"
 main_repo: "https://github.com/notaryproject"
-primary_contact: ""
+primary_contact: "yizha1@microsoft.com"
 auto_ccs :
-  - "adam@adalogics.com"
+  - "vaninrao@amazon.com"
+  - "hbandi@gmail.com"
+  - "shizh@microsoft.com"
+vendor_ccs :
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
 language: go
 fuzzing_engines:
   - libfuzzer
