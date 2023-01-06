@@ -69,10 +69,10 @@ if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
 
-  # Remove sanitization of vrious projects to limit memory footprints. This can
+  # Remove sanitization of various projects to limit memory footprints. This can
   # also be used across the real fuzzing (i.e. not only in the CI) in order
   # to speed up fuzzing by reducing 8-bit counters in the instrumented code.
-  # For futher details, see@
+  # For futher details, see:
   # https://github.com/google/oss-fuzz/blob/b5a904f070363a617a585e4cf75729bdb14f9ac4/projects/envoy/build.sh#L87
   # https://blog.envoyproxy.io/a-stroll-down-fuzzer-optimisation-lane-and-why-instrumentation-policies-matter-f0012ec260b3
   declare -r DI="$(
@@ -83,9 +83,11 @@ then
     echo " --per_file_copt=^.*llvm-project.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
     echo " --per_file_copt=^.*mkl_dnn_v1.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
     echo " --per_file_copt=^.*nasm.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
+    echo " --per_file_copt=^.*curl.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
   )"
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} ${DI}"
 fi
+
 compile_fuzztests.sh
 
 # In the CI we bail out after having compiled the first set of fuzzers. This is
