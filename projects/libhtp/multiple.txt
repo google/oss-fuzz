@@ -3,7 +3,6 @@ bstr_free
 bstr_cmp_c
 bstr_dup_c
 bstr_util_strdup_to_c
-bstr_util_mem_to_pint
 bstr_len
 bstr_ptr
 htp_connp_
