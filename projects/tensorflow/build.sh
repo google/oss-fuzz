@@ -67,7 +67,7 @@ export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
 export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic"
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*.6 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
 
   # Remove sanitization of various projects to limit memory footprints. This can
   # also be used across the real fuzzing (i.e. not only in the CI) in order
