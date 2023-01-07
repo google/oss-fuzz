@@ -18,7 +18,7 @@ import atheris
 import nacl.hash
 import nacl.pwhash
 
-@atheris.instrument_func
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
