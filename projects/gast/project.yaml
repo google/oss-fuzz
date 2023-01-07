@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/serge-sans-paille/gast
+language: python
+main_repo: https://github.com/serge-sans-paille/gast
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

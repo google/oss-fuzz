@@ -23,6 +23,10 @@ fluent-bit/lib
 EOF
 
 cd fluent-bit
+
+# Avoid building tests we don't need
+sed -i 's/prepare_unit_tests(flb/#prepare_unit_tests(flb/g' ./tests/internal/CMakeLists.txt
+
 sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
 sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
 
@@ -111,6 +115,10 @@ cmake -DFLB_TESTS_INTERNAL=ON \
       ${OUTPUT_PLUGINS} \
       ..
 
-make -j$(nproc)
+if [[ "$SANITIZER" == introspector ]]; then
+  make
+else
+  make -j$(nproc)
+fi
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/

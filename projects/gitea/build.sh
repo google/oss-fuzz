@@ -15,5 +15,10 @@
 #
 ################################################################################
 
+# external_renderer.go belongs to the main package and is located in the same directory
+# as the fuzz tests which belong to the fuzz package. This causes a build failure and
+# no fuzzers can be built.
+rm -f $SRC/gitea/tools/external_renderer.go
+
 compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
 compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
