@@ -84,6 +84,7 @@ then
     echo " --per_file_copt=^.*mkl_dnn_v1.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
     echo " --per_file_copt=^.*nasm.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
     echo " --per_file_copt=^.*curl.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
+    echo " --per_file_copt=^.*kernels.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   )"
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} ${DI}"
 fi
