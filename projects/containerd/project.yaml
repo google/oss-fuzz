@@ -8,6 +8,7 @@ auto_ccs :
   - "estesp@gmail.com"
   - "mikebrow@gmail.com"
   - "cjingram@google.com"
+  - "kato.kazuyoshi@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer
