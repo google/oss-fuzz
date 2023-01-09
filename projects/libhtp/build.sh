@@ -21,7 +21,8 @@ cd libhtp-rs
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 cargo fuzz build -O
 cargo fuzz list | while read i; do
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/$i $OUT/
+    # debug for coverage build
+    cp fuzz/target/x86_64-unknown-linux-gnu/release/$i $OUT/ || cp fuzz/target/x86_64-unknown-linux-gnu/debug/$i $OUT/
 done
 if [ "$SANITIZER" = "address" ]
 then
