@@ -21,4 +21,4 @@ pip3 install .
 cd $SRC/azure-sdk-for-python/sdk/dynatrace/azure-mgmt-dynatrace/
 pip3 install .
 
-compile_python_fuzzer /src/fuzz_1.py
+compile_python_fuzzer $SRC/fuzz_mgmt_serialization.py
