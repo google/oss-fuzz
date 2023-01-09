@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+pip3 install .
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev liblzma-dev
-RUN git clone --depth 1 https://github.com/OISF/libhtp.git libhtp
-RUN git clone --depth 1 https://github.com/cccs-rtmorti/libhtp-rs.git libhtp-rs
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY multiple.txt $SRC/
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
