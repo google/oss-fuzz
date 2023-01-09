@@ -20,5 +20,6 @@
 # no fuzzers can be built.
 rm -f $SRC/gitea/tools/external_renderer.go
 
-compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
-compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
+compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
