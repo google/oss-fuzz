@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
+
 # Extend with oss-fuzz settings. To be upsteamed?
 cd $SRC/raksha
 git apply  --ignore-space-change --ignore-whitespace $SRC/raksha-fuzztest.diff
 
 # Compile gfuzztests
+export FUZZTEST_TARGET_FOLDER="//src/..."
 compile_fuzztests.sh

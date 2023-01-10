@@ -94,6 +94,32 @@ then
     make
 fi
 
+# Compile Java module
+if [ "$SANITIZER" = undefined ]; then
+    mkdir -p $OUT/lib/
+    cd $OUT/lib/
+    tar zxf $SRC/openjdk-18.0.1_linux-x64_bin.tar.gz
+    export JDK_PATH=$(realpath jdk-18.0.1)
+    cp $JDK_PATH/lib/server/libjvm.so $OUT/lib/
+    export LINK_FLAGS="$LINK_FLAGS -L$JDK_PATH/lib/server/ -ljvm"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_JAVA"
+
+    cd $SRC/cryptofuzz/modules/java/
+    make -f Makefile-OSS-Fuzz -j$(nproc)
+    cp CryptofuzzJavaHarness.class $OUT/
+fi
+
+if [[ $CFLAGS != *-m32* ]]
+then
+    cd $SRC/
+    tar Jxf zig-latest.tar.xz
+    export ZIG_BIN=$(realpath zig-linux-x86_64*/zig)
+
+    cd $SRC/cryptofuzz/modules/zig/
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ZIG"
+fi
+
 # Compile NSS
 if [[ $CFLAGS != *-m32* ]]
 then
@@ -461,6 +487,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
     # Copy dictionary
@@ -491,7 +522,7 @@ cd $SRC/wolfssl
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -542,6 +573,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl
     # Copy dictionary
@@ -572,6 +608,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 
 # Generate dictionary
 ./generate_dict
+
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
 
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-noasm
@@ -608,6 +649,11 @@ then
     # Generate dictionary
     ./generate_dict
 
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
+
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl
     # Copy dictionary
@@ -638,6 +684,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 
 # Generate dictionary
 ./generate_dict
+
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
 
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm

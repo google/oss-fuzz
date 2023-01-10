@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/evanphx/json-patch
 
 COPY fuzz_*.go $SRC/json-patch/

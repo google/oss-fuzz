@@ -138,8 +138,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           coverage_env,
       'args': [
           'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%%.*}). '
+          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
+           'echo "Failed to unpack the corpus for $(basename ${f%.*}). '
            'This usually means that corpus backup for a particular fuzz '
            'target does not exist. If a fuzz target was added in the last '
            '24 hours, please wait one more day. Otherwise, something is '

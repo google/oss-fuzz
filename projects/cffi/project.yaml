@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://foss.heptapod.net/pypy/cffi
+language: python
+main_repo: https://foss.heptapod.net/pypy/cffi
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

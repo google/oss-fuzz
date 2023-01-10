@@ -1,0 +1,11 @@
+bstr_alloc
+bstr_free
+bstr_cmp_c
+bstr_dup_c
+bstr_util_strdup_to_c
+bstr_len
+bstr_ptr
+htp_connp_
+htp_tx_destroy
+htp_tx_set_user_data
+htp_tx_register_response_body_data
