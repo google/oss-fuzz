@@ -38,8 +38,10 @@ LIBFUZZER_OPTIONS_NO_REPORT_OOM = ['-rss_limit_mb=0']
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-REPRODUCE_TIME_DEFAULT_SECONDS = 30
-REPRODUCE_TIME_PYTHON_SECONDS = 30 * 4
+DEFAULT_REPRODUCE_TIME_SECONDS = 30
+PER_LANGUAGE_REPRODUCE_TIMEOUTS = {
+  'python': 30 * 4  # Python takes a bit longer on startup.
+}
 MINIMIZE_TIME_SECONDS = 60 * 4
 
 # Seconds on top of duration until a timeout error is raised.
@@ -285,11 +287,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
                                              target_path):
-
-      if self.config.language != 'python':
-        reproduce_time_seconds = REPRODUCE_TIME_DEFAULT_SECONDS
-      else:
-        reproduce_time_seconds = REPRODUCE_TIME_PYTHON_SECONDS
+      reproduce_time_seconds = PER_LANGUAGE_REPRODUCE_TIMEOUTS.get(self.config.language, DEFAULT_REPRODUCE_TIME_SECONDS)
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         try:
