@@ -51,19 +51,6 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
   return memory;
 }
 
-bool check_enabled(std::string feature) {
-  for (auto & ch: feature)
-    ch = toupper(ch);
-
-  std::string env_var = "SYSTEMSAN_" + feature;
-  const char* value_charstr = getenv(env_var.c_str());
-  std::string no = "0";
-  if (!value_charstr)
-    value_charstr = no.c_str();
-  int value = atoi(value_charstr);
-  return static_cast<bool>(value);
-}
-
 void report_bug(std::string bug_type, pid_t tid) {
   // Report the bug found based on the bug code.
   std::cerr << "===BUG DETECTED: " << bug_type << "===" << std::endl;
