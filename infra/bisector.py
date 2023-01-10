@@ -65,7 +65,7 @@ class BisectError(Exception):
 
 
 def main():
-  """Finds the commit SHA where an error was initally introduced."""
+  """Finds the commit SHA where an error was initially introduced."""
   logging.getLogger().setLevel(logging.INFO)
   utils.chdir_to_root()
   parser = argparse.ArgumentParser(
@@ -285,7 +285,7 @@ def _bisect(bisect_type, old_commit, new_commit, testcase_path, fuzz_target,
 # pylint: disable=too-many-arguments
 def bisect(bisect_type, old_commit, new_commit, testcase_path, fuzz_target,
            build_data):
-  """From a commit range, this function caluclates which introduced a
+  """From a commit range, this function calculates which introduced a
   specific error from a fuzz testcase_path.
 
   Args:

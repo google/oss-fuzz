@@ -23,7 +23,7 @@ pysecsan.add_hooks()
 
 
 def test_one_input(data):
-  """Fuzzer targetting regex dos in ldap."""
+  """Fuzzer targeting regex dos in ldap."""
   fdp = atheris.FuzzedDataProvider(data)
   try:
     ldap.schema.split_tokens(fdp.ConsumeUnicodeNoSurrogates(1024))

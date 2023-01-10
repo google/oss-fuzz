@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Deterimine srcmap of checked out source code
+# Determine srcmap of checked out source code
 
 SRCMAP=$(tempfile)
 echo "{}" > $SRCMAP

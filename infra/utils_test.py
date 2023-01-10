@@ -124,7 +124,7 @@ class BinaryPrintTest(unittest.TestCase):
 
   @unittest.skip('Causes spurious failures because of side-effects.')
   def test_binary_string(self):  # pylint: disable=no-self-use
-    """Tests that utils.binary_print can print a bianry string."""
+    """Tests that utils.binary_print can print a binary string."""
     # Should execute without raising any exceptions.
     with mock.patch('sys.stdout.buffer.write') as mock_write:
       utils.binary_print(b'hello')

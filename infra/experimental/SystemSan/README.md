@@ -48,7 +48,7 @@ make pytorch-lightning-1.5.10
 ```
 
 ### Command injection PoC in JavaScript with `shell-quote`
-With `SystemSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corrpution bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/substack/node-shell-quote) without any seed.
+With `SystemSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corruption bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/substack/node-shell-quote) without any seed.
 ```shell
 make node-shell-quote-v1.7.3
 ```

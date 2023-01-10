@@ -311,7 +311,7 @@ int init_daemon(const uint8_t **data2, size_t *size2) {
   d_az->domain = auth_domain;
   daemon->auth_zones = d_az;
 
-  // deamon->mxnames
+  // daemon->mxnames
   struct mx_srv_record *mx_srv_rec = (struct mx_srv_record*)gb_alloc_data(sizeof(struct mx_srv_record));
   char *mx_name = gb_get_null_terminated(&data, &size);
   char *mx_target = gb_get_null_terminated(&data, &size);
@@ -379,7 +379,7 @@ int init_daemon(const uint8_t **data2, size_t *size2) {
   //dr->current = NULL;
   daemon->relay4 = dr;
 
-  // deamon->bridges
+  // daemon->bridges
   struct dhcp_bridge *db = (struct dhcp_bridge*)gb_alloc_data(sizeof(struct dhcp_bridge));
   char *db_interface = gb_get_null_terminated(&data, &size);
 

@@ -51,7 +51,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (new_str[i] < 0x01 || new_str[i] > 0x7f) {
       only_ascii = 0;
     }
-    // Avoid forced exits beause of, e.g. unsupported characters or recursion
+    // Avoid forced exits because of, e.g. unsupported characters or recursion
     // depth
     if (new_str[i] == 0x5c || new_str[i] == '{') {
       only_ascii = 0;

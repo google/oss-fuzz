@@ -29,7 +29,7 @@ cp $SRC/cmark/test/afl_test_cases/* corpus
 git clone --depth 1 https://github.com/michelf/mdtest.git mdtest
 find mdtest/*.mdtest -type f -name '*.text' | while read in_file
 do
-  # Genreate unique name for each input...
+  # Generate unique name for each input...
   out_file=$(sha1sum "$in_file" | cut -c 1-32)
   # ... and prepend a four-byte 'options' header
   printf "\0\0\0\0" > "corpus/$out_file"

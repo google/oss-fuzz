@@ -82,7 +82,7 @@ constexpr int kRootDirMaxLength = 16;
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
 
-// Map of a PID/TID its PID/TID creator and wether it ran exec.
+// Map of a PID/TID its PID/TID creator and whether it ran exec.
 std::map<pid_t, ThreadParent> root_pids;
 
 // Assuming the longest pathname is "/bin/bash".

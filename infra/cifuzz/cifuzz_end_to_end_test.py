@@ -25,7 +25,7 @@ EXTERNAL_PROJECT_PATH = os.path.join(CIFUZZ_DIR, 'test_data',
 
 # This test will fail if not run as root because the fuzzer build process
 # creates binaries that only root can write to.
-# Use a seperate env var to keep this seperate from integration tests which
+# Use a separate env var to keep this separate from integration tests which
 # don't have this annoying property.
 @unittest.skipIf(not os.getenv('END_TO_END_TESTS'),
                  'END_TO_END_TESTS=1 not set')
