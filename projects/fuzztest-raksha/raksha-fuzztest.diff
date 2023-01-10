@@ -1,8 +1,8 @@
 diff --git a/WORKSPACE b/WORKSPACE
-index d69494f..ecb2a43 100644
+index 73e0e75..33aae53 100644
 --- a/WORKSPACE
 +++ b/WORKSPACE
-@@ -267,12 +267,12 @@ http_archive(
+@@ -238,12 +238,12 @@ http_archive(
      ],
  )
  
@@ -19,15 +19,20 @@ index d69494f..ecb2a43 100644
      urls = ["https://github.com/google/fuzztest/archive/" + fuzztest_commit_hash + ".zip"],
  )
 diff --git a/src/ir/BUILD b/src/ir/BUILD
-index 1d9e4d0..6c253c9 100644
+index d525046..a16cd0f 100644
 --- a/src/ir/BUILD
 +++ b/src/ir/BUILD
-@@ -208,7 +208,7 @@ cc_test(
-         "//src/common/testing:gtest",
+@@ -206,10 +206,11 @@ cc_test(
+         ":module",
+         ":storage",
+         ":value",
+-        "//src/common/testing:gtest",
          "//src/common/utils:map_iter",
          "//src/ir/types",
 -        "@fuzztest//fuzztest",
 +        "@com_google_fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "//src/common/testing:gtest",
      ],
  )
  
