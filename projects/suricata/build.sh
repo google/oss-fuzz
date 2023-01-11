@@ -75,41 +75,47 @@ export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 # cf https://github.com/google/sanitizers/issues/1389
 export MSAN_OPTIONS=strict_memcmp=false
 
-#we did not put libhtp there before so that cifuzz does not remove it
-mv libhtp suricata/
-# build project
-cd suricata
-sh autogen.sh
 #run configure with right options
 if [ "$SANITIZER" = "address" ]
 then
     export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Ccodegen-units=1"
     export RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions=yes"
 fi
+
+for branch in "" 6; do
+#we did not put libhtp there before so that cifuzz does not remove it
+cp -r libhtp suricata$branch/
+# build project
+(
+cd suricata$branch
+sh autogen.sh
+
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
-./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse_$i; done
+./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse_$i$branch; done
 
-cp src/fuzz_* $OUT/
-
+(
+cd src
+ls fuzz_* | while read i; do cp $i $OUT/$i$branch; done
+)
 # dictionaries
-./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit.dict
+./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit$branch.dict
 
-echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
+echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb$branch.dict
 
-echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
-echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware.dict
+echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware$branch.dict
+echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware$branch.dict
 
 git grep tag rust | grep '"' | cut -d '"' -f2 | sort | uniq | awk 'length($0) > 2' | awk '{print "\""$0"\""}' | grep -v '\\' > generic.dict
-cat generic.dict >> $OUT/fuzz_siginit.dict
-cat generic.dict >> $OUT/fuzz_applayerparserparse.dict
-cat generic.dict >> $OUT/fuzz_sigpcap.dict
-cat generic.dict >> $OUT/fuzz_sigpcap_aware.dict
+cat generic.dict >> $OUT/fuzz_siginit$branch.dict
+cat generic.dict >> $OUT/fuzz_applayerparserparse$branch.dict
+cat generic.dict >> $OUT/fuzz_sigpcap$branch.dict
+cat generic.dict >> $OUT/fuzz_sigpcap_aware$branch.dict
 
 # build corpuses
 # default configuration file
-zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
+zip -r $OUT/fuzz_confyamlloadstring"$branch"_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file
 unzip ../emerging.rules.zip
 cd rules
@@ -120,16 +126,18 @@ mkdir corpus
 set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
-zip -q -r $OUT/fuzz_siginit_seed_corpus.zip corpus
+zip -q -r $OUT/fuzz_siginit"$branch"_seed_corpus.zip corpus
 cd ../../suricata-verify
 
 # corpus with single files
-find . -name "*.pcap" | xargs zip -r $OUT/fuzz_decodepcapfile_seed_corpus.zip
-find . -name "*.yaml" | xargs zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip
-find . -name "*.rules" | xargs zip -r $OUT/fuzz_siginit_seed_corpus.zip
+find . -name "*.pcap" | xargs zip -r $OUT/fuzz_decodepcapfile"$branch"_seed_corpus.zip
+find . -name "*.yaml" | xargs zip -r $OUT/fuzz_confyamlloadstring"$branch"_seed_corpus.zip
+find . -name "*.rules" | xargs zip -r $OUT/fuzz_siginit"$branch"_seed_corpus.zip
+)
+done
 
 # corpus using both rule and pcap as in suricata-verify
-cd tests
+cd $SRC/suricata-verify/tests
 i=0
 mkdir corpus
 set +x
@@ -138,6 +146,7 @@ cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >>
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
+cp $OUT/fuzz_sigpcap_seed_corpus.zip $OUT/fuzz_sigpcap6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
@@ -147,6 +156,7 @@ echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpu
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
+cp $OUT/fuzz_sigpcap_aware_seed_corpus.zip $OUT/fuzz_sigpcap_aware6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
@@ -156,3 +166,4 @@ python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i
 done
 set -x
 zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus
+cp $OUT/fuzz_predefpcap_aware_seed_corpus.zip $OUT/fuzz_predefpcap_aware6_seed_corpus.zip

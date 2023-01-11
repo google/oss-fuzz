@@ -70,17 +70,17 @@ find $SRC/u-root/pkg/boot/syslinux/testdata -name "isolinux.cfg" -exec zip $OUT/
 compile_native_go_fuzzer $SRC/u-root/pkg/boot/syslinux FuzzParseSyslinuxConfig fuzz_parse_syslinux_config
 
 # gosh cmd
-cd $SRC/u-root/cmds/exp/gosh
+cd $SRC/u-root/cmds/core/gosh
 go mod init gosh
 go get github.com/u-root/prompt@v0.0.0-20221110083427-a2ad3c8339a8
 printf "package main\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdep.go
 go mod tidy
 
-cp $SRC/u-root/cmds/exp/gosh/testdata/fuzz/*.dict $SRC/u-root/cmds/exp/gosh/testdata/fuzz/*.options $OUT
+cp $SRC/u-root/cmds/core/gosh/testdata/fuzz/*.dict $SRC/u-root/cmds/core/gosh/testdata/fuzz/*.options $OUT
 
 ## FuzzRun
-find $SRC/u-root/cmds/exp/gosh/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_gosh_run_seed_corpus.zip {} +
-compile_native_go_fuzzer $SRC/u-root/cmds/exp/gosh FuzzRun fuzz_gosh_run
+find $SRC/u-root/cmds/core/gosh/testdata/fuzz/corpora -name "*.seed" -exec zip $OUT/fuzz_gosh_run_seed_corpus.zip {} +
+compile_native_go_fuzzer $SRC/u-root/cmds/core/gosh FuzzRun fuzz_gosh_run
 
 # esxi pkg
 cd $SRC/u-root/pkg/boot/esxi

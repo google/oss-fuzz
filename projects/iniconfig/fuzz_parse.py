@@ -23,7 +23,10 @@ def TestOneInput(data):
     """Simple fuzzer that targets parse routine"""
     fdp = atheris.FuzzedDataProvider(data)
     try:
-        ini = iniconfig.IniConfig(None, fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+        ini = iniconfig.IniConfig(
+            "",
+            fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+        )
     except iniconfig.ParseError:
         pass
 

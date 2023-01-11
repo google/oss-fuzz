@@ -23,13 +23,14 @@ pysecsan.add_hooks()
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
+  c_source = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
   _c_parser = pycparser.c_parser.CParser(
-                lex_optimize=False,
-                yacc_debug=False,
-                yacc_optimize=False)
+                lex_optimize=fdp.ConsumeBool(),
+                yacc_debug=fdp.ConsumeBool(),
+                yacc_optimize=fdp.ConsumeBool())
   try:
     _c_parser.parse(
-        fdp.ConsumeUnicodeNoSurrogates(1024),
+        c_source,
         ''
     )
   except pycparser.c_parser.ParseError:
