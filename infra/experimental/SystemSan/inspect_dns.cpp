@@ -38,6 +38,10 @@ const size_t kDnsHeaderLen = 12;
 
 
 void inspect_for_arbitrary_dns_connect(pid_t pid, const user_regs_struct &regs) {
+  static bool is_enabled = check_enabled("arbitrary_dns_resolution");
+  if (not is_enabled)
+    return;
+
   auto memory = read_memory(pid, regs.rsi, sizeof(struct sockaddr_in));
   if (memory.size()) {
     struct sockaddr_in * sa = reinterpret_cast<struct sockaddr_in *>(memory.data());
