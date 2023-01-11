@@ -5,6 +5,5 @@ language: python
 main_repo: https://github.com/dgasmith/opt_einsum
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com
