@@ -25,7 +25,6 @@ def TestOneInput(data):
   # Create a numpy array with fuzzer-seeded entries.
   ops = np.array(
     [fdp.ConsumeFloat(), fdp.ConsumeFloat(), fdp.ConsumeFloat, fdp.ConsumeFloat()],
-    [fdp.ConsumeFloat(), fdp.ConsumeFloat(), fdp.ConsumeFloat()]
   )
   try:
     parse_einsum_input(
