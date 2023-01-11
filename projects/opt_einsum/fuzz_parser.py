@@ -23,7 +23,7 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
   # Create a numpy array with fuzzer-seeded entries.
-  ops = numpy.array(
+  ops = np.array(
     [fdp.ConsumeFloat(), fdp.ConsumeFloat(), fdp.ConsumeFloat, fdp.ConsumeFloat()],
     [fdp.ConsumeFloat(), fdp.ConsumeFloat(), fdp.ConsumeFloat()]
   )
