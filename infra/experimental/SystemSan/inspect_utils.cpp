@@ -57,9 +57,9 @@ bool check_enabled(std::string feature) {
 
   std::string env_var = "SYSTEMSAN_" + feature;
   const char* value_charstr = getenv(env_var.c_str());
-  std::string no = "0";
+  std::string yes = "1";
   if (!value_charstr)
-    value_charstr = no.c_str();
+    value_charstr = yes.c_str();
   int value = atoi(value_charstr);
   return static_cast<bool>(value);
 }
