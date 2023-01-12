@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip chardet
 
 # We install Keras by way of Tensorflow. As such, this build instructions
 # follow the logic of tensorflow-py project.
@@ -39,5 +39,6 @@ RUN curl -Lo /usr/bin/bazel \
     chmod +x /usr/bin/bazel
 
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
+RUN git clone --depth 1 https://github.com/DavidKorczynski/hdf5-files $SRC/hdf5-files
 WORKDIR $SRC/tensorflow
 COPY build.sh *.py $SRC/

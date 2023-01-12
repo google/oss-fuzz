@@ -27,3 +27,6 @@ python3 -m pip install tf-nightly-cpu
 mv $SRC/tensorflow/tensorflow $SRC/tensorflow/tensorflow_src
 
 compile_python_fuzzer $SRC/fuzz_serialization.py
+compile_python_fuzzer $SRC/fuzz_model.py
+
+zip $OUT/fuzz_model_seed_corpus.zip $SRC/hdf5-files/basic-model.h5
