@@ -82,7 +82,13 @@ then
     export RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions=yes"
 fi
 
-for branch in "" 6; do
+fuzz_branches=("")
+if [[ "$SANITIZER" != "memory" ]]
+then
+    fuzz_branches+=("6")
+fi
+
+for branch in "${fuzz_branches[@]}"; do
 #we did not put libhtp there before so that cifuzz does not remove it
 cp -r libhtp suricata$branch/
 # build project
