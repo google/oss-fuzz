@@ -39,5 +39,6 @@ RUN curl -Lo /usr/bin/bazel \
     chmod +x /usr/bin/bazel
 
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
+RUN git clone --depth 1 https://github.com/DavidKorczynski/hdf5-files $SRC/hdf5-files
 WORKDIR $SRC/tensorflow
 COPY build.sh *.py $SRC/
