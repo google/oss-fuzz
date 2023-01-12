@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake zlib1g-dev
 RUN git clone --depth 1 https://github.com/HDFGroup/hdf5
 WORKDIR hdf5
-COPY build.sh repack_fuzzer.c repack_fuzzer.options $SRC/
+COPY build.sh *.c $SRC/

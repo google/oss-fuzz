@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-
-
-# Since HDexit() calls exit(), we modify this 
-# to avoid interruptions in our fuzzing
-sed -i '17 i\#define HDexit(N) return NULL;'\\n $SRC/hdf5/tools/src/h5repack/h5repack_parse.c
-
 export LDFLAGS="${CFLAGS}"
 export CMAKE_C_FLAGS="${CC} ${CFLAGS}"
 export CMAKE_CXX_FLAGS="${CXX} ${CXXFLAGS}"
@@ -35,33 +29,13 @@ cmake -G "Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILES:BOOL=ON \
     -DHDF5_ENABLE_SANITIZERS:BOOL=ON \
     -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON \
-    -VV \
-    --verbose \
     ..
 
-cmake --build . --config Release
-	
+# Make the build verbose for easy logging inspection
+cmake --build . --verbose --config Release -j$(nproc)
 cd $SRC/hdf5
-cp $SRC/repack_fuzzer.c .
 
-# Get .o files for fuzzer
-find build-dir/tools/src/h5repack/CMakeFiles/h5repack.dir \
-	-name "*.o" -exec ar rcs h5repack_fuzz_lib.a {} \;
-
-$CXX $CXXFLAGS \
-    -I/src/hdf5/tools/lib \
-    -I/src/hdf5/src \
-    -I/src/hdf5/build-dir/src \
-    -I./tools/src/h5repack \
-    -o repack_fuzzer.o -c repack_fuzzer.c
-
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-    repack_fuzzer.o -o $OUT/repack_fuzzer -lz \
-    build-dir/src/CMakeFiles/hdf5-static.dir/H5Zdeflate.c.o \
-    h5repack_fuzz_lib.a build-dir/bin/libhdf5_test.a \
-    build-dir/bin/libhdf5_tools.a \
-    build-dir/bin/libhdf5.a
-
-
-mv $SRC/repack_fuzzer.options $OUT/
+$CC $CXXFLAGS $LIB_FUZZING_ENGINE -std=c99 \
+    -I/src/hdf5/tools/lib -I/src/hdf5/src -I/src/hdf5/build-dir/src \
+    -I./tools/src/h5repack -I./src/H5FDsubfiling/ \
+    $SRC/h5_read_fuzzer.c ./build-dir/bin/libhdf5.a  -lz -o $OUT/h5_read_fuzzer
