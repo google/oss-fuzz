@@ -91,6 +91,8 @@ then
     echo " --per_file_copt=^.*external.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   )"
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} ${DI}"
+else
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.5 --strip=never"
 fi
 
 compile_fuzztests.sh
