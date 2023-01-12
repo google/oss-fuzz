@@ -15,6 +15,8 @@
 import sys
 import atheris
 import json
+import h5py
+import chardet
 
 with atheris.instrument_imports():
   import keras

@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip chardet
 
 # We install Keras by way of Tensorflow. As such, this build instructions
 # follow the logic of tensorflow-py project.
