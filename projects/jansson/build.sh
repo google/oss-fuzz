@@ -15,5 +15,9 @@
 #
 ################################################################################
 
+# --default-symver does not work with lto, which fuzz introspector uses.
+if [ "$SANITIZER" == "introspector" ]; then
+  sed -i 's/--default-symver/-flto/g' ./configure.ac
+fi
 # Run the OSS-Fuzz script in the project.
 ./test/ossfuzz/ossfuzz.sh
