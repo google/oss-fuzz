@@ -5,6 +5,7 @@ auto_ccs :
   - "vaninrao@amazon.com"
   - "hbandi@gmail.com"
   - "shizh@microsoft.com"
+  - "justin.cormack@docker.com"
 vendor_ccs :
   - "Adam@adalogics.com"
   - "David@adalogics.com"
