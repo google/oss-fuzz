@@ -41,3 +41,4 @@ RUN install_java.sh || true
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow
 COPY build.sh $SRC/
+COPY *.patch $SRC/

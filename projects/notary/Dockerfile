@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +14,9 @@
 #
 ################################################################################
 
-# --default-symver does not work with lto, which fuzz introspector uses.
-if [ "$SANITIZER" == "introspector" ]; then
-  sed -i 's/--default-symver/-flto/g' ./configure.ac
-fi
-# Run the OSS-Fuzz script in the project.
-./test/ossfuzz/ossfuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/notaryproject/notary
+RUN git clone --depth 1 https://github.com/notaryproject/notation-go
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+COPY build.sh $SRC/
+WORKDIR $SRC/notary
