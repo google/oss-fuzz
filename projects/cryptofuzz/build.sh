@@ -142,17 +142,6 @@ then
     make -B
 fi
 
-# Compile Monocypher
-cd $SRC/Monocypher/
-make CC="$CC" CFLAGS="$CFLAGS"
-export LIBMONOCYPHER_A_PATH=$(realpath lib/libmonocypher.a)
-export MONOCYPHER_INCLUDE_PATH=$(realpath src/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
-
-# Compile Cryptofuzz monocypher module
-cd $SRC/cryptofuzz/modules/monocypher
-make -B
-
 # Rename blake2b_* functions to avoid symbol collisions with other libraries
 cd $SRC/trezor-firmware/crypto
 sed -i "s/\<blake2b_\([A-Za-z_]\)/trezor_blake2b_\1/g" *.c *.h
