@@ -22,6 +22,7 @@ auto_ccs:
   - "drozenblit@meta.com"
 vendor_ccs:
   - "oss-fuzz@fb.com"
+  - "danilak@google.com"
 fuzzing_engines:
   - libfuzzer
   - afl
