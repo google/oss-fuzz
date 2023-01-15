@@ -143,7 +143,7 @@ TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
 # The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
 # we limit the resources it uses. The RAM will be exhausted. Therefore,
 # limit the resources to ensure the build passes.
-RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.5 --strip=never"
+RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
 
 bazel build \
   --spawn_strategy=sandboxed \
