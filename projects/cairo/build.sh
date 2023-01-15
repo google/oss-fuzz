@@ -36,7 +36,6 @@ meson \
     -Db_lundef=false \
     -Doss_fuzz=enabled \
     -Dlibmount=disabled \
-    -Dinternal_pcre=true \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
@@ -50,7 +49,7 @@ make install
 
 # Build cairo
 pushd $SRC/cairo
-meson \
+CFLAGS="-DDEBUG_SVG_RENDER $CFLAGS" meson \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
@@ -77,7 +76,7 @@ BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")
-for f in $fuzzers; do
+for f in $fuzzers $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c; do
   fuzzer_name=$(basename $f .c)
   $CC $CFLAGS $BUILD_CFLAGS \
     -c $f -o $WORK/${fuzzer_name}.o
@@ -87,6 +86,6 @@ for f in $fuzzers; do
     $BUILD_LDFLAGS \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
-  ln -sf $SRC/cairo_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-  ln -sf $SRC/cairo.dict $OUT/${fuzzer_name}.dict
+  cd $OUT; ln -sf cairo_seed_corpus.zip ${fuzzer_name}_seed_corpus.zip
+  cd $OUT; ln -sf cairo.dict ${fuzzer_name}.dict
 done

@@ -9,7 +9,7 @@ One method to detect invalid results (point 2) is to assert equivalence between 
 
 Another method is to compare a result against the result of different library, where both results are expected to be the same. If they are not the same, this indicates a bug in at least one library. This second method is what merits the composite setup of the project; adherence to the normative specification of a cryptographic primitive is implicitly asserted under the assumption that at least one implementation gets it right. Because determining which one of libraries gets it wrong cannot be reliably automated, all library maintainers are notified in this event, so that the cause of discrepancy can be resolved collaboratively.
 
-Library builds embedding optimized assembly language code and those using pure C implementations have been assigned seperate fuzzer targets (binaries), because either implementation can have distinct bugs that will not transpire if only the other one is tested.
+Library builds embedding optimized assembly language code and those using pure C implementations have been assigned separate fuzzer targets (binaries), because either implementation can have distinct bugs that will not transpire if only the other one is tested.
 
 OpenSSL, BoringSSL and LibreSSL are assigned separate fuzzing targets because their exported symbols largely overlap and can therefore not be bundled into a single binary.
 

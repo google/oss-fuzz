@@ -1,7 +1,7 @@
 homepage: "https://github.com/bitcoin/bitcoin"
 main_repo: 'https://github.com/bitcoin/bitcoin.git'
 language: c++
-primary_contact: "marco@chaincode.com"
+primary_contact: "macro.fuzzing.uxuga@aleeas.com"
 auto_ccs:
   - "fanquake@gmail.com"
   - "john@johnnewbery.com"

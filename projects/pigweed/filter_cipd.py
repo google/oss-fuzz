@@ -33,17 +33,21 @@ def main():
   args = parser.parse_args()
 
   # Load args.json
-  prebuilts = []
+  cipd_json = {}
   try:
     with open(args.json, 'r') as json_file:
-      prebuilts = json.load(json_file)
+      cipd_json = json.load(json_file)
   except Exception:
     print('Encountered error attempting to load ' + args.json)
     raise
 
+  packages = cipd_json['packages']
+
   # Filter out args.excludes
   for exclude in args.excludes:
-    prebuilts[:] = [p for p in prebuilts if exclude not in str(p['path'])]
+    packages[:] = [p for p in packages if exclude not in str(p['path'])]
+
+  cipd_json['packages'] = packages
 
   # Rename original CIPD JSON file
   try:
@@ -55,7 +59,7 @@ def main():
   # Save new CIPD JSON file
   try:
     with open(args.json, 'w') as json_file:
-      json.dump(prebuilts, json_file, indent=2)
+      json.dump(cipd_json, json_file, indent=2)
   except Exception:
     print('Encountered error attempting to write ' + args.json)
     raise

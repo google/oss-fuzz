@@ -1,0 +1,19 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://commons.apache.org/proper/commons-codec/
+language: jvm
+main_repo: https://gitbox.apache.org/repos/asf/commons-codec.git
+primary_contact: "fuzz-testing@commons.apache.org"
+sanitizers:
+- address
+auto_ccs:
+  - "security@commons.apache.org"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

@@ -32,8 +32,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   bfd *file;
   file = bfd_openr (filename, NULL);
   if (file) {
-  char **matches;
-  if (bfd_check_format_matches (file, bfd_object, &matches)) {
+  if (bfd_check_format (file, bfd_object)) {
     load_separate_debug_files(file, bfd_get_filename(file));
     }
   }

@@ -15,6 +15,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lcms2.h"
 
@@ -24,8 +26,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
 
   cmsHANDLE handle = cmsIT8LoadFromMem(0, (void *)data, size);
-  if (handle)
+  if (handle) {
+    char filename[256];
+    sprintf(filename, "/tmp/fuzzer-it.%d.it8", getpid());
+    cmsIT8SaveToFile(handle, filename);
+
     cmsIT8Free(handle);
+  }
 
   return 0;
 }

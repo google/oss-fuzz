@@ -100,11 +100,10 @@ class ProjectYamlChecker:
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
+      'file_github_issue',
   ]
 
-  # Note that some projects like boost only have auto-ccs. However, forgetting
-  # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
+  REQUIRED_SECTIONS = ['main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -124,7 +123,6 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
-        self.check_dataflow,
     ]
     for check_function in checks:
       check_function()
@@ -139,25 +137,6 @@ class ProjectYamlChecker:
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
-
-  def check_dataflow(self):
-    """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
-    specified in "sanitizers", and that if specified in "sanitizers", it is also
-    specified in "fuzzing_engines". Returns True if this condition is met."""
-    engines = self.data.get('fuzzing_engines', [])
-    dfsan_engines = 'dataflow' in engines
-    sanitizers = self.data.get('sanitizers', [])
-    dfsan_sanitizers = 'dataflow' in sanitizers
-
-    if dfsan_engines and not dfsan_sanitizers:
-      self.error('"dataflow" only specified in "fuzzing_engines" must also be '
-                 'specified in "sanitizers" or in neither.')
-      return
-
-    if dfsan_sanitizers and not dfsan_engines:
-      self.error('"dataflow" only specified in "sanitizers" must also be '
-                 'specified in "fuzzing_engines" or in neither.')
-      return
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
@@ -392,6 +371,7 @@ def run_nonbuild_tests(parallel):
   command = [
       'pytest',
       '--ignore-glob=infra/build/*',
+      '--ignore-glob=projects/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
@@ -422,6 +402,14 @@ def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
   return nonbuild_success and build_success
 
 
+def run_systemsan_tests(_=None):
+  """Runs SystemSan unit tests."""
+  command = ['make', 'test']
+  return subprocess.run(command,
+                        cwd='infra/experimental/SystemSan',
+                        check=False).returncode == 0
+
+
 def get_all_files():
   """Returns a list of absolute paths of files in this repo."""
   get_all_files_command = ['git', 'ls-files']
@@ -433,9 +421,10 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests'],
-                      nargs='?')
+  parser.add_argument(
+      'command',
+      choices=['format', 'lint', 'license', 'infra-tests', 'systemsan-tests'],
+      nargs='?')
   parser.add_argument('-a',
                       '--all-files',
                       action='store_true',
@@ -484,6 +473,10 @@ def main():
                         parallel=args.parallel,
                         build_tests=(not args.skip_build_tests),
                         nonbuild_tests=(not args.skip_nonbuild_tests))
+    return bool_to_returncode(success)
+
+  if args.command == 'systemsan-tests':
+    success = run_systemsan_tests(relevant_files)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).

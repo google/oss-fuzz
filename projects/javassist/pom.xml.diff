@@ -1,0 +1,15 @@
+diff --git a/pom.xml b/pom.xml
+index a604e16..52c8a7b 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -138,8 +138,8 @@
+     </snapshotRepository>
+   </distributionManagement>
+   <build>
+-    <sourceDirectory>src/main/</sourceDirectory>
+-    <testSourceDirectory>src/test/</testSourceDirectory>
++    <sourceDirectory>src/main/java/</sourceDirectory>
++    <testSourceDirectory>src/test/java/</testSourceDirectory>
+     <testResources>
+       <testResource>
+         <directory>src/test/resources</directory>

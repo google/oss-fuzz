@@ -16,7 +16,7 @@
 ################################################################################
 
 # build dav1d
-cd ext && bash dav1d_oss_fuzz.sh && cd ..
+cd ext && bash dav1d.cmd && cd ..
 
 # build libavif
 mkdir build

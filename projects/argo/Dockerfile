@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get install -y wget zip
 RUN git clone --depth 1 https://github.com/argoproj/argo-cd
 RUN git clone --depth 1 https://github.com/argoproj/argo-workflows
 RUN git clone --depth 1 https://github.com/argoproj/argo-events
+RUN git clone --depth 1 https://github.com/argoproj/gitops-engine
+RUN git clone --depth 1 https://github.com/argoproj/argo-rollouts
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.tar.gz && \
     tar xzf zstd-1.4.2.tar.gz && \

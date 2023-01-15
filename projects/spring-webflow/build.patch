@@ -1,0 +1,20 @@
+diff --git a/build.gradle b/build.gradle
+index 4d167835..e019f4fb 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -11,6 +11,7 @@ plugins {
+ 	id 'org.asciidoctor.jvm.gems' version '3.3.2'
+ 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
+ 	id 'de.undercouch.download' version '4.1.2'
++	id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ ext {
+@@ -27,6 +28,7 @@ allprojects {
+ 	apply plugin: "java-library"
+ 	apply plugin: "io.spring.dependency-management"
+ 	apply plugin: "org.springframework.build.optional-dependencies"
++	apply plugin: 'com.github.johnrengelman.shadow'
+ 	apply from: "${rootProject.projectDir}/ide.gradle"
+ 
+ 	dependencyManagement {

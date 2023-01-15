@@ -8,6 +8,9 @@ auto_ccs:
   - "vrabaud@google.com"
   - "kusano@google.com"
   - "maksim.shabunin@gmail.com"
+  - "vadim.pisarevsky@gmail.com"
+  - "smorkalov.a.m@gmail.com"
+  - "shiqi.yu@gmail.com"
 
 sanitizers:
   - address

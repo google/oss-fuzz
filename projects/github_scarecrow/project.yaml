@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+# dummy
+homepage: 'https://github.com/Alan32Liu/github-scarecrow'
+primary_contact: 'donggeliu@google.com'
+language: python
+sanitizers:
+  - address
+main_repo: 'https://github.com/Alan32Liu/github-scarecrow'
+file_github_issue: True

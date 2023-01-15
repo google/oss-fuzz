@@ -22,11 +22,9 @@ RUN apt-get update && apt-get install -y \
   curl \
   gettext \
   glib2.0-dev \
-  libbrotli-dev \
   libexpat1-dev \
   libffi-dev \
   libfftw3-dev \
-  libgflags-dev \
   libselinux1-dev \
   libtool \
   nasm \
@@ -34,6 +32,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install meson ninja
 RUN mkdir afl-testcases
 RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases
+RUN mkdir pdfium-latest
+RUN curl -L https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz | tar xzC pdfium-latest
 RUN git clone --depth 1 https://github.com/libvips/libvips.git
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/libexif/libexif.git
@@ -45,9 +45,11 @@ RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/lovell/libimagequant.git
 RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 
 WORKDIR libvips
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

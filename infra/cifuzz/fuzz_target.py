@@ -14,6 +14,7 @@
 """A module to handle running a fuzz target for a specified amount of time."""
 import collections
 import logging
+import multiprocessing
 import os
 import shutil
 import stat
@@ -37,7 +38,10 @@ LIBFUZZER_OPTIONS_NO_REPORT_OOM = ['-rss_limit_mb=0']
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-REPRODUCE_TIME_SECONDS = 30
+DEFAULT_REPRODUCE_TIME_SECONDS = 30
+PER_LANGUAGE_REPRODUCE_TIMEOUTS = {
+    'python': 30 * 4  # Python takes a bit longer on startup.
+}
 MINIMIZE_TIME_SECONDS = 60 * 4
 
 # Seconds on top of duration until a timeout error is raised.
@@ -50,6 +54,12 @@ COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
 
 FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
+
+
+def get_libfuzzer_parallel_options():
+  """Returns a list containing options to pass to libFuzzer to fuzz using all
+  available cores."""
+  return ['-jobs=' + str(multiprocessing.cpu_count())]
 
 
 class ReproduceError(Exception):
@@ -127,6 +137,10 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with open(bug_summary_artifact_path, 'w') as handle:
       handle.write(crash.stacktrace)
 
+    # Set permissions of testcase to be the same as summary so that we're sure
+    # it can be read by necessary users.
+    permissions_mode = os.stat(bug_summary_artifact_path).st_mode
+    os.chmod(target_reproducer_path, permissions_mode & 0o777)
     return target_reproducer_path
 
   def prune(self):
@@ -134,8 +148,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self._download_corpus()
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             self.target_path,
-                                             interactive=True):
+                                             self.target_path):
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
       result = engine_impl.minimize_corpus(self.target_path, [],
                                            [self.latest_corpus_path],
@@ -143,6 +156,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                            self._target_artifact_path(),
                                            self.duration)
 
+    print(result.logs)
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
   def fuzz(self, batch=False):
@@ -160,8 +174,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     with tempfile.TemporaryDirectory() as artifacts_dir:
       with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                                self.config.sanitizer,
-                                               self.target_path,
-                                               interactive=True) as env:
+                                               self.target_path) as env:
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         options = engine_impl.prepare(corpus_path, env.target_path,
                                       env.build_dir)
@@ -175,8 +188,12 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         if not self.config.report_ooms:
           options.arguments.extend(LIBFUZZER_OPTIONS_NO_REPORT_OOM)
 
+        if self.config.parallel_fuzzing:
+          options.arguments.extend(get_libfuzzer_parallel_options())
+
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
+        print(result.logs)
 
       if not result.crashes:
         # Libfuzzer max time was reached.
@@ -192,6 +209,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
                                                crash.reproduce_args,
                                                batch=batch)
       if is_reportable or self.config.upload_all_crashes:
+        logging.info('SAVING CRASH')
         fuzzer_logs = result.logs
         testcase_path = self._save_crash(crash)
         if is_reportable and self.config.minimize_crashes:
@@ -199,6 +217,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
           # Use is_reportable to decide this even though reportable crashes
           # are a subset of reproducible ones.
           self.minimize_testcase(testcase_path)
+        else:
+          logging.info('NOT MINIMIZED')
       else:
         fuzzer_logs = None
         testcase_path = None
@@ -209,8 +229,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     """Minimizes the testcase located at |testcase_path|."""
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             self.target_path,
-                                             interactive=False):
+                                             self.target_path):
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
       minimized_testcase_path = testcase_path + '-minimized'
       return engine_impl.minimize_testcase(self.target_path, [],
@@ -267,15 +286,16 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     logging.info('Trying to reproduce crash using: %s.', testcase)
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             target_path,
-                                             interactive=False):
+                                             target_path):
+      reproduce_time_seconds = PER_LANGUAGE_REPRODUCE_TIMEOUTS.get(
+          self.config.language, DEFAULT_REPRODUCE_TIME_SECONDS)
       for _ in range(REPRODUCE_ATTEMPTS):
         engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
         try:
           result = engine_impl.reproduce(target_path,
                                          testcase,
                                          arguments=reproduce_args,
-                                         max_time=REPRODUCE_TIME_SECONDS)
+                                         max_time=reproduce_time_seconds)
         except TimeoutError as error:
           logging.error('%s.', error)
           return False

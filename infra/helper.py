@@ -26,11 +26,13 @@ import logging
 import os
 import pipes
 import re
+import shutil
 import subprocess
 import sys
-import templates
+import tempfile
 
 import constants
+import templates
 
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
@@ -46,6 +48,7 @@ BASE_IMAGES = {
         'gcr.io/oss-fuzz-base/base-runner-debug',
     ],
     'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
+    'javascript': ['gcr.io/oss-fuzz-base/base-builder-javascript'],
     'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
     'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
     'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
@@ -62,12 +65,25 @@ CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
     'libFuzzer/{fuzz_target}/')
 
+HTTPS_CORPUS_BACKUP_URL_FORMAT = (
+    'https://storage.googleapis.com/{project_name}-backup.clusterfuzz-external'
+    '.appspot.com/corpus/libFuzzer/{fuzz_target}/public.zip')
+
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
+
 LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
+
+CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
+CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
+CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
+CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -103,11 +119,12 @@ class Project:
   @property
   def language(self):
     """Returns project language."""
-    if self.is_external:
-      # TODO(metzman): Handle this properly.
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logging.warning('No project.yaml. Assuming c++.')
       return constants.DEFAULT_LANGUAGE
 
-    project_yaml_path = os.path.join(self.path, 'project.yaml')
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
@@ -115,8 +132,8 @@ class Project:
         if match:
           return match.group(1)
 
-    logging.warning('Language not specified in project.yaml.')
-    return None
+    logging.warning('Language not specified in project.yaml. Assuming c++.')
+    return constants.DEFAULT_LANGUAGE
 
   @property
   def out(self):
@@ -155,10 +172,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    if args.engine == 'dataflow':
-      args.sanitizer = 'dataflow'
-    else:
-      args.sanitizer = constants.DEFAULT_SANITIZER
+    args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -174,12 +188,16 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = run_fuzzer(args)
   elif args.command == 'coverage':
     result = coverage(args)
+  elif args.command == 'introspector':
+    result = introspector(args)
   elif args.command == 'reproduce':
     result = reproduce(args)
   elif args.command == 'shell':
     result = shell(args)
   elif args.command == 'pull_images':
     result = pull_images()
+  elif args.command == 'run_clusterfuzzlite':
+    result = run_clusterfuzzlite(args)
   else:
     # Print help string if no arguments provided.
     parser.print_help()
@@ -241,6 +259,7 @@ def get_parser():  # pylint: disable=too-many-statements
   build_image_parser.add_argument('--pull',
                                   action='store_true',
                                   help='Pull latest base image.')
+  _add_architecture_args(build_image_parser)
   build_image_parser.add_argument('--cache',
                                   action='store_true',
                                   default=False,
@@ -291,6 +310,7 @@ def get_parser():  # pylint: disable=too-many-statements
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
+  _add_architecture_args(run_fuzzer_parser)
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
@@ -322,6 +342,10 @@ def get_parser():  # pylint: disable=too-many-statements
   coverage_parser.add_argument('--corpus-dir',
                                help='specify location of corpus'
                                ' to be used (requires --fuzz-target argument)')
+  coverage_parser.add_argument('--public',
+                               action='store_true',
+                               help='if set, will download public '
+                               'corpus using wget')
   coverage_parser.add_argument('project',
                                help='name of the project or path (external)')
   coverage_parser.add_argument('extra_args',
@@ -329,11 +353,43 @@ def get_parser():  # pylint: disable=too-many-statements
                                'pass to llvm-cov utility.',
                                nargs='*')
   _add_external_project_args(coverage_parser)
+  _add_architecture_args(coverage_parser)
+
+  introspector_parser = subparsers.add_parser(
+      'introspector',
+      help='Run a complete end-to-end run of '
+      'fuzz introspector. This involves (1) '
+      'building the fuzzers with ASAN; (2) '
+      'running all fuzzers; (3) building '
+      'fuzzers with coverge; (4) extracting '
+      'coverage; (5) building fuzzers using '
+      'introspector')
+  introspector_parser.add_argument('project', help='name of the project')
+  introspector_parser.add_argument('--seconds',
+                                   help='number of seconds to run fuzzers',
+                                   default=10)
+  introspector_parser.add_argument('source_path',
+                                   help='path of local source',
+                                   nargs='?')
+  introspector_parser.add_argument(
+      '--public-corpora',
+      help='if specified, will use public corpora for code coverage',
+      default=False,
+      action='store_true')
+  introspector_parser.add_argument(
+      '--private-corpora',
+      help='if specified, will use private corpora',
+      default=False,
+      action='store_true')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
                                        help='specify name of a fuzz target')
+  download_corpora_parser.add_argument('--public',
+                                       action='store_true',
+                                       help='if set, will download public '
+                                       'corpus using wget')
   download_corpora_parser.add_argument(
       'project', help='name of the project or path (external)')
 
@@ -351,6 +407,7 @@ def get_parser():  # pylint: disable=too-many-statements
                                 nargs='*')
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
+  _add_architecture_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -364,6 +421,27 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
   _add_external_project_args(shell_parser)
+
+  run_clusterfuzzlite_parser = subparsers.add_parser(
+      'run_clusterfuzzlite', help='Run ClusterFuzzLite on a project.')
+  _add_sanitizer_args(run_clusterfuzzlite_parser)
+  _add_environment_args(run_clusterfuzzlite_parser)
+  run_clusterfuzzlite_parser.add_argument('project')
+  run_clusterfuzzlite_parser.add_argument('--clean',
+                                          dest='clean',
+                                          action='store_true',
+                                          help='clean existing artifacts.')
+  run_clusterfuzzlite_parser.add_argument(
+      '--no-clean',
+      dest='clean',
+      action='store_false',
+      help='do not clean existing artifacts '
+      '(default).')
+  run_clusterfuzzlite_parser.add_argument('--branch',
+                                          default='master',
+                                          required=True)
+  _add_external_project_args(run_clusterfuzzlite_parser)
+  run_clusterfuzzlite_parser.set_defaults(clean=False)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
   return parser
@@ -388,9 +466,10 @@ def check_project_exists(project):
   return False
 
 
-def _check_fuzzer_exists(project, fuzzer_name):
+def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
   """Checks if a fuzzer exists."""
-  command = ['docker', 'run', '--rm']
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = ['docker', 'run', '--rm', '--platform', platform]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
 
@@ -404,6 +483,13 @@ def _check_fuzzer_exists(project, fuzzer_name):
     return False
 
   return True
+
+
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
 
 
 def _get_absolute_path(path):
@@ -420,8 +506,7 @@ def _get_project_build_subdir(project, subdir_name):
   """Creates the |subdir_name| subdirectory of the |project| subdirectory in
   |BUILD_DIR| and returns its path."""
   directory = os.path.join(BUILD_DIR, subdir_name, project)
-  if not os.path.exists(directory):
-    os.makedirs(directory)
+  os.makedirs(directory, exist_ok=True)
 
   return directory
 
@@ -454,11 +539,10 @@ def _add_sanitizer_args(parser, choices=None):
   """Adds common sanitizer args."""
   if choices is None:
     choices = constants.SANITIZERS
-  parser.add_argument(
-      '--sanitizer',
-      default=None,
-      choices=choices,
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+  parser.add_argument('--sanitizer',
+                      default=None,
+                      choices=choices,
+                      help='the default is "address"')
 
 
 def _add_environment_args(parser):
@@ -468,7 +552,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(project, cache=True, pull=False):
+def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
   """Builds image."""
   image_name = project.name
 
@@ -488,14 +572,27 @@ def build_image_impl(project, cache=True, pull=False):
     return False
 
   build_args = []
+  image_name = 'gcr.io/%s/%s' % (image_project, image_name)
+  if architecture == 'aarch64':
+    build_args += [
+        'buildx',
+        'build',
+        '--platform',
+        'linux/arm64',
+        '--progress',
+        'plain',
+        '--load',
+    ]
   if not cache:
     build_args.append('--no-cache')
 
-  build_args += [
-      '-t',
-      'gcr.io/%s/%s' % (image_project, image_name), '--file', dockerfile_path
-  ]
+  build_args += ['-t', image_name, '--file', dockerfile_path]
   build_args.append(docker_build_dir)
+
+  if architecture == 'aarch64':
+    command = ['docker'] + build_args
+    subprocess.check_call(command)
+    return True
   return docker_build(build_args)
 
 
@@ -528,10 +625,21 @@ def _workdir_from_dockerfile(project):
   return workdir_from_lines(lines, default=os.path.join('/src', project.name))
 
 
-def docker_run(run_args, print_output=True):
-  """Calls `docker run`."""
-  command = ['docker', 'run', '--rm', '--privileged']
+def prepare_aarch64_emulation():
+  """Run some necessary commands to use buildx to build AArch64 targets using
+  QEMU emulation on an x86_64 host."""
+  subprocess.check_call(
+      ['docker', 'buildx', 'create', '--name', ARM_BUILDER_NAME])
+  subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
+
+def docker_run(run_args, print_output=True, architecture='x86_64'):
+  """Calls `docker run`."""
+  platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
+  command = [
+      'docker', 'run', '--rm', '--privileged', '--shm-size=2g', '--platform',
+      platform
+  ]
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
@@ -600,7 +708,10 @@ def build_image(args):
     logging.info('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(args.project, cache=args.cache, pull=pull):
+  if build_image_impl(args.project,
+                      cache=args.cache,
+                      pull=pull,
+                      architecture=args.architecture):
     return True
 
   return False
@@ -614,26 +725,29 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     architecture,
     env_to_add,
     source_path,
-    mount_path=None):
+    mount_path=None,
+    child_dir=''):
   """Builds fuzzers."""
-  if not build_image_impl(project):
+  if not build_image_impl(project, architecture=architecture):
     return False
 
+  project_out = os.path.join(project.out, child_dir)
   if clean:
     logging.info('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
     docker_run([
-        '-v',
-        '%s:/out' % project.out, '-t',
-        'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /out/*'
-    ])
+        '-v', f'{project_out}:/out', '-t', f'gcr.io/oss-fuzz/{project.name}',
+        '/bin/bash', '-c', 'rm -rf /out/*'
+    ],
+               architecture=architecture)
 
     docker_run([
         '-v',
         '%s:/work' % project.work, '-t',
         'gcr.io/oss-fuzz/%s' % project.name, '/bin/bash', '-c', 'rm -rf /work/*'
-    ])
+    ],
+               architecture=architecture)
 
   else:
     logging.info('Keeping existing build artifacts as-is (if any).')
@@ -641,7 +755,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
-      'GIT_REPO=',  # TODO(navidem): load from main_repo in project.yaml.
+      'PROJECT_NAME=' + project.name,
+      'HELPER=True',
   ]
 
   _add_oss_fuzz_ci_if_needed(env)
@@ -671,13 +786,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v',
-      '%s:/out' % project.out, '-v',
-      '%s:/work' % project.work, '-t',
-      'gcr.io/oss-fuzz/%s' % project.name
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      f'gcr.io/oss-fuzz/{project.name}'
   ]
 
-  result = docker_run(command)
+  result = docker_run(command, architecture=architecture)
   if not result:
     logging.error('Building fuzzers failed.')
     return False
@@ -685,16 +798,97 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   return True
 
 
+def run_clusterfuzzlite(args):
+  """Runs ClusterFuzzLite on a local repo."""
+  if not os.path.exists(CLUSTERFUZZLITE_FILESTORE_DIR):
+    os.mkdir(CLUSTERFUZZLITE_FILESTORE_DIR)
+
+  try:
+    with tempfile.TemporaryDirectory() as workspace:
+
+      if args.external:
+        project_src_path = os.path.join(workspace, args.project.name)
+        shutil.copytree(args.project.path, project_src_path)
+
+      build_command = [
+          '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers', '--file',
+          'infra/run_fuzzers.Dockerfile', 'infra'
+      ]
+      if not docker_build(build_command):
+        return False
+      filestore_path = os.path.abspath(CLUSTERFUZZLITE_FILESTORE_DIR)
+      docker_run_command = []
+      if args.external:
+        docker_run_command += [
+            '-e',
+            f'PROJECT_SRC_PATH={project_src_path}',
+        ]
+      else:
+        docker_run_command += [
+            '-e',
+            f'OSS_FUZZ_PROJECT_NAME={args.project.name}',
+        ]
+      docker_run_command += [
+          '-v',
+          f'{filestore_path}:{filestore_path}',
+          '-v',
+          f'{workspace}:{workspace}',
+          '-e',
+          f'FILESTORE_ROOT_DIR={filestore_path}',
+          '-e',
+          f'WORKSPACE={workspace}',
+          '-e',
+          f'REPOSITORY={args.project.name}',
+          '-e',
+          'CFL_PLATFORM=standalone',
+          '--entrypoint',
+          '',
+          '-v',
+          '/var/run/docker.sock:/var/run/docker.sock',
+          CLUSTERFUZZLITE_DOCKER_IMAGE,
+          'python3',
+          '/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py',
+      ]
+      return docker_run(docker_run_command)
+
+  except PermissionError as error:
+    logging.error('PermissionError: %s.', error)
+    # Tempfile can't delete the workspace because of a permissions issue. This
+    # is because docker creates files in the workspace that are owned by root
+    # but this process is probably being run as another user. Use a docker image
+    # to delete the temp directory (workspace) so that we have permission.
+    docker_run([
+        '-v', f'{workspace}:{workspace}', '--entrypoint', '',
+        CLUSTERFUZZLITE_DOCKER_IMAGE, 'rm', '-rf',
+        os.path.join(workspace, '*')
+    ])
+    return False
+
+
 def build_fuzzers(args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project,
-                            args.clean,
-                            args.engine,
-                            args.sanitizer,
-                            args.architecture,
-                            args.e,
-                            args.source_path,
-                            mount_path=args.mount_path)
+  if args.engine == 'centipede' and args.sanitizer != 'none':
+    # Centipede always requires separate binaries for sanitizers:
+    # An unsanitized binary, which Centipede requires for fuzzing.
+    # A sanitized binary, placed in the child directory.
+    sanitized_binary_directories = (
+        ('none', ''),
+        (args.sanitizer, f'__centipede_{args.sanitizer}'),
+    )
+  else:
+    # Generally, a fuzzer only needs one sanitized binary in the default dir.
+    sanitized_binary_directories = ((args.sanitizer, ''),)
+  return all(
+      build_fuzzers_impl(args.project,
+                         args.clean,
+                         args.engine,
+                         sanitizer,
+                         args.architecture,
+                         args.e,
+                         args.source_path,
+                         mount_path=args.mount_path,
+                         child_dir=child_dir)
+      for sanitizer, child_dir in sanitized_binary_directories)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
@@ -709,28 +903,23 @@ def check_build(args):
   if not check_project_exists(args.project):
     return False
 
-  if (args.fuzzer_name and
-      not _check_fuzzer_exists(args.project, args.fuzzer_name)):
+  if (args.fuzzer_name and not _check_fuzzer_exists(
+      args.project, args.fuzzer_name, args.architecture)):
     return False
-
-  fuzzing_language = args.project.language
-  if not fuzzing_language:
-    fuzzing_language = constants.DEFAULT_LANGUAGE
-    logging.warning('Language not specified in project.yaml. Defaulting to %s.',
-                    fuzzing_language)
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + fuzzing_language,
+      'FUZZING_LANGUAGE=' + args.project.language,
+      'HELPER=True',
   ]
   _add_oss_fuzz_ci_if_needed(env)
   if args.e:
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % args.project.out, '-t', BASE_RUNNER_IMAGE
+      '-v', f'{args.project.out}:/out', '-t', BASE_RUNNER_IMAGE
   ]
 
   if args.fuzzer_name:
@@ -738,7 +927,7 @@ def check_build(args):
   else:
     run_args.append('test_all.py')
 
-  result = docker_run(run_args)
+  result = docker_run(run_args, architecture=args.architecture)
   if result:
     logging.info('Check build passed.')
   else:
@@ -752,6 +941,8 @@ def _get_fuzz_targets(project):
   fuzz_targets = []
   for name in os.listdir(project.out):
     if name.startswith('afl-'):
+      continue
+    if name == 'centipede':
       continue
     if name.startswith('jazzer_'):
       continue
@@ -770,11 +961,13 @@ def _get_fuzz_targets(project):
 def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   """Downloads the latest corpus for the given fuzz target."""
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
-  if not os.path.exists(corpus_dir):
-    os.makedirs(corpus_dir)
+  os.makedirs(corpus_dir, exist_ok=True)
 
   if not fuzz_target.startswith(project.name + '_'):
     fuzz_target = '%s_%s' % (project.name, fuzz_target)
+
+  # Normalise fuzz target name.
+  fuzz_target = _normalized_name(fuzz_target)
 
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project.name,
                                                       fuzz_target=fuzz_target)
@@ -807,18 +1000,69 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
+def _get_latest_public_corpus(args, fuzzer):
+  """Downloads the public corpus"""
+  target_corpus_dir = "build/corpus/%s" % args.project.name
+  if not os.path.isdir(target_corpus_dir):
+    os.makedirs(target_corpus_dir)
+
+  target_zip = os.path.join(target_corpus_dir, fuzzer + ".zip")
+
+  project_qualified_fuzz_target_name = fuzzer
+  qualified_name_prefix = args.project.name + '_'
+  if not fuzzer.startswith(qualified_name_prefix):
+    project_qualified_fuzz_target_name = qualified_name_prefix + fuzzer
+
+  download_url = HTTPS_CORPUS_BACKUP_URL_FORMAT.format(
+      project_name=args.project.name,
+      fuzz_target=project_qualified_fuzz_target_name)
+
+  cmd = ['wget', download_url, '-O', target_zip]
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(cmd, stdout=stdout)
+  except OSError:
+    logging.error('Failed to download corpus')
+
+  target_fuzzer_dir = os.path.join(target_corpus_dir, fuzzer)
+  if not os.path.isdir(target_fuzzer_dir):
+    os.mkdir(target_fuzzer_dir)
+
+  target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(
+          ['unzip', '-q', '-o', target_zip, '-d', target_fuzzer_dir],
+          stdout=stdout)
+  except OSError:
+    logging.error('Failed to unzip corpus')
+
+  # Remove the downloaded zip
+  os.remove(target_zip)
+  return True
+
+
 def download_corpora(args):
   """Downloads most recent corpora from GCS for the given project."""
   if not check_project_exists(args.project):
     return False
 
-  try:
-    with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(['gsutil', '--version'], stdout=stdout)
-  except OSError:
-    logging.error('gsutil not found. Please install it from '
-                  'https://cloud.google.com/storage/docs/gsutil_install')
-    return False
+  if args.public:
+    logging.info("Downloading public corpus")
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['wget', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('wget not found')
+      return False
+  else:
+    try:
+      with open(os.devnull, 'w') as stdout:
+        subprocess.check_call(['gsutil', '--version'], stdout=stdout)
+    except OSError:
+      logging.error('gsutil not found. Please install it from '
+                    'https://cloud.google.com/storage/docs/gsutil_install')
+      return False
 
   if args.fuzz_target:
     fuzz_targets = [args.fuzz_target]
@@ -829,7 +1073,10 @@ def download_corpora(args):
 
   def _download_for_single_target(fuzz_target):
     try:
-      _get_latest_corpus(args.project, fuzz_target, corpus_dir)
+      if args.public:
+        _get_latest_public_corpus(args, fuzz_target)
+      else:
+        _get_latest_corpus(args.project, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
       logging.error('Corpus download for %s failed: %s.', fuzz_target,
@@ -866,11 +1113,13 @@ def coverage(args):
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
+      'HELPER=True',
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
+      'ARCHITECTURE=' + args.architecture,
   ]
 
   run_args = _env_to_docker_args(env)
@@ -902,13 +1151,115 @@ def coverage(args):
   if args.fuzz_target:
     run_args.append(args.fuzz_target)
 
-  result = docker_run(run_args)
+  result = docker_run(run_args, architecture=args.architecture)
   if result:
     logging.info('Successfully generated clang code coverage report.')
   else:
     logging.error('Failed to generate clang code coverage report.')
 
   return result
+
+
+def _introspector_prepare_corpus(args):
+  """Helper function for introspector runs to generate corpora."""
+  parser = get_parser()
+  # Generate corpus, either by downloading or running fuzzers.
+  if args.private_corpora or args.public_corpora:
+    corpora_command = ['download_corpora']
+    if args.public_corpora:
+      corpora_command.append('--public')
+    corpora_command.append(args.project.name)
+    if not download_corpora(parse_args(parser, corpora_command)):
+      logging.error('Failed to download corpora')
+      return False
+  else:
+    fuzzer_targets = _get_fuzz_targets(args.project)
+    for fuzzer_name in fuzzer_targets:
+      # Make a corpus directory.
+      fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
+      if not os.path.isdir(fuzzer_corpus_dir):
+        os.makedirs(fuzzer_corpus_dir)
+      run_fuzzer_command = [
+          'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+          fuzzer_corpus_dir, args.project.name, fuzzer_name
+      ]
+
+      parsed_args = parse_args(parser, run_fuzzer_command)
+      parsed_args.fuzzer_args = [
+          f'-max_total_time={args.seconds}', '-detect_leaks=0'
+      ]
+      # Continue even if run command fails, because we do not have 100%
+      # accuracy in fuzz target detection, i.e. we might try to run something
+      # that is not a target.
+      run_fuzzer(parsed_args)
+  return True
+
+
+def introspector(args):
+  """Runs a complete end-to-end run of introspector."""
+  parser = get_parser()
+
+  args_to_append = []
+  if args.source_path:
+    args_to_append.append(_get_absolute_path(args.source_path))
+
+  # Build fuzzers with ASAN.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=address', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with ASAN')
+    return False
+
+  if not _introspector_prepare_corpus(args):
+    return False
+
+  # Build code coverage.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=coverage', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with coverage instrumentation')
+    return False
+
+  # Collect coverage.
+  coverage_command = [
+      'coverage', '--no-corpus-download', '--port', '', args.project.name
+  ]
+  if not coverage(parse_args(parser, coverage_command)):
+    logging.error('Failed to extract coverage')
+    return False
+
+  # Build introspector.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=introspector', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logging.error('Failed to build project with introspector')
+    return False
+
+  introspector_dst = os.path.join(args.project.out,
+                                  "introspector-report/inspector")
+  shutil.rmtree(introspector_dst, ignore_errors=True)
+  shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)
+
+  # Copy the coverage reports into the introspector report.
+  dst_cov_report = os.path.join(introspector_dst, "covreport")
+  shutil.copytree(os.path.join(args.project.out, "report"), dst_cov_report)
+
+  # Copy per-target coverage reports
+  src_target_cov_report = os.path.join(args.project.out, "report_target")
+  for target_cov_dir in os.listdir(src_target_cov_report):
+    dst_target_cov_report = os.path.join(dst_cov_report, target_cov_dir)
+    shutil.copytree(os.path.join(src_target_cov_report, target_cov_dir),
+                    dst_target_cov_report)
+
+  logging.info('Introspector run complete. Report in %s', introspector_dst)
+  logging.info(
+      'To browse the report, run: `python3 -m http.server 8008 --directory %s`'
+      'and navigate to localhost:8008/fuzz_report.html in your browser',
+      introspector_dst)
+  return True
 
 
 def run_fuzzer(args):
@@ -923,6 +1274,7 @@ def run_fuzzer(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'RUN_FUZZER_MODE=interactive',
+      'HELPER=True',
   ]
 
   if args.e:
@@ -950,13 +1302,13 @@ def run_fuzzer(args):
       args.fuzzer_name,
   ] + args.fuzzer_args)
 
-  return docker_run(run_args)
+  return docker_run(run_args, architecture=args.architecture)
 
 
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
-                        args.fuzzer_args, args.testcase_path)
+                        args.fuzzer_args, args.testcase_path, args.architecture)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
@@ -966,6 +1318,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
+    architecture='x86_64',
     run_function=docker_run,
     err_result=False):
   """Reproduces a testcase in the container."""
@@ -976,7 +1329,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     return err_result
 
   debugger = ''
-  env = []
+  env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
   image_name = 'base-runner'
 
   if valgrind:
@@ -1001,7 +1354,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       '-runs=100',
   ] + fuzzer_args
 
-  return run_function(run_args)
+  return run_function(run_args, architecture=architecture)
 
 
 def _validate_project_name(project_name):
@@ -1109,6 +1462,7 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'HELPER=True',
   ]
 
   if args.project.name != 'base-runner-debug':
@@ -1138,7 +1492,7 @@ def shell(args):
       'gcr.io/%s/%s' % (image_project, args.project.name), '/bin/bash'
   ])
 
-  docker_run(run_args)
+  docker_run(run_args, architecture=args.architecture)
   return True
 
 

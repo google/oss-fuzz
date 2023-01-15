@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/gitpython-developers/gitpython
+language: python
+main_repo: https://github.com/gitpython-developers/gitpython
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -15,16 +15,10 @@
 #
 ################################################################################
 
-# Test to fix https://github.com/golang/go/issues/49075
-# with fix of https://github.com/golang/go/issues/49961
-# ie https://go-review.googlesource.com/c/go/+/369098/
-(
-cd /root/.go
-git apply $SRC/372f9bd.diff || true
-)
-
-export GODEBUG=cpu.all=off
 compile_go_fuzzer github.com/google/gonids FuzzParseRule fuzz_parserule
+
+# output it in logs to compare with local builds for https://github.com/golang/go/issues/49075
+base64 $OUT/fuzz_parserule
 
 cd $SRC
 unzip emerging.rules.zip
@@ -36,3 +30,6 @@ set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
 zip -q -r $OUT/fuzz_parserule_seed_corpus.zip corpus
+
+# use different GODEBUG env variables for https://github.com/golang/go/issues/49075
+cp $SRC/gobughunt/fuzz_parserule.options $OUT/

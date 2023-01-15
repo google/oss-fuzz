@@ -15,24 +15,20 @@
 # limitations under the License.
 
 import atheris
-with atheris.instrument_imports():
-  import sys
-  import pygments
-  import pygments.lexers
 
-@atheris.instrument_func
+import sys
+import pygments
+import pygments.lexers
+import pygments.util
+
 def TestOneInput(data: bytes) -> int:
   try:
     lexer = pygments.lexers.guess_lexer(str(data))
-  except ValueError:
+  except pygments.util.ClassNotFound:
     return 0
   return 0
 
 
-def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+atheris.instrument_all()
+atheris.Setup(sys.argv, TestOneInput)
+atheris.Fuzz()

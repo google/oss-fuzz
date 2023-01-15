@@ -1,0 +1,11 @@
+homepage: "https://mapserver.org"
+language: c++
+primary_contact: "mapserver-security@osgeo.org"
+vendor_ccs:
+  - "geographika@gmail.com"
+  - "jmckenna@gatewaygeomatics.com"
+  - "even.rouault@gmail.com"
+  - "sdlime@gmail.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+main_repo: 'https://github.com/MapServer/MapServer'

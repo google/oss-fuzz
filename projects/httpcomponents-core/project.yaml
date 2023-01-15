@@ -1,0 +1,14 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/apache/httpcomponents-core
+language: jvm
+main_repo: https://github.com/apache/httpcomponents-core.git
+sanitizers:
+- address
+vendor_ccs:
+- patrice.salathe@code-intelligence.com
+- wagner@code-intelligence.com
+- yakdan@code-intelligence.com
+- glendowne@code-intelligence.com
+- hlin@code-intelligence.com
+- bug-disclosure@code-intelligence.com

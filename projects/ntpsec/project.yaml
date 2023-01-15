@@ -1,0 +1,19 @@
+homepage: "https://ntpsec.org/"
+language: c
+primary_contact: "fallenpegasus@gmail.com"
+vendor_ccs:
+  - "security@ntpsec.org"
+  - "rlaager@coderich.net"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+  - selsky@gmail.com
+  - "gem@rellim.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://gitlab.com/NTPsec/ntpsec'

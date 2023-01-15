@@ -1,0 +1,13 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/looker-open-source/sdk-codegen
+language: python
+main_repo: https://github.com/looker-open-source/sdk-codegen
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

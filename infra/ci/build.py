@@ -112,6 +112,8 @@ def should_build_coverage(project_yaml):
                       '"fuzzing_engines" if "none" is specified.')
     assert len(engines) == 1, assert_message
     return False
+  if 'wycheproof' in engines:
+    return False
 
   language = project_yaml.get('language')
   if language not in constants.LANGUAGES_WITH_COVERAGE_SUPPORT:
@@ -120,6 +122,22 @@ def should_build_coverage(project_yaml):
     return False
 
   return True
+
+
+def flatten_options(option_list):
+  """Generator that flattens |option_list| (a list of sanitizers, architectures
+  or fuzzing engines) by returning each element in the list that isn't a
+  dictionary. For elements that are dictionaries, the sole key is returned."""
+  result = []
+  for option in option_list:
+    if isinstance(option, dict):
+      keys = list(option.keys())
+      assert len(keys) == 1
+      result.append(keys[0])
+      continue
+    result.append(option)
+  print(result)
+  return result
 
 
 def should_build(project_yaml):
@@ -132,7 +150,8 @@ def should_build(project_yaml):
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
-    return os.getenv(env_var) in project_yaml.get(yaml_name, defaults)
+    return os.getenv(env_var) in flatten_options(
+        project_yaml.get(yaml_name, defaults))
 
   return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
@@ -165,7 +184,8 @@ def build_project(project):
   print('Building project', project)
   build_fuzzers(project, engine, sanitizer, architecture)
 
-  if engine != 'none' and sanitizer != 'coverage':
+  run_tests = project_yaml.get('run_tests', True)
+  if engine != 'none' and sanitizer != 'coverage' and run_tests:
     check_build(project, engine, sanitizer, architecture)
 
 
@@ -216,7 +236,7 @@ def build_base_images():
       'base-image',
       'base-builder',
       'base-builder-go',
-      'base-builder-go-codeintelligencetesting',
+      'base-builder-javascript',
       'base-builder-jvm',
       'base-builder-python',
       'base-builder-rust',

@@ -1,0 +1,14 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/astanin/python-tabulate
+language: python
+main_repo: https://github.com/astanin/python-tabulate
+sanitizers:
+- address
+- undefined
+primary_contact: "s.astanin@gmail.com"
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

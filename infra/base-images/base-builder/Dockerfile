@@ -16,23 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get install -y \
-        binutils-dev \
-        build-essential \
-        curl \
-        wget \
-        git \
-        jq \
-        libc6-dev-i386 \
-        patchelf \
-        rsync \
-        subversion \
-        zip
+COPY install_deps.sh /
+RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
@@ -73,17 +58,19 @@ RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_hwaddress "-fsanitize=hwaddress -fuse-ld=lld -Wno-unused-command-line-argument"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
-ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
+# Don't include "function" since it is unsupported on aarch64.
+ENV SANITIZER_FLAGS_undefined_aarch64 "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
-ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
+ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
-ENV SANITIZER_FLAGS_introspector "-flegacy-pass-manager -flto"
+ENV SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -101,9 +88,6 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 # Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
 # messages which are treated as errors by some projects.
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
-
-# Coverage isntrumentation flags for dataflow builds.
-ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,bb,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"
@@ -127,9 +111,14 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 550ba4d77294e61597a5259d00769c61281e0042 && \
+    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    rm -rf .git && \
     chmod 755 oss.sh
+
+# Do precompiles before copying other scripts for better cache efficiency.
+COPY precompile_afl /usr/local/bin/
+RUN precompile_afl
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -138,21 +127,31 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-# Do precompiles before copying other scripts for better cache efficiency.
-COPY precompile_afl /usr/local/bin/
-RUN precompile_afl
 
 COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
-COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+RUN cd $SRC && \
+    git clone https://github.com/google/centipede.git && \
+    cd centipede && \
+    git checkout addd6670cc6b56dea43036dc3a0dcb9181f23251 && \
+    rm -rf .git
+
+COPY precompile_centipede /usr/local/bin/
+RUN precompile_centipede
+
+COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+    compile_centipede \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
+    compile_python_fuzzer \
+    compile_fuzztests.sh \
+    python_coverage_helper.py \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.
     install_go.sh \
-    install_go_CodeIntelligenceTesting.sh \
+    install_javascript.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \
@@ -161,5 +160,6 @@ COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggf
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
+COPY bazel.bazelrc /root/.bazelrc
 
 CMD ["compile"]

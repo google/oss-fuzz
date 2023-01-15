@@ -16,6 +16,7 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 )
 
@@ -24,8 +25,8 @@ func FuzzConfig(data []byte) int {
 		return -1
 	}
 	crypter := NewSymmetricCrypter(make([]byte, 32))
-	_, _ = crypter.EncryptValue(string(data))
-	_, _ = crypter.DecryptValue(string(data))
+	_, _ = crypter.EncryptValue(context.Background(), string(data))
+	_, _ = crypter.DecryptValue(context.Background(), string(data))
 	return 1
 }
 

@@ -16,7 +16,6 @@
 ################################################################################
 
 cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
-export CXXFLAGS="${CXXFLAGS} -std=c++17"
 
 cd $SRC/
 git clone --depth=1 https://github.com/abseil/abseil-cpp

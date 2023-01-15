@@ -133,6 +133,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_skparagraph \
   api_svg_canvas \
   api_triangulation \
+  colrv1 \
   image_decode \
   image_decode_incremental \
   image_filter_deserialize \
@@ -150,6 +151,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   webp_encoder
 
 $SRC/depot_tools/ninja -C out/FuzzDebug \
+  skmeshspecification \
   skruntimeeffect \
   sksl2glsl \
   sksl2metal \
@@ -245,6 +247,11 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
 
+# skmeshspecification uses the SkSL dictionary but has its own corpus.
+mv out/FuzzDebug/skmeshspecification $OUT/skmeshspecification
+cp ../skia_data/sksl.dict $OUT/skmeshspecification.dict
+mv ../skia_data/skmeshspecification_seed_corpus.zip $OUT/skmeshspecification_seed_corpus.zip
+
 # All five SkSL tests share the same sksl_seed_corpus and dictionary.
 mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
 cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
@@ -267,6 +274,7 @@ mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 mv out/Fuzz/svg_dom $OUT/svg_dom
 mv ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
@@ -283,3 +291,6 @@ mv out/Fuzz/api_skparagraph $OUT/api_skparagraph
 mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
+
+mv out/Fuzz/colrv1 $OUT/colrv1
+mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip

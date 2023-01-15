@@ -1,4 +1,5 @@
 # Copyright 2016 Google Inc.
+# Copyright 2022 D. R. Commander
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +17,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make yasm cmake
-RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo libjpeg-turbo.main
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo -b 2.0.x libjpeg-turbo.2.0.x
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo -b dev libjpeg-turbo.dev || /bin/true
 
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/seed-corpora
 RUN cd seed-corpora && zip -r ../decompress_fuzzer_seed_corpus.zip afl-testcases/jpeg* bugs/decompress* $SRC/libjpeg-turbo/testimages/*.jpg
 RUN cd seed-corpora && zip -r ../compress_fuzzer_seed_corpus.zip afl-testcases/bmp afl-testcases/gif* bugs/compress* $SRC/libjpeg-turbo/testimages/*.bmp $SRC/libjpeg-turbo/testimages/*.ppm
 RUN rm -rf seed-corpora
 
-WORKDIR libjpeg-turbo
-RUN cp fuzz/build.sh $SRC/
+COPY build.sh $SRC/
