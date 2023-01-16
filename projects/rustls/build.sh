@@ -25,15 +25,14 @@ fi
 
 cd $SRC/rustls
 cargo fuzz build -O
-find fuzz/target/x86_64-unknown-linux-gnu/release \
-    -type f \
-    -perm +0111 \
-    -maxdepth 1 \
-    -print0 \
-    | xargs -0 -I {} cp {} $OUT/
+for f in $SRC/rustls/fuzz/fuzzers/*.rs
+do
+  FUZZ_TARGET=$(basename ${f%.*})
+  cp fuzz/target/x86_64-unknown-linux-gnu/release/${FUZZ_TARGET} $OUT/
+done
 
-if [ "$SANITIZER" != "coverage" ]
+if [ "$SANITIZER" == "coverage" ]
 then
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/persist $OUT/
+    rm $OUT/server
+    rm $OUT/persist
 fi
