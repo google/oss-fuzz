@@ -25,11 +25,13 @@ fi
 
 cd $SRC/rustls
 cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/client $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/deframer $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fragment $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/hsjoiner $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
+find fuzz/target/x86_64-unknown-linux-gnu/release \
+    -type f \
+    -perm +0111 \
+    -maxdepth 1 \
+    -print0 \
+    | xargs -0 -I {} cp {} $OUT/
+
 if [ "$SANITIZER" != "coverage" ]
 then
     cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
