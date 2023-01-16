@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/systemd/systemd systemd
+RUN bash -c 'git clone https://github.com/systemd/systemd && cd systemd && git fetch origin pull/25842/head && git checkout FETCH_HEAD'
 WORKDIR systemd
 COPY build.sh $SRC/
