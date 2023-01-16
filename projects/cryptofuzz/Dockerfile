@@ -46,7 +46,6 @@ RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
 RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
 RUN git clone --depth 1 https://github.com/brix/crypto-js.git
-RUN git clone --depth 1 https://github.com/LoupVaillant/Monocypher.git
 RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
 RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
 RUN git clone --depth 1 https://github.com/paulmillr/noble-ed25519.git
