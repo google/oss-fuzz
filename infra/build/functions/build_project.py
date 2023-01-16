@@ -42,7 +42,7 @@ FUZZING_BUILD_TYPE = 'fuzzing'
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
+DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 LATEST_VERSION_FILENAME = 'latest.version'
