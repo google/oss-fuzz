@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+import sys
+import atheris
 
-# --default-symver does not work with lto, which fuzz introspector uses.
-if [ "$SANITIZER" == "introspector" ]; then
-  sed -i 's/--default-symver/-flto/g' ./configure.ac
-fi
-# Run the OSS-Fuzz script in the project.
-./test/ossfuzz/ossfuzz.sh
+import hiredis
+
+
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+  reader = hiredis.Reader()
+  reader.feed(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  try:
+    reader.gets()
+  except hiredis.ProtocolError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 #
 ################################################################################
 
-# --default-symver does not work with lto, which fuzz introspector uses.
-if [ "$SANITIZER" == "introspector" ]; then
-  sed -i 's/--default-symver/-flto/g' ./configure.ac
-fi
-# Run the OSS-Fuzz script in the project.
-./test/ossfuzz/ossfuzz.sh
+# Compiles native code with sanitizers due to OSS-Fuzz flags
+python3 ./setup.py install
+
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

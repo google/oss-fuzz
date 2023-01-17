@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-# --default-symver does not work with lto, which fuzz introspector uses.
-if [ "$SANITIZER" == "introspector" ]; then
-  sed -i 's/--default-symver/-flto/g' ./configure.ac
-fi
-# Run the OSS-Fuzz script in the project.
-./test/ossfuzz/ossfuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip Cython numpy
+RUN git clone https://github.com/dgasmith/opt_einsum opt_einsum
+COPY *.sh *py $SRC/
+WORKDIR $SRC/opt_einsum
