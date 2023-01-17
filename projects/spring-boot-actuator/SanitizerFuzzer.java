@@ -1,5 +1,6 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
+import org.springframework.boot.actuate.endpoint.SanitizableData;
 import org.springframework.boot.actuate.endpoint.Sanitizer;
 
 public class SanitizerFuzzer {
@@ -12,8 +13,7 @@ public class SanitizerFuzzer {
         }
 
         Sanitizer sanitizer = new Sanitizer();
-        sanitizer.keysToSanitize(key);
-        String result = (String) sanitizer.sanitize(key, value);
+        String result = (String) sanitizer.sanitize(new SanitizableData(null, key, value), false);
         if (!result.equals("******")) {
             throw new FuzzerSecurityIssueMedium("Value not sanitized. key: " + key + " value:" + value + " result:" + result);
         }
