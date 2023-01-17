@@ -17,8 +17,9 @@
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import com.sun.mail.util.ASCIIUtility;
 import java.lang.NumberFormatException;
+
+import org.eclipse.angus.mail.util.ASCIIUtility;
 
 public class ASCIIUtilityFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
