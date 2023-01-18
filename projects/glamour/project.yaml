@@ -1,0 +1,9 @@
+homepage: "https://charm.sh/"
+language: go
+main_repo: "https://github.com/charmbracelet/glamour.git"
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - nathaniel.brough@rough.run
+sanitizers:
+  - address
