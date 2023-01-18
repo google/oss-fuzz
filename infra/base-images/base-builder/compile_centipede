@@ -31,5 +31,7 @@ export LIBRARIES_FLAGS="-Wno-unused-command-line-argument -Wl,-ldl,-lrt,-lpthrea
 
 export CFLAGS="$CFLAGS $DFTRACING_FLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
 export CXXFLAGS="$CXXFLAGS $DFTRACING_FLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
+# For Meson.
+export LDFLAGS='/src/centipede/weak.o'
 
 echo 'done.'
