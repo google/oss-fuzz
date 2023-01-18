@@ -4,6 +4,7 @@ primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
 - "jish@openinfosecfoundation.org "
+- "todd.mortimer@gmail.com"
 
 sanitizers:
 - address
