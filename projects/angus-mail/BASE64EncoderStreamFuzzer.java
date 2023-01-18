@@ -16,10 +16,12 @@
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import com.sun.mail.util.BASE64EncoderStream;
 import java.lang.NumberFormatException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import org.eclipse.angus.mail.util.BASE64EncoderStream;
+import org.eclipse.angus.mail.util.ASCIIUtility;
 
 public class BASE64EncoderStreamFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
