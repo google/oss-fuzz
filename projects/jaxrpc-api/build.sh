@@ -76,6 +76,7 @@ LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --cp=${RUNTIME_CLASSPATH} \
 --target_class=${fuzzer_classname} \
 --jvm_args=\"-Xmx2048m\" \
+--instrumentation_includes=\"com.sun.xml.rpc.**\"
 \$@" > $OUT/${fuzzer_basename}
 	chmod u+x $OUT/${fuzzer_basename}
 done
