@@ -134,7 +134,7 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout addd6670cc6b56dea43036dc3a0dcb9181f23251 && \
+    git checkout eb91dd2157710e6c82579f8be19d7fab9423b781 && \
     rm -rf .git
 
 COPY precompile_centipede /usr/local/bin/
