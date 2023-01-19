@@ -26,7 +26,7 @@ RUN git clone --depth 1 -b v3.5.0 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 -b v0.11.1 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth=1 --branch v0.7.x --recursive https://github.com/libjxl/libjxl.git
+RUN git clone --depth=1 --branch v0.8.x --recursive https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC
