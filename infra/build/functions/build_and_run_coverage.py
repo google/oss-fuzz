@@ -54,7 +54,8 @@ class Bucket:  # pylint: disable=too-few-public-methods
 
   def __init__(self, project, date, platform, testing):
     self.bucket_name = self.BUCKET_NAME
-
+    if testing:
+      self.bucket_name += '-testing'
     self.date = date
     self.project = project
     self.html_report_url = (
