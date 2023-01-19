@@ -37,5 +37,5 @@ ENV OPENSSL_ROOT_DIR=/usr/local/openssl-${OPENSSL_VERSION}
 
 RUN git clone --depth 1 https://github.com/FreeRADIUS/freeradius-server.git
 COPY build.sh $SRC
-COPY patch.diff $SRC
+# COPY patch.diff $SRC
 WORKDIR $SRC/freeradius-server
