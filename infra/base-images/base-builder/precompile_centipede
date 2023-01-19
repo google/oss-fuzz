@@ -32,6 +32,15 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 # The weak symbols provides fake implementations for intermediate binaries.
 $CXX "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
 
+# Centipede's ld, which always appends weak.o as a parameter.
+export CENTIPEDE_BIN="$SRC/centipede/bin"
+mkdir -p $CENTIPEDE_BIN
+cat << EOF > ${CENTIPEDE_BIN}/ld
+#!/bin/bash
+/usr/bin/ld \$@ -ldl -lrt -lpthread /src/centipede/weak.o
+EOF
+chmod 777 ${CENTIPEDE_BIN}/ld
+
 echo 'Removing extra stuff leftover to avoid bloating image.'
 
 rm -rf /clang-*.tgz /clang
