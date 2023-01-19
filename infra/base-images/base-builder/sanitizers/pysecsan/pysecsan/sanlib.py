@@ -36,16 +36,19 @@ PYSECSAN_BUG_LABEL = r'===BUG DETECTED: PySecSan:'
 
 
 # pylint: disable=global-statement
-def sanitizer_log(msg, log_level, force=False):
+def sanitizer_log(msg, log_level, force=False, log_prefix=True):
   """Helper printing function."""
   global PYSECSAN_LOG_LVL
   if log_level >= PYSECSAN_LOG_LVL or force:
-    print(f'[PYSECSAN] {msg}')
+    if log_prefix:
+      print(f'[PYSECSAN] {msg}')
+    else:
+      print(f'{msg}')
 
 
-def sanitizer_log_always(msg):
+def sanitizer_log_always(msg, log_prefix=True):
   """Wrapper for sanitizer logging. Will always log"""
-  sanitizer_log(msg, 0, force=True)
+  sanitizer_log(msg, 0, force=True, log_prefix=log_prefix)
 
 
 def is_module_present(mod_name):
@@ -55,7 +58,8 @@ def is_module_present(mod_name):
 
 
 def _log_bug(bug_title):
-  sanitizer_log_always('%s %s ===' % (PYSECSAN_BUG_LABEL, bug_title))
+  sanitizer_log_always('%s %s ===' % (PYSECSAN_BUG_LABEL, bug_title),
+                       log_prefix=False)
 
 
 def abort_with_issue(msg, bug_title):
@@ -65,7 +69,7 @@ def abort_with_issue(msg, bug_title):
   logged from this function to determine if a fuzzer found a bug.
   """
   # Show breaker string using an ASAN approach (uses 65 =)
-  sanitizer_log_always("=" * 65)
+  sanitizer_log_always("=" * 65, log_prefix=False)
 
   # Log issue message
   _log_bug(bug_title)
