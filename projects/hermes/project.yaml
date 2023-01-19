@@ -8,11 +8,14 @@ auto_ccs:
   - "avp@fb.com"
   - "jsx@fb.com"
   - "luigiconiglio@fb.com"
+  - "edq@fb.com"
 vendor_ccs:
   - "oss-fuzz@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
+  - honggfuzz
+  - centipede
 sanitizers:
   - address
   - undefined
