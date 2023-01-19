@@ -46,7 +46,7 @@ cp -f libbz2.a /usr/local/lib
 # Build xz
 cd $SRC
 cd xz
-./autogen.sh
+./autogen.sh --no-po4a
 ./configure --enable-static --disable-debug --disable-shared --disable-xz --disable-xzdec --disable-lzmainfo
 make install -j$(nproc)
 
@@ -74,6 +74,7 @@ make sub-corelib sub-rcc -j$(nproc)
 # Build karchive
 cd $SRC
 cd karchive
+rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
 make install -j$(nproc)
 

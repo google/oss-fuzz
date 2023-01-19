@@ -1,0 +1,17 @@
+homepage: "https://github.com/typetools/checker-framework"
+language: jvm
+main_repo: "git@github.com:typetools/checker-framework.git"
+primary_contact: "michael.ernst@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
+run_tests: False

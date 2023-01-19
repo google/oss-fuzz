@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-ARG parent_image=gcr.io/oss-fuzz-base/base-clang
-FROM $parent_image
+FROM gcr.io/oss-fuzz-base/base-clang
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -114,6 +113,7 @@ RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
     git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    rm -rf .git && \
     chmod 755 oss.sh
 
 # Do precompiles before copying other scripts for better cache efficiency.
@@ -134,7 +134,8 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout 0cb913aa9d77ebd2870aa1036fd8651c2557a9a9
+    git checkout eb91dd2157710e6c82579f8be19d7fab9423b781 && \
+    rm -rf .git
 
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
@@ -144,12 +145,12 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
+    compile_fuzztests.sh \
     python_coverage_helper.py \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
     # Go, java, and swift installation scripts.
     install_go.sh \
-    install_go_CodeIntelligenceTesting.sh \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \

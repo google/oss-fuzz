@@ -17,7 +17,8 @@
 
 if [[ $CFLAGS != *sanitize=dataflow* ]]
 then
-    WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-keygen --enable-curve25519 --enable-curve448 --enable-shake256 --disable-crypttests --disable-examples --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-smallstack --enable-ed25519-stream --enable-ed448-stream"
+    cd $SRC/wolfssl/
+    WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-keygen --enable-curve25519 --enable-curve448 --enable-shake256 --disable-crypttests --disable-examples --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-smallstack --enable-ed25519-stream --enable-ed448-stream --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0"
     if [[ $CFLAGS = *sanitize=memory* ]]
     then
         WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS --disable-asm"
@@ -31,7 +32,18 @@ then
     CFLAGS="" CXXFLAGS="" ./b2 headers
     cp -R boost/ /usr/include/
 
+    # Build Botan
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
+    cd $SRC/botan
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    else
+        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    fi
+    make -j$(nproc)
+    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
+    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
     OLD_CFLAGS="$CFLAGS"
     OLD_CXXFLAGS="$CXXFLAGS"
@@ -92,20 +104,11 @@ then
     echo -n 'ECIES_Decrypt,' >>extra_options.h
     echo -n 'ECC_Point_Add,' >>extra_options.h
     echo -n 'ECC_Point_Mul,' >>extra_options.h
-    echo -n 'ECDH_Derive ' >>extra_options.h
+    echo -n 'ECC_Point_Dbl,' >>extra_options.h
+    echo -n 'ECDH_Derive,' >>extra_options.h
+    echo -n 'ECCSI_Sign,' >>extra_options.h
+    echo -n 'ECCSI_Verify ' >>extra_options.h
     echo -n '"' >>extra_options.h
-
-    # Build Botan
-    cd $SRC/botan
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
-    else
-        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
-    fi
-    make -j$(nproc)
-    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
-    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
     # Build normal math fuzzer
     cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-normal-math/
@@ -318,6 +321,9 @@ then
     cp -R $SRC/wolfssh/ $NEW_SRC
     cp -R $SRC/fuzzing-headers/ $NEW_SRC
     OSS_FUZZ_BUILD=1 SRC="$NEW_SRC" $NEW_SRC/build.sh
+
+    # Copy corpora for SSL/SSH fuzzers
+    cp $SRC/wolf-ssl-ssh-fuzzers/corpora/fuzzer-wolfssl-client-randomize_seed_corpus.zip $OUT/
 fi
 
 if [[ $CFLAGS != *-m32* ]]

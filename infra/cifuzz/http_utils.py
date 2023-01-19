@@ -27,6 +27,7 @@ import retry
 
 _DOWNLOAD_URL_RETRIES = 3
 _DOWNLOAD_URL_BACKOFF = 1
+_HTTP_REQUEST_TIMEOUT = 10
 
 
 def download_and_unpack_zip(url, extract_directory, headers=None):
@@ -81,10 +82,10 @@ def get_json_from_url(url):
   Returns:
     A dictionary deserialized from JSON or None on failure.
   """
-  response = requests.get(url)
   try:
-    return response.json()
-  except (ValueError, TypeError, json.JSONDecodeError) as err:
+    return requests.get(url, timeout=_HTTP_REQUEST_TIMEOUT).json()
+  except (ValueError, TypeError, json.JSONDecodeError,
+          requests.exceptions.ReadTimeout) as err:
     logging.error('Loading json from url %s failed with: %s.', url, str(err))
     return None
 

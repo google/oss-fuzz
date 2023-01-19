@@ -4,6 +4,11 @@ primary_contact: "peter.hoddie@gmail.com"
 auto_ccs:
   - peter@moddable.com
   - ari@agoric.com
+  - raphael@agoric.com
 sanitizers:
   - address
+  - memory:
+      experimental: True
+  - undefined:
+      experimental: True 
 main_repo: 'https://github.com/Moddable-OpenSource/moddable.git'

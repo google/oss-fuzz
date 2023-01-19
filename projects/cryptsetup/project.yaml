@@ -1,0 +1,15 @@
+homepage: "https://gitlab.com/cryptsetup/cryptsetup"
+language: c
+builds_per_day: 2
+primary_contact: "gmazyland@gmail.com"
+auto_ccs:
+  - okozina@redhat.com
+  - vtrefny@redhat.com
+  - daniel.zatovic@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: "https://gitlab.com/cryptsetup/cryptsetup.git"

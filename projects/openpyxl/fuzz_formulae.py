@@ -17,17 +17,24 @@
 import atheris
 import sys
 with atheris.instrument_imports():
-    from openpyxl.formula import Tokenizer
-    from openpyxl.formula.translate import Translator
+    from openpyxl.formula.tokenizer import *
+    from openpyxl.formula.translate import *
 
 def TestInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    #Initial tokenizer for random string and process it
-    Tokenizer(fdp.ConsumeString(200))
+    try:
+        #Initial tokenizer for random string and process it
+        Tokenizer(fdp.ConsumeString(200))
 
-    #Translate random string formulae
-    Translator(fdp.ConsumeString(200), origin="A1").translate_formula("B2")
+        #Translate random string formulae
+        Translator(fdp.ConsumeString(200), origin="A1").translate_formula("B2")
+    except IndexError as e:
+        if 'empty list' not in str(e):
+            raise e
+    except (TokenizerError, TranslatorError):
+        # Internal error handling is expected
+        pass
 
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)

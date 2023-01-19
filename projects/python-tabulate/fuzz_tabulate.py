@@ -29,7 +29,7 @@ def TestOneInput(data):
     # Create random dictionary
     try:
         fuzzed_dict = json.loads(fdp.ConsumeString(sys.maxsize))
-    except json.JSONDecodeError:
+    except:
         return
     if type(fuzzed_dict) is not dict:
         return

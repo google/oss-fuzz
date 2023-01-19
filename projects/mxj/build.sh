@@ -15,4 +15,5 @@
 #
 ################################################################################
 
+go mod init mxj
 compile_go_fuzzer . FuzzMapXml  fuzz_map_xml gofuzz

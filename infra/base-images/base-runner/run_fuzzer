@@ -75,7 +75,7 @@ function get_dictionary() {
 function get_extra_binaries() {
   [[ "$FUZZING_ENGINE" != "centipede" ]] && return
 
-  extra_binaries="$OUT/**_${SANITIZER}/${FUZZER}"
+  extra_binaries="$OUT/__centipede_${SANITIZER}/${FUZZER}"
   if compgen -G "$extra_binaries" >> /dev/null; then
     printf -- "--extra_binaries %s" \""$extra_binaries\""
   fi

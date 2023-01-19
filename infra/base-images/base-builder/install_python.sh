@@ -19,5 +19,5 @@ echo "ATHERIS INSTALL"
 unset CFLAGS CXXFLAGS
 # PYI_STATIC_ZLIB=1 is needed for installing pyinstaller 5.0
 export PYI_STATIC_ZLIB=1
-pip3 install -v --no-cache-dir "atheris>=2.0.6" "pyinstaller==5.0.1" "coverage==6.3.2"
+pip3 install -v --no-cache-dir "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2"
 rm -rf /tmp/*

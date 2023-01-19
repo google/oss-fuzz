@@ -18,7 +18,7 @@
 cd /tmp
 curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.18
+SHELL="bash" ./installer_linux -version=1.19
 rm -rf ./installer_linux
 
 echo 'Set "GOPATH=/root/go"'
@@ -32,7 +32,3 @@ git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
 go build
 mv go-118-fuzz-build $GOPATH/bin/
-
-cd addimport
-go build
-mv addimport $GOPATH/bin/

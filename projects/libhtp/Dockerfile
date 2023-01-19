@@ -14,8 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev liblzma-dev
 RUN git clone --depth 1 https://github.com/OISF/libhtp.git libhtp
+RUN git clone --depth 1 https://github.com/cccs-rtmorti/libhtp-rs.git libhtp-rs
 WORKDIR $SRC
 COPY build.sh $SRC/
+COPY multiple.txt $SRC/

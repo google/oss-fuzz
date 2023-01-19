@@ -22,4 +22,4 @@ make
 cp $SRC/testsuite/oss-fuzzers/fuzz_parse.c .
 $CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_parse.c -o $OUT/fuzz_parse \
     -I./include -I./ ./bin/gcc/libgpac_static.a \
-    -lm -lz -lpthread -DGPAC_HAVE_CONFIG_H 
+    -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H 

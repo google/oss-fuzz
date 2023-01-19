@@ -18,9 +18,9 @@ package h2c
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"golang.org/x/net/http2"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -93,11 +93,16 @@ func FuzzH2c(data []byte) int {
 	}
 	h := NewHandler(handler, h2s)
 	w := &FakeHttpWriter{}
-	r := &http.Request{
-		Body: io.NopCloser(bytes.NewReader(data)),
-		URL:  &url.URL{Path: "nil"},
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "nil", bytes.NewReader(data))
+	if err != nil {
+		return -1
 	}
 	r.Header = headerMap
+	u, err := url.Parse("http://localhost:8001")
+	if err != nil {
+		return 0
+	}
+	r.URL = u
 	defer catchPanics()
 	h.ServeHTTP(w, r)
 	return 1
