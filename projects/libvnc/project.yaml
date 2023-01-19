@@ -3,4 +3,5 @@ language: c++
 primary_contact: "dontmind@sdf.org"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
+  - "info@christianbeier.net"
 main_repo: 'https://github.com/LibVNC/libvncserver.git'
