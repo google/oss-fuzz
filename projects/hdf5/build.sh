@@ -24,9 +24,10 @@ cd build-dir
 cmake -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DBUILD_SHARED_LIBS:BOOL=OFF \
-    -DBUILD_TESTING:BOOL=ON \
-    -DHDF5_BUILD_TOOLS:BOOL=ON \
+    -DBUILD_TESTING:BOOL=OFF \
     -DCMAKE_VERBOSE_MAKEFILES:BOOL=ON \
+    -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
+    -DHDF5_BUILD_TOOLS:BOOL=OFF \
     -DHDF5_ENABLE_SANITIZERS:BOOL=ON \
     -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON \
     ..
@@ -36,6 +37,5 @@ cmake --build . --verbose --config Release -j$(nproc)
 cd $SRC/hdf5
 
 $CC $CXXFLAGS $LIB_FUZZING_ENGINE -std=c99 \
-    -I/src/hdf5/tools/lib -I/src/hdf5/src -I/src/hdf5/build-dir/src \
-    -I./tools/src/h5repack -I./src/H5FDsubfiling/ \
+    -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
     $SRC/h5_read_fuzzer.c ./build-dir/bin/libhdf5.a  -lz -o $OUT/h5_read_fuzzer
