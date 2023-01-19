@@ -1,0 +1,5 @@
+language: go
+primary_contact: "yuin@inforno.net"
+main_repo: "https://github.com/yuin/goldmark"
+vendor_ccs:
+  - nathaniel.brough@rough.run
