@@ -380,6 +380,7 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   # automated analysis.
   cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
   cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
+  cp $xml_report $TEXTCOV_REPORT_DIR/jacoco.xml
 
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
