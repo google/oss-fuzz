@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool wget \
-    python zip libreadline-dev libatomic-ops-dev
+    python3 zip libreadline-dev libatomic-ops-dev
 
 # Building ninja requires PEP 517
 RUN pip3 install "pip>=22.3.1"
@@ -42,6 +42,13 @@ RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
 # Add tests from test262 as seed corpus
 RUN git clone --depth 1 https://github.com/tc39/test262 && \
     find test262/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+
+# Add V8 PoCs as seed corpus
+COPY filter-corpus.py $SRC/
+RUN git clone --depth 1 https://github.com/Zon8Research/v8-vulnerabilities && \
+    python filter-corpus.py && \
+    find v8-vulnerabilities/pocs -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+RUN rm $SRC/filter-corpus.py
 
 WORKDIR $SRC
 COPY build.sh $SRC/
