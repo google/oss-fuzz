@@ -13,4 +13,7 @@ sanitizers:
     - memory
 fuzzing_engines:
     - libfuzzer
+    - afl
+    - centipede
+    - honggfuzz
 main_repo: 'https://github.com/Yubico/libfido2'
