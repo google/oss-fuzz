@@ -1,0 +1,10 @@
+--- a/spring-oxm/spring-oxm.gradle
++++ b/spring-oxm/spring-oxm.gradle
+@@ -1,6 +1,7 @@
+ plugins {
+        id "org.unbroken-dome.xjc"
+ }
++apply plugin: "com.github.johnrengelman.shadow"
+ 
+ description = "Spring Object/XML Marshalling"
+ 

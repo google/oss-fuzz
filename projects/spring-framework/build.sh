@@ -33,18 +33,19 @@ function install_shadowJar {
     fi
 }
 
-install_shadowJar spring-context;
-install_shadowJar spring-core;
-install_shadowJar spring-jdbc;
-install_shadowJar spring-orm;
-install_shadowJar spring-web;
-install_shadowJar spring-webmvc;
-install_shadowJar spring-test;
-install_shadowJar spring-tx;
-install_shadowJar spring-messaging;
-install_shadowJar spring-jms;
-install_shadowJar spring-webflux;
-install_shadowJar spring-websocket;
+install_shadowJar spring-context
+install_shadowJar spring-core
+install_shadowJar spring-jdbc
+install_shadowJar spring-orm
+install_shadowJar spring-web
+install_shadowJar spring-webmvc
+install_shadowJar spring-test
+install_shadowJar spring-tx
+install_shadowJar spring-messaging
+install_shadowJar spring-jms
+install_shadowJar spring-webflux
+install_shadowJar spring-websocket
+install_shadowJar spring-oxm
 
 ALL_JARS=$(find $OUT -name "spring*.jar" -printf "%f ")
 
@@ -102,6 +103,7 @@ create_fuzz_targets spring-jdbc
 create_fuzz_targets spring-messaging
 create_fuzz_targets spring-jms
 create_fuzz_targets spring-webflux
-create_fuzz_targets spring-websocket "\$this_dir/spring-websocket.jar:\$this_dir" # Overwrite class path to avoid logging to stdout
+create_fuzz_targets spring-oxm
+create_fuzz_targets spring-websocket "\$this_dir/spring-websocket.jar:\$this_dir"; # Overwrite class path to avoid logging to stdout
 
 cp $SRC/spring-jdbc/*.xml $OUT/spring-jdbc/
