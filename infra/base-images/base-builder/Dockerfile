@@ -143,6 +143,7 @@ RUN precompile_centipede
 COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     compile_centipede \
     compile_go_fuzzer \
+    compile_javascript_fuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
     compile_fuzztests.sh \
