@@ -1,21 +1,35 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index 8f49e6503d0..d10a688b6d8 100644
+index d1f17a34..6b00ccee 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
-@@ -17,12 +17,11 @@ package(
- tf_cc_test(
+@@ -8,19 +8,25 @@ load(
+     "//tensorflow/security/fuzzing:tf_fuzzing.bzl",
+     "tf_cc_fuzz_test",
+ )
++load(
++    "//tensorflow:tensorflow.bzl",
++    "tf_cc_test",
++)
++
+ 
+ package(
+     # copybara:uncomment default_applicable_licenses = ["//tensorflow:license"],
+     licenses = ["notice"],
+ )
+ 
+-tf_cc_fuzz_test(
++tf_cc_test(
      name = "status_fuzz",
      srcs = ["status_fuzz.cc"],
 -    tags = ["no_oss"],
      deps = [
          ":fuzz_helpers",
          "//tensorflow/core/platform:status",
-         "@com_google_fuzztest//fuzztest",
--        "@com_google_googletest//:gtest_main",
-+        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++       "@com_google_fuzztest//fuzztest",
++       "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
      ],
  )
- 
+
 diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
 index 0236c258bf5..55e4b394a63 100644
 --- a/tensorflow/workspace2.bzl
