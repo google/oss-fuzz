@@ -149,7 +149,7 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     python_coverage_helper.py \
     debug_afl srcmap \
     write_labels.py bazel_build_fuzz_tests \
-    # Go, java, and swift installation scripts.
+    # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
     install_javascript.sh \
     install_java.sh \

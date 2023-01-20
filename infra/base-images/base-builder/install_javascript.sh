@@ -14,3 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+# Install Node.js v19.x
+curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
+apt-get install -y nodejs
+
+# Install latest versions of npm and yarn
+npm install --global npm yarn
