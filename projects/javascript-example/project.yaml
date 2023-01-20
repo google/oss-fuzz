@@ -1,0 +1,13 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/CodeIntelligenceTesting/jazzer.js
+language: javascript
+main_repo: https://github.com/CodeIntelligenceTesting/jazzer.js
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- yakdan@code-intelligence.com
+- norbert.schneider@code-intelligence.com
+- peter.samarin@code-intelligence.com
+- christopher.krah@code-intelligence.com
