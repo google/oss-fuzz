@@ -99,7 +99,7 @@ sh autogen.sh
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
-./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse_$i$branch; done
+./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse"$branch"_$i; done
 
 (
 cd src
@@ -108,7 +108,7 @@ ls fuzz_* | while read i; do cp $i $OUT/$i$branch; done
 # dictionaries
 ./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit$branch.dict
 
-echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb$branch.dict
+echo \"SMB\" > $OUT/fuzz_applayerparserparse"$branch"_smb.dict
 
 echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware$branch.dict
 echo "\"FPC0\"" > $OUT/fuzz_predefpcap_aware$branch.dict
