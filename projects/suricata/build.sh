@@ -25,6 +25,9 @@ then
     make -j$(nproc) all
     make -j$(nproc) install
     )
+    # Temporary workaround for https://github.com/rust-lang/rust/issues/107149
+    # until oss-fuzz clang is up to rustc clang (15.0.6).
+    export RUSTFLAGS="$RUSTFLAGS -Zsanitizer-memory-track-origins -Cllvm-args=-msan-eager-checks=0"
 fi
 
 (
