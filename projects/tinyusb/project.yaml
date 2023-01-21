@@ -5,7 +5,18 @@ main_repo: "https://github.com/hathach/tinyusb.git"
 primary_contact: "tinyusb.org@gmail.com"
 auto_ccs:
   - "nathaniel.brough@gmail.com"
+
 sanitizers:
   - address
   - undefined
   - memory
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+
+architectures:
+- x86_64
+- aarch64
