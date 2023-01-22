@@ -108,6 +108,7 @@ struct DnsRequest parse_dns_request(std::vector<std::byte> data, size_t offset) 
   while(offset < data.size()) {
     uint8_t rlen = uint8_t(data[offset]);
     if (rlen == 0) {
+      offset++;
       break;
     }
     r.nb_levels++;
