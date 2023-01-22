@@ -25,5 +25,5 @@ meson test -C build
 cp "build/fuzz/cgif_fuzzer_seed_corpus.zip" $OUT/.
 
 # build cgif's fuzz target
-$CC $CFLAGS -o "$OUT/cgif_fuzzer" -I"$WORK/include" \
-  fuzz/cgif_fuzzer.c "$WORK/lib/libcgif.a" $LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS -o "$OUT/cgif_fuzzer" -I"$WORK/include" \
+  $LIB_FUZZING_ENGINE fuzz/cgif_fuzzer.c "$WORK/lib/libcgif.a"
