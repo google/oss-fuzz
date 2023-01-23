@@ -1,0 +1,16 @@
+homepage: "https://spring.io/projects/spring-cloud-sleuth"
+language: jvm
+main_repo: "https://github.com/spring-cloud/spring-cloud-sleuth"
+primary_contact: ""
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "peter.samarin@code-intelligence.com"
