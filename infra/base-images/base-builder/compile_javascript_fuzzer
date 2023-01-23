@@ -16,7 +16,7 @@
 ################################################################################
 
 project=$1
-# Path the fuzz target source file relative to the project's root
+# Path the fuzz target source file relative to the project's root.
 fuzz_target=$2
 # Arguments to pass to Jazzer.js
 jazzerjs_args=${@:3}
