@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-# Install dependencies
+# Install dependencies.
 npm install
 
-# Build Fuzzers
+# Build Fuzzers.
 compile_javascript_fuzzer example fuzz_promise.js
 compile_javascript_fuzzer example fuzz_string_compare.js --sync
 compile_javascript_fuzzer example fuzz_value_profiling.js --sync
