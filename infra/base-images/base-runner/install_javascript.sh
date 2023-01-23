@@ -22,6 +22,3 @@ apt-get install -y nodejs
 
 # Install latest versions of npm and yarn
 npm install --global npm yarn
-
-# Install latest version of Jazzer.js
-npm install --global @jazzer.js/core

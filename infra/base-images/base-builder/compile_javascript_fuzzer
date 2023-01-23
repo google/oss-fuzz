@@ -21,8 +21,11 @@ fuzz_target=$2
 # Arguments to pass to Jazzer.js
 jazzerjs_args=${@:3}
 
-# Copy source code into the $OUT directory.
+# Copy source code into the $OUT directory and install Jazzer.js into the project.
 if [ ! -d $OUT/$project ]; then
+  pushd $SRC/$project
+  npm install @jazzer.js/core
+  popd
   cp -r $SRC/$project $OUT/$project
 fi
 
@@ -33,6 +36,6 @@ fuzzer_dir=$(dirname $fuzz_target)
 echo "#!/bin/bash
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized as a fuzz target for 'check_build'.
 cd $project/$fuzzer_dir
-jazzer $fuzzer_basename $jazzerjs_args -- \$@" > $OUT/$fuzzer_basename
+npx jazzer $fuzzer_basename $jazzerjs_args -- \$@" > $OUT/$fuzzer_basename
 
 chmod +x $OUT/$fuzzer_basename
