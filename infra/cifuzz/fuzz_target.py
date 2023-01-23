@@ -202,7 +202,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         return FuzzResult(None, None, self.latest_corpus_path)
 
       if result.timed_out:
-        logging.info('Not reporting crash in %s because process timed out.'
+        logging.info('Not reporting crash in %s because process timed out.',
                      self.target_name)
         return FuzzResult(None, None, self.latest_corpus_path)
 
