@@ -66,7 +66,7 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
 def check_lib_fuzzing_engine(paths):
   """Calls _check_one_lib_fuzzing_engine on each path in |paths|. Returns True
   if the result of every call is True."""
-  return all([_check_one_lib_fuzzing_engine(path) for path in paths])
+  return all(_check_one_lib_fuzzing_engine(path) for path in paths)
 
 
 class ProjectYamlChecker:
