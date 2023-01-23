@@ -34,13 +34,16 @@ COPY build.sh text_fuzzer.go \
      ecdsa_fuzzer.go \
      aes_fuzzer.go \
      h2c_fuzzer.go \
-     fuzz_h2c.options \
+     fuzz_x_h2c.options \
      elf_fuzzer.go \
      tiff_fuzzer.go \
      fuzz_tiff_decode.options \
      openpgp_fuzzer.go \
      webp_fuzzer.go \
      filepath_fuzzer.go \
+     strings_fuzzer.go \
+     multipart_fuzzer.go \
+     encoding_fuzzer.go \
      glob_fuzzer.options $SRC/
 
 WORKDIR $SRC/golang

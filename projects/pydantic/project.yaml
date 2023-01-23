@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pydantic/pydantic
+language: python
+main_repo: https://github.com/pydantic/pydantic
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

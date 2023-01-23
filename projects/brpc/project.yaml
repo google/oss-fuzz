@@ -1,0 +1,17 @@
+homepage: "https://brpc.apache.org"
+language: c++
+primary_contact: "security@apache.org"
+vendor_ccs:
+  - "zhujiashun2010@gmail.com"
+  - "wangweibing@baidu.com"
+  - "serverglen@gmail.com"
+  - "jerrytan@apache.org"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+main_repo: 'https://github.com/apache/incubator-brpc'

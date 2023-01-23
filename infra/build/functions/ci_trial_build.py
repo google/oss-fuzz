@@ -27,6 +27,8 @@ import github
 import trial_build
 
 TRIGGER_COMMAND = '/gcbrun'
+TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
+SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
 
 
 def get_comments(pull_request_number):
@@ -48,24 +50,26 @@ def get_latest_gcbrun_command(comments):
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
-    command_str = f'{TRIGGER_COMMAND} trial_build.py '
-    if not body.startswith(command_str):
-      continue
-    if len(body) == len(command_str):
+    if body.startswith(SKIP_COMMAND_STR):
       return None
-    return body[len(command_str):].strip().split(' ')
+    if not body.startswith(TRIAL_BUILD_COMMAND_STR):
+      continue
+    if len(body) == len(TRIAL_BUILD_COMMAND_STR):
+      return None
+    return body[len(TRIAL_BUILD_COMMAND_STR):].strip().split(' ')
   return None
 
 
-def exec_command_from_github(pull_request_number, branch):
+def exec_command_from_github(pull_request_number, repo, branch):
   """Executes the gcbrun command for trial_build.py in the most recent command
   on |pull_request_number|."""
   comments = get_comments(pull_request_number)
   command = get_latest_gcbrun_command(comments)
-  logging.info('Command: %s.', command)
   if command is None:
     logging.info('Trial build not requested.')
     return None
+  command.extend(['--repo', repo])
+  logging.info('Command: %s.', command)
 
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.
@@ -79,7 +83,11 @@ def main():
   logging.basicConfig(level=logging.INFO)
   pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
   branch = os.environ['BRANCH']
-  return 0 if exec_command_from_github(pull_request_number, branch) else 1
+  repo = os.environ['REPO']
+  result = exec_command_from_github(pull_request_number, repo, branch)
+  if result or result is None:
+    return 0
+  return 1
 
 
 if __name__ == '__main__':

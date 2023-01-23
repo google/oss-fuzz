@@ -1,10 +1,12 @@
-homepage: "https://dateutil.readthedocs.io/en/stable/"
-language: python
-vendor_ccs:
-- "p.antoine@catenacyber.fr"
-- "david@adalogics.com"
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://dateutil.readthedocs.io/en/stable/
+language: python
+main_repo: https://github.com/dateutil/dateutil
 sanitizers:
-  - address
-main_repo: "https://github.com/dateutil/dateutil"
+- address
+vendor_ccs:
+- p.antoine@catenacyber.fr
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

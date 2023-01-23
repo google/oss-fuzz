@@ -19,7 +19,8 @@ echo -n "Precompiling centipede"
 
 # Build Centipede with bazel.
 cd "$SRC/centipede/"
-./install_dependencies_debian.sh
+apt-get install libssl-dev -y
+unset CXXFLAGS CFLAGS
 echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
 bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 
@@ -29,8 +30,7 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 # data-flow tracing flags, but will still throw errors when they cannot find
 # the corresponding functions.
 # The weak symbols provides fake implementations for intermediate binaries.
-/clang/bin/clang++ "$SRC/centipede/weak_sancov_stubs.cc" -c -o \
-  "$SRC/centipede/weak.o"
+$CXX "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
 
 echo 'Removing extra stuff leftover to avoid bloating image.'
 

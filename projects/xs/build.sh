@@ -18,7 +18,6 @@ mv $SRC/{*.zip,*.dict} $OUT
 
 
 export MODDABLE=$PWD
-export ASAN_OPTIONS="detect_leaks=0"
 
 FUZZ_TARGETS=(
   xst
@@ -26,26 +25,10 @@ FUZZ_TARGETS=(
 )
 
 REALBIN_PATH=$OUT
-if [ "$SANITIZER" = "coverage" ]
-then
-  echo "this is a coverage build"
-else
-  # Stash actual binaries in subdirectory so they aren't picked up by target discovery
-  mkdir -p $OUT/real
-  REALBIN_PATH=$OUT/real
-
-  # Build a wrapper binary for each target to set environment variables.
-  for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
-  do
-    $CC $CFLAGS -O0 \
-      -DFUZZ_TARGET=$FUZZ_TARGET \
-      $SRC/target.c -o $OUT/$FUZZ_TARGET
-  done
-fi
 
 # build main target
 cd "$MODDABLE/xs/makefiles/lin"
-FUZZING=1 OSSFUZZ=1 make debug
+FUZZING=1 OSSFUZZ=1 FUZZ_METER=10240000 make debug
 
 cd "$MODDABLE"
 cp ./build/bin/lin/debug/xst $REALBIN_PATH/xst
@@ -54,7 +37,7 @@ cp $SRC/xst.options $OUT/
 # build jsonparse target
 cd "$MODDABLE/xs/makefiles/lin"
 make -f xst.mk clean
-FUZZING=1 OSSFUZZ=1 OSSFUZZ_JSONPARSE=1 make debug
+FUZZING=1 OSSFUZZ=1 OSSFUZZ_JSONPARSE=1 FUZZ_METER=10240000 make debug
 
 cd "$MODDABLE"
 cp ./build/bin/lin/debug/xst $REALBIN_PATH/xst_jsonparse

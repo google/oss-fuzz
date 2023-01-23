@@ -100,13 +100,16 @@ function run_fuzz_target {
   fi
 
   rm -rf $corpus_dummy
-
   if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce profile dumps.
     return 0
   fi
 
   # If necessary translate to latest profraw version.
+  if [[ $target == *"@"* ]]; then
+    # Extract fuzztest binary name from fuzztest wrapper script.
+    target=(${target//@/ }[0])
+  fi
   profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
@@ -129,18 +132,30 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
 
+  # setup for native go fuzzers
+  cd $OUT
+  mkdir -p "testdata/fuzz/${target}"
+  cp -r "${FUZZ_CORPUS_DIR}*" "testdata/fuzz/${target}/"
+
+  # rewrite libFuzzer corpus to Std Go corpus
+  $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
+  cd -
+
   timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
 
+  # cleanup after native go fuzzers
+  rm -r "${OUT}/testdata/fuzz/${target}"
+
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
   # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during
   # the coverage build, we change the references in the .profdata files
   # to the original file names.
-  sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
+  #sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS
@@ -178,7 +193,7 @@ function run_java_fuzz_target {
   rm -rf $corpus_dummy && mkdir -p $corpus_dummy
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*"
+  local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*\\:com.sun.tools.attach.VirtualMachine"
   local args="-merge=1 -timeout=100 --nohooks \
       --additional_jvm_args=-javaagent\\:/opt/jacoco-agent.jar=$jacoco_args \
       $corpus_dummy $corpus_real"
@@ -236,7 +251,7 @@ for fuzz_target in $FUZZ_TARGETS; do
   if [[ $FUZZING_LANGUAGE == "go" ]]; then
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
+      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || grep "testing\.T" $fuzz_target > /dev/null 2>&1 || continue
     fi
     run_go_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "python" ]]; then
@@ -259,6 +274,11 @@ for fuzz_target in $FUZZ_TARGETS; do
     echo "Running $fuzz_target"
     run_fuzz_target $fuzz_target &
 
+    # Rewrite object if its a FUZZTEST target
+    if [[ $fuzz_target == *"@"* ]]; then
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    fi
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
       objects="$fuzz_target"
@@ -266,6 +286,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       objects="$objects -object=$fuzz_target"
     fi
   fi
+
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
@@ -279,8 +300,9 @@ done
 wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  echo $DUMPS_DIR
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
-  go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  gotoolcover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
   $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.cpu.prof
@@ -304,13 +326,20 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     mv $OUT/.coverage_$fuzzer .coverage
     python3 /usr/local/bin/python_coverage_runner_help.py translate /pythoncovmergedfiles/medio
     cp .new_coverage $PYCOVDIR/.coverage_$fuzzer
+    cp .new_coverage $OUT/coverage_d_$fuzzer
   done
 
   # Combine coverage
   cd $PYCOVDIR
   python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
   python3 /usr/local/bin/python_coverage_runner_help.py html
+  python3 /usr/local/bin/python_coverage_runner_help.py json -o ${TEXTCOV_REPORT_DIR}/all_cov.json
+
+  # Copy coverage date out
+  cp htmlcov/status.json ${TEXTCOV_REPORT_DIR}/html_status.json
+
   mv htmlcov/* $REPORT_PLATFORM_DIR/
+  mv .coverage_* $REPORT_PLATFORM_DIR/
 
   # Create an empty summary file for now
   echo "{}" >> $SUMMARY_FILE
@@ -351,6 +380,7 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   # automated analysis.
   cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
   cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
+  cp $xml_report $TEXTCOV_REPORT_DIR/jacoco.xml
 
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
@@ -374,13 +404,20 @@ else
 
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
-    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+    if [[ $fuzz_target == *"@"* ]]; then
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    else
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    fi
     if [[ ! -f "$profdata_path" ]]; then
       echo "WARNING: $fuzz_target has no profdata generated."
       continue
     fi
 
-    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
 fi

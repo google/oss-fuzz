@@ -48,6 +48,7 @@ make sub-corelib sub-rcc -j$(nproc)
 
 cd $SRC
 cd kcodecs
+rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SRC/qtbase
 make -j$(nproc) VERBOSE=1
 

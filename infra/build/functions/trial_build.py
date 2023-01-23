@@ -17,6 +17,7 @@
 versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
+import functools
 import json
 import logging
 import os
@@ -26,6 +27,7 @@ import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
 import oauth2client.client
+import yaml
 
 import build_and_push_test_images
 import build_and_run_coverage
@@ -95,11 +97,27 @@ def _get_production_build_statuses(build_type):
   return results
 
 
+def handle_special_projects(args):
+  """Handles "special" projects that are not actually projects such as "all" or
+  "c++"."""
+  all_projects = get_all_projects()
+  if 'all' in args.projects:  # Explicit opt-in for all.
+    args.projects = all_projects
+    return
+  for project in args.projects[:]:
+    if project not in all_projects:
+      project_languages = get_project_languages()
+      if project in project_languages.keys():
+        language = project
+        args.projects.remove(language)
+        args.projects.extend(project_languages[language])
+
+
 def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects',
-                      help='Projects. "All" for all projects',
+                      help='Projects. "all" for all projects',
                       nargs='+')
   parser.add_argument(
       '--sanitizers',
@@ -112,6 +130,10 @@ def get_args(args=None):
                       default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
                       nargs='+',
                       help='Fuzzing engines.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=build_project.DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
@@ -121,11 +143,11 @@ def get_args(args=None):
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
   parsed_args = parser.parse_args(args)
-  if 'all' in parsed_args.projects:  # Explicit opt-in for all.
-    parsed_args.projects = get_all_projects()
+  handle_special_projects(parsed_args)
   return parsed_args
 
 
+@functools.lru_cache
 def get_all_projects():
   """Returns a list of all OSS-Fuzz projects."""
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
@@ -134,6 +156,24 @@ def get_all_projects():
       project for project in os.listdir(projects_dir)
       if os.path.isdir(os.path.join(projects_dir, project))
   ])
+
+
+@functools.lru_cache
+def get_project_languages():
+  """Returns a dictionary mapping languages to projects."""
+  all_projects = get_all_projects()
+  project_languages = collections.defaultdict(list)
+  for project in all_projects:
+    project_yaml_path = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                                     'projects', project, 'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      continue
+    with open(project_yaml_path, 'r') as project_yaml_file_handle:
+      project_yaml_contents = project_yaml_file_handle.read()
+      project_yaml = yaml.safe_load(project_yaml_contents)
+    language = project_yaml.get('language', 'c++')
+    project_languages[language].append(project)
+  return project_languages
 
 
 def get_projects_to_build(specified_projects, build_type, force_build):
@@ -197,9 +237,10 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch}']))
-    except Exception:  # pylint: disable=broad-except
+      time.sleep(1)  # Avoid going over 75 requests per second limit.
+    except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
-      print('Failed to start build', project_name)
+      print('Failed to start build', project_name, error)
 
   return build_ids
 
@@ -258,7 +299,6 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
 def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
-  # TODO(metzman): Make this handle concurrent builds.
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
@@ -275,6 +315,7 @@ def _do_test_builds(args, test_image_suffix):
                                      args.force_build)
     config = build_project.Config(testing=True,
                                   test_image_suffix=test_image_suffix,
+                                  repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
                                   upload=False)
@@ -292,7 +333,6 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  introspector = 'introspector' in args.sanitizers
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
@@ -301,9 +341,7 @@ def trial_build_main(args=None, local_base_build=True):
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
         test_image_suffix)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(
-        test_image_suffix, introspector=introspector)
-
+    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 

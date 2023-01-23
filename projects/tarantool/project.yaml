@@ -8,6 +8,7 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - centipede
 sanitizers:
   - address
   - undefined

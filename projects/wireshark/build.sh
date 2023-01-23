@@ -36,8 +36,8 @@ CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"
 
 # There is no need to manually disable programs via BUILD_xxx=OFF since the
 # all-fuzzers targets builds the minimum required binaries. However we do have
-# to disable the Qt GUI or else the cmake step will fail.
-CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF"
+# to disable the Qt GUI and sharkd or else the cmake step will fail.
+CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF -DBUILD_logray=OFF -DBUILD_sharkd=OFF"
 
 cd "$WIRESHARK_BUILD_PATH"
 

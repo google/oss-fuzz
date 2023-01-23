@@ -18,6 +18,7 @@ import base64
 import collections
 import logging
 import os
+import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
@@ -32,7 +33,7 @@ import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 
-BUILD_TIMEOUT = 16 * 60 * 60
+BUILD_TIMEOUT = 20 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
@@ -42,6 +43,9 @@ GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 # Where corpus backups can be downloaded from.
 CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
+
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
@@ -114,7 +118,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
     platform = 'linux/arm64'
   else:
     platform = 'linux/amd64'
-  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  new_args = [
+      'run', '--platform', platform, '-v', '/workspace:/workspace',
+      '--privileged', '--cap-add=all'
+  ]
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
@@ -190,6 +197,13 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
+
+
 def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
@@ -207,6 +221,9 @@ def download_corpora_steps(project_name, test_image_suffix):
       qualified_name_prefix = '%s_' % project_name
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
+
+      # Normalize qualified_name name.
+      qualified_name = _normalized_name(qualified_name)
 
       url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
                                                     fuzzer=qualified_name),
@@ -241,23 +258,12 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
       'args': ['bash', '-c', (f'mkdir -p {out_dir}/textcov_reports')]
   })
 
-  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_coverage_args = []
-    for target_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      bucket_path = (f'/{bucket_name}/{project_name}/textcov_reports/'
-                     f'{latest}/{target_name}.covreport')
-      url = 'https://storage.googleapis.com' + bucket_path
-      coverage_data_path = os.path.join(f'{out_dir}/textcov_reports',
-                                        target_name + '.covreport')
-      download_coverage_args.append('%s %s' % (coverage_data_path, url))
-
-    steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'entrypoint': 'download_corpus',
-        'args': download_coverage_args
-    })
-
+  coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
+  bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+  })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
       'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
@@ -416,18 +422,17 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
     language,
-    branch=None,
-    test_image_suffix=None,
+    config,
     architectures=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
 
   # TODO(metzman): Pass the URL to clone.
-  clone_step = get_git_clone_step(branch=branch)
+  clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
   steps = [clone_step]
-  if test_image_suffix:
-    steps.extend(get_pull_test_images_steps(test_image_suffix))
+  if config.test_image_suffix:
+    steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name))
   steps.append(docker_build_step)

@@ -29,18 +29,18 @@ libs/config/ \
 libs/container \
 libs/container_hash/ \
 libs/core \
-libs/exception/ \
+libs/describe \
 libs/headers/ \
 libs/intrusive/ \
-libs/io \
 libs/move/ \
 libs/mp11/ \
-libs/smart_ptr/ \
+libs/predef/ \
 libs/static_assert \
 libs/system/ \
 libs/throw_exception/ \
 libs/type_traits/ \
-libs/utility/ \
+libs/winapi/ \
+libs/variant2/ \
 tools/boost_install \
 tools/build
 

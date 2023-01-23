@@ -19,14 +19,30 @@ RUN apt-get update && \
     apt-get install -y make autoconf automake libtool wget \
     python zip libreadline-dev libatomic-ops-dev
 
+# Building ninja requires PEP 517
+RUN pip3 install "pip>=22.3.1"
+
 RUN pip3 install meson ninja
 RUN ln -s /usr/local/bin/ninja /usr/bin/ninja
+
+# Add JS dictionaries
+RUN git clone --depth 1 https://github.com/chromium/chromium && \
+    cat chromium/testing/libfuzzer/fuzzers/dicts/javascript_parser_proto.dict > $SRC/hermes.dict && \
+    cat chromium/testing/libfuzzer/fuzzers/dicts/generated/javascript.dict >> $SRC/hermes.dict
 
 RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.tar.gz && \
     tar xzvf ./2021-08-25.tar.gz && \
     mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
 
 RUN git clone https://github.com/facebook/hermes.git
+
+# Add tests from project directory as seed corpus
+RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+
+# Add tests from test262 as seed corpus
+RUN git clone --depth 1 https://github.com/tc39/test262 && \
+    find test262/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+
 WORKDIR $SRC
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager

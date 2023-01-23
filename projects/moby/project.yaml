@@ -1,0 +1,11 @@
+homepage: "https://github.com/moby/moby"
+language: go
+primary_contact: ""
+main_repo: "https://github.com/moby/moby"
+vendor_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

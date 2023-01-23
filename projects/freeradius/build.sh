@@ -24,7 +24,7 @@ function copy_lib
 
 mkdir -p $OUT/lib
 
-git apply --ignore-whitespace $SRC/patch.diff
+# git apply --ignore-whitespace $SRC/patch.diff
 # build project
 ./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer
 # make tries to compile regular programs as fuzz targets

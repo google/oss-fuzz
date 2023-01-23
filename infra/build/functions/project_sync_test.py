@@ -26,7 +26,6 @@ sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
 from datastore_entities import Project
-from project_sync import get_github_creds
 from project_sync import get_projects
 from project_sync import ProjectMetadata
 from project_sync import sync_projects
@@ -353,11 +352,6 @@ class TestDataSync(unittest.TestCase):
     repo.contents[0].contents[1].set_yaml_contents(b'builds_per_day: 5')
 
     self.assertEqual(get_projects(repo), {})
-
-  def test_get_github_creds(self):
-    """Testing get_github_creds()."""
-    with ndb.Client().context():
-      self.assertRaises(RuntimeError, get_github_creds)
 
   @classmethod
   def tearDownClass(cls):

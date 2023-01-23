@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/aio-libs/yarl
+language: python
+main_repo: https://github.com/aio-libs/yarl
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

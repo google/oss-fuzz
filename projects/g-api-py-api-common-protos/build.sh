@@ -30,7 +30,7 @@ pip3 install .
 
 # Compile .proto specs
 cd $SRC/python-api-common-protos/
-for target in quota billing service routing log; do
+for target in quota billing routing log; do
   protoc --python_out=. --proto_path=. google/api/$target.proto
 done
 

@@ -21,17 +21,17 @@ from email_validator import EmailSyntaxError, \
 
 
 def TestOneInput(data):
-  try:
-    validate_email(data)
-  except (EmailSyntaxError, EmailUndeliverableError):
-    pass
+    try:
+        validate_email(data)
+    except (EmailSyntaxError, EmailUndeliverableError):
+        pass
 
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.instrument_all()
-  atheris.Fuzz()
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.instrument_all()
+    atheris.Fuzz()
 
 
 if __name__ == "__main__":
-  main()
+    main()

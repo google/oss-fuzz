@@ -21,10 +21,58 @@ RUN apt-get update && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
+      cmake \
       gawk \
+      git \
       libstdc++6 \
       m4 \
-      python python3-pip python3-setuptools python3-wheel cmake git nasm 
+      nasm \
+      python \
+      python3-pip \
+      python3-setuptools \
+      python3-wheel
+
+# install Firefox deps
+# built using https://packages.ubuntu.com/focal/firefox as a reference
+RUN apt-get install -y --no-install-recommends \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo-gobject2 \
+    libcairo2 \
+    libdbus-1-3 \
+    libdbus-glib-1-2 \
+    libffi7 \
+    libfontconfig1 \
+    libfreetype6 \
+    libgcc-s1 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libharfbuzz0b \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libpangoft2-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb-shm0 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxt6 \
+    libxtst6 \
+    lsb-release \
+    libcanberra0 \
+    libdbusmenu-glib4 \
+    libdbusmenu-gtk3-4
+
 RUN pip3 install meson ninja
 
 # This wrapper of cargo seems to interfere with our build system.
