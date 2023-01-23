@@ -10,8 +10,8 @@ permalink: /advanced-topics/fuzz-introspector/
 {: .no_toc}
 
 For projects written in C/C++, Python and Java you can generate Fuzz
-Introspector reports to help guide the development of your fuzzing suit.
-These reports help to extract details about the fuzzing set up of your
+Introspector reports to help guide the development of your fuzzing suite.
+These reports help to extract details about the fuzzing setup of your
 project with the goal of making it easier to improve the fuzzing set up.
 The Fuzz Introspector reports are generated automatically and uploaded
 to the cloud like code coverage reports, and you can also generate them
@@ -24,7 +24,7 @@ locally using the OSS-Fuzz helper script.
 
 ## Fuzz Introspector overview
 
-As soon as your project is run with ClusterFuzz (< 1 day), you can view the Fuzz
+As soon as your project is run with ClusterFuzz (<1 day), you can view the Fuzz
 Introspector report for your project.
 [Fuzz Introspector](https://github.com/ossf/fuzz-introspector) helps you
 understand your fuzzers' performance and identify any potential blockers.
@@ -56,9 +56,9 @@ For ideas on how to use Fuzz Introspector, see [user guides](https://fuzz-intros
 
 ## Run Fuzz Introspector locally
 
-To generate a Fuzz Introspector report locally you can use `infra/helper.py`, which
-offers an `introspector` command. Fuzz Introspector relies on code coverage to
-analyse a given project, and this means we need to extract code coverage in the
+To generate a Fuzz Introspector report locally use `infra/helper.py` and the
+`introspector` command. Fuzz Introspector relies on code coverage to
+analyze a given project, and this means we need to extract code coverage in the
 Fuzz Introspector process. We can do this in two ways. First, by running the fuzzers
 for a given amount of time, and, second, by generating code coverage using the public
 corpus available from OSS-Fuzz.
@@ -100,7 +100,7 @@ following the example described above.
 
 There are some differences in build environment for Fuzz Introspector builds
 in comparison to e.g. ASAN or code coverage builds. The reason is that
-Fuzz Introspector relies on various compile-time tooling to do its analysis.
+Fuzz Introspector relies on certain compile-time tools to do its analysis.
 This compile time tooling differs between languages, namely:
 - For C/C++, Fuzz Introspector relies on [LLVM LTO](https://llvm.org/docs/LinkTimeOptimization.html) and [LLVM Gold](https://llvm.org/docs/GoldPlugin.html)
 - For Python, Fuzz Introspector relies on a modified [PyCG](https://github.com/vitsalis/PyCG)
