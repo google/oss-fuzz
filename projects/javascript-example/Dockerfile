@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ COPY build.sh $SRC/
 # For real projects, you would clone your repo in the next step.
 RUN mkdir -p $SRC/example
 
-# Ideally, you have already configured
+# Ideally, you have already configured.
 COPY fuzz_string_compare.js fuzz_promise.js fuzz_value_profiling.js package.json $SRC/example/
 
 WORKDIR $SRC/example
