@@ -21,9 +21,12 @@ ARG parent_image=ubuntu:20.04
 FROM $parent_image
 
 ENV DEBIAN_FRONTEND noninteractive
+# Install tzadata to match ClusterFuzz
+# (https://github.com/google/oss-fuzz/issues/9280).
+
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-9-dev && \
+    apt-get install -y libc6-dev binutils libgcc-9-dev tzdata && \
     apt-get autoremove -y
 
 ENV OUT=/out
