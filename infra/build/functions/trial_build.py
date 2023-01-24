@@ -47,10 +47,6 @@ BUILD_TYPES = {
     'coverage':
         BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
-    'introspector':
-        BuildType('introspector',
-                  build_and_run_coverage.get_fuzz_introspector_steps,
-                  'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -142,6 +138,11 @@ def get_args(args=None):
                       action='store_true',
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
+  parser.add_argument('--oss-fuzz-on-demand',
+                      action='store_true',
+                      required=False,
+                      default=False,
+                      help='OSS-Fuzz on demand.')
   parsed_args = parser.parse_args(args)
   handle_special_projects(parsed_args)
   return parsed_args
@@ -211,13 +212,12 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
     build_project.set_yaml_defaults(project_yaml)
     print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
+        project_yaml['sanitizers']) + ['coverage']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
-    project_yaml['fuzzing_engines'] = list(
-        set(project_yaml['fuzzing_engines']).intersection(
-            set(args.fuzzing_engines)))
+    project_yaml['fuzzing_engines'] = list(args.fuzzing_engines)
+
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
@@ -237,7 +237,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch}']))
-      time.sleep(1)  # Avoid going over 75 requests per second limit.
+      time.sleep(.5)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
       print('Failed to start build', project_name, error)
@@ -304,9 +304,6 @@ def _do_test_builds(args, test_image_suffix):
   if 'coverage' in sanitizers:
     sanitizers.pop(sanitizers.index('coverage'))
     build_types.append(BUILD_TYPES['coverage'])
-  if 'introspector' in sanitizers:
-    sanitizers.pop(sanitizers.index('introspector'))
-    build_types.append(BUILD_TYPES['introspector'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)
@@ -318,7 +315,8 @@ def _do_test_builds(args, test_image_suffix):
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
-                                  upload=False)
+                                  upload=False,
+                                  oss_fuzz_on_demand=args.oss_fuzz_on_demand)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     project_builds = _do_build_type_builds(args, config, credentials,
@@ -338,10 +336,13 @@ def trial_build_main(args=None, local_base_build=True):
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
   if local_base_build:
-    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        test_image_suffix)
+    # build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
+    #     test_image_suffix)
+    pass
   else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+    pass
+    # empty
+    # build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 

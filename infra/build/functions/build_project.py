@@ -57,8 +57,8 @@ PROJECTS_DIR = os.path.abspath(
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 Config = collections.namedtuple(
     'Config',
-    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
-    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
+    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload', 'oss_fuzz_on_demand'],
+    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True, False))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -229,7 +229,7 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel):
+def get_compile_step(project: Project, build, env, parallel):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -238,6 +238,7 @@ def get_compile_step(project, build, env, parallel):
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
+
   compile_step = {
       'name': project.image,
       'env': env,
@@ -249,8 +250,8 @@ def get_compile_step(project, build, env, parallel):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile || '
-           f'(echo "{failure_msg}" && false)'),
+           f'mkdir -p {build.out} && compile || (echo "{failure_msg}")'),
+
       ],
       'id': get_id('compile', build),
   }
@@ -515,6 +516,11 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Do builds in parallel.')
+  parser.add_argument('--oss-fuzz-on-demand',
+                      action='store_true',
+                      required=False,
+                      default=False,
+                      help='OSS-Fuzz on demand.')
   return parser.parse_args()
 
 
@@ -534,7 +540,8 @@ def build_script_main(script_description, get_build_steps_func, build_type):
                   test_image_suffix=args.test_image_suffix,
                   branch=args.branch,
                   parallel=args.parallel,
-                  upload=True)
+                  upload=True,
+                  oss_fuzz_on_demand=args.oss_fuzz_on_demand)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:

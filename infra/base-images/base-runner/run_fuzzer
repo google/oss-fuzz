@@ -210,7 +210,6 @@ else
   fi
 
   CMD_LINE="$CMD_LINE < /dev/null"
-
 fi
 
 echo $CMD_LINE
