@@ -41,6 +41,7 @@ MAX_BUILD_LOGS = 7
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 INTROSPECTOR_BUCKET = 'oss-fuzz-introspector'
 INTROSPECTOR_BUCKET_URL = 'https://storage.googleapis.com/oss-fuzz-introspector'
+INTROSPECTOR_DOC_URL = 'https://fuzz-introspector.readthedocs.io/en/latest/'
 INTROSPECTOR_INDEX_JSON = 'build_status.json'
 INTROSPECTOR_INDEX_HTML = 'index.html'
 
@@ -52,7 +53,9 @@ HTML_PREFIX_STRING = ('<!DOCTYPE html>\n<html>\n'
                       '\t<head><h2>'
                       'Index of Fuzz-Introspector reports for OSS-Fuzz projects'
                       '</h2></head>\n'
-                      '\t<body>\n\t<font size="4">\n')
+                      '\t<body>\n\t<p>\n\t<b>Fuzz Introspector documentation:'
+                      f'</b><a href="{INTROSPECTOR_DOC_URL}">here</a></p>\n\t'
+                      '<font size="4">\n')
 HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 
 # pylint: disable=invalid-name
