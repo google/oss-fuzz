@@ -16,11 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip3 install cython
-RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
-RUN cd $SRC/numpy && \
-    pip3 install . && \
-    python3 setup.py install
+RUN pip3 install --upgrade pip && pip3 install cython numpy
 RUN git clone --depth 1 https://github.com/pydata/bottleneck
 WORKDIR bottleneck
 COPY build.sh *.py $SRC/
