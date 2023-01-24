@@ -474,34 +474,6 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project_image, project_name):
-  steps = []
-  steps.append(get_git_clone_step('https://github.com/google/fuzzbench.git', 'ood'))
-  builder_image_name = f'gcr.io/oss-fuzz-base/{fuzzing_engine}-builder',
-
-  build_args = [
-      'build',
-      '--tag',
-      f'gcr.io/oss-fuzz/{fuzzing_engine}/{project_name}',
-      '--build-arg',
-      'BUILDKIT_INLINE_CACHE=1',
-      '--cache-from',
-      builder_image_name,
-      '--build-arg',
-      f'parent_image={project_image}',
-      '--file',
-      f'fuzzbench/fuzzers/{fuzzing_engine}/builder.Dockerfile',
-      f'fuzzbench/fuzzers/{fuzzing_engine}'
-  ]
-  build_step = {
-      'args': build_args,
-      'name': DOCKER_TOOL_IMAGE,
-  }
-  steps.append(build_step)
-  return steps
-
-
-
 def get_logs_url(build_id, project_id='oss-fuzz-base'):
   """Returns url that displays the build logs."""
   return ('https://console.developers.google.com/logs/viewer?'

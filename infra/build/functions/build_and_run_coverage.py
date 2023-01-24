@@ -102,6 +102,35 @@ def get_compile_step_ood(fuzzing_engine, project, build, env):
                                use_architecture_image_name=build.is_arm)
   return compile_step
 
+def get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project_image, project_name):
+  steps = []
+  # !!!
+  steps.append(
+      build_lib.get_git_clone_step(
+          'https://github.com/google/fuzzbench.git', 'ood'))
+  builder_image_name = f'gcr.io/oss-fuzz-base/{fuzzing_engine}-builder',
+
+  build_args = [
+      'build',
+      '--tag',
+      f'gcr.io/oss-fuzz/{fuzzing_engine}/{project_name}',
+      '--build-arg',
+      'BUILDKIT_INLINE_CACHE=1',
+      '--cache-from',
+      builder_image_name,
+      '--build-arg',
+      f'parent_image={project_image}',
+      '--file',
+      f'fuzzbench/fuzzers/{fuzzing_engine}/builder.Dockerfile',
+      f'fuzzbench/fuzzers/{fuzzing_engine}'
+  ]
+  build_step = {
+      'args': build_args,
+      'name': build_lib.DOCKER_TOOL_IMAGE,
+  }
+  steps.append(build_step)
+  return steps
+
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, image_project,
@@ -129,7 +158,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                                   project.image,
                                                   project.fuzzing_language,
                                                   config=config)
-  build_steps += build_lib.get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project.image, project.name)
+  build_steps += get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project.image, project.name)
 
   build = build_project.Build(fuzzing_engine, 'address', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
