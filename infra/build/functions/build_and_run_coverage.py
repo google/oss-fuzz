@@ -96,7 +96,7 @@ def get_compile_step_ood(fuzzing_engine, project, build, env):
 def get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project_image,
                                        project_name):
   steps = []
-  # !!!
+  # TODO(metzman): Clone from the main branch.
   steps.append(
       build_lib.get_git_clone_step('https://github.com/google/fuzzbench.git',
                                    'ood'))

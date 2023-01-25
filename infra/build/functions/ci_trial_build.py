@@ -35,7 +35,7 @@ def get_comments(pull_request_number):
   """Returns comments on the GitHub Pull request referenced by
   |pull_request_number|."""
   github_obj = github.Github()
-  repo = github_obj.get_repo('jonathanmetzman/ood')
+  repo = github_obj.get_repo('google/oss-fuzz')
   pull = repo.get_pull(pull_request_number)
   pull_comments = list(pull.get_comments())
   issue = repo.get_issue(pull_request_number)
@@ -63,13 +63,13 @@ def get_latest_gcbrun_command(comments):
 def exec_command_from_github(pull_request_number, repo, branch):
   """Executes the gcbrun command for trial_build.py in the most recent command
   on |pull_request_number|."""
-  command = [
-      'trial_build.py', 'skcms', '--sanitizer', 'coverage', '--fuzzing-engine',
-      'mopt', '--oss-fuzz-on-demand'
-  ]
+  comments = get_comments(pull_request_number)
+  command = get_latest_gcbrun_command(comments)
   if command is None:
     logging.info('Trial build not requested.')
     return None
+
+  command.extend(['--repo', repo])
 
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.

@@ -240,7 +240,6 @@ def get_compile_step(project: Project, build, env, parallel):
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
-
   compile_step = {
       'name': project.image,
       'env': env,
@@ -252,7 +251,10 @@ def get_compile_step(project: Project, build, env, parallel):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
+           # TODO(metzman): we want this behavior for trial builds
            f'mkdir -p {build.out} && compile || (echo "{failure_msg}")'),
+           # f'mkdir -p {build.out} && compile || '
+           # f'(echo "{failure_msg}" && false)'),
       ],
       'id': get_id('compile', build),
   }
