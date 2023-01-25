@@ -63,7 +63,10 @@ def get_latest_gcbrun_command(comments):
 def exec_command_from_github(pull_request_number, repo, branch):
   """Executes the gcbrun command for trial_build.py in the most recent command
   on |pull_request_number|."""
-  command = ['trial_build.py', 'skcms', '--sanitizer', 'coverage', '--fuzzing-engine', 'mopt', '--oss-fuzz-on-demand']
+  command = [
+      'trial_build.py', 'skcms', '--sanitizer', 'coverage', '--fuzzing-engine',
+      'mopt', '--oss-fuzz-on-demand'
+  ]
   if command is None:
     logging.info('Trial build not requested.')
     return None
@@ -89,4 +92,3 @@ def main():
 
 if __name__ == '__main__':
   sys.exit(main())
-p

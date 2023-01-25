@@ -34,18 +34,6 @@ ARCHITECTURE = 'x86_64'
 PLATFORM = 'linux'
 
 COVERAGE_BUILD_TYPE = 'coverage'
-INTROSPECTOR_BUILD_TYPE = 'introspector'
-
-# This is needed for ClusterFuzz to pick up the most recent reports data.
-
-LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
-
-# Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = [
-    'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
-]
-
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python', 'jvm']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
@@ -84,8 +72,10 @@ def get_compile_step_ood(fuzzing_engine, project, build, env):
   env.append('OSS_FUZZ_ON_DEMAND=1')
   compile_step = 'git clone https://github.com/google/fuzzbench.git --depth 1 --branch ood /opt/fuzzbench && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev && pip3 install pip --upgrade && CFLAGS= CXXFLAGS= pip3 install -r /opt/fuzzbench/requirements.txt && OOD=1 OSS_FUZZ_ON_DEMAND=1 PYTHONPATH=/opt/fuzzbench python3 -u -c "from fuzzers import utils; utils.initialize_env(); from fuzzers.mopt import fuzzer; fuzzer.build()"'
   compile_step = {
-      'name': f'gcr.io/oss-fuzz/{fuzzing_engine}/{project.name}',
-      'env': env,
+      'name':
+          f'gcr.io/oss-fuzz/{fuzzing_engine}/{project.name}',
+      'env':
+          env,
       'args': [
           'bash',
           '-c',
@@ -102,26 +92,21 @@ def get_compile_step_ood(fuzzing_engine, project, build, env):
                                use_architecture_image_name=build.is_arm)
   return compile_step
 
-def get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project_image, project_name):
+
+def get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project_image,
+                                       project_name):
   steps = []
   # !!!
   steps.append(
-      build_lib.get_git_clone_step(
-          'https://github.com/google/fuzzbench.git', 'ood'))
+      build_lib.get_git_clone_step('https://github.com/google/fuzzbench.git',
+                                   'ood'))
   builder_image_name = f'gcr.io/oss-fuzz-base/{fuzzing_engine}-builder',
 
   build_args = [
-      'build',
-      '--tag',
-      f'gcr.io/oss-fuzz/{fuzzing_engine}/{project_name}',
-      '--build-arg',
-      'BUILDKIT_INLINE_CACHE=1',
-      '--cache-from',
-      builder_image_name,
-      '--build-arg',
-      f'parent_image={project_image}',
-      '--file',
-      f'fuzzbench/fuzzers/{fuzzing_engine}/builder.Dockerfile',
+      'build', '--tag', f'gcr.io/oss-fuzz/{fuzzing_engine}/{project_name}',
+      '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
+      builder_image_name, '--build-arg', f'parent_image={project_image}',
+      '--file', f'fuzzbench/fuzzers/{fuzzing_engine}/builder.Dockerfile',
       f'fuzzbench/fuzzers/{fuzzing_engine}'
   ]
   build_step = {
@@ -144,21 +129,15 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  if project.fuzzing_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-    logging.info(
-        'Project "%s" is written in "%s", coverage is not supported yet.',
-        project.name, project.fuzzing_language)
-    return []
-
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
-
 
   build_steps = build_lib.get_project_image_steps(project.name,
                                                   project.image,
                                                   project.fuzzing_language,
                                                   config=config)
-  build_steps += get_oss_fuzz_on_demand_build_steps(fuzzing_engine, project.image, project.name)
+  build_steps += get_oss_fuzz_on_demand_build_steps(fuzzing_engine,
+                                                    project.image, project.name)
 
   build = build_project.Build(fuzzing_engine, 'address', ARCHITECTURE)
   env = build_project.get_env(project.fuzzing_language, build)
@@ -212,6 +191,7 @@ def main():
       COVERAGE_BUILD_TYPE)
   if coverage_status != 0:
     return coverage_status
+
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -55,10 +55,12 @@ PROJECTS_DIR = os.path.abspath(
                  os.path.pardir, 'projects'))
 
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
-Config = collections.namedtuple(
-    'Config',
-    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload', 'oss_fuzz_on_demand'],
-    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True, False))
+Config = collections.namedtuple('Config', [
+    'testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload',
+    'oss_fuzz_on_demand'
+],
+                                defaults=(False, None, DEFAULT_OSS_FUZZ_REPO,
+                                          None, False, True, False))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -251,7 +253,6 @@ def get_compile_step(project: Project, build, env, parallel):
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
            f'mkdir -p {build.out} && compile || (echo "{failure_msg}")'),
-
       ],
       'id': get_id('compile', build),
   }

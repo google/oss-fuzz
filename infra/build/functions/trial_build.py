@@ -218,7 +218,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
 
     project_yaml['fuzzing_engines'] = list(args.fuzzing_engines)
 
-
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       logging.info('Nothing to build for this project: %s.', project_name)
       continue
