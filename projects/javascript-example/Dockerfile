@@ -21,7 +21,10 @@ COPY build.sh $SRC/
 # For real projects, you would clone your repo in the next step.
 RUN mkdir -p $SRC/example
 
-# Ideally, you have already configured.
+# Ideally, you have already configured fuzz tests in your repo so that they
+# run (in Jazzer.js regression mode) as part of unit testing. Keeping the fuzz
+# tests in sync with the source code ensures that they are adjusted continue
+# to work after code changes. Here, we copy them into the example project directory.
 COPY fuzz_string_compare.js fuzz_promise.js fuzz_value_profiling.js package.json $SRC/example/
 
 WORKDIR $SRC/example
