@@ -19,7 +19,11 @@ import parso
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  parso.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  try:
+    parso.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except RecursionError:
+    # Not interesting
+    pass
 
 
 def main():
