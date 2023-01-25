@@ -36,6 +36,6 @@ fuzzer_dir=$(dirname $fuzz_target)
 echo "#!/bin/bash
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized as a fuzz target for 'check_build'.
 cd $project/$fuzzer_dir
-npx jazzer $fuzzer_basename $jazzerjs_args -- \$@" > $OUT/$fuzzer_basename
+$OUT/$project/node_modules/.bin/jazzer $fuzzer_basename $jazzerjs_args -- \$@" > $OUT/$fuzzer_basename
 
 chmod +x $OUT/$fuzzer_basename
