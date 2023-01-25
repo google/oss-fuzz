@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,26 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+pip3 install .
 
-# Base image for all other images.
-
-ARG parent_image=ubuntu:20.04
-
-FROM $parent_image
-
-ENV DEBIAN_FRONTEND noninteractive
-# Install tzadata to match ClusterFuzz
-# (https://github.com/google/oss-fuzz/issues/9280).
-
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-9-dev tzdata && \
-    apt-get autoremove -y
-
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
-ENV HWASAN_OPTIONS=random_tags=0
-
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
