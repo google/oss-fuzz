@@ -7,6 +7,7 @@ auto_ccs:
 - iain@orangesquash.org.uk
 - slomo@coaxion.net
 - trevi55@gmail.com
+- mcatanzaro@redhat.com
 sanitizers:
 - address
 - undefined
