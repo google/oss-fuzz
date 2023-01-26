@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x
-apt-get install -y curl
+# Install Node.js v19.x.
+apt-get update && apt-get install -y curl
 
 curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
 apt-get update && apt-get install -y nodejs
