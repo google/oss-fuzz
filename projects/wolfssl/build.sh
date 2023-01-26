@@ -294,6 +294,9 @@ then
     unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/
     find $SRC/libressl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
+    # Write Cryptofuzz built-in tests
+    $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-builtin-tests=$SRC/cryptofuzz-seed-corpus/
+
     # Pack it
     cd $SRC/cryptofuzz_seed_corpus
     zip -r $SRC/cryptofuzz_seed_corpus.zip .
