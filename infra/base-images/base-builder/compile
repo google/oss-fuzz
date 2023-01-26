@@ -43,7 +43,7 @@ if [ "$FUZZING_LANGUAGE" = "javascript" ]; then
     exit 1
   fi
   if [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "none" ]; then
-    echo "ERROR: JavaScript projects can be fuzzed without sanitizers only."
+    echo "ERROR: JavaScript projects cannot be fuzzed with sanitizers."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
