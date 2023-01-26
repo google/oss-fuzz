@@ -13,6 +13,7 @@ auto_ccs:
   - "fuzz@skia.org"
   - "armansito@google.com"
   - "drott@chromium.org"
+  - "jvanverth@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
