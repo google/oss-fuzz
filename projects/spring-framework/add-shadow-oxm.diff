@@ -1,0 +1,20 @@
+--- a/spring-oxm/spring-oxm.gradle
++++ b/spring-oxm/spring-oxm.gradle
+@@ -2,6 +2,8 @@ plugins {
+ 	id "org.unbroken-dome.xjc"
+ }
+ 
++apply plugin: "com.github.johnrengelman.shadow"
++
+ description = "Spring Object/XML Marshalling"
+ 
+ xjc {
+@@ -19,7 +21,7 @@ dependencies {
+ 	api(project(":spring-core"))
+ 	optional("jakarta.xml.bind:jakarta.xml.bind-api")
+ 	optional("jakarta.activation:jakarta.activation-api")
+-	optional("com.thoughtworks.xstream:xstream")
++	implementation("com.thoughtworks.xstream:xstream")
+ 	testImplementation(project(":spring-context"))
+ 	testImplementation(testFixtures(project(":spring-core")))
+ 	testImplementation("org.codehaus.jettison:jettison") {
