@@ -1,0 +1,10 @@
+homepage: https://github.com/horejsek/python-fastjsonschema
+main_repo: https://github.com/horejsek/python-fastjsonschema
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
