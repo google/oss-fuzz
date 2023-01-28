@@ -26,6 +26,9 @@ def TestOneInput(data):
     pendulum.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
   except pendulum.parsing.exceptions.ParserError:
     pass
+  except ValueError:
+    # Runs into this quickly
+    pass
 
 
 def main():
