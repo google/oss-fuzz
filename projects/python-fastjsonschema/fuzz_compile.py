@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+import sys
+import atheris
+import fastjsonschema
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake autogen pkg-config libtool flex bison cmake libnuma-dev libpcre2-dev
-RUN git clone --depth 1 https://github.com/ntop/nDPI.git ndpi
-ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
-COPY build.sh $SRC/
-WORKDIR $SRC
+
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+
+  # Create a random dictionary
+  try:
+    json_dict = json.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except:
+    return
+  if not isinstance(json_dict, dict):
+    return
+
+  # Ensure we can compile it
+  fastjsonschema.compile(json_dict)
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()
