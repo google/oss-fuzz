@@ -19,3 +19,5 @@ RUN apt-get update && apt-get install -y autoconf automake git libogg0 libogg-de
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opusfile
 WORKDIR opusfile
 COPY build.sh *.c $SRC/
+COPY fuzzdrivers /src/opusfile/fuzzdrivers
+COPY headerfiles.csv /src

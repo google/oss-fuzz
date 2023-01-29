@@ -1,3 +1,5 @@
-homepage: "https://opus-codec.org/"
+auto_ccs:
+- for.the.dawn.chorus@gmail.com
+homepage: https://opus-codec.org/
 language: c
-primary_contact: "jmvalin@jmvalin.ca"
+primary_contact: jmvalin@jmvalin.ca
