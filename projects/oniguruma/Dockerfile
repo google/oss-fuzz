@@ -22,3 +22,5 @@ RUN git clone --depth 1 https://github.com/kkos/oniguruma.git oniguruma
 WORKDIR oniguruma
 COPY build.sh $SRC/
 COPY fuzzer.options $SRC/oniguruma/harnesses
+COPY fuzzdrivers /src/oniguruma/fuzzdrivers
+COPY headerfiles.csv /src
