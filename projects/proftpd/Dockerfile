@@ -20,3 +20,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://github.com/proftpd/proftpd
 WORKDIR proftpd
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/proftpd/fuzzdrivers
+COPY headerfiles.csv /src

@@ -1,9 +1,10 @@
-homepage: "http://www.proftpd.org/"
-main_repo: "https://github.com/proftpd/proftpd"
-language: c
-primary_contact: "castaglian@gmail.com"
 auto_ccs:
-  - "Adam@adalogics.com"
+- Adam@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: http://www.proftpd.org/
+language: c
+main_repo: https://github.com/proftpd/proftpd
+primary_contact: castaglian@gmail.com
 sanitizers:
-  - address
-  - undefined
+- address
+- undefined
