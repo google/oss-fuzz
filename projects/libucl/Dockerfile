@@ -22,3 +22,5 @@ WORKDIR $SRC
 
 COPY build.sh $SRC/
 COPY ucl_add_string_fuzzer.options $SRC/ucl_add_string_fuzzer.options
+COPY fuzzdrivers /src/libucl/fuzzdrivers
+COPY headerfiles.csv /src

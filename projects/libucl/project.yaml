@@ -1,6 +1,7 @@
-homepage: "https://github.com/vstakhov/libucl"
-primary_contact: "vsevolod@highsecure.ru"
 auto_ccs:
-  - "adam@adalogics.com"
+- adam@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: https://github.com/vstakhov/libucl
 language: c
-main_repo: 'https://github.com/vstakhov/libucl'
+main_repo: https://github.com/vstakhov/libucl
+primary_contact: vsevolod@highsecure.ru
