@@ -20,3 +20,4 @@ RUN git clone https://github.com/kamailio/kamailio
 
 WORKDIR $SRC
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/kamailio/fuzzdrivers

@@ -35,3 +35,12 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_uri.c -o $OUT/fuzz_uri \
 $CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_parse_msg.c -o $OUT/fuzz_parse_msg \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
     -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
+set +e
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -I/work/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -DFAST_LOCK -D__CPU_i386 -I/src/kamailio/src/core/parser $outfile /src/kamailio/src/libkamilio.a -ldl -lresolv -lm -o $outexe
+cp $outexe /out/
+done
+
