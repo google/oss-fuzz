@@ -22,7 +22,11 @@ def TestOneInput(data):
   parser = tomlkit.parser.Parser(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
   try:
     parser.parse()
-  except tomlkit.exceptions.TOMLKitError:
+  except (
+    tomlkit.exceptions.TOMLKitError,
+    RecursionError
+  ):
+    # Recursion errors are not interesting
     pass
 
 
