@@ -18,3 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/pganalyze/libpg_query libpg_query
 WORKDIR libpg_query
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/libpg_query/fuzzdrivers
+COPY headerfiles.csv /src

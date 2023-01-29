@@ -1,8 +1,9 @@
-homepage: "https://pganalyze.com/"
-language: c
-primary_contact: "team@pganalyze.com"
-main_repo: "https://github.com/pganalyze/pg_query"
 auto_ccs:
-  - "marko@pganalyze.com"
-  - "lukas@pganalyze.com"
-  - "david@adalogics.com"
+- marko@pganalyze.com
+- lukas@pganalyze.com
+- david@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: https://pganalyze.com/
+language: c
+main_repo: https://github.com/pganalyze/pg_query
+primary_contact: team@pganalyze.com

@@ -1,0 +1,2 @@
+libpg_query,/src/libpg_query/pg_query.h,/work/include/pg_query.h
+libpg_query,/src/libpg_query/protobuf/pg_query.proto,/work/include/pg_query/pg_query.proto
