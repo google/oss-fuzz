@@ -37,3 +37,26 @@ for fuzzName in init_path init_binary; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
     $SRC/fuzz_${fuzzName}.c -o $OUT/fuzz_${fuzzName} ./src/lib/libdwarf/libdwarf.a -lz
 done
+
+set +e
+projectName=libdwarf
+# read the csv file
+while IFS="," read -r first_col src_path dst_path; do    
+    # check if first_col equals the projectName
+    if [ "$src_path" == NOT_FOUND ]; then
+        continue
+    fi
+    if [ "$first_col" == "$projectName" ]; then
+        work_dir=`dirname $dst_path`
+        mkdir -p $work_dir
+        cp -v $src_path $dst_path || true
+    fi
+done < /src/headerfiles.csv
+    
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -fsanitize=fuzzer -g -Werror -I/work/include -fuse-ld=lld $outfile /src/libdwarf/build/src/lib/libdwarf/libdwarf.a -lz -o $outexe
+cp $outexe /out/
+done
+

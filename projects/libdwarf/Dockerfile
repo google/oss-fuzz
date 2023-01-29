@@ -21,3 +21,5 @@ RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples $SRC/b
 WORKDIR libdwarf
 COPY build.sh $SRC/
 COPY fuzz*.c $SRC/
+COPY fuzzdrivers /src/libdwarf/fuzzdrivers
+COPY headerfiles.csv /src
