@@ -27,3 +27,4 @@ RUN cd seed-corpora && zip -r ../compress_fuzzer_seed_corpus.zip afl-testcases/b
 RUN rm -rf seed-corpora
 
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/libjpeg-turbo.main/fuzzdrivers

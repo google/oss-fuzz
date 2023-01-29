@@ -29,3 +29,12 @@ for branch in main 2.0.x dev; do
 	fi
 	popd
 done
+
+set +e
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -g -DNDEBUG -fsanitize=fuzzer -I/work/include -fuse-ld=lld $outfile /work/lib/libjpeg.a /work/lib/libturbojpeg.a -o $outexe
+cp $outexe /out/
+done
+

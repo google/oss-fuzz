@@ -1,15 +1,17 @@
-homepage: "https://libjpeg-turbo.org"
-language: c
-primary_contact: "drc@virtualgl.org"
-vendor_ccs:
-  - "aosmond@mozilla.com"
-  - "tnikkel@mozilla.com"
-  - "twsmith@mozilla.com"
-sanitizers:
-  - address
-  - memory
-  - undefined
 architectures:
-  - x86_64
-  - i386
-main_repo: 'https://github.com/libjpeg-turbo/libjpeg-turbo'
+- x86_64
+- i386
+auto_ccs:
+- for.the.dawn.chorus@gmail.com
+homepage: https://libjpeg-turbo.org
+language: c
+main_repo: https://github.com/libjpeg-turbo/libjpeg-turbo
+primary_contact: drc@virtualgl.org
+sanitizers:
+- address
+- memory
+- undefined
+vendor_ccs:
+- aosmond@mozilla.com
+- tnikkel@mozilla.com
+- twsmith@mozilla.com
