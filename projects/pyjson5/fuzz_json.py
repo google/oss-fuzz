@@ -21,8 +21,9 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
     json5.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-  except (ValueError, TypeError) as e:
-    # Raised by the function
+  except (ValueError, TypeError, RecursionError) as e:
+    # ValueError and TypeError are raised by the function
+    # RecursionError is not interesting.
     pass
 
 
