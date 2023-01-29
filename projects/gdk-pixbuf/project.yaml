@@ -1,7 +1,9 @@
+auto_ccs:
+- for.the.dawn.chorus@gmail.com
 homepage: https://gitlab.gnome.org/GNOME/gdk-pixbuf/
 language: c
+main_repo: https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 primary_contact: ebassi@gnome.org
 sanitizers:
-  - address
-  - undefined
-main_repo: 'https://gitlab.gnome.org/GNOME/gdk-pixbuf.git'
+- address
+- undefined

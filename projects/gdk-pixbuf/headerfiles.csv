@@ -1,0 +1,13 @@
+gdk-pixbuf,/src/gdk-pixbuf/_builddir/gdk-pixbuf/gdk-pixbuf-marshal.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-marshal.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-autocleanups.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-autocleanups.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-io.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-io.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-macros.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-macros.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-core.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-core.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-loader.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-loader.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-animation.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-animation.h
+gdk-pixbuf,/src/gdk-pixbuf/_builddir/gdk-pixbuf/gdk-pixbuf-features.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-features.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-transform.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-transform.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixdata.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixdata.h
+gdk-pixbuf,/src/gdk-pixbuf/_builddir/gdk-pixbuf/gdk-pixbuf-enum-types.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-enum-types.h
+gdk-pixbuf,/src/gdk-pixbuf/gdk-pixbuf/gdk-pixbuf-simple-anim.h,/work/include/gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf-simple-anim.h

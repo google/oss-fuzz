@@ -39,3 +39,5 @@ RUN awk 1 $SRC/*.dict > $SRC/gdk-pixbuf.dict && \
 WORKDIR $SRC/gdk-pixbuf
 COPY targets $SRC/fuzz
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/gdk-pixbuf/fuzzdrivers
+COPY headerfiles.csv /src
