@@ -19,3 +19,5 @@ RUN apt-get update && apt-get install -y cmake libssl-dev libevent-dev
 RUN git clone https://github.com/coturn/coturn
 COPY build.sh $SRC/
 WORKDIR $SRC/coturn/
+COPY fuzzdrivers /src/coturn/fuzzdrivers
+COPY headerfiles.csv /src

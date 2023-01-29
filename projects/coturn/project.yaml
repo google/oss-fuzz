@@ -1,16 +1,17 @@
-homepage: "https://github.com/coturn/coturn"
-language: c
-primary_contact: "misi@majd.eu"
 auto_ccs:
-  - "mom040267@gmail.com"
-  - "gustavogb@gmail.com"
-  - "ajsinghyadav00@gmail.com"
+- mom040267@gmail.com
+- gustavogb@gmail.com
+- ajsinghyadav00@gmail.com
+- for.the.dawn.chorus@gmail.com
 fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
+- libfuzzer
+- afl
+- honggfuzz
+homepage: https://github.com/coturn/coturn
+language: c
+main_repo: https://github.com/coturn/coturn
+primary_contact: misi@majd.eu
 sanitizers:
-  - address
-  - memory
-  - undefined
-main_repo: 'https://github.com/coturn/coturn'
+- address
+- memory
+- undefined
