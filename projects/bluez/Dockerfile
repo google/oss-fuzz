@@ -31,3 +31,5 @@ RUN git clone https://github.com/GNOME/glib  && \
 WORKDIR bluez
 COPY build.sh $SRC/
 COPY *.c $SRC/
+COPY fuzzdrivers /src/bluez/fuzzdrivers
+COPY headerfiles.csv /src

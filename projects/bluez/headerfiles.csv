@@ -1,0 +1,11 @@
+bluez,/src/bluez/lib/sco.h,/work/include/bluetooth/sco.h
+bluez,/src/bluez/lib/sdp.h,/work/include/bluetooth/sdp.h
+bluez,/src/bluez/lib/bluetooth.h,/work/include/bluetooth/bluetooth.h
+bluez,/src/bluez/lib/l2cap.h,/work/include/bluetooth/l2cap.h
+bluez,/src/bluez/lib/hci.h,/work/include/bluetooth/hci.h
+bluez,/src/bluez/lib/rfcomm.h,/work/include/bluetooth/rfcomm.h
+bluez,/src/bluez/lib/sdp_lib.h,/work/include/bluetooth/sdp_lib.h
+bluez,/src/bluez/lib/hci_lib.h,/work/include/bluetooth/hci_lib.h
+bluez,/src/bluez/lib/hidp.h,/work/include/bluetooth/hidp.h
+bluez,/src/bluez/lib/bnep.h,/work/include/bluetooth/bnep.h
+bluez,/src/bluez/lib/cmtp.h,/work/include/bluetooth/cmtp.h
