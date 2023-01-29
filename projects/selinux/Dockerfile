@@ -30,3 +30,4 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/SELinuxProject/selinux
 WORKDIR selinux
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/selinux/fuzzdrivers

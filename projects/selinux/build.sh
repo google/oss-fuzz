@@ -15,3 +15,12 @@
 #
 ################################################################################
 ./scripts/oss-fuzz.sh
+
+set +e
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -I/work/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -I/src/selinux/jarvis-install/usr/include -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 $outfile /src/selinux/DESTDIR/usr/lib/libsepol.a -o $outexe
+cp $outexe /out/
+done
+
