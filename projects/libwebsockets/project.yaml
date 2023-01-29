@@ -1,8 +1,10 @@
-homepage: "https://libwebsockets.org"
-language: c
-primary_contact: "andy.warmcat.com@googlemail.com"
-sanitizers:
-  - address
+auto_ccs:
+- for.the.dawn.chorus@gmail.com
 fuzzing_engines:
 - libfuzzer
-main_repo: 'https://libwebsockets.org/repo/libwebsockets'
+homepage: https://libwebsockets.org
+language: c
+main_repo: https://libwebsockets.org/repo/libwebsockets
+primary_contact: andy.warmcat.com@googlemail.com
+sanitizers:
+- address

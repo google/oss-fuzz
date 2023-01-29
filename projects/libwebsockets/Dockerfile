@@ -21,3 +21,5 @@ RUN git clone --depth 1 https://github.com/warmcat/libwebsockets.git
 COPY build.sh $SRC
 COPY lws_upng_inflate_fuzzer.cpp $SRC/libwebsockets/
 WORKDIR $SRC/libwebsockets
+COPY fuzzdrivers /src/libwebsockets/fuzzdrivers
+COPY headerfiles.csv /src
