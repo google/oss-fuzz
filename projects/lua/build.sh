@@ -24,3 +24,26 @@ make
 cp ../fuzz_lua.c .
 $CC $CFLAGS -c fuzz_lua.c -o fuzz_lua.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua ./liblua.a
+
+set +e
+projectName=lua
+# read the csv file
+while IFS="," read -r first_col src_path dst_path; do    
+    # check if first_col equals the projectName
+    if [ "$src_path" == NOT_FOUND ]; then
+        continue
+    fi
+    if [ "$first_col" == "$projectName" ]; then
+        work_dir=`dirname $dst_path`
+        mkdir -p $work_dir
+        cp -v $src_path $dst_path || true
+    fi
+done < /src/headerfiles.csv
+    
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -I/work/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -fuse-ld=lld $outfile /src/lua/liblua.a -o $outexe
+cp $outexe /out/
+done
+

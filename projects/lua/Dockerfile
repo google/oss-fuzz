@@ -20,3 +20,5 @@ RUN git clone https://github.com/lua/lua
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_lua.c $SRC/
+COPY fuzzdrivers /src/lua/fuzzdrivers
+COPY headerfiles.csv /src

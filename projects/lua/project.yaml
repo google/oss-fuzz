@@ -1,7 +1,8 @@
-homepage: "https://github.com/lua/lua"
-language: c
-primary_contact: "roberto@inf.puc-rio.br"
 auto_ccs:
-  - "fuzz@lua.org"
-  - "david@adalogics.com"
-main_repo: 'https://github.com/lua/lua'
+- fuzz@lua.org
+- david@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: https://github.com/lua/lua
+language: c
+main_repo: https://github.com/lua/lua
+primary_contact: roberto@inf.puc-rio.br
