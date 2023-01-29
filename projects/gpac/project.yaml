@@ -1,6 +1,7 @@
-homepage: "https://gpac.wp.imt.fr/"
-main_repo: "https://github.com/gpac/gpac"
-primary_contact: "project.gpac@gmail.com"
-language: c
 auto_ccs:
-  - "david@adalogics.com"
+- david@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: https://gpac.wp.imt.fr/
+language: c
+main_repo: https://github.com/gpac/gpac
+primary_contact: project.gpac@gmail.com

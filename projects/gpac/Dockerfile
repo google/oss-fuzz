@@ -20,3 +20,5 @@ RUN git clone https://github.com/gpac/gpac && git clone https://github.com/gpac/
 
 WORKDIR $SRC
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/gpac/fuzzdrivers
+COPY headerfiles.csv /src
