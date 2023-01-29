@@ -1,8 +1,9 @@
-homepage: "http://www.postfix.org/"
-language: c
-primary_contact: "wietse@gmail.com"
-main_repo: "https://github.com/vdukhovni/postfix"
 auto_ccs:
-  - "david@adalogics.com"
+- david@adalogics.com
+- for.the.dawn.chorus@gmail.com
+homepage: http://www.postfix.org/
+language: c
+main_repo: https://github.com/vdukhovni/postfix
+primary_contact: wietse@gmail.com
 sanitizers:
-  - address
+- address

@@ -35,3 +35,12 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_tok822.o -o $OUT/fuzz_tok822 \
   ./lib/libglobal.a ./lib/libutil.a
 $CC $CFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_mime.o -o $OUT/fuzz_mime \
   ./lib/libglobal.a ./lib/libutil.a -ldb -lnsl
+
+set +e
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -I/work/include -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -DHAS_DEV_URANDOM -DSNAPSHOT -UUSE_DYNAMIC_LIBS -DDEF_SHLIB_DIR='no' -UUSE_DYNAMIC_MAPS -I/src/postfix/postfix/src/global -I/src/postfix/postfix/include $outfile -o $outexe /src/postfix/postfix/lib/libglobal.a /src/postfix/postfix/lib/libutil.a /src/postfix/postfix/lib/libdns.a  /src/postfix/postfix/lib/libmaster.a /src/postfix/postfix/lib/libmilter.a /src/postfix/postfix/lib/libtls.a /src/postfix/postfix/lib/libxsasl.a -ldb -lnsl
+cp $outexe /out/
+done
+
