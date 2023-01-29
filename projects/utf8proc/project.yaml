@@ -1,11 +1,11 @@
-homepage: "http://juliastrings.github.io/utf8proc/"
-language: c
-primary_contact: "stevenj@alum.mit.edu"
 auto_ccs:
-  - "randy440088@gmail.com"
+- randy440088@gmail.com
+- for.the.dawn.chorus@gmail.com
+homepage: http://juliastrings.github.io/utf8proc/
+language: c
+main_repo: https://github.com/JuliaStrings/utf8proc
+primary_contact: stevenj@alum.mit.edu
 sanitizers:
-  - address
-  - memory
-  - undefined 
-main_repo: 'https://github.com/JuliaStrings/utf8proc'
-
+- address
+- memory
+- undefined

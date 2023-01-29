@@ -26,3 +26,5 @@ RUN wget -O $SRC/utf8proc/test/GraphemeBreakTest.txt https://www.unicode.org/Pub
 
 WORKDIR $SRC/utf8proc/
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/utf8proc/fuzzdrivers
+COPY headerfiles.csv /src
