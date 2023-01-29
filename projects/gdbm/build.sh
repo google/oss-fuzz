@@ -31,3 +31,26 @@ cp gdbm_fuzzer.rc $OUT
 # Create seed
 PATH=$SRC/gdbm/tools:$PATH sh ./build_seed.sh -C seed
 zip -rj "$OUT/gdbm_fuzzer_seed_corpus.zip" seed/
+
+set +e
+projectName=gdbm
+# read the csv file
+while IFS="," read -r first_col src_path dst_path; do    
+    # check if first_col equals the projectName
+    if [ "$src_path" == NOT_FOUND ]; then
+        continue
+    fi
+    if [ "$first_col" == "$projectName" ]; then
+        work_dir=`dirname $dst_path`
+        mkdir -p $work_dir
+        cp -v $src_path $dst_path || true
+    fi
+done < /src/headerfiles.csv
+    
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -I/work/include $outfile /src/gdbm/src/.libs/libgdbm.a -o $outexe
+cp $outexe /out/
+done
+

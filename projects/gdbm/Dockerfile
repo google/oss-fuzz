@@ -30,3 +30,5 @@ RUN apt-get -qq update && \
 RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/gdbm/fuzzdrivers
+COPY headerfiles.csv /src
