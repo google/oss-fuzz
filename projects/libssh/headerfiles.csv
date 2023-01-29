@@ -1,0 +1,7 @@
+libssh,/src/libssh/include/libssh/server.h,/work/include/libssh/server.h
+libssh,/src/libssh/include/libssh/legacy.h,/work/include/libssh/legacy.h
+libssh,/src/libssh/include/libssh/ssh2.h,/work/include/libssh/ssh2.h
+libssh,/src/libssh/include/libssh/libsshpp.hpp,/work/include/libssh/libsshpp.hpp
+libssh,/src/libssh/include/libssh/libssh.h,/work/include/libssh/libssh.h
+libssh,/src/libssh/include/libssh/sftp.h,/work/include/libssh/sftp.h
+libssh,/src/libssh/include/libssh/callbacks.h,/work/include/libssh/callbacks.h

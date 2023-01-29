@@ -1,13 +1,12 @@
-homepage: "https://libssh.org/"
-language: c
-primary_contact: "asn@cryptomilk.org"
 auto_ccs:
- - "cryptomilk@gmail.com"
- - "jakuje@gmail.com"
- - "anderson.sasaki@gmail.com"
+- cryptomilk@gmail.com
+- jakuje@gmail.com
+- anderson.sasaki@gmail.com
+- for.the.dawn.chorus@gmail.com
+homepage: https://libssh.org/
+language: c
+main_repo: https://git.libssh.org/projects/libssh.git
+primary_contact: asn@cryptomilk.org
 sanitizers:
-  - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
-  - undefined
-main_repo: 'https://git.libssh.org/projects/libssh.git'
+- address
+- undefined

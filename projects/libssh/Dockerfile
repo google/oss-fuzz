@@ -21,3 +21,5 @@ RUN git clone --depth=1 https://git.libssh.org/projects/libssh.git
 
 WORKDIR libssh
 COPY build.sh $SRC/
+COPY fuzzdrivers /src/libssh/fuzzdrivers
+COPY headerfiles.csv /src
