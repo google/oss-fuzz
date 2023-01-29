@@ -43,3 +43,26 @@ for Seed in $FuzzSeed; do
     cp $Seed $OUT/$Seed
 done
 popd
+
+set +e
+projectName=pjsip
+# read the csv file
+while IFS="," read -r first_col src_path dst_path; do    
+    # check if first_col equals the projectName
+    if [ "$src_path" == NOT_FOUND ]; then
+        continue
+    fi
+    if [ "$first_col" == "$projectName" ]; then
+        work_dir=`dirname $dst_path`
+        mkdir -p $work_dir
+        cp -v $src_path $dst_path || true
+    fi
+done < /src/headerfiles.csv
+    
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -I/work/include -DPJ_AUTOCONF=1 -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1 -DPJMEDIA_HAS_SRTP=0 -Wall -Werror $outfile  -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link /src/pjsip/pjsip/lib/libpjsua-x86_64-unknown-linux-gnu.a /src/pjsip/pjsip/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a /src/pjsip/pjsip/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a /src/pjsip/pjsip/lib/libpjsip-x86_64-unknown-linux-gnu.a /src/pjsip/pjmedia/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a /src/pjsip/pjmedia/lib/libpjmedia-x86_64-unknown-linux-gnu.a /src/pjsip/pjmedia/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a /src/pjsip/pjmedia/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a /src/pjsip/pjmedia/lib/libpjmedia-x86_64-unknown-linux-gnu.a /src/pjsip/pjnath/lib/libpjnath-x86_64-unknown-linux-gnu.a /src/pjsip/pjlib-util/lib/libpjlib-util-x86_64-unknown-linux-gnu.a /src/pjsip/pjlib/lib/libpj-x86_64-unknown-linux-gnu.a  -lm -lrt -lpthread -o $outexe
+cp $outexe /out/
+done
+

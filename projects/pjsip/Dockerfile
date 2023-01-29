@@ -18,3 +18,5 @@ RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config
 RUN git clone https://github.com/pjsip/pjproject pjsip
 COPY build.sh $SRC/
 WORKDIR $SRC/pjsip/
+COPY fuzzdrivers /src/pjsip/fuzzdrivers
+COPY headerfiles.csv /src

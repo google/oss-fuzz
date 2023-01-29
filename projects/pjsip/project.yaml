@@ -1,17 +1,18 @@
-homepage: "www.pjsip.org"
-language: c
-primary_contact: "security@pjsip.org"
 auto_ccs:
-  - "nanang@teluu.com"
-  - "ming@teluu.com"
-  - "riza@teluu.com"
-  - "ajsinghyadav00@gmail.com"
+- nanang@teluu.com
+- ming@teluu.com
+- riza@teluu.com
+- ajsinghyadav00@gmail.com
+- for.the.dawn.chorus@gmail.com
 fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
+- libfuzzer
+- afl
+- honggfuzz
+homepage: www.pjsip.org
+language: c
+main_repo: https://github.com/pjsip/pjproject
+primary_contact: security@pjsip.org
 sanitizers:
-  - address
-  - memory
-  - undefined
-main_repo: 'https://github.com/pjsip/pjproject'
+- address
+- memory
+- undefined
