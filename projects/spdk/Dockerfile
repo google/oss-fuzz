@@ -22,3 +22,5 @@ RUN git clone --depth 1 https://github.com/spdk/spdk && \
     git submodule update --init
 WORKDIR $SRC/spdk
 COPY build.sh parse_json_fuzzer.cc $SRC/
+COPY fuzzdrivers /src/spdk/fuzzdrivers
+COPY headerfiles.csv /src
