@@ -36,3 +36,5 @@ RUN git clone https://github.com/ostreedev/ostree && \
     git submodule update --init
 COPY build.sh $SRC/
 COPY fuzz*.c $SRC/
+COPY fuzzdrivers /src/ostree/fuzzdrivers
+COPY headerfiles.csv /src

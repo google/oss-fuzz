@@ -87,3 +87,26 @@ for fuzz in repo bsdiff; do
   $CC $CFLAGS $FUZZ_DEFINES $FUZZ_INCLUDES -o tests/fuzz-$fuzz.o -c tests/fuzz-$fuzz.c
   $CC $CFLAGS $LIB_FUZZING_ENGINE $FUZZ_INCLUDES -o $OUT/fuzz-$fuzz  tests/fuzz-$fuzz.o $FUZZ_LIBS
 done
+
+set +e
+projectName=ostree
+# read the csv file
+while IFS="," read -r first_col src_path dst_path; do    
+    # check if first_col equals the projectName
+    if [ "$src_path" == NOT_FOUND ]; then
+        continue
+    fi
+    if [ "$first_col" == "$projectName" ]; then
+        work_dir=`dirname $dst_path`
+        mkdir -p $work_dir
+        cp -v $src_path $dst_path || true
+    fi
+done < /src/headerfiles.csv
+    
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -DHAVE_CONFIG_H -DDATADIR='/usr/local/share' -DLIBEXECDIR='/usr/local/libexec' -DLOCALEDIR='/usr/local/share/locale' -DSYSCONFDIR='/usr/local/etc' -DTARGET_PREFIX='/usr/local' -DOSTREE_COMPILATION -DG_LOG_DOMAIN='"OSTree"' -DOSTREE_GITREV='v2022.2-41-gf21944da1cf24cc2bbf1d4dfbd3aaa698d4f0a70' -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_40 -I/src/ostree/src/libotutil -I/src/ostree/libglnx -I/usr/include/gio-unix-2.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -DPKGLIBEXECDIR='/usr/local/libexec/libostree' -I/work/include/ostree-1 $outfile -o $outexe /src/ostree/.libs/libbsdiff.a /src/ostree/.libs/libglnx.a /src/ostree/.libs/libotutil.a -L/usr/lib/x86_64-linux-gnu /src/ostree/.libs/libostree-1.a /src/ostree/.libs/libostreetest.a  -l:libgpgme.a -l:libassuan.a /usr/lib/x86_64-linux-gnu/libgpg-error.so -l:liblzma.a -l:libgio-2.0.a -lresolv -l:libgobject-2.0.a -l:libffi.a -l:libgmodule-2.0.a -l:libglib-2.0.a -lm -l:libz.a -l:libselinux.a -pthread -l:libpcre2-8.a
+cp $outexe /out/
+done
+
