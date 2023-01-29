@@ -1,5 +1,7 @@
-homepage: "https://www.inchi-trust.org/"
+auto_ccs:
+- for.the.dawn.chorus@gmail.com
+homepage: https://www.inchi-trust.org/
 language: c
-primary_contact: "member-info@inchi-trust.org"
+primary_contact: member-info@inchi-trust.org
 sanitizers:
-  - address
+- address

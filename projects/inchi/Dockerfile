@@ -20,3 +20,4 @@ RUN wget https://www.inchi-trust.org/download/106/INCHI-1-SRC.zip
 RUN unzip INCHI-1-SRC.zip
 WORKDIR INCHI-1-SRC
 COPY build.sh *_fuzzer.c $SRC/
+COPY fuzzdrivers /src/INCHI-1-SRC/fuzzdrivers

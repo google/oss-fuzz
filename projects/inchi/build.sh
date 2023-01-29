@@ -32,3 +32,12 @@ for fuzzer in $SRC/*_fuzzer.c; do
       ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
       $LIB_FUZZING_ENGINE $WORK/libinchi.a
 done
+
+set +e
+for outfile in $(find /src/*/fuzzdrivers -name "*.c"); do
+outexe=${outfile%.*}
+echo $outexe
+/usr/local/bin/clang-15 -isystem /usr/local/lib/clang/15.0.0/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include -fsanitize=address -fsanitize=fuzzer -fsanitize-address-use-after-scope -I/src/INCHI-1-SRC/INCHI_BASE/src/ -I/src/INCHI-1-SRC/INCHI_API/libinchi/src/ -I/src/INCHI-1-SRC/INCHI_API/libinchi/src/ixa/ -Wno-everything -DTARGET_API_LIB -DCOMPILE_ANSI_ONLY -ansi $outfile /work/libinchi.a -o $outexe
+cp $outexe /out/
+done
+
