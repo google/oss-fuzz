@@ -65,4 +65,3 @@ RUN git clone --depth 1 https://github.com/project-oak/oak oak
 
 WORKDIR oak
 COPY build.sh $SRC/
-COPY rustc.py $SRC/
