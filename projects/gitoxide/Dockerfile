@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide     # or use other version control
+RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide
 WORKDIR gitoxide
 COPY build.sh $SRC/
