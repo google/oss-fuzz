@@ -1,0 +1,11 @@
+homepage: "https://dapr.io/"
+language: go
+primary_contact: ""
+main_repo: "https://github.com/dapr"
+vendor_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
