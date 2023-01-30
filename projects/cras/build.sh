@@ -22,29 +22,48 @@
 # Expects /src/cras to contain a cras checkout.
 
 cd ${SRC}/adhd/cras
-./git_prepare.sh
-mkdir -p ${WORK}/build && cd ${WORK}/build
+
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-CFLAGS="${CFLAGS}" ${SRC}/adhd/cras/configure --enable-fuzzer --disable-featured
-make -C src common/cras_dbus_bindings.h
-make -C src -j$(nproc) cras
-cp ${WORK}/build/src/server/rust/target/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
+cargo build --release --manifest-path=src/server/rust/Cargo.toml --target-dir=${WORK}/cargo_out
+cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
-CRAS_FUZZERS="rclient_message cras_hfp_slc cras_fl_media_fuzzer"
+# Set bazel options.
+# See also:
+# https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests
+# https://github.com/bazelbuild/rules_fuzzing/blob/master/fuzzing/private/oss_fuzz/repository.bzl
+bazel_opts=(
+    "--verbose_failures"
+    "--curses=no"
+    "--spawn_strategy=standalone"
+    "--action_env=CC=${CC}"
+    "--action_env=CXX=${CXX}"
+    "--action_env=BAZEL_CONLYOPTS=${CFLAGS// /:}"
+    "--action_env=BAZEL_CXXOPTS=${CXXFLAGS// /:}"
+    "--action_env=BAZEL_LINKOPTS=${CXXFLAGS// /:}"
+    "-c" "opt"
+    "--cxxopt=-stdlib=libc++"
+    "--linkopt=-lc++"
+    "--//:fuzzer"
+    "--//:system_cras_rust"
+)
+if [[ "$SANITIZER" == "undefined" ]]; then
+    bazel_opts+=("--linkopt=-fsanitize-link-c++-runtime")
+fi
 
-for fuzzer in ${CRAS_FUZZERS};
-do
-$CXX $CXXFLAGS $FUZZER_LDFLAGS \
-  ${SRC}/adhd/cras/src/fuzz/${fuzzer}.cc -o ${OUT}/${fuzzer} \
-  -D HAVE_FUZZER=1 \
-  -I ${SRC}/adhd/cras/src/server \
-  -I ${SRC}/adhd/cras/src/common \
-  $(pkg-config --cflags dbus-1) \
-  ${WORK}/build/src/.libs/libcrasserver.a \
-  -lcras_rust -lpthread -lrt -ludev -ldl -lm -lsystemd \
-  $LIB_FUZZING_ENGINE \
-  -Wl,-Bstatic -liniparser -lasound -lspeexdsp -ldbus-1 -lsbc -Wl,-Bdynamic
-done
+# Statlic linking hacks
+export OSS_FUZZ_STATIC_PKG_CONFIG_DEPS=1
+bazel_opts+=("--linkopt=-lsystemd")
+
+# Print inferred @fuzz_engine
+bazel cquery  "${bazel_opts[@]}" --output=build @fuzz_engine//:fuzz_engine
+
+bazel run "${bazel_opts[@]}" //dist -- ${WORK}/build
+
+# Preserve historical names
+mv ${WORK}/build/fuzzer/cras_rclient_message_fuzzer ${OUT}/rclient_message
+mv ${WORK}/build/fuzzer/cras_hfp_slc_fuzzer ${OUT}/cras_hfp_slc
+
+mv ${WORK}/build/fuzzer/* ${OUT}/
 
 zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*
 cp "${SRC}/adhd/cras/src/fuzz/cras_hfp_slc.dict" "${OUT}/cras_hfp_slc.dict"
