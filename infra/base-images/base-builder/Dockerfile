@@ -19,8 +19,8 @@ FROM gcr.io/oss-fuzz-base/base-clang
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
-# Build and install latest Python 3 (3.8.3).
-ENV PYTHON_VERSION 3.8.3
+# Build and install latest Python 3 (3.10.8).
+ENV PYTHON_VERSION 3.10.8
 RUN export PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
