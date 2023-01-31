@@ -19,6 +19,7 @@ jobs:
         engine:
           - libfuzzer
         sanitizer:
+          - none
           - address
           - memory
           - undefined
@@ -73,6 +74,9 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
+          cache: pip
+          cache-dependency-path: |
+            infra/ci/requirements.txt
 
       - name: Install dependencies
         run: |

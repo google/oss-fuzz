@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
 
-# Install latest versions of npm
-npm install --global npm
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide
+WORKDIR gitoxide
+COPY build.sh $SRC/
