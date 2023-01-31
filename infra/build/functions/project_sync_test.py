@@ -25,10 +25,8 @@ from google.cloud import ndb
 sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
-from datastore_entities import Project
-from project_sync import get_projects
-from project_sync import ProjectMetadata
-from project_sync import sync_projects
+import datastore_entities
+import project_sync
 import test_utils
 
 # pylint: disable=no-member
@@ -122,22 +120,22 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with ndb.Client().context():
-      Project(name='test1',
-              schedule='0 8 * * *',
-              project_yaml_contents='',
-              dockerfile_contents='').put()
-      Project(name='test2',
-              schedule='0 9 * * *',
-              project_yaml_contents='',
-              dockerfile_contents='').put()
+      datastore_entities.Project(name='test1',
+                                 schedule='0 8 * * *',
+                                 project_yaml_contents='',
+                                 dockerfile_contents='').put()
+      datastore_entities.Project(name='test2',
+                                 schedule='0 9 * * *',
+                                 project_yaml_contents='',
+                                 dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *', '', ''),
-          'test2': ProjectMetadata('0 7 * * *', '', '')
+          'test1': project_sync.ProjectMetadata('0 8 * * *', '', ''),
+          'test2': project_sync.ProjectMetadata('0 7 * * *', '', '')
       }
-      sync_projects(cloud_scheduler_client, projects)
+      project_sync.sync_projects(cloud_scheduler_client, projects)
 
-      projects_query = Project.query()
+      projects_query = datastore_entities.Project.query()
       self.assertEqual({
           'test1': '0 8 * * *',
           'test2': '0 7 * * *'
@@ -148,18 +146,18 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with ndb.Client().context():
-      Project(name='test1',
-              schedule='0 8 * * *',
-              project_yaml_contents='',
-              dockerfile_contents='').put()
+      datastore_entities.Project(name='test1',
+                                 schedule='0 8 * * *',
+                                 project_yaml_contents='',
+                                 dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *', '', ''),
-          'test2': ProjectMetadata('0 7 * * *', '', '')
+          'test1': project_sync.ProjectMetadata('0 8 * * *', '', ''),
+          'test2': project_sync.ProjectMetadata('0 7 * * *', '', '')
       }
-      sync_projects(cloud_scheduler_client, projects)
+      project_sync.sync_projects(cloud_scheduler_client, projects)
 
-      projects_query = Project.query()
+      projects_query = datastore_entities.Project.query()
       self.assertEqual({
           'test1': '0 8 * * *',
           'test2': '0 7 * * *'
@@ -235,19 +233,19 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with ndb.Client().context():
-      Project(name='test1',
-              schedule='0 8 * * *',
-              project_yaml_contents='',
-              dockerfile_contents='').put()
-      Project(name='test2',
-              schedule='0 9 * * *',
-              project_yaml_contents='',
-              dockerfile_contents='').put()
+      datastore_entities.Project(name='test1',
+                                 schedule='0 8 * * *',
+                                 project_yaml_contents='',
+                                 dockerfile_contents='').put()
+      datastore_entities.Project(name='test2',
+                                 schedule='0 9 * * *',
+                                 project_yaml_contents='',
+                                 dockerfile_contents='').put()
 
-      projects = {'test1': ProjectMetadata('0 8 * * *', '', '')}
-      sync_projects(cloud_scheduler_client, projects)
+      projects = {'test1': project_sync.ProjectMetadata('0 8 * * *', '', '')}
+      project_sync.sync_projects(cloud_scheduler_client, projects)
 
-      projects_query = Project.query()
+      projects_query = datastore_entities.Project.query()
       self.assertEqual(
           {'test1': '0 8 * * *'},
           {project.name: project.schedule for project in projects_query})
@@ -269,13 +267,13 @@ class TestDataSync(unittest.TestCase):
     repo.contents[1].contents[1].set_yaml_contents(b'builds_per_day: 3')
 
     self.assertEqual(
-        get_projects(repo), {
+        project_sync.get_projects(repo), {
             'test0':
-                ProjectMetadata('0 6,18 * * *', 'builds_per_day: 2',
-                                'name: test'),
+                project_sync.ProjectMetadata('0 6,18 * * *',
+                                             'builds_per_day: 2', 'name: test'),
             'test1':
-                ProjectMetadata('0 6,14,22 * * *', 'builds_per_day: 3',
-                                'name: test')
+                project_sync.ProjectMetadata('0 6,14,22 * * *',
+                                             'builds_per_day: 3', 'name: test')
         })
 
   def test_get_projects_no_docker_file(self):
@@ -290,8 +288,11 @@ class TestDataSync(unittest.TestCase):
     ])
 
     self.assertEqual(
-        get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
+        project_sync.get_projects(repo), {
+            'test0':
+                project_sync.ProjectMetadata('0 6 * * *', 'name: test',
+                                             'name: test')
+        })
 
   def test_get_projects_invalid_project_name(self):
     """Testing get_projects() with invalid project name"""
@@ -308,8 +309,11 @@ class TestDataSync(unittest.TestCase):
     ])
 
     self.assertEqual(
-        get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
+        project_sync.get_projects(repo), {
+            'test0':
+                project_sync.ProjectMetadata('0 6 * * *', 'name: test',
+                                             'name: test')
+        })
 
   def test_get_projects_non_directory_type_project(self):
     """Testing get_projects() when a file in projects/ is not of type 'dir'."""
@@ -323,8 +327,11 @@ class TestDataSync(unittest.TestCase):
     ])
 
     self.assertEqual(
-        get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
+        project_sync.get_projects(repo), {
+            'test0':
+                project_sync.ProjectMetadata('0 6 * * *', 'name: test',
+                                             'name: test')
+        })
 
   def test_invalid_yaml_format(self):
     """Testing invalid yaml schedule parameter argument."""
@@ -338,7 +345,7 @@ class TestDataSync(unittest.TestCase):
     repo.contents[0].contents[1].set_yaml_contents(
         b'builds_per_day: some-string')
 
-    self.assertEqual(get_projects(repo), {})
+    self.assertEqual(project_sync.get_projects(repo), {})
 
   def test_yaml_out_of_range(self):
     """Testing invalid yaml schedule parameter argument."""
@@ -351,7 +358,7 @@ class TestDataSync(unittest.TestCase):
     ])
     repo.contents[0].contents[1].set_yaml_contents(b'builds_per_day: 5')
 
-    self.assertEqual(get_projects(repo), {})
+    self.assertEqual(project_sync.get_projects(repo), {})
 
   @classmethod
   def tearDownClass(cls):
