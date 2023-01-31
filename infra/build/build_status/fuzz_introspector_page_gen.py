@@ -14,6 +14,7 @@
 # limitations under the License.
 """Logic to create Fuzz Introspector overview page."""
 import json
+
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 

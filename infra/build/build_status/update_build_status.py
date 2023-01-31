@@ -29,10 +29,10 @@ from google.cloud import storage
 import build_and_run_coverage
 import build_lib
 import build_project
-import fuzz_introspector_page_gen
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
 from datastore_entities import Project
+import fuzz_introspector_page_gen
 
 BADGE_DIR = 'badge_images'
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
