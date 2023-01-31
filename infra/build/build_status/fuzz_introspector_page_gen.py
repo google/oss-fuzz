@@ -200,6 +200,7 @@ FUZZ_INTROSPECTOR_HTML_BOTTOM = """</div>
 </body>
 </html>"""
 
+
 def refine_percentage_string(percentage_string):
   """Shortens a srting to 4 characters and prepends zeros if necessary.
   We need to prepend the zero to make sorting in the final table accurrate.
@@ -211,6 +212,7 @@ def refine_percentage_string(percentage_string):
   if len(percentage_string) > 5:
     percentage_string = percentage_string[:5]
   return percentage_string + "%"
+
 
 def fetch_fuzz_introspector_summary(report_url):
   """Given a URL to an introspector report, returns a dictionary with data
@@ -250,8 +252,9 @@ def fetch_fuzz_introspector_summary(report_url):
   return {
       'fuzzer_count': fuzzer_count,
       'project_complexity_reached': reached_stats,
-      'code_coverage' : code_coverage
+      'code_coverage': code_coverage
   }
+
 
 def get_fuzzer_introspector_project_summary(report_url):
   """Return dictionary containing summary of fuzz introspector project."""
@@ -265,17 +268,17 @@ def get_fuzzer_introspector_project_summary(report_url):
     }
   return results_dict
 
+
 def get_fuzz_introspector_row(project, report_url):
   """Creates a single row in the Fuzz Introspector HTML table."""
   project_summary = get_fuzzer_introspector_project_summary(report_url)
-  return (
-      "<tr>"
-      f"<td><a href='{report_url}'>{project}</a></td>"
-      f"<td>{project_summary['fuzzer_count']}</td>"
-      f"<td>{project_summary['project_complexity_reached']}</td>"
-      f"<td>{project_summary['code_coverage']}</td>"
-      "</tr>\n"
-  )
+  return ("<tr>"
+          f"<td><a href='{report_url}'>{project}</a></td>"
+          f"<td>{project_summary['fuzzer_count']}</td>"
+          f"<td>{project_summary['project_complexity_reached']}</td>"
+          f"<td>{project_summary['code_coverage']}</td>"
+          "</tr>\n")
+
 
 def create_introspector_overview_table(fuzz_introspector_index):
   """Creates a HTML table with Fuzz Introspector summary for each project."""
@@ -285,9 +288,9 @@ def create_introspector_overview_table(fuzz_introspector_index):
     all_rows += get_fuzz_introspector_row(project_name, report_url)
   return TABLE_HEAD + all_rows + TABLE_END
 
+
 def get_fuzz_introspector_html_page(fuzz_introspector_index):
   """Creates a HTML page as a string displaying Fuzz Introspector overview."""
   html_table = create_introspector_overview_table(fuzz_introspector_index)
-  return (
-      FUZZ_INTROSPECTOR_HTML_TOP + html_table + FUZZ_INTROSPECTOR_HTML_BOTTOM
-  )
+  return (FUZZ_INTROSPECTOR_HTML_TOP + html_table +
+          FUZZ_INTROSPECTOR_HTML_BOTTOM)
