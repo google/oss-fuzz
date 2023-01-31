@@ -32,6 +32,7 @@ import build_project
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
 from datastore_entities import Project
+import fuzz_introspector_page_gen
 
 BADGE_DIR = 'badge_images'
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
@@ -48,15 +49,6 @@ INTROSPECTOR_INDEX_HTML = 'index.html'
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
 INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
-
-HTML_PREFIX_STRING = ('<!DOCTYPE html>\n<html>\n'
-                      '\t<head><h2>'
-                      'Index of Fuzz-Introspector reports for OSS-Fuzz projects'
-                      '</h2></head>\n'
-                      '\t<body>\n\t<p>\n\t<b>Fuzz Introspector documentation:'
-                      f'</b><a href="{INTROSPECTOR_DOC_URL}">here</a></p>\n\t'
-                      '<font size="4">\n')
-HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 
 # pylint: disable=invalid-name
 _client = None
@@ -339,17 +331,6 @@ def upload_index(json_index, html_string):
   html_blob.upload_from_string(html_string, content_type='text/html')
 
 
-def generate_html_string(content):
-  """Generate html body for introspector index"""
-  html_body = HTML_PREFIX_STRING
-  for project in sorted(content.keys()):
-    url = content[project]
-    html_body += f'\t<li><a href="{url}"> {project} </a></li>\n'
-
-  html_body += HTML_SUFFIX_STRING
-  return html_body
-
-
 def generate_introspector_index():
   """Generate index.html for successful Fuzz Introspector projects"""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
@@ -374,7 +355,8 @@ def generate_introspector_index():
                                                       build_date,
                                                       'fuzz_report.html')
 
-  html_string = generate_html_string(introspector_index)
+  html_string = fuzz_introspector_page_gen.get_fuzz_introspector_html_page(
+      introspector_index)
   upload_index(introspector_index, html_string)
 
 
