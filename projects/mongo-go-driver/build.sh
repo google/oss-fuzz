@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
 #
 ################################################################################
 
-# cd $SRC/mongo-go-driver/bson
-# go mod init bson
-
-# go mod tidy
-
-#go install github.com/AdamKorcz/go-118-fuzz-build@dev
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+go run cmd/build-oss-fuzz-corpus/main.go $OUT/fuzz_decode_seed_corpus.zip
 
-go run cmd/build-oss-fuzz-corpus/main.go $OUT/fuzz_decode_corpus_seed.zip
+mv bson/fuzz_test.go bson/fuzz.go
+mv bson/bson_corpus_spec_test.go bson/bson_corpus_spec.go
 
-compile_native_go_fuzzer go.mongodb.org/mongo-driver/bson FuzzDecodeOss fuzz_decode
+sed -i '/seedBSONCorpus/d' bson/fuzz.go
+
+compile_native_go_fuzzer go.mongodb.org/mongo-driver/bson FuzzDecode fuzz_decode
