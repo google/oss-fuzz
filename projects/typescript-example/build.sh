@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
 
-# Install latest versions of npm
-npm install --global npm
+# Install dependencies.
+npm install
+
+# Install Jazzer.js before building the code since use the fuzzed data provider
+# in the fuzz test
+npm install --save-dev @jazzer.js/core
+
+# Compile TypeScript code.
+npm run build
+
+# Build Fuzzers.
+compile_javascript_fuzzer example dist/fuzz_explore_me.js --sync
