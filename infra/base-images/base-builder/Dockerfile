@@ -104,9 +104,6 @@ ENV LIB_FUZZING_ENGINE_DEPRECATED="/usr/lib/libFuzzingEngine.a"
 # Defaults to the path, but is "-fsanitize=fuzzer" in libFuzzer builds.
 ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
-# TODO: remove after tpm2 catchup.
-ENV FUZZER_LDFLAGS ""
-
 WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
