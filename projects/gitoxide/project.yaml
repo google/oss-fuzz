@@ -1,0 +1,9 @@
+homepage: "https://crates.io/crates/gitoxide"
+language: rust
+primary_contact: "byronimo@gmail.com"
+main_repo: "https://github.com/Byron/gitoxide"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
