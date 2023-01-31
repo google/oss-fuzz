@@ -25,7 +25,7 @@ google-cloud-ndb==1.7.1
 google-cloud-scheduler==1.3.0
 google-cloud-storage==1.29.0
 google-api-core==1.22.2
-google-api-python-client==1.9.3
+google-api-python-client==2.75.0
 oauth2client==4.1.3
 python-dateutil==2.8.1
 protobuf==3.20.2
