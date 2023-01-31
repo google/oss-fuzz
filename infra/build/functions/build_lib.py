@@ -376,6 +376,10 @@ def get_docker_build_step(image_names,
                           architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
+
+  if buildkit_cache_image is None:
+    buildkit_cache_image = []
+
   directory = os.path.join(src_root, directory)
 
   if architecture != _ARM64:
@@ -398,17 +402,21 @@ def get_docker_build_step(image_names,
       'args': args,
       'dir': directory,
   }
+  # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
-
-  if buildkit_cache_image is not None:
+  buildkit_cache_args = []
+  if build_cache_images:
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
-    assert buildkit_cache_image in args
-    additional_args = [
-        '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
+    buildkit_cache_args = ['--build-arg', 'BUILDKIT_INLINE_CACHE=1']
+
+  for buildkit_cache_image in buildkit_cache_images:
+    buildkit_cache_args.extend([
+        '--cache-from',
         buildkit_cache_image
-    ]
-    args.extend(additional_args)
+    ])
+  args.extend(buildkit_cache_args)
+
   args.append('.')
 
   return step

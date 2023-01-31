@@ -99,7 +99,7 @@ def gcb_build_and_push_images(test_image_suffix):
     directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([main_tag, test_tag],
                                            directory,
-                                           buildkit_cache_image=test_tag,
+                                           buildkit_cache_images=[main_tag, test_tag],
                                            src_root='.')
     steps.append(step)
 
