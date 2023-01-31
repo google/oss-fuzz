@@ -172,7 +172,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    args.sanitizer = constants.DEFAULT_SANITIZER
+    if args.project.language == 'javascript':
+      args.sanitizer = 'none'
+    else:
+      args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)

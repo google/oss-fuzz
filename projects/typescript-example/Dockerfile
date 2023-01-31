@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +13,18 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
 
-# Install latest versions of npm
-npm install --global npm
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
+
+COPY build.sh $SRC/
+
+# For real projects, you would clone your repo in the next step.
+RUN mkdir -p $SRC/example
+
+# Ideally, you have already configured fuzz tests in your repo so that they
+# run (in Jazzer.js regression mode) as part of unit testing. Keeping the fuzz
+# tests in sync with the source code ensures that they are adjusted continue
+# to work after code changes. Here, we copy them into the example project directory.
+COPY fuzz_explore_me.ts target.ts package.json tsconfig.json $SRC/example/
+
+WORKDIR $SRC/example
