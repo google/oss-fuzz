@@ -24,8 +24,8 @@ TABLE_HEAD = """<table id="mainTable">
       <th title="Fuzzer key. Usually fuzzer executable file">
        Project Report
       </th>
-      <th title="Number of fuzzers for the project.">
-       Fuzzer count
+      <th title="Number of fuzz targets for the project.">
+       Fuzz target count
       </th>
       <th title="Percentage of code statially reachable from the fuzzers.">
        Code statically reached
