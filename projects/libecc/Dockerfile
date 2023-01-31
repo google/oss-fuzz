@@ -18,7 +18,7 @@
 # Please fix failure and upgrade.
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip
-RUN git clone https://github.com/ANSSI-FR/libecc.git
+RUN git clone --depth 1 --branch cryptofuzz https://github.com/libecc/libecc.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone https://github.com/wolfssl/wolfssl
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
