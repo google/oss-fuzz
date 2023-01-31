@@ -371,15 +371,11 @@ def _make_image_name_architecture_specific(image_name, architecture):
 
 def get_docker_build_step(image_names,
                           directory,
-                          buildkit_cache_image=None,
+                          use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
-
-  if buildkit_cache_image is None:
-    buildkit_cache_image = []
-
   directory = os.path.join(src_root, directory)
 
   if architecture != _ARM64:
@@ -404,18 +400,12 @@ def get_docker_build_step(image_names,
   }
   # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
-  buildkit_cache_args = []
-  if build_cache_images:
+  if use_buildkit_cache:
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
-    buildkit_cache_args = ['--build-arg', 'BUILDKIT_INLINE_CACHE=1']
-
-  for buildkit_cache_image in buildkit_cache_images:
-    buildkit_cache_args.extend([
-        '--cache-from',
-        buildkit_cache_image
-    ])
-  args.extend(buildkit_cache_args)
+    args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
+    for image in image_names:
+      args.extend(['--cache-from', image])
 
   args.append('.')
 
