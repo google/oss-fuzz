@@ -19,6 +19,7 @@ jobs:
         engine:
           - libfuzzer
         sanitizer:
+          - none
           - address
           - memory
           - undefined
