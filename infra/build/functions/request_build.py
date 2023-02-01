@@ -21,8 +21,7 @@ from google.cloud import ndb
 import yaml
 
 import build_project
-from datastore_entities import BuildsHistory
-from datastore_entities import Project
+import datastore_entities
 
 BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
@@ -31,14 +30,16 @@ QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 def update_build_history(project_name, build_id, build_tag):
   """Update build history of project."""
-  project_key = ndb.Key(BuildsHistory, project_name + '-' + build_tag)
+  project_key = ndb.Key(datastore_entities.BuildsHistory,
+                        project_name + '-' + build_tag)
   project = project_key.get()
 
   if not project:
-    project = BuildsHistory(id=project_name + '-' + build_tag,
-                            build_tag=build_tag,
-                            project=project_name,
-                            build_ids=[])
+    project = datastore_entities.BuildsHistory(id=project_name + '-' +
+                                               build_tag,
+                                               build_tag=build_tag,
+                                               project=project_name,
+                                               build_ids=[])
 
   if len(project.build_ids) >= MAX_BUILD_HISTORY_LENGTH:
     project.build_ids.pop(0)
@@ -49,7 +50,8 @@ def update_build_history(project_name, build_id, build_tag):
 
 def get_project_data(project_name):
   """Retrieve project metadata from datastore."""
-  query = Project.query(Project.name == project_name)
+  query = datastore_entities.Project.query(
+      datastore_entities.Project.name == project_name)
   project = query.get()
   if not project:
     raise RuntimeError(
