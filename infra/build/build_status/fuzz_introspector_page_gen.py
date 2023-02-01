@@ -212,6 +212,15 @@ def refine_percentage_string(percentage_string):
 
   if len(percentage_string) > 5:
     percentage_string = percentage_string[:5]
+
+  # Check if the percentage is withing range of [0.0 : 100.0]
+  # Some old reports from 2022 have deprecated data, which we do not want to
+  # display.
+  float_val = float(percentage_string)
+  if float_val < 0.0 or float_val > 100.0:
+    # Raise exception to make the code display '-' elements.
+    raise Exception('Out of range numbers')
+
   return percentage_string + "%"
 
 
