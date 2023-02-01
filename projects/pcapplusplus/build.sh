@@ -16,7 +16,8 @@
 #
 ################################################################################
 
-TARGETS_DIR=Tests/Fuzzers/Bin
+PCAPPLUSPLUS_BUILD_DIR=build
+TARGETS_DIR=$PCAPPLUSPLUS_BUILD_DIR/Tests/Fuzzers
 
 # Build libpcap
 cd $SRC/libpcap/
@@ -24,10 +25,8 @@ cd $SRC/libpcap/
 make -j$(nproc)
 
 # Build PcapPlusPlus linking statically against the built libpcap
-cd $SRC/PcapPlusPlus
-./configure-fuzzing.sh --libpcap-static-lib-dir $SRC/libpcap/
-make clean
-make -j$(nproc) fuzzers
+cmake -S . -B $PCAPPLUSPLUS_BUILD_DIR -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_ROOT=$SRC/libpcap/
+cmake --build $PCAPPLUSPLUS_BUILD_DIR -j$(nproc)
 
 # Copy target and options
 cp $TARGETS_DIR/FuzzTarget $OUT
