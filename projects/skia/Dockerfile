@@ -28,6 +28,8 @@ RUN git clone https://skia.googlesource.com/skia.git --depth 1
 WORKDIR skia
 
 RUN python3 bin/sync
+RUN python3 bin/fetch-gn
+RUN python3 bin/fetch-ninja
 
 # Make a directory for fuzzing artifacts that won't be clobbered by CIFuzz.
 RUN mkdir $SRC/skia_data
