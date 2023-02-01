@@ -17,16 +17,7 @@
 
 set -eox pipefail
 
-# TODO: Switch back to this method for fuzzer discovery once all the fuzzers
-# build successfully.
-# FUZZ_CRATES=$(find . -type d -name fuzz -exec readlink -f {} \;)
-
-FUZZ_CRATE_DIRS=("$(pwd)/git-config"\
-                 "$(pwd)/git-pathspec"\
-                 "$(pwd)/git-refspec"\
-                 "$(pwd)/git-date"\
-                 "$(pwd)/git-revision")
-
+FUZZ_CRATE_DIRS=$(find . -type d -name fuzz -exec dirname $(readlink -f {}) \;)
 
 for CRATE_DIR in ${FUZZ_CRATE_DIRS[@]};
 do
