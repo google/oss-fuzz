@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+export JAVA_HOME="$OUT/open-jdk-17"
+mkdir -p $JAVA_HOME
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+
 # Skip ProGuard because it is only needed for tests (which are skipped as well) and
 # because it would fail since `jmods` JDK folder is removed from this Docker image
 MAVEN_ARGS="-DskipTests -Dproguard.skip"
