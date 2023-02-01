@@ -46,10 +46,10 @@ else
 fi
 # These deprecated warnings get quite noisy and mask other issues.
 CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
-  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
+  -DCMAKE_MAKE_PROGRAM="$SRC/skia/third_party/ninja/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
 
 # Swiftshader only supports Vulkan, so we will build our fuzzers with Vulkan too.
-$SRC/depot_tools/ninja libvk_swiftshader.so
+$SRC/skia/third_party/ninja/ninja libvk_swiftshader.so
 mv libvk_swiftshader.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -69,8 +69,6 @@ export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
-
-$SRC/skia/bin/fetch-gn
 
 # Avoid OOMs on the CI due to lower memory constraints
 LIMITED_LINK_POOL="link_pool_depth=1"
@@ -115,7 +113,7 @@ $SRC/skia/bin/gn gen out/FuzzDebug\
       extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
-$SRC/depot_tools/ninja -C out/Fuzz \
+$SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   android_codec \
   animated_image_decode \
   api_create_ddl \
@@ -150,7 +148,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   textblob_deserialize \
   webp_encoder
 
-$SRC/depot_tools/ninja -C out/FuzzDebug \
+$SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   cubic_quad_roots \
   skmeshspecification \
   skruntimeeffect \
