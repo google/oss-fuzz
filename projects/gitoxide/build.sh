@@ -24,6 +24,7 @@ set -eox pipefail
 FUZZ_CRATE_DIRS=("$(pwd)/git-config"\
                  "$(pwd)/git-pathspec"\
                  "$(pwd)/git-refspec"\
+                 "$(pwd)/git-date"\
                  "$(pwd)/git-revision")
 
 
