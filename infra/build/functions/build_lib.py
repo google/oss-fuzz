@@ -25,9 +25,9 @@ import time
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
-from google.api_core.client_options import ClientOptions
+import google.api_core.client_options
 import google.auth
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import service_account as service_account_lib
 import requests
 import yaml
 
@@ -87,7 +87,7 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
-US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
+US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
@@ -169,8 +169,9 @@ def get_signed_url(path, method='PUT', content_type=''):
 
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    creds = (
+        service_account_lib.ServiceAccountCredentials.from_json_keyfile_name(
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
     client_id = creds.service_account_email
     signature = base64.b64encode(creds.sign_blob(blob)[1])
   else:

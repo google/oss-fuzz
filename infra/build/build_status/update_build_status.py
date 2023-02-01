@@ -29,9 +29,7 @@ from google.cloud import storage
 import build_and_run_coverage
 import build_lib
 import build_project
-from datastore_entities import BuildsHistory
-from datastore_entities import LastSuccessfulBuild
-from datastore_entities import Project
+import datastore_entities
 import fuzz_introspector_page_gen
 
 BADGE_DIR = 'badge_images'
@@ -98,7 +96,7 @@ def sort_projects(projects):
 
 def update_last_successful_build(project, build_tag):
   """Update last successful build."""
-  last_successful_build = ndb.Key(LastSuccessfulBuild,
+  last_successful_build = ndb.Key(datastore_entities.LastSuccessfulBuild,
                                   project['name'] + '-' + build_tag).get()
   if not last_successful_build and 'last_successful_build' not in project:
     return
@@ -115,7 +113,7 @@ def update_last_successful_build(project, build_tag):
       last_successful_build.finish_time = project['last_successful_build'][
           'finish_time']
     else:
-      last_successful_build = LastSuccessfulBuild(
+      last_successful_build = datastore_entities.LastSuccessfulBuild(
           id=project['name'] + '-' + build_tag,
           project=project['name'],
           build_id=project['last_successful_build']['build_id'],
@@ -219,8 +217,9 @@ def update_build_status(build_tag, status_filename):
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     futures = []
-    for project_build in BuildsHistory.query(
-        BuildsHistory.build_tag == build_tag).order('project'):
+    for project_build in datastore_entities.BuildsHistory.query(
+        datastore_entities.BuildsHistory.build_tag == build_tag).order(
+            'project'):
       futures.append(executor.submit(process_project, project_build))
 
     for future in concurrent.futures.as_completed(futures):
@@ -301,7 +300,7 @@ def update_badges():
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
     futures = []
-    for project in Project.query():
+    for project in datastore_entities.Project.query():
       if project.name not in project_build_statuses:
         continue
       # Certain projects (e.g. JVM and Python) do not have any coverage
