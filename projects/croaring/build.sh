@@ -16,7 +16,7 @@
 ################################################################################
 
 mkdir build-dir && cd build-dir
-cmake ..
+cmake -DENABLE_ROARING_TESTS=OFF ..
       
 make -j$(nproc)
 
