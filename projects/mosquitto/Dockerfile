@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +14,13 @@
 #
 ################################################################################
 
-# Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"     \
-        -DBUILD_FUZZERS=ON -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF \
-        -DBUILD_EXAMPLES=OFF -DBUILD_STATIC=ON -DBUILD_SHARED=OFF
-make clean
-make -j$(nproc)
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# Package seed corpus
-zip -j $OUT/decompress_fuzzer_seed_corpus.zip compat/*.cdata
+# Main repo
+RUN git clone --depth 1 -b develop https://github.com/eclipse/mosquitto ${SRC}/mosquitto
 
-# Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT
-find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+# Get dependencies
+RUN $SRC/mosquitto/fuzzing/scripts/oss-fuzz-dependencies.sh
+
+WORKDIR $SRC/mosquitto
+COPY build.sh $SRC/
