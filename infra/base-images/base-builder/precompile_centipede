@@ -37,7 +37,7 @@ export CENTIPEDE_BIN="$SRC/centipede/bin"
 mkdir -p $CENTIPEDE_BIN
 cat << EOF > ${CENTIPEDE_BIN}/ld
 #!/bin/bash
-/usr/bin/ld \$@ -ldl -lrt -lpthread /src/centipede/weak.o
+/usr/bin/ld \$@ -ldl -lrt -lpthread -lc++ /src/centipede/weak.o
 EOF
 chmod 777 ${CENTIPEDE_BIN}/ld
 
