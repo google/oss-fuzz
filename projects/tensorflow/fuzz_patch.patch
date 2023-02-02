@@ -1,8 +1,8 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index d1f17a34..6b00ccee 100644
+index c32a54ab..621d6f8c 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
-@@ -8,19 +8,25 @@ load(
+@@ -8,19 +8,24 @@ load(
      "//tensorflow/security/fuzzing:tf_fuzzing.bzl",
      "tf_cc_fuzz_test",
  )
@@ -10,7 +10,6 @@ index d1f17a34..6b00ccee 100644
 +    "//tensorflow:tensorflow.bzl",
 +    "tf_cc_test",
 +)
-+
  
  package(
      # copybara:uncomment default_applicable_licenses = ["//tensorflow:license"],
@@ -23,27 +22,10 @@ index d1f17a34..6b00ccee 100644
      srcs = ["status_fuzz.cc"],
 -    tags = ["no_oss"],
      deps = [
-         ":fuzz_helpers",
+         ":fuzz_domains",
          "//tensorflow/core/platform:status",
-+       "@com_google_fuzztest//fuzztest",
-+       "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++	"@com_google_fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
      ],
  )
-
-diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
-index 0236c258bf5..55e4b394a63 100644
---- a/tensorflow/workspace2.bzl
-+++ b/tensorflow/workspace2.bzl
-@@ -479,9 +479,9 @@ def _tf_repositories():
  
-     tf_http_archive(
-         name = "com_google_fuzztest",
--        sha256 = "3fe79ede8e860ba7331987b2c1f84d3eeaf5bea00fd76398d6ff0006635586c6",
--        strip_prefix = "fuzztest-6d79ceb1dc2398e02a39efc23ce40d68baa16a42",
--        urls = tf_mirror_urls("https://github.com/google/fuzztest/archive/6d79ceb1dc2398e02a39efc23ce40d68baa16a42.zip"),
-+        sha256 = "0867fae7dce74a62d92b0811b0f735e35f9ea3ba8426a3cb7958ff7b158bed53",
-+        strip_prefix = "fuzztest-0fdfd1aa286054cbf42bbf93006404caa2b827b8",
-+        urls = tf_mirror_urls("https://github.com/google/fuzztest/archive/0fdfd1aa286054cbf42bbf93006404caa2b827b8.zip"),
-     )
- 
-     tf_http_archive(
