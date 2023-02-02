@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build
-RUN git clone --depth 1 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
+RUN git clone --filter=tree:0 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
 WORKDIR spirv-tools
 COPY build.sh $SRC/
