@@ -47,8 +47,7 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of February 2023, OSS-Fuzz has found over [8,900] vulnerabilities and [28,000] bugs in [850] open source
-projects.
+As of February 2023, OSS-Fuzz has helped identify and fix over [8900] vulnerabilities and [28,000] bugs across [850] projects.
 
 [8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
 [28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
