@@ -17,7 +17,7 @@
 
 # Build the project.
 ./buildconf
-./configure --enable-debug
+./configure --enable-debug --disable-tests
 make clean
 make -j$(nproc) V=1 all
 
