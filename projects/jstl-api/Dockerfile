@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-#
-# install maven configuration, which is also used by gradles's publishToMavenLocal
-#
+# Install maven configuration, which is also used by gradles's publishToMavenLocal.
+
 ADD maven-settings.xml ${SRC}/
 RUN apt-get install -y xmlstarlet
 RUN mkdir -p ~/.m2 && \
@@ -26,9 +25,9 @@ RUN mkdir -p ~/.m2 && \
 		-u "settings/localRepository" -v "${OUT}/m2/repository" \
 	< ${SRC}/maven-settings.xml > ~/.m2/settings.xml
 
-#
+
 # install maven and gradle
-#
+
 RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
 	unzip maven.zip -d $SRC/maven-3.8.7 && \
 	rm -rf maven.zip
@@ -43,16 +42,7 @@ ENV GRADLE $SRC/gradle/gradle-7.6/bin/gradle
 
 ENV LIBRARY_NAME jstl-api
 WORKDIR ${SRC}
-#
-# clone repository
-#
 RUN git clone https://github.com/eclipse-ee4j/jstl-api.git ${LIBRARY_NAME}
-
-#
-# apply fixes
-#
-#ADD *.patch ${SRC}/
-#RUN cd ${SRC}/${LIBRARY_NAME} && (for i in ${SRC}/*.patch; do tr -d '\015' < $i | git apply -v; done )
 
 ADD build.sh ${SRC}/
 ADD ${LIBRARY_NAME}-fuzzer ${SRC}/${LIBRARY_NAME}-fuzzer/
