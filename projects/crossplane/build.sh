@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-$SRC/cncf-fuzzing/projects/crossplane/build.sh
+$SRC/crossplane/test/fuzz/oss_fuzz_build.sh
