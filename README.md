@@ -59,6 +59,9 @@ As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabi
 * 2018-11-06 - [A New Chapter for OSS-Fuzz]
 * 2020-10-09 - [Fuzzing internships for Open Source Software]
 * 2020-12-07 - [Improving open source security during the Google summer internship program]
+* 2021-03-10 - [Fuzzing Java in OSS-Fuzz]
+* 2021-12-16 - [Improving OSS-Fuzz and Jazzer to catch Log4Shell]
+* 2022-09-08 - [Fuzzing beyond memory corruption: Finding broader classes of vulnerabilities automatically]
 * 2023-02-01 - [Taking the next step: OSS-Fuzz in 2023]
 
 [Announcing OSS-Fuzz: Continuous fuzzing for open source software]: https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html
@@ -66,4 +69,7 @@ As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabi
 [A New Chapter for OSS-Fuzz]: https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html
 [Fuzzing internships for Open Source Software]: https://security.googleblog.com/2020/10/fuzzing-internships-for-open-source.html
 [Improving open source security during the Google summer internship program]: https://security.googleblog.com/2020/12/improving-open-source-security-during.html
+[Fuzzing Java in OSS-Fuzz]: https://security.googleblog.com/2021/03/fuzzing-java-in-oss-fuzz.html
+[Improving OSS-Fuzz and Jazzer to catch Log4Shell]: https://security.googleblog.com/2021/12/improving-oss-fuzz-and-jazzer-to-catch.html
+[Fuzzing beyond memory corruption: Finding broader classes of vulnerabilities automatically]: https://security.googleblog.com/2022/09/fuzzing-beyond-memory-corruption.html
 [Taking the next step: OSS-Fuzz in 2023]: https://security.googleblog.com/2023/02/taking-next-step-oss-fuzz-in-2023.html
