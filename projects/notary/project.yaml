@@ -7,7 +7,7 @@ auto_ccs :
   - "shizh@microsoft.com"
   - "justin.cormack@docker.com"
   - "toddysm@gmail.com"
-  - “notarycncf@gmail.com"
+  - "notarycncf@gmail.com"
 vendor_ccs :
   - "Adam@adalogics.com"
   - "David@adalogics.com"
