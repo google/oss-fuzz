@@ -47,11 +47,11 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of July 2022, OSS-Fuzz has found over [40,500] bugs in [650] open source
-projects.
+As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabilities and [28,000] bugs across [850] projects.
 
-[40,500]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[650]: https://github.com/google/oss-fuzz/tree/master/projects
+[8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
+[28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
+[850]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
 * 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
@@ -59,9 +59,11 @@ projects.
 * 2018-11-06 - [A New Chapter for OSS-Fuzz]
 * 2020-10-09 - [Fuzzing internships for Open Source Software]
 * 2020-12-07 - [Improving open source security during the Google summer internship program]
+* 2023-02-01 - [Taking the next step: OSS-Fuzz in 2023]
 
 [Announcing OSS-Fuzz: Continuous fuzzing for open source software]: https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html
 [OSS-Fuzz: Five months later, and rewarding projects]: https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html
 [A New Chapter for OSS-Fuzz]: https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html
 [Fuzzing internships for Open Source Software]: https://security.googleblog.com/2020/10/fuzzing-internships-for-open-source.html
 [Improving open source security during the Google summer internship program]: https://security.googleblog.com/2020/12/improving-open-source-security-during.html
+[Taking the next step: OSS-Fuzz in 2023]: https://security.googleblog.com/2023/02/taking-next-step-oss-fuzz-in-2023.html
