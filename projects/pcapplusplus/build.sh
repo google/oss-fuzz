@@ -25,6 +25,7 @@ cd $SRC/libpcap/
 make -j$(nproc)
 
 # Build PcapPlusPlus linking statically against the built libpcap
+cd $SRC/PcapPlusPlus
 cmake -S . -B $PCAPPLUSPLUS_BUILD_DIR -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_ROOT=$SRC/libpcap/
 cmake --build $PCAPPLUSPLUS_BUILD_DIR -j$(nproc)
 
