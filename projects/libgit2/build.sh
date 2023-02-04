@@ -32,7 +32,7 @@ do
     fuzzer_name=$(basename "${fuzzer%.c}")
 
     $CC $CFLAGS -c \
-        -I./src -I./src/util -I./include/ -I./include/git2 \    
+        -I./src -I./src/util -I./include/ -I./include/git2 \
         -I../src/libgit2 -I../src/util -I../include \
         "$fuzzer" -o "$WORK/$fuzzer_name.o"
 
