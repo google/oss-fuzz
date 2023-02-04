@@ -95,6 +95,9 @@ else
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.5 --strip=never"
 fi
 
+# Do not sync bazel-out to /out/ for coverage builds, as this is done
+# at the end of this script instead.
+export FUZZTEST_DO_SYNC="no"
 compile_fuzztests.sh
 
 # In the CI we bail out after having compiled the first set of fuzzers. This is
@@ -182,13 +185,18 @@ then
   declare -r REMAP_PATH=${OUT}/proc/self/cwd/
   mkdir -p ${REMAP_PATH}
 
+  # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
+    "--exclude" "*")
+
   # Sync existing code.
-  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
 
   # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
 
   # Sync external dependencies. We don't need to include `bazel-tensorflow`.
   # Also, remove `external/org_tensorflow` which is a copy of the entire source

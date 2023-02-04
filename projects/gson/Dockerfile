@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget openjdk-17-jdk
 
 RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
