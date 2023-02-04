@@ -223,8 +223,8 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     -I/usr/include/glib-2.0 \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
     $LDFLAGS \
-    -lvips -lexif -llcms2 -ljpeg -lpng -lspng -lz \
-    -ltiff -lwebpmux -lwebpdemux -lwebp -lsharpyuv -lheif -laom \
+    -lvips -lexif -llcms2 -ltiff -ljpeg -lpng -lspng -lz \
+    -lwebpmux -lwebpdemux -lwebp -lsharpyuv -lheif -laom \
     -limagequant -lcgif -lpdfium \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
