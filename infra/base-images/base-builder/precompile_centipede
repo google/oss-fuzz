@@ -30,14 +30,14 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 # data-flow tracing flags, but will still throw errors when they cannot find
 # the corresponding functions.
 # The weak symbols provides fake implementations for intermediate binaries.
-$CXX "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
+$CC "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
 
 # Centipede's ld, which always appends weak.o as a parameter.
 export CENTIPEDE_BIN="$SRC/centipede/bin"
 mkdir -p $CENTIPEDE_BIN
 cat << EOF > ${CENTIPEDE_BIN}/ld
 #!/bin/bash
-/usr/bin/ld \$@ -ldl -lrt -lpthread -lc++ /src/centipede/weak.o
+/usr/bin/ld \$@ -ldl -lrt -lpthread /src/centipede/weak.o
 EOF
 chmod 777 ${CENTIPEDE_BIN}/ld
 
