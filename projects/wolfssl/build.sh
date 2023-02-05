@@ -252,46 +252,45 @@ then
     find $SRC/wycheproof/testvectors/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Unpack corpora from other projects
-    unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_fastmath.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
 
     # Import Botan corpora
     mkdir $SRC/botan-p256-corpus/
-    unzip $SRC/corpus_botan_ecc_p256.zip -d $SRC/botan-p256-corpus/
+    unzip $SRC/corpus_botan_ecc_p256.zip -d $SRC/botan-p256-corpus/ >/dev/null
     find $SRC/botan-p256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp256r1 \;
 
     mkdir $SRC/botan-p384-corpus/
-    unzip $SRC/corpus_botan_ecc_p384.zip -d $SRC/botan-p384-corpus/
+    unzip $SRC/corpus_botan_ecc_p384.zip -d $SRC/botan-p384-corpus/ >/dev/null
     find $SRC/botan-p384-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp384r1 \;
 
     mkdir $SRC/botan-p521-corpus/
-    unzip $SRC/corpus_botan_ecc_p521.zip -d $SRC/botan-p521-corpus/
+    unzip $SRC/corpus_botan_ecc_p521.zip -d $SRC/botan-p521-corpus/ >/dev/null
     find $SRC/botan-p521-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp521r1 \;
 
     mkdir $SRC/botan-bp256-corpus/
-    unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/
+    unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/ >/dev/null
     find $SRC/botan-bp256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,brainpool256r1 \;
 
     # Import OpenSSL/LibreSSL corpora
     mkdir $SRC/openssl-expmod-corpus/
-    unzip $SRC/corpus_openssl_expmod.zip -d $SRC/openssl-expmod-corpus/
+    unzip $SRC/corpus_openssl_expmod.zip -d $SRC/openssl-expmod-corpus/ >/dev/null
     find $SRC/openssl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
     mkdir $SRC/libressl-expmod-corpus/
-    unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/
+    unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/ >/dev/null
     find $SRC/libressl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Write Cryptofuzz built-in tests
