@@ -210,7 +210,7 @@ def find_centipede_auxiliary(main_fuzz_target_path):
   return None
 
 
-def test_all(out, allowed_broken_targets_percentage):
+def test_all(out, allowed_broken_targets_percentage):  # pylint: disable=too-many-return-statements
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
   fuzz_targets = find_fuzz_targets(out)
