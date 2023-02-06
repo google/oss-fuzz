@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip requests
 RUN git clone https://github.com/gabrielfalcao/httpretty httpretty
 COPY *.sh *py $SRC/
 WORKDIR $SRC/httpretty
