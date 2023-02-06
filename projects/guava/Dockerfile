@@ -16,6 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+ENV JAVA_VERSION=17
+
+RUN apt update && apt install -y openjdk-${JAVA_VERSION}-jdk
+
 RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
