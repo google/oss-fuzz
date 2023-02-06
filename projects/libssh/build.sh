@@ -28,7 +28,10 @@ for f in $fuzzers; do
     fuzzerName=$(basename $f .c)
     echo "Building fuzzer $fuzzerName"
     $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
-        "$f" -o "$OUT/$fuzzerName" -O0 -g \
+        -c "$f" -O0 -g
+
+    $CXX $CXXFLAGS $fuzzerName.o \
+        -o "$OUT/$fuzzerName" -O0 -g \
         $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
 
     if [ -d "$SRC/libssh/tests/fuzz/${fuzzerName}_corpus" ]; then
