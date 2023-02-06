@@ -51,9 +51,9 @@ RUN find v8-vulnerabilities/pocs -iname '*.js' -exec stripcomments --write --con
 RUN find v8/test/mjsunit -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+
 
 # Process corpora
-COPY filter-corpus.py $SRC/
-RUN python filter-corpus.py
-RUN rm $SRC/filter-corpus.py
+COPY preprocess-corpus.py $SRC/
+RUN python preprocess-corpus.py
+RUN rm $SRC/preprocess-corpus.py
 
 # Add unit tests from project directory as seed corpus.
 RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
