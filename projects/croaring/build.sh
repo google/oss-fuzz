@@ -17,13 +17,12 @@
 
 mkdir build-dir && cd build-dir
 cmake -DENABLE_ROARING_TESTS=OFF ..
-      
 make -j$(nproc)
 
 $CC $CFLAGS  \
      -I$SRC/croaring/include \
      -c $SRC/croaring_fuzzer.c -o fuzzer.o
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o   \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.o   \
      -o $OUT/croaring_fuzzer $SRC/croaring/build-dir/src/libroaring.a
 
 zip $OUT/croaring_fuzzer_seed_corpus.zip $SRC/croaring/tests/testdata/*bin

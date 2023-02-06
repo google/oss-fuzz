@@ -20,6 +20,7 @@ cd gpac
 make
 
 cp $SRC/testsuite/oss-fuzzers/fuzz_parse.c .
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_parse.c -o $OUT/fuzz_parse \
-    -I./include -I./ ./bin/gcc/libgpac_static.a \
-    -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H 
+$CC $CFLAGS -I./include -I./ -DGPAC_HAVE_CONFIG_H -c fuzz_parse.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse.o -o $OUT/fuzz_parse \
+  ./bin/gcc/libgpac_static.a \
+  -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
