@@ -16,7 +16,7 @@
 
 # Base image for all other images.
 
-ARG parent_image=ubuntu:20.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6
+ARG parent_image=ubuntu:20.04@sha256:4a45212e9518f35983a976eead0de5eecc555a2f047134e9dd2cfc589076a00d
 
 FROM $parent_image
 
