@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-python3 ./setup.py install
+pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

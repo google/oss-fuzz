@@ -15,12 +15,21 @@
 """Targets parseString"""
 import sys
 import atheris
+import xml
+from defusedxml.pulldom import parseString as pulldom_parseString
+from defusedxml.minidom import parseString as minidom_parseString
+from defusedxml.expatbuilder import parseString as expatbuilder_parseString
 import defusedxml
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  defusedxml.pulldom.parseString(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  pulldom_parseString(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  try:
+    minidom_parseString(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    expatbuilder_parseString(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except xml.parsers.expat.error:
+    pass
 
 
 def main():
