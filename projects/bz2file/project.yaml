@@ -1,0 +1,10 @@
+homepage: https://github.com/nvawda/bz2file
+main_repo: https://github.com/nvawda/bz2file
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
