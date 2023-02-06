@@ -28,10 +28,19 @@ cd src
 mkdir objects && find . -name "*.o" -exec cp {} ./objects/ \;
 ar -r libkamilio.a ./objects/*.o
 cd ../
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_uri.c -o $OUT/fuzz_uri \
+$CC $CFLAGS -c ./misc/fuzz/fuzz_uri.c \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
     -I./src/ -I./src/core/parser -ldl -lresolv -lm
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_parse_msg.c -o $OUT/fuzz_parse_msg \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_uri.o -o $OUT/fuzz_uri \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
     -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
+$CC $CFLAGS  ./misc/fuzz/fuzz_parse_msg.c -c \
+    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
+    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_msg.o -o $OUT/fuzz_parse_msg \
+    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
+    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
