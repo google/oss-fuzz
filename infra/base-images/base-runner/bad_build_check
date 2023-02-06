@@ -315,6 +315,13 @@ function check_mixed_sanitizers {
     return 0
   fi
 
+  if [ "${FUZZING_LANGUAGE:-}" = "javascript" ]; then
+    # Jazzer.js currently does not support using sanitizers with native Node.js addons.
+    # This is not relevant anyways since supporting this will be done by preloading
+    # the sanitizers in the wrapper script starting Jazzer.js.
+    return 0
+  fi
+
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
     return 0
@@ -399,6 +406,12 @@ function check_architecture {
   if [ "${FUZZING_LANGUAGE:-}" = "jvm" ]; then
     # The native dependencies of a JVM project are not packaged, but loaded
     # dynamically at runtime and thus cannot be checked here.
+    return 0;
+  fi
+
+  if [ "${FUZZING_LANGUAGE:-}" = "javascript" ]; then
+    # Jazzer.js fuzzers are wrapper scripts that start the fuzz target with
+    # the Jazzer.js CLI.
     return 0;
   fi
 

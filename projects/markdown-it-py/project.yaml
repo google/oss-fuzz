@@ -1,0 +1,10 @@
+homepage: https://github.com/executablebooks/markdown-it-py
+main_repo: https://github.com/executablebooks/markdown-it-py
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
