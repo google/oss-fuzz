@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide
-WORKDIR gitoxide
-RUN rustup component add rust-src
-COPY build.sh $SRC/
+pip3 install .
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

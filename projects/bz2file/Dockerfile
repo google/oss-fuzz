@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,11 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide
-WORKDIR gitoxide
-RUN rustup component add rust-src
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/nvawda/bz2file bz2file
+COPY *.sh *py $SRC/
+WORKDIR $SRC/bz2file

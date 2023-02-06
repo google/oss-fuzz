@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differenti
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
 # needed to compile mbedtls
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
-RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
+RUN git clone --depth 1 https://github.com/libecc/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git gcrypt
