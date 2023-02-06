@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:a723398a016b23d0e2b29f5c0203a6734900e404d09fdd44a555c1514ca513fa
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install python -y
+RUN apt-get update && apt-get install python3 -y
 RUN git clone --depth 1 https://github.com/protocolbuffers/upb.git upb
 WORKDIR upb
 COPY build.sh $SRC/
