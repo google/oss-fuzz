@@ -86,6 +86,9 @@ rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 
+# TODO: Investigate why this code block is skipped
+# by all default fuzzers in bad_build_check.
+# They all set SKIP_SEED_CORPUS=1.
 if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   echo "Using seed corpus: $SEED_CORPUS"
   unzip -o -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null

@@ -122,7 +122,7 @@ function check_engine {
     # binaries if they are from trial build and production build.
     # TODO(Dongge): Support run test with sanitized binaries for trial and
     # production build.
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "\[0] begin-fuzz: ft: 0 cov: 0" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
       echo "BAD BUILD: fuzzing $FUZZER with centipede failed."
