@@ -220,9 +220,9 @@ def test_all(out, allowed_broken_targets_percentage):
 
   if centipede_needs_auxiliaries():
     for fuzz_target in fuzz_targets:
-      if not find_centipede_auxiliary(fuzz_target)
-      print(f'ERROR: Couldn\'t find auxiliary for {fuzz_target}.')
-      return False
+      if not find_centipede_auxiliary(fuzz_target):
+        print(f'ERROR: Couldn\'t find auxiliary for {fuzz_target}.')
+        return False
 
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
