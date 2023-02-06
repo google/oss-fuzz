@@ -222,24 +222,24 @@ then
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
     unset WOLFCRYPT_INCLUDE_PATH
 
-    # Build disable-fastmath fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-disable-fastmath/
-    cp -R $SRC/wolfssl/ $SRC/wolfssl-disable-fastmath/
-    cd $SRC/wolfssl-disable-fastmath/
+    # Build fastmath fuzzer
+    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-fastmath/
+    cp -R $SRC/wolfssl/ $SRC/wolfssl-fastmath/
+    cd $SRC/wolfssl-fastmath/
     autoreconf -ivf
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
-    ./configure $WOLFCRYPT_CONFIGURE_PARAMS --disable-fastmath
+    ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-fastmath
     make -j$(nproc)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
-    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-disable-fastmath/src/.libs/libwolfssl.a"
-    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-disable-fastmath/"
-    cd $SRC/cryptofuzz-disable-fastmath/modules/wolfcrypt
+    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-fastmath/src/.libs/libwolfssl.a"
+    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-fastmath/"
+    cd $SRC/cryptofuzz-fastmath/modules/wolfcrypt
     make -j$(nproc)
-    cd $SRC/cryptofuzz-disable-fastmath/modules/botan
+    cd $SRC/cryptofuzz-fastmath/modules/botan
     make -j$(nproc)
-    cd $SRC/cryptofuzz-disable-fastmath/
+    cd $SRC/cryptofuzz-fastmath/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
-    cp cryptofuzz $OUT/cryptofuzz-disable-fastmath
+    cp cryptofuzz $OUT/cryptofuzz-fastmath
     CFLAGS="$OLD_CFLAGS"
     CXXFLAGS="$OLD_CXXFLAGS"
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
@@ -248,54 +248,53 @@ then
     mkdir $SRC/cryptofuzz-seed-corpus/
 
     # Convert Wycheproof test vectors to Cryptofuzz corpus format
-    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
-    find $SRC/wycheproof/testvectors/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+    find $SRC/wycheproof/testvectors/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Unpack corpora from other projects
-    unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/
-    unzip -n $SRC/corpus_wolfssl_disable-fastmath.zip -d $SRC/cryptofuzz_seed_corpus/
+    unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
+    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
 
     # Import Botan corpora
     mkdir $SRC/botan-p256-corpus/
-    unzip $SRC/corpus_botan_ecc_p256.zip -d $SRC/botan-p256-corpus/
-    find $SRC/botan-p256-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp256r1 \;
+    unzip $SRC/corpus_botan_ecc_p256.zip -d $SRC/botan-p256-corpus/ >/dev/null
+    find $SRC/botan-p256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp256r1 \;
 
     mkdir $SRC/botan-p384-corpus/
-    unzip $SRC/corpus_botan_ecc_p384.zip -d $SRC/botan-p384-corpus/
-    find $SRC/botan-p384-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp384r1 \;
+    unzip $SRC/corpus_botan_ecc_p384.zip -d $SRC/botan-p384-corpus/ >/dev/null
+    find $SRC/botan-p384-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp384r1 \;
 
     mkdir $SRC/botan-p521-corpus/
-    unzip $SRC/corpus_botan_ecc_p521.zip -d $SRC/botan-p521-corpus/
-    find $SRC/botan-p521-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp521r1 \;
+    unzip $SRC/corpus_botan_ecc_p521.zip -d $SRC/botan-p521-corpus/ >/dev/null
+    find $SRC/botan-p521-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp521r1 \;
 
     mkdir $SRC/botan-bp256-corpus/
-    unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/
-    find $SRC/botan-bp256-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,brainpool256r1 \;
+    unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/ >/dev/null
+    find $SRC/botan-bp256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,brainpool256r1 \;
 
     # Import OpenSSL/LibreSSL corpora
     mkdir $SRC/openssl-expmod-corpus/
-    unzip $SRC/corpus_openssl_expmod.zip -d $SRC/openssl-expmod-corpus/
-    find $SRC/openssl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
+    unzip $SRC/corpus_openssl_expmod.zip -d $SRC/openssl-expmod-corpus/ >/dev/null
+    find $SRC/openssl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
     mkdir $SRC/libressl-expmod-corpus/
-    unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/
-    find $SRC/libressl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
+    unzip $SRC/corpus_libressl_expmod.zip -d $SRC/libressl-expmod-corpus/ >/dev/null
+    find $SRC/libressl-expmod-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-openssl-expmod={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Write Cryptofuzz built-in tests
-    $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-builtin-tests=$SRC/cryptofuzz-seed-corpus/
+    $SRC/cryptofuzz-fastmath/cryptofuzz --from-builtin-tests=$SRC/cryptofuzz-seed-corpus/
 
     # Pack it
     cd $SRC/cryptofuzz_seed_corpus
@@ -306,7 +305,7 @@ then
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math-all_seed_corpus.zip
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math-all-8bit_seed_corpus.zip
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math_seed_corpus.zip
-    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-disable-fastmath_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-fastmath_seed_corpus.zip
 
     # Remove files that are no longer needed to prevent running out of disk space
     rm -rf $SRC/botan-p256-corpus/
