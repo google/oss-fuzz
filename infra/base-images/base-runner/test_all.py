@@ -111,10 +111,15 @@ def do_bad_build_check(fuzz_target):
     auxiliary = []
 
   command = ['bad_build_check', fuzz_target] + auxiliary
-  return subprocess.run(command,
-                        stderr=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        check=False)
+  with tempfile.TemporaryDirectory() as temp_centipede_workdir:
+    # Do this so that centipede doesn't fill up the disk during bad build check
+    env = os.environ.copy()
+    env['CENTIPEDE_WORKDIR'] = temp_centipede_workdir
+    return subprocess.run(command,
+                          stderr=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          env=env,
+                          check=False)
 
 
 def get_broken_fuzz_targets(bad_build_results, fuzz_targets):
