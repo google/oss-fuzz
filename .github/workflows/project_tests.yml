@@ -19,11 +19,11 @@ jobs:
         engine:
           - libfuzzer
         sanitizer:
-          - none
           - address
           - memory
           - undefined
           - coverage
+          - none
         architecture:
           - x86_64
         include:
