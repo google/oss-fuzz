@@ -193,11 +193,16 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
-        print(result.logs)
+        print(f'Fuzzing logs:\n{result.logs}')
 
       if not result.crashes:
         # Libfuzzer max time was reached.
         logging.info('Fuzzer %s finished with no crashes discovered.',
+                     self.target_name)
+        return FuzzResult(None, None, self.latest_corpus_path)
+
+      if result.timed_out:
+        logging.info('Not reporting crash in %s because process timed out.',
                      self.target_name)
         return FuzzResult(None, None, self.latest_corpus_path)
 

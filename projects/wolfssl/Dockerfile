@@ -18,7 +18,7 @@
 # Please fix failure and upgrade.
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python
+RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python bsdmainutils
 RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
 RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
@@ -47,7 +47,6 @@ RUN gsutil cp gs://num-bigint-backup.clusterfuzz-external.appspot.com/corpus/lib
 RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all/public.zip $SRC/corpus_wolfssl_sp-math-all.zip
 RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all-8bit/public.zip $SRC/corpus_wolfssl_sp-math-all-8bit.zip
 RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math/public.zip $SRC/corpus_wolfssl_sp-math.zip
-RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-disable-fastmath/public.zip $SRC/corpus_wolfssl_disable-fastmath.zip
 
 # Botan corpora, which require a special import procedure
 RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p256/public.zip $SRC/corpus_botan_ecc_p256.zip

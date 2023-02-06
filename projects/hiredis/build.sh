@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-make USE_SSL=0
+make USE_SSL=0 static
 mv fuzzing/format_command_fuzzer.c .
 
 $CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC \
