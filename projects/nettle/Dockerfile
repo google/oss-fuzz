@@ -14,8 +14,6 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get install -y software-properties-common make autoconf build-essential wget lzip libtool python
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle

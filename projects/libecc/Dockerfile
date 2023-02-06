@@ -14,8 +14,6 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip
 RUN git clone --depth 1 --branch cryptofuzz https://github.com/libecc/libecc.git
