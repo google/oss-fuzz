@@ -14,13 +14,11 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
 ENV GO111MODULE off
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/supranational/blst.git
