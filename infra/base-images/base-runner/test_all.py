@@ -118,7 +118,7 @@ def do_bad_build_check(fuzz_target):
     return subprocess.run(command,
                           stderr=subprocess.PIPE,
                           stdout=subprocess.PIPE,
-                          env=env
+                          env=env,
                           check=False)
 
 
