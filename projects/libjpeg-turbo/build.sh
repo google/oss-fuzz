@@ -1,4 +1,4 @@
-# Copyright 2022 D. R. Commander
+# Copyright 2022-2023 D. R. Commander
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@
 set -e
 set -u
 
-for branch in main 2.0.x dev; do
-	if [ "$branch" = "dev" -a ! -d libjpeg-turbo.$branch ]; then
-		continue
-	fi
+cat fuzz/branches.txt | while read branch; do
 	pushd libjpeg-turbo.$branch
 	if [ "$branch" = "main" ]; then
 		sh fuzz/build.sh

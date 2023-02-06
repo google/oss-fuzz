@@ -22,5 +22,9 @@ do
   make -C $h get-deps
   make -C $h all
   cp $h/_build/$(basename $h) $OUT/
+  corpus=$h/$(basename $h)_seed_corpus.zip  
+  if test -f $corpus; then
+    cp $corpus $OUT/
+  fi
 done
 

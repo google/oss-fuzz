@@ -20,7 +20,7 @@ index 03c5306e90..9d1466b531 100644
                              <goal>check</goal>
                          </goals>
 @@ -253,6 +254,7 @@
-                 <version>1.16.0</version>
+                 <version>1.17.0</version>
                  <executions>
                      <execution>
 +						<phase>none</phase>

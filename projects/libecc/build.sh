@@ -28,7 +28,6 @@ cp -R boost/ /usr/include/
 
 # Build libecc
 cd $SRC/libecc
-git checkout cryptofuzz
 export CFLAGS="$CFLAGS -DUSE_CRYPTOFUZZ"
 make -j$(nproc) build/libsign.a
 export LIBECC_PATH=$(realpath .)

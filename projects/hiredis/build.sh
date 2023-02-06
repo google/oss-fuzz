@@ -15,11 +15,11 @@
 #
 ################################################################################
 
-make USE_SSL=0
+make USE_SSL=0 static
 mv fuzzing/format_command_fuzzer.c .
 
 $CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC \
 	format_command_fuzzer.c -o format_command_fuzzer.o
 
-$CC $CFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE format_command_fuzzer.o \
+$CXX $CXXFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE format_command_fuzzer.o \
 	-o $OUT/format_command_fuzzer libhiredis.a

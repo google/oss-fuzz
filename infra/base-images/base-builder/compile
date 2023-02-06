@@ -37,6 +37,21 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   fi
 fi
 
+if [ "$FUZZING_LANGUAGE" = "javascript" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JavaScript projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "none" ]; then
+    echo "ERROR: JavaScript projects cannot be fuzzed with sanitizers."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: JavaScript projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
   if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
     echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."

@@ -23,6 +23,7 @@ jobs:
           - memory
           - undefined
           - coverage
+          - none
         architecture:
           - x86_64
         include:
@@ -43,6 +44,9 @@ jobs:
             architecture: x86_64
           - engine: centipede
             sanitizer: address
+            architecture: x86_64
+          - engine: centipede
+            sanitizer: none
             architecture: x86_64
     env:
       ENGINE: ${{ matrix.engine }}
@@ -73,6 +77,9 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
+          cache: pip
+          cache-dependency-path: |
+            infra/ci/requirements.txt
 
       - name: Install dependencies
         run: |

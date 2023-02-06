@@ -34,7 +34,7 @@ for fuzzer in $(find $H3_BASE/src/apps/fuzzers -name '*.c'); do
     -o $fuzzer_basename.o \
     -c $fuzzer
 
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -rdynamic \
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic \
     $fuzzer_basename.o \
     -o $OUT/$fuzzer_basename \
     lib/libh3.a
