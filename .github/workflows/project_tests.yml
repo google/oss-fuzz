@@ -45,6 +45,9 @@ jobs:
           - engine: centipede
             sanitizer: address
             architecture: x86_64
+          - engine: centipede
+            sanitizer: none
+            architecture: x86_64
     env:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}
