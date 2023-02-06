@@ -19,7 +19,7 @@
 make
 
 $CC $CFLAGS -fPIE -Wall -Werror -pipe -DHAVE_CONFIG_H -I. -I include/ -c FuzzDecode.c
-$CC $CFLAGS -fPIE -pie -o FuzzDecode FuzzDecode.o $LIB_FUZZING_ENGINE src/daemon/.libs/liblldpd.a libevent/.libs/libevent.a
+$CXX $CXXFLAGS -fPIE -pie -o FuzzDecode FuzzDecode.o $LIB_FUZZING_ENGINE src/daemon/.libs/liblldpd.a libevent/.libs/libevent.a
 cp FuzzDecode $OUT/FuzzDecode
 
 pushd $SRC/oss-fuzz-bloat/lldpd/
