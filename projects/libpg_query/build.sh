@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 # Copyright 2021 Google LLC
-#
+#n
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,4 +16,5 @@
 ################################################################################
 
 make build
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzz/fuzz_parser.c ./libpg_query.a -I./ -o $OUT/fuzz_parser
+$CC $CFLAGS -c ./test/fuzz/fuzz_parser.c ./libpg_query.a -I./
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parser.o ./libpg_query.a -I./ -o $OUT/fuzz_parser
