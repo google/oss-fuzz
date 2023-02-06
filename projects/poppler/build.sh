@@ -17,6 +17,9 @@
 PREFIX=$WORK/prefix
 mkdir -p $PREFIX
 
+CFLAGS="$CFLAGS -fuse-ld=lld"
+CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
+
 export PKG_CONFIG="`which pkg-config` --static"
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export PATH=$PREFIX/bin:$PATH
