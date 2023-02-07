@@ -9,6 +9,7 @@ sanitizers:
   - address
   - undefined
   - memory
+  - nalloc
 auto_ccs:
   - pascal.massimino@gmail.com
   - vrabaud@google.com

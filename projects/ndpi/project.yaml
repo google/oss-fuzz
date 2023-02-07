@@ -8,4 +8,9 @@ sanitizers:
   - address
   - undefined
   - memory
+  - nalloc
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 main_repo: 'https://github.com/ntop/nDPI.git'

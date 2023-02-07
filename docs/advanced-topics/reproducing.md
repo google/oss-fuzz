@@ -138,6 +138,8 @@ Once you reproduce the bug, you can do the following:
 - **Improve fuzzing support:** Consider
    [improving your integration with OSS-Fuzz]({{ site.baseurl }}/advanced-topics/ideal-integration/).
 
+For `nalloc` sanitizer, if you launch the target yourself, without the python wrapper, be sure to use `-runs=2` or more.
+
 ## Reproducing build failures
 
 Our infrastructure runs some sanity tests to make sure that your build was

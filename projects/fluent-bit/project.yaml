@@ -10,3 +10,7 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - nalloc

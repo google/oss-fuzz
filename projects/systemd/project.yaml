@@ -6,6 +6,7 @@ sanitizers:
   - address
   - undefined
   - memory
+  - nalloc
 fuzzing_engines:
   - afl
   - honggfuzz

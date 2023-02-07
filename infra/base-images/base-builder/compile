@@ -175,6 +175,10 @@ EOF
   export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
 fi
 
+if [ "$SANITIZER" = "nalloc" ]; then
+  export LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE $SRC/nallocfuzz/nallocsan.a"
+fi
+
 if [ "$SANITIZER" = "introspector" ]; then
   export AR=llvm-ar
   export NM=llvm-nm
