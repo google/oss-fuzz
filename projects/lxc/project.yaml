@@ -14,3 +14,6 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+  # - centipede
+  # Don't use centipede because it can't handle fuzz targets with "config" in
+  # the name.
