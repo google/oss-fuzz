@@ -47,10 +47,6 @@ BUILD_TYPES = {
     'coverage':
         BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
-    'introspector':
-        BuildType('introspector',
-                  build_and_run_coverage.get_fuzz_introspector_steps,
-                  'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -122,7 +118,7 @@ def get_args(args=None):
   parser.add_argument(
       '--sanitizers',
       required=False,
-      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
+      default=['address', 'memory', 'undefined', 'coverage'],
       nargs='+',
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
@@ -216,7 +212,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
     build_project.set_yaml_defaults(project_yaml)
     print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
+        project_yaml['sanitizers']) + ['coverage']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
