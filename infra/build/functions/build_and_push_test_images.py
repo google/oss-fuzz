@@ -103,7 +103,7 @@ def gcb_build_and_push_images(test_image_suffix):
                                            src_root='.')
     steps.append(step)
     steps.append({'name': 'gcr.io/cloud-builders/docker',
-                  'args': ['push': test_tag],
+                  'args': ['push', test_tag],
                   'waitFor': '-',})
 
   overrides = {'images': []}
