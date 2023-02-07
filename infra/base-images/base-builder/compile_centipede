@@ -27,7 +27,7 @@ cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export CENTIPEDE_FLAGS=`cat "$SRC/centipede/clang-flags.txt" | tr '\n' ' '`
 export LIBRARIES_FLAGS="-Wno-unused-command-line-argument -Wl,-ldl -Wl,-lrt -Wl,-lpthread -Wl,$SRC/centipede/weak.o"
-p
+
 export CFLAGS="$CFLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
 export CXXFLAGS="$CXXFLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
 
