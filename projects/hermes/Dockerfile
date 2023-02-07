@@ -16,14 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool wget \
-    python3 zip libreadline-dev libatomic-ops-dev
+    apt-get install -yqq make autoconf automake libtool wget \
+    python3 zip libreadline-dev libatomic-ops-dev npm
 
 # Building ninja requires PEP 517.
 RUN pip3 install "pip>=22.3.1"
 
 RUN pip3 install meson ninja
 RUN ln -s /usr/local/bin/ninja /usr/bin/ninja
+
+# Install NPM to strip comments
+RUN npm install -g @prasadrajandran/strip-comments-cli
 
 # Add JS dictionaries
 RUN git clone --depth 1 https://github.com/chromium/chromium && \
@@ -35,20 +38,25 @@ RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.ta
     mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
 
 RUN git clone https://github.com/facebook/hermes.git
+RUN git clone --depth 1 https://github.com/tc39/test262
+RUN git clone --depth 1 https://github.com/Zon8Research/v8-vulnerabilities
 
-# Add tests from project directory as seed corpus.
-RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+# Strip comments from corpus.
+RUN find hermes/test -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+
+RUN find test262/test -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+
+RUN find v8-vulnerabilities/pocs -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+
 
-# Add tests from test262 as seed corpus
-RUN git clone --depth 1 https://github.com/tc39/test262 && \
-    find test262/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
-
-# Add V8 PoCs as seed corpus.
+# Process corpora
 COPY filter-corpus.py $SRC/
-RUN git clone --depth 1 https://github.com/Zon8Research/v8-vulnerabilities && \
-    python filter-corpus.py && \
-    find v8-vulnerabilities/pocs -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+RUN python filter-corpus.py
 RUN rm $SRC/filter-corpus.py
+
+# Add unit tests from project directory as seed corpus.
+RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+# Add tests from test262 as seed corpus.
+RUN find test262/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
+# Add V8 PoCs as seed corpus.
+RUN find v8-vulnerabilities/pocs -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
 
 WORKDIR $SRC
 COPY build.sh $SRC/

@@ -55,11 +55,13 @@ cd $SRC/fuzz
 ruby gen_init_ruby_load_paths.rb > init_ruby_load_paths.h
 
 # The -rpath flag helps the dynamic linker to find .so files in /out/lib
-${CC} ${CFLAGS} fuzz_ruby_gems.c -o $OUT/fuzz_ruby_gems \
-    -Wall \
+${CC} ${CFLAGS} -c fuzz_ruby_gems.c -Wall -L${RUBY_LIB_DIR} \
+  ${RUBY_INCLUDES} \
+  -Wl,-rpath,'$ORIGIN'/lib \
+  ${RUBY_LIBRARIES}
+
+${CXX} ${CXXFLAGS} fuzz_ruby_gems.o -o $OUT/fuzz_ruby_gems \
     -Wl,-rpath,'$ORIGIN'/lib \
-    -L${RUBY_LIB_DIR} \
-    ${RUBY_INCLUDES} \
     ${RUBY_LIBRARIES} \
     ${LIB_FUZZING_ENGINE}
 

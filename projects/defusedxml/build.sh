@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 #
 ################################################################################
 
-mkdir build && cd build
-cmake ../ -DBUILD_SHARED_LIBS=OFF
-make
-$CC $CFLAGS -c ../test/fuzzers/fuzz-mdhtml.c -I../src
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-mdhtml.o -o $OUT/fuzz-mdhtml \
-    ./src/libmd4c-html.a ./src/libmd4c.a
+pip3 install .
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
