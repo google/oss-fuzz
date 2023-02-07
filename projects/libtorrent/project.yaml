@@ -5,3 +5,7 @@ auto_ccs:
  - "oss-fuzz-libtorrent@pauldreik.se"
  - "arvid.norberg@gmail.com"
 main_repo: 'https://github.com/arvidn/libtorrent.git'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

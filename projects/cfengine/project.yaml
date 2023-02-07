@@ -4,6 +4,10 @@ language: c++
 primary_contact: "vratislav.podzimek@northern.tech"
 auto_ccs:
   - "Adam@adalogics.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 sanitizers:
   - address
   - undefined
