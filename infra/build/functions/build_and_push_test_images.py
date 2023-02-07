@@ -102,8 +102,11 @@ def gcb_build_and_push_images(test_image_suffix):
                                            use_buildkit_cache=True,
                                            src_root='.')
     steps.append(step)
+    steps.append({'name': 'gcr.io/cloud-builders/docker',
+                  'args': ['push': test_tag],
+                  'waitFor': '-',})
 
-  overrides = {'images': test_tags}
+  overrides = {'images': []}
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
                                         GCB_BUILD_TAGS + [test_image_suffix])
   _run_cloudbuild(build_body)
