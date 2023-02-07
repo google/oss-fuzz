@@ -6,3 +6,7 @@ auto_ccs:
   - "info@christianbeier.net"
   - "christian.cb.beier@gmail.com"
 main_repo: 'https://github.com/LibVNC/libvncserver.git'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

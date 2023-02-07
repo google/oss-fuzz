@@ -10,3 +10,7 @@ auto_ccs:
   - "jakuje@gmail.com"
   - "xhanulik@gmail.com"
 main_repo: 'https://github.com/OpenSC/OpenSC'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

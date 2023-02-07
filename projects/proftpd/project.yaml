@@ -7,3 +7,7 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"
