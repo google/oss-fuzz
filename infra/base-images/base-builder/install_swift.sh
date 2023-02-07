@@ -37,7 +37,7 @@ apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends
 
 
-wget https://download.swift.org/swift-5.7-release/ubuntu2004/swift-5.7-RELEASE/swift-5.7-RELEASE-ubuntu20.04.tar.gz
+wget -q https://download.swift.org/swift-5.7-release/ubuntu2004/swift-5.7-RELEASE/swift-5.7-RELEASE-ubuntu20.04.tar.gz
 tar xzf swift-5.7-RELEASE-ubuntu20.04.tar.gz
 cp -r swift-5.7-RELEASE-ubuntu20.04/usr/* /usr/
 rm -rf swift-5.7-RELEASE-ubuntu20.04.tar.gz swift-5.7-RELEASE-ubuntu20.04/
