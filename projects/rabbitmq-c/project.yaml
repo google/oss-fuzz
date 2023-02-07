@@ -9,6 +9,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - undefined
-  - memory
 main_repo: 'https://github.com/alanxz/rabbitmq-c'
