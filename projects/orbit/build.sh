@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Dont check Coverage in CI as it gets killed
+if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
+  touch $OUT/exit
+  exit 0
+fi
+
 #builds project
 export PATH="$HOME/.local/bin:$PATH"
 $SRC/orbit/bootstrap-orbit.sh --dont-compile --ignore-system-requirements
@@ -35,9 +41,6 @@ echo "OrbitProfiler:LDFLAGS=\$BASE_LDFLAGS ${LDFLAGS:-}" >> ~/.conan/profiles/de
 echo "llvm-core:CFLAGS=\$BASE_CFLAGS $CFLAGS" >> ~/.conan/profiles/default
 echo "llvm-core:CXXFLAGS=\$BASE_CXXFLAGS $CXXFLAGS" >> ~/.conan/profiles/default
 echo "llvm-core:LDFLAGS=\$BASE_LDFLAGS ${LDFLAGS:-}" >> ~/.conan/profiles/default
-
-# LLVM exhausts the memory on CI runners when 2 jobs run in parallel, so we restrict to 1 here.
-echo "llvm-core:CONAN_CPU_COUNT=1" >> ~/.conan/profiles/default
 
 $SRC/orbit/build.sh default
 
