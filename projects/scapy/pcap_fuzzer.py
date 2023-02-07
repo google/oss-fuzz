@@ -21,6 +21,7 @@ with atheris.instrument_imports():
   import io
   import scapy
   import scapy.error
+  import scapy.layers.all
   import scapy.utils
 
 
