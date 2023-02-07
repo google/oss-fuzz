@@ -99,7 +99,7 @@ then
 fi
 
  # Don't need coverage instrumentation for engine-less, afl++ builds.
-if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ]; then
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] ; then
   export COVERAGE_FLAGS=
 fi
 

@@ -124,7 +124,7 @@ RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
     mkdir honggfuzz && \
     cd honggfuzz && \
-    tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    tar -xz --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 
