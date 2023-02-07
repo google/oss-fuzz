@@ -21,12 +21,12 @@
 # Builds fuzzers from within a container into /out/ directory.
 # Expects /src/cras to contain a cras checkout.
 
-cd ${SRC}/adhd/cras
-
+cd ${SRC}/adhd/cras/src/server/rust
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-cargo build --release --manifest-path=src/server/rust/Cargo.toml --target-dir=${WORK}/cargo_out
+cargo build --release --target-dir=${WORK}/cargo_out
 cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
+cd ${SRC}/adhd/cras
 # Set bazel options.
 # See also:
 # https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests
@@ -43,7 +43,7 @@ bazel_opts=(
     "-c" "opt"
     "--cxxopt=-stdlib=libc++"
     "--linkopt=-lc++"
-    "--//:fuzzer"
+    "--config=fuzzer"
     "--//:system_cras_rust"
 )
 if [[ "$SANITIZER" == "undefined" ]]; then
