@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:254ba32c9e5a630865d0a4121fbe53ff7ba8c8394901005674ffa3de17efcd18
 RUN git clone https://github.com/pycrypto/pycrypto
 COPY build.sh *.py $SRC/
 WORKDIR pycrypto
