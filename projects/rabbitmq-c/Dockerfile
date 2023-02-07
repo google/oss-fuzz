@@ -15,6 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake
-RUN git clone https://github.com/alanxz/rabbitmq-c librabbitmq
+RUN git clone https://github.com/alanxz/rabbitmq-c librabbitmq/
 COPY build.sh $SRC/
 WORKDIR $SRC/librabbitmq/
