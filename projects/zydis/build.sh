@@ -48,15 +48,22 @@ function build_fuzzer() {
 
     $CC                                     \
         $CFLAGS                             \
-        "${LIB_FUZZING_ENGINE}"             \
+        -c                                  \
         "../tools/${source_file}"           \
         ../tools/ZydisFuzzShared.c          \
         -DZYDIS_LIBFUZZER                   \
-        -o "${OUT}/${executable}"           \
         -I .                                \
         -I ./zycore                         \
         -I ../include                       \
-        -I ../dependencies/zycore/include   \
+        -I ../dependencies/zycore/include
+
+     $CXX                                   \
+        $CXXFLAGS                           \
+        "${LIB_FUZZING_ENGINE}"             \
+        "$executable.o"                      \
+        ZydisFuzzShared.o                   \
+        -DZYDIS_LIBFUZZER                   \
+        -o "${OUT}/${executable}"           \
         ./libZydis.a
 
     echo -e "[libfuzzer]\nmax_len = ${max_len}" > "${OUT}/${executable}.options"
