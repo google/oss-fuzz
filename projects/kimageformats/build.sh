@@ -23,7 +23,7 @@ CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
 CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 autoreconf --install
 ./configure --disable-examples
-make -j$(nproc) 
+make -j$(nproc)
 make install -j$(nproc)
 CFLAGS=$TMP_CFLAGS
 CXXFLAGS=$TMP_CXXFLAGS
@@ -46,8 +46,10 @@ make install -j$(nproc)
 cd $SRC
 cd qtbase
 # add the flags to Qt build too
-sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
+# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
+# contain paths with slashes.
+sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
+sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
 # disable sanitize=vptr for harfbuzz since it compiles without rtti
 sed -i -e "s/TARGET = qtharfbuzz/TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr/g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
 # make qmake compile faster
