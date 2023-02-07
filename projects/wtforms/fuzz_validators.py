@@ -19,7 +19,6 @@ import wtforms
 
 
 class FuzzField:
-
   def __init__(self, text):
     self.text = text
     self.data = text
@@ -28,7 +27,6 @@ class FuzzField:
     return self.text
 
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
