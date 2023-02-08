@@ -1,3 +1,5 @@
+#! /bin/bash
+
 #! /bin/bash -eux
 # Copyright 2022 Google LLC
 #
@@ -15,4 +17,8 @@
 #
 ################################################################################
 
-PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
+apt-get update && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
+wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
+pip3 install pip --upgrade
+CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
+rm /tmp/requirements.txt
