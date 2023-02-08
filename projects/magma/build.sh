@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CFLAGS = "$CFLAGS -Wno-deprecated-copy"
+
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
     echo "--conlyopt=${f}" "--linkopt=${f}"
