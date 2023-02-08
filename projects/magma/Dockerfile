@@ -14,11 +14,13 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-#RUN git clone --depth 1 https://github.com/magma/magma.git
+RUN apt-get update && apt-get -y upgrade
 RUN git clone --depth 1 https://github.com/0x34d/magma.git
-COPY build.sh $SRC/
+#RUN git clone --depth 1 https://github.com/magma/magma.git
+COPY build.sh $SRC/build.sh
+COPY build_defs.bzl.patch $SRC/build_defs.bzl.patch
 WORKDIR $SRC/magma/
+
 
 
 RUN apt-get update && \
@@ -87,3 +89,7 @@ RUN apt-get update && apt-get install -y \
   oai-gnutls \
   oai-nettle \
   prometheus-cpp-dev
+
+# Get external dependencies first.
+RUN bazel fetch \
+  //lte/gateway/c/core/oai/fuzzing/...:*

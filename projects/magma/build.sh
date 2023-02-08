@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS -Wno-deprecated-copy"
+# Run patch
+patch -d /var/tmp/bazel/external/upb/bazel/ < $SRC/test_auth_service_client.cpp.patch
 
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
@@ -35,7 +36,6 @@ bazel build \
 
 cp bazel-bin/lte/gateway/c/core/oai/fuzzing/nas_message_decode $OUT/nas_message_decode
 cp bazel-bin/lte/gateway/c/core/oai/fuzzing/nas5g_message_decode $OUT/nas5g_message_decode
-
 
 zip -j ${OUT}/nas_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas_message_decode_seed_corpus/*
 zip -j ${OUT}/nas5g_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas5g_message_decode_seed_corpus/*

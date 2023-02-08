@@ -1,0 +1,10 @@
+--- build_defs.bzl	2021-08-02 20:37:51.000000000 +0000
++++ build_defs.bzl.new	2023-02-08 09:11:25.679922255 +0000
+@@ -35,6 +35,7 @@
+         # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
+         "-Werror",
+         "-Wno-long-long",
++        "-Wno-deprecated-copy",
+         # copybara:strip_end
+     ],
+ })
