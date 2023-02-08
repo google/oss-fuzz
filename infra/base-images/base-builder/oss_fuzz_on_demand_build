@@ -1,0 +1,4 @@
+#! /bin/bash -eux
+
+ls $FUZZBENCH
+PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"

@@ -76,8 +76,11 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/local/lib
 fi
+
+if [ "${OSS_FUZZ_ON_DEMAND}" ]; then
+  echo "blah"
 # JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
-if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
+elif [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi
@@ -98,8 +101,7 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
- # Don't need coverage instrumentation for engine-less, afl++ builds.
-if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] ; then
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] || [ "${OSS_FUZZ_ON_DEMAND}" ]; then
   export COVERAGE_FLAGS=
 fi
 
@@ -181,6 +183,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
 fi
 
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
@@ -188,6 +191,12 @@ echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
 echo "RUSTFLAGS=$RUSTFLAGS"
 echo "---------------------------------------------------------------"
+
+if [ "${OSS_FUZZ_ON_DEMAND}" ]; then
+  build_oss_fuzz_on_demand
+  cp $(which llvm-symbolizer) $OUT/
+  exit 0
+fi
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 
@@ -294,3 +303,4 @@ if [ "$SANITIZER" = "introspector" ]; then
     cp -rf $SRC/inspector $OUT/inspector
   fi
 fi
+
