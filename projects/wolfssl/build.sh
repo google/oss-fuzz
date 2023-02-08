@@ -245,6 +245,29 @@ then
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
     unset WOLFCRYPT_INCLUDE_PATH
 
+    # Build heapmath fuzzer
+    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-heapmath/
+    cp -R $SRC/wolfssl/ $SRC/wolfssl-heapmath/
+    cd $SRC/wolfssl-heapmath/
+    autoreconf -ivf
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
+    ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-heapmath
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-heapmath/src/.libs/libwolfssl.a"
+    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-heapmath/"
+    cd $SRC/cryptofuzz-heapmath/modules/wolfcrypt
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-heapmath/modules/botan
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-heapmath/
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
+    cp cryptofuzz $OUT/cryptofuzz-heapmath
+    CFLAGS="$OLD_CFLAGS"
+    CXXFLAGS="$OLD_CXXFLAGS"
+    unset WOLFCRYPT_LIBWOLFSSL_A_PATH
+    unset WOLFCRYPT_INCLUDE_PATH
+
     mkdir $SRC/cryptofuzz-seed-corpus/
 
     # Convert Wycheproof test vectors to Cryptofuzz corpus format
@@ -306,6 +329,7 @@ then
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math-all-8bit_seed_corpus.zip
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-sp-math_seed_corpus.zip
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-fastmath_seed_corpus.zip
+    cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-heapmath_seed_corpus.zip
 
     # Remove files that are no longer needed to prevent running out of disk space
     rm -rf $SRC/botan-p256-corpus/
