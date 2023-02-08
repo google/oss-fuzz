@@ -1371,7 +1371,7 @@ def run_fuzzer(args):
 
 
 def fuzzbench_run_fuzzer(args):
-  """Runs a fuzzer in the container."""
+  """Runs a fuzz target built by fuzzbench in the container."""
   if not check_project_exists(args.project):
     return False
 
@@ -1404,7 +1404,8 @@ def fuzzbench_run_fuzzer(args):
     subprocess.run([
         'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
         fuzzbench_path
-    ], check=True)
+    ],
+                   check=True)
     run_args.extend([
         '-v',
         f'{args.project.out}:/out',
