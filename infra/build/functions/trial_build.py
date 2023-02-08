@@ -118,7 +118,7 @@ def get_args(args=None):
   parser.add_argument(
       '--sanitizers',
       required=False,
-      default=['address', 'memory', 'undefined', 'coverage'],
+      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
       nargs='+',
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
@@ -212,7 +212,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
     build_project.set_yaml_defaults(project_yaml)
     print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage']
+        project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
@@ -241,7 +241,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch}']))
-      time.sleep(.5)  # Avoid going over 75 requests per second limit.
+      time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
       print('Failed to start build', project_name, error)
@@ -340,13 +340,10 @@ def trial_build_main(args=None, local_base_build=True):
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
   if local_base_build:
-    # build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-    #     test_image_suffix)
-    pass
+    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
+        test_image_suffix)
   else:
-    pass
-    # empty
-    # build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 

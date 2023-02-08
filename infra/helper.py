@@ -300,7 +300,6 @@ def get_parser():  # pylint: disable=too-many-statements
                                     '(default).')
   build_fuzzers_parser.set_defaults(clean=False)
 
-
   ood_build_fuzzers_parser = subparsers.add_parser(
       'ood_build_fuzzers', help='Build fuzzers for a oss-fuzz on demand.')
   _add_architecture_args(ood_build_fuzzers_parser)
@@ -309,17 +308,6 @@ def get_parser():  # pylint: disable=too-many-statements
   _add_environment_args(ood_build_fuzzers_parser)
   _add_external_project_args(ood_build_fuzzers_parser)
   ood_build_fuzzers_parser.add_argument('project')
-  # ood_build_fuzzers_parser.add_argument('--clean',
-  #                                   dest='clean',
-  #                                   action='store_true',
-  #                                   help='clean existing artifacts.')
-  # ood_build_fuzzers_parser.add_argument('--no-clean',
-  #                                   dest='clean',
-  #                                   action='store_false',
-  #                                   help='do not clean existing artifacts '
-  #                                   '(default).')
-  # ood_build_fuzzers_parser.set_defaults(clean=False)
-
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
@@ -751,10 +739,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     env_to_add,
     source_path,
     mount_path=None,
-    child_dir=''):
+    child_dir='',
+    build_image=True):
   """Builds fuzzers."""
-  # if not build_image_impl(project, architecture=architecture):
-  #   return False
+  if build_image and not build_image_impl(project, architecture=architecture):
+    return False
 
   project_out = os.path.join(project.out, child_dir)
   if clean:
@@ -816,7 +805,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   ]
 
   result = docker_run(command, architecture=architecture)
-  print('YOOO')
   if not result:
     logging.error('Building fuzzers failed.')
     return False
@@ -922,13 +910,19 @@ def ood_build_fuzzers(args):
   with tempfile.TemporaryDirectory() as tmp_dir:
     tmp_dir = os.path.abspath(tmp_dir)
     fuzzbench_path = os.path.join(tmp_dir, 'fuzzbench')
-    subprocess.run(['git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1', fuzzbench_path])
-    env =[f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1']
+    subprocess.run([
+        'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
+        fuzzbench_path
+    ])
+    env = [f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1']
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     build_image_impl(args.project)
-    assert docker_build(['--tag', tag, '--build-arg', f'parent_image={tag}', '--file',
-                         os.path.join(fuzzbench_path, 'fuzzers', args.engine, 'builder.Dockerfile'),
-                         os.path.join(fuzzbench_path, 'fuzzers')])
+    assert docker_build([
+        '--tag', tag, '--build-arg', f'parent_image={tag}', '--file',
+        os.path.join(fuzzbench_path, 'fuzzers', args.engine,
+                     'builder.Dockerfile'),
+        os.path.join(fuzzbench_path, 'fuzzers')
+    ])
 
     build_fuzzers_impl(args.project,
                        False,
@@ -937,7 +931,8 @@ def ood_build_fuzzers(args):
                        args.architecture,
                        env,
                        source_path=fuzzbench_path,
-                       mount_path=fuzzbench_path)
+                       mount_path=fuzzbench_path,
+                       build_image=False)
 
 
 def _add_oss_fuzz_ci_if_needed(env):

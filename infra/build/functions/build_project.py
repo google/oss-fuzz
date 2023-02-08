@@ -250,11 +250,12 @@ def get_compile_step(project: Project, build, env, parallel):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          (f'rm -r /out && cd /src && cd {project.workdir} && '
-           # TODO(metzman): we want this behavior for trial builds
-           f'mkdir -p {build.out} && compile || (echo "{failure_msg}")'),
-           # f'mkdir -p {build.out} && compile || '
-           # f'(echo "{failure_msg}" && false)'),
+          (
+              f'rm -r /out && cd /src && cd {project.workdir} && '
+              # TODO(metzman): we want this behavior for trial builds
+              f'mkdir -p {build.out} && compile || (echo "{failure_msg}")'),
+          # f'mkdir -p {build.out} && compile || '
+          # f'(echo "{failure_msg}" && false)'),
       ],
       'id': get_id('compile', build),
   }

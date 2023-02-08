@@ -77,10 +77,8 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     cp -R /usr/i386/lib/* /usr/local/lib
 fi
 
-if [ "${OSS_FUZZ_ON_DEMAND}" ]; then
-  echo "blah"
 # JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
-elif [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]] [ -z "${OSS_FUZZ_ON_DEMAND-}" ] ; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi
@@ -303,4 +301,3 @@ if [ "$SANITIZER" = "introspector" ]; then
     cp -rf $SRC/inspector $OUT/inspector
   fi
 fi
-
