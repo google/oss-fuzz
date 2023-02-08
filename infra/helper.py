@@ -1400,6 +1400,7 @@ def fuzzbench_run_fuzzer(args):
       'SANITIZER=' + args.sanitizer,
       'RUN_FUZZER_MODE=interactive',
       'HELPER=True',
+      f'FUZZ_TARGET={args.fuzzer_name}'
   ]
 
   if args.e:
