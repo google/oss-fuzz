@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-export CFLAGS = "$CFLAGS -Wno-deprecated-copy"
+export CFLAGS="$CFLAGS -Wno-deprecated-copy"
 
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
