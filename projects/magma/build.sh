@@ -50,24 +50,24 @@ cp bazel-bin/lte/gateway/c/core/oai/fuzzing/nas5g_message_decode $OUT/nas5g_mess
 zip -j ${OUT}/nas_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas_message_decode_seed_corpus/*
 zip -j ${OUT}/nas5g_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas5g_message_decode_seed_corpus/*
 
-pushd $OUT
-mkdir lib/
-cp /lib/libgnutls.* lib/
-cp /lib/libhogweed.* lib/
-cp /lib/libnettle.* lib/
-cp /lib/x86_64-linux-gnu/libconfig.* lib/
-cp /lib/x86_64-linux-gnu/libczmq.* lib/
-cp /lib/x86_64-linux-gnu/libevent* lib/
-cp /lib/x86_64-linux-gnu/libgflags.* lib/
-cp /lib/x86_64-linux-gnu/libglog.* lib/
-cp /lib/x86_64-linux-gnu/libidn.* lib/
-cp /lib/x86_64-linux-gnu/libnorm.* lib/
-cp /lib/x86_64-linux-gnu/libpgm* lib/
-cp /lib/x86_64-linux-gnu/libsctp.* lib/
-cp /lib/x86_64-linux-gnu/libsodium.* lib/
-cp /lib/x86_64-linux-gnu/libtspi.* lib/
-cp /lib/x86_64-linux-gnu/libunwind.* lib/
-cp /lib/x86_64-linux-gnu/libzmq.* lib/
-cp /usr/local/lib/libfdcore.* lib/
-cp /usr/local/lib/libfdproto.* lib/
-popd
+mkdir $OUT/lib/
+cp /lib/libgnutls* $OUT/lib/.
+cp /lib/libhogweed* $OUT/lib/.
+cp /lib/libnettle* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libconfig* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libczmq* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libevent* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libgflags* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libglog* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libidn* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libnorm* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libpgm* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libsctp* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libsodium* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libtspi* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libunwind* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libzmq* $OUT/lib/.
+cp /usr/local/lib/libfdcore* $OUT/lib/.
+cp /usr/local/lib/libfdproto* $OUT/lib/.
+
+echo "done"
