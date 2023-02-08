@@ -65,5 +65,5 @@ RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
 
 
 RUN cd $SRC && git clone https://chromium.googlesource.com/chromiumos/third_party/adhd
-WORKDIR adhd/cras
+WORKDIR adhd
 COPY build.sh $SRC/
