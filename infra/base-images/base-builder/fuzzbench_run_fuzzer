@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-ls $FUZZBENCH
 export RUNNER_NICENESS="-5"
 export EXPERIMENT_FILESTORE=/out/filestore
 export EXPERIMENT=oss-fuzz-on-demand
