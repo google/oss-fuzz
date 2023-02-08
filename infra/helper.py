@@ -761,8 +761,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     child_dir='',
     build_project_image=True):
   """Builds fuzzers."""
-  if build_project_image and not build_image_impl(
-      project, architecture=architecture):
+  if build_project_image and not build_image_impl(project,
+                                                  architecture=architecture):
     return False
 
   project_out = os.path.join(project.out, child_dir)
@@ -933,7 +933,8 @@ def fuzzbench_build_fuzzers(args):
     subprocess.run([
         'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
         fuzzbench_path
-    ], check=True)
+    ],
+                   check=True)
     env = [f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1']
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     build_image_impl(args.project)
@@ -1369,49 +1370,6 @@ def run_fuzzer(args):
   return docker_run(run_args, architecture=args.architecture)
 
 
-def run_fuzzer(args):
-  """Runs a fuzzer in the container."""
-  if not check_project_exists(args.project):
-    return False
-
-  if not _check_fuzzer_exists(args.project, args.fuzzer_name):
-    return False
-
-  env = [
-      'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer,
-      'RUN_FUZZER_MODE=interactive',
-      'HELPER=True',
-  ]
-
-  if args.e:
-    env += args.e
-
-  run_args = _env_to_docker_args(env)
-
-  if args.corpus_dir:
-    if not os.path.exists(args.corpus_dir):
-      logging.error('The path provided in --corpus-dir argument does not exist')
-      return False
-    corpus_dir = os.path.realpath(args.corpus_dir)
-    run_args.extend([
-        '-v',
-        '{corpus_dir}:/tmp/{fuzzer}_corpus'.format(corpus_dir=corpus_dir,
-                                                   fuzzer=args.fuzzer_name)
-    ])
-
-  run_args.extend([
-      '-v',
-      '%s:/out' % args.project.out,
-      '-t',
-      BASE_RUNNER_IMAGE,
-      'run_fuzzer',
-      args.fuzzer_name,
-  ] + args.fuzzer_args)
-
-  return docker_run(run_args, architecture=args.architecture)
-
-
 def fuzzbench_run_fuzzer(args):
   """Runs a fuzzer in the container."""
   if not check_project_exists(args.project):
@@ -1446,7 +1404,7 @@ def fuzzbench_run_fuzzer(args):
     subprocess.run([
         'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
         fuzzbench_path
-    ])
+    ], check=True)
     run_args.extend([
         '-v',
         f'{args.project.out}:/out',
