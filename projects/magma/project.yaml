@@ -9,6 +9,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - memory
-  - undefined
 main_repo: 'https://github.com/magma/magma.git'
