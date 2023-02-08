@@ -15,25 +15,6 @@
 #
 ################################################################################
 
-export MAGMA_ROOT=$SRC/magma
-export C_BUILD=/build/c
-export OAI_BUILD=$C_BUILD/oai
-export TZ=Europe/Paris
-export CCACHE_DIR=${MAGMA_ROOT}/.cache/gateway/ccache
-export MAGMA_DEV_MODE=0
-export XDG_CACHE_HOME=${MAGMA_ROOT}/.cache
-
-#Build external dependencies
-
-bazel build \
-  @com_github_grpc_grpc//:grpc++ \
-  @com_google_protobuf//:protobuf \
-  @prometheus_cpp//:prometheus-cpp \
-  @yaml-cpp//:yaml-cpp \
-  @github_nlohmann_json//:json \
-  @sentry_native//:sentry
-
-
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
     echo "--conlyopt=${f}" "--linkopt=${f}"
