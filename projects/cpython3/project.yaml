@@ -5,6 +5,10 @@ main_repo: "https://github.com/python/cpython"
 auto_ccs:
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 sanitizers:
  - address
  - memory

@@ -16,3 +16,7 @@ auto_ccs:
 sanitizers:
   - address
 main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

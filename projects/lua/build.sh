@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-sed "s/CFLAGS=/CFLAGS+=/g" -i $SRC/lua/makefile
-sed "s/MYLDFLAGS=/MYLDFLAGS=${CFLAGS} /g" -i $SRC/lua/makefile
+# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
+# contain paths with slashes.
+sed "s~CFLAGS=~CFLAGS+=~g" -i $SRC/lua/makefile
+sed "s~MYLDFLAGS=~MYLDFLAGS=${CFLAGS} ~g" -i $SRC/lua/makefile
 sed "s|CC= gcc|CC= ${CC}|g" -i $SRC/lua/makefile
 
 cd $SRC/lua

@@ -8,4 +8,8 @@ auto_ccs:
   - "sathyanarayana.nujella@intel.corp-partner.google.com"
   - "adrian.bonislawski@intel.com"
   - "michal.wasko@intel.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 main_repo: "https://github.com/thesofproject/sof"
