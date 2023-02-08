@@ -1455,7 +1455,7 @@ def fuzzbench_run_fuzzer(args):
         '-e',
         f'FUZZBENCH={fuzzbench_path}',
         f'gcr.io/oss-fuzz/{args.project.name}',
-        'run_fuzzer_oss_fuzz_on_demand',
+        'fuzzbench_run_fuzzer',
         args.fuzzer_name,
     ] + args.fuzzer_args)
 
