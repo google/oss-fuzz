@@ -17,7 +17,7 @@
 
 #Build external dependencies
 
-RUN bazel build \
+bazel build \
   @com_github_grpc_grpc//:grpc++ \
   @com_google_protobuf//:protobuf \
   @prometheus_cpp//:prometheus-cpp \

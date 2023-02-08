@@ -76,17 +76,6 @@ RUN apt-get update && apt-get install -y \
 #COPY keys/linux_foundation_registry_key.asc /etc/apt/trusted.gpg.d/magma.asc
 RUN cp keys/linux_foundation_registry_key.asc /etc/apt/trusted.gpg.d/magma.asc
 RUN echo "deb https://linuxfoundation.jfrog.io/artifactory/magma-packages-test focal-ci main" > /etc/apt/sources.list.d/magma.list
-RUN apt-get update
-RUN apt-get install -y grpc-dev
-RUN apt-get install -y libfolly-dev
-RUN apt-get install -y liblfds710
-RUN apt-get install -y magma-cpp-redis
-RUN apt-get install -y magma-libfluid
-RUN apt-get install -y oai-asn1c
-RUN apt-get install -y oai-freediameter
-RUN apt-get install -y oai-gnutls
-RUN apt-get install -y oai-nettle
-RUN apt-get install -y prometheus-cpp-dev
 RUN apt-get update && apt-get install -y \
   grpc-dev \
   libfolly-dev \
