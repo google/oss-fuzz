@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ RUN apt-get update && \
   # Setup necessary tools for adding the Magma repository
   apt-get install -y apt-utils software-properties-common apt-transport-https gnupg wget && \
   # Download Bazel
-  wget -P /usr/sbin --progress=dot:giga https://github.com/bazelbuild/bazelisk/releases/download/v1.10.0/bazelisk-linux-"${DEB_PORT}" && \
-  chmod +x /usr/sbin/bazelisk-linux-"${DEB_PORT}" && \
-  ln -s /usr/sbin/bazelisk-linux-"${DEB_PORT}" /usr/sbin/bazel
+  wget -P /usr/sbin --progress=dot:giga https://github.com/bazelbuild/bazelisk/releases/download/v1.10.0/bazelisk-linux-amd64 && \
+  chmod +x /usr/sbin/bazelisk-linux-amd64 && \
+  ln -s /usr/sbin/bazelisk-linux-amd64 /usr/sbin/bazel
 
 # Install dependencies required for building
 RUN apt-get update && apt-get install -y \
