@@ -43,14 +43,6 @@ RUN apt-get -y update && \
       vim \
       zip
 RUN apt-get clean
-RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \
-      cd iniparser && \
-      make && \
-      cp libiniparser.* /usr/local/lib && \
-      cp src/dictionary.h src/iniparser.h /usr/local/include && \
-      chmod 644 /usr/local/include/dictionary.h /usr/local/include/iniparser.h && \
-      chmod 644 /usr/local/lib/libiniparser.a && \
-      chmod 755 /usr/local/lib/libiniparser.so.*
 
 RUN cd /tmp && git clone https://github.com/google/googletest.git -b v1.8.x && \
       cd googletest && \
