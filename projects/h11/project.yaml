@@ -1,0 +1,10 @@
+homepage: https://github.com/python-hyper/h11
+main_repo: https://github.com/python-hyper/h11
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
