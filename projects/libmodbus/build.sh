@@ -20,6 +20,8 @@ make all
 
 cp FuzzClient $OUT/FuzzClient
 cp FuzzServer $OUT/FuzzServer
-cp input.zip $OUT/FuzzClient_seed_corpus.zip
-cp input.zip $OUT/FuzzServer_seed_corpus.zip
 
+pushd $SRC/oss-fuzz-bloat/libmodbus/
+cp FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
+cp FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip
+popd

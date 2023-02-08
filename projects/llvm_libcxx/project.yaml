@@ -1,6 +1,7 @@
 homepage: "https://libcxx.llvm.org/"
 language: c++
 primary_contact: "mclow.lists@gmail.com"
+main_repo: https://github.com/llvm/llvm-project.git
 auto_ccs:
   - "timshen91@gmail.com"
   - "jfb@chromium.org"

@@ -18,5 +18,6 @@
 mkdir build && cd build
 cmake ../ -DBUILD_SHARED_LIBS=OFF
 make
-$CC $CFLAGS $LIB_FUZZING_ENGINE ../test/fuzzers/fuzz-mdhtml.c -o $OUT/fuzz-mdhtml \
-    -I../src ./src/libmd4c-html.a ./src/libmd4c.a
+$CC $CFLAGS -c ../test/fuzzers/fuzz-mdhtml.c -I../src
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-mdhtml.o -o $OUT/fuzz-mdhtml \
+    ./src/libmd4c-html.a ./src/libmd4c.a

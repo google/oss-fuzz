@@ -18,15 +18,13 @@ import os
 import sys
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock
 
 from google.cloud import ndb
 
 sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
-from datastore_entities import BuildsHistory
-from datastore_entities import LastSuccessfulBuild
+import datastore_entities
 import test_utils
 import update_build_status
 
@@ -162,17 +160,18 @@ class TestUpdateLastSuccessfulBuild(unittest.TestCase):
       expected_build_id = '1'
       self.assertEqual(
           expected_build_id,
-          ndb.Key(LastSuccessfulBuild, 'test-project-fuzzing').get().build_id)
+          ndb.Key(datastore_entities.LastSuccessfulBuild,
+                  'test-project-fuzzing').get().build_id)
 
   def test_update_last_successful_build_datastore(self):
     """When last successful build is only available in datastore."""
     with ndb.Client().context():
       project = {'name': 'test-project'}
-      LastSuccessfulBuild(id='test-project-fuzzing',
-                          build_tag='fuzzing',
-                          project='test-project',
-                          build_id='1',
-                          finish_time='test_time').put()
+      datastore_entities.LastSuccessfulBuild(id='test-project-fuzzing',
+                                             build_tag='fuzzing',
+                                             project='test-project',
+                                             build_id='1',
+                                             finish_time='test_time').put()
 
       update_build_status.update_last_successful_build(project, 'fuzzing')
       expected_project = {
@@ -194,17 +193,18 @@ class TestUpdateLastSuccessfulBuild(unittest.TestCase):
               'finish_time': 'test_time'
           }
       }
-      LastSuccessfulBuild(id='test-project-fuzzing',
-                          build_tag='fuzzing',
-                          project='test-project',
-                          build_id='1',
-                          finish_time='test_time').put()
+      datastore_entities.LastSuccessfulBuild(id='test-project-fuzzing',
+                                             build_tag='fuzzing',
+                                             project='test-project',
+                                             build_id='1',
+                                             finish_time='test_time').put()
 
       update_build_status.update_last_successful_build(project, 'fuzzing')
       expected_build_id = '2'
       self.assertEqual(
           expected_build_id,
-          ndb.Key(LastSuccessfulBuild, 'test-project-fuzzing').get().build_id)
+          ndb.Key(datastore_entities.LastSuccessfulBuild,
+                  'test-project-fuzzing').get().build_id)
 
   @classmethod
   def tearDownClass(cls):
@@ -232,24 +232,24 @@ class TestUpdateBuildStatus(unittest.TestCase):
                                mock_google_auth):
     """Testing update build status as a whole."""
     del self, mock_cloud_build, mock_google_auth
-    update_build_status.upload_status = MagicMock()
+    update_build_status.upload_status = mock.MagicMock()
     mock_upload_log.return_value = True
     status_filename = 'status.json'
     with ndb.Client().context():
-      BuildsHistory(id='test-project-1-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-1',
-                    build_ids=['1']).put()
+      datastore_entities.BuildsHistory(id='test-project-1-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-1',
+                                       build_ids=['1']).put()
 
-      BuildsHistory(id='test-project-2-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-2',
-                    build_ids=['2']).put()
+      datastore_entities.BuildsHistory(id='test-project-2-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-2',
+                                       build_ids=['2']).put()
 
-      BuildsHistory(id='test-project-3-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-3',
-                    build_ids=['3']).put()
+      datastore_entities.BuildsHistory(id='test-project-3-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-3',
+                                       build_ids=['3']).put()
 
       builds = [{
           'build_id': '1',

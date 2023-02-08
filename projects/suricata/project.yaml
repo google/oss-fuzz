@@ -8,4 +8,8 @@ sanitizers:
   - address
   - memory
   - undefined
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 main_repo: 'https://github.com/OISF/suricata.git'
