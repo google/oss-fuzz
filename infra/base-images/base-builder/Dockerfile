@@ -142,19 +142,20 @@ RUN precompile_centipede
 
 COPY bazel_build_fuzz_tests \
     cargo \
-    compile compile_afl \
-    compile_libfuzzer \
-    compile_honggfuzz \
+    compile \
+    compile_afl \
     compile_centipede \
+    compile_honggfuzz \
+    compile_fuzztests.sh \
     compile_go_fuzzer \
     compile_javascript_fuzzer \
+    compile_libfuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
-    compile_fuzztests.sh \
     debug_afl \
     fuzzbench_build \
     fuzzbench_install_dependencies \
-    fuzzbench_run_fuzzer
+    fuzzbench_run_fuzzer \
     # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
     install_javascript.sh \
@@ -163,7 +164,6 @@ COPY bazel_build_fuzz_tests \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \
-    run_fuzzer_oss_fuzz_on_demand \
     srcmap \
     write_labels.py \
     /usr/local/bin/
