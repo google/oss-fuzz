@@ -19,5 +19,9 @@ sanitizers:
   - address
   - memory
   - undefined
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 builds_per_day: 4
 main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'
