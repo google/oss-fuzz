@@ -10,3 +10,8 @@ sanitizers:
   - address
   - undefined
 file_github_issue: True
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

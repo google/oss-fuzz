@@ -17,3 +17,8 @@ sanitizers:
 #  - memory
 
 main_repo: 'https://github.com/unicode-org/icu.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

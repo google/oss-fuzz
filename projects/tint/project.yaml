@@ -1,6 +1,6 @@
 homepage: https://dawn.googlesource.com
 language: c++
-primary_contact: bclayton@google.com 
+primary_contact: bclayton@google.com
 auto_ccs:
   - "afdx@google.com"
 sanitizers:
@@ -11,3 +11,8 @@ main_repo: 'https://dawn.googlesource.com/dawn.git'
 architectures:
   - x86_64
   - i386
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

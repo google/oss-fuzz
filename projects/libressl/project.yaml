@@ -13,3 +13,8 @@ sanitizers:
  - address
  - undefined
 main_repo: 'https://github.com/libressl-portable/portable.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

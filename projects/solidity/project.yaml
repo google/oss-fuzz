@@ -6,3 +6,8 @@ auto_ccs:
   - "christian@ethereum.org"
   - "martin.swende@ethereum.org"
 main_repo: 'https://github.com/ethereum/solidity.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

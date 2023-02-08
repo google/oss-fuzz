@@ -8,6 +8,7 @@ sanitizers:
   - undefined
 main_repo: 'https://invent.kde.org/frameworks/kcodecs.git'
 fuzzing_engines:
-  - afl
-  - honggfuzz
-  - libfuzzer
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

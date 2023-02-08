@@ -5,5 +5,5 @@ auto_ccs :
   - "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz 
+  - honggfuzz
 main_repo: 'https://github.com/LibreDWG/libredwg'

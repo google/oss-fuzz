@@ -5,3 +5,8 @@ primary_contact: "walters@verbum.org"
 auto_ccs:
   - "dbn@endlessos.org"
   - "david@adalogics.com"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

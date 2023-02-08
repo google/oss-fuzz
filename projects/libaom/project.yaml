@@ -13,3 +13,8 @@ auto_ccs:
 vendor_ccs:
 - twsmith@mozilla.com
 main_repo: 'https://aomedia.googlesource.com/aom'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

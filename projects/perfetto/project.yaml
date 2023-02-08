@@ -24,9 +24,10 @@ vendor_ccs:
   - maverickm@google.com
   - warrenwright@google.com
 fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
-  - afl
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
 sanitizers:
   - address
   - undefined

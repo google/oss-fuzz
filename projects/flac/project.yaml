@@ -14,3 +14,8 @@ architectures:
  - i386
 coverage_extra_args: -ignore-filename-regex=/usr/lib/jvm/.*
 main_repo: 'https://github.com/xiph/flac.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

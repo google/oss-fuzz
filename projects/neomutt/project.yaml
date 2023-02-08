@@ -8,3 +8,8 @@ main_repo: 'https://github.com/neomutt/neomutt'
 sanitizers:
  - address
  - undefined
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

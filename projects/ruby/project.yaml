@@ -11,3 +11,8 @@ auto_ccs:
   - "kevinbackhouse@github.com"
   - "oss-fuzz@ruby-lang.org"
 main_repo: "https://github.com/ruby/ruby"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

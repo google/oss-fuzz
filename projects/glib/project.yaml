@@ -15,3 +15,8 @@ sanitizers:
 #  - memory
 help_url: https://gitlab.gnome.org/GNOME/glib/tree/master/fuzzing#how-to-reproduce-oss-fuzz-bugs-locally
 main_repo: 'https://gitlab.gnome.org/GNOME/glib'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

@@ -12,3 +12,8 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/nothings/stb.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

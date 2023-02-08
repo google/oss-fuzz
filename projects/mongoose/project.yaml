@@ -4,3 +4,8 @@ primary_contact: "info@cesanta.com"
 auto_ccs:
   - "david@adalogics.com"
 main_repo: 'https://github.com/cesanta/mongoose'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
