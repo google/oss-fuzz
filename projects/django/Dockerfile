@@ -16,7 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update && apt-get install -y libgdal26
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgdal26 \
+        python3.10 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN git clone --depth 1 https://github.com/django/django.git
 RUN git clone --depth 1 https://github.com/django/django-fuzzers.git
