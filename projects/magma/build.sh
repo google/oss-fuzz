@@ -16,7 +16,7 @@
 ################################################################################
 
 # Run patch
-patch -d /var/tmp/bazel/external/upb/bazel/ < $SRC/test_auth_service_client.cpp.patch
+patch -d /var/tmp/bazel/external/upb/bazel/ < $SRC/build_defs.bzl.patch
 
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
