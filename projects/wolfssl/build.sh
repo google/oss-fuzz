@@ -321,7 +321,7 @@ then
 
     # Pack it
     cd $SRC/cryptofuzz_seed_corpus
-    zip -r $SRC/cryptofuzz_seed_corpus.zip .
+    zip -r $SRC/cryptofuzz_seed_corpus.zip . >/dev/null
 
     # Use it as the seed corpus for each Cryptofuzz-based fuzzer
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-normal-math_seed_corpus.zip
