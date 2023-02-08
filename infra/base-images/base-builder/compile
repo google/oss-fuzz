@@ -17,7 +17,7 @@
 
 echo "---------------------------------------------------------------"
 
-OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}" 
+OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
 
 # This is a temporary fix: fall back to LLVM14's old pass manager
 if [ -n "${OLD_LLVMPASS-}" ]; then
@@ -79,7 +79,8 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     cp -R /usr/i386/lib/* /usr/local/lib
 fi
 
-# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
+# Don't use a fuzzing engine with Jazzer which has libFuzzer built-in or with
+# FuzzBench which will provide the fuzzing engine.
 if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]] && [[ "${OSS_FUZZ_ON_DEMAND}" == "0" ]] ; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
@@ -101,6 +102,8 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
+# Only need the default coverage instrumentation for libFuzzer or honggfuzz.
+# Other engines bring their own.
 if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] || [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   export COVERAGE_FLAGS=
 fi
@@ -183,7 +186,6 @@ if [ "$SANITIZER" = "introspector" ]; then
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
 fi
 
-
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
@@ -193,7 +195,7 @@ echo "RUSTFLAGS=$RUSTFLAGS"
 echo "---------------------------------------------------------------"
 
 if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
-  build_oss_fuzz_on_demand
+  fuzzbench_build
   cp $(which llvm-symbolizer) $OUT/
   exit 0
 fi
