@@ -30,7 +30,17 @@ bazel build \
     --repo_env=CC=${CC} \
     --repo_env=CXX=${CXX} \
     --linkopt=${LIB_FUZZING_ENGINE} \
-    --linkopt=-lc++ \
+    --linkopt=-Wl,-rpath,'\$ORIGIN/lib' \
+    --linkopt=-lgflags \
+    --linkopt=-lhogweed \
+    --linkopt=-lidn \
+    --linkopt=-lnorm \
+    --linkopt=-lpgm \
+    --linkopt=-lsctp \
+    --linkopt=-lsodium \
+    --linkopt=-ltspi \
+    --linkopt=-lunwind \
+    --linkopt=-lzmq \
     ${EXTRA_BAZEL_FLAGS} \
     //lte/gateway/c/core/oai/fuzzing/...:*
 
@@ -39,3 +49,25 @@ cp bazel-bin/lte/gateway/c/core/oai/fuzzing/nas5g_message_decode $OUT/nas5g_mess
 
 zip -j ${OUT}/nas_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas_message_decode_seed_corpus/*
 zip -j ${OUT}/nas5g_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzing/nas5g_message_decode_seed_corpus/*
+
+pushd $OUT
+mkdir lib/
+cp /lib/libgnutls.* lib/
+cp /lib/libhogweed.* lib/
+cp /lib/libnettle.* lib/
+cp /lib/x86_64-linux-gnu/libconfig.* lib/
+cp /lib/x86_64-linux-gnu/libczmq.* lib/
+cp /lib/x86_64-linux-gnu/libevent* lib/
+cp /lib/x86_64-linux-gnu/libgflags.* lib/
+cp /lib/x86_64-linux-gnu/libglog.* lib/
+cp /lib/x86_64-linux-gnu/libidn.* lib/
+cp /lib/x86_64-linux-gnu/libnorm.* lib/
+cp /lib/x86_64-linux-gnu/libpgm* lib/
+cp /lib/x86_64-linux-gnu/libsctp.* lib/
+cp /lib/x86_64-linux-gnu/libsodium.* lib/
+cp /lib/x86_64-linux-gnu/libtspi.* lib/
+cp /lib/x86_64-linux-gnu/libunwind.* lib/
+cp /lib/x86_64-linux-gnu/libzmq.* lib/
+cp /usr/local/lib/libfdcore.* lib/
+cp /usr/local/lib/libfdproto.* lib/
+popd

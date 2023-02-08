@@ -90,6 +90,9 @@ RUN apt-get update && apt-get install -y \
   oai-nettle \
   prometheus-cpp-dev
 
+# Other install
+RUN apt-get install -y libfdcore6 libidn11-dev libunwind-dev
+
 # Get external dependencies first.
 RUN bazel fetch \
   //lte/gateway/c/core/oai/fuzzing/...:*
