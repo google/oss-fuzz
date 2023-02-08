@@ -88,10 +88,3 @@ RUN apt-get update && apt-get install -y \
   oai-nettle \
   prometheus-cpp-dev
 
-RUN echo "export MAGMA_ROOT=/magma" >> /root/.bashrc
-RUN echo "export C_BUILD=/build/c" >> /root/.bashrc
-RUN echo "export OAI_BUILD=$C_BUILD/oai" >> /root/.bashrc
-RUN echo "export TZ=Europe/Paris" >> /root/.bashrc
-RUN echo "export CCACHE_DIR=${MAGMA_ROOT}/.cache/gateway/ccache" >> /root/.bashrc
-RUN echo "export MAGMA_DEV_MODE=0" >> /root/.bashrc
-RUN echo "export XDG_CACHE_HOME=${MAGMA_ROOT}/.cache" >> /root/.bashrc

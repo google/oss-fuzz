@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+export MAGMA_ROOT=$SRC/magma
+export C_BUILD=/build/c
+export OAI_BUILD=$C_BUILD/oai
+export TZ=Europe/Paris
+export CCACHE_DIR=${MAGMA_ROOT}/.cache/gateway/ccache
+export MAGMA_DEV_MODE=0
+export XDG_CACHE_HOME=${MAGMA_ROOT}/.cache
+
 #Build external dependencies
 
 bazel build \
