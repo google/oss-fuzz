@@ -42,7 +42,7 @@ FUZZING_BUILD_TYPE = 'fuzzing'
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
+DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 LATEST_VERSION_FILENAME = 'latest.version'
@@ -118,7 +118,7 @@ def get_sanitizer_strings(sanitizers):
   return processed_sanitizers
 
 
-def add_none_sanitizer_for_centipede(project_yaml):
+def set_default_sanitizer_for_centipede(project_yaml):
   """Adds none as a sanitizer for centipede in yaml if it does not exist yet."""
   # Centipede requires a separate unsanitized binary to use sanitized ones.
   if ('centipede' in project_yaml['fuzzing_engines'] and
@@ -177,7 +177,7 @@ def set_yaml_defaults(project_yaml):
   project_yaml.setdefault('labels', {})
   # Adds 'none' as a sanitizer for centipede to the project yaml by default,
   # because Centipede always requires a separate build of unsanitized binary.
-  add_none_sanitizer_for_centipede(project_yaml)
+  set_default_sanitizer_for_centipede(project_yaml)
 
 
 def is_supported_configuration(build):
