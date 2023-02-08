@@ -759,9 +759,10 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     source_path,
     mount_path=None,
     child_dir='',
-    build_image=True):
+    build_project_image=True):
   """Builds fuzzers."""
-  if build_image and not build_image_impl(project, architecture=architecture):
+  if build_project_image and not build_image_impl(
+      project, architecture=architecture):
     return False
 
   project_out = os.path.join(project.out, child_dir)
@@ -932,7 +933,7 @@ def fuzzbench_build_fuzzers(args):
     subprocess.run([
         'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
         fuzzbench_path
-    ])
+    ], check=True)
     env = [f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1']
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     build_image_impl(args.project)
@@ -951,7 +952,7 @@ def fuzzbench_build_fuzzers(args):
                               env,
                               source_path=fuzzbench_path,
                               mount_path=fuzzbench_path,
-                              build_image=False)
+                              build_project_image=False)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
