@@ -430,10 +430,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
   steps = [clone_step]
-
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
-
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name))
   steps.append(docker_build_step)

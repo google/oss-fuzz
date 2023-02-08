@@ -906,7 +906,7 @@ def build_fuzzers(args):
 
 
 def ood_build_fuzzers(args):
-  """Builds fuzzers."""
+  """Builds fuzz targets with an arbitrary fuzzer from FuzzBench."""
   with tempfile.TemporaryDirectory() as tmp_dir:
     tmp_dir = os.path.abspath(tmp_dir)
     fuzzbench_path = os.path.join(tmp_dir, 'fuzzbench')

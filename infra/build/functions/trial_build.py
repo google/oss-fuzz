@@ -47,6 +47,10 @@ BUILD_TYPES = {
     'coverage':
         BuildType('coverage', build_and_run_coverage.get_build_steps,
                   'status-coverage.json'),
+    'introspector':
+        BuildType('introspector',
+                  build_and_run_coverage.get_fuzz_introspector_steps,
+                  'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -308,6 +312,9 @@ def _do_test_builds(args, test_image_suffix):
   if 'coverage' in sanitizers:
     sanitizers.pop(sanitizers.index('coverage'))
     build_types.append(BUILD_TYPES['coverage'])
+  if 'introspector' in sanitizers:
+    sanitizers.pop(sanitizers.index('introspector'))
+    build_types.append(BUILD_TYPES['introspector'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)
