@@ -17,6 +17,8 @@
 
 echo "---------------------------------------------------------------"
 
+OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
+
 # This is a temporary fix: fall back to LLVM14's old pass manager
 if [ -n "${OLD_LLVMPASS-}" ]; then
   export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
@@ -76,8 +78,10 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/local/lib
 fi
-# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
-if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
+
+# Don't use a fuzzing engine with Jazzer which has libFuzzer built-in or with
+# FuzzBench which will provide the fuzzing engine.
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]] && [[ "${OSS_FUZZ_ON_DEMAND}" == "0" ]] ; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi
@@ -98,8 +102,9 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
- # Don't need coverage instrumentation for engine-less, afl++ builds.
-if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] ; then
+# Only need the default coverage instrumentation for libFuzzer or honggfuzz.
+# Other engines bring their own.
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] || [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   export COVERAGE_FLAGS=
 fi
 
@@ -188,6 +193,12 @@ echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
 echo "RUSTFLAGS=$RUSTFLAGS"
 echo "---------------------------------------------------------------"
+
+if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
+  fuzzbench_build
+  cp $(which llvm-symbolizer) $OUT/
+  exit 0
+fi
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 

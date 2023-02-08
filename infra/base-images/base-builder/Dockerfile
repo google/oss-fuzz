@@ -140,16 +140,22 @@ RUN cd $SRC && \
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
-COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+COPY bazel_build_fuzz_tests \
+    cargo \
+    compile \
+    compile_afl \
     compile_centipede \
+    compile_honggfuzz \
+    compile_fuzztests.sh \
     compile_go_fuzzer \
     compile_javascript_fuzzer \
+    compile_libfuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
-    compile_fuzztests.sh \
-    python_coverage_helper.py \
-    debug_afl srcmap \
-    write_labels.py bazel_build_fuzz_tests \
+    debug_afl \
+    fuzzbench_build \
+    fuzzbench_install_dependencies \
+    fuzzbench_run_fuzzer \
     # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
     install_javascript.sh \
@@ -157,6 +163,9 @@ COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
     install_python.sh \
     install_rust.sh \
     install_swift.sh \
+    python_coverage_helper.py \
+    srcmap \
+    write_labels.py \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC
