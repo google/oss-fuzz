@@ -18,3 +18,9 @@
 # TODO(metzman): Do this in a docket image so we don't need to waste time
 # reinstalling.
 PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
+
+if [ "$FUZZING_ENGINE" = "coverage" ]; then
+  cd /out
+  mkdir -p filestore/oss-fuzz-on-demand/coverage-binaries
+  tar -czvf filestore/oss-fuzz-on-demand/coverage-binaries/coverage-build-$PROJECT.tar.gz * /src /work
+fi
