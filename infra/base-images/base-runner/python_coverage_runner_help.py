@@ -69,27 +69,26 @@ def convert_coveragepy_cov_to_summary_json(src, dst):
   dst_dict = {'data': {'files': {}}}
   with open(src, "r") as src_f:
     src_json = json.loads(src_f.read())
-    if 'files' not in src_json:
-      continue
-    for elem in src_json['files']:
-      if 'summary' not in src_json['files'][elem]:
-        continue
-      src_dict = src_json['files'][elem]['summary']
-      count = src_dict['covered_lines'] + src_dict['missing_lines']
-      covered = src_dict['covered_lines']
-      notcovered = src_dict['missing_lines']
-      percent = src_dict['percent_covered']
+    if 'files' in src_json:
+      for elem in src_json['files']:
+        if 'summary' not in src_json['files'][elem]:
+          continue
+        src_dict = src_json['files'][elem]['summary']
+        count = src_dict['covered_lines'] + src_dict['missing_lines']
+        covered = src_dict['covered_lines']
+        notcovered = src_dict['missing_lines']
+        percent = src_dict['percent_covered']
 
-      dst_dict['data']['files'][elem] = {
-          'summary': {
-              'lines': {
-                  'count': count,
-                  'covered': covered,
-                  'notcovered': notcovered,
-                  'percent': percent
-              }
-          }
-      }
+        dst_dict['data']['files'][elem] = {
+            'summary': {
+                'lines': {
+                    'count': count,
+                    'covered': covered,
+                    'notcovered': notcovered,
+                    'percent': percent
+                }
+            }
+        }
 
   with open(dst, 'w') as dst_f:
     dst_f.write(json.dumps(dst_dict))
