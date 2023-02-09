@@ -87,6 +87,7 @@ then
     # Configure Cryptofuzz
     cd $SRC/cryptofuzz/
     python gen_repository.py
+
     rm extra_options.h
     echo -n '"' >>extra_options.h
     echo -n '--force-module=wolfCrypt ' >>extra_options.h
