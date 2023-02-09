@@ -26,6 +26,48 @@ sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.baze
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
 
+synchronize_coverage_directories() {
+  # For coverage, we need to remap source files to correspond to the Bazel build
+  # paths. We also need to resolve all symlinks that Bazel creates.
+  if [ "$SANITIZER" = "coverage" ]
+  then
+    declare -r RSYNC_CMD="rsync -aLkR"
+    declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+    mkdir -p ${REMAP_PATH}
+
+    # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
+    declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+      "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
+      "--exclude" "*")
+
+    # Sync existing code.
+    ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
+
+    # Sync generated proto files.
+    if [ -d "./bazel-out/k8-opt/bin/tensorflow/" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+    fi
+    if [ -d "./bazel-out/k8-opt/bin/external" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+    fi
+    if [ -d "./bazel-out/k8-opt/bin/third_party" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+    fi
+
+    # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+    # Also, remove `external/org_tensorflow` which is a copy of the entire source
+    # code that Bazel creates. Not removing this would cause `rsync` to expand a
+    # symlink that ends up pointing to itself!
+    pushd bazel-tensorflow
+    [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+    ${RSYNC_CMD} external/ ${REMAP_PATH}
+    popd
+  fi
+}
+
 # Since Bazel passes flags to compilers via `--copt`, `--conlyopt` and
 # `--cxxopt`, we need to move all flags from `$CFLAGS` and `$CXXFLAGS` to these.
 # We don't use `--copt` as warnings issued by C compilers when encountering a
@@ -99,6 +141,11 @@ fi
 # at the end of this script instead.
 export FUZZTEST_DO_SYNC="no"
 compile_fuzztests.sh
+
+# Synchronize coverage folders. We have to do this here as well as later, because
+# the fuzztest builds have certain folders that are not existing after the next
+# bazel build command, which causes missing files to abort the coverage generation.
+synchronize_coverage_directories
 
 # In the CI we bail out after having compiled the first set of fuzzers. This is
 # to save disk and time.
@@ -177,36 +224,8 @@ for bazel_target in ${FUZZERS}; do
   fi
 done
 
-# For coverage, we need to remap source files to correspond to the Bazel build
-# paths. We also need to resolve all symlinks that Bazel creates.
-if [ "$SANITIZER" = "coverage" ]
-then
-  declare -r RSYNC_CMD="rsync -aLkR"
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-  mkdir -p ${REMAP_PATH}
-
-  # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
-  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
-    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
-    "--exclude" "*")
-
-  # Sync existing code.
-  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
-
-  # Sync generated proto files.
-  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-
-  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-  # Also, remove `external/org_tensorflow` which is a copy of the entire source
-  # code that Bazel creates. Not removing this would cause `rsync` to expand a
-  # symlink that ends up pointing to itself!
-  pushd bazel-tensorflow
-  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-  ${RSYNC_CMD} external/ ${REMAP_PATH}
-  popd
-fi
+# Synchronize coverage folders
+synchronize_coverage_directories
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*
