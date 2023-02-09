@@ -49,7 +49,7 @@ for f in ${CFLAGS}; do
 done
 )"
 
-bazel build -s \
+bazel build \
     --dynamic_mode=off \
     --repo_env=CC=${CC} \
     --repo_env=CXX=${CXX} \
