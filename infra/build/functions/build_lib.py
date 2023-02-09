@@ -58,9 +58,10 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer':
-        EngineInfo(upload_bucket='clusterfuzz-builds',
-                   supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64', 'i386', 'aarch64']),
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds',
+            supported_sanitizers=['address', 'memory', 'undefined', 'none'],
+            supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
                    supported_sanitizers=['address'],
