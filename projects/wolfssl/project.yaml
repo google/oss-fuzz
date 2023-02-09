@@ -4,16 +4,16 @@ primary_contact: "jacob@wolfssl.com"
 auto_ccs:
   - "david@wolfssl.com"
   - "john@wolfssl.com"
-  - "john.safranek@gmail.com"
   - "kaleb@wolfssl.com"
   - "kaleb.himes@gmail.com"
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
-  - "uriah@wolfssl.com"
   - "tim.weller@wolfssl.com"
+  - "ticket.number.352@gmail.com"
   - "jordan@wolfssl.com"
+  - "jordanjphillips1@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
