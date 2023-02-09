@@ -23,7 +23,7 @@ RUN apt-get update && \
     rm /tmp/docker-ce.deb && \
     mkdir -p /opt/gcloud && \
     wget -qO- https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz | tar zxv -C /opt/gcloud && \
-    /opt/gcloud/google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options && \
+    /opt/gcloud/google-cloud-sdk/install.sh --override-components gsutil --usage-reporting=false --bash-completion=false && \
     apt-get -y install gcc python3-dev && \
     pip3 install -U crcmod && \
     apt-get autoremove -y gcc python3-dev
