@@ -27,5 +27,9 @@ mkdir $OUTPUT_CORPUS_DIR
 export FUZZER=$FUZZING_ENGINE
 export MAX_TOTAL_TIME=120
 export SNAPSHOT_PERIOD=30
+export TRIAL_ID=1
+# BENCHMARK, FUZZ_TARGET
 cd $OUT
-PYTHONPATH=$FUZZBENCH nice -n $RUNNER_NICENESS python3 -B -u $FUZZBENCH/experiment/runner.py
+# Prevent permissions issues with pyc files.
+cp -r $FUZZBENCH /tmp/fuzzbench
+PYTHONPATH=/tmp/fuzzbench nice -n $RUNNER_NICENESS python3 -B -u /tmp/fuzzbench/experiment/runner.py
