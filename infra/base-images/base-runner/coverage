@@ -271,7 +271,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
     fi
 
-    echo "Running $fuzz_target"
+    echo "ddRunning $fuzz_target"
     run_fuzz_target $fuzz_target &
 
     # Rewrite object if its a FUZZTEST target
@@ -354,10 +354,19 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
       --destfile $jacoco_merged_exec
 
   # Merge .class files from the individual targets.
-  classes_dir=$DUMPS_DIR/classes
-  mkdir $classes_dir
-  for fuzz_target in $FUZZ_TARGETS; do
-    cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
+  #classes_dir=$DUMPS_DIR/classes
+  #mkdir $classes_dir
+  #for fuzz_target in $FUZZ_TARGETS; do
+  #  cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
+  #done
+
+  # Get all jar file as classfiles location
+  for jar_file in $(ls $OUT/*.jar)
+  do
+    if [[ $jar_file != $OUT/jazzer* ]]
+    then
+      classes_files+="--classfiles $jar_file "
+    fi
   done
 
   # Heuristically determine source directories based on Maven structure.
@@ -373,7 +382,7 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   java -jar /opt/jacoco-cli.jar report $jacoco_merged_exec \
       --html $REPORT_PLATFORM_DIR \
       --xml $xml_report \
-      --classfiles $classes_dir \
+      $classes_files \
       "${sourcefiles_args[@]}"
 
   # Also serve the raw exec file and XML report, which can be useful for
