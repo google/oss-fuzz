@@ -271,7 +271,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
     fi
 
-    echo "ddRunning $fuzz_target"
+    echo "Running $fuzz_target"
     run_fuzz_target $fuzz_target &
 
     # Rewrite object if its a FUZZTEST target
@@ -352,13 +352,6 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   jacoco_merged_exec=$DUMPS_DIR/jacoco.merged.exec
   java -jar /opt/jacoco-cli.jar merge $DUMPS_DIR/*.exec \
       --destfile $jacoco_merged_exec
-
-  # Merge .class files from the individual targets.
-  #classes_dir=$DUMPS_DIR/classes
-  #mkdir $classes_dir
-  #for fuzz_target in $FUZZ_TARGETS; do
-  #  cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
-  #done
 
   # Get all jar file as classfiles location
   for jar_file in $(ls $OUT/*.jar)
