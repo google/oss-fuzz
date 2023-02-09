@@ -24,13 +24,14 @@ sed 's/int main(int argc/int main2(int argc/g' -i ./src/clib-configure.c
 find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
 
 $CC $CFLAGS -Wno-unused-function -U__STRICT_ANSI__  \
-	-DHAVE_PTHREADS=1 -pthread -o fuzz_manifest.o \
-	-c test/fuzzing/fuzz_manifest.c -I./asprintf -I./deps/ \
+	-DHAVE_PTHREADS=1 -pthread \
+	-c src/common/clib-cache.c src/clib-configure.c \
+        src/common/clib-settings.c src/common/clib-package.c \
+        test/fuzzing/fuzz_manifest.c -I./asprintf -I./deps/ \
 	-I./deps/asprintf
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
-	-o $OUT/fuzz_manifest src/common/clib-settings.c src/common/clib-package.c \
-	src/common/clib-cache.c src/clib-configure.c \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
+	-o $OUT/fuzz_manifest  clib-cache.o clib-configure.o clib-settings.o clib-package.o \
 	-I./deps/asprintf -I./deps -I./asprintf \
 	fuzz_lib.a -L/usr/lib/x86_64-linux-gnu -lcurl
 

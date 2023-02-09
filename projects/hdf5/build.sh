@@ -36,6 +36,8 @@ cmake -G "Unix Makefiles" \
 cmake --build . --verbose --config Release -j$(nproc)
 cd $SRC/hdf5
 
-$CC $CXXFLAGS $LIB_FUZZING_ENGINE -std=c99 \
-    -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
-    $SRC/h5_read_fuzzer.c ./build-dir/bin/libhdf5.a  -lz -o $OUT/h5_read_fuzzer
+$CC $CFLAGS  -std=c99 -c \
+  -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
+  $SRC/h5_read_fuzzer.c
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_read_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_read_fuzzer

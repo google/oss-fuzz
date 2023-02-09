@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-# TODO: workaround https://github.com/google/oss-fuzz/issues/8915
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:a723398a016b23d0e2b29f5c0203a6734900e404d09fdd44a555c1514ca513fa
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://github.com/google/jwt_verify_lib.git
+RUN apt-get update && apt-get install python3 -y
+RUN git clone --depth 1 https://github.com/google/jwt_verify_lib.git
 WORKDIR $SRC/jwt_verify_lib/
 COPY build.sh $SRC/

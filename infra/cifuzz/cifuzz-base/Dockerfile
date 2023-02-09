@@ -18,7 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN apt-get update && \
     apt-get install -y systemd && \
-    apt-get install -y --no-install-recommends nodejs npm && \
     wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && \
     rm /tmp/docker-ce.deb && \
@@ -38,7 +37,7 @@ COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 ADD . ${OSS_FUZZ_ROOT}
-RUN npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
+RUN npm install -g ${OSS_FUZZ_ROOT}/infra/cifuzz
 
 ENV PYTHONUNBUFFERED=1
 

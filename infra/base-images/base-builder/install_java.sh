@@ -17,9 +17,9 @@
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 cd /tmp
-curl -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+curl --silent -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
 mkdir -p $JAVA_HOME
-tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
 rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 

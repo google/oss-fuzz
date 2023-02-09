@@ -23,22 +23,26 @@ make
 INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/local/include/glib-2.0/ -I/src/glib/_build/glib/"
 STATIC_LIBS="./src/.libs/libshared-glib.a ./lib/.libs/libbluetooth-internal.a  -l:libical.a -l:libicalss.a -l:libicalvcal.a -l:libdbus-1.a /src/glib/_build/glib/libglib-2.0.a"
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
- $SRC/fuzz_xml.c ./src/bluetoothd-sdp-xml.o -o $OUT/fuzz_xml \
+$CC $CFLAGS $INCLUDES $SRC/fuzz_xml.c -c
+$CC $CFLAGS $INCLUDES $SRC/fuzz_sdp.c -c
+$CC $CFLAGS $INCLUDES $SRC/fuzz_textfile.c -c
+$CC $CFLAGS $INCLUDES $SRC/fuzz_gobex.c -c
+$CC $CFLAGS $INCLUDES $SRC/fuzz_hci.c -c
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+ ./src/bluetoothd-sdp-xml.o fuzz_xml.o -o $OUT/fuzz_xml \
  $STATIC_LIBS -ldl -lpthread
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
- $SRC/fuzz_sdp.c -o $OUT/fuzz_sdp \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+ fuzz_sdp.o -o $OUT/fuzz_sdp $STATIC_LIBS -ldl -lpthread
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_textfile.o -o $OUT/fuzz_textfile \
+  $STATIC_LIBS -ldl -lpthread src/textfile.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+  fuzz_gobex.o ./gobex/gobex*.o -o $OUT/fuzz_gobex \
  $STATIC_LIBS -ldl -lpthread
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
- $SRC/fuzz_textfile.c -o $OUT/fuzz_textfile \
- $STATIC_LIBS -ldl -lpthread src/textfile.o
-
-$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
- $SRC/fuzz_gobex.c ./gobex/gobex*.o -o $OUT/fuzz_gobex \
- $STATIC_LIBS -ldl -lpthread
-
-$CC $CFLAGS $LIB_FUZZING_ENGINE $INCLUDES \
- $SRC/fuzz_hci.c ./gobex/gobex*.o -o $OUT/fuzz_hci \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+ fuzz_hci.o ./gobex/gobex*.o -o $OUT/fuzz_hci \
  $STATIC_LIBS -ldl -lpthread
