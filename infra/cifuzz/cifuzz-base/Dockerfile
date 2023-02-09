@@ -22,8 +22,8 @@ RUN apt-get update && \
     dpkg -i /tmp/docker-ce.deb && \
     rm /tmp/docker-ce.deb && \
     mkdir -p /opt/gcloud && \
-    wget -qO- https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz | tar zxv -C /opt/gcloud && \
-    /opt/gcloud/google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options && \
+    wget -qO- https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-417.0.1-linux-x86_64.tar.gz | tar zx -C /opt/gcloud && \
+    /opt/gcloud/google-cloud-sdk/install.sh --override-components gsutil --usage-reporting=false --bash-completion=false --update-path=false && \
     apt-get -y install gcc python3-dev && \
     pip3 install -U crcmod && \
     apt-get autoremove -y gcc python3-dev
