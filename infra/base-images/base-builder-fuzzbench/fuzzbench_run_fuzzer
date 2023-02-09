@@ -34,6 +34,6 @@ export TRIAL_ID=1
 cd $OUT
 
 # Prevent permissions issues with pyc files and docker.
-cp -r $FUZZBENCH /tmp/fuzzbench
+cp -r $FUZZBENCH_PATH /tmp/fuzzbench
 
 PYTHONPATH=/tmp/fuzzbench nice -n $RUNNER_NICENESS python3 -B -u /tmp/fuzzbench/experiment/runner.py

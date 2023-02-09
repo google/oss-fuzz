@@ -17,7 +17,7 @@
 
 # TODO(metzman): Do this in a docket image so we don't need to waste time
 # reinstalling.
-PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
+PYTHONPATH=$FUZZBENCH_PATH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
 
 if [ "$FUZZING_ENGINE" = "coverage" ]; then
   cd /out

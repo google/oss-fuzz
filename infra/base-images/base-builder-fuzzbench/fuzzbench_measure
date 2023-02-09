@@ -16,17 +16,17 @@
 ################################################################################
 
 # TODO(metzman): Make these configurable.
-DB_PATH=$OUT/experiment.db
-SNAPSHOT_PERIOD=30
-EXPERIMENT_FILESTORE=$OUT/filestore
-MAX_TOTAL_TIME=120
-EXPERIMENT=oss-fuzz-on-demand
+export DB_PATH=$OUT/experiment.db
+export SNAPSHOT_PERIOD=30
+export EXPERIMENT_FILESTORE=$OUT/filestore
+export MAX_TOTAL_TIME=120
+export EXPERIMENT=oss-fuzz-on-demand
 
 rm -f $DB_PATH
 
 # FUZZER=mopt BENCHMARK=skcms
 
-SQL_DATABASE_URL=sqlite:///$DB_PATH
+export SQL_DATABASE_URL=sqlite:///$DB_PATH
 
-cd $FUZZBENCH
-PYTHONPATH=. python3 -B experiment/measurer/measure_manager.py $MAX_TOTAL_TIME
+cd $FUZZBENCH_PATH
+PYTHONPATH=. python3 -B experiment/measurer/standalone.py $MAX_TOTAL_TIME
