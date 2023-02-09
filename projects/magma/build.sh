@@ -17,6 +17,30 @@
 
 # Run patch
 patch -d /var/tmp/bazel/external/upb/bazel/ < $SRC/build_defs.bzl.patch
+patch -d /src/magma/bazel/external/ < $SRC/libfluid_base.BUILD.patch
+patch -d /src/magma/bazel/external/ < $SRC/system_libraries.BUILD.patch
+
+ln -s /usr/local/lib/libfdcore.so.6 /lib/x86_64-linux-gnu/libfdcore.so.6
+ln -s /usr/local/lib/libfdproto.so.6 /lib/x86_64-linux-gnu/libfdproto.so.6
+
+
+# Dependency
+apt-get install -y libunwind-dev
+
+pushd $SRC/
+git clone --depth=1 -b v4.3.2 https://github.com/zeromq/libzmq.git
+mkdir libzmq/build/ && cd libzmq/build/
+cmake \
+    -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+    -DCMAKE_C_FLAGS="" -DCMAKE_CXX_FLAGS="" \
+    -DBUILD_SHARED=OFF -DBUILD_TESTS=OFF -DWITH_DOCS=OFF -DZMQ_BUILD_TESTS=OFF ../.
+make -j$(nproc)
+make install
+popd
+
+
+# Compile
+apt-get install -y libtspi-dev libidn11-dev
 
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
@@ -25,22 +49,16 @@ for f in ${CFLAGS}; do
 done
 )"
 
-bazel build \
+bazel build -s \
     --dynamic_mode=off \
     --repo_env=CC=${CC} \
     --repo_env=CXX=${CXX} \
+    --linkopt=-lsctp \
+    --linkopt=-lidn \
+    --linkopt=-ltspi \
+    --linkopt=-lhogweed \
     --linkopt=${LIB_FUZZING_ENGINE} \
     --linkopt=-Wl,-rpath,'\$ORIGIN/lib' \
-    --linkopt=-lgflags \
-    --linkopt=-lhogweed \
-    --linkopt=-lidn \
-    --linkopt=-lnorm \
-    --linkopt=-lpgm \
-    --linkopt=-lsctp \
-    --linkopt=-lsodium \
-    --linkopt=-ltspi \
-    --linkopt=-lunwind \
-    --linkopt=-lzmq \
     ${EXTRA_BAZEL_FLAGS} \
     //lte/gateway/c/core/oai/fuzzing/...:*
 
@@ -52,22 +70,11 @@ zip -j ${OUT}/nas5g_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzin
 
 mkdir $OUT/lib/
 cp /lib/libgnutls* $OUT/lib/.
-cp /lib/libhogweed* $OUT/lib/.
 cp /lib/libnettle* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libconfig* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libczmq* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libevent* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libgflags* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libglog* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libidn* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libnorm* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libpgm* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libsctp* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libsodium* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libtspi* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libunwind* $OUT/lib/.
-cp /lib/x86_64-linux-gnu/libzmq* $OUT/lib/.
 cp /usr/local/lib/libfdcore* $OUT/lib/.
 cp /usr/local/lib/libfdproto* $OUT/lib/.
 
-echo "done"
+cp /lib/x86_64-linux-gnu/libsctp* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libidn* $OUT/lib/.
+cp /lib/x86_64-linux-gnu/libtspi* $OUT/lib/.
+cp /lib/libhogweed* $OUT/lib/.

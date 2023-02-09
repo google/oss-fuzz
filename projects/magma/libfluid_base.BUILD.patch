@@ -1,0 +1,15 @@
+--- libfluid_base.BUILD	2023-02-09 13:54:20.969790049 +0000
++++ libfluid_base.BUILD.new	2023-02-09 13:54:16.742847017 +0000
+@@ -46,9 +46,9 @@
+     linkopts = [
+         "-lssl",
+         "-lcrypto",
+-        "-levent",
+-        "-levent_pthreads",
+-        "-levent_openssl",
++        "-l:libevent.a",
++        "-l:libevent_pthreads.a",
++        "-l:libevent_openssl.a",
+     ],
+     visibility = ["//visibility:public"],
+ )

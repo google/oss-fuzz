@@ -1,0 +1,38 @@
+--- system_libraries.BUILD	2023-02-09 13:52:49.170027263 +0000
++++ system_libraries.BUILD.new	2023-02-09 13:52:27.553318602 +0000
+@@ -19,7 +19,7 @@
+     srcs = ["usr/local/lib/libfolly.so"],
+     linkopts = [
+         "-ldl",
+-        "-levent",
++        "-l:libevent.a",
+         "-ldouble-conversion",
+         "-lgflags",
+     ],
+@@ -47,12 +47,12 @@
+ 
+ cc_library(
+     name = "czmq",
+-    linkopts = ["-lczmq"],
++    linkopts = ["-l:libczmq.a /usr/local/lib/libzmq.a -lc++ -l:libuuid.a"],
+ )
+ 
+ cc_library(
+     name = "libconfig",
+-    linkopts = ["-lconfig"],
++    linkopts = ["-l:libconfig.a"],
+ )
+ 
+ cc_library(
+@@ -75,10 +75,7 @@
+ 
+ cc_library(
+     name = "libglog",
+-    srcs = glob(
+-        ["usr/lib/*-linux-gnu/libglog.so.0"],
+-        allow_empty = False,
+-    ),
++    linkopts = ["-l:libglog.a -l:libgflags.a -l:libunwind.a -l:liblzma.a"],
+ )
+ 
+ cc_library(
