@@ -39,8 +39,8 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 
 def get_changed_files_output():
   """Returns the output of a git command that discovers changed files."""
-  branch_commit_hash = subprocess.check_output(
-      ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode()
+  branch_commit_hash = (os.getenv('GITHUB_BASE_REF') or subprocess.check_output(
+      ['git', 'merge-base', 'HEAD', 'origin/HEAD']).strip().decode())
 
   return subprocess.check_output(
       ['git', 'diff', '--name-only', branch_commit_hash + '..']).decode()
