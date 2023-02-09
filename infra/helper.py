@@ -949,7 +949,7 @@ def fuzzbench_build_fuzzers(args):
                    check=True)
     env = [
         f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1',
-        f'PROJECT={args.project}'
+        f'PROJECT={args.project.name}'
     ]
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     subprocess.run([
@@ -1401,7 +1401,7 @@ def fuzzbench_run_fuzzer(args):
       'RUN_FUZZER_MODE=interactive',
       'HELPER=True',
       f'FUZZ_TARGET={args.fuzzer_name}',
-      f'BENCHMARK={args.project}',
+      f'BENCHMARK={args.project.name}',
       f'TRIAL_ID=1'
   ]
 
