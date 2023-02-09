@@ -16,4 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+COPY fuzzbench_install_dependencies /usr/local/bin
 RUN fuzzbench_install_dependencies
+
+COPY fuzzbench_build fuzzbench_run_fuzzer
