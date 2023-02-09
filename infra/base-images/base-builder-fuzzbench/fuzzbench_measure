@@ -1,3 +1,4 @@
+#! /bin/bash -eux
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +15,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# TODO(metzman): Make these configurable.
+export DB_PATH=$OUT/experiment.db
+export SNAPSHOT_PERIOD=30
+export EXPERIMENT_FILESTORE=$OUT/filestore
+export MAX_TOTAL_TIME=120
+export EXPERIMENT=oss-fuzz-on-demand
 
-# Copy/Run this now to make the cache more resilient.
-COPY fuzzbench_install_dependencies /usr/local/bin
-RUN fuzzbench_install_dependencies
+rm -f $DB_PATH
 
-ENV OSS_FUZZ_ON_DEMAND=1
+# FUZZER=mopt BENCHMARK=skcms
 
-COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+export SQL_DATABASE_URL=sqlite:///$DB_PATH
+
+cd $FUZZBENCH_PATH
+PYTHONPATH=. python3 -B experiment/measurer/standalone.py $MAX_TOTAL_TIME
