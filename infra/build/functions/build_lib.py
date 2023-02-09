@@ -490,8 +490,8 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
 
 
 def get_runner_image_name(test_image_suffix):
-  """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |test_image_suffix|."""
+  """Returns the runner image that should be used. Returns the testing image if
+  |test_image_suffix|."""
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
     image += '-' + test_image_suffix

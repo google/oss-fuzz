@@ -23,7 +23,6 @@ import yaml
 import build_project
 import datastore_entities
 
-BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
 QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
@@ -95,7 +94,7 @@ def request_build(event, context):
 
   with ndb.Client().context():
     credentials, cloud_project = google.auth.default()
-    build_steps = get_build_steps(project_name, cloud_project, BASE_PROJECT)
+    build_steps = get_build_steps(project_name, cloud_project)
     if not build_steps:
       return
     run_build(
