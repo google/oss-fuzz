@@ -44,7 +44,6 @@ BASE_IMAGES = {
         'gcr.io/oss-fuzz-base/base-image',
         'gcr.io/oss-fuzz-base/base-clang',
         'gcr.io/oss-fuzz-base/base-builder',
-        'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
         BASE_RUNNER_IMAGE,
         'gcr.io/oss-fuzz-base/base-runner-debug',
     ],
