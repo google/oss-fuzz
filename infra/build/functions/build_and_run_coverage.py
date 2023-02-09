@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-#!/usr/bin/env python3
 """Starts and runs coverage build on Google Cloud Builder.
 
 Usage: build_and_run_coverage.py <project>.
@@ -81,11 +82,9 @@ class IntrospectorBucket(Bucket):  # pylint: disable=too-few-public-methods
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, project_yaml, dockerfile_lines, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
-  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
-                                  image_project)
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
@@ -131,8 +130,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   build_steps.append({
       'name':
-          build_lib.get_runner_image_name(base_images_project,
-                                          config.test_image_suffix),
+          build_lib.get_runner_image_name(config.test_image_suffix),
       'env':
           coverage_env,
       'args': [
@@ -273,12 +271,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
 
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
-    project_name, project_yaml, dockerfile_lines, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps of fuzz introspector for project"""
 
-  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
-                                  image_project)
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []

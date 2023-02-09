@@ -32,6 +32,7 @@ import requests
 import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
+IMAGE_PROJECT = 'oss-fuzz'
 
 BUILD_TIMEOUT = 20 * 60 * 60
 
@@ -488,10 +489,10 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(base_images_project, test_image_suffix):
+def get_runner_image_name(test_image_suffix):
   """Returns the runner image that should be used, based on
   |base_images_project|. Returns the testing image if |test_image_suffix|."""
-  image = f'gcr.io/{base_images_project}/base-runner'
+  image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
     image += '-' + test_image_suffix
   return image
