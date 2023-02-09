@@ -51,7 +51,7 @@ inputs:
 runs:
   using: 'docker'
   image: '../../../cifuzz.Dockerfile'
-  args:
+  entrypoint:
     - python3
     - /opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py
   env:
