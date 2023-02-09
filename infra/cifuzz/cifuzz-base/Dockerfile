@@ -37,7 +37,7 @@ COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 ADD . ${OSS_FUZZ_ROOT}
-RUN npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
+RUN npm install -g ${OSS_FUZZ_ROOT}/infra/cifuzz
 
 ENV PYTHONUNBUFFERED=1
 
