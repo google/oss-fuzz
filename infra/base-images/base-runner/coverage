@@ -345,9 +345,6 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
 
   mv htmlcov/* $REPORT_PLATFORM_DIR/
   mv .coverage_* $REPORT_PLATFORM_DIR/
-
-  # Create an empty summary file for now
-  echo "{}" >> $SUMMARY_FILE
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # From this point on the script does not tolerate any errors.
