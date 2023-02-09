@@ -22,5 +22,7 @@ PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzz
 if [ "$FUZZING_ENGINE" = "coverage" ]; then
   cd /out
   mkdir -p filestore/oss-fuzz-on-demand/coverage-binaries
-  tar -czvf filestore/oss-fuzz-on-demand/coverage-binaries/coverage-build-$PROJECT.tar.gz * /src /work
+  # We expect an error regarding leading slashes. Just assume this step succeeds.
+  # TODO(metzman): Fix this when I get a chance.
+  tar -czvf filestore/oss-fuzz-on-demand/coverage-binaries/coverage-build-$PROJECT.tar.gz * /src /work || exit 0
 fi

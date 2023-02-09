@@ -22,4 +22,4 @@ RUN fuzzbench_install_dependencies
 
 ENV OSS_FUZZ_ON_DEMAND=1
 
-COPY fuzzbench_build fuzzbench_run_fuzzer /usr/local/bin/
+COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
