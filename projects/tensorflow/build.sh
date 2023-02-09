@@ -142,7 +142,7 @@ fi
 export FUZZTEST_DO_SYNC="no"
 compile_fuzztests.sh
 
-# Synchronize coverage folders. We have to do this here as well as later, becase
+# Synchronize coverage folders. We have to do this here as well as later, because
 # the fuzztest builds have certain folders that are not existing after the next
 # bazel build command, which causes missing files to abort the coverage generation.
 synchronize_coverage_directories
