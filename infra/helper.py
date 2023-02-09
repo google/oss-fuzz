@@ -247,7 +247,7 @@ def _add_external_project_args(parser):
   )
 
 
-def get_parser():  # pylint: disable=too-many-statements
+def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   """Returns an argparse parser."""
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   subparsers = parser.add_subparsers(dest='command')
