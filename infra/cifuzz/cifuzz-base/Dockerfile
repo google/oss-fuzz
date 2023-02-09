@@ -20,13 +20,7 @@ RUN apt-get update && \
     apt-get install -y systemd && \
     wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && \
-    rm /tmp/docker-ce.deb && \
-    mkdir -p /opt/gcloud && \
-    wget -qO- https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-417.0.1-linux-x86_64.tar.gz | tar zx -C /opt/gcloud && \
-    /opt/gcloud/google-cloud-sdk/install.sh --override-components gsutil --usage-reporting=false --bash-completion=false --update-path=false && \
-    apt-get -y install gcc python3-dev && \
-    pip3 install -U crcmod && \
-    apt-get autoremove -y gcc python3-dev
+    rm /tmp/docker-ce.deb
 
 
 ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
