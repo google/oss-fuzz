@@ -16,4 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+# Copy/Run this now to make the cache more resilient.
+COPY fuzzbench_install_dependencies /usr/local/bin
 RUN fuzzbench_install_dependencies
+
+COPY fuzzbench_build fuzzbench_run_fuzzer /usr/local/bin

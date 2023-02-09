@@ -935,7 +935,10 @@ def fuzzbench_build_fuzzers(args):
         fuzzbench_path
     ],
                    check=True)
-    env = [f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1']
+    env = [
+        f'FUZZBENCH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1',
+        f'PROJECT={args.project}'
+    ]
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     subprocess.run([
         'docker', 'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
