@@ -37,3 +37,4 @@ cd $OUT
 cp -r $FUZZBENCH_PATH /tmp/fuzzbench
 
 PYTHONPATH=/tmp/fuzzbench nice -n $RUNNER_NICENESS python3 -B -u /tmp/fuzzbench/experiment/runner.py
+cat $EXPERIMENT_FILESTORE/experiment-folders/$BENCHMARK-$FUZZER/trial-$TRIAL_ID/results/fuzzer-log.txt
