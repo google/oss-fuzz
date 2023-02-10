@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+#! /bin/bash -eux
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,4 +15,18 @@
 #
 ################################################################################
 
-./fuzz/oss_fuzz_build.sh
+# TODO(metzman): Make these configurable.
+export DB_PATH=$OUT/experiment.db
+export SNAPSHOT_PERIOD=30
+export EXPERIMENT_FILESTORE=$OUT/filestore
+export MAX_TOTAL_TIME=120
+export EXPERIMENT=oss-fuzz-on-demand
+
+rm -f $DB_PATH
+
+# FUZZER=mopt BENCHMARK=skcms
+
+export SQL_DATABASE_URL=sqlite:///$DB_PATH
+
+cd $FUZZBENCH_PATH
+PYTHONPATH=. python3 -B experiment/measurer/standalone.py $MAX_TOTAL_TIME
