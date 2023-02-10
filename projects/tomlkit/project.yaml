@@ -1,0 +1,10 @@
+homepage: https://github.com/sdispater/tomlkit
+main_repo: https://github.com/sdispater/tomlkit
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

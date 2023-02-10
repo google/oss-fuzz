@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pallets/markupsafe
+language: python
+main_repo: https://github.com/pallets/markupsafe
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

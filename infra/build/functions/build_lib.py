@@ -18,21 +18,22 @@ import base64
 import collections
 import logging
 import os
+import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
-from google.api_core.client_options import ClientOptions
+import google.api_core.client_options
 import google.auth
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import service_account as service_account_lib
 import requests
 import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 
-BUILD_TIMEOUT = 16 * 60 * 60
+BUILD_TIMEOUT = 20 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
@@ -42,6 +43,9 @@ GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 # Where corpus backups can be downloaded from.
 CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
+
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
@@ -54,9 +58,10 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer':
-        EngineInfo(upload_bucket='clusterfuzz-builds',
-                   supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64', 'i386', 'aarch64']),
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds',
+            supported_sanitizers=['address', 'memory', 'undefined', 'none'],
+            supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
                    supported_sanitizers=['address'],
@@ -83,7 +88,7 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
-US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
+US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
@@ -114,7 +119,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
     platform = 'linux/arm64'
   else:
     platform = 'linux/amd64'
-  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  new_args = [
+      'run', '--platform', platform, '-v', '/workspace:/workspace',
+      '--privileged', '--cap-add=all'
+  ]
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
@@ -162,8 +170,9 @@ def get_signed_url(path, method='PUT', content_type=''):
 
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    creds = (
+        service_account_lib.ServiceAccountCredentials.from_json_keyfile_name(
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
     client_id = creds.service_account_email
     signature = base64.b64encode(creds.sign_blob(blob)[1])
   else:
@@ -190,6 +199,13 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
+
+
 def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
@@ -207,6 +223,9 @@ def download_corpora_steps(project_name, test_image_suffix):
       qualified_name_prefix = '%s_' % project_name
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
+
+      # Normalize qualified_name name.
+      qualified_name = _normalized_name(qualified_name)
 
       url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
                                                     fuzzer=qualified_name),
@@ -241,23 +260,12 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
       'args': ['bash', '-c', (f'mkdir -p {out_dir}/textcov_reports')]
   })
 
-  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_coverage_args = []
-    for target_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      bucket_path = (f'/{bucket_name}/{project_name}/textcov_reports/'
-                     f'{latest}/{target_name}.covreport')
-      url = 'https://storage.googleapis.com' + bucket_path
-      coverage_data_path = os.path.join(f'{out_dir}/textcov_reports',
-                                        target_name + '.covreport')
-      download_coverage_args.append('%s %s' % (coverage_data_path, url))
-
-    steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'entrypoint': 'download_corpus',
-        'args': download_coverage_args
-    })
-
+  coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
+  bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+  })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
       'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
@@ -364,7 +372,7 @@ def _make_image_name_architecture_specific(image_name, architecture):
 
 def get_docker_build_step(image_names,
                           directory,
-                          buildkit_cache_image=None,
+                          use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64'):
   """Returns the docker build step."""
@@ -391,17 +399,15 @@ def get_docker_build_step(image_names,
       'args': args,
       'dir': directory,
   }
+  # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
-
-  if buildkit_cache_image is not None:
+  if use_buildkit_cache:
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
-    assert buildkit_cache_image in args
-    additional_args = [
-        '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
-        buildkit_cache_image
-    ]
-    args.extend(additional_args)
+    args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
+    for image in image_names:
+      args.extend(['--cache-from', image])
+
   args.append('.')
 
   return step

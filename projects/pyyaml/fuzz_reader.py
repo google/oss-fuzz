@@ -16,7 +16,7 @@
 import sys
 import atheris
 with atheris.instrument_imports():
-  import yaml.reader
+  import yaml
 
 @atheris.instrument_func
 def TestOneInput(data):

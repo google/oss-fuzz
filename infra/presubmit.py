@@ -66,7 +66,7 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
 def check_lib_fuzzing_engine(paths):
   """Calls _check_one_lib_fuzzing_engine on each path in |paths|. Returns True
   if the result of every call is True."""
-  return all([_check_one_lib_fuzzing_engine(path) for path in paths])
+  return all(_check_one_lib_fuzzing_engine(path) for path in paths)
 
 
 class ProjectYamlChecker:
@@ -222,10 +222,30 @@ def check_project_yaml(paths):
   return all([_check_one_project_yaml(path) for path in paths])
 
 
+def _check_one_seed_corpus(path):
+  """Returns False and prints error if |path| is a seed corpus."""
+  if os.path.dirname(os.path.dirname(path)) != 'projects':
+    return True
+
+  if os.path.splitext(path)[1] == 'zip':
+    print('Don\'t commit seed corpora into the ClusterFuzz repo,'
+          'they bloat it forever.')
+    return False
+
+  return True
+
+
+def check_seed_corpus(paths):
+  """Calls _check_one_seed_corpus on each path in |paths|. Returns True if the
+  result of every call is True."""
+  return all([_check_one_seed_corpus(path) for path in paths])
+
+
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
+      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_seed_corpus
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more
@@ -242,13 +262,17 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.cpp',
     '.css',
     '.Dockerfile',
+    '.go',
     '.h',
     '.htm',
     '.html',
+    '.java',
     '.js',
     '.proto',
     '.py',
+    '.rs',
     '.sh',
+    '.ts',
 ]
 THIRD_PARTY_DIR_NAME = 'third_party'
 
@@ -402,6 +426,14 @@ def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
   return nonbuild_success and build_success
 
 
+def run_systemsan_tests(_=None):
+  """Runs SystemSan unit tests."""
+  command = ['make', 'test']
+  return subprocess.run(command,
+                        cwd='infra/experimental/SystemSan',
+                        check=False).returncode == 0
+
+
 def get_all_files():
   """Returns a list of absolute paths of files in this repo."""
   get_all_files_command = ['git', 'ls-files']
@@ -413,9 +445,10 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests'],
-                      nargs='?')
+  parser.add_argument(
+      'command',
+      choices=['format', 'lint', 'license', 'infra-tests', 'systemsan-tests'],
+      nargs='?')
   parser.add_argument('-a',
                       '--all-files',
                       action='store_true',
@@ -464,6 +497,10 @@ def main():
                         parallel=args.parallel,
                         build_tests=(not args.skip_build_tests),
                         nonbuild_tests=(not args.skip_nonbuild_tests))
+    return bool_to_returncode(success)
+
+  if args.command == 'systemsan-tests':
+    success = run_systemsan_tests(relevant_files)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).

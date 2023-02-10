@@ -30,7 +30,7 @@ compile_package () {
     $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
     ls $SRC/ngolo-fuzzing/std/$pkg_flat.py && (
-        python $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
+        python3 $SRC/ngolo-fuzzing/std/$pkg_flat.py fuzz_ng_$pkg_flat/fuzz_ng.go > fuzz_ng_$pkg_flat/fuzz_ngp.go
         mv fuzz_ng_$pkg_flat/fuzz_ngp.go fuzz_ng_$pkg_flat/fuzz_ng.go
     )
     (
@@ -54,10 +54,12 @@ compile_package () {
         (
         cd fuzz_ng_$pkg_flat
         compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        rm fuzz_ngo_$pkg_flat.a
         )
         $SRC/ngolo-fuzzing/go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
 
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
+        rm fuzz_ng_$pkg_flat.a
     fi
 }
 
@@ -69,7 +71,6 @@ cd go114-fuzz-build
 go build
 )
 
-# maybe we should git clone --depth 1 https://github.com/golang/go.git
 find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue
@@ -92,34 +93,6 @@ find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
         echo $pkg >> $SRC/ko.txt
     fi
 
-done
-
-# compile x packages
-cd $SRC/x
-ls | while read repo; do
-cd $repo
-find . -type d | while read pkg; do
-    if [[ `ls $pkg/*.go | wc -l` == '0' ]]; then
-        continue
-    fi
-    if [[ `echo $pkg | grep internal | wc -l` == '1' ]]; then
-        continue
-    fi
-    if [[ `echo $pkg | grep vendor | wc -l` == '1' ]]; then
-        continue
-    fi
-    if [[ `echo $pkg | grep testdata | wc -l` == '1' ]]; then
-        continue
-    fi
-    if compile_package $pkg; then
-        echo $pkg >> $SRC/ok.txt
-    else
-        echo "Failed for $pkg"
-        echo $pkg >> $SRC/ko.txt
-    fi
-
-done
-cd -
 done
 
 echo "Failed packages:"

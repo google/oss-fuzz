@@ -112,6 +112,8 @@ def should_build_coverage(project_yaml):
                       '"fuzzing_engines" if "none" is specified.')
     assert len(engines) == 1, assert_message
     return False
+  if 'wycheproof' in engines:
+    return False
 
   language = project_yaml.get('language')
   if language not in constants.LANGUAGES_WITH_COVERAGE_SUPPORT:
@@ -234,7 +236,6 @@ def build_base_images():
       'base-image',
       'base-builder',
       'base-builder-go',
-      'base-builder-go-codeintelligencetesting',
       'base-builder-javascript',
       'base-builder-jvm',
       'base-builder-python',

@@ -31,7 +31,7 @@ CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/
 cp "spring-boot-project/spring-boot/build/libs/spring-boot-$CURRENT_VERSION.jar" "$OUT/spring-boot.jar"
 cp "spring-boot-project/spring-boot-tools/spring-boot-loader/build/libs/spring-boot-loader-$CURRENT_VERSION.jar" "$OUT/spring-boot-loader.jar"
 cp "spring-boot-project/spring-boot-starters/spring-boot-starter-web/build/libs/spring-boot-starter-web-$CURRENT_VERSION.jar" "$OUT/spring-boot-starter-web.jar"
-cp "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/build/libs/spring-boot-configuration-processor-3.0.0-SNAPSHOT.jar" "$OUT/spring-boot-configure-processor.jar"
+cp "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/build/libs/spring-boot-configuration-processor-$CURRENT_VERSION.jar" "$OUT/spring-boot-configure-processor.jar"
 cp "spring-boot-project/spring-boot-actuator-autoconfigure/build/libs/spring-boot-actuator-autoconfigure-$CURRENT_VERSION.jar" "$OUT/spring-boot-actuator-autoconfigure.jar"
 cp "spring-boot-project/spring-boot-autoconfigure/build/libs/spring-boot-autoconfigure-$CURRENT_VERSION.jar" "$OUT/spring-boot-autoconfigure.jar"
 
@@ -61,13 +61,13 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
   mem_settings='-Xmx1900m:-Xss900k'
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
+JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \

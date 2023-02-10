@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS -fPIC"
+export CXXFLAGS="$CXXFLAGS -fPIC"
+
 # build project
 mkdir build
 cd build

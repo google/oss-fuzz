@@ -16,8 +16,9 @@
 ################################################################################
 cd pugixml
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzz_parse.cpp src/pugixml.cpp -o ${OUT}/fuzz_parse
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzz_xpath.cpp src/pugixml.cpp -o ${OUT}/fuzz_xpath
+$CXX $CXXFLAGS -c src/pugixml.cpp -o src/pugixml.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzz_parse.cpp src/pugixml.o -o ${OUT}/fuzz_parse
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzz_xpath.cpp src/pugixml.o -o ${OUT}/fuzz_xpath
 
 zip -r ${OUT}/fuzz_parse_seed_corpus.zip tests/data_fuzz_parse
 zip -r ${OUT}/fuzz_xpath_seed_corpus.zip tests/data_fuzz_xpath

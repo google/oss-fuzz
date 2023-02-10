@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pysecsan"
+version = "0.1.0"
+authors = [
+  { name="David Korczynski", email="david@adalogics.com" },
+]
+description = "Sanitizers to detect security vulnerabilities at runtime."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/google/oss-fuzz/tree/master/infra/sanitizers/pysecsan"
+"Bug Tracker" = "https://github.com/google/oss-fuzz/issues"

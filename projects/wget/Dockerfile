@@ -36,7 +36,8 @@ RUN apt-get update && apt-get install -y \
  python \
  rsync \
  gtk-doc-tools \
- libtasn1-bin
+ libtasn1-bin \
+ libz-dev
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib

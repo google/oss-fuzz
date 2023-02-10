@@ -85,5 +85,5 @@ FUZZ_WERROR=""
 
 for fuzz in repo bsdiff; do
   $CC $CFLAGS $FUZZ_DEFINES $FUZZ_INCLUDES -o tests/fuzz-$fuzz.o -c tests/fuzz-$fuzz.c
-  $CC $CFLAGS $LIB_FUZZING_ENGINE $FUZZ_INCLUDES -o $OUT/fuzz-$fuzz  tests/fuzz-$fuzz.o $FUZZ_LIBS
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $FUZZ_INCLUDES -o $OUT/fuzz-$fuzz  tests/fuzz-$fuzz.o $FUZZ_LIBS
 done

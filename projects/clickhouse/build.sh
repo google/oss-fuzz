@@ -72,7 +72,7 @@ else
     cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
 fi
 
-TARGETS=$(find $SRC/ClickHouse/src -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
+TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
 
 for FUZZER_TARGET in $TARGETS
 do

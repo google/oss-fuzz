@@ -15,8 +15,19 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libdbus-1-dev  libreadline8 libreadline-dev python-docutils libudev-dev udev libical-dev libdbus-1-dev systemd
+RUN apt-get update && apt-get install -y \
+    make autoconf automake libtool pkg-config \
+    libdbus-1-dev  libreadline8 libreadline-dev \
+    python-docutils libudev-dev udev libical-dev \
+    libdbus-1-dev systemd
+
+RUN pip3 install -U meson ninja
 RUN git clone --depth 1 https://github.com/bluez/bluez bluez
+RUN git clone https://github.com/GNOME/glib  && \
+    cd glib && \
+    meson _build -Db_lundef=false -Ddefault_library=static -Dlibmount=disabled && \
+    ninja -C _build && \
+    ninja -C _build install
 WORKDIR bluez
 COPY build.sh $SRC/
 COPY *.c $SRC/

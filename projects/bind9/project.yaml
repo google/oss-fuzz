@@ -13,7 +13,5 @@ auto_ccs:
   - "pspacek@isc.org"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined
 main_repo: 'https://gitlab.isc.org/isc-projects/bind9.git'

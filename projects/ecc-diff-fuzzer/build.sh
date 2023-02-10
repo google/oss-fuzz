@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# use a linker that supports Dwarf v5
+export LDFLAGS="-fuse-ld=lld"
+
 # build projects
 #nettle
 (
@@ -63,6 +66,8 @@ else
 fi
 make -j$(nproc)
 make install
+# defined at aria.o:(aria_encrypt) in archive /lib/x86_64-linux-gnu/libcrypto.a
+sed -i -e s/aria_encrypt/ariagencrypt/ /usr/local/lib/libgcrypt.a
 )
 
 #mbedtls

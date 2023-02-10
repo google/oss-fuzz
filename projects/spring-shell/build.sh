@@ -54,7 +54,7 @@ function create_fuzz_targets() {
     # LLVMFuzzerTestOneInput for fuzzer detection.
     this_dir=\$(dirname \"\$0\")
     JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-    if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+    if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
       mem_settings='-Xmx1900m:-Xss900k'
     else
       mem_settings='-Xmx2048m:-Xss1024k'

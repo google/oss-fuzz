@@ -22,7 +22,7 @@ objfiles.txt: Makefile $(SUBDIROBJS) $(OBJS_FUZZERS)
 
 SUBDIRS = ../access ../bootstrap ../catalog ../parser ../commands ../executor ../foreign ../lib ../libpq \
 	../main ../nodes ../optimizer ../partitioning ../port ../postmaster \
-	../regex ../replication ../rewrite \
+	../regex ../replication ../rewrite ../backup \
 	../statistics ../storage ../tcop ../tsearch ../utils $(top_builddir)/src/timezone \
 	../jit
 
@@ -41,13 +41,13 @@ fuzzer: simple_query_fuzzer \
 	protocol_fuzzer
 
 simple_query_fuzzer json_parser_fuzzer: %: %.o fuzzer_initialize.o $(OBJS_FUZZERS)
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -lz
 
 simple_query_fuzzer.o json_parser_fuzzer.o protocol_fuzzer.o fuzzer_initialize.o: %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^ 
 
 protocol_fuzzer: %: %.o $(OBJS_FUZZERS)
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -Wl,--wrap=exit -Wl,--wrap=pq_getbyte
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -Wl,--wrap=exit -Wl,--wrap=pq_getbyte  -lz
 
 dbfuzz: dbfuzz.o | submake-libpgport temp-install
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LDFLAGS_EX) $(LIBS) -o $@ \

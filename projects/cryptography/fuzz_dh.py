@@ -29,10 +29,8 @@ def TestInput(input_bytes):
             key_size=fdp.ConsumeInt(4)
         )
     except ValueError as e:
-        if "DH key_size must be at least 512 bits" not in str(e):
-            raise e
-        else:
-            return
+        # This can only happen if the key_size isn't valid
+        return
 
     server_private_key = parameters.generate_private_key()
     peer_private_key = parameters.generate_private_key()

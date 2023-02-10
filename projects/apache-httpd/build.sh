@@ -16,6 +16,7 @@
 ################################################################################
 
 unset CPP
+INITIAL_CXX=$CXX
 unset CXX
 export LDFLAGS="-l:libbsd.a"
 
@@ -31,10 +32,12 @@ static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
 # Build the fuzzers
 for fuzzname in utils parse tokenize addr_parse uri request preq; do
-  $CC $CFLAGS $LIB_FUZZING_ENGINE \
+  $CC $CFLAGS -c \
     -I$SRC/fuzz-headers/lang/c -I./include -I./os/unix \
     -I./srclib/apr/include -I./srclib/apr-util/include/ \
-    $SRC/fuzz_${fuzzname}.c -o $OUT/fuzz_${fuzzname} \
+    $SRC/fuzz_${fuzzname}.c
+
+  $INITIAL_CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_${fuzzname}.o -o $OUT/fuzz_${fuzzname} \
     ./modules.o buildmark.o \
     -Wl,--start-group ./server/.libs/libmain.a \
                       ./modules/core/.libs/libmod_so.a \

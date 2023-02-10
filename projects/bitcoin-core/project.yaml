@@ -4,11 +4,9 @@ language: c++
 primary_contact: "macro.fuzzing.uxuga@aleeas.com"
 auto_ccs:
   - "fanquake@gmail.com"
-  - "john@johnnewbery.com"
   - "jonas@chaincode.com"
   - "laanwj@gmail.com"
   - "pieter@chaincode.com"
-  - "thomas.j.bitcoin@protonmail.com"
 sanitizers:
   - address
   - undefined

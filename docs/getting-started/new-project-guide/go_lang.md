@@ -109,7 +109,7 @@ For go-fuzz fuzzers, the best way to do this is by using the [`compile_go_fuzzer
 `compile_native_go_fuzzer` requires two dependencies which can be installed with:
 ```bash
 go install github.com/AdamKorcz/go-118-fuzz-build@latest
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 ```
 
 A usage example from go-dns project is

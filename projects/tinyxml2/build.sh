@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Make sure OSS-Fuzz's CXXFLAGS are propagated into the build
+sed -i 's/CXXFLAGS =/#CXXFLAGS/g' Makefile
+
 make -j$(nproc) clean
 make -j$(nproc) all
 

@@ -28,7 +28,13 @@ pushd "${SRC}/commons-logging"
 	ALL_JARS="${ALL_JARS} commons-logging.jar"
 popd
 
-for jarFile in ${SRC}/apache-log4j-2.18.0-bin/log4j-api-2.18.0.jar ${SRC}/apache-log4j-2.18.0-bin/log4j-core-2.18.0.jar ${SRC}/apache-log4j-2.18.0-bin/log4j-1.2-api-2.18.0.jar ; do
+LOG4J_VERSION=$(echo $(curl -s 'https://api.github.com/repos/apache/logging-log4j2/tags?per_page=1' | jq -r .[].name) | sed 's/^[^0-9]*//')
+curl "https://dlcdn.apache.org/logging/log4j/$LOG4J_VERSION/apache-log4j-$LOG4J_VERSION-bin.tar.gz" -o apache-log4j-bin.tar.gz
+tar xf apache-log4j-bin.tar.gz
+unlink apache-log4j-bin.tar.gz
+mv apache-log4j-$LOG4J_VERSION-bin $SRC
+
+for jarFile in ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-api-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-core-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-1.2-api-$LOG4J_VERSION.jar ; do
 	cp -v ${jarFile} "$OUT/$(basename ${jarFile})"
 	ALL_JARS="${ALL_JARS} $(basename ${jarFile})"
 done

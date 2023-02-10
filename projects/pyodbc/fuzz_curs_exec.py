@@ -48,9 +48,10 @@ def TestOneInput(data):
 def main():
     # Write the odbcinst.ini file
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open("/etc/odbcinst.ini", "w") as f:
+    with open("/tmp/odbcinst.ini", "w") as f:
         f.write("[FUZZ]\n")
         f.write("Driver=%s/fuzzodbc.so\n"%(dir_path))
+    os.environ['ODBCSYSINI'] = '/tmp/'
     
     atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)

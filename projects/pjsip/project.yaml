@@ -1,0 +1,17 @@
+homepage: "www.pjsip.org"
+language: c
+primary_contact: "security@pjsip.org"
+auto_ccs:
+  - "nanang@teluu.com"
+  - "ming@teluu.com"
+  - "riza@teluu.com"
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/pjsip/pjproject'

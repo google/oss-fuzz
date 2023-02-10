@@ -17,13 +17,7 @@ import atheris
 import sys
 
 from datetime import datetime
-
-with atheris.instrument_imports():
-  from croniter import (
-    croniter,
-    CroniterBadCronError,
-    CroniterBadDateError
-  )
+import croniter
 
 
 @atheris.instrument_func
@@ -31,13 +25,13 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   base = datetime(2012, 4, 6, 13, 26, 10)
   try:
-    itr = croniter(fdp.ConsumeString(50), base)
+    itr = croniter.croniter(fdp.ConsumeString(50), base)
     idx = 0
     for v in itr.all_next():
       idx += 1
       if idx > 10:
         break
-  except (CroniterBadCronError, CroniterBadDateError) as e:
+  except (croniter.CroniterBadCronError, croniter.CroniterBadDateError) as e:
     pass
   except NameError as e:
     # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781

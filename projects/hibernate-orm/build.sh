@@ -17,11 +17,13 @@
 
 ALL_JARS=""
 
+HIBERNATE_ORM_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+
 pushd "${SRC}/hibernate-orm/hibernate-core"
 	# use bundled gradlew deployer
 	../gradlew -Dorg.gradle.java.home="$(dirname $(dirname $(which javac)))" shadowJar
 
-	install -v target/libs/hibernate-core-6.1.3-SNAPSHOT-all.jar $OUT/hibernate-core.jar
+	install -v target/libs/hibernate-core-$HIBERNATE_ORM_VERSION-all.jar $OUT/hibernate-core.jar
 	ALL_JARS="${ALL_JARS} hibernate-core.jar"
 popd
 

@@ -24,6 +24,33 @@ fuzzer_package=${fuzzer_basename}.pkg
 PYFUZZ_WORKPATH=$SRC/pyfuzzworkdir/
 FUZZ_WORKPATH=$PYFUZZ_WORKPATH/$fuzzer_basename
 
+if [[ $SANITIZER = *introspector* ]]; then
+    # Extract the source package the fuzzer targets. This must happen before
+    # we enter the virtual environment in the following lines because we need
+    # to use the same python environment that installed the fuzzer dependencies.
+    python3 /fuzz-introspector/frontends/python/prepare_fuzz_imports.py $fuzzer_path isossfuzz
+    
+    # We must ensure python3.9, this is because we use certain
+    # AST logic from there.
+    # The below should probably be refined
+    apt-get install -y python3.9
+    apt-get update
+    apt-get install -y python3-pip
+    python3.9 -m pip install virtualenv
+    python3.9 -m virtualenv .venv
+    . .venv/bin/activate
+    pip3 install pyyaml
+    export PYTHONPATH="/fuzz-introspector/frontends/python/PyCG"
+
+    ARGS="--fuzzer $fuzzer_path"
+    if [ -n "${PYFUZZPACKAGE-}" ]; then
+      ARGS="$ARGS --package=${PYFUZZPACKAGE}"
+    fi
+    python /fuzz-introspector/frontends/python/main.py $ARGS
+    ls -la ./
+    exit 0
+fi
+
 # In coverage mode prepend coverage logic to the fuzzer source
 if [[ $SANITIZER = *coverage* ]]; then
   cat <<EOF > coverage_wrapper.py

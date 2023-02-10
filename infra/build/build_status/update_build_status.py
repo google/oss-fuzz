@@ -29,9 +29,8 @@ from google.cloud import storage
 import build_and_run_coverage
 import build_lib
 import build_project
-from datastore_entities import BuildsHistory
-from datastore_entities import LastSuccessfulBuild
-from datastore_entities import Project
+import datastore_entities
+import fuzz_introspector_page_gen
 
 BADGE_DIR = 'badge_images'
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
@@ -41,19 +40,13 @@ MAX_BUILD_LOGS = 7
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 INTROSPECTOR_BUCKET = 'oss-fuzz-introspector'
 INTROSPECTOR_BUCKET_URL = 'https://storage.googleapis.com/oss-fuzz-introspector'
+INTROSPECTOR_DOC_URL = 'https://fuzz-introspector.readthedocs.io/en/latest/'
 INTROSPECTOR_INDEX_JSON = 'build_status.json'
 INTROSPECTOR_INDEX_HTML = 'index.html'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
 INTROSPECTOR_STATUS_FILENAME = 'status-introspector.json'
-
-HTML_PREFIX_STRING = ('<!DOCTYPE html>\n<html>\n'
-                      '\t<head><h2>'
-                      'Index of Fuzz-Introspector reports for OSS-Fuzz projects'
-                      '</h2></head>\n'
-                      '\t<body>\n\t<font size="4">\n')
-HTML_SUFFIX_STRING = '\t</font>\n\t</body>\n</html>'
 
 # pylint: disable=invalid-name
 _client = None
@@ -103,7 +96,7 @@ def sort_projects(projects):
 
 def update_last_successful_build(project, build_tag):
   """Update last successful build."""
-  last_successful_build = ndb.Key(LastSuccessfulBuild,
+  last_successful_build = ndb.Key(datastore_entities.LastSuccessfulBuild,
                                   project['name'] + '-' + build_tag).get()
   if not last_successful_build and 'last_successful_build' not in project:
     return
@@ -120,7 +113,7 @@ def update_last_successful_build(project, build_tag):
       last_successful_build.finish_time = project['last_successful_build'][
           'finish_time']
     else:
-      last_successful_build = LastSuccessfulBuild(
+      last_successful_build = datastore_entities.LastSuccessfulBuild(
           id=project['name'] + '-' + build_tag,
           project=project['name'],
           build_id=project['last_successful_build']['build_id'],
@@ -224,8 +217,9 @@ def update_build_status(build_tag, status_filename):
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     futures = []
-    for project_build in BuildsHistory.query(
-        BuildsHistory.build_tag == build_tag).order('project'):
+    for project_build in datastore_entities.BuildsHistory.query(
+        datastore_entities.BuildsHistory.build_tag == build_tag).order(
+            'project'):
       futures.append(executor.submit(process_project, project_build))
 
     for future in concurrent.futures.as_completed(futures):
@@ -306,7 +300,7 @@ def update_badges():
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
     futures = []
-    for project in Project.query():
+    for project in datastore_entities.Project.query():
       if project.name not in project_build_statuses:
         continue
       # Certain projects (e.g. JVM and Python) do not have any coverage
@@ -336,17 +330,6 @@ def upload_index(json_index, html_string):
   html_blob.upload_from_string(html_string, content_type='text/html')
 
 
-def generate_html_string(content):
-  """Generate html body for introspector index"""
-  html_body = HTML_PREFIX_STRING
-  for project in sorted(content.keys()):
-    url = content[project]
-    html_body += f'\t<li><a href="{url}"> {project} </a></li>\n'
-
-  html_body += HTML_SUFFIX_STRING
-  return html_body
-
-
 def generate_introspector_index():
   """Generate index.html for successful Fuzz Introspector projects"""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
@@ -371,7 +354,8 @@ def generate_introspector_index():
                                                       build_date,
                                                       'fuzz_report.html')
 
-  html_string = generate_html_string(introspector_index)
+  html_string = fuzz_introspector_page_gen.get_fuzz_introspector_html_page(
+      introspector_index)
   upload_index(introspector_index, html_string)
 
 
