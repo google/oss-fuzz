@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-
 """Does fuzzbench runs on Google Cloud Build."""
 
 import logging
