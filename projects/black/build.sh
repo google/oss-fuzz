@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-# Copy/Run this now to make the cache more resilient.
-COPY fuzzbench_install_dependencies /usr/local/bin
-RUN fuzzbench_install_dependencies
-
-ENV OSS_FUZZ_ON_DEMAND=1
-
-COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+pip3 install .
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer --add-data 'src/blib2to3:blib2to3'
+done

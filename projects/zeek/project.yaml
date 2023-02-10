@@ -17,3 +17,7 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/zeek'
+coverage_extra_args: >
+  -ignore-filename-regex=src/3rdparty/.*
+  -ignore-filename-regex=build/zeek/3rdparty/.*
+  -ignore-filename-regex=auxil/.*

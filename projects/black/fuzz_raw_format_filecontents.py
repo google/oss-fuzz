@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,15 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+import sys
+import atheris
 
-FROM gcr.io/oss-fuzz-base/base-builder
+import black
 
-# Copy/Run this now to make the cache more resilient.
-COPY fuzzbench_install_dependencies /usr/local/bin
-RUN fuzzbench_install_dependencies
 
-ENV OSS_FUZZ_ON_DEMAND=1
+def TestOneInput(data):
+  if len(data) < 50:
+    return
 
-COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+  fdp = atheris.FuzzedDataProvider(data)
+  try:
+    black.format_file_contents(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+                               mode=black.Mode(),
+                               fast=False)
+  except black.InvalidInput:
+    pass
+  except black.NothingChanged:
+    pass
+  except AssertionError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

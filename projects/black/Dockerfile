@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,15 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-# Copy/Run this now to make the cache more resilient.
-COPY fuzzbench_install_dependencies /usr/local/bin
-RUN fuzzbench_install_dependencies
-
-ENV OSS_FUZZ_ON_DEMAND=1
-
-COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/psf/black black
+COPY *.sh *py $SRC/
+WORKDIR $SRC/black
