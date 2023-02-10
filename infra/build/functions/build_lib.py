@@ -236,7 +236,7 @@ def download_corpora_steps(project_name, test_image_suffix):
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     steps.append({
-        'name': get_runner_image_name(BASE_IMAGES_PROJECT, test_image_suffix),
+        'name': get_runner_image_name(test_image_suffix),
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
         'volumes': [{

@@ -129,10 +129,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   ]
 
   build_steps.append({
-      'name':
-          build_lib.get_runner_image_name(config.test_image_suffix),
-      'env':
-          coverage_env,
+      'name': build_lib.get_runner_image_name(config.test_image_suffix),
+      'env': coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('

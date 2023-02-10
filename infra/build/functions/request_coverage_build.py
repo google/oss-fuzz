@@ -32,8 +32,7 @@ def get_build_steps(project_name):
       project_name)
   return build_and_run_coverage.get_build_steps(project_name,
                                                 project_yaml_contents,
-                                                dockerfile_lines,
-                                                build_config)
+                                                dockerfile_lines, build_config)
 
 
 def request_coverage_build(event, context):

@@ -157,7 +157,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
   @property
   def image(self):
     """Returns the docker image for the project."""
-    return f'gcr.io/{BUILD_LIB.IMAGE_PROJECT}/{self.name}'
+    return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
 
 def get_last_step_id(steps):
@@ -323,16 +323,13 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               '*' * 80)
           # Test fuzz targets.
           test_step = {
-              'name':
-                  build_lib.get_runner_image_name(config.test_image_suffix),
-              'env':
-                  env,
+              'name': build_lib.get_runner_image_name(config.test_image_suffix),
+              'env': env,
               'args': [
                   'bash', '-c',
                   f'test_all.py || (echo "{failure_msg}" && false)'
               ],
-              'id':
-                  get_id('build-check', build)
+              'id': get_id('build-check', build)
           }
           build_lib.dockerify_run_step(test_step, build)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
@@ -367,7 +364,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             }
         ])
         if config.upload:
-          upload_steps = get_upload_steps(project, build, timestamp, config.testing)
+          upload_steps = get_upload_steps(project, build, timestamp,
+                                          config.testing)
           build_steps.extend(upload_steps)
 
   return build_steps
