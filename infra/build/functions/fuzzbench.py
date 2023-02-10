@@ -16,63 +16,15 @@
 #!/usr/bin/env python3
 """Does fuzzbench runs on Google Cloud Build."""
 
-import json
 import logging
 import os
 import sys
-import posixpath
 
 import build_lib
 import build_project
 
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
-
-
-def get_compile_step(fuzzing_engine, project, build, env):
-  env.append('OSS_FUZZ_ON_DEMAND=1')
-  compile_step = f'fuzzbench_build_fuzzers {project.name}'
-  compile_step = {
-      'name':
-          f'gcr.io/oss-fuzz/{fuzzing_engine}/{project.name}',
-      'env':
-          env,
-      'args': [
-          'bash',
-          '-c',
-          # Remove /out to make sure there are non instrumented binaries.
-          # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-          # Dockerfile). Container Builder overrides our workdir so we need
-          # to add this step to set it back.
-          (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && {compile_step} || true'),
-      ],
-  }
-  build_lib.dockerify_run_step(compile_step,
-                               build,
-                               use_architecture_image_name=build.is_arm)
-  return compile_step
-
-
-def get_osd_build_nsteps(fuzzing_engine, project_image, project_name):
-  project = Project(project_name, project_yaml, dockerfile, image_project)
-
-  steps = [clone_step]
-  builder_image_name = f'gcr.io/oss-fuzz/{fuzzing_engine}'
-
-  build_args = [
-      'build', '--tag', f'gcr.io/oss-fuzz/{fuzzing_engine}/{project_name}',
-      '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
-      builder_image_name, '--build-arg', f'parent_image={project_image}',
-      '--file', f'fuzzbench/fuzzers/{fuzzing_engine}/builder.Dockerfile',
-      f'fuzzbench/fuzzers/{fuzzing_engine}'
-  ]
-  build_step = {
-      'args': build_args,
-      'name': build_lib.DOCKER_TOOL_IMAGE,
-  }
-  steps.append(build_step)
-  return steps
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
