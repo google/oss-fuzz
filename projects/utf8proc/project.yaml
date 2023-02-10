@@ -6,6 +6,9 @@ auto_ccs:
 sanitizers:
   - address
   - memory
-  - undefined 
+  - undefined
 main_repo: 'https://github.com/JuliaStrings/utf8proc'
-
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

@@ -68,8 +68,8 @@ def exec_command_from_github(pull_request_number, repo, branch):
   if command is None:
     logging.info('Trial build not requested.')
     return None
+
   command.extend(['--repo', repo])
-  logging.info('Command: %s.', command)
 
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-zip -r $OUT/fuzz_validator_corpus_seed.zip $SRC/fuzz-corpus/python-email-validator
+zip -r $OUT/fuzz_validator_seed_corpus.zip $SRC/fuzz-corpus/python-email-validator
 
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py');do
