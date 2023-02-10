@@ -28,7 +28,7 @@ REALBIN_PATH=$OUT
 
 # build main target
 cd "$MODDABLE/xs/makefiles/lin"
-FUZZING=1 OSSFUZZ=1 make debug
+FUZZING=1 OSSFUZZ=1 FUZZ_METER=10240000 make debug
 
 cd "$MODDABLE"
 cp ./build/bin/lin/debug/xst $REALBIN_PATH/xst
@@ -37,7 +37,7 @@ cp $SRC/xst.options $OUT/
 # build jsonparse target
 cd "$MODDABLE/xs/makefiles/lin"
 make -f xst.mk clean
-FUZZING=1 OSSFUZZ=1 OSSFUZZ_JSONPARSE=1 make debug
+FUZZING=1 OSSFUZZ=1 OSSFUZZ_JSONPARSE=1 FUZZ_METER=10240000 make debug
 
 cd "$MODDABLE"
 cp ./build/bin/lin/debug/xst $REALBIN_PATH/xst_jsonparse

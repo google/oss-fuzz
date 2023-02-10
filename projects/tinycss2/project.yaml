@@ -1,0 +1,10 @@
+homepage: https://github.com/Kozea/tinycss2/
+main_repo: https://github.com/Kozea/tinycss2/
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

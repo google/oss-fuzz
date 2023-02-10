@@ -49,7 +49,7 @@ make install
 
 # Build cairo
 pushd $SRC/cairo
-meson \
+CFLAGS="-DDEBUG_SVG_RENDER $CFLAGS" meson \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
@@ -76,7 +76,7 @@ BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")
-for f in $fuzzers; do
+for f in $fuzzers $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c; do
   fuzzer_name=$(basename $f .c)
   $CC $CFLAGS $BUILD_CFLAGS \
     -c $f -o $WORK/${fuzzer_name}.o

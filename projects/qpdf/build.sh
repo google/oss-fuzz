@@ -24,7 +24,7 @@ popd
 
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX="$WORK" -DENABLE_STATIC:bool=on
+cmake . -DCMAKE_INSTALL_PREFIX="$WORK" -DENABLE_STATIC=1 -DENABLE_SHARED=0 -DCMAKE_POSITION_INDEPENDENT_CODE=1
 make -j$(nproc)
 make install
 popd

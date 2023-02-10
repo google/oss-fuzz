@@ -1,8 +1,8 @@
-homepage: "https://github.com/lucas-clemente/quic-go"
+homepage: "https://github.com/quic-go/quic-go"
 primary_contact: "martenseemann@gmail.com"
 language: go
 fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
-main_repo: 'https://github.com/lucas-clemente/quic-go'
+main_repo: 'https://github.com/quic-go/quic-go'

@@ -8,6 +8,10 @@ sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 architectures:
   - x86_64
   - i386

@@ -45,7 +45,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
 ]
 
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python']
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python', 'jvm']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
@@ -56,7 +56,6 @@ class Bucket:  # pylint: disable=too-few-public-methods
     self.bucket_name = self.BUCKET_NAME
     if testing:
       self.bucket_name += '-testing'
-
     self.date = date
     self.project = project
     self.html_report_url = (
@@ -138,8 +137,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           coverage_env,
       'args': [
           'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%%.*}). '
+          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
+           'echo "Failed to unpack the corpus for $(basename ${f%.*}). '
            'This usually means that corpus backup for a particular fuzz '
            'target does not exist. If a fuzz target was added in the last '
            '24 hours, please wait one more day. Otherwise, something is '
@@ -173,9 +172,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   })
 
   # TODO(navidem):
-  # Currently python coverage does not produce per_target reports.
+  # Currently python and jvm coverage does not produce per_target reports.
   # Skipping python for now to avoid breakage.
-  if (project.fuzzing_language != 'python' and
+  if (project.fuzzing_language not in ['python', 'jvm'] and
       project.fuzzing_language in LANGUAGES_WITH_INTROSPECTOR_SUPPORT):
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
     build_steps.append({

@@ -32,13 +32,6 @@ make -j$(nproc)
 make install
 cd ..
 
-cd json-c
-mkdir build
-cd build
-cmake -DBUILD_SHARED_LIBS=OFF ..
-make install
-cd ../..
-
 if [[ "$SANITIZER" != "memory" ]]; then
 	#Re-enable code instrumentation
 	export CFLAGS="${CFLAGS_SAVE}"
@@ -54,6 +47,8 @@ LDFLAGS="-lpcap" ./autogen.sh --enable-fuzztargets --with-only-libndpi
 make -j$(nproc)
 # Copy fuzzers
 ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
+# Copy dictionaries
+cp fuzz/*.dict $OUT/
 # Copy seed corpus
 cp fuzz/*.zip $OUT/
 # Copy configuration files

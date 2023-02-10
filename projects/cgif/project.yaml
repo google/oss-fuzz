@@ -1,0 +1,13 @@
+homepage: "https://github.com/dloebl/cgif"
+language: c
+primary_contact: "dloebl.2000@gmail.com"
+auto_ccs:
+  - "matthias.loebl@rwth-aachen.de"
+sanitizers:
+- address
+- undefined
+- memory
+architectures:
+  - x86_64
+  - i386
+main_repo: "https://github.com/dloebl/cgif.git"

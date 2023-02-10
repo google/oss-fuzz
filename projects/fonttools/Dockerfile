@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip brotli
 RUN git clone https://github.com/behdad/fonttools fonttools
 COPY *.sh *py $SRC/
 WORKDIR $SRC/fonttools

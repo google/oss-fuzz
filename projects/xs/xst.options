@@ -1,5 +1,2 @@
-[libfuzzer]
-detect_leaks=0
 [asan]
 detect_stack_use_after_return=0
-detect_leaks=0

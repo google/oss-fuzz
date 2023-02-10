@@ -38,10 +38,6 @@ const size_t kDnsHeaderLen = 12;
 
 
 void inspect_for_arbitrary_dns_connect(pid_t pid, const user_regs_struct &regs) {
-  static bool is_enabled = check_enabled("arbitrary_dns_resolution");
-  if (not is_enabled)
-    return;
-
   auto memory = read_memory(pid, regs.rsi, sizeof(struct sockaddr_in));
   if (memory.size()) {
     struct sockaddr_in * sa = reinterpret_cast<struct sockaddr_in *>(memory.data());
@@ -112,6 +108,7 @@ struct DnsRequest parse_dns_request(std::vector<std::byte> data, size_t offset) 
   while(offset < data.size()) {
     uint8_t rlen = uint8_t(data[offset]);
     if (rlen == 0) {
+      offset++;
       break;
     }
     r.nb_levels++;

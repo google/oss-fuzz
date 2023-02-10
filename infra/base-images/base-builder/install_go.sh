@@ -16,7 +16,7 @@
 ################################################################################
 
 cd /tmp
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
+curl --silent -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod +x ./installer_linux
 SHELL="bash" ./installer_linux -version=1.19
 rm -rf ./installer_linux

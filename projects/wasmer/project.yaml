@@ -1,0 +1,16 @@
+homepage: "https://github.com/wasmerio/wasmer"
+language: rust
+main_repo: "https://github.com/wasmerio/wasmer"
+primary_contact: "syrus@wasmer.io"
+auto_ccs:
+  - michael@wasmer.io
+  - felix@wasmer.io
+  - sebastien@wasmer.io
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

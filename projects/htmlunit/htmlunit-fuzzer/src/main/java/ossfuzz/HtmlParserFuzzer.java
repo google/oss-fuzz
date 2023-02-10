@@ -32,9 +32,7 @@ public class HtmlParserFuzzer {
 	private FuzzedDataProvider fuzzedDataProvider;
 
 	public HtmlParserFuzzer(FuzzedDataProvider fuzzedDataProvider) {
-
 		this.fuzzedDataProvider = fuzzedDataProvider;
-
 	}
 
 	BrowserVersion getBrowserVersion() {
@@ -42,33 +40,26 @@ public class HtmlParserFuzzer {
 		 * from src/test/java/com/gargoylesoftware/htmlunit/WebTestCase.java
 		 */
 		return new BrowserVersion.BrowserVersionBuilder(BrowserVersion.BEST_SUPPORTED)
-                    .setApplicationName("FLAG_ALL_BROWSERS")
-                    .build();
+					.setApplicationName("FLAG_ALL_BROWSERS")
+					.build();
 	}
 
 	void test() {
-		try {
-			WebClient webClient = new WebClient(getBrowserVersion());
-			WebResponse webResponse = new StringWebResponse(fuzzedDataProvider.consumeRemainingAsString(), new URL("http://localhost.edu/index.html"));
-			HtmlPage page = new HtmlPage(webResponse, webClient.getCurrentWindow());
-        
+		try (WebClient webClient = new WebClient(getBrowserVersion())) {
 			/*
 			 * net.sourceforge.htmlunit.corejs.javascript.EvaluatorException
 			 * seems to be fatal
 			 */
 			webClient.getOptions().setThrowExceptionOnScriptError(false);
 
-			webClient.getCurrentWindow().setEnclosedPage(page);
-			webClient.getPageCreator().getHtmlParser().parse(webResponse, page, false, false);
+			webClient.loadHtmlCodeIntoCurrentWindow(fuzzedDataProvider.consumeRemainingAsString());
 		} catch (IllegalArgumentException e) {
-		} catch (MalformedURLException e) {
 		} catch (IOException e) {
 		}
 
 	}
 
 	public static void fuzzerTestOneInput(FuzzedDataProvider fuzzedDataProvider) {
-
 		HtmlParserFuzzer testFixture = new HtmlParserFuzzer(fuzzedDataProvider);
 		testFixture.test();
 	}

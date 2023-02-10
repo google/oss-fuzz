@@ -23,7 +23,7 @@ autoreconf -fi
 
 LIBISC_CFLAGS="-Ilib/isc/unix/include -Ilib/isc/pthreads/include -Ilib/isc/include"
 LIBDNS_CFLAGS="-Ilib/dns/include"
-LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -lssl -lcrypto -luv -lnghttp2 -Wl,-Bdynamic"
+LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -luv -lnghttp2 -Wl,-Bdynamic"
 LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
 
 # dns_name_fromwire needs old.c/old.h code to be linked in

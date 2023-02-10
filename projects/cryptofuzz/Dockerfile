@@ -21,7 +21,7 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN install_go.sh
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
+    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
@@ -46,7 +46,6 @@ RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
 RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
 RUN git clone --depth 1 https://github.com/brix/crypto-js.git
-RUN git clone --depth 1 https://github.com/LoupVaillant/Monocypher.git
 RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
 RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
 RUN git clone --depth 1 https://github.com/paulmillr/noble-ed25519.git

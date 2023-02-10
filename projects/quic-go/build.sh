@@ -20,17 +20,17 @@ set -ex
 (
 cd qpack
 # Fuzz qpack
-compile_go_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+compile_go_fuzzer github.com/quic-go/qpack/fuzzing Fuzz qpack_fuzzer
 )
 
 (
 cd quic-go
 # Fuzz quic-go
-compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
-compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
-compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
-compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fuzzer
-compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
+compile_go_fuzzer github.com/quic-go/quic-go/fuzzing/frames Fuzz frame_fuzzer
+compile_go_fuzzer github.com/quic-go/quic-go/fuzzing/header Fuzz header_fuzzer
+compile_go_fuzzer github.com/quic-go/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
+compile_go_fuzzer github.com/quic-go/quic-go/fuzzing/tokens Fuzz token_fuzzer
+compile_go_fuzzer github.com/quic-go/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
 
 if [ $SANITIZER == "coverage" ]; then
     # no need for corpuses if coverage

@@ -32,7 +32,7 @@ for fuzzer in $(find $SRC -name '*_fuzz.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
 
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
+  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer --hidden-import=chardet
 
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.

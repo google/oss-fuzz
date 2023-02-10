@@ -46,7 +46,8 @@ make install
 # Building libfido2 with ${LIB_FUZZING_ENGINE} and chosen sanitizer
 cd ${SRC}/libfido2
 mkdir build && cd build
-cmake -DFUZZ=1 -DFUZZ_LDFLAGS=${LIB_FUZZING_ENGINE} \
+cmake -DFUZZ=1 -DFUZZ_LDFLAGS="${LIB_FUZZING_ENGINE}" \
+      -DFUZZ_LINKER_LANGUAGE=CXX \
       -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=1 \
       -DCMAKE_PREFIX_PATH=${WORK} \
       -DCMAKE_INSTALL_PREFIX=${WORK} \

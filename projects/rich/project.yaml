@@ -1,0 +1,10 @@
+homepage: https://github.com/Textualize/rich
+main_repo: https://github.com/Textualize/rich
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
