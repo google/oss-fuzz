@@ -17,7 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake bison flex
-RUN git clone --depth 1 --branch develop  https://github.com/igraph/igraph
+RUN git clone --branch master  https://github.com/igraph/igraph
 WORKDIR igraph
 RUN cp $SRC/igraph/fuzzing/build.sh $SRC/build.sh
-

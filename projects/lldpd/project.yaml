@@ -1,0 +1,14 @@
+homepage: "https://lldpd.github.io"
+language: c
+primary_contact: "vincent@bernat.ch"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/lldpd/lldpd'

@@ -32,6 +32,14 @@ $CXX $CXXFLAGS $OUT/${name}.o $LIB_FUZZING_ENGINE -lm \
 rm -f $OUT/${name}.o
 )
 
+# Construct options files
+cat > $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options <<EOF
+[libfuzzer]
+dict = mruby.dict
+only_ascii = 1
+EOF
+cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options
+
 # Build proto fuzzer: ASan and UBSan
 if [[ $CFLAGS != *sanitize=memory* ]]; then
     PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
@@ -39,7 +47,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     rm -rf $SRC/mruby/genfiles
     mkdir $SRC/mruby/genfiles
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
-    $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
+    $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
     $CXX -I $SRC/mruby/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
       -I $SRC/mruby/genfiles \
       -I $SRC/libprotobuf-mutator \

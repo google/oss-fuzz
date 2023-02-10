@@ -3,10 +3,11 @@ language: c++
 primary_contact: "ddkilzer@apple.com"
 auto_ccs:
   - "mark.lam@apple.com"
-  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "jfb@chromium.org"
+  - "product-security@apple.com"
   - "sbarati@apple.com"
+  - "simon.lewis@apple.com"
   - "ysuzuki@apple.com"
 fuzzing_engines:
   - none

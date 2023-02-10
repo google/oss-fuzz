@@ -202,6 +202,10 @@ void FuzzLzoAlgorithm(const LzoAlgorithm& algorithm,
   std::unique_ptr<uint8_t[]> compressed_buffer(
       new uint8_t[algorithm.GetMaxCompressedSize(input_buffer.size())]);
 
+#if MEMORY_SANITIZER
+  __msan_unpoison(working_buffer.get(), algorithm.working_memory_size);
+#endif
+
   lzo_uint compressed_size;
   if (algorithm.compress_fn(input_buffer.data(), input_buffer.size(),
                             compressed_buffer.get(), &compressed_size,

@@ -1,0 +1,32 @@
+# sources:
+# - https://en.wikipedia.org/wiki/INI_file
+# - https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms717987(v=vs.85)
+
+# Basics
+assign="="
+section_left_bracket="["
+section_right_bracket="]"
+comment_semicolon=";"
+comment_hash="#"
+apostrophe="'"
+double_quotes="\""
+
+# Old section nesting symbols
+backslash="\\"
+comma=","
+period="."
+
+# Escape sequences
+escaped_backslash="\\'"
+escaped_double_quotes="\\""
+escaped_null_byte="\\0"
+escaped_alert="\\a"
+escaped_backspace="\\b"
+escaped_tab="\\t"
+escaped_carriage_return="\\r"
+escaped_linefeed="\\n"
+escaped_semicolon="\\;"
+escaped_hash="\\#"
+escaped_equal_sign="\\="
+escaped_colon="\\:"
+escaped_unicode_beginning="\\x"

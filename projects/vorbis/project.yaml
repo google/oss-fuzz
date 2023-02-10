@@ -10,10 +10,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
-  - dataflow
   - memory
-  - undefined
 main_repo: 'https://gitlab.xiph.org/xiph/vorbis.git'

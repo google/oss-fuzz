@@ -3,4 +3,4 @@ language: c++
 primary_contact: "mbed-tls-security@lists.trustedfirmware.org"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
-main_repo: 'https://github.com/ARMmbed/mbedtls.git'
+main_repo: 'https://github.com/Mbed-TLS/mbedtls.git'

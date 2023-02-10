@@ -54,6 +54,8 @@ declare -r BAZEL_BUILD_FLAGS=(
     "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
     "--cxxopt=-stdlib=libc++" \
     "--linkopt=-lc++" \
+    "--verbose_failures" \
+    "--spawn_strategy=standalone" \
     "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
     ${BAZEL_EXTRA_BUILD_FLAGS[*]}
 )

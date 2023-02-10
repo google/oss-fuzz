@@ -1,0 +1,45 @@
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+echo -n "Precompiling centipede"
+
+# Build Centipede with bazel.
+cd "$SRC/centipede/"
+apt-get install libssl-dev -y
+unset CXXFLAGS CFLAGS
+echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
+bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
+
+# Prepare the weak symbols:
+# This is necessary because we compile the target binary and the intermediate
+# auxiliary binaries with the same cflags. The auxiliary binaries do not need
+# data-flow tracing flags, but will still throw errors when they cannot find
+# the corresponding functions.
+# The weak symbols provides fake implementations for intermediate binaries.
+$CXX "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
+
+echo 'Removing extra stuff leftover to avoid bloating image.'
+
+rm -rf /clang-*.tgz /clang
+
+BAZEL_BIN_REAL_DIR=$(readlink -f $SRC/centipede/bazel-bin)
+rm -rf $SRC/centipede/bazel-bin
+mkdir -p $SRC/centipede/bazel-bin
+mv $BAZEL_BIN_REAL_DIR/{centipede,libcentipede_runner.pic.a} $SRC/centipede/bazel-bin/
+rm -rf /root/.cache
+
+echo 'Done.'

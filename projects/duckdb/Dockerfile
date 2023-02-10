@@ -18,3 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth=1 https://github.com/duckdb/duckdb duckdb
 WORKDIR duckdb
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

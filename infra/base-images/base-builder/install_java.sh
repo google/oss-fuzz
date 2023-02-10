@@ -17,9 +17,9 @@
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 cd /tmp
-curl -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+curl --silent -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
 mkdir -p $JAVA_HOME
-tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
 rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
@@ -28,9 +28,9 @@ rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 # drivers are copied to $OUT as they need to be present on the runners.
 cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
-  cd jazzer && \
-  git checkout 997c203566350fa313dbd3d7119725387b190e3e
-bazel build --java_runtime_version=localjdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
+cd jazzer && \
+git checkout c9f9347b7a72a4e65441d0442c7381790aa4c538
+bazel build --java_runtime_version=local_jdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
   //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar
 cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/
 cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH

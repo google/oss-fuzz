@@ -15,24 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev liblzma-dev
+RUN apt-get update && apt-get install -y automake libtool pkg-config libtiff-dev libwebp-dev libzstd-dev
 
-RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit jbigkit && \
-    cd jbigkit && \
-    make clean && \
-    make -j$(nproc) lib && \
-    cp libjbig/libjbig.a /usr/lib/x86_64-linux-gnu/libjbig.a
-
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff libtiff && \
-  cd libtiff && \
-  cmake . -DBUILD_SHARED_LIBS=off && \
-  make clean && \
-  make -j$(nproc) && \
-  make install && \
-  cp libtiff/libtiff.a /usr/lib/x86_64-linux-gnu/libtiff.a
-
-RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
-RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
-RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
+RUN git clone --depth 1 https://github.com/DanBloomberg/leptonica.git
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract.git
 
 COPY build.sh $SRC/

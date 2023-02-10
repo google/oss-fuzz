@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake check
 RUN git clone --depth 1 https://github.com/proftpd/proftpd
 WORKDIR proftpd
-COPY build.sh fuzzer.c $SRC/
+COPY build.sh $SRC/

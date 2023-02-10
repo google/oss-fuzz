@@ -9,3 +9,4 @@ sanitizers:
 architectures:
   - x86_64
 main_repo: 'https://github.com/google/sentencepiece.git'
+file_github_issue: True

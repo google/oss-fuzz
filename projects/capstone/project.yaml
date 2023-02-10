@@ -1,17 +1,15 @@
 homepage: "https://www.capstone-engine.org"
 language: c++
 primary_contact: "capstone.engine@gmail.com"
-auto_ccs : 
+auto_ccs:
   - "p.antoine@catenacyber.fr"
   - "stalkr@stalkr.net"
 fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 main_repo: 'https://github.com/aquynh/capstone.git'

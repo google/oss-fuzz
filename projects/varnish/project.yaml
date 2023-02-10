@@ -6,3 +6,7 @@ auto_ccs:
   - "nils.goroll@uplex.de"
   - "martin@varnish-software.com"
 main_repo: 'https://github.com/varnishcache/varnish-cache'
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"

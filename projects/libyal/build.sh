@@ -26,10 +26,19 @@ do
   fi
   cd ${SRC}/${PROJECT}
 
+  # OSSFuzz base-image currently uses Ubuntu 20.04 which ships older versions
+  # of autoconf and gettext. The libyal projects are compatible with these
+  # older versions, but should not ship with them. The following edits will
+  # allow ./autogen.sh to generate the correct version for OSSFuzz.
+  sed 's/^AC_PREREQ.*$/AC_PREREQ([2.69])/' -i configure.ac
+  sed 's/^AM_GNU_GETTEXT_VERSION.*$/AM_GNU_GETTEXT_VERSION([0.19])/' -i configure.ac
+
   # Prepare the project source for build.
   ./synclibs.sh
   ./autogen.sh
-  ./configure --enable-shared=no
+  # OSSFuzz cross-compiles certain architectures which can lead to a partial
+  # installed dependencies.
+  ./configure --enable-shared=no --with-openssl=no --with-zlib=no
 
   # Build the project and fuzzer binaries.
   make -j$(nproc) LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE}

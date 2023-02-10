@@ -1,0 +1,12 @@
+homepage: "https://github.com/doboy/Underscore"
+language: python
+primary_contact: "doboy0+_ossfuzz@gmail.com"
+main_repo: "https://github.com/doboy/Underscore"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com

@@ -1,10 +1,11 @@
-homepage: "https://gitlab.com/systerel/S2OPC"
+homepage: "https://s2opc.com/"
 language: c++
 primary_contact: "pab.systerel@gmail.com"
 auto_ccs:
   - "mcl.systerel@gmail.com"
   - "vla.systerel@gmail.com"
   - "vmo.systerel@gmail.com"
+main_repo: "https://gitlab.com/systerel/S2OPC"
 sanitizers:
  - address
  - memory

@@ -8,6 +8,7 @@ vendor_ccs :
 
 sanitizers:
 - address
+- memory
 
 blackbox: true  # also use a blackbox fuzzer for this project.
 main_repo: 'https://github.com/bellard/quickjs'

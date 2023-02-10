@@ -7,6 +7,8 @@ auto_ccs:
   - "evvers@ya.ru"
   - "evverx@gmail.com"
   - "kerolasa@gmail.com"
+  - "gmazyland@gmail.com"
+  - "thomas@t-8ch.de"
 architectures:
   - x86_64
   - i386
@@ -15,3 +17,4 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/util-linux/util-linux'
+file_github_issue: True

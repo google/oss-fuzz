@@ -88,7 +88,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
   if (isValidFormat(nt_string, size)) {
-    auto index = s2textformat::MakeIndex(nt_string);
+    auto index = absl::make_unique<MutableS2ShapeIndex>();
+    s2textformat::MakeIndex(nt_string, &index);
     s2shapeutil::RangeIterator it(*index);
     if (!it.done()) {
       it.Next();

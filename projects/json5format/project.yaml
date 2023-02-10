@@ -8,3 +8,4 @@ fuzzing_engines:
 language: rust
 auto_ccs:
   - "david@adalogics.com"
+file_github_issue: True

@@ -27,7 +27,8 @@ RUN apt-get update && apt-get -y install  \
     libtool         \
     wget            \
     golang          \
-    rsync
+    rsync           \
+    python3
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

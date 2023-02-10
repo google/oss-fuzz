@@ -6,7 +6,6 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 vendor_ccs:
-- "bvandyk@mozilla.com"
-- "jbauman@mozilla.com"
+- "media-alerts@mozilla.com"
 - "twsmith@mozilla.com"
 main_repo: 'https://github.com/mozilla/mp4parse-rust'

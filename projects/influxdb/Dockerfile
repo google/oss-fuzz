@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 MAINTAINER william@influxdata.com
-RUN go get github.com/influxdata/influxdb
-RUN go get github.com/dgrijalva/jwt-go
+RUN git clone https://github.com/influxdata/influxdb.git
+RUN git clone https://github.com/dgrijalva/jwt-go.git
 
 COPY build.sh $SRC/
 WORKDIR $SRC/

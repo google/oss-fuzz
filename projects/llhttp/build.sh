@@ -18,6 +18,7 @@
 npm install -g typescript
 npm link typescript
 npm install .
-make
+make build/libllhttp.a
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $OUT/fuzz_parser
+$CC $CFLAGS -c ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $OUT/fuzz_parser.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -fuse-ld=lld -I./build/ ./build/libllhttp.a $OUT/fuzz_parser.o -o $OUT/fuzz_parser

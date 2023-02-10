@@ -58,7 +58,7 @@ fuzz_check_coff_rsrc (const char *filename, const char *target)
     return 0;
   }
 
-  if (! bfd_check_format_matches (abfd, bfd_object, NULL)) {
+  if (! bfd_check_format (abfd, bfd_object)) {
 	  retval = 0;
 	  goto cleanup;
     }

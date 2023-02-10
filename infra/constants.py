@@ -25,15 +25,24 @@ LANGUAGES = [
     'c',
     'c++',
     'go',
+    'javascript',
     'jvm',
     'python',
     'rust',
     'swift',
 ]
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust', 'swift']
-SANITIZERS = [
-    'address', 'none', 'memory', 'undefined', 'dataflow', 'thread', 'coverage',
-    'introspector'
+LANGUAGES_WITH_COVERAGE_SUPPORT = [
+    'c', 'c++', 'go', 'jvm', 'python', 'rust', 'swift'
 ]
-ARCHITECTURES = ['i386', 'x86_64']
-ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none']
+SANITIZERS = [
+    'address',
+    'none',
+    'memory',
+    'undefined',
+    'thread',
+    'coverage',
+    'introspector',
+    'hwaddress',
+]
+ARCHITECTURES = ['i386', 'x86_64', 'aarch64']
+ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede', 'none', 'wycheproof']

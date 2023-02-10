@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://freedesktop.org/wiki/Software/pyxdg/
+language: python
+main_repo: https://github.com/takluyver/pyxdg
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

@@ -16,7 +16,7 @@
 import sys
 import atheris
 with atheris.instrument_imports():
-  import yaml.reader
+  import yaml
 
 @atheris.instrument_func
 def TestOneInput(data):
@@ -28,6 +28,8 @@ def TestOneInput(data):
             stream.forward()
     except yaml.reader.ReaderError:
         None
+    except RecursionError:
+        pass
 
     return 
 

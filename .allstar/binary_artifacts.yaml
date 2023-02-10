@@ -1,0 +1,3 @@
+# Exemption reason: This repo uses binary artifacts for integration tests.
+optConfig:
+  optOut: true

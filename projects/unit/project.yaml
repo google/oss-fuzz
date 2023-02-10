@@ -1,0 +1,15 @@
+homepage: "https://unit.nginx.org"
+language: c
+primary_contact: "xim.andrew@gmail.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+  - "devrep@nginx.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/nginx/unit'

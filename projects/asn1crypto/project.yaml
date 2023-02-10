@@ -1,0 +1,13 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/wbond/asn1crypto
+language: python
+main_repo: https://github.com/wbond/asn1crypto
+sanitizers:
+- address
+- undefined
+primary_contact: "will@wbond.net"
+vendor_ccs:
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

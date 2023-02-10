@@ -1,0 +1,30 @@
+--- CMakeLists.txt	2022-10-29 16:48:38.253513165 +0530
++++ CMakeLists.txt.backup	2022-10-29 16:52:45.751660599 +0530
+@@ -51,7 +51,7 @@
+     message(FATAL_ERROR "Googletest is not available")
+ endif()
+ 
+-set(CMAKE_CPP_FLAGS "${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DBRPC_WITH_RDMA=${WITH_RDMA_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
++set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} ${DEFINE_CLOCK_GETTIME} -DBRPC_WITH_GLOG=${WITH_GLOG_VAL} -DBRPC_WITH_RDMA=${WITH_RDMA_VAL} -DGFLAGS_NS=${GFLAGS_NS}")
+ set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -DBTHREAD_USE_FAST_PTHREAD_MUTEX -D__const__=__unused__ -D_GNU_SOURCE -DUSE_SYMBOLIZE -DNO_TCMALLOC -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -DUNIT_TEST -Dprivate=public -Dprotected=public -DBVAR_NOT_LINK_DEFAULT_VARIABLES -D__STRICT_ANSI__ -include ${PROJECT_SOURCE_DIR}/test/sstream_workaround.h")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CPP_FLAGS} -g -O2 -pipe -Wall -W -fPIC -fstrict-aliasing -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer")
+ use_cxx11()
+@@ -196,7 +196,7 @@
+ set_property(TARGET ${BUTIL_DEBUG_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
+ set_property(TARGET ${SOURCES_DEBUG_LIB} PROPERTY POSITION_INDEPENDENT_CODE 1)
+ 
+-add_library(brpc-shared-debug SHARED $<TARGET_OBJECTS:BUTIL_DEBUG_LIB>
++add_library(brpc-shared-debug STATIC $<TARGET_OBJECTS:BUTIL_DEBUG_LIB>
+                                      $<TARGET_OBJECTS:SOURCES_DEBUG_LIB>
+                                      $<TARGET_OBJECTS:PROTO_LIB>)
+ # change the debug lib output dir to be different from the release output
+@@ -252,3 +252,9 @@
+                                         ${GPERFTOOLS_LIBRARIES})
+     add_test(NAME ${BRPC_UT_WE} COMMAND ${BRPC_UT_WE})
+ endforeach()
++
++add_executable(Fuzz_json Fuzz_json.cpp $<TARGET_OBJECTS:TEST_PROTO_LIB>)
++target_link_libraries(Fuzz_json brpc-shared-debug ${LIB_FUZZING_ENGINE})
++
++add_executable(Fuzz_http Fuzz_http.cpp $<TARGET_OBJECTS:TEST_PROTO_LIB>)
++target_link_libraries(Fuzz_http brpc-shared-debug ${LIB_FUZZING_ENGINE})

@@ -7,10 +7,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
-  - dataflow
-  - undefined
 main_repo: 'https://github.com/uclouvain/openjpeg'

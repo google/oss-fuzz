@@ -38,7 +38,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	assert(fd >= 0);
 
 	n = write(fd, data, size);
-	assert(n == size);
+	assert(n == (ssize_t) size);
 
 	offset = lseek(fd, 0, SEEK_SET);
 	assert(offset == 0);

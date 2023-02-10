@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/dgraph-io/dgraph/gql Fuzz parser_fuzzer
+compile_go_fuzzer github.com/dgraph-io/dgraph/dql Fuzz parser_fuzzer

@@ -5,12 +5,12 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
+  - centipede
 sanitizers:
   - address
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/google/wuffs.git'
+file_github_issue: True

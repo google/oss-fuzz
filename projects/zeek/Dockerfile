@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ninja-build \
         flex \
         bison \
+        libfl-dev \
         libpcap-dev \
         libssl-dev \
         libmaxminddb-dev \

@@ -13,5 +13,6 @@ auto_ccs:
   - "mtakayama@fastly.com"
   - "gfuji@fastly.com"
   - "nalramli@fastly.com"
+  - "ethompson@fastly.com"
 
 main_repo: 'https://github.com/h2o/h2o'

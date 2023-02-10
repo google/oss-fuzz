@@ -18,8 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y bison flex libssl-dev pkg-config
 RUN git clone https://github.com/OpenSIPS/opensips
 
-COPY patch.diff $SRC/
 COPY build.sh $SRC/
-COPY fuzz_*.c $SRC/
 
 WORKDIR opensips

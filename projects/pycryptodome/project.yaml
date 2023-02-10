@@ -1,4 +1,4 @@
-homepage: "https://www.pycryptodome.org/"
+homepage: https://www.pycryptodome.org/
 language: c
-primary_contact: "helderijs@gmail.com"
-main_repo: 'https://github.com/Legrandin/pycryptodome.git'
+main_repo: https://github.com/Legrandin/pycryptodome.git
+primary_contact: helderijs@gmail.com

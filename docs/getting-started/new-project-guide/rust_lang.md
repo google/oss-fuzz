@@ -129,7 +129,7 @@ pub mod fuzz_logic {
 and then call the logic within `fuzz_logic` from your fuzzer. 
 
 Furthermore, within your `.toml` files, you can then specify fuzzing-specific
-depedencies by wrapping them as follows:
+dependencies by wrapping them as follows:
 ```
 [target.'cfg(fuzzing)'.dependencies]
 ```

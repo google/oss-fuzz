@@ -8,3 +8,4 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/google/cel-go'
+file_github_issue: True

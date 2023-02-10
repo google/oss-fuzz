@@ -30,10 +30,9 @@ RUN mkdir bmpsuite_corpus
 RUN unzip -j bmpsuite.zip -d bmpsuite_corpus
 RUN rm bmpsuite.zip
 
-RUN wget -O pngsuite.tgz http://www.schaik.com/pngsuite/PngSuite-2017jul19.tgz
-RUN mkdir pngsuite_corpus
-RUN tar xf pngsuite.tgz --one-top-level=pngsuite_corpus
-RUN rm pngsuite.tgz
+RUN mkdir pngsuite_corpus && \
+    git clone --depth=1 https://github.com/MozillaSecurity/fuzzdata && \
+    cp ./fuzzdata/samples/png/common/*.png ./pngsuite_corpus
 
 RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
 RUN mkdir rapidjson_corpus

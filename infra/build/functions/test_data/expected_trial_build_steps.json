@@ -1,0 +1,532 @@
+[
+  {
+    "args": [
+      "clone",
+      "https://github.com/google/oss-fuzz.git",
+      "--depth",
+      "1",
+      "--branch",
+      "mybranch"
+    ],
+    "name": "gcr.io/cloud-builders/git"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-swift-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-swift-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-swift"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-javascript-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-javascript-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-javascript"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-jvm-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-jvm-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-jvm"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-go-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-go-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-go"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-python-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-python-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-python"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-rust-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-rust-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-rust"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-runner"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "build",
+      "--tag",
+      "gcr.io/oss-fuzz/skcms",
+      "."
+    ],
+    "dir": "oss-fuzz/projects/skcms"
+  },
+  {
+    "name": "gcr.io/oss-fuzz/skcms",
+    "args": [
+      "bash",
+      "-c",
+      "srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json"
+    ],
+    "env": [
+      "OSSFUZZ_REVISION=$REVISION_ID",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "id": "srcmap"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=afl",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/afl-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=afl",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/afl-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz/skcms",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd skcms && mkdir -p /workspace/out/afl-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-afl-address-x86_64"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=afl",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/afl-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=afl",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/afl-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 skcms\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-afl-address-x86_64"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=afl",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/afl-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.address"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz/skcms",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd skcms && mkdir -p /workspace/out/libfuzzer-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-libfuzzer-address-x86_64"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-address-x86_64",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 skcms\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-libfuzzer-address-x86_64"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-x86_64",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.address"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=i386",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-i386",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=i386",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-address-i386",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz/skcms",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd skcms && mkdir -p /workspace/out/libfuzzer-address-i386 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-libfuzzer-address-i386"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=i386",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-i386",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=i386",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-address-i386",
+      "-e",
+      "SANITIZER=address",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 skcms\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-libfuzzer-address-i386"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+    "env": [
+      "ARCHITECTURE=i386",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-address-i386",
+      "SANITIZER=address"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.address"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-undefined-x86_64",
+      "SANITIZER=undefined"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-undefined-x86_64",
+      "-e",
+      "SANITIZER=undefined",
+      "-t",
+      "gcr.io/oss-fuzz/skcms",
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd skcms && mkdir -p /workspace/out/libfuzzer-undefined-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "compile-libfuzzer-undefined-x86_64"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-undefined-x86_64",
+      "SANITIZER=undefined"
+    ],
+    "args": [
+      "run",
+      "--platform",
+      "linux/amd64",
+      "-v",
+      "/workspace:/workspace",
+      "--privileged",
+      "--cap-add=all",
+      "-e",
+      "ARCHITECTURE=x86_64",
+      "-e",
+      "FUZZING_ENGINE=libfuzzer",
+      "-e",
+      "FUZZING_LANGUAGE=c++",
+      "-e",
+      "HOME=/root",
+      "-e",
+      "OUT=/workspace/out/libfuzzer-undefined-x86_64",
+      "-e",
+      "SANITIZER=undefined",
+      "-t",
+      "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+      "bash",
+      "-c",
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image skcms\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\npython infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\n********************************************************************************\" && false)"
+    ],
+    "id": "build-check-libfuzzer-undefined-x86_64"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner-testing-mybranch",
+    "env": [
+      "ARCHITECTURE=x86_64",
+      "FUZZING_ENGINE=libfuzzer",
+      "FUZZING_LANGUAGE=c++",
+      "HOME=/root",
+      "OUT=/workspace/out/libfuzzer-undefined-x86_64",
+      "SANITIZER=undefined"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "targets_list > /workspace/targets.list.undefined"
+    ]
+  }
+]

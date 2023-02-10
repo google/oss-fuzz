@@ -16,10 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y wget
-
 # checkout all sources needed to build your project
-RUN git clone https://skia.googlesource.com/skcms.git
+RUN git clone --depth 1 https://skia.googlesource.com/skcms.git
 
 RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_seed_corpus.zip
 

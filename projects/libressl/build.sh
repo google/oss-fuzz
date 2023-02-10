@@ -74,11 +74,52 @@ if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
+
+# Build Botan
+cd $SRC/botan
+if [[ $CFLAGS != *-m32* ]]
+then
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+else
+    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+fi
+make -j$(nproc)
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
+export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
+export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
+
+# Compile libgmp
+cd $SRC/
+tar --lzip -xvf gmp-6.2.1.tar.lz
+cd $SRC/gmp-6.2.1/
+autoreconf -ivf
+if [[ $CFLAGS = *-m32* ]]
+then
+    setarch i386 ./configure --enable-maintainer-mode --enable-assert
+elif [[ $CFLAGS = *sanitize=memory* ]]
+then
+    ./configure --enable-maintainer-mode --enable-assert --disable-assembly
+else
+    ./configure --enable-maintainer-mode --enable-assert
+fi
+make -j$(nproc)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"
+export LIBGMP_INCLUDE_PATH=$(realpath .)
+export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
+
+cd $SRC/cryptofuzz/
 # Generate lookup tables
 python3 gen_repository.py
 # Compile Cryptofuzz LibreSSL module
 cd $SRC/cryptofuzz/modules/openssl
 OPENSSL_INCLUDE_PATH="$SRC/libressl/include" OPENSSL_LIBCRYPTO_A_PATH="$WORK/libressl/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL" make
+# Compile Cryptofuzz libgmp module
+cd ../libgmp/
+make -B -j$(nproc)
+# Compile Cryptofuzz Botan module
+cd ../botan/
+make -B -f Makefile-oracle -j$(nproc)
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz/
 LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL -I $SRC/libressl/include" make -j$(nproc)

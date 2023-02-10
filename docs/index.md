@@ -30,13 +30,14 @@ instances of [ClusterFuzz] or [ClusterFuzzLite].
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
 
-We support the [libFuzzer], [AFL++], and [Honggfuzz] fuzzing engines in
+We support the [libFuzzer], [AFL++], [Honggfuzz], and [Centipede] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 
 [libFuzzer]: https://llvm.org/docs/LibFuzzer.html
 [AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [Honggfuzz]: https://github.com/google/honggfuzz
+[Centipede]: https://github.com/google/centipede
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 [ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
@@ -59,9 +60,8 @@ other resources are listed on the [useful links] page.
 [useful links]: {{ site.baseurl }}/reference/useful-links/#tutorials
 
 ## Trophies
-As of June 2021, OSS-Fuzz has found over [30,000] bugs in [500] open source
-projects.
+As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabilities and [28,000] bugs across [850] projects.
 
-[30,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[500]: https://github.com/google/oss-fuzz/tree/master/projects
-
+[8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
+[28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
+[850]: https://github.com/google/oss-fuzz/tree/master/projects

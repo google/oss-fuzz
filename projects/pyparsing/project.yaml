@@ -1,0 +1,14 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pyparsing/pyparsing
+language: python
+main_repo: https://github.com/pyparsing/pyparsing
+primary_contact: "ptmcg@austin.rr.com"
+sanitizers:
+- address
+- undefined
+auto_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

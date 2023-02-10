@@ -1,0 +1,17 @@
+homepage: "https://github.com/apache/tomcat"
+language: jvm
+main_repo: "https://github.com/apache/tomcat"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "fuzz-testing@tomcat.apache.org"
+auto_ccs:
+  - "security@tomcat.apache.org"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

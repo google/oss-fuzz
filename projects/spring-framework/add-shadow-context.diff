@@ -1,0 +1,12 @@
+diff --git a/spring-context/spring-context.gradle b/spring-context/spring-context.gradle
+index 5f5ac1001e..bff2f80935 100644
+--- a/spring-context/spring-context.gradle
++++ b/spring-context/spring-context.gradle
+@@ -4,6 +4,7 @@ plugins {
+ 
+ description = "Spring Context"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ 
+ dependencies {

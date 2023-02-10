@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
+RUN apt-get update && apt-get install -y make cmake python3
 RUN git clone --depth 1 https://github.com/commonmark/cmark.git cmark
 WORKDIR cmark
 COPY build.sh *.dict *.options $SRC/

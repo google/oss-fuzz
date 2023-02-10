@@ -4,8 +4,11 @@ primary_contact: "jesteele@google.com"
 auto_ccs:
     - "nchusid@google.com"
     - "pinheirojamie@google.com"
+    - "yulongzhang@google.com"
+    - "info@libraw.org"
 sanitizers:
     - address
     - memory
     - undefined
 main_repo: 'https://github.com/libraw/libraw'
+file_github_issue: true

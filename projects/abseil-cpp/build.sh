@@ -14,6 +14,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="$CXXFLAGS -std=c++14"
+
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"

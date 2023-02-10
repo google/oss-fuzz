@@ -5,9 +5,11 @@ primary_contact: "szhorvat@gmail.com"
 auto_ccs:
   - "Adam@adalogics.com"
   - "ntamas@gmail.com"
+  - "vtraag@gmail.com"
 sanitizers:
   - address
   - undefined
+  - memory
 architectures:
  - x86_64
  - i386

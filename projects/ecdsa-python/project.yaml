@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/starkbank/ecdsa-python
+language: python
+main_repo: https://github.com/starkbank/ecdsa-python/
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

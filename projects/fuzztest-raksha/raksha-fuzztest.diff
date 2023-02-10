@@ -1,0 +1,55 @@
+diff --git a/WORKSPACE b/WORKSPACE
+index 73e0e75..33aae53 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -238,12 +238,12 @@ http_archive(
+     ],
+ )
+ 
+-fuzztest_commit_hash = "4a8253b7299cf1764550054fae55f1b58a65bbaa"
++fuzztest_commit_hash = "c8ae15a574068f5ed8cd2944bdb5e56b2a1e9d71"
+ 
+ # Fuzztest
+ http_archive(
+-    name = "fuzztest",
+-    sha256 = "72ae2d28323748d2c466396fa47038351ae81bedc50b8a3c6f1de6a9f02cde33",
++    name = "com_google_fuzztest",
++    sha256 = "ab7cdadecde55e645cc38dfec7bb9bab9e43ea508c9e13ed2aad884a23020240",
+     strip_prefix = "fuzztest-" + fuzztest_commit_hash,
+     urls = ["https://github.com/google/fuzztest/archive/" + fuzztest_commit_hash + ".zip"],
+ )
+diff --git a/src/ir/BUILD b/src/ir/BUILD
+index d525046..a16cd0f 100644
+--- a/src/ir/BUILD
++++ b/src/ir/BUILD
+@@ -206,10 +206,11 @@ cc_test(
+         ":module",
+         ":storage",
+         ":value",
+-        "//src/common/testing:gtest",
+         "//src/common/utils:map_iter",
+         "//src/ir/types",
+-        "@fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "//src/common/testing:gtest",
+     ],
+ )
+ 
+diff --git a/src/ir/datalog/BUILD b/src/ir/datalog/BUILD
+index 6b3a0c7..f571f31 100644
+--- a/src/ir/datalog/BUILD
++++ b/src/ir/datalog/BUILD
+@@ -131,9 +131,10 @@ cc_test(
+     srcs = ["value_test.cc"],
+     deps = [
+         ":value",
+-        "//src/common/testing:gtest",
+         "@com_google_absl//absl/strings",
+-        "@fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "//src/common/testing:gtest",
+     ],
+ )
+ 

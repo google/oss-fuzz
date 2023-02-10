@@ -22,3 +22,6 @@ RUN zip spdlog_fuzzer_seed_corpus.zip spdlog/example/*
 WORKDIR spdlog
 COPY build.sh spdlog_fuzzer.dict $SRC/
 COPY fuzz/* $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

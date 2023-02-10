@@ -1,0 +1,14 @@
+homepage: "https://github.com/antlr/stringtemplate4"
+language: jvm
+primary_contact: "parrt@antlr.org"
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://github.com/antlr/stringtemplate4.git"
+vendor_ccs:
+  - "glendowne@code-intelligence.com"
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

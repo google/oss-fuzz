@@ -21,4 +21,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone --depth 1 https://github.com/libass/libass.git
 RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git
 
-COPY build.sh libass_fuzzer.cc *.dict *.options $SRC/
+COPY build.sh *.options $SRC/

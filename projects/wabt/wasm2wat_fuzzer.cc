@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "wabt/src/binary-reader-ir.h"
-#include "wabt/src/binary-reader.h"
-#include "wabt/src/common.h"
-#include "wabt/src/ir.h"
+#include "wabt/binary-reader-ir.h"
+#include "wabt/binary-reader.h"
+#include "wabt/common.h"
+#include "wabt/ir.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   wabt::ReadBinaryOptions options;

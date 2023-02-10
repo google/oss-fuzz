@@ -20,6 +20,7 @@ homepage: "<your_project_homepage>"
 language: %(language)s
 primary_contact: "<primary_contact_email>"
 main_repo: "https://path/to/main/repo.git"
+file_github_issue: true
 """
 
 DOCKER_TEMPLATE = """\

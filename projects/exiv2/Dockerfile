@@ -15,8 +15,8 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y cmake make ccache python3 libexpat1-dev zlib1g-dev libssh-dev libcurl4-openssl-dev libxml2-utils
 RUN git clone https://github.com/Exiv2/exiv2 exiv2
+RUN ./exiv2/ci/install_dependencies.sh
 WORKDIR exiv2
 
 COPY build.sh $SRC/

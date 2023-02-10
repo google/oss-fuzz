@@ -5,12 +5,10 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
   - memory
-  - dataflow
 auto_ccs:
   - pascal.massimino@gmail.com
   - vrabaud@google.com

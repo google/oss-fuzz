@@ -1,0 +1,15 @@
+homepage: "https://github.com/microsoft/msquic"
+language: c
+primary_contact: "msquicinfra@microsoft.com"
+auto_ccs:
+  - "daikiaminaka@microsoft.com"
+  - "anrossi@microsoft.com"
+  - "maolson@microsoft.com"
+  - "huanyi@microsoft.com"
+  - "nibanks@microsoft.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/microsoft/msquic.git'

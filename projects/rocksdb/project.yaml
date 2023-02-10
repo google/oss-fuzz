@@ -5,7 +5,9 @@ vendor_ccs:
   - "oss-fuzz@fb.com"
 auto_ccs:
   - "david@adalogics.com"
-  - "mhl@fb.com"
+  - "hmf@fb.com"
+  - "yaohway@fb.com"
+  - "axxu@fb.com"
 sanitizers:
   - "address"
 main_repo: 'https://github.com/facebook/rocksdb'

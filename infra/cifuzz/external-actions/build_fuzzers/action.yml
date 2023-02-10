@@ -22,6 +22,10 @@ inputs:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
     default: true
+  keep-unaffected-fuzz-targets:
+    description: "Whether to keep unaffected fuzzers or delete them."
+    required: false
+    default: false
   storage-repo:
     description: |
       The git repo to use for storing certain artifacts from fuzzing.
@@ -63,3 +67,4 @@ runs:
     UPLOAD_BUILD: ${{ inputs.upload-build }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
+    KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}

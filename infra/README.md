@@ -7,12 +7,7 @@ Core infrastructure:
 
 Continuous Integration infrastructure:
 
-* [`libfuzzer-pipeline.groovy`](libfuzzer-pipeline.groovy/) - jenkins pipeline that runs for each OSS-Fuzz
-  project.
-* [`docker-cleanup`](docker-cleanup/) - jenkins pipeline to clean stale docker images & processes.
-* [`push-images`](push-images/) - jenkins pipeline to push built base images.
-* [`jenkins-cluster`](jenkins-cluster/) - kubernetes cluster definition for our jenkins-based build (not operational yet,
-[#10](https://github.com/google/oss-fuzz/issues/10)).
+* [`ci`](ci/) - script to build projects in CI.
 
 ## helper.py
 > script to automate common docker operations

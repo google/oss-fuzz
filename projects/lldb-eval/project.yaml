@@ -9,3 +9,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+file_github_issue: True

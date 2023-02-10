@@ -252,30 +252,30 @@ const char *gzerror(gzFile gz, int *err)
 
 static char *prog;
 
-void error            (const char *msg);
-void gz_compress      (FILE   *in, gzFile out);
+int error            (const char *msg);
+int gz_compress      (FILE   *in, gzFile out);
 #ifdef USE_MMAP
 int  gz_compress_mmap (FILE   *in, gzFile out);
 #endif
 void gz_uncompress    (gzFile in, FILE   *out);
-void file_compress    (char  *file, char *mode);
-void file_uncompress  (char  *file);
+int file_compress    (char  *file, char *mode);
+int file_uncompress  (char  *file);
 int  main             (int argc, char *argv[]);
 
 /* ===========================================================================
- * Display error message and exit
+ * Display error message and return
  */
-void error(const char *msg)
+int error(const char *msg)
 {
     fprintf(stderr, "%s: %s\n", prog, msg);
-    exit(1);
+    return 0;
 }
 
 /* ===========================================================================
  * Compress input to output then close both files.
  */
 
-void gz_compress(FILE   *in, gzFile out)
+int gz_compress(FILE   *in, gzFile out)
 {
     char buf[BUFLEN];
     int len;
@@ -294,7 +294,7 @@ void gz_compress(FILE   *in, gzFile out)
         len = (int)fread(buf, 1, sizeof(buf), in);
         if (ferror(in)) {
             perror("fread");
-            exit(1);
+            return 0;
         }
         if (len == 0) break;
 
@@ -302,6 +302,7 @@ void gz_compress(FILE   *in, gzFile out)
     }
     fclose(in);
     if (gzclose(out) != Z_OK) error("failed gzclose");
+    return 0;
 }
 
 #ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */
@@ -367,7 +368,7 @@ void gz_uncompress(gzFile in, FILE   *out)
  * Compress the given file: create a corresponding .gz file and remove the
  * original.
  */
-void file_compress(char  *file, char  *mode)
+int file_compress(char  *file, char  *mode)
 {
     char outfile[MAX_NAME_LEN];
     FILE  *in;
@@ -375,7 +376,7 @@ void file_compress(char  *file, char  *mode)
 
     if (strlen(file) + strlen(GZ_SUFFIX) >= sizeof(outfile)) {
         fprintf(stderr, "%s: filename too long\n", prog);
-        exit(1);
+        return 0;
     }
 
     snprintf(outfile, sizeof(outfile), "%s%s", file, GZ_SUFFIX);
@@ -383,23 +384,24 @@ void file_compress(char  *file, char  *mode)
     in = fopen(file, "rb");
     if (in == NULL) {
         perror(file);
-        exit(1);
+        return 0;
     }
     out = gzopen(outfile, mode);
     if (out == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, outfile);
-        exit(1);
+        return 0;
     }
     gz_compress(in, out);
 
     unlink(file);
+    return 0;
 }
 
 
 /* ===========================================================================
  * Uncompress the given file and remove the original.
  */
-void file_uncompress(char  *file)
+int file_uncompress(char  *file)
 {
     char buf[MAX_NAME_LEN];
     char *infile, *outfile;
@@ -409,7 +411,7 @@ void file_uncompress(char  *file)
 
     if (len + strlen(GZ_SUFFIX) >= sizeof(buf)) {
         fprintf(stderr, "%s: filename too long\n", prog);
-        exit(1);
+        return 0;
     }
 
     snprintf(buf, sizeof(buf), "%s", file);
@@ -426,17 +428,18 @@ void file_uncompress(char  *file)
     in = gzopen(infile, "rb");
     if (in == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, infile);
-        exit(1);
+        return 0;
     }
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
-        exit(1);
+        return 0;
     }
 
     gz_uncompress(in, out);
 
     unlink(infile);
+    return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
@@ -490,7 +493,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   in = fopen(inFileName, "rb");
   if (in == NULL) {
     perror(inFileName);
-    exit(1);
+    return 0;
   }
 
   memset(buf, 0, sizeof(buf));
@@ -498,7 +501,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     int len = (int)fread(buf, 1, sizeof(buf), in);
     if (ferror(in)) {
       perror("fread");
-      exit(1);
+      return 0;
     }
     if (len == 0)
       break;

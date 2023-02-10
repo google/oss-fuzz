@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/h5py/h5py
+language: python
+main_repo: https://github.com/h5py/h5py
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -20,3 +20,6 @@ RUN git clone https://github.com/janet-lang/janet
 
 WORKDIR $SRC
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

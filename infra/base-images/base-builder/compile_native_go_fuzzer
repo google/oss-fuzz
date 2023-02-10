@@ -1,0 +1,54 @@
+#!/bin/bash -eu
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+function build_native_go_fuzzer() {
+	fuzzer=$1
+	function=$2
+	path=$3
+	tags="-tags gofuzz"
+
+	if [[ $SANITIZER == *coverage* ]]; then
+		current_dir=$(pwd)
+		mkdir $OUT/rawfuzzers || true
+		cd $abs_file_dir
+		go test -c -run $fuzzer -o $OUT/$fuzzer -cover
+		cp "${fuzzer_filename}" "${OUT}/rawfuzzers/${fuzzer}"
+		cd $current_dir
+	else
+		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
+		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+	fi
+}
+
+path=$1
+function=$2
+fuzzer=$3
+tags="-tags gofuzz"
+
+# Get absolute path.
+abs_file_dir=$(go list $tags -f {{.Dir}} $path)
+
+# TODO(adamkorcz): Get rid of "-r" flag here.
+fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
+
+# Test if file contains a line with "func $function" and "testing.F".
+if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
+then
+	build_native_go_fuzzer $fuzzer $function $abs_file_dir
+else
+	echo "Could not find the function: func ${function}(f *testing.F)"
+fi

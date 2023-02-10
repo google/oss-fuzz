@@ -3,4 +3,4 @@ language: c++
 primary_contact: "leandro.pereira@gmail.com"
 sanitizers:
   - address
-main_repo: 'git://github.com/lpereira/lwan'
+main_repo: 'https://github.com/lpereira/lwan.git'

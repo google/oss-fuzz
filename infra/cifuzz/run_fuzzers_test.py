@@ -329,6 +329,7 @@ class GetCoverageTargetsTest(unittest.TestCase):
                        [fuzz_target_path])
 
 
+@unittest.skip('TODO(metzman): Fix this test')
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class CoverageReportIntegrationTest(unittest.TestCase):

@@ -1,0 +1,15 @@
+homepage: "https://helm.sh"
+main_repo: "https://github.com/helm/helm"
+primary_contact: "cncf-helm-core-maintainers@lists.cncf.io"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "scott@r6by.com"
+  - "matt.farina@gmail.com"
+  - "marc.khouzam@gmail.com"
+  - "martyintech@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

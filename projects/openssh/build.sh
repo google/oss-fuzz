@@ -25,6 +25,7 @@ sed -i 's|\(usleep.*\)|// \1|' ssh-agent.c
 autoreconf
 env
 if ! env CFLAGS="" ./configure \
+    --without-hardening \
     --without-zlib-version-check \
     --with-cflags="-DWITH_XMSS=1" \
     --with-cflags-after="$CFLAGS" \

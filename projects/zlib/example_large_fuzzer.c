@@ -10,7 +10,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
+        return 0; \
     } \
 }
 
@@ -23,7 +23,7 @@ static unsigned int diff;
 /* ===========================================================================
  * Test deflate() with large buffers and dynamic change of compression level
  */
-void test_large_deflate(unsigned char *compr, size_t comprLen,
+int test_large_deflate(unsigned char *compr, size_t comprLen,
                         unsigned char *uncompr, size_t uncomprLen) {
   z_stream c_stream; /* compression stream */
   int err;
@@ -47,7 +47,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   CHECK_ERR(err, "deflate large 1");
   if (c_stream.avail_in != 0) {
     fprintf(stderr, "deflate not greedy\n");
-    exit(1);
+    return 0;
   }
 
   /* Feed in already compressed data and switch to no compression: */
@@ -68,16 +68,17 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   err = deflate(&c_stream, Z_FINISH);
   if (err != Z_STREAM_END) {
     fprintf(stderr, "deflate large should report Z_STREAM_END\n");
-    exit(1);
+    return 0;
   }
   err = deflateEnd(&c_stream);
   CHECK_ERR(err, "deflateEnd");
+  return 0;
 }
 
 /* ===========================================================================
  * Test inflate() with large buffers
  */
-void test_large_inflate(unsigned char *compr, size_t comprLen,
+int test_large_inflate(unsigned char *compr, size_t comprLen,
                         unsigned char *uncompr, size_t uncomprLen) {
   int err;
   z_stream d_stream; /* decompression stream */
@@ -106,8 +107,9 @@ void test_large_inflate(unsigned char *compr, size_t comprLen,
 
   if (d_stream.total_out != 2 * uncomprLen + diff) {
     fprintf(stderr, "bad large inflate: %zu\n", d_stream.total_out);
-    exit(1);
+    return 0;
   }
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {

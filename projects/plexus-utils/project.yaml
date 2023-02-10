@@ -1,0 +1,15 @@
+homepage: "https://github.com/codehaus-plexus/plexus-utils"
+language: jvm
+primary_contact: ""
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://github.com/codehaus-plexus/plexus-utils.git"
+vendor_ccs:
+  - "glendowne@code-intelligence.com"
+  - "wagner@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

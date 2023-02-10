@@ -18,7 +18,7 @@
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-./bootstrap
+./bootstrap --skip-po
 ./configure --enable-static --disable-doc
 make -j
 make -j check

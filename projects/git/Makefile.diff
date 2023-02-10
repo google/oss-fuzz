@@ -1,0 +1,95 @@
+diff --git a/Makefile b/Makefile
+index 6bfb62cbe9..2230b40a9f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -691,6 +691,11 @@ ETAGS_TARGET = TAGS
+ FUZZ_OBJS += oss-fuzz/fuzz-commit-graph.o
+ FUZZ_OBJS += oss-fuzz/fuzz-pack-headers.o
+ FUZZ_OBJS += oss-fuzz/fuzz-pack-idx.o
++FUZZ_OBJS += oss-fuzz/fuzz-command.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-status.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-version.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-diff.o
++
+ .PHONY: fuzz-objs
+ fuzz-objs: $(FUZZ_OBJS)
+ 
+@@ -1015,6 +1020,7 @@ LIB_OBJS += oid-array.o
+ LIB_OBJS += oidmap.o
+ LIB_OBJS += oidset.o
+ LIB_OBJS += oidtree.o
++LIB_OBJS += oss-fuzz/fuzz-cmd-base.o
+ LIB_OBJS += pack-bitmap-write.o
+ LIB_OBJS += pack-bitmap.o
+ LIB_OBJS += pack-check.o
+diff --git a/diff.c b/diff.c
+index 648f6717a5..24e42d0cd1 100644
+--- a/diff.c
++++ b/diff.c
+@@ -3557,7 +3557,7 @@ static void builtin_diff(const char *name_a,
+ 		}
+ 		if (fill_mmfile(o->repo, &mf1, one) < 0 ||
+ 		    fill_mmfile(o->repo, &mf2, two) < 0)
+-			die("unable to read files to diff");
++			return; //die("unable to read files to diff");
+ 		/* Quite common confusing case */
+ 		if (mf1.size == mf2.size &&
+ 		    !memcmp(mf1.ptr, mf2.ptr, mf1.size)) {
+@@ -4009,7 +4009,7 @@ int diff_populate_filespec(struct repository *r,
+ 		conv_flags = CONV_EOL_RNDTRP_WARN;
+ 
+ 	if (!DIFF_FILE_VALID(s))
+-		die("internal error: asking to populate invalid file.");
++		return -1;//die("internal error: asking to populate invalid file.");
+ 	if (S_ISDIR(s->mode))
+ 		return -1;
+ 
+@@ -4113,7 +4113,7 @@ int diff_populate_filespec(struct repository *r,
+ 		}
+ 		if (oid_object_info_extended(r, &s->oid, &info,
+ 					     OBJECT_INFO_LOOKUP_REPLACE))
+-			die("unable to read %s", oid_to_hex(&s->oid));
++			return -1;//die("unable to read %s", oid_to_hex(&s->oid));
+ 
+ object_read:
+ 		if (size_only || check_binary) {
+@@ -4128,7 +4128,7 @@ int diff_populate_filespec(struct repository *r,
+ 			info.contentp = &s->data;
+ 			if (oid_object_info_extended(r, &s->oid, &info,
+ 						     OBJECT_INFO_LOOKUP_REPLACE))
+-				die("unable to read %s", oid_to_hex(&s->oid));
++				return -1;//die("unable to read %s", oid_to_hex(&s->oid));
+ 		}
+ 		s->should_free = 1;
+ 	}
+@@ -7051,7 +7051,7 @@ size_t fill_textconv(struct repository *r,
+ 			return 0;
+ 		}
+ 		if (diff_populate_filespec(r, df, NULL))
+-			die("unable to read files to diff");
++			return 0;//die("unable to read files to diff");
+ 		*outbuf = df->data;
+ 		return df->size;
+ 	}
+@@ -7069,7 +7069,7 @@ size_t fill_textconv(struct repository *r,
+ 
+ 	*outbuf = run_textconv(r, driver->textconv, df, &size);
+ 	if (!*outbuf)
+-		die("unable to read files to diff");
++		return 0;//die("unable to read files to diff");
+ 
+ 	if (driver->textconv_cache && df->oid_valid) {
+ 		/* ignore errors, as we might be in a readonly repository */
+diff --git a/environment.c b/environment.c
+index 18d042b467..7e0ba9dc47 100644
+--- a/environment.c
++++ b/environment.c
+@@ -265,7 +265,7 @@ void set_git_work_tree(const char *new_work_tree)
+ 		strbuf_release(&realpath);
+ 		return;
+ 	}
+-	git_work_tree_initialized = 1;
++	git_work_tree_initialized = 0;
+ 	repo_set_worktree(the_repository, new_work_tree);
+ }
+ 

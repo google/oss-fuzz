@@ -1,15 +1,4 @@
-# Provide the home page for *your* project:
-homepage: "https://my-api.example.com"
-
-# Language the project is written in:
-language: c++
-
-# Provide the e-mail for the primary contact and others:
-# Un-comment the below lines to make auto-cc work.
-# primary_contact: "primary-my-api-maintainer@example.com"
-# auto_ccs:  
-#   - "secondary-my-api-maintainer@example.com"
-#   - "tertiary-my-api-maintainer@example.com"
-
-# We don't run this example project for real. (Don't use this flag for your project)
 disabled: true
+homepage: https://my-api.example.com
+language: c++
+vendor_ccs: []

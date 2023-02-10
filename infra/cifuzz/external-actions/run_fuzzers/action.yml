@@ -56,6 +56,10 @@ inputs:
     description: 'If True, reportable crashes will be minimized.'
     required: false
     default: False
+  parallel-fuzzing:
+    description: "Whether to use all available cores for fuzzing."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -75,3 +79,4 @@ runs:
     MINIMIZE_CRASHES: ${{ inputs.minimize-crashes }}
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
+    PARALLEL_FUZZING: ${{ inputs.parallel-fuzzing }}

@@ -1,0 +1,12 @@
+homepage: "https://github.com/bincode-org/bincode"
+language: rust
+primary_contact: "nathan@mccarty.io"
+auto_ccs:
+  - "zoey@dos.cafe"
+  - "github@trangar.com"
+  - "ty@pre-alpha.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/bincode-org/bincode'

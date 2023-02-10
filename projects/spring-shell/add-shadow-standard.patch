@@ -1,0 +1,17 @@
+diff --git a/spring-shell-standard/spring-shell-standard.gradle b/spring-shell-standard/spring-shell-standard.gradle
+index c471dbd..d6c5e9d 100644
+--- a/spring-shell-standard/spring-shell-standard.gradle
++++ b/spring-shell-standard/spring-shell-standard.gradle
+@@ -1,5 +1,6 @@
+ plugins {
+ 	id 'org.springframework.shell.module'
++	id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ description = 'Spring Shell Standard'
+@@ -9,4 +10,5 @@ dependencies {
+ 	implementation project(':spring-shell-core')
+ 	compileOnly 'com.google.code.findbugs:jsr305'
+ 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
++	apply plugin: 'com.github.johnrengelman.shadow'
+ }

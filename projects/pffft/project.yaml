@@ -8,10 +8,8 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
-  - dataflow
   - memory
   - undefined
 architectures:

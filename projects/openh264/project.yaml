@@ -8,6 +8,7 @@ auto_ccs:
   - "xiaotianshimail@gmail.com"
 vendor_ccs:
   - "dminor@mozilla.com"
+  - "jmuizelaar@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address

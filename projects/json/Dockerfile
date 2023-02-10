@@ -20,3 +20,6 @@ RUN apt-get update && apt-get install -y binutils make
 RUN git clone --depth 1 -b develop https://github.com/nlohmann/json.git
 WORKDIR json/
 COPY build.sh *.options parse_afl_fuzzer.dict $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

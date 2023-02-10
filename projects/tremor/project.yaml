@@ -10,10 +10,8 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
   - memory
-  - dataflow
 main_repo: 'https://gitlab.xiph.org/xiph/tremor.git'

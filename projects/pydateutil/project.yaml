@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://dateutil.readthedocs.io/en/stable/
+language: python
+main_repo: https://github.com/dateutil/dateutil
+sanitizers:
+- address
+vendor_ccs:
+- p.antoine@catenacyber.fr
+- david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

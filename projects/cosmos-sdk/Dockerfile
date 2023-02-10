@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --single-branch --branch fuzz-packages https://github.com/cosmos/cosmos-sdk
+RUN git clone --depth 1 https://github.com/cosmos/cosmos-sdk
 
 COPY build.sh $SRC
 WORKDIR $SRC/cosmos-sdk

@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-compile_go_fuzzer github.com/go-redis/redis/v8/fuzz Fuzz fuzz gofuzz
+compile_go_fuzzer github.com/go-redis/redis/v9/fuzz Fuzz fuzz gofuzz

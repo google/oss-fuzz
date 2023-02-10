@@ -3,10 +3,6 @@ language: c++
 primary_contact: "weinrank@fh-muenster.de"
 auto_ccs:
   - "t00fcxen@googlemail.com"
-  - "markwo@google.com"
-  - "natashenka@google.com"
-  - "orphis@google.com"
-  - "mbonadei@google.com"
 fuzzing_engines:
   - libfuzzer
   - afl

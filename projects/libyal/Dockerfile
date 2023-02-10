@@ -18,6 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config flex byacc
 
+RUN git clone --depth 1 https://github.com/libyal/libfmos.git libfmos
 RUN git clone --depth 1 https://github.com/libyal/libfplist.git libfplist
 RUN git clone --depth 1 https://github.com/libyal/libftxf.git libftxf
 RUN git clone --depth 1 https://github.com/libyal/libfusn.git libfusn
@@ -45,12 +46,15 @@ RUN git clone --depth 1 https://github.com/libyal/libwrc.git libwrc
 
 RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libfsapfs
 RUN git clone --depth 1 https://github.com/libyal/libfsext.git libfsext
+RUN git clone --depth 1 https://github.com/libyal/libfsfat.git libfsfat
 RUN git clone --depth 1 https://github.com/libyal/libfshfs.git libfshfs
 RUN git clone --depth 1 https://github.com/libyal/libfsntfs.git libfsntfs
 RUN git clone --depth 1 https://github.com/libyal/libfsxfs.git libfsxfs
 
 RUN git clone --depth 1 https://github.com/libyal/libbde.git libbde
+RUN git clone --depth 1 https://github.com/libyal/libfvde.git libfvde
 RUN git clone --depth 1 https://github.com/libyal/libluksde.git libluksde
+RUN git clone --depth 1 https://github.com/libyal/libvsapm.git libvsapm
 RUN git clone --depth 1 https://github.com/libyal/libvsgpt.git libvsgpt
 RUN git clone --depth 1 https://github.com/libyal/libvshadow.git libvshadow
 RUN git clone --depth 1 https://github.com/libyal/libvslvm.git libvslvm

@@ -1,4 +1,4 @@
-homepage: "https://github.com/nmoinvaz/minizip"
+homepage: "https://github.com/zlib-ng/minizip-ng"
 language: c++
 primary_contact: "nathan.moinvaziri@gmail.com"
 sanitizers:
@@ -8,4 +8,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
-main_repo: 'https://github.com/nmoinvaz/minizip'
+main_repo: 'https://github.com/zlib-ng/minizip-ng'

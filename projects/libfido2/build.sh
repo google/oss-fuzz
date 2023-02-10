@@ -46,7 +46,8 @@ make install
 # Building libfido2 with ${LIB_FUZZING_ENGINE} and chosen sanitizer
 cd ${SRC}/libfido2
 mkdir build && cd build
-cmake -DFUZZ=1 -DFUZZ_LDFLAGS=${LIB_FUZZING_ENGINE} \
+cmake -DFUZZ=1 -DFUZZ_LDFLAGS="${LIB_FUZZING_ENGINE}" \
+      -DFUZZ_LINKER_LANGUAGE=CXX \
       -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=1 \
       -DCMAKE_PREFIX_PATH=${WORK} \
       -DCMAKE_INSTALL_PREFIX=${WORK} \
@@ -59,6 +60,13 @@ mkdir -p ${OUT}/lib
 for lib in `ls ${WORK}/lib/lib*.so*`; do
     cp ${lib} ${OUT}/lib;
 done
+
+# Place libpcsclite in ${OUT}; needed by fuzz_pcsc
+if [ -x fuzz/fuzz_pcsc ]; then
+    for lib in `ldd fuzz/fuzz_pcsc | awk '/libpcsclite.so.*=>/ { print $3 }'`; do
+        cp ${lib} ${OUT}/lib;
+    done
+fi
 
 # Fixup rpath in the fuzzers so they use our libs
 for f in `ls fuzz/fuzz_*`; do
@@ -77,3 +85,4 @@ tar xzf ${SRC}/corpus.tgz
 (set -e ; cd fuzz_largeblob/corpus ; zip -r ${OUT}/fuzz_largeblob_seed_corpus.zip .)
 (set -e ; cd fuzz_mgmt/corpus      ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
 (set -e ; cd fuzz_netlink/corpus   ; zip -r ${OUT}/fuzz_netlink_seed_corpus.zip .)
+(set -e ; cd fuzz_pcsc/corpus      ; zip -r ${OUT}/fuzz_pcsc_seed_corpus.zip .)

@@ -7,10 +7,8 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 main_repo: 'https://github.com/libimobiledevice/libplist'

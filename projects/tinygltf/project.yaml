@@ -1,8 +1,6 @@
 homepage: "https://github.com/syoyo/tinygltf"
 language: c++
-primary_contact: "syoyo@lighttransport.com"
-auto_ccs:
-  - "p.antoine@catenacyber.fr"
+primary_contact: "p.antoine@catenacyber.fr"
 fuzzing_engines:
 - libfuzzer
 sanitizers:

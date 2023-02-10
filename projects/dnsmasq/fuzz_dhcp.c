@@ -24,14 +24,14 @@ void FuzzDhcp(const uint8_t **data2, size_t *size2) {
   struct iovec *dhpa = malloc(sizeof(struct iovec));
   if (dhpa == NULL) return;
 
-  char *content = malloc(300);
+  char *content = malloc(sizeof(struct dhcp_packet));
   if (content == NULL) {
     free(dhpa);
     return;
   }
   
   dhpa->iov_base = content;
-  dhpa->iov_len = 300;
+  dhpa->iov_len = sizeof(struct dhcp_packet);
 
   daemon->dhcp_packet = *dhpa;
 
@@ -42,13 +42,7 @@ void FuzzDhcp(const uint8_t **data2, size_t *size2) {
 
   // dnsmasq may change the iov_base if the buffer needs expansion.
   // Do not free in that case, only free if the buffer stays that same.
-  if (daemon->dhcp_packet.iov_base == content) {
-    free(content);
-  }
-  else{
-    free(daemon->dhcp_packet.iov_base);
-  }
-
+  free(daemon->dhcp_packet.iov_base);
   free(dhpa);
 }
 

@@ -1,0 +1,10 @@
+homepage: "https://github.com/JoshData/python-email-validator"
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/JoshData/python-email-validator"
+vendor_ccs:
+  - maxnair.dev@gmail.com

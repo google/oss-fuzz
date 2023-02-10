@@ -1,5 +1,5 @@
 homepage: "https://libssh.org/"
-language: c++
+language: c
 primary_contact: "asn@cryptomilk.org"
 auto_ccs:
  - "cryptomilk@gmail.com"

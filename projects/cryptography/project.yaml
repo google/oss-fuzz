@@ -1,0 +1,16 @@
+auto_ccs:
+- paul.l.kehrer@gmail.com
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pyca/cryptography
+language: python
+main_repo: https://github.com/pyca/cryptography
+primary_contact: alex.gaynor@gmail.com
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

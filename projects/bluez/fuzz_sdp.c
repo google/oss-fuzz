@@ -21,11 +21,17 @@ limitations under the License.
 #include "sdp_lib.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+  /* Target sdp_extract_pdu */
   int scanned = 0;
   sdp_record_t *out = NULL;
   openlog("fuzz_sdp", LOG_PERROR, LOG_LOCAL0);
   out = sdp_extract_pdu(data, size, &scanned);
   if (out) {
+    sdp_record_t *copy = sdp_copy_record(out);
+    if (copy) {
+      sdp_record_free(copy);
+    }
     sdp_record_free(out);
   }
   closelog();

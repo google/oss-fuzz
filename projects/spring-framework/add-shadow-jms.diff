@@ -1,0 +1,18 @@
+diff --git a/spring-jms/spring-jms.gradle b/spring-jms/spring-jms.gradle
+index 6757f90eca..32587faf7d 100644
+--- a/spring-jms/spring-jms.gradle
++++ b/spring-jms/spring-jms.gradle
+@@ -1,11 +1,12 @@
+ description = "Spring JMS"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ dependencies {
+ 	api(project(":spring-beans"))
+ 	api(project(":spring-core"))
+ 	api(project(":spring-messaging"))
+ 	api(project(":spring-tx"))
+-	compileOnly("jakarta.jms:jakarta.jms-api")
++	api("jakarta.jms:jakarta.jms-api")
+ 	optional(project(":spring-aop"))
+ 	optional(project(":spring-context"))
+ 	optional(project(":spring-oxm"))

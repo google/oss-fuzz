@@ -18,13 +18,13 @@ package fuzzing
 import (
 	"bytes"
 	"context"
-	"gvisor.dev/gvisor/pkg/buffer"
+	"gvisor.dev/gvisor/pkg/bufferv2"
 	"gvisor.dev/gvisor/pkg/state"
 )
 
 func FuzzStateLoad(data []byte) int {
 	ctx := context.Background()
-	var toLoad *buffer.View
+	var toLoad *bufferv2.View
 	_, _ = state.Load(ctx, bytes.NewReader(data), toLoad)
 	return 1
 }

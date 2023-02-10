@@ -18,10 +18,10 @@ import base64
 
 import google.auth
 from google.cloud import ndb
+import yaml
 
 import build_project
-from datastore_entities import BuildsHistory
-from datastore_entities import Project
+import datastore_entities
 
 BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
@@ -30,14 +30,16 @@ QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 def update_build_history(project_name, build_id, build_tag):
   """Update build history of project."""
-  project_key = ndb.Key(BuildsHistory, project_name + '-' + build_tag)
+  project_key = ndb.Key(datastore_entities.BuildsHistory,
+                        project_name + '-' + build_tag)
   project = project_key.get()
 
   if not project:
-    project = BuildsHistory(id=project_name + '-' + build_tag,
-                            build_tag=build_tag,
-                            project=project_name,
-                            build_ids=[])
+    project = datastore_entities.BuildsHistory(id=project_name + '-' +
+                                               build_tag,
+                                               build_tag=build_tag,
+                                               project=project_name,
+                                               build_ids=[])
 
   if len(project.build_ids) >= MAX_BUILD_HISTORY_LENGTH:
     project.build_ids.pop(0)
@@ -48,26 +50,27 @@ def update_build_history(project_name, build_id, build_tag):
 
 def get_project_data(project_name):
   """Retrieve project metadata from datastore."""
-  query = Project.query(Project.name == project_name)
+  query = datastore_entities.Project.query(
+      datastore_entities.Project.name == project_name)
   project = query.get()
   if not project:
     raise RuntimeError(
         f'Project {project_name} not available in cloud datastore')
 
-  return project.project_yaml_contents, project.dockerfile_contents
+  project_yaml = yaml.safe_load(project.project_yaml_contents)
+  return project_yaml, project.dockerfile_contents
 
 
 def get_empty_config():
   """Returns an empty build config."""
-  return build_project.Config(False, None, None, False)
+  return build_project.Config()
 
 
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
-  # TODO(metzman): Figure out if we need this.
-  project_yaml_contents, dockerfile_lines = get_project_data(project_name)
+  project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = get_empty_config()
-  return build_project.get_build_steps(project_name, project_yaml_contents,
+  return build_project.get_build_steps(project_name, project_yaml,
                                        dockerfile_lines, image_project,
                                        base_images_project, build_config)
 

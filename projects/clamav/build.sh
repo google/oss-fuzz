@@ -51,7 +51,7 @@ cmake ${SRC}/clamav \
     -DCMAKE_INSTALL_PREFIX="install"
 
 # Build libclamav and the fuzz targets
-make -j4
+make -j$(nproc)
 cp ./fuzz/clamav_* ${OUT}/.
 
 #
@@ -75,6 +75,10 @@ for type in ARCHIVE MAIL OLE2 PDF HTML PE ELF SWF XMLDOCS HWP3; do
     # Copy seeds for the generic fuzz target.
     cp ${SRC}/clamav-fuzz-corpus/scantype/${type}/* ${WORK}/all-scantype-seeds/
 done
+
+# Add weird files
+git clone --depth=1 https://github.com/corkami/pocs
+find ./pocs/ -type f -print0 | xargs -0 -I % mv -f % ${WORK}/all-scantype-seeds/
 
 # Prepare seed corpus for the generic fuzz target.
 cp ${SRC}/clamav-fuzz-corpus/scantype/other/* ${WORK}/all-scantype-seeds/

@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/junrar/junrar
+language: jvm
+main_repo: https://github.com/junrar/junrar.git
+sanitizers:
+- address
+vendor_ccs:
+- all.u.ever.know@gmail.com

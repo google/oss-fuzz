@@ -6,7 +6,7 @@ sanitizers:
 - memory
 - undefined
 auto_ccs:
-- jaikk@google.com
+- jhuoponen@google.com
 - jzern@google.com
 - wtc@google.com
 - yunqingwang@google.com
