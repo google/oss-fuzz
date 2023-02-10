@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
-#!/usr/bin/env python3
+
 """Does fuzzbench runs on Google Cloud Build."""
 
 import logging
@@ -33,13 +35,15 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   """Returns build steps for project."""
   project = build_project.Project(project_name, project_yaml, dockerfile_lines,
                                   image_project)
-  # !!! DOn't overwrite base-builder-fuzzbench
-  config = build_project.Config(config.testing, None, config.repo,
-                                config.branch, config.parallel, config.upload)
-  fuzzing_engine = 'libafl'  # !!!
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
+
+  config = build_project.Config(config.testing, None, config.repo,
+                                config.branch, config.parallel, config.upload)
+
+  # TODO(metzman): Make this a command line argument
+  fuzzing_engine = 'libafl'
 
   steps = [
       {
@@ -57,7 +61,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           'name': 'gcr.io/cloud-builders/docker',
           'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench']
       },
-      {
+      {  # TODO(metzman): Don't overwrite base-builder
           'name':
               'gcr.io/cloud-builders/docker',
           'args': [
@@ -115,9 +119,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
            f'mkdir -p {build.out} && compile'),
       ],
   }
-  # build_lib.dockerify_run_step(compile_project_step,
-  #                              build,
-  #                              use_architecture_image_name=build.is_arm)
   steps.append(compile_project_step)
   env.extend(['FUZZ_TARGET=iccprofile_atf', f'BENCHMARK={project.name}'])
   run_fuzzer_step = {
@@ -132,10 +133,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'args': [
           'bash',
           '-c',
-          # Remove /out to make sure there are non instrumented binaries.
-          # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-          # Dockerfile). Container Builder overrides our workdir so we need
-          # to add this step to set it back.
           (f'ls /fuzzbench && cd {build.out} && ls {build.out} && '
            f'fuzzbench_run_fuzzer'),
       ],
@@ -146,7 +143,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
 
 def main():
-  """Build and run fuzzbench for projects."""
+  """Build and run fuzzbench for OSS-Fuzz projects."""
   fuzzbench_status = build_project.build_script_main('Does a FuzzBench run.',
                                                      get_build_steps,
                                                      FUZZBENCH_BUILD_TYPE)
