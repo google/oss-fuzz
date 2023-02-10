@@ -62,7 +62,7 @@ def translate_coverage(all_file_paths):
 
 def convert_coveragepy_cov_to_summary_json(src, dst):
   """
-  Convert a json file produced by coveragepy into a summary.json file
+  Converts a json file produced by coveragepy into a summary.json file
   similary to llvm-cov output. `src` is the source coveragepy json file,
   `dst` is the destination json file, which will be overwritten.
   """
@@ -70,7 +70,7 @@ def convert_coveragepy_cov_to_summary_json(src, dst):
   with open(src, "r") as src_f:
     src_json = json.loads(src_f.read())
     if 'files' in src_json:
-      for elem in src_json['files']:
+      for elem in src_json.get('files'):
         if 'summary' not in src_json['files'][elem]:
           continue
         src_dict = src_json['files'][elem]['summary']
