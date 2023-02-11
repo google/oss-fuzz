@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
   oai-asn1c oai-nettle oai-gnutls oai-freediameter
 
 
-RUN git clone --depth 1 https://github.com/0x34d/magma.git
+RUN git clone --depth 1 https://github.com/magma/magma.git
 
 COPY build.sh $SRC/build.sh
 COPY build_defs.bzl.patch $SRC/build_defs.bzl.patch

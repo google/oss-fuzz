@@ -71,10 +71,9 @@ zip -j ${OUT}/nas5g_message_decode_seed_corpus.zip lte/gateway/c/core/oai/fuzzin
 mkdir $OUT/lib/
 cp /lib/libgnutls* $OUT/lib/.
 cp /lib/libnettle* $OUT/lib/.
+cp /lib/libhogweed* $OUT/lib/.
 cp /usr/local/lib/libfdcore* $OUT/lib/.
 cp /usr/local/lib/libfdproto* $OUT/lib/.
-
 cp /lib/x86_64-linux-gnu/libsctp* $OUT/lib/.
 cp /lib/x86_64-linux-gnu/libidn* $OUT/lib/.
 cp /lib/x86_64-linux-gnu/libtspi* $OUT/lib/.
-cp /lib/libhogweed* $OUT/lib/.
