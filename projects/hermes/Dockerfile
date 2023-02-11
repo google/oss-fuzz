@@ -62,9 +62,9 @@ RUN find hermes/test -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
     # Add V8 PoCs as seed corpus.
     find v8-vulnerabilities/pocs -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
     # Add tests from esprima as seed corpus.
-    find hermes/external/esprima/test_fixtures '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
+    find hermes/external/esprima/test_fixtures -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
     # Add tests from flow as seed corpus.
-    find hermes/external/flowtest/test/flow '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
+    find hermes/external/flowtest/test/flow -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip && \
     # Add tests from v8 as seed corpus.
     find v8/test/mjsunit -iname '*.js' | zip -@ -q $SRC/hermes_seed_corpus.zip
 
