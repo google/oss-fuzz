@@ -22,7 +22,6 @@ def empty():
   return
 
 
-#@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   args = []
