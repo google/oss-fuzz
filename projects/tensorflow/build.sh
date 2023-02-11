@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-#git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
+git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
