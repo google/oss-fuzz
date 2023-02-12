@@ -70,6 +70,7 @@ cp $LIBRESSL_FUZZERS/oids.txt $OUT/x509.dict
 
 # Cryptofuzz
 cd $SRC/cryptofuzz/
+sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' config.h
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
