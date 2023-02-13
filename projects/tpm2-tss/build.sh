@@ -31,6 +31,7 @@ export GEN_FUZZ=1
   --disable-tcti-device \
   --disable-tcti-mssim \
   --disable-tcti-swtpm \
+  --disable-tcti-spi-ftdi \
   --disable-tcti-spi-lt2go \
   --disable-doxygen-doc \
   --disable-shared \
