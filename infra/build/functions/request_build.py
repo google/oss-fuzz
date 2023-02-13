@@ -65,7 +65,7 @@ def get_empty_config():
   return build_project.Config()
 
 
-def get_build_steps(project_name, image_project):
+def get_build_steps(project_name):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = get_empty_config()
