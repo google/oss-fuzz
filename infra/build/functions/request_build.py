@@ -93,7 +93,7 @@ def request_build(event, context):
 
   with ndb.Client().context():
     credentials, cloud_project = google.auth.default()
-    build_steps = get_build_steps(project_name, cloud_project)
+    build_steps = get_build_steps(project_name)
     if not build_steps:
       return
     run_build(
