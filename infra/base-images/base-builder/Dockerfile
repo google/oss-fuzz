@@ -153,9 +153,6 @@ COPY bazel_build_fuzz_tests \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
     debug_afl \
-    fuzzbench_build \
-    fuzzbench_install_dependencies \
-    fuzzbench_run_fuzzer \
     # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
     install_javascript.sh \

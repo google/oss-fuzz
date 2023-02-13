@@ -15,5 +15,4 @@
 #
 ################################################################################
 
-chmod +x $SRC/rekor/tests/oss_fuzz.sh
 $SRC/rekor/tests/oss_fuzz.sh

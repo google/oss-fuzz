@@ -1,5 +1,5 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index c32a54ab..621d6f8c 100644
+index c32a54ab..f9557657 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
 @@ -8,19 +8,24 @@ load(
@@ -24,8 +24,75 @@ index c32a54ab..621d6f8c 100644
      deps = [
          ":fuzz_domains",
          "//tensorflow/core/platform:status",
-+	"@com_google_fuzztest//fuzztest",
-+	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
+ )
+ 
+@@ -34,32 +39,34 @@ tf_cc_fuzz_test(
+     ],
+ )
+ 
+-tf_cc_fuzz_test(
++tf_cc_test(
+     name = "base64_fuzz",
+     srcs = ["base64_fuzz.cc"],
+-    tags = ["no_oss"],
+     deps = [
++        ":fuzz_domains",
+         "//tensorflow/core/platform:base64",
+         "//tensorflow/core/platform:status",
+         "//tensorflow/core/platform:stringpiece",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
+ )
+ 
+-tf_cc_fuzz_test(
++tf_cc_test(
+     name = "bfloat16_fuzz",
+     srcs = ["bfloat16_fuzz.cc"],
+-    tags = ["no_oss"],  # b/175698644
+     deps = [
+         "//tensorflow/core:test",
+         "//tensorflow/core/framework:bfloat16",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
+ )
+ 
+-tf_cc_fuzz_test(
++tf_cc_test(
+     name = "checkpoint_reader_fuzz",
+     srcs = ["checkpoint_reader_fuzz.cc"],
+     data = glob(["checkpoint_reader_testdata/*"]),
+-    tags = ["no_oss"],
+     deps = [
+         ":checkpoint_reader_fuzz_input_proto_cc",
+         "//tensorflow/c:checkpoint_reader",
+@@ -70,6 +77,8 @@ tf_cc_fuzz_test(
+         "//tensorflow/core/framework:types_proto_cc",
+         "//tensorflow/core/platform:resource_loader",
+         "//tensorflow/core/platform:status",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+     ],
+ )
+ 
+@@ -83,13 +92,14 @@ tf_proto_library(
+     ],
+ )
+ 
+-tf_cc_fuzz_test(
++tf_cc_test(
+     name = "cleanpath_fuzz",
+     srcs = ["cleanpath_fuzz.cc"],
+-    tags = ["no_oss"],
+     deps = [
+         "//tensorflow/core/platform:path",
+         "@com_google_absl//absl/strings",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
      ],
  )
  

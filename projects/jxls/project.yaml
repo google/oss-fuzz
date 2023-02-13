@@ -1,0 +1,9 @@
+homepage: "https://github.com/jxlsteam/jxls"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jxlsteam/jxls"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"
