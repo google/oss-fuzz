@@ -35,7 +35,7 @@ def set_default_env_var_if_unset(env_var, default_value):
 def docker_run(entrypoint, workspace, project_src_path):
   """Runs a CIFuzz docker container with |name|."""
   command = [
-      'docker', 'run', '--name', CIFUZZ_IMAGE_NAME, '--rm',
+      'docker', 'run', '--rm',
       '-e', 'PROJECT_SRC_PATH', '--entrypoint',
       f'/opt/oss-fuzz/infra/cifuzz/{entrypoint}'
       '-e',
