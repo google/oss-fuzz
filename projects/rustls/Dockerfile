@@ -29,4 +29,3 @@ RUN git clone https://github.com/ctz/rustls
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY *.py $SRC/
