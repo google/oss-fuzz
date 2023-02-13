@@ -65,13 +65,12 @@ def get_empty_config():
   return build_project.Config()
 
 
-def get_build_steps(project_name, image_project, base_images_project):
+def get_build_steps(project_name, image_project):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = get_empty_config()
   return build_project.get_build_steps(project_name, project_yaml,
-                                       dockerfile_lines, image_project,
-                                       base_images_project, build_config)
+                                       dockerfile_lines, build_config)
 
 
 def run_build(oss_fuzz_project, build_steps, credentials, build_type,
