@@ -24,3 +24,8 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/ittiam-systems/libhevc.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

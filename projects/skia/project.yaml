@@ -24,3 +24,8 @@ sanitizers:
 help_url: "https://skia.org/dev/testing/fuzz"
 builds_per_day: 4
 main_repo: 'https://skia.googlesource.com/skia.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
