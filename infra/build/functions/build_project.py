@@ -519,6 +519,7 @@ def get_args(description):
 
 
 def create_config_from_commandline(args):
+  """Create a Config object from parsed command line |args|."""
   return Config(testing=args.testing,
                 test_image_suffix=args.test_image_suffix,
                 branch=args.branch,

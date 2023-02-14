@@ -32,6 +32,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, image_project,
     base_images_project, config):
   """Returns build steps for project."""
+  del base_images_project
   project = build_project.Project(project_name, project_yaml, dockerfile_lines,
                                   image_project)
   if project.disabled:
