@@ -144,11 +144,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
 def main():
   """Build and run fuzzbench for OSS-Fuzz projects."""
-  fuzzbench_status = build_project.build_script_main('Does a FuzzBench run.',
-                                                     get_build_steps,
-                                                     FUZZBENCH_BUILD_TYPE)
-  if fuzzbench_status != 0:
-    return fuzzbench_status
+  return build_project.build_script_main('Does a FuzzBench run.',
+                                         get_build_steps,
+                                         FUZZBENCH_BUILD_TYPE)
 
 
 if __name__ == '__main__':
