@@ -508,8 +508,8 @@ def get_build_body(steps,
   else:
     options = {}
 
-  # if use_build_pool:
-  #   options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+  if use_build_pool:
+    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
