@@ -10,3 +10,8 @@ sanitizers:
 - undefined
 - memory
 main_repo: 'https://boringssl.googlesource.com/boringssl'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

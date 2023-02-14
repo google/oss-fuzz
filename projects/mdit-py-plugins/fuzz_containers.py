@@ -1,4 +1,4 @@
-#! /bin/bash -eux
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+"""Parse markdown using one of the mdit-py-plugins plugins."""
+import sys
+import atheris
 
-export RUNNER_NICENESS="-5"
-export EXPERIMENT_FILESTORE=/out/filestore
-export EXPERIMENT=oss-fuzz-on-demand
-export OSS_FUZZ_ON_DEMAND=1
-export OUTPUT_CORPUS_DIR=$OUT/out-corpus
-export SEED_CORPUS_DIR=/input-corpus
-mkdir $SEED_CORPUS_DIR
-rm -rf $OUTPUT_CORPUS_DIR
-mkdir $OUTPUT_CORPUS_DIR
-export FUZZER=$FUZZING_ENGINE
-export MAX_TOTAL_TIME=120
-export SNAPSHOT_PERIOD=30
-cd $OUT
-PYTHONPATH=$FUZZBENCH nice -n $RUNNER_NICENESS python3 -B -u $FUZZBENCH/experiment/runner.py
+import markdown_it
+import mdit_py_plugins
+from mdit_py_plugins.container import container_plugin
+
+
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+  md = markdown_it.MarkdownIt().use(container_plugin, "fuzz")
+  md.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

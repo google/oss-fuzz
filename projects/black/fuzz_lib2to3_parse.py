@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-
-# Copyright 2021 Google LLC
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import sys
-import subprocess
+import atheris
 
-#Disable coverage for troubling crates.
-sys.argv[0] = "rustc"
-if "tokio_util" in sys.argv or "hyper" in sys.argv:
-    try:
-        sys.argv.remove("-Zinstrument-coverage")
-    except:
-        pass
-    print(sys.argv)
-subprocess.call(sys.argv)
+import black
+
+
+def TestOneInput(data):
+  fdp = atheris.FuzzedDataProvider(data)
+  try:
+    black.lib2to3_parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except black.InvalidInput:
+    pass
+  except AssertionError:
+    pass
+  except KeyError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()

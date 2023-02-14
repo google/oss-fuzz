@@ -1,4 +1,3 @@
-#! /bin/bash -eux
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,19 @@
 #
 ################################################################################
 
-# TODO(metzman): Do this in a docket image so we don't need to waste time
-# reinstalling.
-PYTHONPATH=$FUZZBENCH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN rm -rf $SRC/project-parent/jxls
+RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
+RUN chmod +x $SRC/jxls/gradlew
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+
+COPY *.patch $SRC/
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+COPY *.dict $SRC/
+WORKDIR $SRC/jxls
