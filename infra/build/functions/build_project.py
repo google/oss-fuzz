@@ -518,6 +518,15 @@ def get_args(description):
   return parser.parse_args()
 
 
+def create_config_from_commandline(args):
+  """Create a Config object from parsed command line |args|."""
+  return Config(testing=args.testing,
+                test_image_suffix=args.test_image_suffix,
+                branch=args.branch,
+                parallel=args.parallel,
+                upload=True)
+
+
 def build_script_main(script_description, get_build_steps_func, build_type):
   """Gets arguments from command line using |script_description| as helpstring
   description. Gets build_steps using |get_build_steps_func| and then runs those
@@ -530,11 +539,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = Config(testing=args.testing,
-                  test_image_suffix=args.test_image_suffix,
-                  branch=args.branch,
-                  parallel=args.parallel,
-                  upload=True)
+  config = create_config_from_commandline(args)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
