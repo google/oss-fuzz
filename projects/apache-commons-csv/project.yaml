@@ -1,10 +1,12 @@
 homepage: "https://github.com/apache/commons-csv"
 language: jvm
-primary_contact: ""
+primary_contact: "fuzz-testing@commons.apache.org"
 fuzzing_engines:
   - "libfuzzer"
 sanitizers:
   - "address"
+auto_ccs:
+  - "security@commons.apache.org"
 main_repo: "https://github.com/apache/commons-csv.git"
 vendor_ccs:
   - "glendowne@code-intelligence.com"
@@ -12,4 +14,5 @@ vendor_ccs:
   - "patrice.salathe@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"

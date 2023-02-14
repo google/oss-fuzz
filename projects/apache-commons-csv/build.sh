@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-#mv $SRC/{*.zip,*.dict} $OUT
+mv $SRC/{*.zip,*.dict} $OUT
 
 MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15 -Dmaven.javadoc.skip=true"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
