@@ -56,7 +56,7 @@ export LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE:--fsanitize=fuzzer}
 cd "$SRC/elfutils"
 
 # ASan isn't compatible with -Wl,--no-undefined: https://github.com/google/sanitizers/issues/380
-find -name Makefile.am | xargs sed -i 's/,--no-undefined//'
+sed -i 's/^\(NO_UNDEFINED=\).*/\1/' configure.ac
 
 # ASan isn't compatible with -Wl,-z,defs either:
 # https://clang.llvm.org/docs/AddressSanitizer.html#usage
