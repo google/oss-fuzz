@@ -14,27 +14,32 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+package com.example;
+
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
-
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.*;
+import com.code_intelligence.jazzer.junit.FuzzTest;
 import org.eclipse.jetty.io.NullByteBufferPool;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.LocalConnector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.*;
+import org.junit.jupiter.api.BeforeAll;
 
-import java.io.File;
 import java.util.Collection;
 
 
-public class ServerHandlersFuzzer {
+class ServerHandlersFuzzer {
     static Server _server;
     static LocalConnector _connector;
     static HandlerCollection handlers;
-    static String methods_arr [] = {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"};
-    static Handler handler_arr [] = {new AsyncDelayHandler(), new BufferedResponseHandler(), new ContextHandler(), new DefaultHandler(), new ErrorHandler(), new FileBufferedResponseHandler(),
+    static String[] methods_arr = {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"};
+    static Handler[] handler_arr = {new AsyncDelayHandler(), new BufferedResponseHandler(), new ContextHandler(), new DefaultHandler(), new ErrorHandler(), new FileBufferedResponseHandler(),
             new HotSwapHandler(), new IdleTimeoutHandler(), new InetAccessHandler(), new MovedContextHandler(), new RequestLogHandler(), new ResourceHandler(), new SecuredRedirectHandler(),
             new ThreadLimitHandler()};
 
-    public static void fuzzerInitialize() {
+    @BeforeAll
+    static void setup() {
         _server = new Server();
         _server.addBean(new NullByteBufferPool());
         _connector = new LocalConnector(_server, new HttpConnectionFactory(), null);
@@ -42,7 +47,8 @@ public class ServerHandlersFuzzer {
         _server.addConnector(_connector);
     }
 
-    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    @FuzzTest
+    void getResponse(FuzzedDataProvider data) {
         Collection<Handler> handlersCollection = data.pickValues(handler_arr, data.consumeInt(0, handler_arr.length));
         String method = data.pickValue(methods_arr);
         String str = data.consumeString(1000);
@@ -64,7 +70,7 @@ public class ServerHandlersFuzzer {
         }
 
         try {
-            String response = _connector.getResponse(method + " /" + str + " HTTP/1.0\r\n" + str1 + "\r\n\r\n" + str2);
+            _connector.getResponse(method + " /" + str + " HTTP/1.0\r\n" + str1 + "\r\n\r\n" + str2);
         } catch (Exception e) {
         }
 
@@ -74,4 +80,5 @@ public class ServerHandlersFuzzer {
             throw new RuntimeException("Server stop error!");
         }
     }
+
 }
