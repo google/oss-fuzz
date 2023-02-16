@@ -113,8 +113,8 @@ else
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
 fi
 
-# Do not sync bazel-out to /out/ for coverage builds as we do this using
-# synchronize_coverage_directories instead.
+# Do not use compile_fuzztests.sh to synchronize coverage folders as we use
+# synchronize_coverage_directories from this script instead.
 export FUZZTEST_DO_SYNC="no"
 
 # Set fuzz targets
@@ -124,11 +124,10 @@ export FUZZTEST_EXTRA_TARGETS="//tensorflow/core/kernels/fuzzing:all"
 # Overwrite fuzz targets in CI.
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-  echo "In CI, exiting, overwriting targets to only build a single target."
+  echo "In CI overwriting targets to only build a single target."
   export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz"
   export FUZZTEST_EXTRA_TARGETS=""
 fi
-
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
@@ -164,7 +163,7 @@ done
 
 declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
 
-# All preparation are done, proceed to build fuzzers.
+# All preparations are done, proceed to build fuzzers.
 compile_fuzztests.sh
 
 # Copy out all non-fuzztest fuzzers.
