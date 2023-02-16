@@ -39,6 +39,16 @@ then
   BUILD_ARGS="$BUILD_ARGS ${FUZZTEST_EXTRA_ARGS}"
 fi
 
+# If a project includes non-FuzzTest fuzzers then the following variable
+# can be used to compile these in the same `bazel build` command as when
+# building the FuzzTest fuzzers. This is to avoid having to call `bazel build`
+# twice.
+EXTRA_TARGETS_TO_BUILD=""
+if [[ ${FUZZTEST_EXTRA_TARGETS:-"unset"} != "unset" ]];
+then
+  EXTRA_TARGETS_TO_BUILD="${FUZZTEST_EXTRA_TARGETS}"
+fi
+
 # Trigger setup_configs rule of fuzztest as it generates the necessary
 # configuration file based on OSS-Fuzz environment variables.
 bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
@@ -50,7 +60,7 @@ FUZZ_TEST_BINARIES=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com
 FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))" --output=files)
 
 # Build the project and fuzz binaries
-bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]}
+bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]} ${EXTRA_TARGETS_TO_BUILD}
 
 # Iterate the fuzz binaries and list each fuzz entrypoint in the binary. For
 # each entrypoint create a wrapper script that calls into the binaries the
