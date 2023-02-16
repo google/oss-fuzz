@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,49 +15,71 @@
 #
 ################################################################################
 
-mv $SRC/{*.zip,*.dict} $OUT
+PROJECT=jetty
+PROJECT_GROUP_ID=org.eclipse.jetty
+PROJECT_ARTIFACT_ID=jetty-project
+MAIN_REPOSITORY=https://github.com/eclipse/jetty.project
 
-patch pom.xml pom.patch
-export MAVEN_OPTS="-Xmx1G"
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
-$MVN package $MAVEN_ARGS
-JETTY_VERSION=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-http-$JETTY_VERSION.jar $OUT/jetty-http.jar
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-server-$JETTY_VERSION.jar $OUT/jetty-server.jar
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-util-$JETTY_VERSION.jar $OUT/jetty-util.jar
-cp $SRC/jetty.project/jetty-home/target/jetty-home/lib/jetty-io-$JETTY_VERSION.jar $OUT/jetty-io.jar
-cp $SRC/jetty.project/jetty-runner/target/jetty-runner-$JETTY_VERSION.jar $OUT/jetty-runner.jar
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
 
-ALL_JARS="jetty-util.jar jetty-server.jar jetty-http.jar jetty-io.jar jetty-runner.jar"
 
-# The classpath at build-time includes the project jars in $OUT as well as the
-# Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+function set_project_version_in_fuzz_targets_dependency {
+  PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+  # set dependency project version in fuzz-targets
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-http -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-server -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-util -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-io -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-runner -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+}
 
-# All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+cd project-parent
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java'); do
-  fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/[$fuzzer_basename]*.class $OUT/
+# LOCAL_DEV env variable need to be set in local development env
+if [[ -v LOCAL_DEV ]]; then
 
-  # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/bash
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-  mem_settings='-Xmx1900m:-Xss900k'
+  # checkout latest project version
+  git -C $PROJECT pull || git clone $MAIN_REPOSITORY $PROJECT
+
+  set_project_version_in_fuzz_targets_dependency
+
+  #install
+  (cd $PROJECT && $MVN install $MAVEN_ARGS) 
+  $MVN -pl fuzz-targets install
+
 else
-  mem_settings='-Xmx2048m:-Xss1024k'
+  # Move seed corpus and dictionary.
+  # mv $SRC/{*.zip,*.dict} $OUT
+  
+  set_project_version_in_fuzz_targets_dependency
+
+  #install
+  (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
+  $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
+
+  # build classpath
+  $MVN -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
+  cp -r $SRC/project-parent/fuzz-targets/target/test-classes $OUT/
+  RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes"
+  RUNTIME_CLASSPATH_RELATIVE=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|.|g")
+
+  for fuzzer in $(find $SRC/project-parent/fuzz-targets -name '*Fuzzer.java'); do
+    fuzzer_basename=$(basename -s .java $fuzzer)
+
+    # Create an execution wrapper for every fuzztarget
+    echo "#!/bin/bash
+  # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
+  if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+    mem_settings='-Xmx1900m -Xss900k'
+  else
+    mem_settings='-Xmx2048m -Xss1024k'
+  fi
+  java -cp $RUNTIME_CLASSPATH_RELATIVE \
+  \$mem_settings \
+  com.code_intelligence.jazzer.Jazzer \
+  --target_class=com.example.$fuzzer_basename \
+  \$@" > $OUT/$fuzzer_basename
+    chmod u+x $OUT/$fuzzer_basename
+  done
+
 fi
-JAVA_HOME=\"\$this_dir/open-jdk/\" \
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
-\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---cp=$RUNTIME_CLASSPATH \
---target_class=$fuzzer_basename \
--rss_limit_mb=0 \
---jvm_args=\"\$mem_settings\" \
-\$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
-done

@@ -8,3 +8,8 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/firebase/firebase-ios-sdk.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

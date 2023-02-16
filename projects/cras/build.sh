@@ -26,7 +26,7 @@ export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 cargo build --release --target-dir=${WORK}/cargo_out
 cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
-cd ${SRC}/adhd/cras
+cd ${SRC}/adhd
 # Set bazel options.
 # See also:
 # https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests
@@ -67,5 +67,25 @@ mv ${WORK}/build/fuzzer/* ${OUT}/
 
 zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*
 cp "${SRC}/adhd/cras/src/fuzz/cras_hfp_slc.dict" "${OUT}/cras_hfp_slc.dict"
-# Add *.rs soft link for coverage build
-ln -s ${SRC}/adhd/cras/src/server/rust/src/* ${SRC}
+
+if [ "$SANITIZER" = "coverage" ]; then
+    echo "Collecting the repository source files for coverage tracking."
+
+    ln -s ${SRC}/adhd/cras/src/server/rust/src/* ${SRC}
+
+    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
+    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r RSYNC_FILTER_ARGS=(
+        "--include" "*.h"
+        "--include" "*.cc"
+        "--include" "*.hpp"
+        "--include" "*.cpp"
+        "--include" "*.c"
+        "--include" "*.inc"
+        "--include" "*/"
+        "--exclude" "*"
+    )
+    rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
+        "$(bazel info execution_root)/" \
+        "${COVERAGE_SOURCES}/"
+fi

@@ -19,6 +19,7 @@ paths that match local files. This is needed for html report creation.
 """
 import os
 import re
+import json
 import sys
 from coverage.cmdline import main as coverage_main
 from coverage.data import CoverageData
@@ -59,6 +60,40 @@ def translate_coverage(all_file_paths):
   covdata_post_translation.write()
 
 
+def convert_coveragepy_cov_to_summary_json(src, dst):
+  """
+  Converts a json file produced by coveragepy into a summary.json file
+  similary to llvm-cov output. `src` is the source coveragepy json file,
+  `dst` is the destination json file, which will be overwritten.
+  """
+  dst_dict = {'data': {'files': {}}}
+  with open(src, "r") as src_f:
+    src_json = json.loads(src_f.read())
+    if 'files' in src_json:
+      for elem in src_json.get('files'):
+        if 'summary' not in src_json['files'][elem]:
+          continue
+        src_dict = src_json['files'][elem]['summary']
+        count = src_dict['covered_lines'] + src_dict['missing_lines']
+        covered = src_dict['covered_lines']
+        notcovered = src_dict['missing_lines']
+        percent = src_dict['percent_covered']
+
+        dst_dict['data']['files'][elem] = {
+            'summary': {
+                'lines': {
+                    'count': count,
+                    'covered': covered,
+                    'notcovered': notcovered,
+                    'percent': percent
+                }
+            }
+        }
+
+  with open(dst, 'w') as dst_f:
+    dst_f.write(json.dumps(dst_dict))
+
+
 def main():
   """
   Main handler.
@@ -73,6 +108,10 @@ def main():
         all_file_paths.append(abs_file_path)
     print('Done with path walk')
     translate_coverage(all_file_paths)
+  elif sys.argv[1] == 'convert-to-summary-json':
+    src = sys.argv[2]
+    dst = sys.argv[3]
+    convert_coveragepy_cov_to_summary_json(src, dst)
   else:
     # Pass commands into coverage package
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])

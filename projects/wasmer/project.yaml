@@ -12,3 +12,5 @@ fuzzing_engines:
   - libfuzzer
 vendor_ccs:
   - maxnair.dev@gmail.com
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

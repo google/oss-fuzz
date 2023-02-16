@@ -8,3 +8,8 @@ auto_ccs:
   - "ajuaristi@gmx.es"
   - "rootkea@gmail.com"
 main_repo: 'https://gitlab.com/gnuwget/wget2.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

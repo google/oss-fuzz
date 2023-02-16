@@ -12,3 +12,8 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/uber/h3'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
