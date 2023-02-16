@@ -20,7 +20,7 @@
 PYTHONPATH=$FUZZBENCH_PATH python3 -B -u -c "from fuzzers.$FUZZING_ENGINE import fuzzer; fuzzer.build()"
 
 if [ "$FUZZING_ENGINE" = "coverage" ]; then
-  cd /out
+  cd $OUT
   mkdir -p filestore/oss-fuzz-on-demand/coverage-binaries
   # We expect an error regarding leading slashes. Just assume this step succeeds.
   # TODO(metzman): Fix this when I get a chance.

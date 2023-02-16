@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+################################################################################
 
-import sys
-import subprocess
-
-#Disable coverage for troubling crates.
-sys.argv[0] = "rustc"
-if "tokio_util" in sys.argv or "hyper" in sys.argv:
-    try:
-        sys.argv.remove("-Zinstrument-coverage")
-    except:
-        pass
-    print(sys.argv)
-subprocess.call(sys.argv)
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/dapr/dapr
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+WORKDIR $SRC/dapr
+COPY build.sh $SRC/

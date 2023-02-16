@@ -8,3 +8,8 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/seladb/PcapPlusPlus'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

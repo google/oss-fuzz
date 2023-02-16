@@ -15,3 +15,8 @@ auto_ccs:
   - "cfir@google.com"
   - "mruthven@google.com"
 main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/tpm2'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

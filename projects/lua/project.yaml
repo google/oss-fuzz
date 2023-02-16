@@ -6,6 +6,7 @@ auto_ccs:
   - "david@adalogics.com"
 main_repo: 'https://github.com/lua/lua'
 fuzzing_engines:
-  - afl
-  - honggfuzz
-  - libfuzzer
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

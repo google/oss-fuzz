@@ -14,6 +14,10 @@ auto_ccs:
   - "ticket.number.352@gmail.com"
   - "jordan@wolfssl.com"
   - "jordanjphillips1@gmail.com"
+  - "anthony@wolfssl.com"
+  - "anthony.hu.76@gmail.com"
+  - "andras@wolfssl.com"
+  - "iamfeketeandras@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

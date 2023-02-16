@@ -11,3 +11,8 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/akheron/jansson.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
