@@ -515,9 +515,7 @@ def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
   command = ['docker', 'run', '--rm', '--platform', platform]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
-
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
-
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
@@ -598,7 +596,6 @@ def _add_environment_args(parser):
 def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
   """Builds image."""
   image_name = project.name
-
   if is_base_image(image_name):
     image_project = 'oss-fuzz-base'
     docker_build_dir = os.path.join(OSS_FUZZ_DIR, 'infra', 'base-images',
@@ -616,26 +613,13 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
 
   build_args = []
   image_name = 'gcr.io/%s/%s' % (image_project, image_name)
-  if architecture == 'aarch64':
-    build_args += [
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm64',
-        '--progress',
-        'plain',
-        '--load',
-    ]
+
   if not cache:
     build_args.append('--no-cache')
 
   build_args += ['-t', image_name, '--file', dockerfile_path]
   build_args.append(docker_build_dir)
 
-  if architecture == 'aarch64':
-    command = ['docker'] + build_args
-    subprocess.check_call(command)
-    return True
   return docker_build(build_args)
 
 
@@ -688,7 +672,6 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
     command.append('-i')
 
   command.extend(run_args)
-
   logging.info('Running: %s.', _get_command_string(command))
   stdout = None
   if not print_output:
@@ -772,6 +755,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     child_dir='',
     build_project_image=True):
   """Builds fuzzers."""
+
   if build_project_image and not build_image_impl(project,
                                                   architecture=architecture):
     return False
@@ -1351,7 +1335,7 @@ def run_fuzzer(args):
   if not check_project_exists(args.project):
     return False
 
-  if not _check_fuzzer_exists(args.project, args.fuzzer_name):
+  if not _check_fuzzer_exists(args.project, args.fuzzer_name,args.architecture):
     return False
 
   env = [
@@ -1385,7 +1369,6 @@ def run_fuzzer(args):
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args)
-
   return docker_run(run_args, architecture=args.architecture)
 
 
