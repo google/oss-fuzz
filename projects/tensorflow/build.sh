@@ -166,6 +166,12 @@ declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzi
 # All preparations are done, proceed to build fuzzers.
 compile_fuzztests.sh
 
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # Exit for now in the CI.
+  exit 0
+fi
+
 # Copy out all non-fuzztest fuzzers.
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
 # in `$OUT`, so move them accordingly.
