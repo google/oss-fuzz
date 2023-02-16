@@ -30,7 +30,7 @@ extern "C" int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
   if (data[index++] != 'l')
     return 0;
 
-  if (size < 11) {
+  if (size < 13) {
     return 0;
   }
   if (data[index++] != 'l')
