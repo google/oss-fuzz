@@ -21,7 +21,7 @@ import graphviz
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   g = graphviz.Graph('G', filename='/tmp/process.gv', engine='sfdp')
-  for i in range(fdp.ConsumeIntInRange(1, 8196):
+  for i in range(fdp.ConsumeIntInRange(1, 8196)):
     g.edge(fdp.ConsumeUnicodeNoSurrogates(24),
            fdp.ConsumeUnicodeNoSurrogates(24))
   try:
