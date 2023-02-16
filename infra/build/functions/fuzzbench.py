@@ -27,6 +27,61 @@ import build_project
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 
+def get_engine_project_image(fuzzing_engine, project):
+  return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.image}'
+
+
+def get_env(project, build):
+  env = build_project.get_env(project.fuzzing_language, build)
+  env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
+  env.append(f'PROJECT={project.name}')
+  env.append('OSS_FUZZ_ON_DEMAND=1')
+  env.extend(['FUZZ_TARGET=vulnerable', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
+  return env
+
+def get_build_fuzzers_step(fuzzing_engine, project, env, build):
+  steps = []
+  engine_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
+                                        fuzzing_engine, 'builder.Dockerfile')
+  build_args = [
+      'build', '--build-arg', f'parent_image=gcr.io/oss-fuzz/{project.name}',
+      '--tag', get_engine_project_image(fuzzing_engine, project),
+      '--file', engine_dockerfile_path,
+      os.path.join(FUZZBENCH_PATH, 'fuzzers')
+  ]
+  engine_step = [
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': build_args,
+          'volumes': [{
+              'name': 'fuzzbench_path',
+              'path': FUZZBENCH_PATH,
+          }],
+      },
+  ]
+  steps.append(engine_step)
+  compile_project_step = {
+      'name':
+          get_engine_project_image(fuzzing_engine, project),
+      'env':
+          env,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+      'args': [
+          'bash',
+          '-c',
+          # Remove /out to make sure there are non instrumented binaries.
+          # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+          # Dockerfile). Container Builder overrides our workdir so we need
+          # to add this step to set it back.
+          (f'ls /fuzzbench && rm -r /out && cd /src && cd {project.workdir} && '
+           f'mkdir -p {build.out} && compile'),
+      ],
+  }
+  steps.append(compile_project_step)
+  return steps
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, image_project,
@@ -43,7 +98,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                 config.branch, config.parallel, config.upload)
 
   # TODO(metzman): Make this a command line argument
-  fuzzing_engine = 'libafl'
+  fuzzing_engine = 'mopt'
 
   steps = [
       {
@@ -76,54 +131,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                              project.fuzzing_language,
                                              config=config)
 
-  engine_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
-                                        fuzzing_engine, 'builder.Dockerfile')
-  build_args = [
-      'build', '--build-arg', f'parent_image=gcr.io/oss-fuzz/{project.name}',
-      '--tag', project.image, '--file', engine_dockerfile_path,
-      os.path.join(FUZZBENCH_PATH, 'fuzzers')
-  ]
-  engine_step = [
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': build_args,
-          'volumes': [{
-              'name': 'fuzzbench_path',
-              'path': FUZZBENCH_PATH,
-          }],
-      },
-  ]
-  steps += engine_step
+
   build = build_project.Build(fuzzing_engine, 'address', 'x86_64')
-  env = build_project.get_env(project.fuzzing_language, build)
-  env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
-  env.append(f'PROJECT={project.name}')
-  env.append('OSS_FUZZ_ON_DEMAND=1')
-  compile_project_step = {
-      'name':
-          project.image,
-      'env':
-          env,
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
-      'args': [
-          'bash',
-          '-c',
-          # Remove /out to make sure there are non instrumented binaries.
-          # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-          # Dockerfile). Container Builder overrides our workdir so we need
-          # to add this step to set it back.
-          (f'ls /fuzzbench && rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile'),
-      ],
-  }
-  steps.append(compile_project_step)
-  env.extend(['FUZZ_TARGET=iccprofile_atf', f'BENCHMARK={project.name}'])
+  env = get_env(project, build)
+
+  steps += get_build_fuzzers_step(fuzzing_engine, project, env, build)
   run_fuzzer_step = {
       'name':
-          project.image,
+          get_engine_project_image(fuzzing_engine, project),
       'env':
           env,
       'volumes': [{
@@ -139,6 +154,23 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   }
   steps.append(run_fuzzer_step)
 
+  build = build_project.Build('coverage', 'address', 'x86_64')
+  env = get_env(project, build)
+  env.append(f'FUZZER={fuzzing_engine}')
+  steps += get_build_fuzzers_step('coverage', project, env, build)
+  steps += [
+      {
+          'args': [
+            'fuzzbench_measure'
+          ],
+          'env': env,
+          'name': get_engine_project_image('coverage', project),
+          'volumes': [{
+              'name': 'fuzzbench_path',
+              'path': FUZZBENCH_PATH,
+          }],
+      }
+  ]
   return steps
 
 
