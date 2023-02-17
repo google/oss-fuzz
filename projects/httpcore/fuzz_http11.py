@@ -21,8 +21,6 @@ from httpcore.backends.mock import MockStream
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  val_1 = fdp.ConsumeUnicodeNoSurrogates(24)
-
   stream = MockStream(fdp.ConsumeBytes(2048))
   origin = httpcore.Origin(fdp.ConsumeBytes(24), fdp.ConsumeBytes(24), 443)
   try:
