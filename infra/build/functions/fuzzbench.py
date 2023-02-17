@@ -29,13 +29,16 @@ FUZZBENCH_PATH = '/fuzzbench'
 
 
 def get_engine_project_image(fuzzing_engine, project):
+  """Returns the name of an image used to build |project| with
+  |fuzzing_engine|."""
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
 
 def get_env(project, build):
+  """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
-  env.append(f'FORCE_LOCAL=1')
+  env.append('FORCE_LOCAL=1')
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
   env.append('OUT=/workspace/out')
@@ -47,6 +50,8 @@ def get_env(project, build):
 
 
 def get_build_fuzzers_step(fuzzing_engine, project, env, build):
+  """Returns the build_fuzzers step to build |project| with |fuzzing_engine|,
+  for fuzzbench/oss-fuzz-on-demand."""
   steps = []
   engine_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
                                         fuzzing_engine, 'builder.Dockerfile')
@@ -70,9 +75,9 @@ def get_build_fuzzers_step(fuzzing_engine, project, env, build):
   steps.append(engine_step)
   compile_project_step = {
       'name':
-      get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image(fuzzing_engine, project),
       'env':
-      env,
+          env,
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
@@ -115,8 +120,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
               'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
               FUZZBENCH_PATH
           ],
-          'name':
-          'gcr.io/cloud-builders/git',
+          'name': 'gcr.io/cloud-builders/git',
           'volumes': [{
               'name': 'fuzzbench_path',
               'path': FUZZBENCH_PATH,
@@ -128,7 +132,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       },
       {  # TODO(metzman): Don't overwrite base-builder
           'name':
-          'gcr.io/cloud-builders/docker',
+              'gcr.io/cloud-builders/docker',
           'args': [
               'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
               'gcr.io/oss-fuzz-base/base-builder'
@@ -147,9 +151,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   steps += get_build_fuzzers_step(fuzzing_engine, project, env, build)
   run_fuzzer_step = {
       'name':
-      get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image(fuzzing_engine, project),
       'env':
-      env,
+          env,
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
