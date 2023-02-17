@@ -39,7 +39,6 @@ then
   BUILD_ARGS="$BUILD_ARGS ${FUZZTEST_EXTRA_ARGS}"
 fi
 
-
 # Trigger setup_configs rule of fuzztest as it generates the necessary
 # configuration file based on OSS-Fuzz environment variables.
 bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
