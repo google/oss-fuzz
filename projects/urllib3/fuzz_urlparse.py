@@ -23,7 +23,12 @@ def TestOneInput(data):
     original = fdp.ConsumeUnicode(sys.maxsize)
 
     try:
-        urllib3.util.parse_url(original)
+        response = urllib3.util.parse_url(original)
+        response.hostname
+        response.request_uri
+        response.authority
+        response.netloc
+        response.url
     except urllib3.exceptions.LocationParseError:
         None
     return
