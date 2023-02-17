@@ -25,14 +25,25 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = "0.3"
-#zip = { path = ".." , version = "0.5"}
+libfuzzer-sys = "0.4.6"
 zip = { path = ".." }
+arbitrary = { version = "1", features = ["derive"] }
+
+# Prevent this from interfering with workspaces
+[workspace]
 
 [[bin]]
 name = "from_zip"
 path = "fuzz_targets/fuzz_zip.rs"
 
-# Prevent this from interfering with workspaces
-[workspace]
+[[bin]]
+name = "roundtrip"
+path = "fuzz_targets/roundtrip.rs"
+test = false
+doc = false
 
+[[bin]]
+name = "structured_fuzz_reader"
+path = "fuzz_targets/structured_fuzz_reader.rs"
+test = false
+doc = false
