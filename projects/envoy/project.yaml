@@ -25,7 +25,6 @@ coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
 main_repo: 'https://github.com/envoyproxy/envoy.git'
 sanitizers:
  - address
- - memory
  - undefined
 fuzzing_engines:
   - libfuzzer
