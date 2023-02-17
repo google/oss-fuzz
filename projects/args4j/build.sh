@@ -16,19 +16,14 @@
 ################################################################################
 
 
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-mv $SRC/*.dict $OUT
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+-Dexpression=project.version -q -DforceStdout)
 
-git apply $SRC/build.patch --whitespace=fix --reject
+$MVN package -pl -args4j-tools -pl -args4j-maven-plugin -pl -args4j-maven-plugin-example
 
-./gradlew clean shadowJar -x :jxls:javadoc -x :jxls-poi:test
-
-cp "../jxls/jxls/build/libs/jxls-$CURRENT_VERSION-all.jar" $OUT/jxls.jar
-cp "../jxls/jxls-poi/build/libs/jxls-poi-$CURRENT_VERSION-all.jar" $OUT/jxls-poi.jar
+cp "../args4j/args4j/target/args4j-$CURRENT_VERSION.jar" $OUT/
 
 ALL_JARS=$(find $OUT/ -name *.jar ! -name jazzer*.jar -printf "%f ")
-
-echo $ALL_JARS
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -40,7 +35,6 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  #cp $SRC/$fuzzer_basename.class $OUT/
   cp $SRC/*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
@@ -59,4 +53,4 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
-done
+done 
