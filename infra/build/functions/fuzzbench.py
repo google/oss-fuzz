@@ -28,14 +28,16 @@ FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 
 def get_engine_project_image(fuzzing_engine, project):
-  return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.image}'
+  return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
 
 def get_env(project, build):
   env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
+  env.append(f'FORCE_LOCAL=1')
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
+  env.append('OUT=/workspace/out')
   env.extend(['FUZZ_TARGET=vulnerable', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
   return env
 
@@ -98,7 +100,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                 config.branch, config.parallel, config.upload)
 
   # TODO(metzman): Make this a command line argument
-  fuzzing_engine = 'mopt'
+  fuzzing_engine = 'libfuzzer'
 
   steps = [
       {
@@ -149,7 +151,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           'bash',
           '-c',
           (f'ls /fuzzbench && cd {build.out} && ls {build.out} && '
-           f'fuzzbench_run_fuzzer'),
+           f'fuzzbench_run_fuzzer),
       ],
   }
   steps.append(run_fuzzer_step)
