@@ -1,0 +1,9 @@
+homepage: "https://github.com/algesten/ureq"
+language: rust
+main_repo: "https://github.com/algesten/ureq"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - maxnair.dev@gmail.com
