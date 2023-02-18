@@ -18,7 +18,6 @@ import toolz
 from operator import add
 
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   val_1 = fdp.ConsumeUnicodeNoSurrogates(24)
