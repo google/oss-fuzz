@@ -20,7 +20,7 @@
   Usage:
     python infra/helper.py build_image libical
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory libical
-    python infra/helper.py run_fuzzer libical libical_fuzzer
+    python infra/helper.py run_fuzzer libical libical_extended_fuzzer
 */
 
 #include <stdlib.h>
