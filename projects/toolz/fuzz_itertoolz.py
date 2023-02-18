@@ -41,46 +41,43 @@ def TestOneInput(data):
     str_list4.append((fdp.ConsumeUnicodeNoSurrogates(12),
                       fdp.ConsumeUnicodeNoSurrogates(12)))
 
-  try:
-    list(
-        toolz.itertoolz.merge_sorted(fuzz_int_list_1, fuzz_int_list_2,
-                                     fuzz_int_list_3))
-    list(
-        toolz.itertoolz.merge_sorted(fuzz_int_list_1,
-                                     fuzz_int_list_2,
-                                     fuzz_int_list_3,
-                                     key=lambda x: x + 2))
-    list(
-        toolz.itertoolz.join(toolz.itertoolz.first, fuzz_int_list_4,
-                             toolz.itertoolz.second, fuzz_int_list_5))
+  list(
+      toolz.itertoolz.merge_sorted(fuzz_int_list_1, fuzz_int_list_2,
+                                   fuzz_int_list_3))
+  list(
+      toolz.itertoolz.merge_sorted(fuzz_int_list_1,
+                                   fuzz_int_list_2,
+                                   fuzz_int_list_3,
+                                   key=lambda x: x + 2))
+  list(
+      toolz.itertoolz.join(toolz.itertoolz.first, fuzz_int_list_4,
+                           toolz.itertoolz.second, fuzz_int_list_5))
 
-    list(
-        toolz.itertoolz.join(toolz.itertoolz.second, str_list3,
-                             toolz.itertoolz.first, str_list4))
-    list(
-        toolz.itertoolz.join(toolz.itertoolz.second,
-                             str_list3,
-                             toolz.itertoolz.first,
-                             str_list4,
-                             left_default=None,
-                             right_default=None))
-    list(
-        toolz.itertoolz.join(lambda x: x,
-                             str_list3,
-                             lambda x: x,
-                             str_list4,
-                             left_default=None))
-    list(
-        toolz.itertoolz.join(lambda x: x,
-                             str_list3,
-                             lambda x: x,
-                             str_list4,
-                             right_default=None))
-    list(toolz.itertoolz.join(lambda x: x, str_list3, lambda x: x, str_list4))
-    list(toolz.itertoolz.diff(fuzz_int_list_2, fuzz_int_list_3))
-    list(toolz.itertoolz.partition_all(3, fuzz_int_list_3))
-  except ():
-    pass
+  list(
+      toolz.itertoolz.join(toolz.itertoolz.second, str_list3,
+                           toolz.itertoolz.first, str_list4))
+  list(
+      toolz.itertoolz.join(toolz.itertoolz.second,
+                           str_list3,
+                           toolz.itertoolz.first,
+                           str_list4,
+                           left_default=None,
+                           right_default=None))
+  list(
+      toolz.itertoolz.join(lambda x: x,
+                           str_list3,
+                           lambda x: x,
+                           str_list4,
+                           left_default=None))
+  list(
+      toolz.itertoolz.join(lambda x: x,
+                           str_list3,
+                           lambda x: x,
+                           str_list4,
+                           right_default=None))
+  list(toolz.itertoolz.join(lambda x: x, str_list3, lambda x: x, str_list4))
+  list(toolz.itertoolz.diff(fuzz_int_list_2, fuzz_int_list_3))
+  list(toolz.itertoolz.partition_all(3, fuzz_int_list_3))
 
   try:
     toolz.itertoolz.get(fdp.ConsumeIntInRange(1, 1000000), fuzz_int_list_3)
