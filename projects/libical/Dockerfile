@@ -18,8 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 https://github.com/libical/libical.git
 COPY build.sh $SRC
-COPY *.cc $SRC
+COPY *.cc $SRC/
 WORKDIR libical
-
-
-
