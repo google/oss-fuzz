@@ -80,7 +80,7 @@ fi
 
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
-            --without-bzlib --without-lzma --without-zstd \
+            --disable-demangler --without-bzlib --without-lzma --without-zstd \
 	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS"; then
     cat config.log
     exit 1
