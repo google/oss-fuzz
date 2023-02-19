@@ -65,6 +65,30 @@
         <artifactId>junit-platform-launcher</artifactId>
         <version>1.9.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.toolchain</groupId>
+            <artifactId>jetty-test-helper</artifactId>
+            <version>6.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+            <version>Fuzzing-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-common</artifactId>
+            <version>Fuzzing-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-server</artifactId>
+            <version>Fuzzing-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
 
     </dependencies>
