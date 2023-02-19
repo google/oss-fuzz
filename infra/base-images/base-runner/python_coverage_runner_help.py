@@ -25,6 +25,23 @@ from coverage.cmdline import main as coverage_main
 from coverage.data import CoverageData
 
 
+def should_exclude_file(filepath):
+  """Returns whether the path should be excluded from the coverage report."""
+  # Skip all atheris code
+  if "atheris" in filepath:
+    return True
+
+  # Filter out all standard python libraries
+  if '/usr/local/lib/python' in filepath and 'site-packages' not in filepath:
+    return True
+
+  # Avoid all PyInstaller modules.
+  if 'PyInstaller' in filepath:
+    return True
+
+  return False
+
+
 def translate_lines(cov_data, new_cov_data, all_file_paths):
   """
   Translate lines in a .coverage file created by coverage.py such that
@@ -40,6 +57,8 @@ def translate_lines(cov_data, new_cov_data, all_file_paths):
 
     # Check if this file exists in our file paths:
     for local_file_path in all_file_paths:
+      if should_exclude_file(local_file_path):
+        continue
       if local_file_path.endswith(stripped_py_file_path):
         print('Found matching: %s' % (local_file_path))
         new_cov_data.add_lines(
