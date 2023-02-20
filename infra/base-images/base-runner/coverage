@@ -226,7 +226,18 @@ function run_java_fuzz_target {
 
 function run_javascript_fuzz_target {
   local target=$1
-  local corpus="$CORPUS_DIR/${target}"
+  local corpus_real="$CORPUS_DIR/${target}"
+
+  # -merge=1 requires an output directory, create a new, empty dir for that.
+  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
+  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # IstanbulJS currently does not work when the tested program creates
+  # subprocesses. For this reason, we first minimize the corpus removing
+  # any crashing inputs so that we can report source-based code coverage
+  # with a single sweep over the minimized corpus
+  local merge_args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  timeout $TIMEOUT $OUT/$target $merge_args &> $LOGS_DIR/$target.log
 
   # nyc saves the coverage reports in a directory with the default name "coverage"
   local coverage_dir="$DUMPS_DIR/coverage_dir_for_${target}"
@@ -235,7 +246,7 @@ function run_javascript_fuzz_target {
   local nyc_json_coverage_file="$coverage_dir/coverage-final.json"
   local nyc_json_summary_file="$coverage_dir/coverage-summary.json"
 
-  local args="-runs=0 $corpus"
+  local args="-runs=0 $corpus_dummy"
   local jazzerjs_args="--coverage --coverageDirectory $coverage_dir --coverageReporters json --coverageReporters json-summary"
 
   JAZZERJS_EXTRA_ARGS=$jazzerjs_args $OUT/$target $args &> $LOGS_DIR/$target.log
