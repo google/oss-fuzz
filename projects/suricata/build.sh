@@ -16,7 +16,7 @@
 ################################################################################
 
 # build dependencies statically
-if [ "$SANITIZER" = "memory" ]
+if [ "$SANITIZER" = "memory" ] || [ "$ARCHITECTURE" = "aarch64" ]
 then
     (
     cd zlib
