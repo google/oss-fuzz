@@ -104,33 +104,29 @@ fi
 # and not for other binaries such as protoc
 sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
 
-# Compile fuzztest fuzzers
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz+//tensorflow/security/fuzzing/cc:status_fuzz+//tensorflow/security/fuzzing/cc:bfloat16_fuzz+//tensorflow/security/fuzzing/cc:cleanpath_fuzz"
+# Prepare flags for compiling fuzzers.
 export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic"
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
-  export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz"
 else
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.5 --strip=never"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
 fi
 
-# Do not sync bazel-out to /out/ for coverage builds, as this is done
-# at the end of this script instead.
+# Do not use compile_fuzztests.sh to synchronize coverage folders as we use
+# synchronize_coverage_directories from this script instead.
 export FUZZTEST_DO_SYNC="no"
-compile_fuzztests.sh
 
-# Synchronize coverage folders. We have to do this here as well as later, because
-# the fuzztest builds have certain folders that are not existing after the next
-# bazel build command, which causes missing files to abort the coverage generation.
-synchronize_coverage_directories
+# Set fuzz targets
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz+//tensorflow/security/fuzzing/cc:status_fuzz+//tensorflow/security/fuzzing/cc:bfloat16_fuzz+//tensorflow/security/fuzzing/cc:cleanpath_fuzz"
+export FUZZTEST_EXTRA_TARGETS="//tensorflow/core/kernels/fuzzing:all"
 
-# In the CI we bail out after having compiled the first set of fuzzers. This is
-# to save disk and time.
+# Overwrite fuzz targets in CI.
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-  echo "In CI, exiting"
-  exit 0
+  echo "In CI overwriting targets to only build a single target."
+  export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz"
+  export FUZZTEST_EXTRA_TARGETS=""
 fi
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
@@ -166,23 +162,17 @@ for fuzzer in ${FUZZERS}; do
 done
 
 declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
-TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
 
-# The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
-# we limit the resources it uses. The RAM will be exhausted. Therefore,
-# limit the resources to ensure the build passes.
-RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
+# All preparations are done, proceed to build fuzzers.
+compile_fuzztests.sh
 
-bazel build \
-  --spawn_strategy=sandboxed \
-  ${RESOURCE_LIMITATIONS} \
-  --config=monolithic \
-  --dynamic_mode=off \
-  ${EXTRA_FLAGS} \
-  --verbose_failures \
-  --define=framework_shared_object=false \
-  -- $TARGETS_TO_BUILD
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # Exit for now in the CI.
+  exit 0
+fi
 
+# Copy out all non-fuzztest fuzzers.
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
 # in `$OUT`, so move them accordingly.
 for bazel_target in ${FUZZERS}; do
