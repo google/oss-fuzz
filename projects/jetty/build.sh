@@ -99,4 +99,8 @@ else
   \$@" > $OUT/WebAppDefaultServletFuzzer
   chmod u+x $OUT/WebAppDefaultServletFuzzer
 
+  # add keystore to location required by SslConnectionFuzzer
+  mkdir -p /out/src/test/resources
+  cp $SRC/project-parent/jetty/jetty-io/src/test/resources/keystore.p12 /out/src/test/resources/
+
 fi
