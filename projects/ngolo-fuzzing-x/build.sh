@@ -25,7 +25,7 @@ export PATH=$PATH:$SRC/goroot/bin/
 
 compile_package () {
     pkg=$1
-    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x/'`
+    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x'_$repo'/'`
     args=`cat $SRC/ngolo-fuzzing/x/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
     $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
@@ -44,11 +44,8 @@ compile_package () {
     if [ "$SANITIZER" = "coverage" ]
     then
         (
-        if [[ `echo $pkg | grep runtime | wc -l` == '1' ]]; then
-            continue
-        fi
         cd fuzz_ng_$pkg_flat
-        GO_COV_ADD_PKG="$pkg" compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
         )
     else
         (
@@ -88,7 +85,7 @@ find . -type d | while read pkg; do
     if [[ `echo $pkg | grep testdata | wc -l` == '1' ]]; then
         continue
     fi
-    if compile_package $pkg; then
+    if compile_package $pkg $repo; then
         echo $pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
