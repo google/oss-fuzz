@@ -24,8 +24,8 @@ import datetime
 import errno
 import logging
 import os
-import pipes
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -542,7 +542,7 @@ def _get_absolute_path(path):
 
 def _get_command_string(command):
   """Returns a shell escaped command string."""
-  return ' '.join(pipes.quote(part) for part in command)
+  return ' '.join(shlex.quote(part) for part in command)
 
 
 def _get_project_build_subdir(project, subdir_name):
