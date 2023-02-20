@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
             <artifactId>http2-server</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>9.4.48.v20220622</version>
             <scope>test</scope>
         </dependency>
 
