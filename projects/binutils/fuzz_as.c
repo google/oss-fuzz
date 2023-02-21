@@ -31,31 +31,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   reg_section = NULL;
 
   const char *fakeArgv[3];
+  int fakeArgc = 3;
   fakeArgv[0] = "fuzz_as";
   fakeArgv[1] = filename; // Assemble our fake source file.
   fakeArgv[2] = NULL;
 
+  gas_early_init (&fakeArgc, &fakeArgv);
+
   out_file_name = "/tmp/tmp-out";
 
-  // as initialition. This follows the flow of ordinary main function
-  hex_init ();
-  if (bfd_init () != BFD_INIT_MAGIC)
-    abort ();
-  obstack_begin (&notes, chunksize);
-  symbol_begin ();
-  frag_init ();
-  subsegs_begin ();
-  read_begin ();
-  input_scrub_begin ();
-  expr_begin ();
-  macro_init (flag_macro_alternate, flag_mri, 0, macro_expr);
-
-  output_file_create (out_file_name);
-  dot_symbol_init ();
-  itbl_init ();
-  dwarf2_init ();
-  local_symbol_make (".gasversion.", absolute_section,
-		     &predefined_address_frag, BFD_VERSION / 10000UL);
+  gas_init ();
 
   // Main fuzzer target. Assemble our random data.
   perform_an_assembly_pass (2, (char**)fakeArgv);
