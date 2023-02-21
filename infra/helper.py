@@ -1395,10 +1395,14 @@ def fuzzbench_run_fuzzer(args):
     return False
 
   env = [
-      'FUZZING_ENGINE=' + args.engine, 'SANITIZER=' + args.sanitizer,
-      'RUN_FUZZER_MODE=interactive', 'HELPER=True',
-      f'FUZZ_TARGET={args.fuzzer_name}', f'BENCHMARK={args.project.name}',
-      'TRIAL_ID=1', 'EXPERIMENT_TYPE=bug',
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'RUN_FUZZER_MODE=interactive',
+      'HELPER=True',
+      f'FUZZ_TARGET={args.fuzzer_name}',
+      f'BENCHMARK={args.project.name}',
+      'TRIAL_ID=1',
+      'EXPERIMENT_TYPE=bug',
   ]
 
   if args.e:
@@ -1456,8 +1460,7 @@ def fuzzbench_measure(args):
     run_args = [
         '-v', f'{args.project.out}:/out', '-v',
         f'{fuzzbench_path}:{fuzzbench_path}', '-e',
-        f'FUZZBENCH_PATH={fuzzbench_path}', '-e',
-        'EXPERIMENT_TYPE=bug', '-e',
+        f'FUZZBENCH_PATH={fuzzbench_path}', '-e', 'EXPERIMENT_TYPE=bug', '-e',
         f'FUZZ_TARGET={args.fuzz_target_name}', '-e',
         f'FUZZER={args.engine_name}', '-e', f'BENCHMARK={args.project.name}',
         f'gcr.io/oss-fuzz/{args.project.name}', 'fuzzbench_measure'
