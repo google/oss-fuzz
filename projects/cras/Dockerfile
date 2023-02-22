@@ -37,6 +37,7 @@ RUN apt-get -y update && \
       libsndfile-dev \
       libspeexdsp-dev \
       libsystemd-dev \
+      libclang1 \
       libtool \
       libudev-dev \
       wget \
