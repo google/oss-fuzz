@@ -70,6 +70,7 @@ compile_package () {
         pushd $SRC/x/$repo/$pkg/
         go mod tidy
         go test -mod=readonly
+        git checkout -- . && git clean -f
         popd
         cd fuzz_ng_$pkg_flat
         zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
