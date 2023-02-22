@@ -58,8 +58,8 @@ def TestOneInput(data):
 
   try:
     validators.length(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                      fdp.ConsumeIntInRange(1, 100),
-                      fdp.ConsumeIntInRange(1, 100))
+                      min_val = fdp.ConsumeIntInRange(1, 100),
+                      max_val = fdp.ConsumeIntInRange(1, 100))
   except validators.ValidationFailure:
     pass
 
