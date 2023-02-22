@@ -31,7 +31,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   reg_section = NULL;
 
   const char *fakeArgv[3];
-  int fakeArgc = 3;
+  int fakeArgc = 2;
   fakeArgv[0] = "fuzz_as";
   fakeArgv[1] = filename; // Assemble our fake source file.
   fakeArgv[2] = NULL;
