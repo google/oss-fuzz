@@ -17,6 +17,9 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
+# Rename all fuzzer rules to oss-fuzz rules.
+find $SRC/tensorflow/tensorflow/security/fuzzing -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
+
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
 sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelrc
@@ -118,7 +121,7 @@ fi
 export FUZZTEST_DO_SYNC="no"
 
 # Set fuzz targets
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz+//tensorflow/security/fuzzing/cc:status_fuzz+//tensorflow/security/fuzzing/cc:bfloat16_fuzz+//tensorflow/security/fuzzing/cc:cleanpath_fuzz"
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
 export FUZZTEST_EXTRA_TARGETS="//tensorflow/core/kernels/fuzzing:all"
 
 # Overwrite fuzz targets in CI.
@@ -126,7 +129,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]
 then
   echo "In CI overwriting targets to only build a single target."
   export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz"
-  export FUZZTEST_EXTRA_TARGETS=""
+  unset FUZZTEST_EXTRA_TARGETS
 fi
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
