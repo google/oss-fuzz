@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
-RUN git clone --depth 1 --single-branch --branch support-oss-fuzz https://github.com/manunio/mongo-go-driver mongo-go-driver
+RUN git clone --depth 1 https://github.com/mongodb/mongo-go-driver mongo-go-driver
 
 WORKDIR mongo-go-driver
 
