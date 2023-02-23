@@ -19,3 +19,6 @@ apt-get update && apt-get install -y curl
 
 curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
 apt-get update && apt-get install -y nodejs
+
+# Install latest versions of nyc for source-based coverage reporting
+npm install --global nyc
