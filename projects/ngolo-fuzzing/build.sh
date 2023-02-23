@@ -66,7 +66,8 @@ compile_package () {
         # corpus
         export go_package=`echo $pkg_flat | rev | cut -d_ -f1 | rev`
         cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go $SRC/goroot/src/$pkg/
-        goimports -w fuzz_ng_$pkg_flat/*.go
+        goimports -w fuzz_ng_$pkg_flat/copy/*.go
+        cp fuzz_ng_$pkg_flat/copy/*.go $SRC/goroot/src/$pkg/
         cp fuzz_ng_$pkg_flat/*.go $SRC/goroot/src/$pkg/
         sed -i -e 's/^package .*/package '$go_package'/' $SRC/goroot/src/$pkg/*.go
         export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
