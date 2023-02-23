@@ -109,7 +109,7 @@ if [ "$SANITIZER" = undefined ]; then
     cp CryptofuzzJavaHarness.class $OUT/
 fi
 
-if [[ $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *-m32* && "$SANITIZER" = "coverage" ]]
 then
     cd $SRC/
     tar Jxf zig-latest.tar.xz
