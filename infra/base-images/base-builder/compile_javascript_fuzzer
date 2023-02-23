@@ -34,7 +34,7 @@ fuzzer_basename=$(basename -s .js $fuzz_target)
 # Create an execution wrapper that executes Jazzer.js with the correct arguments.
 echo "#!/bin/bash
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized as a fuzz target for 'check_build'.
-this_dir=\$(dirname \"\$0\")
-\$this_dir/$project/node_modules/@jazzer.js/core/dist/cli.js $project/$fuzz_target $jazzerjs_args \$JAZZERJS_EXTRA_ARGS -- \$@" > $OUT/$fuzzer_basename
+project_dir=\$(dirname \"\$0\")/$project
+\$project_dir/node_modules/@jazzer.js/core/dist/cli.js \$project_dir/$fuzz_target $jazzerjs_args \$JAZZERJS_EXTRA_ARGS -- \$@" > $OUT/$fuzzer_basename
 
 chmod +x $OUT/$fuzzer_basename
