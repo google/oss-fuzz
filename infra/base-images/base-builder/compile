@@ -112,7 +112,7 @@ fi
 # use RUSTFLAGS.
 # FIXME: Support code coverage once support is in.
 # See https://github.com/rust-lang/rust/issues/34701.
-if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCHITECTURE" != 'i386' ]; then
+if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "none" ] && [ "$ARCHITECTURE" != 'i386' ]; then
   export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
 else
   export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"

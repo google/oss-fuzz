@@ -31,6 +31,8 @@ fi
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 
 DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
+FUZZERS_COVERAGE_DUMPS_DIR="$DUMPS_DIR/fuzzers_coverage"
+MERGED_COVERAGE_DIR="$COVERAGE_OUTPUT_DIR/merged_coverage"
 FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
 TEXTCOV_REPORT_DIR="$COVERAGE_OUTPUT_DIR/textcov_reports"
 LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
@@ -40,7 +42,7 @@ PLATFORM=linux
 REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/$PLATFORM"
 
 for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR $TEXTCOV_REPORT_DIR\
-                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR; do
+                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR $FUZZERS_COVERAGE_DUMPS_DIR $MERGED_COVERAGE_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
@@ -222,6 +224,51 @@ function run_java_fuzz_target {
   jacoco_report_converter.py $xml_report $summary_file
 }
 
+function run_javascript_fuzz_target {
+  local target=$1
+  local corpus_real="$CORPUS_DIR/${target}"
+
+  # -merge=1 requires an output directory, create a new, empty dir for that.
+  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
+  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # IstanbulJS currently does not work when the tested program creates
+  # subprocesses. For this reason, we first minimize the corpus removing
+  # any crashing inputs so that we can report source-based code coverage
+  # with a single sweep over the minimized corpus
+  local merge_args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  timeout $TIMEOUT $OUT/$target $merge_args &> $LOGS_DIR/$target.log
+
+  # nyc saves the coverage reports in a directory with the default name "coverage"
+  local coverage_dir="$DUMPS_DIR/coverage_dir_for_${target}"
+  rm -rf $coverage_dir && mkdir -p $coverage_dir
+
+  local nyc_json_coverage_file="$coverage_dir/coverage-final.json"
+  local nyc_json_summary_file="$coverage_dir/coverage-summary.json"
+
+  local args="-runs=0 $corpus_dummy"
+  local jazzerjs_args="--coverage --coverageDirectory $coverage_dir --coverageReporters json --coverageReporters json-summary"
+
+  JAZZERJS_EXTRA_ARGS=$jazzerjs_args $OUT/$target $args &> $LOGS_DIR/$target.log
+
+  if (( $? != 0 )); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+
+  if [ ! -s $nyc_json_coverage_file ]; then
+    # Skip fuzz targets that failed to produce coverage-final.json file.
+    echo "$target failed to produce coverage-final.json file."
+    return 0
+  fi
+
+  cp $nyc_json_coverage_file $FUZZERS_COVERAGE_DUMPS_DIR/$target.json
+
+  local summary_file="$FUZZER_STATS_DIR/$target.json"
+
+  nyc_report_converter.py $nyc_json_summary_file $summary_file
+}
+
 function generate_html {
   local profdata=$1
   local shared_libraries=$2
@@ -265,6 +312,14 @@ for fuzz_target in $FUZZ_TARGETS; do
 
     echo "Running $fuzz_target"
     run_java_fuzz_target $fuzz_target &
+  elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+
+    echo "Running $fuzz_target"
+    run_javascript_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
@@ -386,6 +441,22 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
+
+  set +e
+elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
+
+  # From this point on the script does not tolerate any errors.
+  set -e
+
+  json_report=$MERGED_COVERAGE_DIR/coverage.json
+  nyc merge $FUZZERS_COVERAGE_DUMPS_DIR $json_report
+
+  nyc report -t $MERGED_COVERAGE_DIR --report-dir $REPORT_PLATFORM_DIR --reporter=html --reporter=json-summary
+
+  nyc_json_summary_file=$REPORT_PLATFORM_DIR/coverage-summary.json
+
+  # Write llvm-cov summary file.
+  nyc_report_converter.py $nyc_json_summary_file $SUMMARY_FILE
 
   set +e
 else
