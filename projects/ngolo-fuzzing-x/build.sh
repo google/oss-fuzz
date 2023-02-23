@@ -103,10 +103,10 @@ find . -type d | while read pkg; do
         continue
     fi
     if compile_package $pkg $repo; then
-        echo $pkg >> $SRC/ok.txt
+        echo $repo/$pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
-        echo $pkg >> $SRC/ko.txt
+        echo $repo/$pkg >> $SRC/ko.txt
     fi
 
 done
