@@ -128,19 +128,13 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   // Cleanup
   free (strip_specific_buffer);
-  strip_specific_buffer = NULL;
   free (strip_unneeded_buffer);
-  strip_unneeded_buffer = NULL;
   free (keep_specific_buffer);
-  keep_specific_buffer = NULL;
   free (localize_specific_buffer);
-  localize_specific_buffer = NULL;
   free (globalize_specific_buffer);
-  globalize_specific_buffer = NULL;
   free (keepglobal_specific_buffer);
-  keepglobal_specific_buffer = NULL;
   free (weaken_specific_buffer);
-  weaken_specific_buffer = NULL;
+  delete_symbol_htabs ();
 
   unlink(filename);
   remove("/tmp/random.out");
