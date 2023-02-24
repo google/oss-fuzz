@@ -18,7 +18,7 @@
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
 # Rename all fuzzer rules to oss-fuzz rules.
-find $SRC/tensorflow/tensorflow/security/fuzzing -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
+find $SRC/tensorflow/tensorflow/ -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
 
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
@@ -121,7 +121,7 @@ fi
 export FUZZTEST_DO_SYNC="no"
 
 # Set fuzz targets
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/..."
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/...+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/..."
 export FUZZTEST_EXTRA_TARGETS="//tensorflow/core/kernels/fuzzing:all"
 
 # Overwrite fuzz targets in CI.
