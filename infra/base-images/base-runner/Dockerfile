@@ -91,6 +91,7 @@ COPY bad_build_check \
     coverage_helper \
     download_corpus \
     jacoco_report_converter.py \
+    nyc_report_converter.py \
     rcfilt \
     reproduce \
     run_fuzzer \
