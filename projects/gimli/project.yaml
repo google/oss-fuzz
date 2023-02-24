@@ -1,6 +1,6 @@
 homepage: "https://github.com/gimli-rs/gimli"
 language: rust
-primary_contact: ""
+primary_contact: "philipjcraig@gmail.com"
 main_repo: "https://github.com/gimli-rs/gimli"
 sanitizers:
   - address
