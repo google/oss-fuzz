@@ -1,0 +1,10 @@
+homepage: https://github.com/jborean93/ntlm-auth
+main_repo: https://github.com/jborean93/ntlm-auth
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
