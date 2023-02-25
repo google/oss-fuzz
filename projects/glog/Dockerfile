@@ -16,8 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-# TODO use main repo once PR is merged
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/glog
+RUN git clone --depth 1 https://github.com/google/glog
 
 COPY build.sh $SRC/
 WORKDIR $SRC/glog
