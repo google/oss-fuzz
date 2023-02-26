@@ -84,6 +84,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ko.txt
 # compile x packages
 cd $SRC/x
 ls | while read repo; do
