@@ -30,20 +30,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   reg_section = NULL;
 
-  const char *fakeArgv[3];
-  int fakeArgc = 2;
+  char *fakeArgv[3];
   fakeArgv[0] = "fuzz_as";
   fakeArgv[1] = filename; // Assemble our fake source file.
   fakeArgv[2] = NULL;
 
-  gas_early_init (&fakeArgc, &fakeArgv);
+  int argc = 2;
+  char **argv = fakeArgv;
+  gas_early_init (&argc, &argv);
 
   out_file_name = "/tmp/tmp-out";
 
   gas_init ();
 
   // Main fuzzer target. Assemble our random data.
-  perform_an_assembly_pass (2, (char**)fakeArgv);
+  perform_an_assembly_pass (argc, argv);
 
   // Cleanup
   cond_finish_check (-1);
