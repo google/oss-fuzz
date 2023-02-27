@@ -5,6 +5,7 @@ auto_ccs:
  - "smalyshev@gmail.com"
  - "nikita.ppv@gmail.com"
  - "dmitrystogov@gmail.com"
+ - "ilija.tovilo@me.com"
 fuzzing_engines:
   - "afl"
   - "honggfuzz"
