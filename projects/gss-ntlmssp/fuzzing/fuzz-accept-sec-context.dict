@@ -1,0 +1,7 @@
+"BAR\\foo"
+"foo@BAR"
+"foo\\@bar.example.com"
+"foo\\@bar.example.com@BAR"
+"\\foo@bar.example.com"
+"BAR\\foo@bar.example.com"
+"BAR@dom\\foo@bar.example.com"
