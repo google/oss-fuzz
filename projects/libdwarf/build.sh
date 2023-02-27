@@ -15,26 +15,39 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -g -Werror"
-export CXXFLAGS="${CXXFLAGS} -g -Werror"
+# Build corpus for fuzzing
+export BINARY_SAMPLES_DIR="$SRC/libdwarf-binary-samples"
+export BINARY_SAMPLES_V1="$BINARY_SAMPLES_DIR/binary-samples"
+export BINARY_SAMPLES_V2="$BINARY_SAMPLES_DIR/binary-samples-v2"
+export FUZZER_DIR="$SRC/libdwarf/fuzz"
 
+mkdir $SRC/corp
+cp $BINARY_SAMPLES_V1/elf* $SRC/corp
+cp $BINARY_SAMPLES_V1/Mach* $SRC/corp
+cp $BINARY_SAMPLES_V1/pe* $SRC/corp
+cp $BINARY_SAMPLES_V1/lib* $SRC/corp
+for file in $BINARY_SAMPLES_V2/{linux,windows}/*_DWARF*/* $BINARY_SAMPLES_V2/macOS-arm/*/*; do 
+ export newfile=$(echo $file | sed 's/ /_/g')
+ # e.g. cp "..." /out/windows_gcc11_DWARF2_cross-platform.exe
+ cp "$file" $SRC/corp/$(echo "$newfile" | cut -d/ -f5,6 | sed 's/\//_/g')_$(basename "$newfile")
+done
+
+zip -r -j $OUT/fuzz_seed_corpus.zip $SRC/corp
+for fuzzFile in $FUZZER_DIR/fuzz*.c; do
+  fuzzName=$(basename "$fuzzFile" '.c')
+  cp $OUT/fuzz_seed_corpus.zip $OUT/${fuzzName}_seed_corpus.zip
+done
+rm $OUT/fuzz_seed_corpus.zip
+
+
+# Build fuzzers
 mkdir build
 cd build
 cmake ../
 make
 
-# Build corpus for fuzzing
-mkdir $SRC/corp
-cp $SRC/binary-samples/elf* $SRC/corp
-cp $SRC/binary-samples/Mach* $SRC/corp
-cp $SRC/binary-samples/pe* $SRC/corp
-cp $SRC/binary-samples/lib* $SRC/corp
-
-zip -r -j $OUT/fuzz_init_path_seed_corpus.zip $SRC/corp
-cp $OUT/fuzz_init_path_seed_corpus.zip $OUT/fuzz_init_binary_seed_corpus.zip
-
-for fuzzName in init_path init_binary; do
-  $CC $CFLAGS -I../src/lib/libdwarf/ $SRC/fuzz_${fuzzName}.c -c
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_${fuzzName} fuzz_${fuzzName}.o \
-    ./src/lib/libdwarf/libdwarf.a -lz
+for fuzzFile in $FUZZER_DIR/fuzz*.c; do
+  fuzzName=$(basename "$fuzzFile" '.c')
+  $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
+    "$FUZZER_DIR/${fuzzName}.c" -o "$OUT/${fuzzName}" ./src/lib/libdwarf/libdwarf.a -lz
 done
