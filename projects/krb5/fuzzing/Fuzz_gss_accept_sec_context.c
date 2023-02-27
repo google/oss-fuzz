@@ -14,9 +14,6 @@ limitations under the License.
 #include "krb5.h"
 #include "gssapi.h"
 
-#define kMinInputLength 10
-#define kMaxInputLength 5120
-
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
     OM_uint32 maj_stat, min_stat;
