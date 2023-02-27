@@ -61,20 +61,18 @@ compile_package () {
     fi
     (
         # corpus
-        export go_package=`echo $pkg_flat | rev | cut -d_ -f1 | rev`
-        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go $SRC/x/$repo/$pkg/
+        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go fuzz_ng_$pkg_flat/
         goimports -w fuzz_ng_$pkg_flat/copy/*.go
-        cp fuzz_ng_$pkg_flat/copy/*.go $SRC/x/$repo/$pkg/
-        cp fuzz_ng_$pkg_flat/*.go $SRC/x/$repo/$pkg/
-        sed -i -e 's/^package .*/package '$go_package'/' $SRC/goroot/src/$pkg/*.go
+        cp fuzz_ng_$pkg_flat/copy/*.go fuzz_ng_$pkg_flat/
+        cp $pkg/*_test.go fuzz_ng_$pkg_flat/
+        sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' fuzz_ng_$pkg_flat/*.go
         export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
-        pushd $SRC/x/$repo/$pkg/
+        pushd fuzz_ng_$pkg_flat
         go mod tidy
         go test -mod=readonly
-        git checkout -- . && git clean -f
-        popd
-        cd fuzz_ng_$pkg_flat
         zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        popd
+        rm -rf fuzz_ng_$pkg_flat/
     )
 }
 
@@ -86,6 +84,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ko.txt
 # compile x packages
 cd $SRC/x
 ls | while read repo; do

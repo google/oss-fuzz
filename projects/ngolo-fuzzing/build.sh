@@ -64,18 +64,19 @@ compile_package () {
     fi
     (
         # corpus
-        export go_package=`echo $pkg_flat | rev | cut -d_ -f1 | rev`
-        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go $SRC/goroot/src/$pkg/
+        mkdir $SRC/goroot/src/fuzz_ng_$pkg_flat
+        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
         goimports -w fuzz_ng_$pkg_flat/copy/*.go
-        cp fuzz_ng_$pkg_flat/copy/*.go $SRC/goroot/src/$pkg/
-        cp fuzz_ng_$pkg_flat/*.go $SRC/goroot/src/$pkg/
-        sed -i -e 's/^package .*/package '$go_package'/' $SRC/goroot/src/$pkg/*.go
+        cp fuzz_ng_$pkg_flat/copy/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
+        cp fuzz_ng_$pkg_flat/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
+        cp $SRC/goroot/src/$pkg/*_test.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
+        sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' $SRC/goroot/src/fuzz_ng_$pkg_flat/*.go
         export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
-        pushd $SRC/goroot/src/$pkg/
+        pushd $SRC/goroot/src/fuzz_ng_$pkg_flat/
         go mod tidy
         go test -mod=readonly
-        git checkout -- . && git clean -f
         popd
+        rm -rf $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cd fuzz_ng_$pkg_flat
         zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
     )
