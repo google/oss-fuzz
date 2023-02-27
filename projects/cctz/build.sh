@@ -14,7 +14,7 @@
 #
 ################################################################################
 mkdir build && cd build
-cmake -DBUILD_TESTING=OFF ../
+cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
 make
 
 # Compile fuzzers
