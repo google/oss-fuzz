@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get -qq update && apt-get install -qq -y make autoconf automake libtool zlib1g-dev
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-code $SRC/libdwarf
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-binary-samples $SRC/libdwarf-binary-samples
-WORKDIR libdwarf
-COPY build.sh $SRC/
+mkdir build
+cd build
+cmake .. -DWITH_FUZZING=ossfuzz -DBUILD_SHARED_LIBS=OFF
+make -j$(nproc)
+cp fuzz_* $OUT/

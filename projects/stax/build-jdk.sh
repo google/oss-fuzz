@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get -qq update && apt-get install -qq -y make autoconf automake libtool zlib1g-dev
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-code $SRC/libdwarf
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-binary-samples $SRC/libdwarf-binary-samples
-WORKDIR libdwarf
-COPY build.sh $SRC/
+if ! test -e ${OUT}/jdk.tar.xz; then
+	pushd ${SRC}/jdk
+		bash configure --build x86_64-linux-gnu
+		make images
+		pushd ${SRC}/jdk/build/linux-x86_64-server-release/images
+			tar cf ${OUT}/jdk.tar.xz jdk
+		popd
+	popd
+fi

@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get -qq update && apt-get install -qq -y make autoconf automake libtool zlib1g-dev
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-code $SRC/libdwarf
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-binary-samples $SRC/libdwarf-binary-samples
-WORKDIR libdwarf
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/alexmojaki/stack_data stack_data
+COPY *.sh *py $SRC/
+WORKDIR $SRC/stack_data

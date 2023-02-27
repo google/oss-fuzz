@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get -qq update && apt-get install -qq -y make autoconf automake libtool zlib1g-dev
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-code $SRC/libdwarf
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-binary-samples $SRC/libdwarf-binary-samples
-WORKDIR libdwarf
+
+RUN git clone --depth 1 https://github.com/google/glog
+
 COPY build.sh $SRC/
+WORKDIR $SRC/glog
