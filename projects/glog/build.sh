@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir build && cd build
-cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
-make
 
-# Compile fuzzers
-cp $SRC/fuzz* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz
+mkdir build
+cd build
+cmake .. -DWITH_FUZZING=ossfuzz -DBUILD_SHARED_LIBS=OFF
+make -j$(nproc)
+cp fuzz_* $OUT/

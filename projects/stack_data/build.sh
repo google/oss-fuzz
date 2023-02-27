@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir build && cd build
-cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
-make
-
-# Compile fuzzers
-cp $SRC/fuzz* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz
+pip3 install .
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

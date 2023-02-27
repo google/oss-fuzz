@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir build && cd build
-cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
-make
 
-# Compile fuzzers
-cp $SRC/fuzz* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz
+if ! test -e ${OUT}/jdk.tar.xz; then
+	pushd ${SRC}/jdk
+		bash configure --build x86_64-linux-gnu
+		make images
+		pushd ${SRC}/jdk/build/linux-x86_64-server-release/images
+			tar cf ${OUT}/jdk.tar.xz jdk
+		popd
+	popd
+fi

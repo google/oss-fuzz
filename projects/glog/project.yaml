@@ -1,0 +1,7 @@
+homepage: "https://github.com/google/glog"
+language: c++
+primary_contact: "sergiu.deitsch@gmail.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+main_repo: 'https://github.com/google/glog'

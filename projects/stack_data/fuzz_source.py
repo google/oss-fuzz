@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +12,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-mkdir build && cd build
-cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
-make
+import sys
+import atheris
 
-# Compile fuzzers
-cp $SRC/fuzz* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz
+from stack_data import Source
+
+
+def TestOneInput(data):
+  fuzz_file = '/tmp/fuzz_data.py'
+  with open(fuzz_file, 'wb') as f:
+    f.write(data)
+  try:
+    src = Source.for_filename(fuzz_file)
+  except:
+    return
+
+  list(src.pieces)
+  try:
+    src.tokens_by_line
+  except AttributeError:
+    pass
+
+
+def main():
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()
