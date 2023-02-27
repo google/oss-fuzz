@@ -48,6 +48,6 @@ make
 
 for fuzzFile in $FUZZER_DIR/fuzz*.c; do
   fuzzName=$(basename "$fuzzFile" '.c')
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
     "$FUZZER_DIR/${fuzzName}.c" -o "$OUT/${fuzzName}" ./src/lib/libdwarf/libdwarf.a -lz
 done
