@@ -22,6 +22,7 @@ cd $SRC/goroot/src
 )
 rm -Rf /root/.go/
 export PATH=$PATH:$SRC/goroot/bin/
+go install golang.org/x/tools/cmd/goimports@latest
 
 compile_package () {
     pkg=$1
@@ -58,6 +59,21 @@ compile_package () {
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
         rm fuzz_ng_$pkg_flat.a
     fi
+    (
+        # corpus
+        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go fuzz_ng_$pkg_flat/
+        goimports -w fuzz_ng_$pkg_flat/copy/*.go
+        cp fuzz_ng_$pkg_flat/copy/*.go fuzz_ng_$pkg_flat/
+        cp $pkg/*_test.go fuzz_ng_$pkg_flat/
+        sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' fuzz_ng_$pkg_flat/*.go
+        export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
+        pushd fuzz_ng_$pkg_flat
+        go mod tidy
+        go test -mod=readonly
+        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        popd
+        rm -rf fuzz_ng_$pkg_flat/
+    )
 }
 
 # in $SRC/ngolo-fuzzing
@@ -68,6 +84,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ko.txt
 # compile x packages
 cd $SRC/x
 ls | while read repo; do
@@ -86,10 +103,10 @@ find . -type d | while read pkg; do
         continue
     fi
     if compile_package $pkg $repo; then
-        echo $pkg >> $SRC/ok.txt
+        echo $repo/$pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
-        echo $pkg >> $SRC/ko.txt
+        echo $repo/$pkg >> $SRC/ko.txt
     fi
 
 done

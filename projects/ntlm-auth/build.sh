@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x.
-apt-get update && apt-get install -y curl
 
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
-
-# Install latest versions of nyc for source-based coverage reporting
-npm install --global nyc
+pip3 install .
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x.
-apt-get update && apt-get install -y curl
 
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
-
-# Install latest versions of nyc for source-based coverage reporting
-npm install --global nyc
+mkdir build
+cd build
+cmake .. -DWITH_FUZZING=ossfuzz -DBUILD_SHARED_LIBS=OFF
+make -j$(nproc)
+cp fuzz_* $OUT/

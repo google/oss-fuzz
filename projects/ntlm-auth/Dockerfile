@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-# Install Node.js v19.x.
-apt-get update && apt-get install -y curl
-
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
-
-# Install latest versions of nyc for source-based coverage reporting
-npm install --global nyc
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/jborean93/ntlm-auth ntlm-auth
+COPY *.sh *py $SRC/
+WORKDIR $SRC/ntlm-auth

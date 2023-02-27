@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x.
-apt-get update && apt-get install -y curl
 
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
-
-# Install latest versions of nyc for source-based coverage reporting
-npm install --global nyc
+if ! test -e ${OUT}/jdk.tar.xz; then
+	pushd ${SRC}/jdk
+		bash configure --build x86_64-linux-gnu
+		make images
+		pushd ${SRC}/jdk/build/linux-x86_64-server-release/images
+			tar cf ${OUT}/jdk.tar.xz jdk
+		popd
+	popd
+fi

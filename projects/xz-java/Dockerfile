@@ -1,4 +1,3 @@
-#!/bin/bash -eux
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +13,12 @@
 # limitations under the License.
 #
 ################################################################################
-# Install Node.js v19.x.
-apt-get update && apt-get install -y curl
 
-curl -fsSL https://deb.nodesource.com/setup_19.x | bash -
-apt-get update && apt-get install -y nodejs
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-# Install latest versions of nyc for source-based coverage reporting
-npm install --global nyc
+RUN apt-get install ant -y
+RUN git clone --depth 1 https://github.com/tukaani-project/xz-java $SRC/xz-java
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/xz-java
