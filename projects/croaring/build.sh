@@ -22,8 +22,17 @@ make -j$(nproc)
 $CC $CFLAGS  \
      -I$SRC/croaring/include \
      -c $SRC/croaring_fuzzer.c -o fuzzer.o
+
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.o   \
      -o $OUT/croaring_fuzzer $SRC/croaring/build-dir/src/libroaring.a
+
+$CXX $CFLAGS $CXXFLAGS  \
+     -I$SRC/croaring/include \
+     -I$SRC/croaring \
+     -c $SRC/croaring_fuzzer_cc.cc -o fuzzer_cc.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer_cc.o   \
+     -o $OUT/croaring_fuzzer_cc $SRC/croaring/build-dir/src/libroaring.a
 
 zip $OUT/croaring_fuzzer_seed_corpus.zip $SRC/croaring/tests/testdata/*bin
 cp $SRC/croaring/tests/testdata/*bin $OUT/
