@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
+git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
 pip3 install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --hidden-import=pymysql.constants
 done

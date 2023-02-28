@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip mock
+RUN pip3 install --upgrade pip mock setuptools
 RUN git clone https://github.com/PyMySQL/PyMySQL pymysql
-COPY *.sh *py $SRC/
+COPY *.sh *py *.diff $SRC/
 WORKDIR $SRC/pymysql
