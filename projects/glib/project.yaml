@@ -8,6 +8,7 @@ auto_ccs:
 - slomo@coaxion.net
 - trevi55@gmail.com
 - mcatanza@redhat.com
+- tcullum@redhat.com
 sanitizers:
 - address
 - undefined
