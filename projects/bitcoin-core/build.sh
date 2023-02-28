@@ -30,7 +30,6 @@ fi
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
   make HOST=$BUILD_TRIPLET NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 -j$(nproc)
-  # DEBUG=1 is temporarily disabled due to libc++ bugs
 )
 
 # Build the fuzz targets
