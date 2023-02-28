@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-perl scripts/config.pl set MBEDTLS_PLATFORM_TIME_ALT
+scripts/config.py set MBEDTLS_PLATFORM_TIME_ALT
 mkdir build
 cd build
 cmake -DENABLE_TESTING=OFF ..
