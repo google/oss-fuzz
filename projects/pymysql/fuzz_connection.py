@@ -21,7 +21,7 @@ import time
 
 import configparser
 import pymysql
-from pymysql import connections
+from pymysql import connections, constants
 
 
 fuzzed_input = b""
