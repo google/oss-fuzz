@@ -22,15 +22,16 @@ MAIN_REPOSITORY=https://github.com/eclipse/jetty.project
 
 MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
 
+mv $SRC/{*.zip,*.dict} $OUT
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
-  # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-http -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-server -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-util -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-io -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:jetty-runner -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  FUZZ_TARGET_DEPENDENCIES=":jetty-http :jetty-server :jetty-util :jetty-io :jetty-runner :jetty-client .http2:http2-common .http2:http2-server"
+  
+  for dependency in $FUZZ_TARGET_DEPENDENCIES; do
+    # set dependency project version in fuzz-targets
+    (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID$dependency -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  done
 }
 
 cd project-parent
@@ -63,7 +64,7 @@ else
   RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes"
   RUNTIME_CLASSPATH_RELATIVE=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|.|g")
 
-  for fuzzer in $(find $SRC/project-parent/fuzz-targets -name '*Fuzzer.java'); do
+  for fuzzer in $(find $SRC/project-parent/fuzz-targets -name '*Fuzzer.java' ! -name WebAppDefaultServletFuzzer.java); do
     fuzzer_basename=$(basename -s .java $fuzzer)
 
     # Create an execution wrapper for every fuzztarget
@@ -81,5 +82,25 @@ else
   \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
+
+  # disable NamingContextLookup sanitizer for WebAppDefaultServletFuzzer.java
+  echo "#!/bin/bash
+  # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
+  if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+    mem_settings='-Xmx1900m -Xss900k'
+  else
+    mem_settings='-Xmx2048m -Xss1024k'
+  fi
+  java -cp $RUNTIME_CLASSPATH_RELATIVE \
+  \$mem_settings \
+  com.code_intelligence.jazzer.Jazzer \
+  --target_class=com.example.WebAppDefaultServletFuzzer \
+  --disabled_hooks=com.code_intelligence.jazzer.sanitizers.NamingContextLookup \
+  \$@" > $OUT/WebAppDefaultServletFuzzer
+  chmod u+x $OUT/WebAppDefaultServletFuzzer
+
+  # add keystore to location required by SslConnectionFuzzer
+  mkdir -p /out/src/test/resources
+  cp $SRC/project-parent/jetty/jetty-io/src/test/resources/keystore.p12 /out/src/test/resources/
 
 fi

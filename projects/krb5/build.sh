@@ -30,6 +30,7 @@ cp Fuzz_json $OUT/Fuzz_json
 cp Fuzz_krb5 $OUT/Fuzz_krb5
 cp Fuzz_marshal $OUT/Fuzz_marshal
 cp Fuzz_profile $OUT/Fuzz_profile
+cp Fuzz_gss_accept_sec_context $OUT/Fuzz_gss_accept_sec_context
 popd
 
 pushd $SRC/oss-fuzz-bloat/krb5/
@@ -40,4 +41,8 @@ cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
 cp Fuzz_krb5_seed_corpus.zip $OUT/Fuzz_krb5_seed_corpus.zip
 cp Fuzz_marshal_seed_corpus.zip $OUT/Fuzz_marshal_seed_corpus.zip
 cp Fuzz_profile_seed_corpus.zip $OUT/Fuzz_profile_seed_corpus.zip
+popd
+
+pushd fuzzing/exemplars
+zip -j $OUT/Fuzz_gss_accept_sec_context_seed_corpus.zip gss-accept-sec-context-kerberos gss-accept-sec-context-spnego
 popd

@@ -49,22 +49,21 @@ else
 fi
 make -j$(nproc)
 
-# Copy encoder fuzzers
-cd $SRC/flac/oss-fuzz
-cp fuzzer_encoder fuzzer_encoder_v2 $OUT
-
-# Build libflac again for decoder fuzzers, but now with additional define
-cd $SRC/flac/
-echo "#define FUZZING_BUILD_MODE_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW" >> config.h
-
-make -j$(nproc)
-
 # Copy decoder fuzzers
 cd $SRC/flac/oss-fuzz
-cp fuzzer_decoder fuzzer_seek fuzzer_metadata fuzzer_reencoder $OUT
-cp fuzzer_*.dict $OUT
+cp fuzzer_* $OUT
 cd $SRC
 
 # Build fuzzer_exo
 $CXX $CXXFLAGS -I $SRC/flac/oss-fuzz/ -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
     $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_exo
+
+# Build libflac again for encoder fuzzers, but now with additional define
+cd $SRC/flac/
+echo "#define FUZZING_BUILD_MODE_FLAC_SANITIZE_SIGNED_INTEGER_OVERFLOW" >> config.h
+
+make -j$(nproc)
+
+# Copy encoder fuzzers
+cd $SRC/flac/oss-fuzz
+cp fuzzer_encoder fuzzer_encoder_v2 $OUT

@@ -1,0 +1,15 @@
+homepage: "https://docs.oracle.com/javase/8/docs/api/index.html?javax/xml/stream/package-summary.html"
+language: jvm
+main_repo: "https://github.com/openjdk/jdk/tree/master/src/java.xml/share/classes"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
