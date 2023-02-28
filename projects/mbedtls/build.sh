@@ -15,8 +15,13 @@
 #
 ################################################################################
 
-# build project
+# build project (default configuration + experimental features)
+scripts/config.py full
+# Allow repeatability of time-based calculations.
 scripts/config.py set MBEDTLS_PLATFORM_TIME_ALT
+# MBEDTLS_USE_PSA_CRYPTO significantly changes how X.509 and TLS work.
+# In this build, use the default setting.
+scripts/config.py unset MBEDTLS_USE_PSA_CRYPTO
 mkdir build
 cd build
 cmake -DENABLE_TESTING=OFF ..
