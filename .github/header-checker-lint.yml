@@ -1,6 +1,5 @@
 allowedCopyrightHolders:
   - 'Google LLC'
-  - 'Google Inc.'
 allowedLicenses:
   - 'Apache-2.0'
 sourceFileExtensions:

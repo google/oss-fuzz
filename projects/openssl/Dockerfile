@@ -23,3 +23,4 @@ WORKDIR openssl
 COPY build.sh *.options $SRC/
 ENV AFL_SKIP_OSSFUZZ=1
 ENV AFL_LLVM_MODE_WORKAROUND=0
+RUN echo "hi"
