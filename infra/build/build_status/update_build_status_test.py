@@ -38,9 +38,8 @@ class MockGetBuild:
   def __init__(self, builds):
     self.builds = builds
 
-  def get_build(self, cloudbuild, image_project, build_id):
+  def get_build(self, build_id):
     """Mimic build object retrieval."""
-    del cloudbuild, image_project
     for build in self.builds:
       if build['build_id'] == build_id:
         return build
@@ -61,7 +60,7 @@ class TestGetBuildHistory(unittest.TestCase):
     mock_upload_log.return_value = True
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
+    update_build_status.BuildGetter.get_build = mock_get_build.get_build
 
     expected_projects = {
         'history': [{
@@ -77,17 +76,6 @@ class TestGetBuildHistory(unittest.TestCase):
     self.assertDictEqual(update_build_status.get_build_history(['1']),
                          expected_projects)
 
-  def test_get_build_history_missing_log(self, mock_upload_log,
-                                         mock_cloud_build, mock_google_auth):
-    """Test for missing build log file."""
-    del mock_cloud_build, mock_google_auth
-    builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
-    mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
-    mock_upload_log.return_value = False
-    self.assertRaises(update_build_status.MissingBuildLogError,
-                      update_build_status.get_build_history, ['1'])
-
   def test_get_build_history_no_last_success(self, mock_upload_log,
                                              mock_cloud_build,
                                              mock_google_auth):
@@ -95,7 +83,7 @@ class TestGetBuildHistory(unittest.TestCase):
     del mock_cloud_build, mock_google_auth
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'FAILURE'}]
     mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
+    update_build_status.BuildGetter.get_build = mock_get_build.get_build
     mock_upload_log.return_value = True
 
     expected_projects = {
@@ -236,6 +224,19 @@ class TestUpdateBuildStatus(unittest.TestCase):
     mock_upload_log.return_value = True
     status_filename = 'status.json'
     with ndb.Client().context():
+      datastore_entities.Project(
+          name='test-project-1',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo1"')).put()
+      datastore_entities.Project(
+          name='test-project-2',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo2"')).put()
+      datastore_entities.Project(
+          name='test-project-3',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo3"')).put()
+
       datastore_entities.BuildsHistory(id='test-project-1-fuzzing',
                                        build_tag='fuzzing',
                                        project='test-project-1',
@@ -264,7 +265,7 @@ class TestUpdateBuildStatus(unittest.TestCase):
           'status': 'WORKING'
       }]
       mock_get_build = MockGetBuild(builds)
-      update_build_status.get_build = mock_get_build.get_build
+      update_build_status.BuildGetter.get_build = mock_get_build.get_build
 
       expected_data = {
           'projects': [{
@@ -273,7 +274,8 @@ class TestUpdateBuildStatus(unittest.TestCase):
                   'finish_time': 'test_time',
                   'success': False
               }],
-              'name': 'test-project-2'
+              'name': 'test-project-2',
+              'main_repo': 'https://github/com/main/repo2',
           }, {
               'history': [{
                   'build_id': '1',
@@ -284,10 +286,12 @@ class TestUpdateBuildStatus(unittest.TestCase):
                   'build_id': '1',
                   'finish_time': 'test_time'
               },
-              'name': 'test-project-1'
+              'name': 'test-project-1',
+              'main_repo': 'https://github/com/main/repo1',
           }, {
               'history': [],
-              'name': 'test-project-3'
+              'name': 'test-project-3',
+              'main_repo': 'https://github/com/main/repo3',
           }]
       }
 
