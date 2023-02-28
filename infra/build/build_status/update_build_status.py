@@ -25,6 +25,7 @@ from googleapiclient.discovery import build
 import googleapiclient.errors
 from google.cloud import ndb
 from google.cloud import storage
+import yaml
 
 import build_and_run_coverage
 import build_lib
@@ -203,6 +204,17 @@ def get_build_history(build_ids):
   return project
 
 
+def _get_main_repo(project_name):
+  """Get the main repo for a project."""
+  project = datastore_entities.Project.query(
+      datastore_entities.Project.name == project_name).get()
+  if not project:
+    return None
+
+  project_yaml = yaml.safe_load(project.project_yaml_contents)
+  return project_yaml.get('main_repo')
+
+
 # pylint: disable=too-many-locals
 def update_build_status(build_tag, status_filename):
   """Update build statuses."""
@@ -210,10 +222,13 @@ def update_build_status(build_tag, status_filename):
 
   def process_project(project_build):
     """Process a project."""
-    project = get_build_history(project_build.build_ids)
-    project['name'] = project_build.project
-    print('Processing project', project['name'])
-    return project
+    # We need a new context for every thread.
+    with ndb.Client().context():
+      project = get_build_history(project_build.build_ids)
+      project['name'] = project_build.project
+      project['main_repo'] = _get_main_repo(project_build.project)
+      print('Processing project', project['name'])
+      return project
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     futures = []
