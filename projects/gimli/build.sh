@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
-git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
-pip3 install .
 
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=pymysql.constants
+cargo fuzz build -O
+cargo fuzz list | while read i; do
+    cp fuzz/target/x86_64-unknown-linux-gnu/release/$i $OUT/
+
+    if [ -d "$SRC/gimli/fuzz/corpus/${i}" ]; then
+        zip -rj "$OUT/${i}_seed_corpus.zip" "$SRC/gimli/fuzz/corpus/${i}"
+    fi
 done

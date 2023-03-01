@@ -5,7 +5,6 @@ primary_contact: "macro.fuzzing.uxuga@aleeas.com"
 auto_ccs:
   - "fanquake@gmail.com"
   - "jonas@chaincode.com"
-  - "laanwj@gmail.com"
   - "pieter@chaincode.com"
 sanitizers:
   - address

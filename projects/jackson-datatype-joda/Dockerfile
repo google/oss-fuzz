@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +13,16 @@
 # limitations under the License.
 #
 ################################################################################
-git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
-pip3 install .
 
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=pymysql.constants
-done
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN git clone --depth 1 https://github.com/FasterXML/jackson-datatype-joda $SRC/jackson-datatype-joda
+
+RUN curl -L https://downloads.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/jackson-datatype-joda

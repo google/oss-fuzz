@@ -137,10 +137,10 @@ function run_go_fuzz_target {
   # setup for native go fuzzers
   cd $OUT
   mkdir -p "testdata/fuzz/${target}"
-  cp -r "${FUZZ_CORPUS_DIR}*" "testdata/fuzz/${target}/"
+  cp -r "${FUZZ_CORPUS_DIR}" "testdata/fuzz/"
 
-  # rewrite libFuzzer corpus to Std Go corpus
-  $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
+  # rewrite libFuzzer corpus to Std Go corpus if native fuzzing
+  grep "TestFuzzCorpus" $target > /dev/null 2>&1 && $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
   cd -
 
   timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log

@@ -1,0 +1,11 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 3793a8c..2a61b7a 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -45,5 +45,5 @@ build-backend = "setuptools.build_meta"
+ 
+ [tool.setuptools.packages.find]
+ namespaces = false
+-include = ["pymysql"]
++include = ["pymysql", "pymysql.constants"]
+ exclude = ["tests*", "pymysql.tests*"]

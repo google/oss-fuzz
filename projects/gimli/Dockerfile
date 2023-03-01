@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
-pip3 install .
 
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=pymysql.constants
-done
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/gimli-rs/gimli gimli
+RUN git clone --depth 1 https://github.com/gimli-rs/gimli-libfuzzer-corpora $SRC/gimli/fuzz/corpus
+WORKDIR gimli
+COPY build.sh $SRC/
