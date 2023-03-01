@@ -17,6 +17,19 @@ limitations under the License.
  */
 #include <fuzz_as.h>
 
+/* Don't allow cleanups.  libiberty's function of the same name adds
+   cleanups to a list without any means of clearing the list.  The
+   list must be clear at the start if LLVMFuzzerTestOneInput is to run
+   more than once, otherwise we will get multiple copies of the same
+   cleanup on the list which leads to double frees if xexit is called.
+   Also a cleanup from the first run can result in use-after-free
+   errors when as_fatal is hit as in issue 56429.  */
+int
+xatexit (void (*fn) (void) ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char filename[256];
