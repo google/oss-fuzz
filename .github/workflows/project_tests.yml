@@ -69,7 +69,7 @@ jobs:
         run: |
           df -h
           echo "Remove largest packages >200M, inspired by https://github.com/apache/flink/blame/master/tools/azure-pipelines/free_disk_space.sh"
-          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 30
+          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 15
           sudo apt-get remove -y azure-cli google-cloud-sdk microsoft-edge-stable google-chrome-stable firefox powershell
           sudo apt-get remove -y '^llvm-.*'
           sudo apt-get remove -y '^dotnet-.*'
