@@ -24,13 +24,13 @@ cd ..
 
 for fuzzers in $(find $SRC -name '*_fuzzer.cc' | grep -v wasm_objdump_fuzzer); do
   fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I. -Ibuild -Iinclude -Ibuild/include \
+  $CXX $CXXFLAGS -std=c++17 -I. -Ibuild -Iinclude -Ibuild/include \
   $fuzzers $LIB_FUZZING_ENGINE ./build/libwabt.a \
   -o $OUT/$fuzz_basename
 done
 
 # wasm_objdump_fuzzer needs to be linked together with binary-reader-objdump.cc
-$CXX $CXXFLAGS -std=c++11 -I. -Ibuild -Ibuild/include -Iinclude /src/wasm_objdump_fuzzer.cc \
+$CXX $CXXFLAGS -std=c++17 -I. -Ibuild -Ibuild/include -Iinclude /src/wasm_objdump_fuzzer.cc \
         ./src/binary-reader-objdump.cc $LIB_FUZZING_ENGINE ./build/libwabt.a \
         -o $OUT/wasm_objdump_fuzzer
 
