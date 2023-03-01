@@ -49,7 +49,7 @@ func TestFuzzCorpus(t *testing.T) {
 	}
 	filename := ""
 	// recurse for regressions subdirectory
-	err = filepath.Walk(".", func(filename string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(dir, func(filename string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
