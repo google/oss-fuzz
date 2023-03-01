@@ -67,6 +67,12 @@ jobs:
 
       - name: Clear unnecessary files
         run: |
+          df -h
+          echo "Remove largest packages >200M"
+          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 30
+          sudo apt-get remove -y azure-cli google-cloud-sdk microsoft-edge-stable google-chrome-stable firefox powershell
+          sudo apt-get remove -y '^llvm-.*'
+          sudo apt-get remove -y '^dotnet-.*'
           sudo swapoff -a
           sudo rm -f /swapfile
           sudo apt clean
