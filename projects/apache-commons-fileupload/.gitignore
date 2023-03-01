@@ -1,0 +1,5 @@
+project-parent/apache-commons-fileupload
+project-parent/fuzz-targets/target
+project-parent/fuzz-targets/src/test/resources
+project-parent/fuzz-targets/pom.xml.versionsBackup
+project-parent/fuzz-targets/.cifuzz-corpus
