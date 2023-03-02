@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-export ENABLE_PYSECSAN="YES"
+# In order to enable PySecSan for a given module, set the environment
+# variable ENABLE_PYSECSAN="YES"
 
 fuzzer_path=$1
 shift 1
