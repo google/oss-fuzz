@@ -2,10 +2,10 @@ homepage: "https://github.com/apache/commons-text/"
 language: jvm
 primary_contact: "fuzz-testing@commons.apache.org"
 fuzzing_engines:
-  - libfuzzer
+  - "libfuzzer"
 main_repo: "https://github.com/apache/commons-text/"
 sanitizers:
-  - address
+  - "address"
 auto_ccs:
   - "security@commons.apache.org"
 vendor_ccs:

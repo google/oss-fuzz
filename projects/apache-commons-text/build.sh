@@ -75,8 +75,8 @@ else
   \$mem_settings \
   com.code_intelligence.jazzer.Jazzer \
   --target_class=com.example.$fuzzer_basename \
-  # Ignores reported RCE caused by class loading during interpolation of constant strings.
-  # Should be fixed in newer versions of Jazzer  https://github.com/CodeIntelligenceTesting/jazzer/pull/531#discussion_r1115478731
+  `# Ignores reported RCE caused by class loading during interpolation of constant strings.` \
+  `# Should be fixed in newer versions of Jazzer  https://github.com/CodeIntelligenceTesting/jazzer/pull/531#discussion_r1115478731` \
   --disabled_hooks=\"com.code_intelligence.jazzer.sanitizers.ReflectiveCall\" \
   \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
