@@ -68,23 +68,15 @@ jobs:
       - name: Clear unnecessary files
         run: |
           df -h
-          echo "Remove largest packages >200M, inspired by https://github.com/apache/flink/blame/master/tools/azure-pipelines/free_disk_space.sh"
-          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 15
-          sudo apt-get remove -y azure-cli google-cloud-sdk microsoft-edge-stable google-chrome-stable firefox powershell
-          sudo apt-get remove -y '^llvm-.*'
-          sudo apt-get remove -y '^dotnet-.*'
-          sudo rm -rf /usr/share/dotnet/
-          sudo rm -rf /usr/local/graalvm/
-          sudo rm -rf /usr/local/.ghcup/
-          sudo rm -rf /usr/local/share/powershell
-          sudo rm -rf /usr/local/share/chromium
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/local/lib/node_modules
           sudo swapoff -a
           sudo rm -f /swapfile
           sudo apt clean
           docker rmi $(docker images -a -q)
           df -h
+          echo "Remove largest packages >200M, inspired by https://github.com/apache/flink/blame/master/tools/azure-pipelines/free_disk_space.sh"
+          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 15
+          sudo apt-get remove -y azure-cli google-cloud-sdk microsoft-edge-stable google-chrome-stable firefox powershell '^llvm-.*' '^dotnet-.*'
+          sudo bash -c '(rm -rf /usr/share/dotnet/ /usr/local/graalvm/ /usr/local/.ghcup/ /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/android /usr/local/lib/node_modules)&'
 
       - name: Setup python environment
         uses: actions/setup-python@v3
