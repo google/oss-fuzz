@@ -72,11 +72,11 @@ jobs:
           sudo rm -f /swapfile
           sudo apt clean
           docker rmi $(docker images -a -q)
-          df -h
           echo "Remove largest packages >200M, inspired by https://github.com/apache/flink/blame/master/tools/azure-pipelines/free_disk_space.sh"
           dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 15
           sudo apt-get remove -y azure-cli google-cloud-sdk microsoft-edge-stable google-chrome-stable firefox powershell '^llvm-.*' '^dotnet-.*'
-          sudo bash -c '(rm -rf /usr/share/dotnet/ /usr/local/graalvm/ /usr/local/.ghcup/ /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/android /usr/local/lib/node_modules)&'
+          df -h
+          sudo bash -c '(ionice -c 3 nice -n 19 rm -rf /usr/share/dotnet/ /usr/local/graalvm/ /usr/local/.ghcup/ /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/android /usr/local/lib/node_modules)&'
 
       - name: Setup python environment
         uses: actions/setup-python@v3
