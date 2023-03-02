@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/RoaringBitmap/CRoaring croaring
 WORKDIR $SRC/croaring
 COPY croaring_fuzzer.c \
+     croaring_fuzzer_cc.cc \
      build.sh \
      $SRC/
 

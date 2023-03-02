@@ -124,7 +124,7 @@ RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
     mkdir honggfuzz && \
     cd honggfuzz && \
-    tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    tar -xz --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 
@@ -134,7 +134,7 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/centipede.git && \
     cd centipede && \
-    git checkout addd6670cc6b56dea43036dc3a0dcb9181f23251 && \
+    git checkout eb91dd2157710e6c82579f8be19d7fab9423b781 && \
     rm -rf .git
 
 COPY precompile_centipede /usr/local/bin/
@@ -142,23 +142,29 @@ RUN precompile_centipede
 
 COPY sanitizers /usr/local/lib/sanitizers
 
-COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+COPY bazel_build_fuzz_tests \
+    cargo \
+    compile \
+    compile_afl \
     compile_centipede \
+    compile_honggfuzz \
+    compile_fuzztests.sh \
     compile_go_fuzzer \
+    compile_javascript_fuzzer \
+    compile_libfuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
-    compile_fuzztests.sh \
-    python_coverage_helper.py \
-    debug_afl srcmap \
-    write_labels.py bazel_build_fuzz_tests \
-    # Go, java, and swift installation scripts.
+    debug_afl \
+    # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
-    install_go_CodeIntelligenceTesting.sh \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \
     install_swift.sh \
+    python_coverage_helper.py \
+    srcmap \
+    write_labels.py \
     /usr/local/bin/
 
 COPY llvmsymbol.diff $SRC

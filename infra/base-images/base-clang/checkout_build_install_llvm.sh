@@ -129,7 +129,7 @@ cp -rf /fuzz-introspector/frontends/llvm/lib/Transforms/FuzzIntrospector ./llvm/
 
 # LLVM currently does not support dynamically loading LTO passes. Thus, we
 # hardcode it into Clang instead. Ref: https://reviews.llvm.org/D77704
-/fuzz-introspector/sed_cmds.sh
+/fuzz-introspector/frontends/llvm/patch-llvm.sh
 cd $OLD_WORKING_DIR
 
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1

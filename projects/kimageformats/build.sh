@@ -23,7 +23,7 @@ CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
 CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 autoreconf --install
 ./configure --disable-examples
-make -j$(nproc) 
+make -j$(nproc)
 make install -j$(nproc)
 CFLAGS=$TMP_CFLAGS
 CXXFLAGS=$TMP_CXXFLAGS
@@ -35,7 +35,7 @@ make install -j$(nproc)
 
 cd $SRC
 cd libzip
-cmake . -DBUILD_SHARED_LIBS=OFF
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_DOC=OFF
 make install -j$(nproc)
 
 cd $SRC
@@ -46,8 +46,10 @@ make install -j$(nproc)
 cd $SRC
 cd qtbase
 # add the flags to Qt build too
-sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
+# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
+# contain paths with slashes.
+sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
+sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
 # disable sanitize=vptr for harfbuzz since it compiles without rtti
 sed -i -e "s/TARGET = qtharfbuzz/TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr/g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
 # make qmake compile faster
@@ -93,7 +95,7 @@ sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_W
 sed -i "s/static const int MAX_IMAGE_HEIGHT = 32768;/static const int MAX_IMAGE_HEIGHT = 8192;/g" libheif/heif_limits.h
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DWITH_AOM=ON -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_X265=OFF ..
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_RAV1E_PLUGIN=OFF -DWITH_SvtEnc=OFF -DWITH_SvtEnc_PLUGIN=OFF -DWITH_X265=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 
@@ -101,7 +103,7 @@ cd $SRC
 cd libjxl
 mkdir build
 cd build
-CXXFLAGS="$CXXFLAGS -DHWY_COMPILE_ONLY_SCALAR" cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJPEGXL_BUNDLE_SKCMS=ON -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=ON -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_ENABLE_TOOLS=OFF ..
+CXXFLAGS="$CXXFLAGS -DHWY_COMPILE_ONLY_SCALAR" cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJPEGXL_BUNDLE_SKCMS=ON -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=ON -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_ENABLE_TOOLS=OFF ..
 make -j$(nproc) jxl-static jxl_threads-static
 
 cd $SRC

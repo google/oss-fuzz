@@ -114,8 +114,16 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     # commits before the current diff base.
     # TODO(ochang): If API usage becomes an issue, this can be optimized by the
     # filestore accepting a list of filenames to try.
-    for old_commit in repo.get_commit_list(diff_base,
-                                           limit=self.LATEST_BUILD_WINDOW):
+    try:
+      # TODO(metzman): Why do we default to 'origin', we should avoid going down
+      # this path entirely and not need to catch an exception.
+      commit_list = repo.get_commit_list(diff_base,
+                                         limit=self.LATEST_BUILD_WINDOW)
+    except ValueError as error:
+      logging.error('Can\'t get commit list: %s', error)
+      return None
+
+    for old_commit in commit_list:
       logging.info('Trying to downloading previous build %s.', old_commit)
       build_name = self._get_build_name(old_commit)
       try:

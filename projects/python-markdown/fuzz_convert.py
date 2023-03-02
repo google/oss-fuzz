@@ -30,6 +30,8 @@ def TestOneInput(data):
     md.convert(fdp.ConsumeUnicodeNoSurrogates(1024))
   except NotImplementedError:
     pass
+  except RecursionError:
+    pass
 
 
 def main():

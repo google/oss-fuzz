@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y wget cmake
-RUN git clone https://android.googlesource.com/platform/external/libhevc
+RUN git clone https://github.com/ittiam-systems/libhevc.git
 ADD https://storage.googleapis.com/android_media/external/libhevc/fuzzer/hevc_dec_fuzzer_seed_corpus.zip $SRC/
 COPY build.sh $SRC/
 WORKDIR libhevc

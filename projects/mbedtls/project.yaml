@@ -4,3 +4,8 @@ primary_contact: "mbed-tls-security@lists.trustedfirmware.org"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
 main_repo: 'https://github.com/Mbed-TLS/mbedtls.git'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

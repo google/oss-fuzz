@@ -30,7 +30,7 @@ extern "C" int LLVMFuzzerTestOneInput(char* data, size_t size) {
 
   struct addrinfo *result = NULL;
 
-  int s = getaddrinfo(str.c_str(), NULL, NULL, &result);
+  getaddrinfo(str.c_str(), NULL, NULL, &result);
   if (result) {
     freeaddrinfo(result);
   }

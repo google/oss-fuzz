@@ -1,0 +1,10 @@
+homepage: "https://itextpdf.com/products/itext-7"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/itext/itext7"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"
+  - "michael.nothhard@code-intelligence.com"

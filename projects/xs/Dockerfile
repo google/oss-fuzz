@@ -23,16 +23,30 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cat fuzzing/dictionaries/json.dict > $SRC/xst_jsonparse.dict && \
     cat fuzzing/dictionaries/js.dict > $SRC/xst.dict
 
-#Apache-2.0 license, MIT license, BSD license
-#RUN git clone --depth 1 https://github.com/tc39/test262-parser-tests && \
-#    zip -q $SRC/xst_seed_corpus.zip test262-parser-tests/pass-explicit/*
+# install npm tool to strip comments
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt install -yqq npm 
+# && rm -rf /var/lib/apt/lists/*
+RUN npm i -g @prasadrajandran/strip-comments-cli
 
 #test262 built-ins
 #BSD license
 RUN git clone --depth 1 https://github.com/tc39/test262 && \
+    # strip comments
+    find test262/test/built-ins -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+ && \
+    # strip empty lines
+    find test262/test/built-ins -iname '*.js' -exec sed -i '/^[[:space:]]*$/d' '{}' \+ && \
     find test262/test/built-ins -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
 
-RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable
-WORKDIR moddable
+RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable && \
+    # strip comments
+    find moddable/tests/xs -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+ && \
+    # strip empty lines
+    find moddable/tests/xs -iname '*.js' -exec sed -i '/^[[:space:]]*$/d' '{}' \+ && \
+    find moddable/tests/xs -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
+WORKDIR $SRC/moddable
 
-COPY target.c build.sh xst.options $SRC/
+COPY build.sh xst.options $SRC/
+
+# clean up
+RUN npm rm @prasadrajandran/strip-comments-cli && apt purge -yqq npm && apt autoremove -yqq && rm -rf /var/lib/apt/lists/*

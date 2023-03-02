@@ -1,0 +1,16 @@
+homepage: "https://www.hdfgroup.org/solutions/hdf5/"
+main_repo: "https://github.com/HDFGroup/hdf5"
+language: c
+primary_contact: "derobins@hdfgroup.org"
+vendor_ccs:
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

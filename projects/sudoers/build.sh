@@ -20,13 +20,16 @@ env
 
 # Some of the sanitizer flags cause issues with configure tests.
 # Pull them out of CFLAGS and pass them to configure instead.
-if [ $SANITIZER == "coverage" ]; then
+if [ $SANITIZER == "coverage" -a -n "$COVERAGE_FLAGS" ]; then
     CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $COVERAGE_FLAGS//\"`"
     sanitizer_opts="$COVERAGE_FLAGS"
-else
+elif [ -n "$SANITIZER_FLAGS" ]; then
     CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $SANITIZER_FLAGS//\"`"
     sanitizer_opts="$SANITIZER_FLAGS"
+else
+    sanitizer_opts=no
 fi
+
 # This is already added by --enable-fuzzer
 CFLAGS="`echo \"$CFLAGS\" | sed 's/ -fsanitize=fuzzer-no-link//'`"
 

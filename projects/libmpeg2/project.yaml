@@ -1,4 +1,4 @@
-homepage: "https://android.googlesource.com/platform/external/libmpeg2/"
+homepage: "https://github.com/ittiam-systems/libmpeg2"
 language: c++
 primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
@@ -23,4 +23,4 @@ vendor_ccs:
 architectures:
   - x86_64
   - i386
-main_repo: 'https://android.googlesource.com/platform/external/libmpeg2'
+main_repo: 'https://github.com/ittiam-systems/libmpeg2.git'

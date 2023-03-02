@@ -1,0 +1,12 @@
+homepage: "https://github.com/alanxz/rabbitmq-c"
+language: c
+primary_contact: "alan.antonuk@gmail.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+main_repo: 'https://github.com/alanxz/rabbitmq-c'

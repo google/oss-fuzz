@@ -22,7 +22,7 @@ import toml
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
     try:
-        toml.loads(fdp.ConsumeString(sys.maxsize))
+        toml.decoder.loads(fdp.ConsumeString(sys.maxsize))
     except toml.TomlDecodeError:
         pass
 

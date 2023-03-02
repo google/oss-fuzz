@@ -25,14 +25,11 @@ source $HOME/.cargo/env
 
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
+  ContentSecurityPolicyParser
+  FeaturePolicyParser
   # WebRTC
   SdpParser
   StunParser
-  # IPC
-  ContentParentIPC
-  CompositorManagerParentIPC
-  ContentSecurityPolicyParser
-  FeaturePolicyParser
   # Image
   ImageGIF
   ImageICO
@@ -107,9 +104,6 @@ cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 find media/webrtc -iname "*.stun" \
   -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
 cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
-
-# ContentParentIPC
-cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
 
 # ImageGIF
 zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif

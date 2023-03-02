@@ -1,0 +1,10 @@
+homepage: "https://github.com/withastro/compiler"
+language: go
+main_repo: "https://github.com/withastro/compiler"
+primary_contact: "cable023@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+auto_ccs:
+  - "nate@astro.build"

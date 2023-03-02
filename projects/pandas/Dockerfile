@@ -15,8 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip Cython numpy
-RUN git clone --depth 1 https://github.com/pandas-dev/pandas pandas
+RUN apt-get update && apt-get install -y make autoconf automake libtool libffi-dev
+RUN pip3 install --upgrade pip Cython numpy versioneer
+RUN git clone --depth 1 https://github.com/pandas-dev/pandas pandas && \
+    cd pandas && \
+    python3 -m pip install -r requirements-dev.txt
 WORKDIR pandas
 COPY build.sh *.py $SRC/

@@ -137,7 +137,8 @@ def _get_dedup_token(output):
 def _check_for_crash(project_name, fuzz_target, testcase_path):
   """Check for crash."""
 
-  def docker_run(args):
+  def docker_run(args, **kwargs):
+    del kwargs
     command = ['docker', 'run', '--rm', '--privileged']
     if sys.stdin.isatty():
       command.append('-i')

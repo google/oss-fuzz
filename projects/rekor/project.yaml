@@ -3,7 +3,7 @@ main_repo: "https://github.com/sigstore/rekor"
 primary_contact: "bcallaway@sigstore.dev"
 auto_ccs:
   - naveensrinivasan@protonmail.com
-  - dlorenc@sigstore.dev
+  - dlorenc@protonmail.com
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
   - asraa@sigstore.dev

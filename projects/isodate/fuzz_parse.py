@@ -25,7 +25,7 @@ pysecsan.add_hooks()
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
-    isodate.parse_date(fdp.ConsumeUnicodeNoSurrogates(1024))
+    isodate.isodates.parse_date(fdp.ConsumeUnicodeNoSurrogates(1024))
   except (
     # parse_date can legitimately raise two types of exceptions:
     # https://github.com/gweis/isodate/blob/8856fdf0e46c7bca00229faa1aae6b7e8ad6e76c/src/isodate/isodates.py#L150-L151

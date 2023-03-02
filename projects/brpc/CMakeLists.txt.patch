@@ -24,7 +24,7 @@
  endforeach()
 +
 +add_executable(Fuzz_json Fuzz_json.cpp $<TARGET_OBJECTS:TEST_PROTO_LIB>)
-+target_link_libraries(Fuzz_json brpc-shared-debug ${LIB_FUZZING_ENGINE} -lsnappy)
++target_link_libraries(Fuzz_json brpc-shared-debug ${LIB_FUZZING_ENGINE})
 +
 +add_executable(Fuzz_http Fuzz_http.cpp $<TARGET_OBJECTS:TEST_PROTO_LIB>)
-+target_link_libraries(Fuzz_http brpc-shared-debug ${LIB_FUZZING_ENGINE} -lsnappy)
++target_link_libraries(Fuzz_http brpc-shared-debug ${LIB_FUZZING_ENGINE})

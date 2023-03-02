@@ -1,0 +1,5 @@
+homepage: "https://github.com/google/oss-fuzz"
+language: c++
+primary_contact: "fake@example.com"
+main_repo: "https://github.com/google/oss-fuzz"
+file_github_issue: false

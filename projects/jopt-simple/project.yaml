@@ -1,0 +1,15 @@
+homepage: "http://jopt-simple.github.io/jopt-simple/"
+language: jvm
+main_repo: "https://github.com/jopt-simple/jopt-simple.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
