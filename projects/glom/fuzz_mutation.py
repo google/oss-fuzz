@@ -23,26 +23,27 @@ import json
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
-  val = {'d': {'e': ['f']}}
   try:
-    glom.core.glom(val, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
+    glom.mutation.delete({'a': [{
+        'f': 'z'
+    }, {'ff', 'zz'}]}, fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  except (glom.GlomError, ValueError):
     pass
 
-  # Create a random dictionary. In this case if any
-  # error happens during random dict creation we just
-  # exit.
+  # Create a random object using json
   try:
-    json_dict = json.loads(fdp.ConsumeString(100))
+    json_val = json.loads(fdp.ConsumeString(sys.maxsize))
   except Exception:
     return
-  if not isinstance(json_dict, dict):
-    return
 
-  # Use random dict as input to glom
   try:
-    glom.core.glom(json_dict, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
+    glom.mutation.delete(json_val, 'a.1.b.2.c')
+  except (glom.GlomError, ValueError, TypeError):
+    pass
+
+  try:
+    glom.mutation.delete(json_val, fdp.ConsumeUnicodeNoSurrogates(64))
+  except (glom.GlomError, ValueError, TypeError):
     pass
 
 

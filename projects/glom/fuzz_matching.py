@@ -22,27 +22,22 @@ import json
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
+  spec = glom.matching.Match([{
+      'fuzz1': str,
+      'fuzz2': str,
+      'fuzz3': int,
+      'fuzz4': dict
+  }])
 
-  val = {'d': {'e': ['f']}}
+  # Create a random object using json
   try:
-    glom.core.glom(val, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
-    pass
-
-  # Create a random dictionary. In this case if any
-  # error happens during random dict creation we just
-  # exit.
-  try:
-    json_dict = json.loads(fdp.ConsumeString(100))
+    json_val = json.loads(fdp.ConsumeString(sys.maxsize))
   except Exception:
     return
-  if not isinstance(json_dict, dict):
-    return
 
-  # Use random dict as input to glom
   try:
-    glom.core.glom(json_dict, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
+    glom.glom(json_val, spec)
+  except glom.GlomError:
     pass
 
 

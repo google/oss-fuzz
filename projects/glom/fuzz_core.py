@@ -25,15 +25,23 @@ def TestOneInput(data):
 
   val = {'d': {'e': ['f']}}
   try:
-    glom.core.glom(val, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
+    glom.core.glom(val, glom.core.Inspect(fdp.ConsumeUnicodeNoSurrogates(64)))
+  except glom.GlomError:
     pass
 
+  try:
+    glom.core.glom(
+        val,
+        glom.core.Coalesce(fdp.ConsumeUnicodeNoSurrogates(32),
+                           fdp.ConsumeUnicodeNoSurrogates(32),
+                           fdp.ConsumeUnicodeNoSurrogates(32)))
+  except glom.GlomError:
+    pass
   # Create a random dictionary. In this case if any
   # error happens during random dict creation we just
   # exit.
   try:
-    json_dict = json.loads(fdp.ConsumeString(100))
+    json_dict = json.loads(fdp.ConsumeString(sys.maxsize))
   except Exception:
     return
   if not isinstance(json_dict, dict):
@@ -42,7 +50,13 @@ def TestOneInput(data):
   # Use random dict as input to glom
   try:
     glom.core.glom(json_dict, fdp.ConsumeString(30))
-  except glom.core.PathAccessError:
+  except glom.GlomError:
+    pass
+
+  try:
+    spec = glom.T['a']['b']['c']
+    glom.core.glom(json_dict, spec)
+  except glom.GlomError:
     pass
 
 
