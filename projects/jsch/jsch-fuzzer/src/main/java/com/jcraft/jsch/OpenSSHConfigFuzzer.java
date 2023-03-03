@@ -14,7 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package org.xnio.http;
+package com.jcraft.jsch;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
