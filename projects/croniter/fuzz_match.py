@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,37 +16,25 @@
 import atheris
 import sys
 
-from datetime import datetime
+import datetime
 import croniter
 
+def RandomDateTime(fdp):
+    return datetime.datetime.now() + fdp.ConsumeProbability() * datetime.timedelta(days=200000)
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  base = datetime(2012, 4, 6, 13, 26, 10)
+  cron_str = fdp.ConsumeString(50)
+  testdate = RandomDateTime(fdp)
   try:
-    cron_str = fdp.ConsumeString(50)
-    hash_id = fdp.ConsumeBytes(2)
-    croniter.croniter.is_valid(cron_str)
-    itr = croniter.croniter(cron_str, base, hash_id=hash_id)
-    idx = 0
-    for v in itr.all_next():
-      idx += 1
-      if idx > 10:
-        break
-    itr.get_next(base)
-    itr.get_prev(base)
-  except (croniter.CroniterBadCronError, croniter.CroniterBadDateError) as e:
+    croniter.croniter.match(cron_str, testdate)
+  except croniter.CroniterBadCronError as e:
     pass
-  except NameError as e:
-    # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781
-    if not "'exc' is not defined" in str(e):
-      raise e
 
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 if __name__ == "__main__":
