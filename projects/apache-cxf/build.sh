@@ -45,7 +45,7 @@ if [[ -v LOCAL_DEV ]]; then
 
 else
   # Move seed corpus and dictionary.
-  # mv $SRC/{*.zip,*.dict} $OUT
+  mv $SRC/{*.zip,*.dict} $OUT
 
   export JAVA_HOME="$OUT/open-jdk-17"
   mkdir -p $JAVA_HOME
