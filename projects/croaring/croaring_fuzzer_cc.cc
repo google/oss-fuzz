@@ -30,31 +30,61 @@ std::vector<uint32_t> ConsumeVecInRange(FuzzedDataProvider &fdp, size_t length,
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  /**
+   * A bitmap may contain up to 2**32 elements. Later this function will
+   * output the content to an array where each element uses 32 bits of storage.
+   * That would use 16 GB. Thus this function is bound to run out of memory.
+   *
+   * Even without the full serialization to a 32-bit array, a bitmap may still use over
+   * 512 MB in the normal course of operation: that is to be expected since it can
+   * represent all sets of integers in [0,2**32]. This function may hold several
+   * bitmaps in memory at once, so it can require gigabytes of memory (without bugs).
+   * Hence, unless it has a generous memory capacity, this function will run out of memory
+   * almost certainly.
+   *
+   * For sanity, we may limit the range to, say, 10,000,000 which will use 38 MB or so.
+   * With such a limited range, if we run out of memory, then we can almost certain that it
+   * has to do with a genuine bug.
+   */
+
+  uint32_t range_start = 0;
+  uint32_t range_end = 10'000'000;
+
+  /**
+   * We are not solely dependent on the range [range_start, range_end) because
+   * ConsumeVecInRange below produce integers in a small range starting at 0.
+   */
+
   FuzzedDataProvider fdp(data, size);
-  std::vector<uint32_t> bitmap_data_a = ConsumeVecInRange(fdp, 1000, 0, 500);
+  /**
+   * The next line was ConsumeVecInRange(fdp, 500, 0, 1000) but it would pick 500
+   * values at random from 0, 1000, making almost certain that all of the values are
+   * picked. It seems more useful to pick 500 values in the range 0,1000.
+   */
+  std::vector<uint32_t> bitmap_data_a = ConsumeVecInRange(fdp, 500, 0, 1000);
   roaring::Roaring a(bitmap_data_a.size(), bitmap_data_a.data());
   a.runOptimize();
   a.shrinkToFit();
 
-  std::vector<uint32_t> bitmap_data_b = ConsumeVecInRange(fdp, 1000, 0, 500);
+  std::vector<uint32_t> bitmap_data_b = ConsumeVecInRange(fdp, 500, 0, 1000);
   roaring::Roaring b(bitmap_data_b.size(), bitmap_data_b.data());
   b.runOptimize();
-  b.add(fdp.ConsumeIntegral<uint32_t>());
-  b.addChecked(fdp.ConsumeIntegral<uint32_t>());
-  b.addRange(fdp.ConsumeIntegral<uint32_t>(), fdp.ConsumeIntegral<uint32_t>());
+  b.add(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.addChecked(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.addRange(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end), fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
   // add half of a to b.
   b.addMany(bitmap_data_a.size() / 2, bitmap_data_a.data());
-  b.remove(fdp.ConsumeIntegral<uint32_t>());
-  b.removeChecked(fdp.ConsumeIntegral<uint32_t>());
-  b.removeRange(fdp.ConsumeIntegral<uint32_t>(),
-                fdp.ConsumeIntegral<uint32_t>());
-  b.removeRangeClosed(fdp.ConsumeIntegral<uint32_t>(),
-                      fdp.ConsumeIntegral<uint32_t>());
+  b.remove(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.removeChecked(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.removeRange(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end),
+                fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.removeRangeClosed(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end),
+                      fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
   b.maximum();
   b.minimum();
-  b.contains(fdp.ConsumeIntegral<uint32_t>());
-  b.containsRange(fdp.ConsumeIntegral<uint32_t>(),
-                  fdp.ConsumeIntegral<uint32_t>());
+  b.contains(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.containsRange(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end),
+                  fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
 
   uint32_t element = 0;
   a.select(fdp.ConsumeIntegralInRange<uint32_t>(0, 1000), &element);
@@ -84,16 +114,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   a.isSubset(b);
   a.isStrictSubset(b);
-  b.flip(fdp.ConsumeIntegral<uint32_t>(), fdp.ConsumeIntegral<uint32_t>());
-  b.flipClosed(fdp.ConsumeIntegral<uint32_t>(),
-               fdp.ConsumeIntegral<uint32_t>());
+  b.flip(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end), fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
+  b.flipClosed(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end),
+               fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
   b.removeRunCompression();
 
   // Move/copy constructors
   roaring::Roaring copied = b;
   roaring::Roaring moved = std::move(b);
 
-  // Asignment operatores
+  // Asignment operators
   b = copied;
   b = std::move(moved);
 
@@ -119,7 +149,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   roaring::Roaring::const_iterator b_iter = b.begin();
-  b_iter.equalorlarger(fdp.ConsumeIntegral<uint32_t>());
+  b_iter.equalorlarger(fdp.ConsumeIntegralInRange<uint32_t>(range_start, range_end));
 
   return 0;
 }
