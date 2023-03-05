@@ -148,7 +148,8 @@ public class HashingFuzzer {
 	}
 
 	public static void fuzzerTestOneInput(FuzzedDataProvider fuzzedDataProvider) {
-		int minimumBits = fuzzedDataProvider.consumeInt();
+		// Choose realistic and valid minimumBits value; this is normally not controlled by the user
+		int minimumBits = fuzzedDataProvider.consumeInt(1, 8192);
 		int seed = fuzzedDataProvider.consumeInt();
 		int k0 = fuzzedDataProvider.consumeInt();
 		int k1 = fuzzedDataProvider.consumeInt();
