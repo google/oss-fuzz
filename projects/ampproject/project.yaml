@@ -1,7 +1,7 @@
 homepage: "https://github.com/ampproject/amphtml"
 language: c++
-primary_contact: "david@adalogics.com"
 main_repo: "https://github.com/ampproject/amphtml"
-file_github_issue: true
 fuzzing_engines:
  - libfuzzer
+vendor_ccs:
+ - "david@adalogics.com"

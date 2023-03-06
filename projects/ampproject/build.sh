@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
-
 export USE_BAZEL_VERSION=5.4.0
 cd validator
 export FUZZTEST_TARGET_FOLDER="//cpp/htmlparser:parser_fuzz_test"
