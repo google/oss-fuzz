@@ -16,7 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool libomp-dev libgomp1 nodejs
-RUN git clone --depth 1 https://github.com/ampproject/amphtml amphtml
-#COPY amphtml amphtml
 WORKDIR amphtml
 COPY build.sh *.diff $SRC/
+
+RUN git clone --depth 1 https://github.com/ampproject/amphtml amphtml && \
+    cd amphtml && \
+    git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.diff
