@@ -32,8 +32,8 @@ def target1(fdp):
 def target2(fdp):
   try:
     key = ecdsa.eddsa.PublicKey(ecdsa.eddsa.generator_ed25519,
-                                fdp.ConsumeBytes(sys.maxsize))
-    key.verify(fdp.ConsumeBytes(sys.maxsize), fdp.ConsumeBytes(sys.maxsize))
+                                fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)))
+    key.verify(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)), fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)))
   except ValueError:
     pass
   except ecdsa.errors.MalformedPointError:
