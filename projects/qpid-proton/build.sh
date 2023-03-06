@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# workaround https://github.com/google/oss-fuzz/issues/9857
+ln -s /usr/local/bin/llvm-ar /src/aflplusplus/afl-llvm-ar
+ln -s /usr/local/bin/llvm-ranlib /src/aflplusplus/afl-llvm-ranlib
+
 mkdir build
 pushd build
   cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIBS=ON -DENABLE_FUZZ_TESTING=ON -DFUZZ_REGRESSION_TESTS=OFF
