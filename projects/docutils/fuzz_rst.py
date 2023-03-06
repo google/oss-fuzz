@@ -41,7 +41,7 @@ def TestOneInput(data):
 
   doc = new_document(fdp.ConsumeUnicodeNoSurrogates(64), settings.copy())
   try:
-    parser.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize), doc)
+    parser.parse(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)), doc)
     if fdp.ConsumeBool():
       doc.transformer.add_transforms([TestMessages])
     if fdp.ConsumeBool():
