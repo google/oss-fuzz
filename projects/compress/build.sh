@@ -37,9 +37,12 @@ go mod edit -replace github.com/AdaLogics/go-fuzz-headers=github.com/AdamKorcz/g
 sed -i '28 a\
 	if fi == nil { return }' $SRC/compress/internal/fuzz/helpers.go
 printf "package compress\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdependency.go
-sed -i 's/\"testing\"/\"github.com\/AdamKorcz\/go-118-fuzz-build\/testing\"/g' "${SRC}"/compress/internal/fuzz/helpers.go
 sed -i 's/zr := testCreateZipReader/\/\/zr := testCreateZipReader/g' "${SRC}"/compress/zstd/fuzz_test.go
 sed -i 's/dicts = readDicts(f, zr)/dicts = fuzzDicts/g' "${SRC}"/compress/zstd/fuzz_test.go
+
+if [ "$SANITIZER" != "coverage" ]; then
+	sed -i 's/\"testing\"/\"github.com\/AdamKorcz\/go-118-fuzz-build\/testing\"/g' "${SRC}"/compress/internal/fuzz/helpers.go
+fi
 
 # OSS-Fuzz uses 'go build' to build the fuzzers, so we move the tests
 # we need into scope.
