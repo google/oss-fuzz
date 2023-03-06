@@ -30,14 +30,14 @@ from packaging.specifiers import InvalidSpecifier, Specifier
 def fuzz_utils(data):
   """Logic to hit routines in src/packaging/utils."""
   fdp = atheris.FuzzedDataProvider(data)
-  canonicalize_version(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  canonicalize_version(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   try:
-    parse_sdist_filename(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    parse_sdist_filename(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except InvalidSdistFilename:
     pass
 
   try:
-    parse_wheel_filename(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    parse_wheel_filename(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except InvalidWheelFilename:
     pass
 
@@ -46,8 +46,8 @@ def fuzz_specifier(data):
   """Logic to hit routines in src/packaging/specifiers."""
   fdp = atheris.FuzzedDataProvider(data)
   try:
-    spec1 = Specifier(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-    spec2 = Specifier(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    spec1 = Specifier(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
+    spec2 = Specifier(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except InvalidSpecifier:
     return
 
