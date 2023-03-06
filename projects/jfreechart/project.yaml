@@ -1,0 +1,9 @@
+homepage: "https://www.jfree.org/jfreechart/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jfree/jfreechart.git"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"

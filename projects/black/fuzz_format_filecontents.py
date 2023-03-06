@@ -21,7 +21,7 @@ import black
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
-    black.format_file_contents(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+    black.format_file_contents(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)),
                                mode=black.Mode(),
                                fast=fdp.ConsumeBool())
   except black.InvalidInput:

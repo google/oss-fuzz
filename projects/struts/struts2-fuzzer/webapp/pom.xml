@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ossfuzz</groupId>
+	<artifactId>struts2-webapp</artifactId>
+	<version>${fuzzedLibaryVersion}</version>
+	<packaging>war</packaging>
+
+	<parent>
+		<groupId>ossfuzz</groupId>
+		<artifactId>parent-project</artifactId>
+		<version>${fuzzedLibaryVersion}</version>
+	</parent>
+
+	<properties>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<fuzzedLibaryVersion>6.1.1</fuzzedLibaryVersion>
+	</properties>
+
+	<!-- This repositories list is copy pasted from the projects' main BOM -->
+	
+	<dependencies>
+		<!--
+			On the CI, install the jazzer file with
+		
+				mvn install:install-file -Dfile=${JAZZER_API_PATH} \
+					-DgroupId="com.code-intelligence" \
+					-DartifactId="jazzer-api" \
+					-Dversion="0.14.0" \
+					-Dpackaging=jar
+		
+			in order to avoid mismatching driver/api versions.
+		-->
+		<dependency>
+			<groupId>com.code-intelligence</groupId>
+			<artifactId>jazzer-api</artifactId>
+			<version>0.14.0</version>
+		</dependency>
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-core</artifactId>
+            <version>${fuzzedLibaryVersion}</version>
+        </dependency>
+	</dependencies>
+
+	<build>
+        <finalName>struts2-webapp</finalName>
+		<plugins>
+
+            <plugin>            
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                  <webXml>src\main\webapp\WEB-INF\web.xml</webXml>        
+                </configuration>
+              </plugin>
+            
+
+              <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                
+                <version>9.3.29.v20201019</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/${project.build.finalName}</contextPath>
+                    </webApp>
+                    <stopKey>CTRL+C</stopKey>
+                    <stopPort>8999</stopPort>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <scanTargets>
+                        <scanTarget>src/main/webapp/WEB-INF/web.xml</scanTarget>
+                    </scanTargets>
+                 
+                </configuration>
+            </plugin>
+
+
+		</plugins>
+	</build>
+</project>

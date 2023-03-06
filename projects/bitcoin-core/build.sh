@@ -47,7 +47,6 @@ else
   CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --with-seccomp=no --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 fi
 
-
 if [ "$SANITIZER" = "memory" ]; then
   # MemorySanitizer (MSAN) does not support tracking memory initialization done by
   # using the Linux getrandom syscall. Avoid using getrandom by undefining

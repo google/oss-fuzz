@@ -20,9 +20,9 @@ import tinycss2
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
-  source_to_parse = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
   skip_comments = fdp.ConsumeBool()
   skip_whitespace = fdp.ConsumeBool()
+  source_to_parse = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
 
   tinycss2.parse_one_component_value(
     source_to_parse,
