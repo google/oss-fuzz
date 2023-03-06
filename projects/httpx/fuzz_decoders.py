@@ -24,7 +24,7 @@ def TestOneInput(data):
   ByteChunker(chunk_size=fdp.ConsumeIntInRange(1, 100)).decode(
     fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024))
   )
-  LineDecoder().decode(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  LineDecoder().decode(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   TextChunker(chunk_size=fdp.ConsumeIntInRange(1, 100)).decode(
     fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
   )
