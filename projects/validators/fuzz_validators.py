@@ -52,20 +52,22 @@ def TestOneInput(data):
 
   try:
     target = fdp.PickValueInList(targets)
-    target(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    target(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except validators.ValidationFailure:
     pass
 
   try:
-    validators.length(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                      min_val = fdp.ConsumeIntInRange(1, 100),
-                      max_val = fdp.ConsumeIntInRange(1, 100))
+    validators.length(fdp.ConsumeUnicodeNoSurrogates(
+        fdp.ConsumeIntInRange(0, 1024)),
+                      min_val=fdp.ConsumeIntInRange(1, 100),
+                      max_val=fdp.ConsumeIntInRange(1, 100))
   except validators.ValidationFailure:
     pass
 
   try:
-    validators.fi_ssn(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                      fdp.ConsumeBool())
+    validators.fi_ssn(
+        fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
+        fdp.ConsumeBool())
   except validators.ValidationFailure:
     pass
 

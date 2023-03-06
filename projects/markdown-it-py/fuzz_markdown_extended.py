@@ -23,16 +23,16 @@ import markdown_it
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  val_1 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_2 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_3 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_4 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_5 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_6 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_7 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_8 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_9 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  val_10 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+  val_1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
+  val_2 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
+  val_3 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_4 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_5 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_6 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_7 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_8 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_9 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
+  val_10 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 256))
 
   try:
     c1 = markdown_it.main.MarkdownIt()

@@ -41,7 +41,7 @@ def TestOneInput(data):
   # error happens during random dict creation we just
   # exit.
   try:
-    json_dict = json.loads(fdp.ConsumeString(sys.maxsize))
+    json_dict = json.loads(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
   except Exception:
     return
   if not isinstance(json_dict, dict):
