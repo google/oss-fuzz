@@ -16,7 +16,7 @@
 ################################################################################
 
 # Enable pysecsan
-export ENABLE_PYSECSAN="YES"
+export ENABLE_PYSECSAN="1"
 
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
