@@ -17,19 +17,6 @@ limitations under the License.
  */
 #include "fuzz_addr2line.h"
 
-/* for precondition checks */
-#include "ada_addr2line.h"
-
-/*
- * Preconditions that should be met so we won't run into bfd_fatal calls.
- * The fuzz_slurp_symtab and fuzz_preconditions_check implement simplified
- * versions of process_file and slurp_symtab of addr2line that only incorporates
- * the logic resulting in bfd_fatal calls.
- * If fuzz_preconditions_check returns 1, it means process_file should be
- * good to be called and there won't be any bfd_fatal call.
- */
-
-
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
@@ -62,9 +49,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   addr = c2;
 
   // Main fuzz entrypoint in addr2line.c
-  if (fuzz_preconditions_check(filename, NULL) == 1) {
-    process_file(filename, NULL, NULL);
-  }
+  process_file(filename, NULL, NULL);
  
   free(c2);
   free(c2_1);
