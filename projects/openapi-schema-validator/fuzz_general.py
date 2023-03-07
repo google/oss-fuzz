@@ -27,7 +27,7 @@ def TestOneInput(data):
     fuzz_dict_instance = json.loads(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)))
   except:
     return
-  if not isinstance(fuzz_schema, dict) or not isinstance(
+  if not isinstance(fuzz_dict_schema, dict) or not isinstance(
       fuzz_dict_instance, dict):
     return
 
