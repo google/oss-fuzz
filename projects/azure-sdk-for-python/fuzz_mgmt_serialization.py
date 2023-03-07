@@ -28,7 +28,7 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
   try:
-    payload = json.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    payload = json.loads(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except:
     return
   model = _models_py3.AccountInfo()
@@ -51,7 +51,7 @@ def TestOneInput(data):
     try:
       deserializer._deserialize(
         model,
-        fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+        fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
       )
     except DeserializationError:
       pass

@@ -18,17 +18,17 @@ import mdurl
 
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  mdurl.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-  mdurl.decode(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-  mdurl.encode(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    fdp = atheris.FuzzedDataProvider(data)
+    mdurl.parse(fdp.ConsumeUnicodeNoSurrogates(512))
+    mdurl.decode(fdp.ConsumeUnicodeNoSurrogates(512))
+    mdurl.encode(fdp.ConsumeUnicodeNoSurrogates(512))
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
 
 
 if __name__ == "__main__":
-  main()
+    main()

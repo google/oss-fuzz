@@ -23,14 +23,14 @@ from ecdsa.keys import VerifyingKey
 
 def target1(fdp):
   try:
-    VerifyingKey.from_der(fdp.ConsumeBytes(sys.maxsize))
+    VerifyingKey.from_der(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)))
   except ecdsa.der.UnexpectedDER:
     pass
 
 
 def target2(fdp):
   try:
-    VerifyingKey.from_pem(fdp.ConsumeBytes(sys.maxsize), hashlib.sha256)
+    VerifyingKey.from_pem(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)), hashlib.sha256)
   except ecdsa.der.UnexpectedDER:
     pass
   except binascii.Error:
@@ -40,7 +40,7 @@ def target2(fdp):
 def target3(fdp):
   try:
     VerifyingKey.from_public_key_recovery_with_digest(
-        fdp.ConsumeBytes(sys.maxsize), fdp.ConsumeBytes(sys.maxsize),
+        fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)), fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
         ecdsa.curves.Ed25519)
   except ecdsa.der.UnexpectedDER:
     pass
@@ -50,7 +50,7 @@ def target3(fdp):
 
 def target4(fdp):
   try:
-    VerifyingKey.from_string(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+    VerifyingKey.from_string(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
                              ecdsa.curves.Ed25519)
   except ecdsa.keys.MalformedPointError:
     pass
@@ -61,9 +61,9 @@ def target4(fdp):
 
 
 def target5(fdp):
-  vk_str = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  sig = fdp.ConsumeBytes(sys.maxsize)
-  data = fdp.ConsumeBytes(sys.maxsize)
+  vk_str = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
+  sig = fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024))
+  data = fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024))
   try:
     vk = VerifyingKey.from_pem(vk_str)
     vk.verify(sig, data)

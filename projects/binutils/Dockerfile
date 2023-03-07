@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev
 RUN apt-get install -y flex bison
 RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binary-samples
 RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
-RUN git clone --depth=1 https://github.com/DavidKorczynski/binutils-preconditions binutils-preconditions
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/

@@ -1,0 +1,9 @@
+homepage: "https://github.com/jakartaee/jsonp-api"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jakartaee/jsonp-api"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"

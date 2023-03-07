@@ -19,9 +19,9 @@ import markupsafe
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  markupsafe.escape(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  markupsafe.escape(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)))
 
-  s1 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+  s1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048))
   M1 = markupsafe.Markup(s1)
   M1.unescape()
 

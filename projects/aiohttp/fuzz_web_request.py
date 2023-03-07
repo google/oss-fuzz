@@ -28,14 +28,14 @@ with atheris.instrument_imports():
 @atheris.instrument_func
 async def fuzz_run_one_async(data):
     fdp = atheris.FuzzedDataProvider(data)
-    url_s = fdp.ConsumeString(sys.maxsize)
+    url_s = fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512))
     try:
         URL(url_s)
     except Exception:
         return
 
     headers = CIMultiDict(
-        { fdp.ConsumeString(20) : fdp.ConsumeString(sys.maxsize) }
+        { fdp.ConsumeString(20) : fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)) }
     )
     req = make_mocked_request("GET", url_s, headers=headers)
 
