@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Temporarily disable coverage build in OSS-Fuzz's CI
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+	if [ "${SANITIZER}" = 'coverage' ]
+	then
+		exit 0
+	fi
+
+fi
+
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
 cd $SRC/text
@@ -120,18 +130,18 @@ compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 #zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
 cd $SRC/instrumentation
-go run main.go $SRC/go/src/archive/tar
+go run main.go --target_dir=$SRC/go/src/archive/tar --check_io_length=true
 
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
-cd $SRC/instrumentation && go run main.go $SRC/net && cd -
+cd $SRC/instrumentation && go run main.go --target_dir=$SRC/net --check_io_length=true && cd -
 go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_x_h2c
 mv $SRC/fuzz_x_h2c.options $OUT/
 
 cp $SRC/openpgp_fuzzer.go $SRC/crypto/openpgp/packet
 cd $SRC/crypto/openpgp/packet
-cd $SRC/instrumentation && go run main.go $SRC/crypto && cd -
+cd $SRC/instrumentation && go run main.go --target_dir=$SRC/crypto --check_io_length=true && cd -
 go mod tidy
 compile_go_fuzzer . FuzzOpenpgpRead fuzz_openpgp_read
 
