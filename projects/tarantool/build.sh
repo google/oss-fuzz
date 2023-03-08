@@ -15,23 +15,16 @@
 #
 ################################################################################
 
-# build ICU for linking statically.
-cd $SRC/icu/source
-./configure --disable-shared --enable-static --disable-layoutex \
+# Clean up potentially persistent build directory.
+[[ -e $SRC/tarantool/build ]] && rm -rf $SRC/tarantool/build
+
+# Build ICU for linking statically.
+mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
+
+[ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
+  $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
   --disable-tests --disable-samples --with-data-packaging=static
 make install -j$(nproc)
-
-# Ugly ugly hack to get static linking to work for icu.
-cd lib
-ls *.a | xargs -n1 ar x
-rm *.a
-ar r libicu.a *.{ao,o}
-ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
-ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
-ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
-
-# remove dynamic libraries of libunwind to force static linking
-find / -name "libunwind*.so*" -exec rm {} \;
 
 cd $SRC/tarantool
 
