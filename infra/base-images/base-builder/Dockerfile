@@ -140,6 +140,8 @@ RUN cd $SRC && \
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
+COPY sanitizers /usr/local/lib/sanitizers
+
 COPY bazel_build_fuzz_tests \
     cargo \
     compile \

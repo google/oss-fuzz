@@ -13,7 +13,7 @@
 # limitations under the License.
 """Glue for pysecsan library."""
 
-# Import sanlib and expose only neede functionality by way of __all__
+# Import sanlib and expose only needs functionality by way of __all__
 from .sanlib import *
 
 # pylint: disable=undefined-all-variable

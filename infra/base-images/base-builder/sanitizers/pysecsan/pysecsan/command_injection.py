@@ -15,8 +15,8 @@
 ################################################################################
 """Sanitizers for capturing code injections."""
 
-import sys
 from typing import Optional
+from pysecsan import sanlib
 
 
 def get_all_substr_prefixes(main_str, sub_str):
@@ -48,7 +48,7 @@ def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
 
       # Return None if all fuzzer taints were quoted
       return None
-    return 'Fuzzer controlled content in data. Code injection potential.'
+    return 'Fuzzer-controlled data in command string. Injection potential.'
   return None
 
 
@@ -61,16 +61,16 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
   # Command injections depend on whether the first argument is a list of
   # strings or a string. Handle this now.
   # Example: tests/poe/ansible-runner-cve-2021-4041
-  if cmd is isinstance(str):
+  if isinstance(cmd, str):
     res = check_code_injection_match(cmd, check_unquoted=True)
     if res is not None:
       # if shell arg is true and string is tainted and unquoted that's a
       # definite code injection.
       if arg_shell is True:
-        raise Exception('Code injection in Popen')
+        sanlib.abort_with_issue('Code injection in Popen', 'Command injection')
 
-      # Otherwise it's a maybe.
-      raise Exception(f'Potental code injection in subprocess.Popen\n{res}')
+      # It's a maybe: will not report this to avoid false positives.
+      # TODO: add more precise detection here.
 
   # Check for hg command injection
   # Example: tests/poe/libvcs-cve-2022-21187
@@ -82,27 +82,24 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
       if cmd[0] == '--':
         found_dashes = True
       if not found_dashes and check_code_injection_match(cmd[idx]):
-        raise Exception(
+        sanlib.abort_with_issue(
             'command injection likely by way of mercurial. The following'
             f'command {str(cmd)} is executed, and if you substitute {cmd[idx]} '
             'with \"--config=alias.init=!touch HELLO_PY\" then you will '
-            'create HELLO_PY')
+            'create HELLO_PY', 'Command injection')
 
 
 def hook_pre_exec_os_system(cmd):
   """Hook for os.system."""
   res = check_code_injection_match(cmd)
   if res is not None:
-    print('code injection by way of os.system')
-    # Exceptions are not enough to throw if they are all caught:
-    #   https://github.com/Lightning-AI/lightning/blob/8b7a12c52
-    #   e52a06408e9231647839ddb4665e8ae/pytorch_lightning/utilit
-    #   ies/argparse.py#L123-L125
-    sys.exit(1337)
+    sanlib.abort_with_issue(f'code injection by way of os.system\n{res}',
+                            'Command injection')
 
 
 def hook_pre_exec_eval(cmd):
   """Hook for eval. Experimental atm."""
-  res = check_code_injection_match(cmd)
+  res = check_code_injection_match(cmd, check_unquoted=True)
   if res is not None:
-    raise Exception(f'Potential code injection by way of eval\n{res}')
+    sanlib.abort_with_issue(f'Potential code injection by way of eval\n{res}',
+                            'Command injection')
