@@ -79,6 +79,7 @@ fi
 
 # If PYSECSAN is enabled, ensure that we can build with it.
 if [[ ${ENABLE_PYSECSAN:-"0"} != "0" ]];
+then
   # Make sure pysecsan is installed
   if [[ ! -d "/pysecsan" ]];
   then
@@ -87,7 +88,6 @@ if [[ ${ENABLE_PYSECSAN:-"0"} != "0" ]];
     popd
   fi
 
-then
   cat <<EOF > pysecsan_wrapper.py
 import pysecsan; pysecsan.add_hooks();
 EOF
