@@ -15,8 +15,10 @@
 ################################################################################
 """Sanitizer for regular expression dos."""
 
+# pylint: disable=protected-access
+
 import time
-import sys
+import os
 from pysecsan import sanlib
 
 START_RE_TIME = None
@@ -28,7 +30,7 @@ START_RE_TIME = None
 # - https://dl.acm.org/doi/pdf/10.1145/3236024.3236027
 # and the current approach we use is simply check for extensive computing time.
 # In essence, this is more of a refinement of traditional timeout checker from
-# the fuzzer, which, effectivelly will detect these types of attacks by way of
+# the fuzzer, which, effectively will detect these types of attacks by way of
 # timeouts.
 #
 # Perhaps the smartest would be to use something like e.g.
@@ -49,11 +51,12 @@ def hook_post_exec_re_pattern_findall(self, re_str):
   try:
     endtime = time.time() - START_RE_TIME
     if endtime > 4:
-      print('param: %s' % (re_str))
-      raise Exception('Potential ReDOS attack')
+      sanlib.abort_with_issue(f'Potential ReDOS attack.\n {re_str}', 'ReDOS')
   except NameError:
-    sanlib.sanitizer_log('starttime is not set, which it should have', 0)
-    sys.exit(1)
+    sanlib.sanitizer_log(
+        'starttime is not set, which it should have. Error in PySecSan',
+        sanlib.LOG_INFO)
+    os._exit(1)
 
 
 def hook_pre_exec_re_pattern_findall(self, string):
@@ -66,7 +69,7 @@ def hook_pre_exec_re_pattern_findall(self, string):
 def hook_post_exec_re_compile(retval, pattern, flags=None):
   """Hook for re.compile post execution to hook returned objects functions."""
   _ = (pattern, flags)  # Satisfy lint
-  sanlib.sanitizer_log('Inside of post compile hook', 0)
+  sanlib.sanitizer_log('Inside of post compile hook', sanlib.LOG_DEBUG)
   wrapper_object = sanlib.create_object_wrapper(
       findall=(hook_pre_exec_re_pattern_findall,
                hook_pre_exec_re_pattern_findall))
@@ -78,4 +81,4 @@ def hook_pre_exec_re_compile(pattern, flags=None):
   """Check if tainted input exists in pattern. If so, likely chance of making
     ReDOS possible."""
   _ = (pattern, flags)  # Satisfy lint
-  sanlib.sanitizer_log('Inside re compile hook', 0)
+  sanlib.sanitizer_log('Inside re compile hook', sanlib.LOG_DEBUG)

@@ -12,49 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets: https://github.com/advisories/GHSA-6j58-grhv-2769."""
+"""Fuzzer targetting command injection of os.system."""
 
+import os
 import sys
-import pexpect
 import atheris
 import pysecsan
-import ansible_runner
-from ansible_runner.config.runner import RunnerConfig
 
-pysecsan.add_hooks()
+
+def list_files_perhaps(param, magicval):
+  """Pass fuzzer data into os.system."""
+  if 'B' not in param:
+    return
+  if magicval == 1338:
+    os.system('exec-san')
+  elif magicval == 1339:
+    os.system('ls -la FROMFUZZ')
+  else:
+    os.system('ls -la ./')
 
 
 def test_one_input(data):
   """Fuzzer entrypoint."""
   fdp = atheris.FuzzedDataProvider(data)
-
-  conf = RunnerConfig('/tmp/')
-  conf.suppress_ansible_output = True
-  conf.expect_passwords = {pexpect.TIMEOUT: None, pexpect.EOF: None}
-  conf.cwd = str('/tmp/')
-  conf.env = {}
-  conf.job_timeout = 10
-  conf.idle_timeout = 0
-  conf.pexpect_timeout = 2.
-  conf.pexpect_use_poll = True
-  conf.command = 'from_fuzzer'
-
-  runner = ansible_runner.Runner(conf)
-  runner.resource_profiling = True
-  # rc.resource_profiling_base_cgroup = "; exec-san"
-  assistance = True
-  if assistance and fdp.ConsumeIntInRange(1, 100) > 80:
-    conf.resource_profiling_base_cgroup = 'FROMFUZZ'
-  else:
-    conf.resource_profiling_base_cgroup = fdp.ConsumeUnicodeNoSurrogates(24)
-  try:
-    runner.run()
-  except (RuntimeError, ValueError, TypeError) as _:
-    pass
+  list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24),
+                     fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
   """Set up and start fuzzing."""
+  pysecsan.add_hooks()
+
   atheris.instrument_all()
   atheris.Setup(sys.argv, test_one_input, enable_python_coverage=True)
   atheris.Fuzz()

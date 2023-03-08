@@ -12,37 +12,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fuzzer displaying insecure use of subprocess.Popen."""
+"""Fuzzer targetting command injection of eval."""
+# pylint: disable=eval-used
 
-import os
 import sys
-import subprocess
 import atheris
 import pysecsan
 
+pysecsan.add_hooks()
 
-def list_files_perhaps(param):
-  """Insecure call to Popen."""
-  try:
-    subprocess.Popen(' '.join(['ls', '-la', param]), shell=True)
-    os.system(param)
-  except ValueError:
-    pass
+
+def list_files_perhaps(param, magicval):
+  """Pass fuzzer data into eval."""
+  if len(param) < 3:
+    return
+  if magicval == 1337:
+    try:
+      eval("FROMFUZZ")
+    except ValueError:
+      pass
 
 
 def test_one_input(data):
   """Fuzzer entrypoint."""
   fdp = atheris.FuzzedDataProvider(data)
-
-  if fdp.ConsumeIntInRange(1, 10) == 5:
-    list_files_perhaps('FROMFUZZ')
-  else:
-    list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24))
+  list_files_perhaps(fdp.ConsumeUnicodeNoSurrogates(24),
+                     fdp.ConsumeIntInRange(500, 1500))
 
 
 def main():
   """Set up and start fuzzing."""
-  pysecsan.add_hooks()
 
   atheris.instrument_all()
   atheris.Setup(sys.argv, test_one_input, enable_python_coverage=True)
