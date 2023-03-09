@@ -15,6 +15,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/gweis/isodate isodate
-RUN python3 -m pip install --upgrade pip && pip install pysecsan
 COPY *.sh *py $SRC/
 WORKDIR $SRC/isodate

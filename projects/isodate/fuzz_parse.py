@@ -17,10 +17,6 @@ import atheris
 
 import isodate
 
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)

@@ -18,9 +18,6 @@ import atheris
 from jmespath import parser
 from jmespath import exceptions
 
-import pysecsan
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
