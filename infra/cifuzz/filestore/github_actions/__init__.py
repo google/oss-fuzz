@@ -24,7 +24,7 @@ INFRA_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
                  os.path.pardir))
 sys.path.append(INFRA_DIR)
-OSS_FUZZ_ROOT_DIR = os.dirname(INFRA_DIR)
+OSS_FUZZ_ROOT_DIR = os.path.dirname(INFRA_DIR)
 
 import utils
 import http_utils
