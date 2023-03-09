@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,26 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone --depth 1 https://github.com/uiri/toml toml
-COPY build.sh fuzz_*.py atheris_dict.py $SRC/
-WORKDIR $SRC/toml
+import sys
+import atheris
+import io
+
+import toml
+
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+    try:
+        f = io.StringIO(fdp.ConsumeString(sys.maxsize))
+        result = toml.decoder.load(f)
+    except toml.TomlDecodeError:
+        pass
+
+
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()
