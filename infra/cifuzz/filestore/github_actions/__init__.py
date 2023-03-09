@@ -26,7 +26,6 @@ INFRA_DIR = os.path.abspath(
 sys.path.append(INFRA_DIR)
 OSS_FUZZ_ROOT_DIR = os.dirname(INFRA_DIR)
 
-
 import utils
 import http_utils
 import filestore
