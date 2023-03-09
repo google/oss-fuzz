@@ -37,7 +37,11 @@ COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 ADD . ${OSS_FUZZ_ROOT}
-RUN npm install -g ${OSS_FUZZ_ROOT}/infra/cifuzz
+# Don't use the default npm location since jazzer.js can break us.
+# This means javascript needed by cifuzz/clusterfuzzlite must be executed in
+# OSS_FUZZ_ROOT.
+RUN cd ${OSS_FUZZ_ROOT} && npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
+
 
 ENV PYTHONUNBUFFERED=1
 
