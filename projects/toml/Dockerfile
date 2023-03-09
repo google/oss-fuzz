@@ -16,7 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone --depth 1 https://github.com/uiri/toml toml
-
 COPY build.sh fuzz_*.py atheris_dict.py $SRC/
-
 WORKDIR $SRC/toml

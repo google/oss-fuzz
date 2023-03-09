@@ -19,8 +19,7 @@ import sys
 import atheris
 import atheris_dict
 
-with atheris.instrument_imports():
-    import toml
+import toml
 
 
 def TestOneInput(data):

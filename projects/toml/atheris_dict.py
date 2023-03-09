@@ -40,7 +40,7 @@ def random_float():
 
 
 def random_string():
-    return fdp.ConsumeString(sys.maxsize)
+    return fdp.ConsumeString(fdp.ConsumeIntInRange(0, 1024))
 
 
 def random_datetime():
