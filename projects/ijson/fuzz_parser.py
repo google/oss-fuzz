@@ -19,9 +19,6 @@ import json
 import ijson
 import atheris
 
-import pysecsan
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   try:
