@@ -70,6 +70,7 @@ compile_package () {
         cp fuzz_ng_$pkg_flat/copy/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cp fuzz_ng_$pkg_flat/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cp $SRC/goroot/src/$pkg/*_test.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
+        cp -r $SRC/goroot/src/$pkg/testdata $SRC/goroot/src/fuzz_ng_$pkg_flat/ || true
         sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' $SRC/goroot/src/fuzz_ng_$pkg_flat/*.go
         export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
         pushd $SRC/goroot/src/fuzz_ng_$pkg_flat/
