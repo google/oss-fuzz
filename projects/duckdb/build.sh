@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-make
+make CRASH_ON_ASSERT=1
 EXTENSION_LIBS=$(find ./build/release/extension/ -name "*.a")
 THIRD_PARTY_LIBS=$(find ./build/release/third_party/ -name "*.a")
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/parse_fuzz_test.cpp \
