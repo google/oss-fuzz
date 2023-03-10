@@ -44,8 +44,8 @@ def fuzz_csrf(data):
   with app.test_request_context():
     try:
       validate_csrf(
-          generate_csrf(secret_key=fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                        token_key=fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
+          generate_csrf(secret_key=fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
+                        token_key=fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))))
     except ValidationError:
       pass
 

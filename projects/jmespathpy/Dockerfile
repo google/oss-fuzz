@@ -14,6 +14,5 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/jmespath/jmespath.py jmespath.py
-RUN python3 -m pip install --upgrade pip && pip install pysecsan
 COPY *.sh *py $SRC/
 WORKDIR $SRC/jmespath.py

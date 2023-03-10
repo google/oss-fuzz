@@ -20,10 +20,6 @@ from bs4 import BeautifulSoup
 import unittest
 import soupsieve as sv
 
-# Security sensitive sanitizer
-import pysecsan
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)

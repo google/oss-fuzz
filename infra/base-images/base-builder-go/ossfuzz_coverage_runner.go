@@ -15,6 +15,7 @@
 package mypackagebeingfuzzed
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -28,6 +29,7 @@ func TestFuzzCorpus(t *testing.T) {
 		t.Logf("No fuzzing corpus directory set")
 		return
 	}
+	filename := ""
 	defer func() {
 		if r := recover(); r != nil {
 			t.Error("Fuzz panicked in "+filename, r)
@@ -42,22 +44,22 @@ func TestFuzzCorpus(t *testing.T) {
 			_ = pprof.StartCPUProfile(f)
 		}
 	}
-	infos, err := ioutil.ReadDir(dir)
+	_, err := ioutil.ReadDir(dir)
 	if err != nil {
 		t.Logf("Not fuzzing corpus directory %s", err)
 		return
 	}
-	filename := ""
 	// recurse for regressions subdirectory
-	err = filepath.Walk(".", func(filename string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(dir, func(fname string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
-		data, err := ioutil.ReadFile(filename)
+		data, err := ioutil.ReadFile(fname)
 		if err != nil {
 			t.Error("Failed to read corpus file", err)
 			return err
 		}
+		filename = fname
 		FuzzFunction(data)
 		return nil
 	})

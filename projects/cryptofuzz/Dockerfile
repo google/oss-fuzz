@@ -21,7 +21,7 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN install_go.sh
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip
+    apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip bsdmainutils
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora

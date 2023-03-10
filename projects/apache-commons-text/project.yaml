@@ -1,0 +1,19 @@
+homepage: "https://github.com/apache/commons-text/"
+language: jvm
+primary_contact: "fuzz-testing@commons.apache.org"
+fuzzing_engines:
+  - "libfuzzer"
+main_repo: "https://github.com/apache/commons-text/"
+sanitizers:
+  - "address"
+auto_ccs:
+  - "security@commons.apache.org"
+vendor_ccs:
+  - "michael.nothhard@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "wagner@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

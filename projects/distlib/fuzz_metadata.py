@@ -24,7 +24,7 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
     metadata = LegacyMetadata()
-    metadata.read_file(StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
+    metadata.read_file(StringIO(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))))
   except ValueError:
     # ValueErrors are raised varies places, e.g.
     # https://github.com/pypa/distlib/blob/05375908c1b2d6b0e74bdeb574569d3609db9f56/distlib/version.py#L106
@@ -33,7 +33,7 @@ def TestOneInput(data):
     pass
 
   try:
-    metadata = Metadata(fileobj=StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
+    metadata = Metadata(fileobj=StringIO(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))))
   except ValueError:
     # ValueErrors are raised varies places, e.g.
     # https://github.com/pypa/distlib/blob/05375908c1b2d6b0e74bdeb574569d3609db9f56/distlib/version.py#L106

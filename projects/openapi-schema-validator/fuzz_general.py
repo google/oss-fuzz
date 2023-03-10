@@ -23,11 +23,11 @@ import openapi_schema_validator
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
-    fuzz_dict_schema = json.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-    fuzz_dict_instance = json.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    fuzz_dict_schema = json.loads(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)))
+    fuzz_dict_instance = json.loads(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)))
   except:
     return
-  if not isinstance(fuzz_schema, dict) or not isinstance(
+  if not isinstance(fuzz_dict_schema, dict) or not isinstance(
       fuzz_dict_instance, dict):
     return
 

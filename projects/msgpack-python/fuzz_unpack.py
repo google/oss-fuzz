@@ -19,8 +19,6 @@ import atheris
 import io
 import msgpack
 
-import pysecsan
-pysecsan.add_hooks()
 
 def TestOneInput(data):
   b = io.BytesIO(data)

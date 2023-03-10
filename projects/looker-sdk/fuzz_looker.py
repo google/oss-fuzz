@@ -51,7 +51,7 @@ def transport_requests_mock(
 def TestOneInput(data):
   global return_dict
   fdp = atheris.FuzzedDataProvider(data)
-  s1 = fdp.ConsumeString(sys.maxsize)
+  s1 = fdp.ConsumeString(fdp.ConsumeIntInRange(0, 1024))
   try:
     fuzzed_dict = json.loads(s1)
   except:

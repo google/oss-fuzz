@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/uiri/toml toml
-WORKDIR toml
-COPY build.sh *.py $SRC/
+COPY build.sh fuzz_*.py atheris_dict.py $SRC/
+WORKDIR $SRC/toml

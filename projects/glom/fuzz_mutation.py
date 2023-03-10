@@ -26,13 +26,13 @@ def TestOneInput(data):
   try:
     glom.mutation.delete({'a': [{
         'f': 'z'
-    }, {'ff', 'zz'}]}, fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    }, {'ff', 'zz'}]}, fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except (glom.GlomError, ValueError):
     pass
 
   # Create a random object using json
   try:
-    json_val = json.loads(fdp.ConsumeString(sys.maxsize))
+    json_val = json.loads(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 1024)))
   except Exception:
     return
 

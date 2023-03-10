@@ -109,7 +109,7 @@ if [ "$SANITIZER" = undefined ]; then
     cp CryptofuzzJavaHarness.class $OUT/
 fi
 
-if [[ $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *-m32* && "$SANITIZER" != "coverage" ]]
 then
     cd $SRC/
     tar Jxf zig-latest.tar.xz
@@ -248,8 +248,8 @@ make symcrypt_common symcrypt_generic -j$(nproc)
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
 export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
-export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
-export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/libsymcrypt_common.a)
+export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/symcrypt_generic.a)
 
 # Compile Cryptofuzz SymCrypt module
 cd $SRC/cryptofuzz/modules/symcrypt
@@ -334,6 +334,7 @@ then
     scripts/config.pl unset MBEDTLS_HAVE_ASM
     scripts/config.pl unset MBEDTLS_PADLOCK_C
     scripts/config.pl unset MBEDTLS_AESNI_C
+    scripts/config.pl unset MBEDTLS_AESCE_C
 fi
 mkdir build/
 cd build/

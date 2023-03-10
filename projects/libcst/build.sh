@@ -25,6 +25,12 @@ cd ../
 mkdir fuzzbuild
 cd fuzzbuild
 
+if [ "$SANITIZER" = "address" ]
+then
+  # Enable pysecsan
+  export ENABLE_PYSECSAN="1"
+fi
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
