@@ -18,16 +18,25 @@ import ipykernel
 from ipykernel.serialize import deserialize_object, serialize_object
 
 
+def ConsumeRandomLengthBufferList(fdp):
+  """Creates a list of buffers of various lengths"""
+  buffers = []
+  max_range = fdp.ConsumeIntInRange(1, 50)
+  for _ in range(1, max_range):
+    buffers.append(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 200)))
+  return buffers
+
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
   try:
-    deserialized_obj = deserialize_object(fdp.ConsumeBytes(4096))
-  except Exception as e:
+    deserialized_obj = deserialize_object(ConsumeRandomLengthBufferList(fdp))
+  except Exception:
     return
 
   # Any deserizlied object should be serializable
-  serialize_object(deserialize_obj)
+  serialize_object(deserialized_obj)
 
 
 def main():
