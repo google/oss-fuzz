@@ -22,7 +22,6 @@ def TestOneInput(data):
   targets = [
       validators.uuid,
       validators.url,
-      validators.truthy,
       validators.slug,
       validators.mac_address,
       validators.ipv4,
