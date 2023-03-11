@@ -19,7 +19,7 @@
 export CFLAGS="${CFLAGS} -fno-lto"
 export CXXFLAGS="${CXXFLAGS} -fno-lto"
 export CPPFLAGS="${CXXFLAGS} -fno-lto"
-pip3 install -e .
+python3 -m pip install -e .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   LD_PRELOAD=$OUT/sanitizer_with_fuzzer.so ASAN_OPTIONS=detect_leaks=0  compile_python_fuzzer $fuzzer
 done
