@@ -72,7 +72,6 @@ compile_package () {
         go test -mod=readonly
         zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
         popd
-        rm -rf fuzz_ng_$pkg_flat/
     )
 }
 
