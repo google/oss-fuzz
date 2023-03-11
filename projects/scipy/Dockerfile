@@ -15,7 +15,13 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y \
   gfortran libopenblas-dev liblapack-dev pkg-config
-RUN pip3 install --upgrade pip numpy
+# Ensure we work from right python version
+RUN apt-get install -y python3.9 python3.9-dev && \
+    ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
+    apt-get install -y python3-pip && \
+    python3 -m pip install cython "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2"
+RUN python3 -m pip install --upgrade pip setuptools meson ninja numpy pybind11 cython pythran setuptools_scm
+
 RUN git clone https://github.com/scipy/scipy scipy
 COPY *.sh *py $SRC/
 WORKDIR $SRC/scipy
