@@ -19,6 +19,7 @@ import binascii
 
 import ecdsa
 from ecdsa.keys import VerifyingKey
+from ecdsa import SigningKey
 
 
 def target1(fdp):
@@ -30,7 +31,8 @@ def target1(fdp):
 
 def target2(fdp):
   try:
-    VerifyingKey.from_pem(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)), hashlib.sha256)
+    VerifyingKey.from_pem(fdp.ConsumeBytes(
+      fdp.ConsumeIntInRange(0, 1024)), hashlib.sha256)
   except ecdsa.der.UnexpectedDER:
     pass
   except binascii.Error:
@@ -40,8 +42,9 @@ def target2(fdp):
 def target3(fdp):
   try:
     VerifyingKey.from_public_key_recovery_with_digest(
-        fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)), fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
-        ecdsa.curves.Ed25519)
+      fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
+      fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
+      ecdsa.curves.Ed25519)
   except ecdsa.der.UnexpectedDER:
     pass
   except ValueError:
@@ -50,8 +53,8 @@ def target3(fdp):
 
 def target4(fdp):
   try:
-    VerifyingKey.from_string(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
-                             ecdsa.curves.Ed25519)
+    VerifyingKey.from_string(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
+      ecdsa.curves.Ed25519)
   except ecdsa.keys.MalformedPointError:
     pass
   except ecdsa.der.UnexpectedDER:
@@ -75,14 +78,50 @@ def target5(fdp):
     pass
 
 
+def target6(fdp):
+  sk = SigningKey.generate()
+  vk = sk.verifying_key
+  message = fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024))
+  signature = sk.sign(message)
+  assert vk.verify(signature, message)
+
+
+def target7(fdp):
+  try:
+    SigningKey.from_string(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)),
+                           curve=ecdsa.curves.NIST384p)
+  except ecdsa.keys.MalformedPointError:
+    pass
+
+
+def target8(fdp):
+  try:
+    SigningKey.from_pem(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)))
+  except ecdsa.der.UnexpectedDER:
+    pass
+  except ValueError:
+    pass
+
+
+def target9(fdp):
+  try:
+    SigningKey.from_der(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)))
+  except ecdsa.der.UnexpectedDER:
+    pass
+
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   targets = [
-      target1,
-      target2,
-      target3,
-      target4,
-      target5,
+    target1,
+    target2,
+    target3,
+    target4,
+    target5,
+    target6,
+    target7,
+    target8,
+    target9
   ]
 
   target = fdp.PickValueInList(targets)
