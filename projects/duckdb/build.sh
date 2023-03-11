@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-make relassert CRASH_ON_ASSERT=1
+make relassert CRASH_ON_ASSERT=1 DISABLE_SANITIZER=1
 EXTENSION_LIBS=$(find ./build/relassert/extension/ -name "*.a")
 THIRD_PARTY_LIBS=$(find ./build/relassert/third_party/ -name "*.a")
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/parse_fuzz_test.cpp \
