@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import soupsieve as sv
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  html_str      = fdp.ConsumeUnicodeNoSurrogates(1024)
-  soupsieve_str = fdp.ConsumeUnicodeNoSurrogates(1024)
+  html_str = fdp.ConsumeUnicodeNoSurrogates(1024)
 
   try:
     the_soup = BeautifulSoup(html_str, 'html.parser')
@@ -33,17 +32,10 @@ def TestOneInput(data):
     return
 
   try:
-    list(sv.select(soupsieve_str, the_soup))
-  except sv.SelectorSyntaxError:
+    sv.filter(fdp.ConsumeUnicodeNoSurrogates(24), the_soup)
+  except sv.util.SelectorSyntaxError:
     pass
-  except RecursionError:
-    # Not interesting
-    # Fixes, e.g. https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=54288
-    pass
-  except NotImplementedError:
-    # Not implemented
-    # Catches e.g. https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=54276
-    pass
+  sv.purge()
 
 
 def main():
