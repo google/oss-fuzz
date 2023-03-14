@@ -20,6 +20,9 @@ set -o pipefail
 set -o errexit
 set -x
 
+# required by Go 1.20
+export CXX="${CXX} -lresolv"
+
 # Compile kOps fuzzers
 (
 cd kops
