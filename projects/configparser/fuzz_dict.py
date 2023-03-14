@@ -33,6 +33,9 @@ def TestOneInput(data):
     config_parser.read_dict(json_dict)
   except (configparser.Error):
     pass
+  except ValueError:
+    # Thrown at: https://github.com/jaraco/configparser/blob/8b5181b4f270be88f3e4572300406587fdbd4a6e/src/backports/configparser/__init__.py#L422
+    pass
 
 
 def main():
