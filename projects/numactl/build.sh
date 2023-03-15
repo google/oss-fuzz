@@ -19,7 +19,7 @@
 ./configure
 make libnuma.la
 
-$CC $CFLAGS -c $SRC/fuzz_parse_str.c -o fuzz_parse_str.o -I./
+$CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
 
 # Link with CXX as this is needed for OSS-Fuzz Centipede
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str
