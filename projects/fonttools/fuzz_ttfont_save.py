@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,38 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import io
 import sys
 import atheris
 
-from fontTools import (
-  ttx,
-  misc,
-  ttLib
-)
+from fontTools import ttLib
+from fontTools.ttLib import TTFont
 import xml
 
 
 def TestOneInput(data):
-  randfile = "/tmp/random.ttx"
+  randfile = "/tmp/random2.ttx"
   with open(randfile, "wb") as f:
     f.write(data)
-
-  if not os.path.isfile(randfile):
+  try:
+    otf = TTFont(randfile)
+  except Exception:
     return
 
-  try:
-    ttx.ttCompile(randfile, "/tmp/t2", ttx.Options([], 1))
-  except xml.parsers.expat.ExpatError:
-    pass
-  except LookupError:  # Error thrown by standard library
-    pass
-  except ValueError:  # Error thrown by standard library
-    pass
-  except misc.xmlReader.TTXParseError:
-    pass
-  except ttLib.TTLibError:
-    pass
-
+  # The idea to check here is that does not throw an issue when being loaded
+  # should be save-able.
+  otf.saveXML('/tmp/saved_font.xml')
 
 def main():
   atheris.instrument_all()
