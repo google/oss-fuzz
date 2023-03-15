@@ -14,4 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
+export CXXFLAGS="${CXXFLAGS} -lresolv"
 $SRC/cncf-fuzzing/projects/dapr/build.sh

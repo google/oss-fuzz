@@ -17,7 +17,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/instagram/libcst libcst
 RUN apt-get install build-essential libssl-dev libffi-dev python3-dev cargo -y
 RUN pip3 install --upgrade pip
-RUN pip3 install pysecsan
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly

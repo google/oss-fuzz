@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Glue for pysecsan library."""
+#
+################################################################################
 
-# Import sanlib and expose only neede functionality by way of __all__
-from .sanlib import *
+import sys
+import atheris
+import io
 
-# pylint: disable=undefined-all-variable
-__all__ = ['add_hooks']
+import toml
+
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+    try:
+        f = io.StringIO(fdp.ConsumeString(sys.maxsize))
+        result = toml.decoder.load(f)
+    except toml.TomlDecodeError:
+        pass
+
+
+def main():
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()

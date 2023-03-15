@@ -16,10 +16,6 @@ import sys
 import atheris
 import pycparser
 
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
