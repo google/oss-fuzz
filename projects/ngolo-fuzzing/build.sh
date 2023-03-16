@@ -79,7 +79,7 @@ compile_package () {
         popd
         rm -rf $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cd fuzz_ng_$pkg_flat
-        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus || true
     )
 }
 
