@@ -1,0 +1,12 @@
+fuzzing_engines:
+  - libfuzzer
+homepage: https://www.sigstore.dev/
+language: jvm
+main_repo: https://github.com/sigstore/sigstore-java.git
+sanitizers:
+  - address
+primary_contact: "appu@google.com"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
