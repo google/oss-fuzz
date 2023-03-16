@@ -1,5 +1,4 @@
-
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y maven
-
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    cat fuzzing/dictionaries/json.dict > $SRC/JsonFuzzer.dict
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -q $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN git clone --depth 1 https://github.com/alibaba/fastjson2
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/numactl/numactl numactl
+WORKDIR numactl
 COPY build.sh $SRC/
-COPY JsonFuzzer.java $SRC/
-WORKDIR $SRC/fastjson2

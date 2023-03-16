@@ -1,5 +1,5 @@
-
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y maven
+./autogen.sh
+./configure
+make libnuma.la
 
-RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    cat fuzzing/dictionaries/json.dict > $SRC/JsonFuzzer.dict
+$CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
 
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -q $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN git clone --depth 1 https://github.com/alibaba/fastjson2
-
-COPY build.sh $SRC/
-COPY JsonFuzzer.java $SRC/
-WORKDIR $SRC/fastjson2
+# Link with CXX as this is needed for OSS-Fuzz Centipede
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str

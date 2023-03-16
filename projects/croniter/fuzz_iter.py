@@ -25,12 +25,17 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   base = datetime(2012, 4, 6, 13, 26, 10)
   try:
-    itr = croniter.croniter(fdp.ConsumeString(50), base)
+    cron_str = fdp.ConsumeString(50)
+    hash_id = fdp.ConsumeBytes(2)
+    croniter.croniter.is_valid(cron_str)
+    itr = croniter.croniter(cron_str, base, hash_id=hash_id)
     idx = 0
     for v in itr.all_next():
       idx += 1
       if idx > 10:
         break
+    itr.get_next(base)
+    itr.get_prev(base)
   except (croniter.CroniterBadCronError, croniter.CroniterBadDateError) as e:
     pass
   except NameError as e:
