@@ -12,6 +12,7 @@ auto_ccs:
   - "szucs.krisztian@gmail.com"
   - "wesmckinn@gmail.com"
   - "xhochy@gmail.com"
+  - "willjones127@gmail.com"
 main_repo: 'https://github.com/apache/arrow.git'
 fuzzing_engines:
  - afl
