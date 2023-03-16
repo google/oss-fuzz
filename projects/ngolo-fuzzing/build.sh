@@ -91,6 +91,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ok.txt $SRC/ko.txt
 find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue
