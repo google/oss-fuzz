@@ -3,6 +3,7 @@ language: c
 primary_contact: "peter.hoddie@gmail.com"
 auto_ccs:
   - peter@moddable.com
+  - ps@moddable.com
   - ari@agoric.com
   - raphael@agoric.com
 sanitizers:
