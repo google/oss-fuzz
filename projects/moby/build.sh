@@ -47,7 +47,6 @@ go mod tidy && go mod vendor
 mv $SRC/moby/volume/mounts/parser_test.go $SRC/moby/volume/mounts/parser_test_fuzz.go
 mv $SRC/moby/volume/mounts/validate_unix_test.go $SRC/moby/volume/mounts/validate_unix_test_fuzz.go
 
-rm vendor/github.com/cilium/ebpf/internal/btf/fuzz.go
 
 if [ "$SANITIZER" != "coverage" ] ; then
 	go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/docker/docker/daemon

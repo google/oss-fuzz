@@ -79,7 +79,7 @@ compile_package () {
         popd
         rm -rf $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cd fuzz_ng_$pkg_flat
-        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus || true
     )
 }
 
@@ -91,6 +91,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ok.txt $SRC/ko.txt
 find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue

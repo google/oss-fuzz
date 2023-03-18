@@ -15,4 +15,7 @@
 #
 ################################################################################
 
+cd $SRC/crossplane
 $SRC/crossplane/test/fuzz/oss_fuzz_build.sh
+cd $SRC/crossplane-runtime
+$SRC/crossplane-runtime/test/fuzz/oss_fuzz_build.sh
