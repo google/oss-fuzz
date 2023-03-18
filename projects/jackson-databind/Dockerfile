@@ -30,7 +30,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -q $SRC/ObjectWriterFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
-RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
+RUN git clone --depth 1 --branch 2.15 https://github.com/FasterXML/jackson-databind
 
 RUN git clone --depth 1 https://github.com/forge/roaster
 
