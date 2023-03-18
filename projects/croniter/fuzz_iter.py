@@ -18,9 +18,9 @@ import sys
 
 from datetime import datetime
 import croniter
+from croniter.croniter import CroniterError, CroniterBadTypeRangeError
 
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   base = datetime(2012, 4, 6, 13, 26, 10)
@@ -36,7 +36,7 @@ def TestOneInput(data):
         break
     itr.get_next(base)
     itr.get_prev(base)
-  except (croniter.CroniterBadCronError, croniter.CroniterBadDateError) as e:
+  except (CroniterError, CroniterBadTypeRangeError) as e:
     pass
   except NameError as e:
     # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781
@@ -46,7 +46,7 @@ def TestOneInput(data):
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 if __name__ == "__main__":
