@@ -18,9 +18,12 @@ import sys
 
 import datetime
 import croniter
+from croniter.croniter import CroniterError, CroniterBadTypeRangeError
+
 
 def RandomDateTime(fdp):
     return datetime.datetime.now() + fdp.ConsumeProbability() * datetime.timedelta(days=200000)
+
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
@@ -33,7 +36,7 @@ def TestOneInput(data):
       idx += 1
       if idx > 10:
         break
-  except croniter.CroniterBadCronError as e:
+  except (CroniterError, CroniterBadTypeRangeError) as e:
     pass
 
 
