@@ -6,6 +6,7 @@ auto_ccs:
   - "fanquake@gmail.com"
   - "jonas@chaincode.com"
   - "pieter@chaincode.com"
+  - "n.goeggi@gmail.com"
 sanitizers:
   - address
   - undefined
