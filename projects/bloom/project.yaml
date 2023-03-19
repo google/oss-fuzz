@@ -1,0 +1,10 @@
+homepage: "https://github.com/bits-and-blooms/bloom"
+language: go
+primary_contact: "lemire@gmail.com"
+main_repo: "https://github.com/bits-and-blooms/bloom"
+auto_ccs:
+  - "nathaniel.brough@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
