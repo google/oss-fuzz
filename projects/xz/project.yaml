@@ -12,4 +12,4 @@ sanitizers:
   - address
   - memory
   - undefined
-main_repo: 'https://git.tukaani.org/xz.git'
+main_repo: 'https://github.com/tukaani-project/xz.git'
