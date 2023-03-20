@@ -1644,9 +1644,10 @@ def shell(args):
 
   run_args = _env_to_docker_args(env)
   if args.source_path:
+    workdir = _workdir_from_dockerfile(args.project)
     run_args.extend([
         '-v',
-        '%s:%s' % (_get_absolute_path(args.source_path), '/src'),
+        '%s:%s' % (_get_absolute_path(args.source_path), workdir),
     ])
 
   run_args.extend([
