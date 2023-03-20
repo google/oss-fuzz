@@ -85,6 +85,9 @@ cmake_args=(
     -DENABLE_BUNDLED_ZSTD=OFF
 )
 
+# To deal with a host filesystem from inside of container.
+git config --global --add safe.directory '*'
+
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
