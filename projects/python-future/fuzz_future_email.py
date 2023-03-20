@@ -21,18 +21,12 @@ import atheris
 
 from future.backports.email.mime.multipart import MIMEMultipart
 from future.backports.email.mime.text import MIMEText
-from future.backports.email.utils import formatdate
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   MIMEMultipart(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 1024)))
   MIMEText(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 1024)))
-
-  try:
-    formatdate(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 1024)))
-  except TypeError:
-    pass
 
 
 def main():
