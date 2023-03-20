@@ -238,12 +238,25 @@ make -B -j$(nproc)
 
 ## Compile SymCrypt
 cd $SRC/SymCrypt/
+
+# Disable speculative load hardening because
+# this results in MSAN false positives
+sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
+sed -i '/.*x86-speculative-load-hardening.*/d' modules_linux/common/ModuleCommon.cmake
+
+
 # Unittests don't build with clang and are not needed anyway
 sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
 
 mkdir b/
 cd b/
-cmake ../
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    cmake -DSYMCRYPT_USE_ASM=off ../
+else
+    cmake ../
+fi
+
 make symcrypt_common symcrypt_generic -j$(nproc)
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
