@@ -20,11 +20,11 @@ import sqlparse
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   sqlparse.format(
-    fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+    fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
     output_format='python'
   )
 
-  sqlparse.lexer.tokenize(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  sqlparse.lexer.tokenize(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
 
 
 def main():

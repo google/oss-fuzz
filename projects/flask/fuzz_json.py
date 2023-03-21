@@ -37,13 +37,13 @@ def TestOneInput(data):
     flask.request.get_json()
     return None
 
-  parse_set_header(fdp.ConsumeUnicode(sys.maxsize))
+  parse_set_header(fdp.ConsumeUnicode(fdp.ConsumeIntInRange(0, 512)))
   
   client = app.test_client()
 
   try:
     app.add_url_rule(
-      fdp.ConsumeUnicode(sys.maxsize),
+      fdp.ConsumeUnicode(fdp.ConsumeIntInRange(0, 512)),
       endpoint = "randomendpoint"
     )
   except ValueError:
@@ -52,7 +52,7 @@ def TestOneInput(data):
   try:
     client.post(
       "/json",
-      data=fdp.ConsumeUnicode(sys.maxsize),
+      data=fdp.ConsumeUnicode(fdp.ConsumeIntInRange(0, 512)),
       content_type="application/json"
     )
   except (TypeError, UnicodeEncodeError):

@@ -22,13 +22,13 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
   ByteChunker(chunk_size=fdp.ConsumeIntInRange(1, 100)).decode(
-    fdp.ConsumeBytes(sys.maxsize)
+    fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024))
   )
-  LineDecoder().decode(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+  LineDecoder().decode(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   TextChunker(chunk_size=fdp.ConsumeIntInRange(1, 100)).decode(
-    fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
   )
-  TextDecoder().decode(fdp.ConsumeBytes(sys.maxsize))
+  TextDecoder().decode(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 1024)))
 
 
 def main():

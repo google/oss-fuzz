@@ -23,12 +23,12 @@ from google.cloud.secretmanager_v1beta1.services.secret_manager_service import (
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    SecretManagerServiceClient.parse_secret_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_common_location_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_common_project_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_common_organization_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_common_folder_path(fdp.ConsumeString(sys.maxsize))
-    SecretManagerServiceClient.parse_common_billing_account_path(fdp.ConsumeString(sys.maxsize))
+    SecretManagerServiceClient.parse_secret_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
+    SecretManagerServiceClient.parse_common_location_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
+    SecretManagerServiceClient.parse_common_project_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
+    SecretManagerServiceClient.parse_common_organization_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
+    SecretManagerServiceClient.parse_common_folder_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
+    SecretManagerServiceClient.parse_common_billing_account_path(fdp.ConsumeString(fdp.ConsumeIntInRange(0, 512)))
 
 
 def main():

@@ -1,0 +1,16 @@
+homepage: "https://github.com/fangyidong/json-simple"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/fangyidong/json-simple"
+sanitizers:
+  - address
+vendor_ccs:
+  - "michael.nothhard@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "wagner@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

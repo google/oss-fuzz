@@ -68,9 +68,6 @@ cd ../binutils
 # The general strategy is to remove main functions such that the fuzzer (which has its own main)
 # can link against the code.
 
-# Copy over precondition files
-cp $SRC/binutils-preconditions/*.h .
-
 #
 # Patching
 #

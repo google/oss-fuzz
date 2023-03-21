@@ -8,6 +8,7 @@ auto_ccs:
 - slomo@coaxion.net
 - trevi55@gmail.com
 - mcatanza@redhat.com
+- tcullum@redhat.com
 sanitizers:
 - address
 - undefined
@@ -15,3 +16,8 @@ sanitizers:
 #  - memory
 help_url: https://gitlab.gnome.org/GNOME/glib/tree/master/fuzzing#how-to-reproduce-oss-fuzz-bugs-locally
 main_repo: 'https://gitlab.gnome.org/GNOME/glib'
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

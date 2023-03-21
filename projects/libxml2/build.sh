@@ -17,8 +17,8 @@
 ################################################################################
 
 if [ "$SANITIZER" = undefined ]; then
-    export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
-    export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+    export CFLAGS="$CFLAGS -fsanitize=integer -fno-sanitize-recover=integer"
+    export CXXFLAGS="$CXXFLAGS -fsanitize=integer -fno-sanitize-recover=integer"
 fi
 
 export V=1
@@ -26,9 +26,7 @@ export V=1
 ./autogen.sh \
     --disable-shared \
     --without-debug \
-    --without-ftp \
     --without-http \
-    --without-legacy \
     --without-python
 make -j$(nproc)
 
@@ -36,7 +34,7 @@ cd fuzz
 make clean-corpus
 make fuzz.o
 
-for fuzzer in html regexp schema uri xml xpath; do
+for fuzzer in html regexp schema uri valid xinclude xml xpath; do
     make $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \

@@ -22,13 +22,10 @@ def TestOneInput(data):
   targets = [
       validators.uuid,
       validators.url,
-      validators.truthy,
       validators.slug,
       validators.mac_address,
       validators.ipv4,
-      validators.ipv4_cidr,
       validators.ipv6,
-      validators.ipv6_cidr,
       validators.iban,
       validators.md5,
       validators.sha1,
@@ -52,20 +49,23 @@ def TestOneInput(data):
 
   try:
     target = fdp.PickValueInList(targets)
-    target(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    target(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except validators.ValidationFailure:
     pass
 
   try:
-    validators.length(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                      fdp.ConsumeIntInRange(1, 100),
-                      fdp.ConsumeIntInRange(1, 100))
-  except validators.ValidationFailure:
+    validators.length(fdp.ConsumeUnicodeNoSurrogates(
+        fdp.ConsumeIntInRange(0, 1024)),
+                      min_val=fdp.ConsumeIntInRange(1, 100),
+                      max_val=fdp.ConsumeIntInRange(1, 100))
+  except (validators.ValidationFailure, TypeError, AssertionError):
+    # Thrown by the functions.
     pass
 
   try:
-    validators.fi_ssn(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-                      fdp.ConsumeBool())
+    validators.fi_ssn(
+        fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
+        fdp.ConsumeBool())
   except validators.ValidationFailure:
     pass
 

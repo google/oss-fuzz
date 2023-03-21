@@ -19,7 +19,7 @@ FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 
 # do not use override toolchain
 # cf https://rust-lang.github.io/rustup/overrides.html
-export RUSTUP_TOOLCHAIN=nightly-2021-11-01
+export RUSTUP_TOOLCHAIN=nightly
 
 build_and_copy() {
   pushd "$1"
@@ -33,8 +33,8 @@ build_and_copy() {
 
 cd OpenSK
 
-# Main OpenSK fuzzing targets
-build_and_copy "."
+# CTAP library fuzzing targets
+build_and_copy libraries/opensk
 
 # persistent storage library
 build_and_copy libraries/persistent_store

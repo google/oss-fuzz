@@ -6,3 +6,8 @@ auto_ccs:
   - "marko@pganalyze.com"
   - "lukas@pganalyze.com"
   - "david@adalogics.com"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
