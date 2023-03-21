@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/litl/backoff
+language: python
+main_repo: https://github.com/litl/backoff
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
