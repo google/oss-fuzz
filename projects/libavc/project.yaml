@@ -5,7 +5,12 @@ sanitizers:
   - address
   - memory
 auto_ccs:
+  - aadithya.kamath@ittiam.com
+  - ashwin.natesan@ittiam.com
   - harish.mahendrakar@ittiam.com
+  - ram.mohan@ittiam.com
+  - umang.saini@ittiam.com
+  - vijayakumar.gr@ittiam.com
   - essick@google.com
   - lajos@google.com
 vendor_ccs:

@@ -17,13 +17,18 @@ import atheris
 
 import markupsafe
 
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   markupsafe.escape(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048)))
-
   s1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 2048))
   M1 = markupsafe.Markup(s1)
   M1.unescape()
+  M1.striptags()
+  try:
+    M1.format(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 100)))
+  except (ValueError, KeyError, AttributeError, TypeError, IndexError):
+    pass
 
 
 def main():
