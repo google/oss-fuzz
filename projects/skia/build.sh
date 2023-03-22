@@ -79,7 +79,7 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_directory=false
            skia_enable_fontmgr_custom_embedded=false
            skia_enable_fontmgr_custom_empty=true
-           skia_enable_gpu=true
+           skia_enable_ganesh=true
            skia_enable_skottie=true
            skia_use_vulkan=true
            skia_use_egl=false

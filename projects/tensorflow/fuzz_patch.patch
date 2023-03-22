@@ -1,5 +1,5 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index c32a54ab..857608ea 100644
+index 231a40bf..7330af85 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
 @@ -55,23 +55,23 @@ tf_cc_fuzz_test(

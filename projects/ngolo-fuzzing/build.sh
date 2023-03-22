@@ -70,6 +70,7 @@ compile_package () {
         cp fuzz_ng_$pkg_flat/copy/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cp fuzz_ng_$pkg_flat/*.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cp $SRC/goroot/src/$pkg/*_test.go $SRC/goroot/src/fuzz_ng_$pkg_flat/
+        cp -r $SRC/goroot/src/$pkg/testdata $SRC/goroot/src/fuzz_ng_$pkg_flat/ || true
         sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' $SRC/goroot/src/fuzz_ng_$pkg_flat/*.go
         export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
         pushd $SRC/goroot/src/fuzz_ng_$pkg_flat/
@@ -78,7 +79,7 @@ compile_package () {
         popd
         rm -rf $SRC/goroot/src/fuzz_ng_$pkg_flat/
         cd fuzz_ng_$pkg_flat
-        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus || true
     )
 }
 
@@ -90,6 +91,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ok.txt $SRC/ko.txt
 find $SRC/goroot/src/ -type d | cut -d/ -f5- | while read pkg; do
     if [[ `ls $SRC/goroot/src/$pkg/*.go | wc -l` == '0' ]]; then
         continue

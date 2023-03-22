@@ -32,31 +32,23 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   program_name = filename;
 
-  char **c2 = malloc(sizeof(char*)*6);
-  char *c2_1 = strdup("AAABC");
-  char *c2_2 = strdup("BBC");
-  char *c2_3 = strdup("0xbeefbeef");
-  char *c2_4 = strdup("0xcafebabe");
-  char *c2_5 = strdup("5123423");
-  c2[0] = c2_1;
-  c2[1] = c2_2;
-  c2[2] = c2_3;
-  c2[3] = c2_4;
-  c2[4] = c2_5;
+  char **c2 = xmalloc(sizeof(char*)*6);
+  c2[0] = xstrdup("AAABC");
+  c2[1] = xstrdup("BBC");
+  c2[2] = xstrdup("0xbeefbeef");
+  c2[3] = xstrdup("0xcafebabe");
+  c2[4] = xstrdup("5123423");
   c2[5] = NULL;
 
-  naddr  = 2;
+  naddr = 5;
   addr = c2;
 
   // Main fuzz entrypoint in addr2line.c
   process_file(filename, NULL, NULL);
- 
+
+  for (int i = 5; --i >= 0; )
+    free(c2[i]);
   free(c2);
-  free(c2_1);
-  free(c2_2);
-  free(c2_3);
-  free(c2_4);
-  free(c2_5);
 
   unlink(filename);
   return 0;

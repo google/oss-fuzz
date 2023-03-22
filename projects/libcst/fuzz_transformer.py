@@ -16,10 +16,6 @@
 import sys
 import atheris
 
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
 import libcst
 from libcst import parse_module
 from libcst import PartialParserConfig, ParserSyntaxError

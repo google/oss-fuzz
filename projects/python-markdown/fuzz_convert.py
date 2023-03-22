@@ -17,11 +17,6 @@ import atheris
 
 import markdown
 
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 

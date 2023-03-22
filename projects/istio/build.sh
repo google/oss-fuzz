@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# required by Go 1.20
+export CXX="${CXX} -lresolv"
+
+# Build fuzzers
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
 	echo "Skipping most fuzzers since the OSS-fuzz CI may fail from running out of disk space."

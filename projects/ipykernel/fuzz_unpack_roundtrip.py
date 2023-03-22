@@ -18,18 +18,24 @@ import ipykernel
 from ipykernel.serialize import unpack_apply_message, pack_apply_message
 
 
+def ConsumeRandomLengthBufferList(fdp):
+  """Creates a list of buffers of various lengths"""
+  buffers = []
+  max_range = fdp.ConsumeIntInRange(3, 50)
+  for _ in range(3, max_range):
+    buffers.append(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 200)))
+  return buffers
+
+
 def TestOneInput(data):
   if len(data) < 48:
     return
   fdp = atheris.FuzzedDataProvider(data)
-  buffers = [
-    fdp.ConsumeBytes(1048),
-    fdp.ConsumeBytes(1048),
-    fdp.ConsumeBytes(1048),
-  ]
+
   try:
+    buffers = ConsumeRandomLengthBufferList(fdp)
     f, args, kwargs = unpack_apply_message(buffers)
-  except Exception as e:
+  except Exception:
     return
 
   # Anything unpackable, should be packable.

@@ -18,18 +18,23 @@ import atheris
 
 import sys
 import pygments
-import pygments.formatters.html
+from pygments.formatters import *
 import pygments.lexers
 
-formatter = pygments.formatters.html.HtmlFormatter()
 # pygments.LEXERS.values() is a list of tuples like this, with some of then empty:
 # (textual class name, longname, tuple of aliases, tuple of filename patterns, tuple of mimetypes)
 LEXERS = [l[2][0] for l in pygments.lexers.LEXERS.values() if l[2]]
+FORMATTERS = [BBCodeFormatter(), GroffFormatter(), HtmlFormatter(),
+              IRCFormatter(), LatexFormatter(), NullFormatter(),
+              PangoMarkupFormatter(), RawTokenFormatter(), RtfFormatter(),
+              SvgFormatter(), Terminal256Formatter(), TerminalFormatter(),
+              TerminalTrueColorFormatter()]
 
 
 def TestOneInput(data: bytes) -> int:
   fdp = atheris.FuzzedDataProvider(data)
   random_lexer = pygments.lexers.get_lexer_by_name(fdp.PickValueInList(LEXERS))
+  formatter = fdp.PickValueInList(FORMATTERS)
   str_data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
 
   pygments.highlight(str_data, random_lexer, formatter)

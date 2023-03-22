@@ -15,6 +15,16 @@
 #
 ################################################################################
 
+# Temporarily disable coverage build in OSS-Fuzz's CI
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+	if [ "${SANITIZER}" = 'coverage' ]
+	then
+		exit 0
+	fi
+
+fi
+
 rm -r $SRC/fabric/cmd/cryptogen
 
 cp $SRC/ccprovider_fuzzer.go ./core/common/ccprovider/
@@ -23,7 +33,9 @@ cp $SRC/policydsl_fuzzer.go $SRC/fabric/common/policydsl/
 cp $SRC/msp_fuzzer.go $SRC/fabric/msp/
 cp $SRC/fabenc_fuzzer.go $SRC/fabric/common/flogging/fabenc/
 
-cd $SRC/instrumentation && go run main.go $SRC/fabric && cd $SRC/fabric
+cd $SRC/instrumentation
+go run main.go --target_dir=$SRC/fabric --check_io_length=true
+cd $SRC/fabric
 go mod tidy && go mod vendor
 
 go get github.com/AdaLogics/go-fuzz-headers

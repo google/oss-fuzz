@@ -1,16 +1,15 @@
 homepage: "https://github.com/facebook/hermes"
 language: c++
-primary_contact: "neildhar@fb.com"
+primary_contact: "neildhar@meta.com"
 auto_ccs:
-  - "hmf@fb.com"
-  - "yaohway@fb.com"
-  - "axxu@fb.com"
-  - "avp@fb.com"
-  - "jsx@fb.com"
-  - "luigiconiglio@fb.com"
-  - "edq@fb.com"
+  - "hmf@meta.com"
+  - "yaohway@meta.com"
+  - "axxu@meta.com"
+  - "avp@meta.com"
+  - "luigiconiglio@meta.com"
+  - "edq@meta.com"
 vendor_ccs:
-  - "oss-fuzz@fb.com"
+  - "oss-fuzz@meta.com"
 fuzzing_engines:
   - libfuzzer
   - afl

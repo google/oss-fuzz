@@ -17,9 +17,6 @@ import os
 import sys
 import atheris
 
-import pysecsan
-pysecsan.add_hooks()
-
 with atheris.instrument_imports(enable_loader_override=False):
   from xdg.DesktopEntry import DesktopEntry
   from xdg.Exceptions import ParsingError

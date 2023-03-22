@@ -111,6 +111,14 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   init_objcopy_global_state();
 
+  /* glibc getopt has internal static state.  Setting optind to zero
+     reinitialises it.  Do this every second run, which effectively
+     alternates objcopy with options then objcopy without options.
+     (optind will be 9 when copy_main returns.)  */
+  static int iter;
+  if (++iter & 1)
+    optind = 0;
+
   char *fakeArgv[12];
   fakeArgv[0] = "fuzz_objcopy";
   fakeArgv[1] = "-S";
