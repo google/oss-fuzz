@@ -4,6 +4,8 @@ primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
   - address
   - memory
+  - undefined:
+     experimental: True
 auto_ccs:
   - aadithya.kamath@ittiam.com
   - harish.mahendrakar@ittiam.com
