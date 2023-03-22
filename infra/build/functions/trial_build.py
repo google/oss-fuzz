@@ -294,8 +294,10 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   print('Printing results')
   print('Project, Statuses')
   for project, build_result in build_results.items():
-    project_to_links = [f'gs://oss-fuzz-gcb-logs/log-{log_id}.txt'
-                        for project_to_build_ids[project]]
+    project_to_links = [
+        f'gs://oss-fuzz-gcb-logs/log-{log_id}.txt'
+        for log_id in project_to_build_ids[project]
+    ]
     print(project, build_result, project_to_links)
 
   return all(build_results.values())
