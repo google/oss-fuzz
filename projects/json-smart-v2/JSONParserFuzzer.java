@@ -25,8 +25,7 @@ public class JSONParserFuzzer {
     JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
     try{
       jp.parse(input);
-    }
-    catch( ParseException | NumberFormatException e){
+    } catch (ParseException | NumberFormatException e) {
       return;
     }
   }

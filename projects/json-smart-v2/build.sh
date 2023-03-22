@@ -17,14 +17,24 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-cd json-smart
 MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15 -Dmaven.javadoc.skip=true -Dmaven.repo.local=$WORK/m2"
+
+# build accessors-smart first json-smart depends on it
+cd accessors-smart
+$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
+cp "target/accessors-smart-$CURRENT_VERSION.jar" $OUT/accessors-smart.jar
+cd ..
+
+# build the actual json-smart
+cd json-smart
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "target/json-smart-$CURRENT_VERSION.jar" $OUT/json-smart.jar
 
-ALL_JARS="json-smart.jar"
+ALL_JARS="json-smart.jar accessors-smart.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
