@@ -276,6 +276,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
   wait_builds = build_ids.copy()
   build_results = {}
+  project_to_build_ids = wait_builds.copy()
+
   while wait_builds:
     logging.info('Polling: %s', wait_builds)
     for project, project_build_ids in list(wait_builds.items()):
@@ -292,7 +294,9 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   print('Printing results')
   print('Project, Statuses')
   for project, build_result in build_results.items():
-    print(project, build_result)
+    project_to_links = [f'gs://oss-fuzz-gcb-logs/log-{log_id}.txt'
+                        for project_to_build_ids[project]]
+    print(project, build_result, project_to_links)
 
   return all(build_results.values())
 
