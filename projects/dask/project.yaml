@@ -5,7 +5,6 @@ language: python
 main_repo: https://github.com/dask/dask
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
