@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ import sys
 import json
 import ijson
 import atheris
+from  ijson.backends import yajl2_c
 
 
 def TestOneInput(data):
+  native_backend = ijson.get_backend("yajl2_c")
   try:
-    parse_items = ijson.parse(io.BytesIO(data))
+    parse_items = native_backend.parse(io.BytesIO(data))
     for obj in ijson.items(parse_items, 'item'):
       pass
   except (
