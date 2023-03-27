@@ -15,4 +15,8 @@
 #
 ################################################################################
 
+# Specifying the target package prefix for java frontend
+export TARGET_PACKAGE_PREFIX=dev.sigstore.*
+
+# Call build script provided by sigsotre-java/fuzzing
 $SRC/sigstore-java/fuzzing/oss_fuzz_build.sh
