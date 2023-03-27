@@ -6,6 +6,7 @@ auto_ccs:
   - "estetus@gmail.com"
   - "totktonada.ru@gmail.com"
 fuzzing_engines:
+  - afl
   - libfuzzer
   - honggfuzz
   - centipede
