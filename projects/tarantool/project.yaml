@@ -5,6 +5,7 @@ primary_contact: "kirill.yukhin@gmail.com"
 auto_ccs:
   - "estetus@gmail.com"
   - "totktonada.ru@gmail.com"
+  - "s.kaplun@corp.mail.ru"
 fuzzing_engines:
   - afl
   - libfuzzer
