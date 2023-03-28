@@ -17,11 +17,11 @@
 package ossfuzz;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.StringWebResponse; 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.StringWebResponse; 
+import org.htmlunit.WebClient;
+import org.htmlunit.WebResponse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,7 +37,7 @@ public class HtmlParserFuzzer {
 
 	BrowserVersion getBrowserVersion() {
 		/*
-		 * from src/test/java/com/gargoylesoftware/htmlunit/WebTestCase.java
+		 * from src/test/java/org/htmlunit/WebTestCase.java
 		 */
 		return new BrowserVersion.BrowserVersionBuilder(BrowserVersion.BEST_SUPPORTED)
 					.setApplicationName("FLAG_ALL_BROWSERS")

@@ -6,7 +6,6 @@ main_repo: https://github.com/sqlalchemy/mako
 primary_contact: mike_mp@zzzcomputing.com
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com

@@ -23,10 +23,9 @@ public class JSONParserFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
     JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
-    try{
+    try {
       jp.parse(input);
-    }
-    catch( ParseException | NumberFormatException e){
+    } catch (ParseException | NumberFormatException e) {
       return;
     }
   }

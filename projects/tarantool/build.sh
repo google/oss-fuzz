@@ -28,10 +28,6 @@ make install -j$(nproc)
 
 cd $SRC/tarantool
 
-# Avoid compilation issue due to some unused variables. They are in fact
-# not unused, but the compilers are complaining.
-sed -i 's/total = 0;/total = 0;(void)total;/g' ./src/lib/core/crash.c
-sed -i 's/n = 0;/n = 0;(void)n;/g' ./src/lib/core/sio.c
 # Avoid compilation issue due to some undefined references. They are defined in
 # libc++ and used by Centipede so -lc++ needs to come after centipede's lib.
 if [[ $FUZZING_ENGINE == centipede ]]

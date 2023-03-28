@@ -1,0 +1,9 @@
+homepage: https://github.com/python/typing_extensions
+language: python
+main_repo: https://github.com/python/typing_extensions
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
