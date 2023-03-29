@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.fuzzer</groupId>
+    <artifactId>fuzz-targets</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>fuzz</name>
+    <description>fuzz</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.code-intelligence</groupId>
+            <artifactId>jazzer-junit</artifactId>
+            <version>0.16.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.9.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-api</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/api/build/libs/opencensus-api-0.32.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-impl</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/impl/build/libs/opencensus-impl-0.32.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-impl-core</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/impl_core/build/libs/opencensus-impl-core-0.32.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-exporter-trace-util</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/exporters/trace/util/build/libs/opencensus-exporter-trace-util-0.32.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-contrib-resource-util</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/contrib/resource_util/build/libs/opencensus-contrib-resource-util-0.32.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-exporter-trace-elasticsearch</artifactId>
+            <version>${env.OPENCENSUS_JAVA_VERSION}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../opencensus-java/exporters/trace/elasticsearch/build/libs/opencensus-exporter-trace-elasticsearch-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-proto</artifactId>
+            <version>0.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>4.0.0-rc-2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.4.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-context</artifactId>
+            <version>1.54.0</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+        </plugins>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+        </testResources>
+    </build>
+
+</project>
