@@ -1,4 +1,5 @@
 homepage: "https://jsoniter.com"
+main_repo: "https://github.com/json-iterator/go"
 primary_contact: "taowen@gmail.com"
 auto_ccs : "p.antoine@catenacyber.fr"
 language: go
