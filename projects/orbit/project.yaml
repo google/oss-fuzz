@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/orbit"
+main_repo: "https://github.com/google/orbit"
 language: c++
 primary_contact: "hebecker@google.com"
 auto_ccs:

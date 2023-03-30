@@ -1,7 +1,7 @@
 homepage: "https://www.mpg123.de"
 language: c++
 primary_contact: "maintainer@mpg123.org"
-
+main_repo: "https://github.com/dreamerc/mpg123"
 sanitizers:
   - address
   - undefined

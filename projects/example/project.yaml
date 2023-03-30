@@ -1,4 +1,5 @@
 disabled: true
 homepage: https://my-api.example.com
+main_repo: https://github.com/example/my-api
 language: c++
 vendor_ccs: []
