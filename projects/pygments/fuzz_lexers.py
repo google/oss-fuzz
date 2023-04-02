@@ -32,6 +32,8 @@ FORMATTERS = [BBCodeFormatter(), GroffFormatter(), HtmlFormatter(),
 
 
 def TestOneInput(data: bytes) -> int:
+  if len(data) > (2 << 18):
+    return
   fdp = atheris.FuzzedDataProvider(data)
   random_lexer = pygments.lexers.get_lexer_by_name(fdp.PickValueInList(LEXERS))
   formatter = fdp.PickValueInList(FORMATTERS)
