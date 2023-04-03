@@ -22,10 +22,10 @@ make -C lib/isc -j"$(nproc)" all V=1
 make -C lib/dns -j"$(nproc)" all V=1
 make -C tests/libtest -j"$(nproc)" all V=1
 
-LIBISC_CFLAGS="-Ilib/isc/unix/include -Ilib/isc/pthreads/include -Ilib/isc/include"
+LIBISC_CFLAGS="-Ilib/isc/include"
 LIBDNS_CFLAGS="-Ilib/dns/include"
-LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -luv -lnghttp2 -Wl,-Bdynamic"
-LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
+LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -lurcu-qsbr -lurcu-cds -luv -lnghttp2 -Wl,-Bdynamic"
+LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -lurcu-qsbr -lurcu-cds -Wl,-Bdynamic"
 LIBTEST_LIBS="tests/libtest/.libs/libtest.a"
 
 # dns_name_fromwire needs old.c/old.h code to be linked in
