@@ -28,6 +28,9 @@ RUN git clone --depth=1 https://github.com/catenacyber/fuzzpcap
 
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
+# until clang 16 is used for C cf https://github.com/rust-lang/rust/issues/107149#issuecomment-1492637779
+RUN rustup install nightly-2023-03-24
+RUN rustup component add rust-src --toolchain nightly-2023-03-24-x86_64-unknown-linux-gnu
 RUN cargo install --force cbindgen
 
 RUN git clone --depth 1 https://github.com/OISF/suricata.git suricata
