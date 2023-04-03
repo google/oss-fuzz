@@ -69,7 +69,8 @@ else
   $MVN -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
   cp -r $SRC/project-parent/fuzz-targets/target/test-classes/ $OUT/
   RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes:$(echo $ALL_JARS | xargs printf -- "$OUT/%s:")"
-  RUNTIME_CLASSPATH_RELATIVE=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|.|g")
+  # replace dirname with placeholder $this_dir that will be replaced at runtime
+  RUNTIME_CLASSPATH=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|\$this_dir|g")
 
   for fuzzer in $(find $SRC/project-parent/fuzz-targets -name '*Fuzzer.java'); do
     fuzzer_basename=$(basename -s .java $fuzzer)
@@ -77,6 +78,7 @@ else
     # Create an execution wrapper for every fuzztarget
     echo "#!/bin/bash
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
+  this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
     mem_settings='-Xmx1900m -Xss900k'
   else
@@ -84,7 +86,7 @@ else
   fi
   this_dir=\$(dirname \"\$0\")
   JAVA_HOME=\"\$this_dir/open-jdk-8/\" \
-  ./open-jdk-8/bin/java -cp $RUNTIME_CLASSPATH_RELATIVE \
+  ./open-jdk-8/bin/java -cp $RUNTIME_CLASSPATH \
   \$mem_settings \
   com.code_intelligence.jazzer.Jazzer \
   --target_class=com.example.$fuzzer_basename \
