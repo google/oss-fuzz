@@ -158,6 +158,7 @@ def create_object_wrapper(**methods):
   return Wrapper
 
 
+# pylint: disable=unsubscriptable-object
 def add_hook(function: Callable[[Any], Any],
              pre_exec_hook: Optional[Callable[[Any], Any]] = None,
              post_exec_hook: Optional[Callable[[Any], Any]] = None):
