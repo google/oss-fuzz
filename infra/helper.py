@@ -428,6 +428,8 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
+                                       action='extend',
+                                       nargs='+',
                                        help='specify name of a fuzz target')
   download_corpora_parser.add_argument('--public',
                                        action='store_true',
@@ -1149,9 +1151,16 @@ def download_corpora(args):
       return False
 
   if args.fuzz_target:
-    fuzz_targets = [args.fuzz_target]
+    fuzz_targets = args.fuzz_target
   else:
     fuzz_targets = _get_fuzz_targets(args.project)
+
+  if not fuzz_targets:
+    logging.error(
+        'Fuzz targets not found. Please build project first '
+        '(python3 infra/helper.py build_fuzzers %s) so that download_corpora '
+        'can automatically identify targets.', args.project.name)
+    return False
 
   corpus_dir = args.project.corpus
 

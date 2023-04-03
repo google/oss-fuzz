@@ -32,6 +32,7 @@ def get_all_substr_prefixes(main_str, sub_str):
     idx += len(sub_str)
 
 
+# pylint: disable=unsubscriptable-object
 def check_code_injection_match(elem, check_unquoted=False) -> Optional[str]:
   """identify if elem is an injection match."""
   # Check exact match
