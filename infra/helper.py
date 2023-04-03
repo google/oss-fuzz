@@ -1153,6 +1153,12 @@ def download_corpora(args):
   else:
     fuzz_targets = _get_fuzz_targets(args.project)
 
+  if not fuzz_targets:
+    logging.error(
+        'Fuzz targets not found. Please find them in %s/build.sh and specify '
+        'them after --fuzz-target', args.project.name)
+    return False
+
   corpus_dir = args.project.corpus
 
   def _download_for_single_target(fuzz_target):
