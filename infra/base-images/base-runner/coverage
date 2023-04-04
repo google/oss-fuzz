@@ -410,12 +410,29 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   java -jar /opt/jacoco-cli.jar merge $DUMPS_DIR/*.exec \
       --destfile $jacoco_merged_exec
 
-  # Get all jar file as classfiles location
+  # Merge .class files from the individual targets.
+  classes_dir=$DUMPS_DIR/classes
+  mkdir $classes_dir
+  for fuzz_target in $FUZZ_TARGETS; do
+    cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
+  done
+
+  # Dump classes in jar file to dump directory
+  # This action includes all the classes of
+  # the project that are not executed by the fuzzers
+  # to the dump directory. Duplicate classes in the
+  # dump directory will be overwritten. We needs to
+  # do this to include all possible classes to
+  # the coverage report and avoid duplicate classes
+  # from different jar file which jacoco fails to handle.
   for jar_file in $(ls $OUT/*.jar)
   do
     if [[ $jar_file != $OUT/jazzer* ]]
     then
-      classes_files+="--classfiles $jar_file "
+      tempdir=$(mktemp -d)
+      cd $tempdir && jar xvf $jar_file && cd -
+      cp -r $tempdir/* $classes_dir/
+      rm -r $tempdir
     fi
   done
 
@@ -432,7 +449,7 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   java -jar /opt/jacoco-cli.jar report $jacoco_merged_exec \
       --html $REPORT_PLATFORM_DIR \
       --xml $xml_report \
-      $classes_files \
+      --classfiles $classes_dir \
       "${sourcefiles_args[@]}"
 
   # Also serve the raw exec file and XML report, which can be useful for
