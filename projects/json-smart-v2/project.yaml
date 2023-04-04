@@ -1,6 +1,6 @@
 homepage: "https://github.com/netplex/json-smart-v2"
 language: jvm
-primary_contact: ""
+primary_contact: "uchemouni@gmail.com"
 fuzzing_engines:
   - "libfuzzer"
 sanitizers:

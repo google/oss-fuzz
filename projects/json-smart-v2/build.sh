@@ -17,13 +17,22 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
+MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15 \
+-Dmaven.javadoc.skip=true -Dmaven.repo.local=$WORK/m2"
+
+# first install accessors-smart in local $WORK/m2. json-smart depends on it
+cd accessors-smart
+$MVN install $MAVEN_ARGS
+cd ..
+
+# build the actual json-smart
 cd json-smart
-MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15 -Dmaven.javadoc.skip=true -Dmaven.repo.local=$WORK/m2"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "target/json-smart-$CURRENT_VERSION.jar" $OUT/json-smart.jar
-
+# do not include accessors-smart.jar in ALL_JARS as it is already included with
+# maven-shade-plugin:3.2.4:shade
 ALL_JARS="json-smart.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
@@ -37,7 +46,6 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
-
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash

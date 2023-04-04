@@ -1,5 +1,6 @@
 homepage: "https://proj.org/"
 language: c++
+main_repo: "https://github.com/OSGeo/PROJ"
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - "hobu.inc@gmail.com"

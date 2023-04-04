@@ -1,4 +1,5 @@
 homepage: "https://sqlite.org/"
+main_repo: "https://sqlite.org/src/dir"
 language: c++
 primary_contact: "drhsqlite@gmail.com"
 auto_ccs:

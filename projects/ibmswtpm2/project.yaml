@@ -1,6 +1,7 @@
 homepage: https://sourceforge.net/projects/ibmswtpm2/
 language: c++
 primary_contact: kgoldman@us.ibm.com
+main_repo: https://git.code.sf.net/p/ibmswtpm2/tpm2
 auto_ccs:
   - "john.s.andersen@intel.com"
   - "william.c.roberts@intel.com"

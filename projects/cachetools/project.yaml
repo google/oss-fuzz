@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/tkem/cachetools/
+language: python
+main_repo: https://github.com/tkem/cachetools/
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- sean@compactcloud.co.uk

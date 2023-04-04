@@ -21,7 +21,10 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 MAVEN_ARGS="-DskipTests -Djavac.src.version=17 -Djavac.target.version=17 -Dmaven.repo.local=$WORK/m2"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 
-cp "target/spring-data-keyvalue-3.0.0-SNAPSHOT.jar" $OUT/spring-data-keyvalue.jar
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
+
+cp "target/spring-data-keyvalue-$CURRENT_VERSION.jar" $OUT/spring-data-keyvalue.jar
 
 # remove signature files
 mkdir $OUT/tmp

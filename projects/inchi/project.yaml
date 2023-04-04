@@ -1,4 +1,5 @@
 homepage: "https://www.inchi-trust.org/"
+main_repo: "https://github.com/metamolecular/inchi"
 language: c
 primary_contact: "member-info@inchi-trust.org"
 sanitizers:

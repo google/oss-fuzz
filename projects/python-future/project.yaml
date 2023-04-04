@@ -5,6 +5,5 @@ language: python
 main_repo: https://github.com/PythonCharmers/python-future
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com

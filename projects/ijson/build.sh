@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
 
-if [ "$SANITIZER" = "address" ]
-then
-  # Enable pysecsan
-  export ENABLE_PYSECSAN="1"
-fi
+cd $SRC/yajl/
+./configure
+make install
+
+cd $SRC/ijson
+python3 ./setup.py install
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data /usr/local/lib/libyajl.so:. --add-data /usr/local/lib/libyajl.so.2:.
 done

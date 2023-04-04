@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && apt-get install python3 -y
-RUN git clone --depth 1 https://github.com/protocolbuffers/upb.git upb
-WORKDIR upb
-COPY build.sh $SRC/
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get install -y pkg-config libblosc-dev libbz2-dev liblzo2-dev \
+                       liblzma-dev liblz4-dev libz-dev
+RUN pip3 install --upgrade pip && pip3 install cython packaging python-lzo blosc2
+RUN git clone https://github.com/pytables/pytables pytables
+COPY *.sh *py $SRC/
+WORKDIR $SRC/pytables

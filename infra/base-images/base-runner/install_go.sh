@@ -19,7 +19,7 @@
 
 case $(uname -m) in
     x86_64)
-      # Download and install the latest stable Go.
+      # Download and install Go 1.19.
       wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
       SHELL="bash" $SRC/installer_linux -version 1.19

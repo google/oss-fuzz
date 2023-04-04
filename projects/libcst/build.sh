@@ -16,9 +16,9 @@
 ################################################################################
 
 export RUSTFLAGS=""
-pip3 install -r requirements.txt -r requirements-dev.txt
-pip3 uninstall -y libcst
-pip3 install .
+python3 -m pip install -U hatch
+python3 -m pip uninstall -y libcst
+python3 -m pip install .
 
 # Change directory to force pyinstaller to load in the package we build
 cd ../
