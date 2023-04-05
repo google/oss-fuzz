@@ -15,7 +15,10 @@
 #
 ################################################################################
 
-export LLVM_SYS_120_PREFIX=$(llvm-config-12 --prefix)
+# until clang 16 is used for C cf https://github.com/rust-lang/rust/issues/107149#issuecomment-1492637779
+rustup default nightly-2023-03-24
+
+export LLVM_SYS_140_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 
 cargo +nightly fuzz build universal_cranelift --features=universal,cranelift -O
 cargo +nightly fuzz build universal_llvm --features=universal,llvm -O
