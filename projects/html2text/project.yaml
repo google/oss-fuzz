@@ -1,0 +1,10 @@
+homepage: https://github.com/Alir3z4/html2text
+main_repo: https://github.com/Alir3z4/html2text
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
