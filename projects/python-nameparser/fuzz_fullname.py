@@ -29,8 +29,8 @@ def TestOneInput(data):
 
   # Heuristic name: py-autofuzz-heuristics-4.2.1
   try:
-    c1 = nameparser.parser.HumanName(fuzz_human_name)
-    c1.full_name()
+    hn = nameparser.parser.HumanName(fuzz_human_name)
+    hn.full_name()
   except (TypeError):
     pass
 
