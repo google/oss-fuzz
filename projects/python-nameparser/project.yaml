@@ -1,0 +1,9 @@
+main_repo: https://github.com/derek73/python-nameparser
+homepage: https://github.com/derek73/python-nameparser
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
