@@ -1,0 +1,12 @@
+homepage: https://savannah.nongnu.org/projects/lwip/
+language: c
+primary_contact: "goldsimon@gmx.de"
+auto_ccs:
+  - "j.neuschaefer@gmx.net"
+sanitizers:
+  - address
+main_repo: https://git.savannah.gnu.org/git/lwip.git
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - centipede
