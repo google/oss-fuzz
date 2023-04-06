@@ -24,12 +24,12 @@ import gprof2dot
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  val_1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
+  funcName = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
 
   # Class target.
   try:
     profile = gprof2dot.Profile()
-    profile.getFunctionIds(val_1)
+    profile.getFunctionIds(funcName)
   except (
       gprof2dot.XmlTokenMismatch,
       gprof2dot.UndefinedEvent,
