@@ -9,6 +9,8 @@ auto_ccs:
   - "chen.bo@intel.com"
   - "liuwe@microsoft.com"
   - "seb@rivosinc.com"
+  - "nistephe@microsoft.com"
+  - "fabduchene@microsoft.com"
 sanitizers:
   - address
 fuzzing_engines:
