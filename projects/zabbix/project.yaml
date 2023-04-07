@@ -1,6 +1,6 @@
 homepage: "www.zabbix.com"
 language: c
-primary_contact: "security@zabbix.org"
+primary_contact: "security@zabbix.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
