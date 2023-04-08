@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/alvations/sacremoses
+language: python
+main_repo: https://github.com/alvations/sacremoses
+sanitizers:
+- address
+- undefined
+primary_contacts: autofuzz@fuzz-introspector.com
