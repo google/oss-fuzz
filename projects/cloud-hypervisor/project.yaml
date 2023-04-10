@@ -4,9 +4,11 @@ primary_contact: "sebastien.boeuf@intel.com"
 auto_ccs:
   - "michael2012zhao@hotmail.com"
   - "Henry.Wang@arm.com"
-  - "robert.bradford@intel.com"
+  - "rbradford@rivosinc.com"
   - "samuel.e.ortiz@protonmail.com"
   - "chen.bo@intel.com"
+  - "liuwe@microsoft.com"
+  - "seb@rivosinc.com"
 sanitizers:
   - address
 fuzzing_engines:
