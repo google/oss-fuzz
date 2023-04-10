@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# until clang 16 is used for C cf https://github.com/rust-lang/rust/issues/107149#issuecomment-1492637779
-rustup default nightly-2023-03-24
-
 # build dependencies statically
 if [ "$SANITIZER" = "memory" ]
 then
