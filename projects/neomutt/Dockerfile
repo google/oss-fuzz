@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN	apt-get update && \
-	apt-get install -y libncursesw5-dev libtinfo5 libtool make pkgconf
+	apt-get install -y libncursesw5-dev libtinfo5 libtool make pkgconf libidn2-0-dev
 
 RUN git clone --depth 1 https://github.com/neomutt/neomutt
 RUN git clone --depth 1 https://github.com/neomutt/corpus-address
