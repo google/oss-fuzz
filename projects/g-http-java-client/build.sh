@@ -24,8 +24,12 @@ MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=tru
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
-  # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  FUZZ_TARGET_DEPENDENCIES=":google-http-client :google-http-client-gson"
+  
+  for dependency in $FUZZ_TARGET_DEPENDENCIES; do
+    # set dependency project version in fuzz-targets
+    (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID$dependency -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  done
 }
 
 cd project-parent
@@ -55,7 +59,7 @@ else
 
   # build classpath
   $MVN -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
-  cp -r $SRC/project-parent/fuzz-targets/target/test-classes/ $OUT/test-classes
+  cp -r $SRC/project-parent/fuzz-targets/target/test-classes/ $OUT/
   RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes"
   # replace dirname with placeholder $this_dir that will be replaced at runtime
   RUNTIME_CLASSPATH=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|\$this_dir|g")
