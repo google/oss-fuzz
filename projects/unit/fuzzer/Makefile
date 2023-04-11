@@ -5,9 +5,9 @@ httpEXE=Fuzz_http
 jsonEXE=Fuzz_json
 
 #Flags
-INC=-I ../src -I ../build -I../src/test/
+INC=-I ../src -I ../build -I../src/test/ -I../build/include/
 EXTCFLAGS=-Wall -Werror -g
-LibINC=-L../build/
+LibINC=-L../build/lib/
 LibFLAGS=$(LIB_FUZZING_ENGINE) -lnxt
 
 all: $(TARGET)
