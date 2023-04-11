@@ -25,3 +25,24 @@ ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}"
 
 cp build/bin/fuzz-* "${OUT}"
 cp -r build "${OUT}"
+
+## Replace soflinks in copied out build directory with actual contents.
+FROM=${SRC}/spicy
+TO=${OUT}/$(basename "${SRC}")/spicy
+
+# Replace softlinks to runtime headers with actual contents.
+mkdir -p "${TO}/hilti/runtime/include/hilti/rt"
+rm -rf "${TO}/hilti/runtime/include/hilti/rt"/*
+cp -rP "${FROM}/hilti/runtime/include/"* "${TO}/hilti/runtime/include/hilti/rt"
+
+mkdir -p "${TO}/spicy/runtime/include/spicy/rt"
+rm -rf "${TO}/spicy/runtime/include/spicy/rt"/*
+cp -rP "${FROM}/spicy/runtime/include/"* "${TO}/spicy/runtime/include/spicy/rt"
+
+# Replace softlinks to 3rdparty dependencies with actual contents.
+for DEP in any ArticleEnumClass-v2 ghc SafeInt tinyformat nlohmann; do
+	D=${TO}/hilti/runtime/include/hilti/rt/3rdparty
+	rm -r "${D}/${DEP}"
+	mkdir -p "${D}/${DEP}"
+	cp -rL "${FROM}/hilti/runtime/include/hilti/rt/3rdparty/${DEP}"/* "${D}/${DEP}/"
+done
