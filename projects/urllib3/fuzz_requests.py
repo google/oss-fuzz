@@ -80,7 +80,7 @@ def TestOneInput(input_bytes):
     global GLOBAL_RESPONSE_MESSAGE, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_ENCODING, PORT
 
     timeout = urllib3.util.Timeout(connect=1.0, read=1.0)
-    urllib_pool = urllib3.PoolManager(timeout=timeout)
+    urllib_pool = urllib3.poolmanager.PoolManager(timeout=timeout)
 
     # Try and get an open port to run our test web server
     for attempt in range(10):
