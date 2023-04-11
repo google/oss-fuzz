@@ -12,7 +12,6 @@ auto_ccs:
   - "benjamin.bannier@corelight.com"
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/spicy'

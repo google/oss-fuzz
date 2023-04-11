@@ -28,6 +28,7 @@ RUN apt-get -y install		\
 	libssl-dev		\
 	libtool			\
 	libtool-bin		\
+	liburcu-dev		\
 	libuv1-dev		\
 	pkg-config		\
 	zip

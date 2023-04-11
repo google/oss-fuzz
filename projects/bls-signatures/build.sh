@@ -197,7 +197,7 @@ then
     ./configure.py --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 else
@@ -205,7 +205,7 @@ else
     --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 fi

@@ -15,5 +15,13 @@
 #
 ################################################################################
 
-cargo fuzz build -O
-cp target/x86_64-unknown-linux-gnu/release/message $OUT/
+echo 'add_subdirectory(ci/fuzz)' >> CMakeLists.txt
+
+export LIBFUZZER_LIB="/usr/local/lib/clang/15.0.0/lib/linux/libclang_rt.fuzzer_no_main-${ARCHITECTURE}.a"
+
+CXXFLAGS="${CXXFLAGS} -DHILTI_HAVE_SANITIZER" ./configure --generator=Ninja --build-type=Debug || (cat build/config.log && exit)
+mapfile -t FUZZ_TARGETS < <(ninja -C build -t targets | grep fuzz- | cut -d: -f1)
+ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}"
+
+cp build/bin/fuzz-* "${OUT}"
+cp -r build "${OUT}"

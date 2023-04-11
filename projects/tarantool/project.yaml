@@ -6,6 +6,10 @@ auto_ccs:
   - "estetus@gmail.com"
   - "totktonada.ru@gmail.com"
   - "sergeykaplun1998@gmail.com"
+  - "imeevma@gmail.com"
+  - "leonid2012v@gmail.com"
+  - "boris.stepanenko@gmail.com"
+  - "munkin.igor@gmail.com"
 fuzzing_engines:
   - afl
   - libfuzzer
