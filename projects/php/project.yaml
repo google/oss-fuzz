@@ -6,6 +6,7 @@ auto_ccs:
  - "nikita.ppv@gmail.com"
  - "dmitrystogov@gmail.com"
  - "ilija.tovilo@me.com"
+ - "github@derickrethans.nl"
 fuzzing_engines:
   - "afl"
   - "honggfuzz"
