@@ -21,7 +21,6 @@
 
 import datetime
 from itertools import product
-from random import choice, shuffle
 from typing import Callable, List
 
 import tomlkit
@@ -77,12 +76,19 @@ def random_comment():
 def random_newline():
     return tomlkit.nl()
 
-
 # Return a random set of functions from list
 def _value_gen(sources: List[Callable], number: int) -> Callable:
+    methods = []
     for _ in range(number):
-        yield choice(sources)
+        methods.append(fdp.PickValueInList(list(sources)))
+    return methods
 
+# A simple Fisher-Yates shuffle implementation as an alternative to
+# using random.shuffle
+def shuffle_array(arr):
+    for i in range(len(arr)-1, 0, -1):
+        j = fdp.ConsumeIntInRange(0, i)
+        arr[i], arr[j] = arr[j], arr[i]
 
 def random_tomlkit_dict(
     max_depth,
@@ -113,7 +119,7 @@ def random_tomlkit_dict(
     )
 
     # Shuffle that list
-    shuffle(generators_tuples)
+    shuffle_array(generators_tuples)
 
     # Return a dictionary item
     result = tomlkit.document()
