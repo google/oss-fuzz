@@ -21,12 +21,20 @@
 # Builds fuzzers from within a container into /out/ directory.
 # Expects /src/cras to contain a cras checkout.
 
-cd ${SRC}/adhd/cras/src/server/rust
-export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-cargo build --release --target-dir=${WORK}/cargo_out
-cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
 cd ${SRC}/adhd
+
+#
+# Build Rust code.
+#
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
+cargo build --package=cras_rust --release --target-dir=${WORK}/cargo_out
+cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
+
+#
+# Build C code.
+#
+
 # Set bazel options.
 # See also:
 # https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests
