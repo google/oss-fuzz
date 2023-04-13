@@ -1,0 +1,9 @@
+homepage: https://github.com/betodealmeida/python-rison
+main_repo: https://github.com/betodealmeida/python-rison
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

@@ -5,6 +5,5 @@ language: python
 main_repo: https://github.com/more-itertools/more-itertools
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com

@@ -1,0 +1,40 @@
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+project=$1
+# Path the fuzz target source file relative to the project's root.
+fuzz_target=$2
+# Arguments to pass to Jazzer.js
+jazzerjs_args=${@:3}
+
+# Copy source code into the $OUT directory and install Jazzer.js into the project.
+if [ ! -d $OUT/$project ]; then
+  pushd $SRC/$project
+  npm install @jazzer.js/core
+  popd
+  cp -r $SRC/$project $OUT/$project
+fi
+
+fuzzer_basename=$(basename -s .js $fuzz_target)
+
+# Create an execution wrapper that executes Jazzer.js with the correct arguments.
+echo "#!/bin/bash
+# LLVMFuzzerTestOneInput so that the wrapper script is recognized as a fuzz target for 'check_build'.
+project_dir=\$(dirname \"\$0\")/$project
+\$project_dir/node_modules/@jazzer.js/core/dist/cli.js \$project_dir/$fuzz_target $jazzerjs_args \$JAZZERJS_EXTRA_ARGS -- \$@" > $OUT/$fuzzer_basename
+
+chmod +x $OUT/$fuzzer_basename

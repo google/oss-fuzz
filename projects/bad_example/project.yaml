@@ -1,6 +1,7 @@
 disabled: true
 homepage: http://www.zlib.net/
 language: c++
+main_repo: https://github.com/madler/zlib
 sanitizers:
 - address
 - memory

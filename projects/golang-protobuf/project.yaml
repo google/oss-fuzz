@@ -1,8 +1,10 @@
 homepage: "https://github.com/protocolbuffers/protobuf-go"
-primary_contact: "dneil@google.com"
+main_repo: "https://github.com/protocolbuffers/protobuf-go"
+primary_contact: "stapelberg@google.com"
 auto_ccs:
- - "joetsai@google.com"
- - "herbie@google.com"
+ - "lassefolger@google.com"
+ - "stapelberg@google.com"
+ - "dneil@google.com"
 sanitizers:
  - address
 fuzzing_engines:

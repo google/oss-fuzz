@@ -24,7 +24,8 @@ cc_binary(
 	name = "string_utilities_fuzzer",
 	deps = [
 		"@com_google_absl//absl/strings",
-		"@com_google_absl//absl/strings:cord"
+		"@com_google_absl//absl/strings:cord",
+                "@com_google_absl//absl/strings:str_format"
 		],
 	srcs = ["string_utilities_fuzzer.cc"],
 )

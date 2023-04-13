@@ -22,8 +22,8 @@ def TestOneInput(data):
 
   try:
     x = regex.match(
-      fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-      fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+      fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
+      fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
     )
   except regex._regex_core.error:
     pass
@@ -36,8 +36,8 @@ def TestOneInput(data):
 
   try:
     x = regex.fullmatch(
-      fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
-      fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
+      fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
+      fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)),
     )
   except regex._regex_core.error:
     pass

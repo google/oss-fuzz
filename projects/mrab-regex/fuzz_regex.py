@@ -22,7 +22,7 @@ def TestOneInput(data):
 
   # Random compilation
   try:
-    x = regex.compile(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    x = regex.compile(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except regex._regex_core.error:
     pass
   except ValueError:
@@ -34,9 +34,9 @@ def TestOneInput(data):
 
   # Target regex.sub
   try:
-    s1 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-    s2 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-    s3 = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    s1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
+    s2 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
+    s3 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
     regex.sub(s1, s2, s3)
   except regex._regex_core.error:
     pass

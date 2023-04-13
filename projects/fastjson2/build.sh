@@ -21,9 +21,9 @@ mv $SRC/{*.zip,*.dict} $OUT
 mvn package -Dmaven.test.skip=true -Djdk.version=15
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
-cp "target/fastjson-$CURRENT_VERSION.jar" $OUT/fastjson.jar
+cp "core/target/fastjson2-$CURRENT_VERSION.jar" $OUT/fastjson2.jar
 
-PROJECT_JARS="fastjson.jar"
+PROJECT_JARS="fastjson2.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

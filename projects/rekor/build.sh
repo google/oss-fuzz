@@ -15,5 +15,6 @@
 #
 ################################################################################
 
-chmod +x $SRC/rekor/tests/oss_fuzz.sh
+export CXX="${CXX} -lresolv"
+
 $SRC/rekor/tests/oss_fuzz.sh

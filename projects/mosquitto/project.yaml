@@ -1,0 +1,12 @@
+homepage: "https://mosquitto.org/"
+language: c
+primary_contact: "roger@atchoo.org"
+auto_ccs:
+ - "security@eclipse.org"
+ - "rogerlight@gmail.com"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
+main_repo: 'https://github.com/eclipse/mosquitto'

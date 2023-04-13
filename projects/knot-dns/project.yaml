@@ -1,4 +1,5 @@
 homepage: "https://www.knot-dns.cz/"
+main_repo: "https://gitlab.nic.cz/knot/knot-dns.git"
 language: c++
 primary_contact: "knot.dns@gmail.com"
 auto_ccs:

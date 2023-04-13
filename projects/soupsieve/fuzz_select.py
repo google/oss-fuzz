@@ -20,10 +20,6 @@ from bs4 import BeautifulSoup
 import unittest
 import soupsieve as sv
 
-# Security sensitive sanitizer
-import pysecsan
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
@@ -37,7 +33,7 @@ def TestOneInput(data):
     return
 
   try:
-    sv.select(soupsieve_str, the_soup)
+    list(sv.select(soupsieve_str, the_soup))
   except sv.SelectorSyntaxError:
     pass
   except RecursionError:
@@ -52,7 +48,7 @@ def TestOneInput(data):
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 

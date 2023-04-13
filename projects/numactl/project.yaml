@@ -1,0 +1,6 @@
+homepage: "https://github.com/numactl/numactl"
+main_repo: "https://github.com/numactl/numactl"
+language: c
+primary_contact: "github@halobates.de"
+auto_ccs:
+- "david@adalogics.com"

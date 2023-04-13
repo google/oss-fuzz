@@ -50,7 +50,11 @@ FUZZ_TEST_BINARIES=$(bazel query "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com
 FUZZ_TEST_BINARIES_OUT_PATHS=$(bazel cquery "kind(\"cc_test\", rdeps(${TARGET_FOLDER}, @com_google_fuzztest//fuzztest:fuzztest_gtest_main))" --output=files)
 
 # Build the project and fuzz binaries
-bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]}
+# Expose `FUZZTEST_EXTRA_TARGETS` environment variable, in the event a project
+# includes non-FuzzTest fuzzers then this can be used to compile these in the
+# same `bazel build` command as when building the FuzzTest fuzzers.
+# This is to avoid having to call `bazel build` twice.
+bazel build $BUILD_ARGS -- ${FUZZ_TEST_BINARIES[*]} ${FUZZTEST_EXTRA_TARGETS:-}
 
 # Iterate the fuzz binaries and list each fuzz entrypoint in the binary. For
 # each entrypoint create a wrapper script that calls into the binaries the

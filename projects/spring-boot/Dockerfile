@@ -29,6 +29,10 @@ RUN apt update && apt install -y openjdk-17-jdk
 RUN git clone --depth 1 https://github.com/spring-projects/spring-boot
 RUN git clone --depth 1 https://github.com/spring-projects/spring-framework spring-boot/spring-framework
 
+COPY . $SRC/
+
+RUN cd spring-boot && (for i in ${SRC}/add-shadow*.diff; do tr -d '\015' < $i | git apply; done )
+
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/spring-boot

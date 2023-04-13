@@ -17,6 +17,8 @@
 
 echo "---------------------------------------------------------------"
 
+OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
+
 # This is a temporary fix: fall back to LLVM14's old pass manager
 if [ -n "${OLD_LLVMPASS-}" ]; then
   export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
@@ -33,6 +35,21 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
     echo "ERROR: JVM projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
+if [ "$FUZZING_LANGUAGE" = "javascript" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JavaScript projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "none" ]; then
+    echo "ERROR: JavaScript projects cannot be fuzzed with sanitizers."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: JavaScript projects can be fuzzed on x86_64 architecture only."
     exit 1
   fi
 fi
@@ -61,8 +78,10 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/local/lib
 fi
-# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
-if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
+
+# Don't use a fuzzing engine with Jazzer which has libFuzzer built-in or with
+# FuzzBench which will provide the fuzzing engine.
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]] && [[ "${OSS_FUZZ_ON_DEMAND}" == "0" ]] ; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi
@@ -83,8 +102,9 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
- # Don't need coverage instrumentation for engine-less, afl++ builds.
-if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ]; then
+# Only need the default coverage instrumentation for libFuzzer or honggfuzz.
+# Other engines bring their own.
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ] || [ $FUZZING_ENGINE = "centipede" ] || [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   export COVERAGE_FLAGS=
 fi
 
@@ -92,7 +112,7 @@ fi
 # use RUSTFLAGS.
 # FIXME: Support code coverage once support is in.
 # See https://github.com/rust-lang/rust/issues/34701.
-if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCHITECTURE" != 'i386' ]; then
+if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "none" ] && [ "$ARCHITECTURE" != 'i386' ]; then
   export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
 else
   export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
@@ -100,7 +120,7 @@ fi
 if [ "$SANITIZER" = "coverage" ]
 then
     # link to C++ from comment in f5098035eb1a14aa966c8651d88ea3d64323823d
-    export RUSTFLAGS="$RUSTFLAGS -Zinstrument-coverage -C link-arg=-lc++"
+    export RUSTFLAGS="$RUSTFLAGS -Cinstrument-coverage -C link-arg=-lc++"
 fi
 
 # Add Rust libfuzzer flags.
@@ -173,6 +193,12 @@ echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
 echo "RUSTFLAGS=$RUSTFLAGS"
 echo "---------------------------------------------------------------"
+
+if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
+  fuzzbench_build
+  cp $(which llvm-symbolizer) $OUT/
+  exit 0
+fi
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 

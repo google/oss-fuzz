@@ -2,9 +2,10 @@ homepage: "https://www.jbig2dec.com"
 language: c++
 primary_contact: sebastian.rasmussen@artifex.com
 fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede
 sanitizers:
   - address
   - memory

@@ -14,6 +14,13 @@
 # limitations under the License.
 
 pip3 install .
+
+if [ "$SANITIZER" = "address" ]
+then
+  # Enable pysecsan
+  export ENABLE_PYSECSAN="1"
+fi
+
 # Build fuzzers into $OUT. These could be detected in other ways.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   compile_python_fuzzer $fuzzer

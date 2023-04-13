@@ -23,6 +23,7 @@ jobs:
           - memory
           - undefined
           - coverage
+          - none
         architecture:
           - x86_64
         include:
@@ -44,6 +45,9 @@ jobs:
           - engine: centipede
             sanitizer: address
             architecture: x86_64
+          - engine: centipede
+            sanitizer: none
+            architecture: x86_64
     env:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}
@@ -63,16 +67,22 @@ jobs:
 
       - name: Clear unnecessary files
         run: |
+          df -h
           sudo swapoff -a
           sudo rm -f /swapfile
           sudo apt clean
           docker rmi $(docker images -a -q)
           df -h
+          echo "Remove large unused folders, inspired by https://github.com/apache/flink/blame/master/tools/azure-pipelines/free_disk_space.sh"
+          sudo bash -c '(ionice -c 3 nice -n 19 rm -rf /usr/share/dotnet/ /usr/local/graalvm/ /usr/local/.ghcup/ /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/android /usr/local/lib/node_modules)&'
 
       - name: Setup python environment
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
+          cache: pip
+          cache-dependency-path: |
+            infra/ci/requirements.txt
 
       - name: Install dependencies
         run: |

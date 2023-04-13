@@ -3,9 +3,11 @@ main_repo: "https://github.com/notaryproject"
 primary_contact: "yizha1@microsoft.com"
 auto_ccs :
   - "vaninrao@amazon.com"
-  - "hbandi@gmail.com"
+  - "priteshbandi@gmail.com"
   - "shizh@microsoft.com"
   - "justin.cormack@docker.com"
+  - "toddysm@gmail.com"
+  - "notarycncf@gmail.com"
 vendor_ccs :
   - "Adam@adalogics.com"
   - "David@adalogics.com"

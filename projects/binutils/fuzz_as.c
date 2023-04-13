@@ -17,6 +17,19 @@ limitations under the License.
  */
 #include <fuzz_as.h>
 
+/* Don't allow cleanups.  libiberty's function of the same name adds
+   cleanups to a list without any means of clearing the list.  The
+   list must be clear at the start if LLVMFuzzerTestOneInput is to run
+   more than once, otherwise we will get multiple copies of the same
+   cleanup on the list which leads to double frees if xexit is called.
+   Also a cleanup from the first run can result in use-after-free
+   errors when as_fatal is hit as in issue 56429.  */
+int
+xatexit (void (*fn) (void) ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char filename[256];
@@ -30,35 +43,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   reg_section = NULL;
 
-  const char *fakeArgv[3];
+  char *fakeArgv[3];
   fakeArgv[0] = "fuzz_as";
   fakeArgv[1] = filename; // Assemble our fake source file.
   fakeArgv[2] = NULL;
 
+  int argc = 2;
+  char **argv = fakeArgv;
+  gas_early_init (&argc, &argv);
+
   out_file_name = "/tmp/tmp-out";
 
-  // as initialition. This follows the flow of ordinary main function
-  hex_init ();
-  if (bfd_init () != BFD_INIT_MAGIC)
-    abort ();
-  obstack_begin (&notes, chunksize);
-  symbol_begin ();
-  frag_init ();
-  subsegs_begin ();
-  read_begin ();
-  input_scrub_begin ();
-  expr_begin ();
-  macro_init (flag_macro_alternate, flag_mri, 0, macro_expr);
-
-  output_file_create (out_file_name);
-  dot_symbol_init ();
-  itbl_init ();
-  dwarf2_init ();
-  local_symbol_make (".gasversion.", absolute_section,
-		     &predefined_address_frag, BFD_VERSION / 10000UL);
+  gas_init ();
 
   // Main fuzzer target. Assemble our random data.
-  perform_an_assembly_pass (2, (char**)fakeArgv);
+  perform_an_assembly_pass (argc, argv);
 
   // Cleanup
   cond_finish_check (-1);

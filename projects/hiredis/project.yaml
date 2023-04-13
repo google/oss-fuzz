@@ -4,3 +4,8 @@ language: c
 auto_ccs:
   - "Adam@adalogics.com"
 main_repo: "https://github.com/redis/hiredis"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+ - centipede

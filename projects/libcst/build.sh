@@ -16,14 +16,20 @@
 ################################################################################
 
 export RUSTFLAGS=""
-pip3 install -r requirements.txt -r requirements-dev.txt
-pip3 uninstall -y libcst
-pip3 install .
+python3 -m pip install -U hatch
+python3 -m pip uninstall -y libcst
+python3 -m pip install .
 
 # Change directory to force pyinstaller to load in the package we build
 cd ../
 mkdir fuzzbuild
 cd fuzzbuild
+
+if [ "$SANITIZER" = "address" ]
+then
+  # Enable pysecsan
+  export ENABLE_PYSECSAN="1"
+fi
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do

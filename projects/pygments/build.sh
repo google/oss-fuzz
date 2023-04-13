@@ -23,4 +23,4 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
 
-zip -j $OUT/files_fuzzer_seed_corpus.zip tests/examplefiles/*
+find tests/examplefiles/ -type f | zip -@ -q $OUT/files_fuzzer_seed_corpus.zip

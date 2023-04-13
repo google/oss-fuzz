@@ -15,6 +15,7 @@ limitations under the License.
 #include <string>
 
 #include "EsiParser.h"
+#include "Utils.h"
 
 using std::string;
 using namespace EsiLib;
@@ -42,6 +43,7 @@ LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         return 0;
     }
 
+    Utils::init(&Debug, &Error);
     EsiParser parser("parser_test", &Debug, &Error);
 
     bool ret;

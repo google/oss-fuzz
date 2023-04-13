@@ -262,13 +262,17 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.cpp',
     '.css',
     '.Dockerfile',
+    '.go',
     '.h',
     '.htm',
     '.html',
+    '.java',
     '.js',
     '.proto',
     '.py',
+    '.rs',
     '.sh',
+    '.ts',
 ]
 THIRD_PARTY_DIR_NAME = 'third_party'
 

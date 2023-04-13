@@ -26,7 +26,7 @@ ENV FUZZINTRO_OUTDIR=$SRC
 # Install newer cmake.
 ENV CMAKE_VERSION 3.24.2
 RUN apt-get update && apt-get install -y wget sudo && \
-    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
+    wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     chmod +x cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     ./cmake-$CMAKE_VERSION-Linux-$arch.sh --skip-license --prefix="/usr/local" && \
     rm cmake-$CMAKE_VERSION-Linux-$arch.sh && \
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 6b21f6396192f9c01f81d9e6c61ddfe1b36b288b && \
+    git checkout fe85aff3b52e6c92b6df56b1ef205b9524272bbf && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \

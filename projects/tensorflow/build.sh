@@ -17,6 +17,9 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
+# Rename all fuzzer rules to oss-fuzz rules.
+find $SRC/tensorflow/tensorflow/ -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
+
 # Overwrite compiler flags that break the oss-fuzz build
 sed -i 's/build:linux --copt=\"-Wno-unknown-warning\"/# overwritten/g' ./.bazelrc
 sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelrc
@@ -25,6 +28,48 @@ sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.baze
 # Force Python3, run configure.py to pick the right build config
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
+
+synchronize_coverage_directories() {
+  # For coverage, we need to remap source files to correspond to the Bazel build
+  # paths. We also need to resolve all symlinks that Bazel creates.
+  if [ "$SANITIZER" = "coverage" ]
+  then
+    declare -r RSYNC_CMD="rsync -aLkR"
+    declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+    mkdir -p ${REMAP_PATH}
+
+    # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
+    declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+      "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
+      "--exclude" "*")
+
+    # Sync existing code.
+    ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
+
+    # Sync generated proto files.
+    if [ -d "./bazel-out/k8-opt/bin/tensorflow/" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
+    fi
+    if [ -d "./bazel-out/k8-opt/bin/external" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
+    fi
+    if [ -d "./bazel-out/k8-opt/bin/third_party" ]
+    then
+      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
+    fi
+
+    # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+    # Also, remove `external/org_tensorflow` which is a copy of the entire source
+    # code that Bazel creates. Not removing this would cause `rsync` to expand a
+    # symlink that ends up pointing to itself!
+    pushd bazel-tensorflow
+    [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
+    ${RSYNC_CMD} external/ ${REMAP_PATH}
+    popd
+  fi
+}
 
 # Since Bazel passes flags to compilers via `--copt`, `--conlyopt` and
 # `--cxxopt`, we need to move all flags from `$CFLAGS` and `$CXXFLAGS` to these.
@@ -62,47 +107,29 @@ fi
 # and not for other binaries such as protoc
 sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensorflow/security/fuzzing/tf_fuzzing.bzl
 
-# Compile fuzztest fuzzers
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:status_fuzz"
+# Prepare flags for compiling fuzzers.
 export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic"
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
-
-  # Remove sanitization of various projects to limit memory footprints. This can
-  # also be used across the real fuzzing (i.e. not only in the CI) in order
-  # to speed up fuzzing by reducing 8-bit counters in the instrumented code.
-  # For futher details, see:
-  # https://github.com/google/oss-fuzz/blob/b5a904f070363a617a585e4cf75729bdb14f9ac4/projects/envoy/build.sh#L87
-  # https://blog.envoyproxy.io/a-stroll-down-fuzzer-optimisation-lane-and-why-instrumentation-policies-matter-f0012ec260b3
-  declare -r DI="$(
-    echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*llvm-project.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*mlir.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*mkl_dnn_v1.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*nasm.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*curl.*\.c\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*kernels.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*platform.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*external.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
-    echo " --per_file_copt=^.*external.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  )"
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} ${DI}"
 else
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.5 --strip=never"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
 fi
 
-compile_fuzztests.sh
+# Do not use compile_fuzztests.sh to synchronize coverage folders as we use
+# synchronize_coverage_directories from this script instead.
+export FUZZTEST_DO_SYNC="no"
 
-# In the CI we bail out after having compiled the first set of fuzzers. This is
-# to save disk and time.
+# Set fuzz targets
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/...+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/..."
+export FUZZTEST_EXTRA_TARGETS="//tensorflow/core/kernels/fuzzing:all"
+
+# Overwrite fuzz targets in CI.
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-  echo "In CI, exiting"
-  exit 0
+  echo "In CI overwriting targets to only build a single target."
+  export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:base64_fuzz"
+  unset FUZZTEST_EXTRA_TARGETS
 fi
 
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
@@ -138,23 +165,17 @@ for fuzzer in ${FUZZERS}; do
 done
 
 declare FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/core/kernels/fuzzing/...))' | grep -v decode_base64)
-TARGETS_TO_BUILD="//tensorflow/core/kernels/fuzzing:all"
 
-# The bazel build will exhaust the resources of the OSS-Fuzz build bot unless
-# we limit the resources it uses. The RAM will be exhausted. Therefore,
-# limit the resources to ensure the build passes.
-RESOURCE_LIMITATIONS="--local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
+# All preparations are done, proceed to build fuzzers.
+compile_fuzztests.sh
 
-bazel build \
-  --spawn_strategy=sandboxed \
-  ${RESOURCE_LIMITATIONS} \
-  --config=monolithic \
-  --dynamic_mode=off \
-  ${EXTRA_FLAGS} \
-  --verbose_failures \
-  --define=framework_shared_object=false \
-  -- $TARGETS_TO_BUILD
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+  # Exit for now in the CI.
+  exit 0
+fi
 
+# Copy out all non-fuzztest fuzzers.
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
 # in `$OUT`, so move them accordingly.
 for bazel_target in ${FUZZERS}; do
@@ -174,31 +195,8 @@ for bazel_target in ${FUZZERS}; do
   fi
 done
 
-# For coverage, we need to remap source files to correspond to the Bazel build
-# paths. We also need to resolve all symlinks that Bazel creates.
-if [ "$SANITIZER" = "coverage" ]
-then
-  declare -r RSYNC_CMD="rsync -aLkR"
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-  mkdir -p ${REMAP_PATH}
-
-  # Sync existing code.
-  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
-
-  # Sync generated proto files.
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-
-  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-  # Also, remove `external/org_tensorflow` which is a copy of the entire source
-  # code that Bazel creates. Not removing this would cause `rsync` to expand a
-  # symlink that ends up pointing to itself!
-  pushd bazel-tensorflow
-  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-  ${RSYNC_CMD} external/ ${REMAP_PATH}
-  popd
-fi
+# Synchronize coverage folders
+synchronize_coverage_directories
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*

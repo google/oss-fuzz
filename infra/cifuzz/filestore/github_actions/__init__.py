@@ -20,10 +20,11 @@ import tarfile
 import tempfile
 
 # pylint: disable=wrong-import-position,import-error
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
-                     os.path.pardir)))
+INFRA_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+                 os.path.pardir))
+sys.path.append(INFRA_DIR)
+OSS_FUZZ_ROOT_DIR = os.path.dirname(INFRA_DIR)
 
 import utils
 import http_utils
@@ -162,7 +163,7 @@ def _upload_artifact_with_upload_js(name, artifact_paths, directory):
   """Uploads the artifacts in |artifact_paths| that are located in |directory|
   to |name|, using the upload.js script."""
   command = [UPLOAD_JS, name, directory] + artifact_paths
-  _, _, retcode = utils.execute(command)
+  _, _, retcode = utils.execute(command, location=OSS_FUZZ_ROOT_DIR)
   return retcode == 0
 
 

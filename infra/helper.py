@@ -24,8 +24,8 @@ import datetime
 import errno
 import logging
 import os
-import pipes
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -172,7 +172,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
   if hasattr(args, 'sanitizer') and not args.sanitizer:
-    args.sanitizer = constants.DEFAULT_SANITIZER
+    if args.project.language == 'javascript':
+      args.sanitizer = 'none'
+    else:
+      args.sanitizer = constants.DEFAULT_SANITIZER
 
   if args.command == 'generate':
     result = generate(args)
@@ -180,6 +183,12 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = build_image(args)
   elif args.command == 'build_fuzzers':
     result = build_fuzzers(args)
+  elif args.command == 'fuzzbench_build_fuzzers':
+    result = fuzzbench_build_fuzzers(args)
+  elif args.command == 'fuzzbench_run_fuzzer':
+    result = fuzzbench_run_fuzzer(args)
+  elif args.command == 'fuzzbench_measure':
+    result = fuzzbench_measure(args)
   elif args.command == 'check_build':
     result = check_build(args)
   elif args.command == 'download_corpora':
@@ -238,7 +247,7 @@ def _add_external_project_args(parser):
   )
 
 
-def get_parser():  # pylint: disable=too-many-statements
+def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   """Returns an argparse parser."""
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   subparsers = parser.add_subparsers(dest='command')
@@ -295,6 +304,14 @@ def get_parser():  # pylint: disable=too-many-statements
                                     '(default).')
   build_fuzzers_parser.set_defaults(clean=False)
 
+  fuzzbench_build_fuzzers_parser = subparsers.add_parser(
+      'fuzzbench_build_fuzzers')
+  _add_architecture_args(fuzzbench_build_fuzzers_parser)
+  fuzzbench_build_fuzzers_parser.add_argument('--engine')
+  _add_sanitizer_args(fuzzbench_build_fuzzers_parser)
+  _add_environment_args(fuzzbench_build_fuzzers_parser)
+  _add_external_project_args(fuzzbench_build_fuzzers_parser)
+  fuzzbench_build_fuzzers_parser.add_argument('project')
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
@@ -323,6 +340,29 @@ def get_parser():  # pylint: disable=too-many-statements
   run_fuzzer_parser.add_argument('fuzzer_args',
                                  help='arguments to pass to the fuzzer',
                                  nargs='*')
+
+  fuzzbench_run_fuzzer_parser = subparsers.add_parser('fuzzbench_run_fuzzer')
+  _add_architecture_args(fuzzbench_run_fuzzer_parser)
+  fuzzbench_run_fuzzer_parser.add_argument('--engine')
+  _add_sanitizer_args(fuzzbench_run_fuzzer_parser)
+  _add_environment_args(fuzzbench_run_fuzzer_parser)
+  _add_external_project_args(fuzzbench_run_fuzzer_parser)
+  fuzzbench_run_fuzzer_parser.add_argument(
+      '--corpus-dir', help='directory to store corpus for the fuzz target')
+  fuzzbench_run_fuzzer_parser.add_argument(
+      'project', help='name of the project or path (external)')
+  fuzzbench_run_fuzzer_parser.add_argument('fuzzer_name',
+                                           help='name of the fuzzer')
+  fuzzbench_run_fuzzer_parser.add_argument(
+      'fuzzer_args', help='arguments to pass to the fuzzer', nargs='*')
+
+  fuzzbench_measure_parser = subparsers.add_parser('fuzzbench_measure')
+  fuzzbench_measure_parser.add_argument(
+      'project', help='name of the project or path (external)')
+  fuzzbench_measure_parser.add_argument('engine_name',
+                                        help='name of the fuzzer')
+  fuzzbench_measure_parser.add_argument('fuzz_target_name',
+                                        help='name of the fuzzer')
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Generate code coverage report for the project.')
@@ -385,6 +425,8 @@ def get_parser():  # pylint: disable=too-many-statements
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
+                                       action='extend',
+                                       nargs='+',
                                        help='specify name of a fuzz target')
   download_corpora_parser.add_argument('--public',
                                        action='store_true',
@@ -499,7 +541,7 @@ def _get_absolute_path(path):
 
 def _get_command_string(command):
   """Returns a shell escaped command string."""
-  return ' '.join(pipes.quote(part) for part in command)
+  return ' '.join(shlex.quote(part) for part in command)
 
 
 def _get_project_build_subdir(project, subdir_name):
@@ -726,9 +768,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     env_to_add,
     source_path,
     mount_path=None,
-    child_dir=''):
+    child_dir='',
+    build_project_image=True):
   """Builds fuzzers."""
-  if not build_image_impl(project, architecture=architecture):
+  if build_project_image and not build_image_impl(project,
+                                                  architecture=architecture):
     return False
 
   project_out = os.path.join(project.out, child_dir)
@@ -889,6 +933,45 @@ def build_fuzzers(args):
                          mount_path=args.mount_path,
                          child_dir=child_dir)
       for sanitizer, child_dir in sanitized_binary_directories)
+
+
+def fuzzbench_build_fuzzers(args):
+  """Builds fuzz targets with an arbitrary fuzzer from FuzzBench."""
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    tmp_dir = os.path.abspath(tmp_dir)
+    fuzzbench_path = os.path.join(tmp_dir, 'fuzzbench')
+    subprocess.run([
+        'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
+        fuzzbench_path
+    ],
+                   check=True)
+    env = [
+        f'FUZZBENCH_PATH={fuzzbench_path}', 'OSS_FUZZ_ON_DEMAND=1',
+        f'PROJECT={args.project.name}'
+    ]
+    tag = f'gcr.io/oss-fuzz/{args.project.name}'
+    subprocess.run([
+        'docker', 'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
+        'gcr.io/oss-fuzz-base/base-builder'
+    ],
+                   check=True)
+    build_image_impl(args.project)
+    assert docker_build([
+        '--tag', tag, '--build-arg', f'parent_image={tag}', '--file',
+        os.path.join(fuzzbench_path, 'fuzzers', args.engine,
+                     'builder.Dockerfile'),
+        os.path.join(fuzzbench_path, 'fuzzers', args.engine)
+    ])
+
+    return build_fuzzers_impl(args.project,
+                              False,
+                              args.engine,
+                              args.sanitizer,
+                              args.architecture,
+                              env,
+                              source_path=fuzzbench_path,
+                              mount_path=fuzzbench_path,
+                              build_project_image=False)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
@@ -1065,9 +1148,16 @@ def download_corpora(args):
       return False
 
   if args.fuzz_target:
-    fuzz_targets = [args.fuzz_target]
+    fuzz_targets = args.fuzz_target
   else:
     fuzz_targets = _get_fuzz_targets(args.project)
+
+  if not fuzz_targets:
+    logging.error(
+        'Fuzz targets not found. Please build project first '
+        '(python3 infra/helper.py build_fuzzers %s) so that download_corpora '
+        'can automatically identify targets.', args.project.name)
+    return False
 
   corpus_dir = args.project.corpus
 
@@ -1305,6 +1395,86 @@ def run_fuzzer(args):
   return docker_run(run_args, architecture=args.architecture)
 
 
+def fuzzbench_run_fuzzer(args):
+  """Runs a fuzz target built by fuzzbench in the container."""
+  if not check_project_exists(args.project):
+    return False
+
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'RUN_FUZZER_MODE=interactive',
+      'HELPER=True',
+      f'FUZZ_TARGET={args.fuzzer_name}',
+      f'BENCHMARK={args.project.name}',
+      'TRIAL_ID=1',
+      'EXPERIMENT_TYPE=bug',
+  ]
+
+  if args.e:
+    env += args.e
+
+  run_args = _env_to_docker_args(env)
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      logging.error('The path provided in --corpus-dir argument does not exist')
+      return False
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend([
+        '-v',
+        '{corpus_dir}:/tmp/{fuzzer}_corpus'.format(corpus_dir=corpus_dir,
+                                                   fuzzer=args.fuzzer_name)
+    ])
+
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    tmp_dir = os.path.abspath(tmp_dir)
+    fuzzbench_path = os.path.join(tmp_dir, 'fuzzbench')
+    subprocess.run([
+        'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
+        fuzzbench_path
+    ],
+                   check=True)
+    run_args.extend([
+        '-v',
+        f'{args.project.out}:/out',
+        '-v',
+        f'{fuzzbench_path}:{fuzzbench_path}',
+        '-e',
+        f'FUZZBENCH_PATH={fuzzbench_path}',
+        f'gcr.io/oss-fuzz/{args.project.name}',
+        'fuzzbench_run_fuzzer',
+        args.fuzzer_name,
+    ] + args.fuzzer_args)
+
+    return docker_run(run_args, architecture=args.architecture)
+
+
+def fuzzbench_measure(args):
+  """Measure results from fuzzing with fuzzbench."""
+  if not check_project_exists(args.project):
+    return False
+
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    tmp_dir = os.path.abspath(tmp_dir)
+    fuzzbench_path = os.path.join(tmp_dir, 'fuzzbench')
+    subprocess.run([
+        'git', 'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
+        fuzzbench_path
+    ],
+                   check=True)
+    run_args = [
+        '-v', f'{args.project.out}:/out', '-v',
+        f'{fuzzbench_path}:{fuzzbench_path}', '-e',
+        f'FUZZBENCH_PATH={fuzzbench_path}', '-e', 'EXPERIMENT_TYPE=bug', '-e',
+        f'FUZZ_TARGET={args.fuzz_target_name}', '-e',
+        f'FUZZER={args.engine_name}', '-e', f'BENCHMARK={args.project.name}',
+        f'gcr.io/oss-fuzz/{args.project.name}', 'fuzzbench_measure'
+    ]
+
+    return docker_run(run_args, 'x86_64')
+
+
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
@@ -1480,9 +1650,10 @@ def shell(args):
 
   run_args = _env_to_docker_args(env)
   if args.source_path:
+    workdir = _workdir_from_dockerfile(args.project)
     run_args.extend([
         '-v',
-        '%s:%s' % (_get_absolute_path(args.source_path), '/src'),
+        '%s:%s' % (_get_absolute_path(args.source_path), workdir),
     ])
 
   run_args.extend([
