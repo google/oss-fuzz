@@ -24,13 +24,17 @@ import urlextract
 # time is heavy for URLExtract.
 urlextractor = urlextract.urlextract_core.URLExtract()
 
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 4096))
   # Class target.
   try:
     urlextractor.find_urls(text)
-  except(urlextract.urlextract_core.URLExtractError,urlextract.cachefile.CacheFileError,):
+  except (
+      urlextract.urlextract_core.URLExtractError,
+      urlextract.cachefile.CacheFileError,
+  ):
     pass
 
 
