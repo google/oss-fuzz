@@ -28,12 +28,9 @@ make all
 # Copy the .so file to $OUT as well as the executable.
 mkdir -p $OUT/lib
 cp libmyanmartools.so $OUT/lib
-# TODO(https://github.com/google/oss-fuzz/issues/2947): Link in libunwind
-# statically or stop copying if ClusterFuzz bot images get libunwind.
-# Copy libunwind since it isn't on the ClusterFuzz bot images.
-cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
 $CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
-    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools -lunwind \
+    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools \
+    -Wl,-Bstatic -lunwind -Wl,-Bdynamic \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
     $LIB_FUZZING_ENGINE
