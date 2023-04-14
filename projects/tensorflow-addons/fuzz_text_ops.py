@@ -17,14 +17,7 @@
 """Module for hitting the native text modules"""
 import sys
 import atheris
-import typeguard
 
-
-# Overwrite runtime instrumentation done by typeguard since it's not compatible
-# with pyinstaller.
-def overwritten_instrument(f):
-  return "Not instrumenting. Running in fuzz mode"
-typeguard._decorators.instrument = overwritten_instrument
 
 # Instrument selected imports rather than atheris.instrument_all() since the
 # python package will have a huge amount of code and instrument_all() will
