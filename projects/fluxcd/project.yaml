@@ -3,10 +3,11 @@ main_repo: "https://github.com/fluxcd/flux2"
 primary_contact: "cncf-flux-security@lists.cncf.io"
 auto_ccs :
   - "hidde@weave.works"
-  - "scott@weave.works"
-  - "paulo.gomes@weave.works"
+  - "scott@r6by.com"
+  - "pjbgf@linux.com"
   - "david@adalogics.com"
   - "adam@adalogics.com"
+  - "max@weave.works"
 language: go
 fuzzing_engines:
   - libfuzzer
