@@ -36,7 +36,7 @@ python3 ./setup.py install
 python3 -m pip install .
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data "/usr/local/lib64/libblosc2.so.2.7.1:." --add-data "/usr/local/lib64/libblosc2.so.2:." --add-data "/usr/local/lib64/libblosc2.so:."
+  compile_python_fuzzer $fuzzer --add-data "/usr/local/lib64/libblosc2.so.2.8.0:." --add-data "/usr/local/lib64/libblosc2.so.2:." --add-data "/usr/local/lib64/libblosc2.so:."
 done
 
 # Create corpus
