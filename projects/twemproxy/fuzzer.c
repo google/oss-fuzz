@@ -26,9 +26,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         return 1;
     }
 
-    char *data = calloc((Size+1), sizeof(char));  
-    memcpy(data, Data, Size);
-
     struct instance nci = {0};
     nci.mbuf_chunk_size = MBUF_SIZE;
     mbuf_init(&nci);
@@ -43,7 +40,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         req->state = 0;
         req->token = NULL;
 
-        mbuf_copy(m, (const uint8_t*)Data, Size);
+        mbuf_copy(m, Data, Size);
 
         STAILQ_INIT(&req->mhdr);
         mbuf_insert(&req->mhdr, m);
@@ -62,7 +59,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         rsp->state = 0;
         rsp->token = NULL;
 
-        mbuf_copy(m, (const uint8_t*)data, Size);
+        mbuf_copy(m, Data, Size);
 
         STAILQ_INIT(&rsp->mhdr);
         mbuf_insert(&rsp->mhdr, m);
@@ -80,7 +77,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         rsp->state = 0;
         rsp->token = NULL;
 
-        mbuf_copy(m, (const uint8_t*)data, Size);
+        mbuf_copy(m, Data, Size);
 
         STAILQ_INIT(&rsp->mhdr);
         mbuf_insert(&rsp->mhdr, m);
@@ -97,7 +94,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         req->state = 0;
         req->token = NULL;
 
-        mbuf_copy(m, (const uint8_t*)data, Size);
+        mbuf_copy(m, Data, Size);
 
         STAILQ_INIT(&req->mhdr);
         mbuf_insert(&req->mhdr, m);
@@ -110,8 +107,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     msg_deinit();
     mbuf_deinit();
     log_deinit();
-
-    free(data);
 
     return 0;
 }
