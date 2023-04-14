@@ -20,6 +20,7 @@ import sys
 import pygments
 from pygments.formatters import *
 import pygments.lexers
+import pygments.filters
 
 # pygments.LEXERS.values() is a list of tuples like this, with some of then empty:
 # (textual class name, longname, tuple of aliases, tuple of filename patterns, tuple of mimetypes)
@@ -30,12 +31,12 @@ FORMATTERS = [BBCodeFormatter(), GroffFormatter(), HtmlFormatter(),
               SvgFormatter(), Terminal256Formatter(), TerminalFormatter(),
               TerminalTrueColorFormatter()]
 
-
 def TestOneInput(data: bytes) -> int:
   if len(data) > (2 << 18):
     return
   fdp = atheris.FuzzedDataProvider(data)
   random_lexer = pygments.lexers.get_lexer_by_name(fdp.PickValueInList(LEXERS))
+  random_lexer.add_filter(fdp.PickValueInList(list(pygments.filters.FILTERS.keys())))
   formatter = fdp.PickValueInList(FORMATTERS)
   str_data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
 

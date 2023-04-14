@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make
-RUN git clone --depth 1 https://github.com/openssl/openssl.git
-RUN cd $SRC/openssl/ && git submodule update --init fuzz/corpora
-RUN git clone --depth 1 --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl.git openssl111
-RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl.git openssl30
-WORKDIR openssl
-COPY build.sh *.options $SRC/
-ENV AFL_SKIP_OSSFUZZ=1
-ENV AFL_LLVM_MODE_WORKAROUND=0
+autoreconf -f -i
+./configure --disable-shared --enable-static --without-wbclient
+make
+
+pushd fuzzing/
+make fuzzer
+
+cp fuzz-accept-sec-context $OUT/
+cp fuzz-accept-sec-context.dict $OUT/
+popd

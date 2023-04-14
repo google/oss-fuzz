@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,42 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import atheris
+#
+##########################################################################
 import sys
+import atheris
+# Auto-fuzz heuristics used: py-autofuzz-heuristics-4.1
+# Imports by the generated code
+import urlextract
 
-from datetime import datetime
-import croniter
-from croniter.croniter import CroniterError, CroniterBadTypeRangeError
+# Stpre the extractor as a global variable to speed up exec/sec. The startup
+# time is heavy for URLExtract.
+urlextractor = urlextract.urlextract_core.URLExtract()
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  base = datetime(2012, 4, 6, 13, 26, 10)
+  text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 4096))
+  # Class target.
   try:
-    cron_str = fdp.ConsumeString(50)
-    hash_id = fdp.ConsumeBytes(2)
-    croniter.croniter.is_valid(cron_str, hash_id=hash_id)
-    itr = croniter.croniter(cron_str, base, hash_id=hash_id)
-    idx = 0
-    for v in itr.all_next():
-      idx += 1
-      if idx > 10:
-        break
-    itr.get_next()
-    itr.get_prev()
-  except (CroniterError, CroniterBadTypeRangeError) as e:
+    urlextractor.find_urls(text)
+  except (
+      urlextract.urlextract_core.URLExtractError,
+      urlextract.cachefile.CacheFileError,
+  ):
     pass
-  except NameError as e:
-    # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781
-    if not "'exc' is not defined" in str(e):
-      raise e
 
 
 def main():
   atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()

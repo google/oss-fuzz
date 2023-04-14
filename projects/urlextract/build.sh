@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-# Build and install project (using current CFLAGS, CXXFLAGS).
+##########################################################################
 pip3 install .
-
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data urlextract/data/:urlextract/data/
 done
-
-find tests/examplefiles/ -type f | zip -@ -q $OUT/files_fuzzer_seed_corpus.zip

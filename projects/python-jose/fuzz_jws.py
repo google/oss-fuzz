@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,42 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import atheris
+#
+##########################################################################
 import sys
-
-from datetime import datetime
-import croniter
-from croniter.croniter import CroniterError, CroniterBadTypeRangeError
+import atheris
+# Auto-fuzz heuristics used: py-autofuzz-heuristics-2
+# Imports by the generated code
+from jose.jws import get_unverified_headers
+import jose
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  base = datetime(2012, 4, 6, 13, 26, 10)
+  unverified_headers = fdp.ConsumeUnicodeNoSurrogates(
+      fdp.ConsumeIntInRange(0, 4096))
   try:
-    cron_str = fdp.ConsumeString(50)
-    hash_id = fdp.ConsumeBytes(2)
-    croniter.croniter.is_valid(cron_str, hash_id=hash_id)
-    itr = croniter.croniter(cron_str, base, hash_id=hash_id)
-    idx = 0
-    for v in itr.all_next():
-      idx += 1
-      if idx > 10:
-        break
-    itr.get_next()
-    itr.get_prev()
-  except (CroniterError, CroniterBadTypeRangeError) as e:
+    get_unverified_headers(unverified_headers)
+  except (jose.exceptions.JOSEError,):
     pass
-  except NameError as e:
-    # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781
-    if not "'exc' is not defined" in str(e):
-      raise e
 
 
 def main():
   atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()
