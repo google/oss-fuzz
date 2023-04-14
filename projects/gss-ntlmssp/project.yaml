@@ -1,0 +1,12 @@
+homepage: "https://github.com/gssapi/gss-ntlmssp"
+language: c
+primary_contact: "simo@redhat.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: "https://github.com/gssapi/gss-ntlmssp"
