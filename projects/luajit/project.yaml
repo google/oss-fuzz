@@ -1,0 +1,15 @@
+homepage: "https://luajit.org/"
+language: c
+builds_per_day: 4
+primary_contact: "estetus@gmail.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - centipede
+sanitizers:
+  - address
+architectures:
+  # See https://luajit.org/luajit.html.
+  - x86_64
+main_repo: "https://github.com/LuaJIT/LuaJIT/"
