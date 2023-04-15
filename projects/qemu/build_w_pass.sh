@@ -53,7 +53,7 @@ if ! { [ -e "./COPYING" ] &&
     fatal "Please run the script from the top of the QEMU tree"
 fi
 
-# mkdir -p $OSS_FUZZ_BUILD_DIR || fatal "mkdir $OSS_FUZZ_BUILD_DIR failed"
+mkdir -p $OSS_FUZZ_BUILD_DIR || fatal "mkdir $OSS_FUZZ_BUILD_DIR failed"
 cd $OSS_FUZZ_BUILD_DIR || fatal "cd $OSS_FUZZ_BUILD_DIR failed"
 
 
@@ -64,16 +64,17 @@ else
 fi
 
 mkdir -p "$DEST_DIR/lib/"  # Copy the shared libraries here
+cp $REPORT_PASS/*.so $DEST_DIR/lib/ || fatal "cp $REPORT_PASS/*.so $DEST_DIR/lib/ failed"
 
 # Build once to get the list of dynamic lib paths, and copy them over
 
-REPORT_FLAGS="-Xclang -load -Xclang $REPORT_PASS/libReportPass.so -flegacy-pass-manager"
+REPORT_FLAGS="-Xclang -load -Xclang $DEST_DIR/lib/libReportPass.so -flegacy-pass-manager"
 export CC="$CC $REPORT_FLAGS"
 
 # Build a second time to build the final binary with correct rpath
 ../configure --disable-werror --cc="$CC" --cxx="$CXX" --enable-fuzzing \
     --prefix="/opt/qemu-oss-fuzz" \
-    --extra-cflags="$EXTRA_CFLAGS" --extra-ldflags="-Wl,-rpath,\$ORIGIN/lib $REPORT_PASS/reporter.so" \
+    --extra-cflags="$EXTRA_CFLAGS" --extra-ldflags="-Wl,-rpath,\$ORIGIN/lib $DEST_DIR/lib/reporter.so" \
     --target-list="i386-softmmu"
 make "-j$(nproc)" qemu-fuzz-i386 V=1
 
