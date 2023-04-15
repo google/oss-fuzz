@@ -14,5 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+# Required by Go 1.20
+export CXX="${CXX} -lresolv" 
 cp $SRC/cncf-fuzzing/projects/vitess/vt_schema_fuzzer.go $SRC/vitess/go/test/fuzzing/
 $SRC/cncf-fuzzing/projects/vitess/build.sh
