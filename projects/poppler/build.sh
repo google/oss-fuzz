@@ -145,15 +145,20 @@ fi
 
 pushd $SRC/qtbase
 # add the flags to Qt build too
+# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
+# contain paths with slashes.
 sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
 sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
+sed -i -e "s~QMAKE_CXX               = \$\${CROSS_COMPILE}clang++~QMAKE_CXX = $CXX~g" mkspecs/common/clang.conf
+sed -i -e "s~QMAKE_CC                = \$\${CROSS_COMPILE}clang~QMAKE_CC = $CC~g" mkspecs/common/clang.conf
 # disable sanitize=vptr for harfbuzz since it compiles without rtti
 sed -i -e "s~TARGET = qtharfbuzz~TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr~g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
 # make qmake compile faster
 sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
 # Fix memory stuff in qt 5.15 unfixable since branch is closed now
 sed -i -e "s/struct statx statxBuffer/struct statx statxBuffer = {}/g" src/corelib/io/qfilesystemengine_unix.cpp
-./configure --zlib=qt --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -no-pkg-config -platform linux-clang-libc++ -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
+sed -i -e "s/if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zlib) {/if (false) {/g" src/tools/rcc/rcc.cpp
+./configure --zlib=system --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS -I $PREFIX/include/ -L $PREFIX/lib/
 make -j$(nproc)
 make install
 popd
