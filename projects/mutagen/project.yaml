@@ -1,0 +1,12 @@
+homepage: "https://mutagen.readthedocs.io"
+main_repo: "https://github.com/quodlibet/mutagen"
+language: python
+primary_contact: "reiter.christoph@gmail.com"
+auto_ccs:
+  - "jvoisin@google.com"
+  - "phw@uploadedlobster.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
