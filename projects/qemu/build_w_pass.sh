@@ -41,7 +41,7 @@ OSS_FUZZ_BUILD_DIR="./build-oss-fuzz/"
 # remove it, resulting in an unresolved reference to qemu_build_not_reached
 # Undefine the __OPTIMIZE__ macro which compiler.h relies on to choose whether
 # to " #define qemu_build_not_reached()  g_assert_not_reached() "
-EXTRA_CFLAGS="$CFLAGS -U __OPTIMIZE__"
+EXTRA_CFLAGS="$CFLAGS -U __OPTIMIZE__ -fno-stack-protector"
 
 if ! { [ -e "./COPYING" ] &&
    [ -e "./MAINTAINERS" ] &&
