@@ -62,9 +62,9 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -DSK_GPU_TOOLS_VK_LIBRARY_NAME=libvk_swiftshader.so \
- -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
- -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.

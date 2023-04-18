@@ -1,6 +1,7 @@
 homepage: "http://www.ntp.org"
 language: c++
 primary_contact: "security@ntp.org"
+main_repo: "https://bitbucket.nwtime.org/scm/websites/ntpwww.git"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
 fuzzing_engines:

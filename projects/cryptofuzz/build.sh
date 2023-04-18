@@ -94,21 +94,6 @@ then
     make
 fi
 
-# Compile Java module
-if [ "$SANITIZER" = undefined ]; then
-    mkdir -p $OUT/lib/
-    cd $OUT/lib/
-    tar zxf $SRC/openjdk-18.0.1_linux-x64_bin.tar.gz
-    export JDK_PATH=$(realpath jdk-18.0.1)
-    cp $JDK_PATH/lib/server/libjvm.so $OUT/lib/
-    export LINK_FLAGS="$LINK_FLAGS -L$JDK_PATH/lib/server/ -ljvm"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_JAVA"
-
-    cd $SRC/cryptofuzz/modules/java/
-    make -f Makefile-OSS-Fuzz -j$(nproc)
-    cp CryptofuzzJavaHarness.class $OUT/
-fi
-
 if [[ $CFLAGS != *-m32* && "$SANITIZER" != "coverage" ]]
 then
     cd $SRC/

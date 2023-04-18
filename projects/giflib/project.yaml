@@ -1,4 +1,5 @@
 homepage: "http://giflib.sourceforge.net/"
+main_repo: "https://git.code.sf.net/p/giflib/code"
 language: c++
 primary_contact: "esr@thyrsus.com"
 auto_ccs:

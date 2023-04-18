@@ -305,7 +305,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   build_fuzzers_parser.set_defaults(clean=False)
 
   fuzzbench_build_fuzzers_parser = subparsers.add_parser(
-      'fuzzbench_build_fuzzers', help='Build fuzzers for a oss-fuzz on demand.')
+      'fuzzbench_build_fuzzers')
   _add_architecture_args(fuzzbench_build_fuzzers_parser)
   fuzzbench_build_fuzzers_parser.add_argument('--engine')
   _add_sanitizer_args(fuzzbench_build_fuzzers_parser)
@@ -341,9 +341,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                  help='arguments to pass to the fuzzer',
                                  nargs='*')
 
-  fuzzbench_run_fuzzer_parser = subparsers.add_parser(
-      'fuzzbench_run_fuzzer',
-      help='Run a fuzzer in the emulated fuzzing environment.')
+  fuzzbench_run_fuzzer_parser = subparsers.add_parser('fuzzbench_run_fuzzer')
   _add_architecture_args(fuzzbench_run_fuzzer_parser)
   fuzzbench_run_fuzzer_parser.add_argument('--engine')
   _add_sanitizer_args(fuzzbench_run_fuzzer_parser)
@@ -358,8 +356,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   fuzzbench_run_fuzzer_parser.add_argument(
       'fuzzer_args', help='arguments to pass to the fuzzer', nargs='*')
 
-  fuzzbench_measure_parser = subparsers.add_parser(
-      'fuzzbench_measure', help='Measure results from fuzzing.')
+  fuzzbench_measure_parser = subparsers.add_parser('fuzzbench_measure')
   fuzzbench_measure_parser.add_argument(
       'project', help='name of the project or path (external)')
   fuzzbench_measure_parser.add_argument('engine_name',
@@ -428,6 +425,8 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
+                                       action='extend',
+                                       nargs='+',
                                        help='specify name of a fuzz target')
   download_corpora_parser.add_argument('--public',
                                        action='store_true',
@@ -1149,9 +1148,16 @@ def download_corpora(args):
       return False
 
   if args.fuzz_target:
-    fuzz_targets = [args.fuzz_target]
+    fuzz_targets = args.fuzz_target
   else:
     fuzz_targets = _get_fuzz_targets(args.project)
+
+  if not fuzz_targets:
+    logging.error(
+        'Fuzz targets not found. Please build project first '
+        '(python3 infra/helper.py build_fuzzers %s) so that download_corpora '
+        'can automatically identify targets.', args.project.name)
+    return False
 
   corpus_dir = args.project.corpus
 
