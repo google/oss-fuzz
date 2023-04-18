@@ -4,8 +4,3 @@ primary_contact: "bergmann@tzi.org"
 auto_ccs:
     - "libcoap@gmail.com"
 main_repo: 'https://github.com/obgm/libcoap.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

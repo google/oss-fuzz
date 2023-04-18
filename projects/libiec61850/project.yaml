@@ -4,8 +4,3 @@ auto_ccs:
   - "david@adalogics.com"
 language: c
 main_repo: 'https://github.com/mz-automation/libiec61850'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

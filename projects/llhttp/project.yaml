@@ -4,8 +4,3 @@ language: c
 primary_contact: "fedor@indutny.com"
 auto_ccs:
  - "david@adalogics.com"
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

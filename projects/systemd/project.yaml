@@ -27,8 +27,3 @@ architectures:
   - x86_64
   - i386
 file_github_issue: True
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

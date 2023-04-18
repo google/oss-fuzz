@@ -11,8 +11,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/imagemagick/imagemagick'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

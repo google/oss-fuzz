@@ -15,8 +15,3 @@ architectures:
   - i386
 main_repo: 'https://github.com/google/double-conversion.git'
 file_github_issue: True
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

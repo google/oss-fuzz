@@ -11,8 +11,3 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://git.libssh.org/projects/libssh.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

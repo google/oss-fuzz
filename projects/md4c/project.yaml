@@ -4,8 +4,3 @@ primary_contact: "mity.ossfuzz@gmail.com"
 language: c
 auto_ccs:
   - "david@adalogics.com"
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

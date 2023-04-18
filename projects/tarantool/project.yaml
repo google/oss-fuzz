@@ -10,11 +10,6 @@ auto_ccs:
   - "leonid2012v@gmail.com"
   - "boris.stepanenko@gmail.com"
   - "munkin.igor@gmail.com"
-fuzzing_engines:
-  - afl
-  - libfuzzer
-  - honggfuzz
-  - centipede
 sanitizers:
   - address
   - undefined
