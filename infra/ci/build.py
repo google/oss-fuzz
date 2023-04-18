@@ -147,6 +147,10 @@ def should_build(project_yaml):
     # This assumes we only do coverage builds with libFuzzer on x86_64.
     return should_build_coverage(project_yaml)
 
+  if os.getenv('ENGINE') == 'centipede':
+    # Centipede may not work with other sanitizer (e.g., UBSAN, MSAN) for now.
+    return os.getenv('SANITIZER') in ['none', 'address']
+
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
