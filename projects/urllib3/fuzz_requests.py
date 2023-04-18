@@ -21,7 +21,7 @@ import sys
 import threading
 import urllib3
 
-PORT = 8011
+PORT = -1
 
 GLOBAL_RESPONSE_MESSAGE = ""
 GLOBAL_RESPONSE_CODE = 0
@@ -79,7 +79,7 @@ CONTENT_ENCODING_TYPES = [None, "gzip", "deflate"]
 def TestOneInput(input_bytes):
     global GLOBAL_RESPONSE_MESSAGE, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_ENCODING, PORT
 
-    timeout = urllib3.util.Timeout(connect=1.0, read=1.0)
+    timeout = urllib3.util.Timeout(connect=0.1, read=0.1)
     urllib_pool = urllib3.poolmanager.PoolManager(timeout=timeout)
 
     # Try and get an open port to run our test web server
@@ -95,7 +95,7 @@ def TestOneInput(input_bytes):
 
     fdp = atheris.FuzzedDataProvider(input_bytes)
 
-    BATCH_SIZE = 100
+    BATCH_SIZE = 2
     for iteration in range(BATCH_SIZE):
         # Fuzz Http Response
         GLOBAL_RESPONSE_MESSAGE = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
