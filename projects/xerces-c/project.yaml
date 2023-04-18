@@ -1,4 +1,5 @@
 homepage: "https://xerces.apache.org/"
+main_repo: 'https://github.com/google/libprotobuf-mutator.git'
 language: c++
 primary_contact: "vincent.ulitzsch@live.de"
 auto_ccs:

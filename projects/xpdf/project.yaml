@@ -1,4 +1,5 @@
 homepage: "https://www.xpdfreader.com/"
+main_repo: 'https://gitlab.freedesktop.org/freetype/freetype'
 primary_contact: "xpdf@xpdfreader.com"
 language: c++
 sanitizers:
