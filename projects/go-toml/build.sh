@@ -15,6 +15,6 @@
 #
 ################################################################################
 
-mkdir $OUT/benchmark
+mkdir -p $OUT/benchmark
 cp benchmark/benchmark.toml $OUT/benchmark/benchmark.toml
 compile_go_fuzzer . FuzzToml fuzz_toml gofuzz
