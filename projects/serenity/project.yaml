@@ -14,3 +14,9 @@ auto_ccs:
 # Bug reports are public by default:
 view_restrictions: none
 main_repo: 'https://github.com/SerenityOS/serenity'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

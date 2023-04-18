@@ -13,3 +13,9 @@ sanitizers:
   - undefined:
       experimental: True 
 main_repo: 'https://github.com/Moddable-OpenSource/moddable.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

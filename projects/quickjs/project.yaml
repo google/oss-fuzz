@@ -12,3 +12,9 @@ sanitizers:
 
 blackbox: true  # also use a blackbox fuzzer for this project.
 main_repo: 'https://github.com/bellard/quickjs'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

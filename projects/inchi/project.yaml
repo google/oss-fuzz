@@ -4,3 +4,9 @@ language: c
 primary_contact: "member-info@inchi-trust.org"
 sanitizers:
   - address
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

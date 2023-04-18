@@ -4,3 +4,9 @@ primary_contact: "johanl@spotify.com"
 language: c++
 auto_ccs:
   - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

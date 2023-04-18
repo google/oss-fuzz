@@ -14,3 +14,9 @@ sanitizers:
 #  - memory
 coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*
 main_repo: "https://www.mercurial-scm.org/repo/hg"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+
