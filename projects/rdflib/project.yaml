@@ -1,0 +1,11 @@
+homepage: "https://github.com/RDFLib/rdflib"
+language: python
+#TODO: Add primary contact
+primary_contact: ""
+main_repo: "https://github.com/RDFLib/rdflib.git"
+file_github_issue: false
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
