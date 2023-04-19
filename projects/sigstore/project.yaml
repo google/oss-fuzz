@@ -2,11 +2,9 @@ homepage: "https://sigstore.dev"
 main_repo: "https://github.com/sigstore/sigstore"
 primary_contact: "bcallaway@sigstore.dev"
 auto_ccs:
-  - naveensrinivasan@protonmail.com
-  - dlorenc@protonmail.com
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
-  - asraa@sigstore.dev
+  - codysoyland@sigstore.dev
 language: go
 fuzzing_engines:
   - libfuzzer
