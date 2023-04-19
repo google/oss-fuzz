@@ -1,5 +1,4 @@
 homepage: "https://www.documentliberation.org"
-main_repo: 'https://dev-www.libreoffice.org/'
 language: c++
 primary_contact: "dtardon@redhat.com"
 sanitizers:
