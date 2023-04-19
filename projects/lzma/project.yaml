@@ -1,4 +1,5 @@
 homepage: "https://www.7-zip.org/sdk.html"
+main_repo: 'https://github.com/fancycode/lzma-fuzz.git'
 language: c++
 primary_contact: "ipavlov@users.sourceforge.net"
 auto_ccs:

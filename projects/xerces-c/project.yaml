@@ -1,4 +1,5 @@
 homepage: "https://xerces.apache.org/"
+main_repo: 'https://svn.apache.org/repos/asf/xerces/c/trunk'
 language: c++
 primary_contact: "vincent.ulitzsch@live.de"
 auto_ccs:
