@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.code-intelligence</groupId>
             <artifactId>jazzer-junit</artifactId>
-            <version>0.16.0</version>
+            <version>0.15.0</version>
         </dependency>
 
         <dependency>
@@ -41,7 +41,7 @@
             <artifactId>opencensus-api</artifactId>
             <version>${env.OPENCENSUS_JAVA_VERSION}</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../opencensus-java/api/build/libs/opencensus-api-0.32.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${basedir}/../opencensus-java/api/build/libs/opencensus-api-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -49,7 +49,7 @@
             <artifactId>opencensus-impl</artifactId>
             <version>${env.OPENCENSUS_JAVA_VERSION}</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../opencensus-java/impl/build/libs/opencensus-impl-0.32.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${basedir}/../opencensus-java/impl/build/libs/opencensus-impl-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -57,7 +57,7 @@
             <artifactId>opencensus-impl-core</artifactId>
             <version>${env.OPENCENSUS_JAVA_VERSION}</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../opencensus-java/impl_core/build/libs/opencensus-impl-core-0.32.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${basedir}/../opencensus-java/impl_core/build/libs/opencensus-impl-core-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -65,7 +65,7 @@
             <artifactId>opencensus-exporter-trace-util</artifactId>
             <version>${env.OPENCENSUS_JAVA_VERSION}</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../opencensus-java/exporters/trace/util/build/libs/opencensus-exporter-trace-util-0.32.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${basedir}/../opencensus-java/exporters/trace/util/build/libs/opencensus-exporter-trace-util-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -73,7 +73,7 @@
             <artifactId>opencensus-contrib-resource-util</artifactId>
             <version>${env.OPENCENSUS_JAVA_VERSION}</version>
             <scope>system</scope>
-            <systemPath>${basedir}/../opencensus-java/contrib/resource_util/build/libs/opencensus-contrib-resource-util-0.32.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${basedir}/../opencensus-java/contrib/resource_util/build/libs/opencensus-contrib-resource-util-${env.OPENCENSUS_JAVA_VERSION}.jar</systemPath>
         </dependency>
 
         <dependency>

@@ -16,4 +16,4 @@
 ################################################################################
 
 cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
+cp target/x86_64-unknown-linux-gnu/release/message $OUT/
