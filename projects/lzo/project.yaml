@@ -1,5 +1,4 @@
 homepage: "http://www.oberhumer.com"
-main_repo: 'http://www.oberhumer.com/opensource/lzo'
 language: c++
 primary_contact: "info@oberhumer.com"
 auto_ccs:
