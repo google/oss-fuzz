@@ -436,6 +436,13 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     fi
   done
 
+  # Remove META-INF and non-class file from the dump
+  # directory in order to avoid duplication of classes
+  # Also remove illegal class file with name with a dot
+  find $classes_dir -name "META-INF" | xargs rm -rf
+  find $classes_dir -type f -not -name "*.class" | xargs rm -f
+  find $classes_dir -type f -name "*.*.class" | xargs rm -f
+
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
   sourcefiles_args=(--sourcefiles $OUT/$SRC)
