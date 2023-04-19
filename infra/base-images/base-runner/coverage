@@ -436,11 +436,16 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     fi
   done
 
-  # Remove META-INF and non-class file from the dump
-  # directory in order to avoid duplication of classes
-  # Also remove illegal class file with name with a dot
+  # Clean up files that can create duplicate class names which breaks Jacoco.
+  # Remove META-INF folder because some jar may store duplication of the same
+  # class file in the META-INF for other java version
   find $classes_dir -name "META-INF" | xargs rm -rf
+  # Remove all files that is not a java class because some jar may contain
+  # Kotlin class which has the same name of a java class and Jacoco fail to
+  # distinguish them.
   find $classes_dir -type f -not -name "*.class" | xargs rm -f
+  # Remove all class files which have a dot in its file name which are normally
+  # used to name a duplication of the legitimate class file.
   find $classes_dir -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
