@@ -23,10 +23,10 @@ import simplejson
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-  val_1 = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
+  fuzz_string = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
 
   try:
-    jsonpickle.unpickler.decode(val_1)
+    jsonpickle.unpickler.decode(fuzz_string)
   except (simplejson.JSONDecodeError, RecursionError):
     pass
 
