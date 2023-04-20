@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
   automake autotools-dev bsdmainutils build-essential cmake curl g++-multilib libtool make \
   patch pkg-config python3 wget zip
 
-RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
+RUN git clone --depth=1 https://github.com/fanquake/bitcoin.git bitcoin-core -b flto_thin
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
