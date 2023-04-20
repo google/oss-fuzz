@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
 RUN git clone https://github.com/lua/lua
 RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
 WORKDIR testdir
+RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
 COPY build.sh testdir/
 WORKDIR $SRC
 COPY build.sh $SRC/
