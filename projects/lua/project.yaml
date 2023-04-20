@@ -5,8 +5,3 @@ auto_ccs:
   - "fuzz@lua.org"
   - "david@adalogics.com"
 main_repo: 'https://github.com/lua/lua'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

@@ -10,3 +10,9 @@ sanitizers:
 labels:
   load_from_memory_fuzzer:
     - sundew
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

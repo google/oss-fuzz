@@ -9,3 +9,9 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/VirusTotal/yara.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

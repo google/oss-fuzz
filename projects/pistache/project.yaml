@@ -8,3 +8,9 @@ auto_ccs:
  - "hyperxor@protonmail.com"
  - "auquetal@gmail.com"
  - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

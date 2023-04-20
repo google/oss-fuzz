@@ -4,3 +4,9 @@ primary_contact: "lemire@gmail.com"
 main_repo: "https://github.com/simdutf/simdutf"
 auto_ccs:
   - "nathaniel.brough@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -11,3 +11,9 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/libjxl/libjxl.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

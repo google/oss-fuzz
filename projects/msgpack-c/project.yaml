@@ -9,8 +9,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/msgpack/msgpack-c.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

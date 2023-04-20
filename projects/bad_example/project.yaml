@@ -7,3 +7,9 @@ sanitizers:
 - memory
 - undefined
 vendor_ccs: []
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

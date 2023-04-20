@@ -4,8 +4,3 @@ primary_contact: "sergey.poznyakoff@gmail.com"
 auto_ccs:
   - "gray@gnu.org"
 main_repo: "https://git.gnu.org.ua/gdbm.git"
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

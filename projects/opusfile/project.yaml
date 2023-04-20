@@ -2,3 +2,9 @@ homepage: "https://opus-codec.org/"
 main_repo: "https://gitlab.xiph.org/xiph/opusfile.git"
 language: c
 primary_contact: "jmvalin@jmvalin.ca"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

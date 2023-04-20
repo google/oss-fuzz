@@ -4,8 +4,3 @@ primary_contact: "pauldreikossfuzz@gmail.com"
 auto_ccs:
  - "victor.zverovich@gmail.com"
 main_repo: 'https://github.com/fmtlib/fmt.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

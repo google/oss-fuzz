@@ -12,3 +12,9 @@ sanitizers:
 architectures:
  - x86_64
  - i386
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

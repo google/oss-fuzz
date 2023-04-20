@@ -5,3 +5,9 @@ auto_ccs:
   - "xtraeme@voidlinux.eu"
 main_repo: "https://github.com/voidlinux/xbps"
 language: c
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

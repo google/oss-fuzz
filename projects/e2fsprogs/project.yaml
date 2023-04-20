@@ -6,3 +6,9 @@ auto_ccs:
   - "tytso@google.com"
   - "mxms@google.com"
 main_repo: 'https://github.com/tytso/e2fsprogs'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

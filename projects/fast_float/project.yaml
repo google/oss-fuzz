@@ -4,3 +4,9 @@ primary_contact: "lemire@gmail.com"
 auto_ccs:
   - "nathaniel.brough@gmail.com"
 main_repo: "https://github.com/fastfloat/fast_float.git"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

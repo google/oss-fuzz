@@ -9,8 +9,3 @@ sanitizers:
  - address
  - memory
  - undefined
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

@@ -6,8 +6,3 @@ auto_ccs:
    - "grisumbras@gmail.com"
    - "pdimov@gmail.com"
 main_repo: 'https://github.com/boostorg/json.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

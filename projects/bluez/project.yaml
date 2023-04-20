@@ -5,8 +5,3 @@ main_repo: "https://github.com/bluez/bluez"
 auto_ccs:
   - "hj.tedd.an@gmail.com"
   - "david@adalogics.com"
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

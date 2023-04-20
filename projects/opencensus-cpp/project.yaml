@@ -8,8 +8,3 @@ sanitizers:
 - address
 - memory
 main_repo: 'https://github.com/census-instrumentation/opencensus-cpp'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

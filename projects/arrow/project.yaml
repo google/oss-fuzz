@@ -14,8 +14,3 @@ auto_ccs:
   - "xhochy@gmail.com"
   - "will.jones127@gmail.com"
 main_repo: 'https://github.com/apache/arrow.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

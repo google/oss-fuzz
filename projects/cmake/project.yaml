@@ -9,3 +9,9 @@ sanitizers:
   - undefined
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

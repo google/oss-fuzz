@@ -7,8 +7,3 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/libssh2/libssh2.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

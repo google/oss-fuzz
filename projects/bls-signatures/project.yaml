@@ -18,3 +18,9 @@ auto_ccs:
  - "arvid@chia.net"
  - "bill@chia.net"
  - "pratyush795@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+
