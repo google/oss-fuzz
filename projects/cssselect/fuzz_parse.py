@@ -20,7 +20,6 @@ import atheris
 import cssselect
 
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   css = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
