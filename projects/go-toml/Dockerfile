@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y make autoconf automake libtool vim
+RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 --single-branch --branch v2 https://github.com/pelletier/go-toml go-toml
 COPY build.sh $SRC/
-COPY *.go $SRC/go-toml
+COPY *.go $SRC/go-toml/
 WORKDIR $SRC/go-toml
