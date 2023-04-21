@@ -425,7 +425,6 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
   download_corpora_parser.add_argument('--fuzz-target',
-                                       action='extend',
                                        nargs='+',
                                        help='specify name of a fuzz target')
   download_corpora_parser.add_argument('--public',
