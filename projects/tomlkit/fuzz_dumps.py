@@ -12,16 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 import atheris
-import atheris_dict
+import sys
 import tomlkit
+import dictgen
 
 
 def test_one_input(input_bytes: bytes) -> None:
     fdp = atheris.FuzzedDataProvider(input_bytes)
-    fuzz_dict = atheris_dict.random_dict(100, 100, fdp_generator=fdp)
-    tomlkit.api.dumps(fuzz_dict, sort_keys=fdp.ConsumeBool())
+    test_data = dictgen.generate(
+        max_height=5,
+        max_depth=10,
+        key_generators=(
+            dictgen.random_string,
+        ),
+        val_generators=(
+            dictgen.random_string,
+            dictgen.random_bool,
+            dictgen.random_int,
+            dictgen.random_datetime,
+            dictgen.random_float
+        ),
+        rand_seed=fdp.ConsumeInt(32)
+    )
+    tomlkit.api.dumps(test_data, sort_keys=fdp.ConsumeBool())
 
 
 def main():
