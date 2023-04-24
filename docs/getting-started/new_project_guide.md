@@ -441,7 +441,7 @@ OSS-Fuzz only: See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/c
 ### Dictionaries
 
 Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
-sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
+sequences of bytes. [libFuzzer documentation](https://llvm.org/docs/LibFuzzer.html#dictionaries)
 
 Put your dict file in `$OUT`. If the dict filename is the same as your target
 binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the
