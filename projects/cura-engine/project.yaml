@@ -3,13 +3,14 @@ language: c++
 primary_contact: "j.vankessel@ultimaker.com"
 auto_ccs:
   - "artem.smotrakov@gmail.com"
+  - "nathaniel.brough@gmail.com"
 sanitizers:
   - address
-  - undefined
 main_repo: "https://github.com/Ultimaker/CuraEngine.git"
 
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+  - centipede
 
