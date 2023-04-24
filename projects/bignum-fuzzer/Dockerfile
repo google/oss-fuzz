@@ -32,5 +32,7 @@ RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.ta
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
+    (wget --no-check-certificate 'https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+
 COPY build.sh $SRC/
