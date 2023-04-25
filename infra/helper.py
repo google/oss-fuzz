@@ -83,7 +83,7 @@ ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
 CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
 CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
-CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
+CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name
@@ -854,8 +854,8 @@ def run_clusterfuzzlite(args):
         shutil.copytree(args.project.path, project_src_path)
 
       build_command = [
-          '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers', '--file',
-          'infra/run_fuzzers.Dockerfile', 'infra'
+          '--tag', CLUSTERFUZZLITE_DOCKER_IMAGE_NAME, '--file',
+          'infra/cifuzz.Dockerfile', 'infra'
       ]
       if not docker_build(build_command):
         return False

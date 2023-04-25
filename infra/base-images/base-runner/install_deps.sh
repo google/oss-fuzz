@@ -21,7 +21,6 @@ apt-get update && apt-get install -y \
     binutils \
     file \
     fonts-dejavu \
-    git \
     libcap2 \
     python3 \
     python3-pip \

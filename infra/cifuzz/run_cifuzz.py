@@ -22,6 +22,7 @@ import logging
 INFRA_DIR = os.path.dirname(os.path.dirname(__file__))
 DEFAULT_ENVS = [('DRY_RUN', '0'), ('SANITIZER', 'address')]
 BASE_CIFUZZ_DOCKER_TAG = 'gcr.io/oss-fuzz-base'
+CIFUZZ_IMAGE_NAME = f'{BASE_CIFUZZ_DOCKER_TAG}/cifuzz'
 
 
 def set_default_env_var_if_unset(env_var, default_value):
@@ -31,7 +32,7 @@ def set_default_env_var_if_unset(env_var, default_value):
     os.environ[env_var] = default_value
 
 
-def docker_run(name, workspace, project_src_path):
+def docker_run(entrypoint, workspace, project_src_path):
   """Runs a CIFuzz docker container with |name|."""
   command = [
       'docker', 'run', '--name', name, '--rm', '-e', 'PROJECT_SRC_PATH', '-e',
@@ -43,7 +44,7 @@ def docker_run(name, workspace, project_src_path):
     command += ['-v', f'{project_src_path}:{project_src_path}']
   command += [
       '-v', '/var/run/docker.sock:/var/run/docker.sock', '-v',
-      f'{workspace}:{workspace}', f'{BASE_CIFUZZ_DOCKER_TAG}/{name}'
+      f'{workspace}:{workspace}', CIFUZZ_IMAGE_NAME
   ]
   print('Running docker command:', command)
   subprocess.run(command, check=True)
@@ -52,8 +53,8 @@ def docker_run(name, workspace, project_src_path):
 def docker_build(image):
   """Builds the CIFuzz |image|. Only suitable for building CIFuzz images."""
   command = [
-      'docker', 'build', '-t', f'{BASE_CIFUZZ_DOCKER_TAG}/{image}', '--file',
-      f'{image}.Dockerfile', '.'
+      'docker', 'build', '-t', CIFUZZ_IMAGE_NAME, '--file',
+      'cifuzz.Dockerfile', '.'
   ]
   subprocess.run(command, check=True, cwd=INFRA_DIR)
 
@@ -74,11 +75,10 @@ def main():
 
     workspace = os.environ['WORKSPACE']
 
-    docker_build('build_fuzzers')
-    docker_run('build_fuzzers', workspace, project_src_path)
-    docker_build('run_fuzzers')
+    docker_build()
+    docker_run('build_fuzzers_entrypoint.py', workspace, project_src_path)
     try:
-      docker_run('run_fuzzers', workspace, project_src_path)
+      docker_run('run_fuzzers_entrypoint.py', workspace, project_src_path)
     except subprocess.CalledProcessError:
       logging.error('run_fuzzers failed.')
       return 1

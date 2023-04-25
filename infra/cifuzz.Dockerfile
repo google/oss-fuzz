@@ -13,19 +13,19 @@
 # limitations under the License.
 #
 ################################################################################
-# Docker image for running fuzzers on CIFuzz (the run_fuzzers action on GitHub
-# actions).
+# Docker image to build and run fuzzers for CIFuzz (the build_and run_fuzzers
+# actions on GitHub actions).
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base-test
+FROM gcr.io/oss-fuzz-base/cifuzz-base
 
-# Python file to execute when the docker container starts up.
+# Python file to execute when the docker container starts up
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
 # just expand to '/opt/oss-fuzz'.
-ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py"]
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
 WORKDIR ${OSS_FUZZ_ROOT}/infra
 
-# Copy infra source code.
+# Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
 
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
