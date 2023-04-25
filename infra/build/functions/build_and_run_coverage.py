@@ -268,8 +268,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   return build_steps
 
 
-def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argumentn
-    project_name, project_yaml, dockerfile_lines, base_images_project, config):
+def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps of fuzz introspector for project"""
 
   project = build_project.Project(project_name, project_yaml, dockerfile_lines)

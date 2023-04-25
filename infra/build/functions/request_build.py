@@ -66,13 +66,12 @@ def get_empty_config():
   return build_project.Config()
 
 
-def get_build_steps(project_name, image_project, base_images_project):
+def get_build_steps(project_name):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = get_empty_config()
   return build_project.get_build_steps(project_name, project_yaml,
-                                       dockerfile_lines, image_project,
-                                       base_images_project, build_config)
+                                       dockerfile_lines, build_config)
 
 
 def run_build(oss_fuzz_project, build_steps, credentials, build_type,
@@ -94,7 +93,7 @@ def request_build(event, context):
     raise RuntimeError('Project name missing from payload')
 
   with ndb.Client().context():
-    credentials, _ = google.auth.default()
+    credentials, cloud_project = google.auth.default()
     build_steps = get_build_steps(project_name)
     if not build_steps:
       return
