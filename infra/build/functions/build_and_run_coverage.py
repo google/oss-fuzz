@@ -82,7 +82,7 @@ class IntrospectorBucket(Bucket):  # pylint: disable=too-few-public-methods
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, project_yaml, dockerfile_lines, image_project, config):
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
   project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:

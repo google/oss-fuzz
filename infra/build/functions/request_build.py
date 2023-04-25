@@ -94,8 +94,8 @@ def request_build(event, context):
     raise RuntimeError('Project name missing from payload')
 
   with ndb.Client().context():
-    credentials, cloud_project = google.auth.default()
-    build_steps = get_build_steps(project_name, cloud_project, BASE_PROJECT)
+    credentials, _ = google.auth.default()
+    build_steps = get_build_steps(project_name)
     if not build_steps:
       return
     run_build(

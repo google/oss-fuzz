@@ -390,7 +390,7 @@ def get_uploader_image():
   return f'gcr.io/{build_lib.BASE_IMAGES_PROJECT}/uploader'
 
 
-def get_upload_steps(project, build, timestamp, base_images_project, testing):
+def get_upload_steps(project, build, timestamp, testing):
   """Returns the steps for uploading the fuzzer build specified by |project| and
   |build|. Uses |timestamp| for naming the uploads. Uses |testing| for
   determining which image to use for the upload."""
