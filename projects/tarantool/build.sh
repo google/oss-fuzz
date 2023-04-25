@@ -89,5 +89,7 @@ do
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  [[ -e $corpus_dir ]] && zip -j $OUT/"$module"_fuzzer_seed_corpus.zip $corpus_dir/*
+  if [ -e "$corpus_dir" ]; then
+    zip -j $OUT/"$module"_fuzzer_seed_corpus.zip $corpus_dir/*
+  fi
 done
