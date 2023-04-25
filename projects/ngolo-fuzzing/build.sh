@@ -59,7 +59,12 @@ compile_package () {
         )
         $SRC/ngolo-fuzzing/go114-fuzz-build/go114-fuzz-build -func FuzzNG_valid -o fuzz_ng_$pkg_flat.a ./fuzz_ng_$pkg_flat
 
-        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
+        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o \
+            fuzz_ng_$pkg_flat.a \
+            $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+            $SRC/LPM/src/libprotobuf-mutator.a \
+            -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
+            -o $OUT/fuzz_ng_$pkg_flat
         rm fuzz_ng_$pkg_flat.a
     fi
     (
