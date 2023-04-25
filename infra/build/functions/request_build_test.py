@@ -48,7 +48,7 @@ class TestRequestBuilds(unittest.TestCase):
     """Test for when project isn't available in datastore."""
     with ndb.Client().context():
       self.assertRaises(RuntimeError, request_build.get_build_steps,
-                        'test-project', 'oss-fuzz', 'oss-fuzz-base')
+                        'test-project')
 
   def test_build_history(self):
     """Testing build history."""
