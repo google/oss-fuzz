@@ -50,6 +50,8 @@ cd qtbase
 # contain paths with slashes.
 sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
 sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
+sed -i -e "s~QMAKE_CXX               = \$\${CROSS_COMPILE}clang++~QMAKE_CXX = $CXX~g" mkspecs/common/clang.conf
+sed -i -e "s~QMAKE_CC                = \$\${CROSS_COMPILE}clang~QMAKE_CC = $CC~g" mkspecs/common/clang.conf
 # disable sanitize=vptr for harfbuzz since it compiles without rtti
 sed -i -e "s/TARGET = qtharfbuzz/TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr/g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
 # make qmake compile faster
@@ -95,7 +97,7 @@ sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_W
 sed -i "s/static const int MAX_IMAGE_HEIGHT = 32768;/static const int MAX_IMAGE_HEIGHT = 8192;/g" libheif/heif_limits.h
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DWITH_AOM=ON -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_X265=OFF ..
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_RAV1E_PLUGIN=OFF -DWITH_SvtEnc=OFF -DWITH_SvtEnc_PLUGIN=OFF -DWITH_X265=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 

@@ -9,3 +9,9 @@ vendor_ccs:
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 main_repo: 'https://github.com/MapServer/MapServer'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

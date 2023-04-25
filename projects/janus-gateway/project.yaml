@@ -10,3 +10,9 @@ sanitizers:
 #  - memory
 coverage_extra_args: -ignore-filename-regex=.*glib.* -ignore-filename-regex=.*log.c
 main_repo: 'https://github.com/meetecho/janus-gateway.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

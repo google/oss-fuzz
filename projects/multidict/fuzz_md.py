@@ -91,7 +91,7 @@ def run_operation(md, fdp, operation):
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
-    random_dict = json.loads(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    random_dict = json.loads(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024)))
   except:
     return
   if not isinstance(random_dict, dict):

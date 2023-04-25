@@ -5,8 +5,8 @@ primary_contact: "macro.fuzzing.uxuga@aleeas.com"
 auto_ccs:
   - "fanquake@gmail.com"
   - "jonas@chaincode.com"
-  - "laanwj@gmail.com"
   - "pieter@chaincode.com"
+  - "n.goeggi@gmail.com"
 sanitizers:
   - address
   - undefined
@@ -18,3 +18,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+  - centipede

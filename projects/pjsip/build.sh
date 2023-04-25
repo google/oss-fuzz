@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+export CFLAGS="$CFLAGS -DPJMEDIA_HAS_VIDEO=1"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 

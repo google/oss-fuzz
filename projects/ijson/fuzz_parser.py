@@ -19,9 +19,6 @@ import json
 import ijson
 import atheris
 
-import pysecsan
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   try:
@@ -37,7 +34,7 @@ def TestOneInput(data):
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 

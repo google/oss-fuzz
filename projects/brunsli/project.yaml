@@ -4,11 +4,6 @@ primary_contact: "eustas@chromium.org"
 vendor_ccs:
   - "jkew@mozilla.com"
   - "twsmith@mozilla.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
-  - centipede
 sanitizers:
   - address
   - memory

@@ -24,7 +24,10 @@ def TestOneInput(data):
     dilled = loads(data)
   except:
     return
-  dumps(dilled)
+  try:
+    dumps(dilled)
+  except RecursionError:
+    pass
 
 
 def main():

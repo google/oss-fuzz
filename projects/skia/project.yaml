@@ -3,7 +3,6 @@ language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "hcm@google.com"
-  - "bsalomon@google.com"
   - "brianosman@google.com"
   - "johnstiles@google.com"
   - "robertphillips@google.com"

@@ -8,3 +8,9 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/capnproto/capnproto'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -21,6 +21,11 @@ cat brotli/shared.mk | sed -e "s/-no-canonical-prefixes//" \
 > brotli/shared.mk.temp
 mv brotli/shared.mk.temp brotli/shared.mk
 
+if [ "$SANITIZER" == "introspector" ]; then
+  # Modify AR flags as "f" is not a valid option to llvm-ar.
+  sed -i 's/crf/cr/g' Makefile
+fi
+
 # woff2 uses LFLAGS instead of LDFLAGS.
 make clean
 make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \

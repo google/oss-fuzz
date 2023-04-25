@@ -22,10 +22,11 @@ cd $SRC/goroot/src
 )
 rm -Rf /root/.go/
 export PATH=$PATH:$SRC/goroot/bin/
+go install golang.org/x/tools/cmd/goimports@latest
 
 compile_package () {
     pkg=$1
-    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x/'`
+    pkg_flat=`echo $pkg | sed 's/\//_/g' | sed 's/\./x'_$repo'/'`
     args=`cat $SRC/ngolo-fuzzing/x/args.txt | grep "^$pkg_flat " | cut -d" " -f2-`
     $SRC/ngolo-fuzzing/ngolo-fuzzing $args $pkg fuzz_ng_$pkg_flat
     # applies special python patcher if any
@@ -44,11 +45,8 @@ compile_package () {
     if [ "$SANITIZER" = "coverage" ]
     then
         (
-        if [[ `echo $pkg | grep runtime | wc -l` == '1' ]]; then
-            continue
-        fi
         cd fuzz_ng_$pkg_flat
-        GO_COV_ADD_PKG="$pkg" compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
+        compile_go_fuzzer . FuzzNG_unsure fuzz_ngo_$pkg_flat
         )
     else
         (
@@ -61,6 +59,20 @@ compile_package () {
         $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_ng_$pkg_flat/ngolofuzz.pb.o fuzz_ng_$pkg_flat//ngolofuzz.o fuzz_ng_$pkg_flat.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_ng_$pkg_flat
         rm fuzz_ng_$pkg_flat.a
     fi
+    (
+        # corpus
+        cp $SRC/ngolo-fuzzing/corpus/ngolo_helper.go fuzz_ng_$pkg_flat/
+        goimports -w fuzz_ng_$pkg_flat/copy/*.go
+        cp fuzz_ng_$pkg_flat/copy/*.go fuzz_ng_$pkg_flat/
+        cp $pkg/*_test.go fuzz_ng_$pkg_flat/
+        sed -i -e 's/^package .*/package 'fuzz_ng_$pkg_flat'/' fuzz_ng_$pkg_flat/*.go
+        export FUZZ_NG_CORPUS_DIR=`pwd`/fuzz_ng_$pkg_flat/corpus/
+        pushd fuzz_ng_$pkg_flat
+        go mod tidy
+        go test -mod=readonly
+        zip -r $OUT/fuzz_ngo_"$pkg_flat"_seed_corpus.zip corpus
+        popd
+    )
 }
 
 # in $SRC/ngolo-fuzzing
@@ -71,6 +83,7 @@ cd go114-fuzz-build
 go build
 )
 
+touch $SRC/ko.txt
 # compile x packages
 cd $SRC/x
 ls | while read repo; do
@@ -88,11 +101,11 @@ find . -type d | while read pkg; do
     if [[ `echo $pkg | grep testdata | wc -l` == '1' ]]; then
         continue
     fi
-    if compile_package $pkg; then
-        echo $pkg >> $SRC/ok.txt
+    if compile_package $pkg $repo; then
+        echo $repo/$pkg >> $SRC/ok.txt
     else
         echo "Failed for $pkg"
-        echo $pkg >> $SRC/ko.txt
+        echo $repo/$pkg >> $SRC/ko.txt
     fi
 
 done

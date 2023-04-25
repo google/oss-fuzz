@@ -10,3 +10,9 @@ sanitizers:
 #  - memory
 main_repo: 'https://github.com/google/leveldb.git'
 file_github_issue: True
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

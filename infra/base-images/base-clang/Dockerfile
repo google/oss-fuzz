@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 6b21f6396192f9c01f81d9e6c61ddfe1b36b288b && \
+    git checkout fe85aff3b52e6c92b6df56b1ef205b9524272bbf && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \
@@ -54,7 +54,7 @@ ENV CXX "clang++"
 ENV CCC "clang++"
 
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
-# http://libfuzzer.info#fuzzer-friendly-build-mode
+# https://llvm.org/docs/LibFuzzer.html#fuzzer-friendly-build-mode
 
 ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"

@@ -12,3 +12,9 @@ sanitizers:
     - undefined
 main_repo: 'https://github.com/libraw/libraw'
 file_github_issue: true
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,10 @@
+homepage: https://github.com/areski/python-nvd3
+main_repo: https://github.com/areski/python-nvd3
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

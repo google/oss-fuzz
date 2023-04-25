@@ -22,7 +22,7 @@ def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   bzfile_path = '/tmp/random_file.txt'
   with open(bzfile_path, 'wb') as f:
-    f.write(fdp.ConsumeBytes(sys.maxsize))
+    f.write(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 2048)))
 
   try:
     with bz2file.open(bzfile_path) as target_file:

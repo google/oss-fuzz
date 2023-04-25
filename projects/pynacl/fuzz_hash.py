@@ -22,9 +22,9 @@ import nacl.pwhash
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
-  nacl.hash.sha256(fdp.ConsumeBytes(sys.maxsize))
-  nacl.hash.sha512(fdp.ConsumeBytes(sys.maxsize))
-  nacl.hash.generichash(fdp.ConsumeBytes(sys.maxsize), key=fdp.ConsumeBytes(32))
+  nacl.hash.sha256(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)))
+  nacl.hash.sha512(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)))
+  nacl.hash.generichash(fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 512)), key=fdp.ConsumeBytes(32))
 
   try:
     nacl.pwhash.kdf_scryptsalsa208sha256(

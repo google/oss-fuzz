@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
@@ -30,7 +30,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -q $SRC/ObjectWriterFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
-RUN git clone --depth 1 --branch 2.14 https://github.com/FasterXML/jackson-databind
+RUN git clone --depth 1 --branch 2.15 https://github.com/FasterXML/jackson-databind
 
 RUN git clone --depth 1 https://github.com/forge/roaster
 

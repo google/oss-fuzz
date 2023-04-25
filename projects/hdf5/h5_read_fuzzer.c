@@ -14,6 +14,8 @@ limitations under the License.
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+    // Some old logic with regards to skipping first byte. Leaving it here
+    // to avoid affecting the clusterfuzz-generated corpus.
     if (size == 0) {
         return 0;
     }
@@ -31,12 +33,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     fwrite(data, size, 1, fp);
     fclose(fp);
 
-    if (decider % 1 == 0) {
-      H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-    }
-    else {
-      H5Dopen2(filename, "Dataset name", H5P_DEFAULT);
-    }
+    H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
     return 0;
 }

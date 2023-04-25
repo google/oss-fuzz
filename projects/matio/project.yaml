@@ -8,3 +8,9 @@ sanitizers:
 architectures:
   - x86_64
 main_repo: 'git://git.code.sf.net/p/matio/matio'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -16,18 +16,18 @@ import sys
 import atheris
 import pycparser
 
-import pysecsan
-pysecsan.sanlib.sanitizer_log_level = 30
-pysecsan.add_hooks()
-
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
+  lex_optimize = fdp.ConsumeBool()
+  yacc_debug = fdp.ConsumeBool()
+  yacc_optimize = fdp.ConsumeBool()
+
   c_source = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
   _c_parser = pycparser.c_parser.CParser(
-                lex_optimize=fdp.ConsumeBool(),
-                yacc_debug=fdp.ConsumeBool(),
-                yacc_optimize=fdp.ConsumeBool())
+                lex_optimize=lex_optimize,
+                yacc_debug=yacc_debug,
+                yacc_optimize=yacc_optimize)
   try:
     _c_parser.parse(
         c_source,

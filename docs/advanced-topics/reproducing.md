@@ -23,7 +23,7 @@ reproduce it.
 Every issue has a [reproducer file]({{ site.baseurl
 }}/reference/glossary/#reproducer) (also know as a "testcase" file) attached.
 Download it. This file contains the bytes that were fed to the [fuzz
-target](http://libfuzzer.info/#fuzz-target).
+target](https://llvm.org/docs/LibFuzzer.html#fuzz-target).
 
 **Note:** If the issue is not public, you will need to login using a
 [Google account](https://support.google.com/accounts/answer/176347?hl=en)

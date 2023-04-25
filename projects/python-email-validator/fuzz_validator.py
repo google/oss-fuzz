@@ -22,7 +22,7 @@ from email_validator import EmailSyntaxError, \
 
 def TestOneInput(data):
     try:
-        validate_email(data)
+        validate_email(data, check_deliverability=False)
     except (EmailSyntaxError, EmailUndeliverableError):
         pass
 

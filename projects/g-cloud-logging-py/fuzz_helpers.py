@@ -25,7 +25,7 @@ def TestInput(data):
 
     op = fdp.ConsumeIntInRange(0, 4)
     if op == 0:
-        helpers._normalize_severity(fdp.ConsumeInt(sys.maxsize))
+        helpers._normalize_severity(fdp.ConsumeInt(fdp.ConsumeIntInRange(0, 512)))
     elif op == 1:
         helpers._add_defaults_to_filter(fdp.ConsumeUnicodeNoSurrogates(40))
     elif op == 2:

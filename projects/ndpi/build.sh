@@ -57,3 +57,4 @@ cp example/categories.txt $OUT/
 cp example/risky_domains.txt $OUT/
 cp example/ja3_fingerprints.csv $OUT/
 cp example/sha1_fingerprints.csv $OUT/
+cp fuzz/ipv4_addresses.txt $OUT/

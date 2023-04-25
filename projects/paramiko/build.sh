@@ -18,6 +18,13 @@
 pip3 install .
 cd tests
 cp -rf $SRC/fuzz_*.py .
+
+if [ "$SANITIZER" = "address" ]
+then
+  # Enable pysecsan
+  export ENABLE_PYSECSAN="1"
+fi
+
 for fuzzer in $(find . -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer --add-data loop.py:.
 done

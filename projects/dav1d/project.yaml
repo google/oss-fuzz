@@ -19,3 +19,9 @@ architectures:
   - i386
   - x86_64
 main_repo: 'https://code.videolan.org/videolan/dav1d.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+
