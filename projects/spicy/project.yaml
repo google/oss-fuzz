@@ -15,3 +15,8 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/spicy'
+
+coverage_extra_args: >
+  -ignore-filename-regex=src/spicy/3rdparty/.*
+  -ignore-filename-regex=src/spicy/build/3rdparty/.*
+  -ignore-filename-regex=src/spicy/hilti/runtime/include/hilti/rt/3rdparty/.*
