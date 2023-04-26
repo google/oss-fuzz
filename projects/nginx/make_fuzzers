@@ -31,7 +31,7 @@ objs/http_request_fuzzer: $ngx_deps_fuzz
 	 -I \$(SRC)/LPM/external.protobuf/include \
 	 \$(SRC)/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
   	 \$(SRC)/LPM/src/libprotobuf-mutator.a \
-  	 \$(SRC)/LPM/external.protobuf/lib/libprotobuf.a \
+  	 -Wl,--start-group \$(SRC)/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
 	 $ngx_binexit$ngx_long_cont$ngx_objs \
    	 \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link -lcrypt
 $ngx_long_end					    
