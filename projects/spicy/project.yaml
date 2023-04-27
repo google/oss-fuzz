@@ -8,10 +8,15 @@ auto_ccs:
   - "seth@corelight.com"
   - "justin@corelight.com"
   - "vern@corelight.com"
-  - "vlad@es.net"
   - "benjamin.bannier@corelight.com"
+  - "christian@corelight.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/spicy'
+
+coverage_extra_args: >
+  -ignore-filename-regex=src/spicy/3rdparty/.*
+  -ignore-filename-regex=src/spicy/build/3rdparty/.*
+  -ignore-filename-regex=src/spicy/hilti/runtime/include/hilti/rt/3rdparty/.*
