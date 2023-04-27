@@ -35,7 +35,7 @@ inputs:
 runs:
   using: 'docker'
   image: '../../../cifuzz.Dockerfile'
-  entrypoint: '/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py'
+  entrypoint: '/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     LANGUAGE: ${{ inputs.language }}

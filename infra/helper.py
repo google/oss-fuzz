@@ -83,7 +83,7 @@ ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
 CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
 CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
-CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz'
+CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
 
 if sys.version_info[0] >= 3:
   raw_input = input  # pylint: disable=invalid-name

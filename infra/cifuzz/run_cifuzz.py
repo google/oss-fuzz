@@ -22,7 +22,7 @@ import logging
 INFRA_DIR = os.path.dirname(os.path.dirname(__file__))
 DEFAULT_ENVS = [('DRY_RUN', '0'), ('SANITIZER', 'address')]
 BASE_CIFUZZ_DOCKER_TAG = 'gcr.io/oss-fuzz-base'
-CIFUZZ_IMAGE_NAME = f'{BASE_CIFUZZ_DOCKER_TAG}/cifuzz'
+CIFUZZ_IMAGE_NAME = f'{BASE_CIFUZZ_DOCKER_TAG}/run_fuzzers'
 
 
 def set_default_env_var_if_unset(env_var, default_value):
