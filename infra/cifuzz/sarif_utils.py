@@ -147,6 +147,7 @@ SRC_ROOT = '/src/'
 
 
 def redact_src_path(src_path):
+  """Redact the src path so that it can be reported to users."""
   if src_path.startswith(SRC_ROOT):
     src_path = src_path[len(SRC_ROOT):]
 
@@ -154,28 +155,30 @@ def redact_src_path(src_path):
   return src_path
 
 
-def get_frame(crash_info):
+def get_error_frame(crash_info):
+  """Returns the stackframe where the error occurred."""
   if not crash_info.crash_state:
-    return
+    return None
   state = crash_info.crash_state.split('\n')[0]
 
-  print('state', state, crash_info.crash_state)
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
-      if frame.function_name.startswith(state):  # !!! buggy
+      # TODO(metzman): Do something less fragile here.
+      if frame.function_name.startswith(state):
         return frame
   return None
 
 
-def get_frame_info(crash_info):
-  frame = get_frame(crash_info)
+def get_error_source_info(crash_info):
+  """Returns the filename and the line where the bug occurred."""
+  frame = get_error_frame(crash_info)
   if not frame:
     return (None, 1)
-  print(frame.filename, int(frame.fileline or 1))
   return frame.filename, int(frame.fileline or 1)
 
 
 def get_rule_index(crash_type):
+  """Returns the rule index describe the rule that |crash_type| ran afoul of."""
   # Don't include "READ" or "WRITE" or number of bytes.
   crash_type = crash_type.split(' ')[0].lower()
   for idx, rule in enumerate(SARIF_RULES):
@@ -186,15 +189,15 @@ def get_rule_index(crash_type):
 
 
 def get_sarif_data(stacktrace, target_path):
+  """Returns a description of the crash in SARIF."""
   fuzz_target = os.path.basename(target_path)
   stack_parser = stacktraces.StackParser(fuzz_target=fuzz_target,
                                          symbolized=True,
                                          detect_ooms_and_hangs=True,
                                          include_ubsan=True)
   crash_info = stack_parser.parse(stacktrace)
-  frame_info = get_frame_info(crash_info)
-  print('frameinfo', frame_info, crash_info.frames[0][0], crash_info.frames)
-  uri = redact_src_path(frame_info[0])
+  error_source_info = get_error_source_info(crash_info)
+  uri = redact_src_path(error_source_info[0])
 
   result = {
       'level': 'error',
@@ -208,7 +211,8 @@ def get_sarif_data(stacktrace, target_path):
                   'index': 0
               },
               'region': {
-                  'startLine': frame_info[1],
+                  'startLine': error_source_info[1],
+                  # We don't have this granualarity fuzzing.
                   'startColumn': 1,
               }
           }
@@ -222,6 +226,7 @@ def get_sarif_data(stacktrace, target_path):
 
 
 def write_stacktrace_to_sarif(stacktrace, target_path, workspace):
+  """Writes a description of the crash in stacktrace to a SARIF file."""
   data = get_sarif_data(stacktrace, target_path)
   workspace.initialize_dir(workspace.sarif)
   with open(os.path.join(workspace.sarif, 'results.sarif'), 'w') as file_handle:

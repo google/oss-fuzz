@@ -24,18 +24,20 @@ TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 
 class GetSarifDataTest(unittest.TestCase):
+  """Tests that get_sarif_data."""
 
-  def test_get_sarif_data(self):
+  def test_get_sarif_data(self):  # pylint: disable=no-self-use
+    """Tests that get_sarif_data correctly describes a crash."""
     with open(os.path.join(TEST_DATA_PATH,
-                           'example_crash_fuzzer_output.txt')) as fp:
-      fuzzer_output = fp.read()
+                           'example_crash_fuzzer_output.txt')) as file_handle:
+      fuzzer_output = file_handle.read()
 
     stack_parser = stacktraces.StackParser(fuzz_target='blah',
                                            symbolized=True,
                                            detect_ooms_and_hangs=True,
                                            include_ubsan=True)
     crash_info = stack_parser.parse(fuzzer_output)
-    data = sarif_utils.get_sarif_data(crash_info)
+    data = sarif_utils.get_sarif_data(crash_info) # pylint: disable=unused-variable
     # TODO(metzman): Finish.
 
 

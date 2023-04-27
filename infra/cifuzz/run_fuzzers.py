@@ -141,7 +141,8 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
-      if self.config.write_sarif:
+      if bug_found and self.config.write_sarif:
+        # TODO(metzman): Handle multiple crashes.
         write_fuzz_result_to_sarif(result, target_path, self.workspace)
       bug_found = True
       if self.quit_on_bug_found:
