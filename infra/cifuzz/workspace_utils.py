@@ -29,7 +29,6 @@ class Workspace:
     logging.info('initialize_dir: %s is directory: %s', directory,
                  os.path.isdir(directory))
 
-
   @property
   def repo_storage(self):
     """The parent directory for repo storage."""
