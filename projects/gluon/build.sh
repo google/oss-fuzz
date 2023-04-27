@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-	build-essential ninja-build cmake make \
-	zlib1g-dev libreadline-dev libunwind-dev
-RUN git clone https://github.com/lua/lua
-RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
-WORKDIR testdir
-RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
-COPY build.sh testdir/
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fuzz_lua.c $SRC/
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer github.com/ProtonMail/gluon/imap       FuzzNewParsedMessage    fuzz_new_parsed_message
+compile_native_go_fuzzer github.com/ProtonMail/gluon/rfc5322    FuzzParseAddress        fuzz_parse_address
+compile_native_go_fuzzer github.com/ProtonMail/gluon/rfc5322    FuzzRFC5322             fuzz_rfc5322
+compile_native_go_fuzzer github.com/ProtonMail/gluon/rfc822     FuzzParseDec            fuzz_parse_dec

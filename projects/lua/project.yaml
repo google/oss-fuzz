@@ -4,4 +4,5 @@ primary_contact: "roberto@inf.puc-rio.br"
 auto_ccs:
   - "fuzz@lua.org"
   - "david@adalogics.com"
+  - "estetus@gmail.com"
 main_repo: 'https://github.com/lua/lua'

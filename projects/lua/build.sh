@@ -26,3 +26,65 @@ make
 cp ../fuzz_lua.c .
 $CC $CFLAGS -c fuzz_lua.c -o fuzz_lua.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua ./liblua.a
+
+cd $SRC/testdir
+
+# Avoid compilation issue due to some undefined references. They are defined in
+# libc++ and used by Centipede so -lc++ needs to come after centipede's lib.
+if [[ $FUZZING_ENGINE == centipede ]]
+then
+    sed -i \
+        '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
+        tests/CMakeLists.txt
+fi
+
+# Clean up potentially persistent build directory.
+[[ -e $SRC/testdir/build ]] && rm -rf $SRC/testdir/build
+
+case $SANITIZER in
+  address) SANITIZERS_ARGS="-DENABLE_ASAN=ON" ;;
+  undefined) SANITIZERS_ARGS="-DENABLE_UBSAN=ON" ;;
+  *) SANITIZERS_ARGS="" ;;
+esac
+
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
+
+cmake_args=(
+    -DUSE_LUA=ON
+    -DOSS_FUZZ=ON
+    $SANITIZERS_ARGS
+
+    # C compiler
+    -DCMAKE_C_COMPILER="${CC}"
+    -DCMAKE_C_FLAGS="${CFLAGS}"
+
+    # C++ compiler
+    -DCMAKE_CXX_COMPILER="${CXX}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+
+    # Linker
+    -DCMAKE_LINKER="${LD}"
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+)
+
+# To deal with a host filesystem from inside of container.
+git config --global --add safe.directory '*'
+
+# Build the project and fuzzers.
+[[ -e build ]] && rm -rf build
+cmake "${cmake_args[@]}" -S . -B build -G Ninja
+cmake --build build --parallel
+
+# Archive and copy to $OUT seed corpus if the build succeeded.
+for f in $(find build/tests/ -name '*_test' -type f);
+do
+  name=$(basename $f);
+  module=$(echo $name | sed 's/_test//')
+  corpus_dir="corpus_dir/$module"
+  echo "Copying for $module";
+  cp $f $OUT/
+  [[ -e $corpus_dir ]] && zip -j $OUT/"$module"_seed_corpus.zip $corpus_dir/*
+done

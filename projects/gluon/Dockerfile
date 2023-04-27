@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/sdispater/tomlkit tomlkit
-RUN pip3 install dictgen
-COPY *.sh *py $SRC/
-WORKDIR $SRC/tomlkit
+#
+################################################################################
+
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/ProtonMail/gluon.git
+RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
+COPY build.sh $SRC/
+WORKDIR $SRC/gluon

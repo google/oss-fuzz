@@ -67,7 +67,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
         ./ssl/libssl.a ./crypto/libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \
-        $SRC/LPM/external.protobuf/lib/libprotobuf.a \
+        -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
         -o $OUT/"${fuzzerName}_lpm"
   done
 fi
