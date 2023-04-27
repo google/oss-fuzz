@@ -37,7 +37,7 @@ class GetSarifDataTest(unittest.TestCase):
                                            detect_ooms_and_hangs=True,
                                            include_ubsan=True)
     crash_info = stack_parser.parse(fuzzer_output)
-    data = sarif_utils.get_sarif_data(crash_info) # pylint: disable=unused-variable
+    data = sarif_utils.get_sarif_data(crash_info)  # pylint: disable=unused-variable
     # TODO(metzman): Finish.
 
 
