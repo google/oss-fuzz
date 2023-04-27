@@ -22,7 +22,7 @@ steps:
   - '-t'
   - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
   - '-f'
-  - infra/build_fuzzers.Dockerfile
+  - infra/cifuzz.Dockerfile
   - infra
 - name: 'gcr.io/cloud-builders/docker'
   args:
@@ -36,7 +36,7 @@ steps:
   - '-t'
   - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
   - '-f'
-  - infra/run_fuzzers.Dockerfile
+  - infra/cifuzz.Dockerfile
   - infra
 images:
 - gcr.io/oss-fuzz-base/cifuzz-base

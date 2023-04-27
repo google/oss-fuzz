@@ -27,8 +27,8 @@ docker build --tag gcr.io/oss-fuzz-base/cifuzz-base --file $CIFUZZ_DIR/cifuzz-ba
 docker build \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers-test:v1 \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1 \
-  --file $INFRA_DIR/build_fuzzers.Dockerfile $INFRA_DIR
+  --file $INFRA_DIR/cifuzz.Dockerfile $INFRA_DIR
 docker build \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1 \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers-test:v1 \
-  --file $INFRA_DIR/run_fuzzers.Dockerfile $INFRA_DIR
+  --file $INFRA_DIR/cifuzz.Dockerfile $INFRA_DIR

@@ -854,8 +854,8 @@ def run_clusterfuzzlite(args):
         shutil.copytree(args.project.path, project_src_path)
 
       build_command = [
-          '--tag', 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers', '--file',
-          'infra/run_fuzzers.Dockerfile', 'infra'
+          '--tag', CLUSTERFUZZLITE_DOCKER_IMAGE_NAME, '--file',
+          'infra/cifuzz.Dockerfile', 'infra'
       ]
       if not docker_build(build_command):
         return False
