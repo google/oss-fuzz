@@ -51,6 +51,10 @@ inputs:
       TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
       Document locking this down.
     required: false
+  output-sarif:
+    description: "Whether to output fuzzing results to SARIF."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -68,3 +72,4 @@ runs:
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
     KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}
+    OUTPUT_SARIF: ${{ inputs.output-sarif }}
