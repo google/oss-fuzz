@@ -38,6 +38,7 @@ class GetSarifDataTest(unittest.TestCase):
     data = sarif_utils.get_sarif_data(crash_info)
     # TODO(metzman): Finish.
 
+
 # class GetSarifDataTest(unittest.TestCase):
 
 #   def test_write_stacktrace_to_sarif(self):

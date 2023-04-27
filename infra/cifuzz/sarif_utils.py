@@ -94,8 +94,7 @@ SARIF_RULES = [
     {
         'id': 'initialization-order-fiasco',
         'shortDescription': {
-            'text':
-                'Problem with order of initialization of global objects.'
+            'text': 'Problem with order of initialization of global objects.'
         },
         'helpUri': 'https://isocpp.org/wiki/faq/ctors#static-init-order',
         'properties': {
@@ -103,23 +102,25 @@ SARIF_RULES = [
         }
     },
     {
-        'id': 'direct-leak',
+        'id':
+            'direct-leak',
         'shortDescription': {
-            'text':
-                'Memory is leaked.'
+            'text': 'Memory is leaked.'
         },
-        'helpUri': 'https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer',
+        'helpUri':
+            'https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer',
         'properties': {
             'category': 'Crashes'
         }
     },
     {
-        'id': 'indirect-leak',
+        'id':
+            'indirect-leak',
         'shortDescription': {
-            'text':
-                'Memory is leaked.'
+            'text': 'Memory is leaked.'
         },
-        'helpUri': 'https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer',
+        'helpUri':
+            'https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer',
         'properties': {
             'category': 'Crashes'
         }
