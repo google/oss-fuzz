@@ -35,26 +35,27 @@ def set_default_env_var_if_unset(env_var, default_value):
 def docker_run(entrypoint, workspace, project_src_path):
   """Runs a CIFuzz docker container with |name|."""
   command = [
-      'docker', 'run', '--name', name, '--rm', '-e', 'PROJECT_SRC_PATH', '-e',
-      'OSS_FUZZ_PROJECT_NAME', '-e', 'WORKSPACE', '-e', 'REPOSITORY', '-e',
-      'DRY_RUN', '-e', 'CI', '-e', 'SANITIZER', '-e', 'GIT_SHA', '-e',
-      'FILESTORE', '-e', 'NO_CLUSTERFUZZ_DEPLOYMENT'
+      'docker', 'run', '--name', CIFUZZ_IMAGE_NAME, '--rm', '-e',
+      'PROJECT_SRC_PATH', '-e', 'OSS_FUZZ_PROJECT_NAME', '-e', 'WORKSPACE',
+      '-e', 'REPOSITORY', '-e', 'DRY_RUN', '-e', 'CI', '-e', 'SANITIZER', '-e',
+      'GIT_SHA', '-e', 'FILESTORE', '-e', 'NO_CLUSTERFUZZ_DEPLOYMENT'
   ]
   if project_src_path:
     command += ['-v', f'{project_src_path}:{project_src_path}']
   command += [
-      '-v', '/var/run/docker.sock:/var/run/docker.sock', '-v',
+      '--entrypoint', entrypoint, '-v',
+      '/var/run/docker.sock:/var/run/docker.sock', '-v',
       f'{workspace}:{workspace}', CIFUZZ_IMAGE_NAME
   ]
   print('Running docker command:', command)
   subprocess.run(command, check=True)
 
 
-def docker_build(image):
+def docker_build():
   """Builds the CIFuzz |image|. Only suitable for building CIFuzz images."""
   command = [
-      'docker', 'build', '-t', CIFUZZ_IMAGE_NAME, '--file',
-      'cifuzz.Dockerfile', '.'
+      'docker', 'build', '-t', CIFUZZ_IMAGE_NAME, '--file', 'cifuzz.Dockerfile',
+      '.'
   ]
   subprocess.run(command, check=True, cwd=INFRA_DIR)
 
