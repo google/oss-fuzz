@@ -91,7 +91,11 @@ do
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
+  dict_path="test/static/$name.dict"
+  if [ -e "$dict_path" ]; then
+    cp $dict_path $OUT/
+  fi
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$module"_fuzzer_seed_corpus.zip $corpus_dir/*
+    zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done
