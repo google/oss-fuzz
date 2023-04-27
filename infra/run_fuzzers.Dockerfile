@@ -16,7 +16,7 @@
 # Docker image for running fuzzers on CIFuzz (the run_fuzzers action on GitHub
 # actions).
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base-test
+FROM gcr.io/oss-fuzz-base/cifuzz-base
 
 # Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
