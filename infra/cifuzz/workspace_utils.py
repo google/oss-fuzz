@@ -13,6 +13,7 @@
 # limitations under the License.
 """Module for representing the workspace directory which CIFuzz uses."""
 
+import logging
 import os
 
 
@@ -25,6 +26,9 @@ class Workspace:
   def initialize_dir(self, directory):  # pylint: disable=no-self-use
     """Creates directory if it doesn't already exist, otherwise does nothing."""
     os.makedirs(directory, exist_ok=True)
+    logging.info('initialize_dir: %s is directory: %s', directory,
+                 os.path.isdir(directory))
+
 
   @property
   def repo_storage(self):
