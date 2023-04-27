@@ -51,6 +51,8 @@ cmake_args=(
     -DENABLE_BACKTRACE=OFF
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
+    -DLUA_USE_APICHECK=ON
+    -DLUA_USE_ASSERT=ON
     $SANITIZERS_ARGS
 
     # C compiler
