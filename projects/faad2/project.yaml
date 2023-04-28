@@ -1,6 +1,10 @@
 homepage: "https://sourceforge.net/projects/faac"
 main_repo: "https://github.com/knik0/faad2"
-language: c
+language: c++ # Actually, language is c, but centipede does not compile for it
 primary_contact: "eustas@chromium.org"
 auto_ccs:
  - "david@adalogics.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
