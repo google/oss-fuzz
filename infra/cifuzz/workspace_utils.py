@@ -73,3 +73,8 @@ class Workspace:
   def pruned_corpora(self):
     """The directory where pruned corpora are stored."""
     return os.path.join(self.workspace, 'cifuzz-pruned-corpus')
+
+  @property
+  def sarif(self):
+    """The directory where sarif files are stored."""
+    return os.path.join(self.workspace, 'cifuzz-sarif')

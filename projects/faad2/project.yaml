@@ -4,3 +4,7 @@ language: c
 primary_contact: "eustas@chromium.org"
 auto_ccs:
  - "david@adalogics.com"
+sanitizers:
+ - address
+ - memory
+ - undefined

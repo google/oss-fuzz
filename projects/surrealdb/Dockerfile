@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
-RUN apt-get --yes update \
-   && apt-get install --no-install-recommends --yes \
-   libssl-dev \
-   pkg-config \
-   python \
-   && apt-get clean \
-   && rm --recursive --force /var/lib/apt/lists/*
-
-RUN git clone https://github.com/ctz/rustls
-RUN git clone --depth 1 https://github.com/guidovranken/rustls-fuzzing-corpora
-
-WORKDIR $SRC
-
+RUN git clone --depth 1 https://github.com/surrealdb/surrealdb surrealdb
+WORKDIR surrealdb
+# TODO(surrealdb/surrealdb#1873): Remove `RUN rustup.*` lines once 
+# rust-lang/rust#110475 is fixed.
+RUN rustup install nightly-2023-04-21
+RUN rustup default nightly-2023-04-21
 COPY build.sh $SRC/

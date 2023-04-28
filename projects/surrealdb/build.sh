@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
+cd lib
+cargo fuzz build -O --debug-assertions
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
-RUN apt-get --yes update \
-   && apt-get install --no-install-recommends --yes \
-   libssl-dev \
-   pkg-config \
-   python \
-   && apt-get clean \
-   && rm --recursive --force /var/lib/apt/lists/*
-
-RUN git clone https://github.com/ctz/rustls
-RUN git clone --depth 1 https://github.com/guidovranken/rustls-fuzzing-corpora
-
-WORKDIR $SRC
-
-COPY build.sh $SRC/
+FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+for f in fuzz/fuzz_targets/*.rs
+do
+    FUZZ_TARGET_NAME=$(basename ${f%.*})
+    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+done
