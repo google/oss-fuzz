@@ -21,5 +21,5 @@ cd libfaad
 make
 cd ../
 for fname in config decode; do
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -I./include ./fuzz/fuzz_${fname}.c -o $OUT/fuzz_${fname} ./libfaad/.libs/libfaad.a
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./include ./fuzz/fuzz_${fname}.c -o $OUT/fuzz_${fname} ./libfaad/.libs/libfaad.a
 done
