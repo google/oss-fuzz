@@ -27,10 +27,8 @@ make all
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
 # Copy the .so file to $OUT as well as the executable.
 mkdir -p $OUT/lib
-cp libmyanmartools.so $OUT/lib
 $CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
-    -Wl,-Bstatic -lunwind -llzma -Wl,-Bdynamic \
-    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools \
+    -Wl,-Bstatic -lunwind -llzma -lmyanmartools -Wl,-Bdynamic \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
     $LIB_FUZZING_ENGINE
