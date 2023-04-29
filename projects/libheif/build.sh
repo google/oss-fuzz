@@ -73,6 +73,7 @@ cd build
 cmake .. --preset=fuzzing \
       -DFUZZING_COMPILE_OPTIONS="" \
       -DFUZZING_LINKER_OPTIONS="$LIB_FUZZING_ENGINE" \
+      -DFUZZING_C_COMPILER=$CC -DFUZZING_CXX_COMPILER=$CXX \
       -DWITH_DEFLATE_HEADER_COMPRESSION=OFF
 
 make -j$(nproc)
