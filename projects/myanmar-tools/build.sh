@@ -25,9 +25,7 @@ make all
 
 # Note: don't use the myanmartools_fuzz CMake target directly because we want
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
-# Copy the .so file to $OUT as well as the executable.
-mkdir -p $OUT/lib
-$CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
+$CXX $CXXFLAGS -std=c++11 -I../public -L. \
     -Wl,-Bstatic -lunwind -llzma -lmyanmartools -Wl,-Bdynamic \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
