@@ -26,7 +26,7 @@ make all
 # Note: don't use the myanmartools_fuzz CMake target directly because we want
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I../public -L. \
-    -Wl,-Bstatic -lunwind -llzma -lmyanmartools -Wl,-Bdynamic \
+    -Wl,-Bstatic -lunwind -llzma -lmyanmartools_static -Wl,-Bdynamic \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
     $LIB_FUZZING_ENGINE
