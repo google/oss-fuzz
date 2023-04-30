@@ -34,7 +34,7 @@ class Workspace:
     return os.path.join(self.workspace, 'storage')
 
   @property
-  def initial_repo(self):
+  def repo(self):
     """The repo directory."""
     if self._repo:
       return self._repo
