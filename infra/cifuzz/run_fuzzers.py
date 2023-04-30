@@ -141,14 +141,15 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
-      if bug_found and self.config.output_sarif:
-        # TODO(metzman): Handle multiple crashes.
-        write_fuzz_result_to_sarif(result, target_path, self.workspace)
       bug_found = True
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
+    logging.info('output_sarif: %s %s', self.config.output_sarif, bug_found)
+    if bug_found and self.config.output_sarif:
+      # TODO(metzman): Handle multiple crashes.
+      write_fuzz_result_to_sarif(result, target_path, self.workspace)
     self.clusterfuzz_deployment.upload_crashes()
     return bug_found
 
