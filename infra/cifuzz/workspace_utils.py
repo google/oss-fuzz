@@ -43,7 +43,7 @@ class Workspace:
     directories = os.listdir(self.repo_storage)
     if len(directories) != 1:
       return None
-      self._repo = os.path.join(self.repo_storage, directories[0])
+    self._repo = os.path.join(self.repo_storage, directories[0])
     return self._repo
 
   @property
