@@ -27,6 +27,6 @@ make all
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I../public -L. \
     ../zawgyi_detector_fuzz_target.cpp \
-    -Wl,-Bstatic -lmyanmartools_static -lglog -lunwind -llzma -lmyanmartools_static -Wl,-Bdynamic \
+    -Wl,-Bstatic -lmyanmartools_static -lglog -lunwind -llzma -Wl,-Bdynamic \
     -o $OUT/zawgyi_detector_fuzz_target \
     $LIB_FUZZING_ENGINE
