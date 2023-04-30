@@ -15,6 +15,10 @@
 #
 ################################################################################
 cd lib
+
+# Copy dictionaries, but don't fail if there aren't any.
+cp fuzz/fuzz_targets/*.dict $OUT/ || true
+
 cargo fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
