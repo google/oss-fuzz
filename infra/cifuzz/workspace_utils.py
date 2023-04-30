@@ -46,11 +46,6 @@ class Workspace:
     return self._repo
 
   @property
-  def repo_for_sarif(self):
-    return os.path.join(self.workspace, 'sarif-repo')
-
-
-  @property
   def out(self):
     """The out directory used for storing the fuzzer build built by
     build_fuzzers."""
@@ -99,4 +94,4 @@ class Workspace:
     return os.path.join(self.workspace, 'cifuzz-sarif')
 
   def make_repo_for_sarif(self):
-    return shutil.copytree(self.repo, self.repo_for_sarif)
+    return shutil.copytree(self.repo, self.sarif)
