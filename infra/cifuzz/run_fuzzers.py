@@ -155,6 +155,7 @@ class BaseFuzzTargetRunner:
 
 def write_fuzz_result_to_sarif(result, target_path, workspace):
   """Write results of fuzzing to SARIF."""
+  self.workspace.copy_repo_for_sarif()
   sarif_utils.write_stacktrace_to_sarif(result.stacktrace, target_path,
                                         workspace)
 

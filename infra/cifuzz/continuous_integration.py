@@ -234,7 +234,7 @@ class InternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for an OSS-Fuzz project on Github Actions."""
 
   def _copy_repo_from_image(self, image_repo_path):
-    self._make_repo_storage_dir()
+    self._make_repo_storagex_dir()
     repo_name = os.path.basename(image_repo_path)
     host_repo_path = os.path.join(self._repo_dir, repo_name)
     bash_command = f'cp -r {image_repo_path} {host_repo_path}'
