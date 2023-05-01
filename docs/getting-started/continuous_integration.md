@@ -84,12 +84,22 @@ jobs:
        oss-fuzz-project-name: 'example'
        language: c++
        fuzz-seconds: 600
+       # Uncomment this to get results in the GitHub security dashboard.
+       # output-sarif: true
    - name: Upload Crash
      uses: actions/upload-artifact@v3
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
        path: ./out/artifacts
+   # Uncomment this to get results in the GitHub security dashboard.
+   # - name: Upload Sarif
+   #  if: failure() && steps.build.outcome == 'success'
+   #  uses: github/codeql-action/upload-sarif@v2
+   #  with:
+   #    # Path to SARIF file relative to the root of the repository
+   #    sarif_file: cifuzz-sarif/results.sarif
+   #    checkout_path: cifuzz-sarif
 ```
 
 

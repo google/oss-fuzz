@@ -141,20 +141,25 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
-      if bug_found and self.config.output_sarif:
-        # TODO(metzman): Handle multiple crashes.
-        write_fuzz_result_to_sarif(result, target_path, self.workspace)
       bug_found = True
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
+    # pylint: disable=undefined-loop-variable
+    if not target_path:
+      logging.error('Ran no fuzz targets.')
+    elif bug_found and self.config.output_sarif:
+      # TODO(metzman): Handle multiple crashes.
+      write_fuzz_result_to_sarif(result, target_path, self.workspace)
     self.clusterfuzz_deployment.upload_crashes()
     return bug_found
 
 
 def write_fuzz_result_to_sarif(result, target_path, workspace):
   """Write results of fuzzing to SARIF."""
+  logging.info('Writing sarif results.')
+  workspace.make_repo_for_sarif()
   sarif_utils.write_stacktrace_to_sarif(result.stacktrace, target_path,
                                         workspace)
 
