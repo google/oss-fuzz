@@ -29,9 +29,10 @@ else
         ./configure --prefix=$SRC/xvidcore-install/
     fi
 fi
-make -j $(nproc)
-make install
+make -j $(nproc) libxvidcore.a
 
-find $SRC/xvidcore-install/
+find . -name "libxvidcore.a"  -exec cp {} . \;
 
-$CXX $CXXFLAGS -I $SRC/xvidcore-install/include $SRC/oss-fuzz-fuzzers/xvid/fuzzer.cpp $SRC/xvidcore-install/lib/libxvidcore.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer-decoder
+$CXX $CXXFLAGS -I $SRC/trunk/xvidcore/src/ \
+    $SRC/oss-fuzz-fuzzers/xvid/fuzzer.cpp ./libxvidcore.a \
+    $LIB_FUZZING_ENGINE -o $OUT/fuzzer-decoder
