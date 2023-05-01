@@ -146,6 +146,7 @@ class BaseFuzzTargetRunner:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
+    # pylint: disable=undefined-loop-variable
     if not target_path:
       logging.error('Ran no fuzz targets.')
     elif bug_found and self.config.output_sarif:
