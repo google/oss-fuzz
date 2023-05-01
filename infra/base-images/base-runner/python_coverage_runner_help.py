@@ -85,7 +85,9 @@ def convert_coveragepy_cov_to_summary_json(src, dst):
   similary to llvm-cov output. `src` is the source coveragepy json file,
   `dst` is the destination json file, which will be overwritten.
   """
-  dst_dict = {'data': {'files': {}}}
+  dst_dict = {'data': [{'files': {}}]}
+  lines_covered = 0
+  lines_count = 0
   with open(src, "r") as src_f:
     src_json = json.loads(src_f.read())
     if 'files' in src_json:
@@ -98,7 +100,11 @@ def convert_coveragepy_cov_to_summary_json(src, dst):
         notcovered = src_dict['missing_lines']
         percent = src_dict['percent_covered']
 
-        dst_dict['data']['files'][elem] = {
+        # Accumulate line coverage
+        lines_covered += covered
+        lines_count += count
+
+        dst_dict['data'][0]['files'][elem] = {
             'summary': {
                 'lines': {
                     'count': count,
@@ -108,6 +114,39 @@ def convert_coveragepy_cov_to_summary_json(src, dst):
                 }
             }
         }
+  if lines_count > 0:
+    lines_covered_percent = lines_covered / lines_count
+  else:
+    lines_covered_percent = 0.0
+  dst_dict['data'][0]['totals'] = {
+      'branches': {
+          'count': 0,
+          'covered': 0,
+          'notcovered': 0,
+          'percent': 0.0
+      },
+      'functions': {
+          'count': 0,
+          'covered': 0,
+          'percent': 0.0
+      },
+      'instantiations': {
+          'count': 0,
+          'covered': 0,
+          'percent': 0.0
+      },
+      'lines': {
+          'count': lines_count,
+          'covered': lines_covered,
+          'percent': lines_covered_percent
+      },
+      'regions': {
+          'count': 0,
+          'covered': 0,
+          'notcovered': 0,
+          'percent': 0.0
+      }
+  }
 
   with open(dst, 'w') as dst_f:
     dst_f.write(json.dumps(dst_dict))
