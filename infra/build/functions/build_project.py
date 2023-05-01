@@ -129,12 +129,11 @@ def set_default_sanitizer_for_centipede(project_yaml):
 class Project:  # pylint: disable=too-many-instance-attributes
   """Class representing an OSS-Fuzz project."""
 
-  def __init__(self, name, project_yaml, dockerfile, image_project):
+  def __init__(self, name, project_yaml, dockerfile):
     project_yaml = project_yaml.copy()
     set_yaml_defaults(project_yaml)
 
     self.name = name
-    self.image_project = image_project
     self.workdir = workdir_from_dockerfile(dockerfile)
     self._sanitizers = project_yaml['sanitizers']
     self.disabled = project_yaml['disabled']
@@ -158,7 +157,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
   @property
   def image(self):
     """Returns the docker image for the project."""
-    return f'gcr.io/{self.image_project}/{self.name}'
+    return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
 
 def get_last_step_id(steps):
@@ -277,11 +276,10 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml, dockerfile, image_project, base_images_project,
-    config):
+    project_name, project_yaml, dockerfile, config):
   """Returns build steps for project."""
 
-  project = Project(project_name, project_yaml, dockerfile, image_project)
+  project = Project(project_name, project_yaml, dockerfile)
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
@@ -325,17 +323,13 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               '*' * 80)
           # Test fuzz targets.
           test_step = {
-              'name':
-                  build_lib.get_runner_image_name(base_images_project,
-                                                  config.test_image_suffix),
-              'env':
-                  env,
+              'name': build_lib.get_runner_image_name(config.test_image_suffix),
+              'env': env,
               'args': [
                   'bash', '-c',
                   f'test_all.py || (echo "{failure_msg}" && false)'
               ],
-              'id':
-                  get_id('build-check', build)
+              'id': get_id('build-check', build)
           }
           build_lib.dockerify_run_step(test_step, build)
           maybe_add_parallel(test_step, get_last_step_id(build_steps),
@@ -360,8 +354,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
             # Generate targets list.
             {
                 'name':
-                    build_lib.get_runner_image_name(base_images_project,
-                                                    config.test_image_suffix),
+                    build_lib.get_runner_image_name(config.test_image_suffix),
                 'env':
                     env,
                 'args': [
@@ -372,7 +365,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
         ])
         if config.upload:
           upload_steps = get_upload_steps(project, build, timestamp,
-                                          base_images_project, config.testing)
+                                          config.testing)
           build_steps.extend(upload_steps)
 
   return build_steps
@@ -392,15 +385,15 @@ def get_targets_list_upload_step(bucket, project, build, uploader_image):
   }
 
 
-def get_uploader_image(base_images_project):
+def get_uploader_image():
   """Returns the uploader base image in |base_images_project|."""
-  return f'gcr.io/{base_images_project}/uploader'
+  return f'gcr.io/{build_lib.BASE_IMAGES_PROJECT}/uploader'
 
 
-def get_upload_steps(project, build, timestamp, base_images_project, testing):
+def get_upload_steps(project, build, timestamp, testing):
   """Returns the steps for uploading the fuzzer build specified by |project| and
-  |build|. Uses |timestamp| for naming the uploads. Uses |base_images_project|
-  and |testing| for determining which image to use for the upload."""
+  |build|. Uses |timestamp| for naming the uploads. Uses |testing| for
+  determining which image to use for the upload."""
   bucket = build_lib.get_upload_bucket(build.fuzzing_engine, build.architecture,
                                        testing)
   stamped_name = '-'.join([project.name, build.sanitizer, timestamp])
@@ -417,7 +410,7 @@ def get_upload_steps(project, build, timestamp, base_images_project, testing):
       bucket, project.name, latest_version_file)
   latest_version_url = build_lib.get_signed_url(
       latest_version_url, content_type=LATEST_VERSION_CONTENT_TYPE)
-  uploader_image = get_uploader_image(base_images_project)
+  uploader_image = get_uploader_image()
 
   upload_steps = [
       # Zip binaries.
@@ -535,8 +528,6 @@ def build_script_main(script_description, get_build_steps_func, build_type):
   args = get_args(script_description)
   logging.basicConfig(level=logging.INFO)
 
-  image_project = 'oss-fuzz'
-
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
   config = create_config_from_commandline(args)
@@ -550,8 +541,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
       continue
 
     steps = get_build_steps_func(project_name, project_yaml,
-                                 dockerfile_contents, image_project,
-                                 build_lib.BASE_IMAGES_PROJECT, config)
+                                 dockerfile_contents, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       error = True
