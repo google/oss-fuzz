@@ -23,7 +23,6 @@ jobs:
           - memory
           - undefined
           - coverage
-          - none
         architecture:
           - x86_64
         include:
