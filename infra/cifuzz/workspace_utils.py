@@ -95,5 +95,4 @@ class Workspace:
     return os.path.join(self.workspace, 'cifuzz-sarif')
 
   def make_repo_for_sarif(self):
-    logging.info('%s %s', self.repo, os.listdir(self.repo_storage))
     return shutil.copytree(self.repo, self.sarif)

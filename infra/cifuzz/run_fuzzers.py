@@ -146,7 +146,6 @@ class BaseFuzzTargetRunner:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
-    logging.info('output_sarif: %s %s', self.config.output_sarif, bug_found)
     if bug_found and self.config.output_sarif:
       # TODO(metzman): Handle multiple crashes.
       write_fuzz_result_to_sarif(result, target_path, self.workspace)
@@ -156,7 +155,7 @@ class BaseFuzzTargetRunner:
 
 def write_fuzz_result_to_sarif(result, target_path, workspace):
   """Write results of fuzzing to SARIF."""
-  logging.info('Writing sarif results')
+  logging.info('Writing sarif results.')
   workspace.make_repo_for_sarif()
   sarif_utils.write_stacktrace_to_sarif(result.stacktrace, target_path,
                                         workspace)
