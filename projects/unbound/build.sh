@@ -42,7 +42,7 @@ OBJECTS_TO_LINK="dns.o infra.o rrset.o dname.o \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o rpz.o proxy_protocol.o"
+  libworker.o context.o rpz.o proxy_protocol.o timeval_func.o"
 
 $CXX $CXXFLAGS -std=c++11 \
   $LIB_FUZZING_ENGINE \
