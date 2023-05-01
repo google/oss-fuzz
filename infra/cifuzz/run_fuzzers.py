@@ -146,7 +146,9 @@ class BaseFuzzTargetRunner:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
-    if bug_found and self.config.output_sarif:
+    if not target_path:
+      logging.error('Ran no fuzz targets.')
+    elif bug_found and self.config.output_sarif:
       # TODO(metzman): Handle multiple crashes.
       write_fuzz_result_to_sarif(result, target_path, self.workspace)
     self.clusterfuzz_deployment.upload_crashes()

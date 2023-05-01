@@ -14,7 +14,6 @@
 """Module for representing the workspace directory which CIFuzz uses."""
 
 import os
-import logging
 import shutil
 
 
@@ -95,4 +94,5 @@ class Workspace:
     return os.path.join(self.workspace, 'cifuzz-sarif')
 
   def make_repo_for_sarif(self):
+    """Copies the repo over for the sarif upload GitHub action."""
     return shutil.copytree(self.repo, self.sarif)
