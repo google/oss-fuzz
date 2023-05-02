@@ -19,6 +19,7 @@ import os
 import shutil
 import stat
 import tempfile
+from typing import Optional
 
 import clusterfuzz.environment
 import clusterfuzz.fuzz
@@ -159,7 +160,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     print(result.logs)
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
 
-  def fuzz(self, batch=False):
+  def fuzz(self, batch=False) -> Optional[FuzzResult]:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:

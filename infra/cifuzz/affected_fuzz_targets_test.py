@@ -38,7 +38,7 @@ TEST_DATA_OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_data', 'build-out')
 
 
-class RemoveUnaffectedFuzzTargets(unittest.TestCase):
+class RemoveUnaffectedFuzzTargetsTest(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
   TEST_FUZZER_1 = os.path.join(TEST_DATA_OUT_PATH, 'example_crash_fuzzer')
@@ -85,7 +85,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
         self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
-class IsFuzzTargetAffected(unittest.TestCase):
+class IsFuzzTargetAffectedTest(unittest.TestCase):
   """Tests for is_fuzz_target_affected."""
 
   def setUp(self):
