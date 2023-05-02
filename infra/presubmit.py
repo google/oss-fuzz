@@ -321,7 +321,8 @@ def is_nonfuzzer_python(path):
 def lint(_=None):
   """Runs python's linter on infra. Returns False if it fails linting."""
 
-  command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
+  # Use --score no to make linting quieter.
+  command = ['python3', '-m', 'pylint', '--score', 'no', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
