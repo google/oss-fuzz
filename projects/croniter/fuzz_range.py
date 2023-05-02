@@ -17,7 +17,7 @@ import atheris
 import sys
 
 import datetime
-import croniter
+from croniter import croniter_range
 from croniter.croniter import CroniterError, CroniterBadTypeRangeError
 
 
@@ -32,7 +32,7 @@ def TestOneInput(data):
   stop = RandomDateTime(fdp)
   try:
     idx = 0
-    for dt in croniter.croniter_range(start, stop, cron_str):
+    for dt in croniter_range(start, stop, cron_str):
       idx += 1
       if idx > 10:
         break

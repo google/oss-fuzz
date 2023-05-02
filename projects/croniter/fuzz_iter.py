@@ -17,7 +17,7 @@ import atheris
 import sys
 
 from datetime import datetime
-import croniter
+from croniter import croniter
 from croniter.croniter import CroniterError, CroniterBadTypeRangeError
 
 
@@ -27,8 +27,8 @@ def TestOneInput(data):
   try:
     cron_str = fdp.ConsumeString(50)
     hash_id = fdp.ConsumeBytes(2)
-    croniter.croniter.is_valid(cron_str, hash_id=hash_id)
-    itr = croniter.croniter(cron_str, base, hash_id=hash_id)
+    croniter.is_valid(cron_str, hash_id=hash_id)
+    itr = croniter(cron_str, base, hash_id=hash_id)
     idx = 0
     for v in itr.all_next():
       idx += 1
