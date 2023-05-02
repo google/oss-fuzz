@@ -23,7 +23,8 @@ If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
 input available for download and the CI test fails (red X).
 
 If CIFuzz doesn't find a crash during the allotted time, the CI test passes
-(green check). If CIFuzz finds a crash, it reports the crash only if both of following are true:
+(green check). If CIFuzz finds a crash, it reports the crash only if both of
+following are true:
 * The crash is reproducible (on the PR/commit build).
 * The crash does not occur on older OSS-Fuzz builds. (If the crash does occur
   on older builds, then it was not introduced by the PR/commit
@@ -94,7 +95,7 @@ jobs:
        path: ./out/artifacts
    # Uncomment this to get results in the GitHub security dashboard.
    # - name: Upload Sarif
-   #  if: failure() && steps.build.outcome == 'success'
+   #  if: always() && steps.build.outcome == 'success'
    #  uses: github/codeql-action/upload-sarif@v2
    #  with:
    #    # Path to SARIF file relative to the root of the repository
@@ -159,12 +160,22 @@ jobs:
        language: c++
        fuzz-seconds: 600
        sanitizer: ${{ matrix.sanitizer }}
+       # Uncomment this to get results in the GitHub security dashboard.
+       # output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
-     if: failure() && steps.build.outcome == 'success'
+     uses: actions/upload-artifact@v3
+     if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
+   # Uncomment this to get results in the GitHub security dashboard.
+   # - name: Upload Sarif
+   #  if: always() && steps.build.outcome == 'success'
+   #  uses: github/codeql-action/upload-sarif@v2
+   #  with:
+   #    # Path to SARIF file relative to the root of the repository
+   #    sarif_file: cifuzz-sarif/results.sarif
+   #    checkout_path: cifuzz-sarif
 {% endraw %}
 ```
 

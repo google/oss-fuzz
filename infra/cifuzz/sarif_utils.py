@@ -13,8 +13,9 @@
 # limitations under the License.
 """Module for outputting SARIF data."""
 import copy
-import os
 import json
+import logging
+import os
 
 from clusterfuzz import stacktraces
 
@@ -174,15 +175,17 @@ def get_error_source_info(crash_info):
   frame = get_error_frame(crash_info)
   if not frame:
     return (None, 1)
-  return frame.filename, int(frame.fileline or 1)
+  return redact_src_path(frame.filename), int(frame.fileline or 1)
 
 
 def get_rule_index(crash_type):
   """Returns the rule index describe the rule that |crash_type| ran afoul of."""
   # Don't include "READ" or "WRITE" or number of bytes.
   crash_type = crash_type.split(' ')[0].lower()
+  logging.info('crash_type: %s.', crash_type)
   for idx, rule in enumerate(SARIF_RULES):
     if rule['id'] == crash_type:
+      logging.info('Rule index: %d.', idx)
       return idx
 
   return get_rule_index('no-crashes')
@@ -190,6 +193,10 @@ def get_rule_index(crash_type):
 
 def get_sarif_data(stacktrace, target_path):
   """Returns a description of the crash in SARIF."""
+  data = copy.deepcopy(SARIF_DATA)
+  if stacktrace is None:
+    return data
+
   fuzz_target = os.path.basename(target_path)
   stack_parser = stacktraces.StackParser(fuzz_target=fuzz_target,
                                          symbolized=True,
@@ -197,7 +204,9 @@ def get_sarif_data(stacktrace, target_path):
                                          include_ubsan=True)
   crash_info = stack_parser.parse(stacktrace)
   error_source_info = get_error_source_info(crash_info)
-  uri = redact_src_path(error_source_info[0])
+  uri = error_source_info[0]
+  rule_idx = get_rule_index(crash_info.crash_type)
+  rule_id = SARIF_RULES[rule_idx]['id']
 
   result = {
       'level': 'error',
@@ -217,10 +226,9 @@ def get_sarif_data(stacktrace, target_path):
               }
           }
       }],
-      'ruleId': 'no-crashes',
-      'ruleIndex': get_rule_index(crash_info.crash_type)
+      'ruleId': rule_id,
+      'ruleIndex': rule_idx
   }
-  data = copy.deepcopy(SARIF_DATA)
   data['runs'][0]['results'].append(result)
   return data
 
