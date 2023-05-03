@@ -1,0 +1,15 @@
+homepage: "https://github.com/ntop/ntopng/"
+language: c++
+primary_contact: "luca.deri@gmail.com"
+auto_ccs:
+  - "patacca.x@gmail.com"
+main_repo: "https://github.com/ntop/ntopng.git"
+file_github_issue: true
+
+sanitizers:
+  - address
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
