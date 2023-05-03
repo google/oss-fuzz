@@ -95,4 +95,4 @@ class Workspace:
 
   def make_repo_for_sarif(self):
     """Copies the repo over for the sarif upload GitHub action."""
-    return shutil.copytree(self.repo, self.sarif)
+    return shutil.copytree(self.repo, self.sarif, symlinks=True)
