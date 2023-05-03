@@ -22,7 +22,6 @@ class Workspace:
 
   def __init__(self, config):
     self.workspace = config.workspace
-    self._repo = None
 
   def initialize_dir(self, directory):  # pylint: disable=no-self-use
     """Creates directory if it doesn't already exist, otherwise does nothing."""
@@ -32,18 +31,6 @@ class Workspace:
   def repo_storage(self):
     """The parent directory for repo storage."""
     return os.path.join(self.workspace, 'storage')
-
-  @property
-  def repo(self):
-    """The repo directory."""
-    if self._repo:
-      return self._repo
-
-    directories = os.listdir(self.repo_storage)
-    if len(directories) != 1:
-      return None
-    self._repo = os.path.join(self.repo_storage, directories[0])
-    return self._repo
 
   @property
   def out(self):
@@ -93,6 +80,6 @@ class Workspace:
     """The directory where sarif files are stored."""
     return os.path.join(self.workspace, 'cifuzz-sarif')
 
-  def make_repo_for_sarif(self):
+  def make_repo_for_sarif(self, repo_manager):
     """Copies the repo over for the sarif upload GitHub action."""
-    return shutil.copytree(self.repo, self.sarif, symlinks=True)
+    return shutil.copytree(repo_manager.repo_dir, self.sarif, symlinks=True)
