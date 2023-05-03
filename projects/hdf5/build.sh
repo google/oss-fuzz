@@ -48,4 +48,3 @@ $CC $CFLAGS  -std=c99 -c \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_extended_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_extended_fuzzer
 
 zip -j $OUT/h5_extended_fuzzer_seed_corpus.zip $SRC/hdf5/test/*.h5
-cp $SRC/*.options $OUT/
