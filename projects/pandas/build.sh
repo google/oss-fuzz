@@ -16,7 +16,7 @@
 ###############################################################################
 
 python3 setup.py install
-pip3 install .
+python3 -m pip install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   LD_PRELOAD=$OUT/sanitizer_with_fuzzer.so ASAN_OPTIONS=detect_leaks=0 compile_python_fuzzer $fuzzer --hidden-import cmath
 done
