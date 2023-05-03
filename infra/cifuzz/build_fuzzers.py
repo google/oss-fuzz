@@ -69,7 +69,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False
-    if self.output_sarif:
+    if self.config.output_sarif:
       self.workspace.make_repo_for_sarif()
     self.image_repo_path = result.image_repo_path
     self.repo_manager = result.repo_manager
