@@ -162,11 +162,12 @@ def get_error_frame(crash_info):
   if not crash_info.crash_state:
     return None
   state = crash_info.crash_state.split('\n')[0]
-  logging.info('state: %s frames %s, %s', state, crash_info.frames, [f.function_name for f in crash_info.frames])
+  logging.info('state: %s frames %s, %s', state, crash_info.frames, [f.function_name for f in crash_info.frames[0]])
 
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
       # TODO(metzman): Do something less fragile here.
+      logging.info('framefunctionname', frame.function_name)
       if frame.function_name.startswith(state):
         return frame
   return None
