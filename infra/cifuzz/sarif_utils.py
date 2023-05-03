@@ -181,7 +181,7 @@ def get_error_source_info(crash_info):
 def get_rule_index(crash_type):
   """Returns the rule index describe the rule that |crash_type| ran afoul of."""
   # Don't include "READ" or "WRITE" or number of bytes.
-  crash_type = crash_type.split(' ')[0].lower()
+  crash_type = crash_type.replace('\n', ' ').split(' ')[0].lower()
   logging.info('crash_type: %s.', crash_type)
   for idx, rule in enumerate(SARIF_RULES):
     if rule['id'] == crash_type:
