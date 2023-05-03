@@ -149,6 +149,7 @@ SRC_ROOT = '/src/'
 
 def redact_src_path(src_path):
   """Redact the src path so that it can be reported to users."""
+  src_path = os.path.normpath(src_path)
   if src_path.startswith(SRC_ROOT):
     src_path = src_path[len(SRC_ROOT):]
 
