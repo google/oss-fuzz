@@ -22,7 +22,7 @@ make
 
 $CC -g -fPIC $CFLAGS -I$SRC/librdkafka/src -Igenerated/dummy \
     -c $SRC/librdkafka/tests/fuzzers/fuzz_regex.c -o fuzz_regex.o
-$CC $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
     ./src-cpp/librdkafka++.a ./src/librdkafka.a -lm -lssl -lcrypto \
     -lcrypto -lz -ldl -lpthread -lrt
 cp fuzzer $OUT/fuzz_regex
