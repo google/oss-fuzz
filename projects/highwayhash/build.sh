@@ -23,11 +23,11 @@ make
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I/src/highwayhash \
   CMakeFiles/nanobenchmark.dir/highwayhash/instruction_sets.cc.o \
   CMakeFiles/nanobenchmark.dir/highwayhash/os_specific.cc.o \
-    ../highwayhash/highwayhash_fuzzer.cc z
-    libhighwayhash.a -lpthread z
+    ../highwayhash/highwayhash_fuzzer.cc \
+    libhighwayhash.a -lpthread \
     -o $OUT/highwayhash_fuzzer
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I/src/highwayhash \
-    ../highwayhash/sip_hash_fuzzer.cc z
-    libhighwayhash.a -lpthread z
+    ../highwayhash/sip_hash_fuzzer.cc \
+    libhighwayhash.a -lpthread \
     -o $OUT/sip_hash_fuzzer
