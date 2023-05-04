@@ -21,7 +21,7 @@
 sed -i 's/-std=c++11 --expt-extended-lambda/-allow-unsupported-compiler -std=c++11 --expt-extended-lambda/g' ./makefiles/common.mk
 
 make clean
-make -j src.build V=1
+make -j3 src.build
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS $SRC/fuzz_xml.cpp -o $OUT/fuzz_xml \
     -I./src/graph/ -I./src/include -I./build/include/ \
