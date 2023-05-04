@@ -1,0 +1,5 @@
+homepage: "https://www.nongnu.org/libunwind/"
+language: c
+main_repo: "https://github.com/libunwind/libunwind"
+vendor_ccs:
+- david@adalogics.com
