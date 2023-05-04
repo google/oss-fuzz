@@ -13,12 +13,12 @@
 # limitations under the License.
 #
 ################################################################################
-FROM python:3.11-slim
+FROM python:3.11-bullseye
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 
-COPY fuzz-introspector /fuzz-introspector
+RUN git clone --depth=1 https://github.com/ossf/fuzz-introspector /fuzz-introspector
 
 # Copy local code to the container image.
 ENV APP_HOME /fuzz-introspector/tools/web-fuzzing-introspection/app/
@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir -r $APP_HOME/../requirements.txt
 # Create the database the webapp will be using
 RUN cd $APP_HOME/static/assets/db/ && \
     python ./web_db_creator_from_summary.py \
-      --max-projects=150 \
+      --max-projects=2000 \
       --since-date=20-04-2023 \
       --output-dir=$PWD \
       --input-dir=$PWD
