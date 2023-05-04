@@ -2,7 +2,12 @@ homepage: https://dawn.googlesource.com
 language: c++
 primary_contact: bclayton@google.com
 auto_ccs:
-  - "afdx@google.com"
+  - "alanbaker@google.com"
+  - "amaiorano@google.com"
+  - "dneto@google.com"
+  - "dsinclair@chromium.org"
+  - "jrprice@google.com"
+  - "rharrison@chromium.org"
 sanitizers:
   - address
   - memory
