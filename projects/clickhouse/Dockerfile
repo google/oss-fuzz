@@ -37,7 +37,8 @@ RUN apt-get update -y \
             protobuf-compiler-grpc \
             libprotobuf-dev \
             sudo \
-            tzdata
+            tzdata \
+            nasm
 
 RUN git clone -j 8 --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
 WORKDIR $SRC/ClickHouse
