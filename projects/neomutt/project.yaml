@@ -11,4 +11,3 @@ sanitizers:
 fuzzing_engines:
  - afl
  - libfuzzer
- - centipede
