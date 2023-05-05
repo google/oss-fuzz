@@ -521,7 +521,7 @@ def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
     logger.error('%s does not seem to exist. Please run build_fuzzers first.',
-                  fuzzer_name)
+                 fuzzer_name)
     return False
 
   return True
@@ -1144,7 +1144,7 @@ def download_corpora(args):
         subprocess.check_call(['gsutil', '--version'], stdout=stdout)
     except OSError:
       logger.error('gsutil not found. Please install it from '
-                    'https://cloud.google.com/storage/docs/gsutil_install')
+                   'https://cloud.google.com/storage/docs/gsutil_install')
       return False
 
   if args.fuzz_target:
@@ -1170,11 +1170,11 @@ def download_corpora(args):
       return True
     except Exception as error:  # pylint:disable=broad-except
       logger.error('Corpus download for %s failed: %s.', fuzz_target,
-                    str(error))
+                   str(error))
       return False
 
   logger.info('Downloading corpora for %s project to %s.', args.project.name,
-               corpus_dir)
+              corpus_dir)
   thread_pool = ThreadPool()
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
@@ -1223,7 +1223,7 @@ def coverage(args):
   if args.corpus_dir:
     if not os.path.exists(args.corpus_dir):
       logger.error('The path provided in --corpus-dir argument does not '
-                    'exist.')
+                   'exist.')
       return False
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, args.fuzz_target)])
