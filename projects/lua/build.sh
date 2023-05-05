@@ -86,5 +86,9 @@ do
   corpus_dir="corpus_dir/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  [[ -e $corpus_dir ]] && zip -j $OUT/"$module"_seed_corpus.zip $corpus_dir/*
+  dict_path="corpus_dir/$module.dict"
+  if [ -e "$dict_path" ]; then
+    cp $dict_path "$OUT/$name.dict"
+  fi
+  [[ -e $corpus_dir ]] && zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
 done
