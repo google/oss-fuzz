@@ -137,6 +137,7 @@ RUN cd $SRC && \
     git checkout 0f20056623a83441ce8474f5162fab7dbf1da9b8 && \
     rm -rf .git
 
+ENV CENTIPEDE_BIN_DIR=$SRC/fuzztest/bazel-bin
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
