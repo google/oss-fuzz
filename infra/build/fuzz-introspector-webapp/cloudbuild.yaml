@@ -5,9 +5,7 @@ steps:
   - 'build'
   - '-t'
   - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
-  - '-f'
   - 'infra/build/fuzz-introspector-webapp'
-  - '.'
 images:
   - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
 
