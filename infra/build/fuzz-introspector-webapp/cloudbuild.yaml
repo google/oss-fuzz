@@ -19,7 +19,7 @@ steps:
     - 'run'
     - 'deploy'
     - 'fuzz-introspector-webapp'
-    - ' --image'
+    - '--image'
     - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
     - '--region'
     - 'us-central1'
