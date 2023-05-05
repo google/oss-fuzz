@@ -36,10 +36,10 @@ echo 'Removing extra stuff leftover to avoid bloating image.'
 
 rm -rf /clang-*.tgz /clang
 
-BAZEL_BIN_REAL_DIR=$(readlink -f $SRC/fuzztest/centipede/bazel-bin)
-rm -rf $SRC/fuzztest/centipede/bazel-bin
-mkdir -p $SRC/fuzztest/centipede/bazel-bin
-mv $BAZEL_BIN_REAL_DIR/{centipede,libcentipede_runner.pic.a} $SRC/fuzztest/centipede/bazel-bin/
+BAZEL_BIN_REAL_DIR=$(readlink -f $CENTIPEDE_BIN_DIR)
+rm -rf $CENTIPEDE_BIN_DIR
+mkdir -p $CENTIPEDE_BIN_DIR
+mv $BAZEL_BIN_REAL_DIR/{centipede,libcentipede_runner.pic.a} $CENTIPEDE_BIN_DIR
 rm -rf /root/.cache
 
 echo 'Done.'

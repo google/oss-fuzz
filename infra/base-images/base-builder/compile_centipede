@@ -17,13 +17,11 @@
 
 echo "Skipping compilation; using precompiled centipede"
 
-export BIN_DIR="$SRC/fuzztest/centipede/bazel-bin/"
-
 if [[ "$SANITIZER" == 'none' ]]; then
-  cp "$BIN_DIR/centipede" "$OUT"
+  cp "$CENTIPEDE_BIN_DIR/centipede" "$OUT"
 fi
 
-cp "$BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
+cp "$CENTIPEDE_BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export CENTIPEDE_FLAGS=`cat "$SRC/fuzztest/centipede/clang-flags.txt" | tr '\n' ' '`
 export LIBRARIES_FLAGS="-Wno-unused-command-line-argument -Wl,-ldl -Wl,-lrt -Wl,-lpthread -Wl,$SRC/fuzztest/centipede/weak.o"
