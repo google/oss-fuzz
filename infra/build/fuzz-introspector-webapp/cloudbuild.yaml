@@ -6,7 +6,20 @@ steps:
   - '-t'
   - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
   - 'infra/build/fuzz-introspector-webapp'
-images:
+
+# Push the image here so we deploy the latest build.
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
   - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
 
-# TODO(metzman): Deploy this to Cloud Run.
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+    - 'run'
+    - 'deploy'
+    - 'fuzz-introspector-webapp'
+    - '--image'
+    - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+    - '--region'
+    - 'us-central1'
