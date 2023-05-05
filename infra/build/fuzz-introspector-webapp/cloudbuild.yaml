@@ -1,5 +1,5 @@
 # Builds and deploys the fuzz introspector webapp.
-# steps:
+steps:
 # - name: 'gcr.io/cloud-builders/docker'
 #   args:
 #   - 'build'
