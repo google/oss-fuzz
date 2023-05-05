@@ -39,7 +39,7 @@ rm -rf /clang-*.tgz /clang
 BAZEL_BIN_REAL_DIR=$(readlink -f $CENTIPEDE_BIN_DIR)
 rm -rf $CENTIPEDE_BIN_DIR
 mkdir -p $CENTIPEDE_BIN_DIR
-mv $BAZEL_BIN_REAL_DIR/{centipede,libcentipede_runner.pic.a} $CENTIPEDE_BIN_DIR
+mv $BAZEL_BIN_REAL_DIR/centipede/{centipede,libcentipede_runner.pic.a} $CENTIPEDE_BIN_DIR
 rm -rf /root/.cache
 
 echo 'Done.'
