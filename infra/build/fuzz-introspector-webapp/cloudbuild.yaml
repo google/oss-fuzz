@@ -1,0 +1,14 @@
+# Builds and deploys the fuzz introspector webapp.
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-t'
+  - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+  - '-f'
+  - 'fuzz-introspector-webapp'
+  - '.'
+images:
+  - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+
+# TODO(metzman): Deploy this to Cloud Run.
