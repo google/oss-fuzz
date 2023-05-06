@@ -37,14 +37,16 @@ except ImportError:
 @atheris.instrument_func
 def TestOneInput(data):
   """TestOneInput gets random data from the fuzzer, and throws it at bs4."""
-  if len(data) < 1:
+  if len(data) < 12:
     return
 
   parsers = ['lxml-xml', 'html5lib', 'html.parser', 'lxml']
   try:
-    idx = int(data[0]) % len(parsers)
+    idx = int(data.pop()) % len(parsers)
   except ValueError:
     return
+
+  css_selector, data = data[:10], data[10:]
 
   try:
     soup = BeautifulSoup(data[1:], features=parsers[idx])
@@ -54,6 +56,7 @@ def TestOneInput(data):
     return
 
   list(soup.find_all(True))
+  soup.css.select(css_selector)
   soup.prettify()
 
 
