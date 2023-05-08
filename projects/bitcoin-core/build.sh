@@ -26,16 +26,10 @@ if [ "$ARCHITECTURE" = "i386" ]; then
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
-
-# Build using ThinLTO, to avoid OOM, and other LLVM issues.
-# See https://github.com/google/oss-fuzz/pull/10123.
-sed -i 's/flto/flto=thin/g' ./depends/hosts/linux.mk
-sed -i 's/flto/flto=thin/g' ./configure.ac
-
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET LTO=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib -j$(nproc)
+  make HOST=$BUILD_TRIPLET NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j$(nproc)
 )
 
 # Build the fuzz targets
