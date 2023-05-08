@@ -42,11 +42,11 @@ def TestOneInput(data):
 
   parsers = ['lxml-xml', 'html5lib', 'html.parser', 'lxml']
   try:
-    idx = int(data.pop()) % len(parsers)
+    idx = int(data[0]) % len(parsers)
   except ValueError:
     return
 
-  css_selector, data = data[:10], data[10:]
+  css_selector, data = data[1:10], data[10:]
 
   try:
     soup = BeautifulSoup(data[1:], features=parsers[idx])
