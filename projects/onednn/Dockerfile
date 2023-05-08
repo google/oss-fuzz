@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool libomp-dev libgomp1
 RUN git clone --depth 1 https://github.com/oneapi-src/oneDNN oneDNN
 WORKDIR oneDNN
-COPY build.sh $SRC/
+COPY build.sh *.cpp $SRC/
