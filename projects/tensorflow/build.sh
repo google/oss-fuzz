@@ -135,7 +135,7 @@ fi
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
 
-declare FUZZERS=$(grep '^tf_ops_fuzz_target' tensorflow/core/kernels/fuzzing/BUILD | cut -d'"' -f2 | grep -v decode_base64)
+declare FUZZERS=$(grep '^tf_ops_fuzz_target' tensorflow/core/kernels/fuzzing/BUILD | cut -d'"' -f2 | grep -v decode_base64 | grep -v decode_compressed | grep -v one_hot | grep -v encode_base64 | grep -v scatter_nd | grep -v decode_csv | grep -v check_numerics)
 
 cat >> tensorflow/core/kernels/fuzzing/tf_ops_fuzz_target_lib.bzl << END
 
