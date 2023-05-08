@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-rustup default nighlty-2023-04-01
+rustup default nightly-2023-04-01
 rustup component add rust-src
 
 # Commands migrated from Dockerfile to make CIFuzz work
