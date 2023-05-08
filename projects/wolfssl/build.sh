@@ -26,8 +26,8 @@ then
 
     # Install Boost headers
     cd $SRC/
-    tar jxf boost_1_74_0.tar.bz2
-    cd boost_1_74_0/
+    tar jxf boost_1_82_0.tar.bz2
+    cd boost_1_82_0/
     CFLAGS="" CXXFLAGS="" ./bootstrap.sh
     CFLAGS="" CXXFLAGS="" ./b2 headers
     cp -R boost/ /usr/include/
