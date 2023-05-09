@@ -21,6 +21,5 @@ RUN apt-get update && \
     autoconf automake libtool zlib1g-dev pkg-config
 
 RUN git clone https://github.com/open-mpi/hwloc hwloc
-COPY build.sh $SRC/
-COPY *_fuzzer.c *.options $SRC/
+COPY *.sh *_fuzzer.c *.options $SRC/
 WORKDIR $SRC/hwloc
