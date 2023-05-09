@@ -26,12 +26,15 @@ set -u
 # - `oss_fuzz` enables OSS-Fuzz build
 # - `is_clang` selects clang toolchains (does not support AFL fuzzing engine)
 # - `enable_rrti` enables RTTI to support UBSan build
+# - `chip_enable_thread_safety_checks` disabled since OSS-Fuzz clang does not
+#   seem to currently support or need this analysis
 # - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
     oss_fuzz=true \
     is_clang=true \
     enable_rtti=true \
+    chip_enable_thread_safety_checks=false \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
