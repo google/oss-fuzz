@@ -56,7 +56,8 @@ def TestOneInput(data):
     return
 
   list(soup.find_all(True))
-  soup.css.select(css_selector)
+  if soup.css:
+      soup.css.select(css_selector)
   soup.prettify()
 
 
