@@ -69,6 +69,7 @@ cifuzz.yml for an example project:
 ```yaml
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
@@ -138,6 +139,7 @@ can be used. To use a sanitizer add it to the list of sanitizers in the matrix f
 {% raw %}
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
@@ -199,6 +201,7 @@ on:
       - '**.cpp'
       - '**.cxx'
       - '**.h'
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
