@@ -13,7 +13,6 @@ limitations under the License.
 #include "glslang/Public/ShaderLang.h"
 #include <string>
 
-EShLanguage GetShaderStage(const std::string &stage);
 
 void compile(glslang::TShader *shader, const std::string &code,
              const std::string &entryPointName, EShMessages controls,
