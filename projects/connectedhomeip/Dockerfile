@@ -29,7 +29,10 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --recurse-submodules https://github.com/project-chip/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+
+# checkout submodules required for linux
+RUN cd $SRC/connectedhomeip && scripts/checkout_submodules.py --shallow --platform linux
 
 # Bootstrap pigweed environment
 SHELL ["/bin/bash", "-c"]
