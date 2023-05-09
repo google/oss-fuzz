@@ -19,7 +19,7 @@ sed -i 's/FATAL_ERROR/WARNING/g' ./cmake/OpenMP.cmake
 mkdir build
 cd build
 cmake -DDNNL_LIBRARY_TYPE=STATIC -DDNNL_BUILD_TESTS=OFF -DDNNL_BUILD_EXAMPLES=OFF ..
-make
+make -j4
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_json.cpp \
 	-I/src/oneDNN/include -I/src/oneDNN/build/include \
