@@ -147,8 +147,6 @@ class ProjectYamlChecker:
     for banned_name in banned_names:
       if banned_name in project_name:
         self.error('Projects can\'t have \'google\' in the name.')
-    import ipdb
-    ipdb.set_trace()
     if not VALID_PROJECT_REGEX.match(project_name):
       self.error(f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
 
