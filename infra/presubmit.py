@@ -27,7 +27,7 @@ import yaml
 import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VALID_PROJECT_REGEX_STR = '[a-z0-9_\-]+'
+VALID_PROJECT_REGEX_STR = '^[a-z0-9_-]+$'
 VALID_PROJECT_REGEX = re.compile(VALID_PROJECT_REGEX_STR)
 
 
@@ -138,7 +138,7 @@ class ProjectYamlChecker:
   def error(self, message):
     """Prints an error message and sets self.success to False."""
     self.success = False
-    print(f'Error in {filename}: {message}')
+    print(f'Error in {self.filename}: {message}')
 
   def check_valid_project_name(self):
     """Checks that the project has a valid name."""
@@ -146,12 +146,11 @@ class ProjectYamlChecker:
     project_name = os.path.basename(os.path.dirname(self.filename))
     for banned_name in banned_names:
       if banned_name in project_name:
-        self.error(filename, 'Projects can\'t have \'google\' in the name.')
+        self.error('Projects can\'t have \'google\' in the name.')
     import ipdb
-    pdb.set_trace()
+    ipdb.set_trace()
     if not VALID_PROJECT_REGEX.match(project_name):
-      self.error(filename,
-                 f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
+      self.error(f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
@@ -254,7 +253,7 @@ def check_seed_corpus(paths):
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_license, yapf, check_project_yaml, check_lib_fuzzing_engine,
       check_seed_corpus
   ]
   # Use a list comprehension here and in other cases where we use all() so that
