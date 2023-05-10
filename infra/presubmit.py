@@ -59,9 +59,8 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
   for line_num, line in enumerate(build_sh_lines):
     uncommented_code = line.split('#')[0]
     if '-lFuzzingEngine' in uncommented_code:
-      print(
-          'Error: build.sh contains deprecated "-lFuzzingEngine" on line: '
-          f'{line_num}. Please use "$LIB_FUZZING_ENGINE" instead.')
+      print('Error: build.sh contains deprecated "-lFuzzingEngine" on line: '
+            f'{line_num}. Please use "$LIB_FUZZING_ENGINE" instead.')
       return False
   return True
 
@@ -148,11 +147,11 @@ class ProjectYamlChecker:
     for banned_name in banned_names:
       if banned_name in project_name:
         self.error(filename, 'Projects can\'t have \'google\' in the name.')
+    import ipdb
+    pdb.set_trace()
     if not VALID_PROJECT_REGEX.match(project_name):
       self.error(filename,
                  f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
-
-
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
