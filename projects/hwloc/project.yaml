@@ -1,0 +1,6 @@
+homepage: "https://github.com/open-mpi/hwloc"
+main_repo: "https://github.com/open-mpi/hwloc"
+language: c
+vendor_ccs:
+- david@adalogics.com
+- arthur.chan@adalogics.com
