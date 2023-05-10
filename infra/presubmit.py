@@ -123,6 +123,7 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
+        self.check_valid_project_name,
     ]
     for check_function in checks:
       check_function()
@@ -137,6 +138,13 @@ class ProjectYamlChecker:
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
+
+  def check_valid_project_name(self):
+    banned_names = ['google', 'g00gle']
+    filename = os.path.dirname(self.filename)
+    for banned_name in banned_names:
+      if banned_name in filename:
+        return
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
