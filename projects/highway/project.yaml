@@ -1,0 +1,11 @@
+homepage: "https://github.com/open-source-parsers/jsoncpp/"
+language: c++
+primary_contact: "chenguopingdota@163.com"
+auto_ccs:
+ - "jophba@chromium.org"
+sanitizers:
+  - address
+  - undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://github.com/open-source-parsers/jsoncpp'
