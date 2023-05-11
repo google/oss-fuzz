@@ -21,8 +21,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 
 RUN git clone --recursive -b develop https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
-RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-# evmone v0.8.2 fixes: https://github.com/ethereum/evmone/issues/373
+RUN git clone https://github.com/google/libprotobuf-mutator.git
 RUN git clone --branch="v0.9.1" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
@@ -43,7 +42,11 @@ RUN cd $SRC; \
     rm -rf $SRC/boost_1_73_0
 
 # Install libprotobuf-mutator
-RUN mkdir $SRC/LPM; \
+# Use commit prior to libprotobuf upgrade that broke solidity build
+# See https://github.com/google/oss-fuzz/issues/10237
+RUN cd $SRC/libprotobuf-mutator; \
+    git reset --hard 212a7be1eb08e7f9c79732d2aab9b2097085d936; \
+    mkdir $SRC/LPM; \
     cd $SRC/LPM; \
     cmake $SRC/libprotobuf-mutator -GNinja \
     -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF \
