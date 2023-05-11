@@ -20,7 +20,7 @@ import atheris
 with atheris.instrument_imports():
   import logging
   import warnings
-  from bs4 import BeautifulSoup
+  from bs4 import BeautifulSoup, ParserRejectedMarkup
 
 
 try:
@@ -53,6 +53,8 @@ def TestOneInput(data):
   except HTMLParseError:
     return
   except ValueError:
+    return
+  except ParserRejectedMarkup:
     return
 
   list(soup.find_all(True))
