@@ -59,7 +59,7 @@ def TestOneInput(data):
 
   list(soup.find_all(True))
   if soup.css:
-      soup.css.select(css_selector)
+      soup.css.select(css_selector.decode('utf-8', 'replace'))
   soup.prettify()
 
 
