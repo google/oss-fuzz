@@ -29,6 +29,6 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS $SRC/fuzz_xml.cpp -o $OUT/fuzz_xml \
     ./build/lib/libnccl_static.a \
     /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so
 
-cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so.11.0 /out/libcudart.so.11.0
-cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so /out/libcudart.so
+cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so.11.0 $OUT/libcudart.so.11.0
+cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so $OUT/libcudart.so
 patchelf --set-rpath '$ORIGIN/' /out/fuzz_xml
