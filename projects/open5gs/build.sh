@@ -18,7 +18,7 @@ CFLAGS="$CFLAGS -Wno-compound-token-split-by-macro -Wno-format"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
 
-sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" tests/fuzzing/meson.build
+sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" $SRC/open5gs/tests/fuzzing/meson.build
 
 meson setup builddir --default-library=static -Dfuzzing=true -Dlib_fuzzing_engine="$LIB_FUZZING_ENGINE"
 ninja -C builddir -k 0 || true
