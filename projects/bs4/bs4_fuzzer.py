@@ -21,6 +21,8 @@ with atheris.instrument_imports():
   import logging
   import warnings
   from bs4 import BeautifulSoup, ParserRejectedMarkup
+  import soupsieve
+  from soupsieve.util import SelectorSyntaxError
 
 
 try:
@@ -59,7 +61,10 @@ def TestOneInput(data):
 
   list(soup.find_all(True))
   if soup.css:
-      soup.css.select(css_selector.decode('utf-8', 'replace'))
+      try:
+          soup.css.select(css_selector.decode('utf-8', 'replace'))
+      except SelectorSyntaxError:
+          return
   soup.prettify()
 
 
