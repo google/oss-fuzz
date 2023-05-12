@@ -29,4 +29,4 @@ RUN ./configure --enable-static --disable-shared
 RUN make install
 
 COPY build.sh $SRC/
-WORKDIR $SRC/open5gs/
+WORKDIR $SRC/open5gs
