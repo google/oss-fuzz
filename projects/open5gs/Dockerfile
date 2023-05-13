@@ -20,13 +20,14 @@ RUN apt-get update && \
         python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake meson libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev iproute2 ca-certificates netbase pkg-config && \
         apt-get install -y autoconf libtool-bin
 
-RUN git clone https://github.com/yaml/libyaml.git
+RUN git clone https://github.com/yaml/libyaml.git && \
+        cd libyaml &&\
+        ./bootstrap && \
+        ./configure --enable-static --disable-shared && \
+        make install && \
+        cd .. && \
+        rm -rf libyaml
+
 RUN git clone --depth=1 https://github.com/open5gs/open5gs.git
-
-WORKDIR $SRC/libyaml
-RUN ./bootstrap
-RUN ./configure --enable-static --disable-shared
-RUN make install
-
-COPY build.sh $SRC/
 WORKDIR $SRC/open5gs
+COPY build.sh $SRC/

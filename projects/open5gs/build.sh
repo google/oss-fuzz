@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+pushd $SRC/open5gs
+
 CFLAGS="$CFLAGS -Wno-compound-token-split-by-macro -Wno-format"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
 
-sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" $SRC/open5gs/tests/fuzzing/meson.build
+sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" tests/fuzzing/meson.build
 
 meson setup builddir --default-library=static -Dfuzzing=true -Dlib_fuzzing_engine="$LIB_FUZZING_ENGINE"
 ninja -C builddir -k 0 || true
@@ -31,3 +33,5 @@ cp /lib/x86_64-linux-gnu/libtalloc.so* /out/lib/
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
+
+popd
