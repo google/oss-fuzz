@@ -65,6 +65,8 @@ def TestOneInput(data):
           soup.css.select(css_selector.decode('utf-8', 'replace'))
       except SelectorSyntaxError:
           return
+      except NotImplementedError:
+          return
   soup.prettify()
 
 
