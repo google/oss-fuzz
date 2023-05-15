@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+pushd $SRC/open5gs
+
 CFLAGS="$CFLAGS -Wno-compound-token-split-by-macro -Wno-format"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
@@ -31,3 +33,5 @@ cp /lib/x86_64-linux-gnu/libtalloc.so* /out/lib/
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
+
+popd

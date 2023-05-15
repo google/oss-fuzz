@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,7 @@
 #
 ################################################################################
 
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
-    ninja-build     \
-    curl            \
-    autoconf        \
-    libtool         \
-    wget            \
-    golang          \
-    rsync           \
-    python3
-
-RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR $SRC/envoy/
-COPY build.sh $SRC/
-COPY WORKSPACE $SRC/envoy/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/golang/appengine
+WORKDIR $SRC/appengine
+COPY build.sh fuzz_test.go $SRC/

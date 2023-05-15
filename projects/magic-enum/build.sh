@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +15,6 @@
 #
 ################################################################################
 
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
-    ninja-build     \
-    curl            \
-    autoconf        \
-    libtool         \
-    wget            \
-    golang          \
-    rsync           \
-    python3
-
-RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR $SRC/envoy/
-COPY build.sh $SRC/
-COPY WORKSPACE $SRC/envoy/
+$CXX $CXXFLAGS -std=c++17 -I$SRC/magic_enum/include     \
+    $SRC/magic_enum_fuzzer.cc -o $OUT/magic_enum_fuzzer \
+    $LIB_FUZZING_ENGINE -lpthread

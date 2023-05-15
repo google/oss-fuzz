@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +15,19 @@
 #
 ################################################################################
 
+cd crosvm
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Build crosvm fuzzers
+# Unset the SRC variable as it will interfere with minijail's common.mk framework.
+env -u SRC cargo +nightly \
+    fuzz build \
+    -O \
+    --fuzz-dir=crosvm-fuzz \
+    --features upstream-fuzz
 
-RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
-    ninja-build     \
-    curl            \
-    autoconf        \
-    libtool         \
-    wget            \
-    golang          \
-    rsync           \
-    python3
-
-RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR $SRC/envoy/
-COPY build.sh $SRC/
-COPY WORKSPACE $SRC/envoy/
+# Copy fuzzer binaries to $OUT
+FUZZ_TARGET_OUTPUT_DIR="target/x86_64-unknown-linux-gnu/release"
+for f in crosvm-fuzz/*.rs; do
+    FUZZ_TARGET_NAME=$(basename ${f%.*})
+    cp "${FUZZ_TARGET_OUTPUT_DIR}/crosvm_${FUZZ_TARGET_NAME}" "$OUT/"
+done

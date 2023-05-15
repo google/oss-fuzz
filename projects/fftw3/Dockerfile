@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,12 @@
 #
 ################################################################################
 
-
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
-    ninja-build     \
-    curl            \
-    autoconf        \
-    libtool         \
-    wget            \
-    golang          \
-    rsync           \
-    python3
+RUN apt-get update && \
+    apt-get install -y build-essential ocaml ocamlbuild texinfo \
+    autoconf automake indent libtool libnum-ocaml-dev fig2dev
 
-RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR $SRC/envoy/
-COPY build.sh $SRC/
-COPY WORKSPACE $SRC/envoy/
+RUN git clone https://github.com/FFTW/fftw3 fftw3
+COPY build.sh *.cc $SRC/
+WORKDIR $SRC/fftw3

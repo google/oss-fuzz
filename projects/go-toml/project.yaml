@@ -8,3 +8,4 @@ sanitizers:
   - address
 vendor_ccs:
   - maxnair.dev@gmail.com
+file_github_issue: true
