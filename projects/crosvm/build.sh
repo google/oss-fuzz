@@ -19,15 +19,11 @@ cd crosvm
 
 # Build crosvm fuzzers
 # Unset the SRC variable as it will interfere with minijail's common.mk framework.
-env -u SRC cargo +nightly \
-    fuzz build \
-    -O \
-    --fuzz-dir=crosvm-fuzz \
-    --features upstream-fuzz
+env -u SRC cargo +nightly fuzz build -O
 
 # Copy fuzzer binaries to $OUT
 FUZZ_TARGET_OUTPUT_DIR="target/x86_64-unknown-linux-gnu/release"
-for f in crosvm-fuzz/*.rs; do
+for f in fuzz/fuzz_targets/*.rs; do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp "${FUZZ_TARGET_OUTPUT_DIR}/crosvm_${FUZZ_TARGET_NAME}" "$OUT/"
+    cp "${FUZZ_TARGET_OUTPUT_DIR}/${FUZZ_TARGET_NAME}" "$OUT/"
 done
