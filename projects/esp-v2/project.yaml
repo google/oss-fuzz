@@ -9,3 +9,9 @@ sanitizers:
 - undefined
 coverage_extra_args: -ignore-filename-regex=.*\.cache.* -ignore-filename-regex=.*bazel-out.*
 main_repo: 'https://github.com/GoogleCloudPlatform/esp-v2.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

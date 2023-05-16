@@ -6,6 +6,7 @@ auto_ccs:
 - "equinox-ossfuzz@diac24.net"
 - "menotdonald@gmail.com"
 - "mjs.ietf@gmail.com"
+- "rwgbsd@gmail.com"
 fuzzing_engines:
  - libfuzzer
 main_repo: 'https://github.com/FRRouting/frr'

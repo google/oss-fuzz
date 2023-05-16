@@ -9,8 +9,3 @@ sanitizers:
 main_repo: 'https://invent.kde.org/frameworks/kimageformats.git'
 auto_ccs:
   - dnovomesky@gmail.com
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

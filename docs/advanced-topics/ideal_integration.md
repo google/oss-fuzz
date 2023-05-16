@@ -25,7 +25,7 @@ covers most of the items.
 
 ## Summary
 
-Every [fuzz target](http://libfuzzer.info/#fuzz-target):
+Every [fuzz target](https://llvm.org/docs/LibFuzzer.html#fuzz-target):
 * Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).
 * Is [built with the rest of the tests](#build-support) - no bit rot! 
 * Has a [seed corpus](#seed-corpus) with good [code coverage](#coverage).
@@ -36,7 +36,7 @@ Every [fuzz target](http://libfuzzer.info/#fuzz-target):
 
 ## Fuzz Target
 
-The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be
+The code of the [fuzz target(s)](https://llvm.org/docs/LibFuzzer.html#fuzz-target) should be
 part of the project's source code repository.  All fuzz targets should be easily
 discoverable (reside in the same directory, follow the same naming pattern,
 etc.). 
@@ -49,7 +49,7 @@ it does not crash, hang, or run out of memory instantly. If you're having
 trouble, read about [what makes a good fuzz
 target](https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md).
 
-The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
+The interface between the [fuzz target]((https://llvm.org/docs/LibFuzzer.html#fuzz-target))
 and the fuzzing engines is C, so you can use either C or C++ to implement the
 fuzz target.
 
@@ -116,7 +116,7 @@ XML parser, a dictionary of XML tokens is helpful. AFL++ has a
 [collection](https://github.com/AFLplusplus/AFLplusplus/tree/master/dictionaries)
 of dictionaries for popular data formats. Ideally, a dictionary should be
 maintained alongside the fuzz target, and it must use [correct
-syntax](http://libfuzzer.info/#dictionaries).
+syntax](https://llvm.org/docs/LibFuzzer.html#dictionaries).
 
 ## Coverage
 

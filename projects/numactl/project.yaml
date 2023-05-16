@@ -4,3 +4,9 @@ language: c
 primary_contact: "github@halobates.de"
 auto_ccs:
 - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

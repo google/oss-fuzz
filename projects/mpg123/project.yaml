@@ -12,8 +12,3 @@ labels:
     - sundew
   decode_fuzzer:
     - sundew
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

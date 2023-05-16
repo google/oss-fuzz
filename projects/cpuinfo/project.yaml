@@ -1,0 +1,5 @@
+homepage: "https://github.com/pytorch/cpuinfo"
+main_repo: "https://github.com/pytorch/cpuinfo"
+language: c
+vendor_ccs:
+- david@adalogics.com

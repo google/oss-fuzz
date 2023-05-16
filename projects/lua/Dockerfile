@@ -15,8 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y libreadline-dev 
+RUN apt-get update && apt-get install -y \
+	build-essential ninja-build cmake make \
+	zlib1g-dev libreadline-dev libunwind-dev
 RUN git clone https://github.com/lua/lua
+RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
+WORKDIR testdir
+RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
+COPY build.sh testdir/
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_lua.c $SRC/

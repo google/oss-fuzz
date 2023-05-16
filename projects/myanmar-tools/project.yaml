@@ -10,8 +10,3 @@ sanitizers:
 coverage_extra_args: -ignore-filename-regex=.*/\.hunter/.*
 main_repo: 'https://github.com/google/myanmar-tools.git'
 file_github_issue: True
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

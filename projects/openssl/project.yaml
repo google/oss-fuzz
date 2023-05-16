@@ -4,7 +4,7 @@ primary_contact: "kurt@roeckx.be"
 auto_ccs:
  - "openssl-security@openssl.org"
  - "appronym@gmail.com"
- - "caswell.matt@googlemail.com"
+ - "matt@openssl.org"
  - "richard@levitte.org"
 sanitizers:
  - address

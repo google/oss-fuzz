@@ -16,7 +16,7 @@
 #
 ################################################################################
 
-./autogen.sh --without-cython --enable-debug
+./autogen.sh --without-cython --enable-debug --without-tests
 make -j$(nproc) clean
 make -j$(nproc) all
 

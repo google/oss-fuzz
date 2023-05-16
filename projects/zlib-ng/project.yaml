@@ -4,10 +4,6 @@ primary_contact: "zlib-ng@circlestorm.org"
 auto_ccs:
   - "sebpop@gmail.com"
   - "nathan.moinvaziri@gmail.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
 sanitizers:
   - address
   - memory
@@ -16,8 +12,3 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/zlib-ng/zlib-ng.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

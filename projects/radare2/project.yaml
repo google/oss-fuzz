@@ -7,8 +7,3 @@ sanitizers:
   - address
 run_tests: False
 main_repo: 'https://github.com/radareorg/radare2'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

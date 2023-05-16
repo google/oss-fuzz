@@ -21,6 +21,7 @@ RUN wget https://go.dev/dl/go1.20.2.linux-amd64.tar.gz \
     && tar -C temp-go/ -xzf go1.20.2.linux-amd64.tar.gz \
     && mv temp-go/go/* /root/.go/
 RUN git clone --depth 1 https://github.com/dapr/dapr
+RUN git clone --depth 1 https://github.com/dapr/kit
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 WORKDIR $SRC/dapr
 COPY build.sh $SRC/

@@ -34,8 +34,6 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
-IMAGE_PROJECT = 'oss-fuzz'
-BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 TEST_IMAGE_SUFFIX = 'testing'
 FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
                            'EXPIRED')
@@ -224,8 +222,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     steps = build_type.get_build_steps_func(project_name, project_yaml,
-                                            dockerfile_contents, IMAGE_PROJECT,
-                                            BASE_IMAGES_PROJECT, config)
+                                            dockerfile_contents, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       continue
@@ -326,7 +323,7 @@ def _do_test_builds(args, test_image_suffix):
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
 
-  return wait_on_builds(build_ids, credentials, IMAGE_PROJECT)
+  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT)
 
 
 def trial_build_main(args=None, local_base_build=True):

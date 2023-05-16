@@ -7,8 +7,3 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://invent.kde.org/frameworks/karchive.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

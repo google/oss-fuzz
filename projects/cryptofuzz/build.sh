@@ -420,24 +420,25 @@ export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
 cd $SRC/cryptofuzz/modules/libsodium
 make -B
 
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    # Compile EverCrypt (with assembly)
-    cd $SRC/evercrypt/dist
-    make -C portable -j$(nproc) libevercrypt.a
-    make -C kremlin/kremlib/dist/minimal -j$(nproc)
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
-    export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/portable/libevercrypt.a"
-    export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
-    export EVERCRYPT_INCLUDE_PATH="$SRC/evercrypt/dist"
-    export KREMLIN_INCLUDE_PATH="$SRC/evercrypt/dist/kremlin/include"
-    export INCLUDE_PATH_FLAGS="$INCLUDE_PATH_FLAGS -I $EVERCRYPT_INCLUDE_PATH -I $KREMLIN_INCLUDE_PATH"
-
-    # Compile Cryptofuzz EverCrypt (with assembly) module
-    cd $SRC/cryptofuzz/modules/evercrypt
-    make -B
-fi
+# Disabled because NSS now also embeds evercrypt, leading to symbol collisions
+#if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+#then
+#    # Compile EverCrypt (with assembly)
+#    cd $SRC/evercrypt/dist
+#    make -C portable -j$(nproc) libevercrypt.a
+#    make -C kremlin/kremlib/dist/minimal -j$(nproc)
+#
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
+#    export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/portable/libevercrypt.a"
+#    export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
+#    export EVERCRYPT_INCLUDE_PATH="$SRC/evercrypt/dist"
+#    export KREMLIN_INCLUDE_PATH="$SRC/evercrypt/dist/kremlin/include"
+#    export INCLUDE_PATH_FLAGS="$INCLUDE_PATH_FLAGS -I $EVERCRYPT_INCLUDE_PATH -I $KREMLIN_INCLUDE_PATH"
+#
+#    # Compile Cryptofuzz EverCrypt (with assembly) module
+#    cd $SRC/cryptofuzz/modules/evercrypt
+#    make -B
+#fi
 
 ##############################################################################
 # Compile Cryptofuzz reference (without assembly) module

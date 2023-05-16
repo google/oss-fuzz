@@ -77,14 +77,14 @@ cd $SRC/wget2
 ./bootstrap
 
 LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
-  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
+  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no
 make clean
 make -j$(nproc)
 make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
 LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
-  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
+  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C include

@@ -17,7 +17,7 @@ import atheris
 import sys
 
 import datetime
-import croniter
+from croniter import croniter
 from croniter.croniter import CroniterError, CroniterBadTypeRangeError
 
 
@@ -30,7 +30,7 @@ def TestOneInput(data):
   cron_str = fdp.ConsumeString(50)
   testdate = RandomDateTime(fdp)
   try:
-    croniter.croniter.match(cron_str, testdate)
+    croniter.match(cron_str, testdate)
   except (CroniterError, CroniterBadTypeRangeError) as e:
     pass
 

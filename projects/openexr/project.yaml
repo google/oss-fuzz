@@ -6,3 +6,9 @@ auto_ccs:
   - "security@openexr.org"
   - "kdt3rd@gmail.com"
 main_repo: 'https://github.com/AcademySoftwareFoundation/openexr'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

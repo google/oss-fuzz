@@ -51,7 +51,7 @@ printenv
 NUM_JOBS=$(nproc || grep -c ^processor /proc/cpuinfo)
 
 if (( $NUM_JOBS > 10 )); then
-    NUM_JOBS=$(expr $NUM_JOBS / 2)
+    NUM_JOBS=$(expr $NUM_JOBS / 4)
 fi
 
 CLICKHOUSE_CMAKE_FLAGS=(

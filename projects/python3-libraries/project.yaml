@@ -6,6 +6,7 @@ auto_ccs:
  - "gps@google.com"
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
+ - "pablogsal@python.org"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

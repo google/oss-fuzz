@@ -12,7 +12,7 @@ parent: OSS-Fuzz
 The process works like this:
 
 1. A maintainer of an open source project (or an outside volunteer) creates
-one or more [fuzz targets](http://libfuzzer.info/#fuzz-target)
+one or more [fuzz targets](https://llvm.org/docs/LibFuzzer.html#fuzz-target)
 and [integrates]({{ site.baseurl }}/advanced-topics/ideal-integration/) them
 with the project's build and test system.
 1. The project is [accepted to OSS-Fuzz]({{ site.baseurl }}/getting-started/accepting-new-projects/) and the developer commits their build configurations.

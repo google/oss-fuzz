@@ -42,13 +42,13 @@ $CXX $CXXFLAGS -DNDEBUG -Wall -c -I giflib-code dgif_protobuf_target.cc -I libpr
 -I LPM/external.protobuf/include \
  -o dgif_protobuf_target.o
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DNDEBUG -std=c++11 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DNDEBUG -std=c++14 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
 ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
 -I genfiles \
 LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
 LPM/src/libprotobuf-mutator.a \
-LPM/external.protobuf/lib/libprotobuf.a \
+-Wl,--start-group LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
         -o $OUT/dgif_protobuf_target giflib-code/libgif.a
 
 

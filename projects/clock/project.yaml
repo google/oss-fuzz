@@ -1,0 +1,9 @@
+homepage: "https://github.com/benbjohnson/clock"
+language: go
+main_repo: "https://github.com/benbjohnson/clock"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

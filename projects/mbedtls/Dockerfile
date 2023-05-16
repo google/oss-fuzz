@@ -24,6 +24,8 @@ RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/m
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
-RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
+RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl && \
+    cd openssl && \
+    git submodule update --init fuzz/corpora
 WORKDIR mbedtls
 COPY build.sh $SRC/
