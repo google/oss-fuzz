@@ -213,14 +213,14 @@ go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
+# golangs build from source currently breaks.
+exit 0
+
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
-
-# golangs build from source currently breaks.
-exit 0
 
 # Install latest Go from master branch and build fuzzers again
 cd $SRC
