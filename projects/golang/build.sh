@@ -177,11 +177,17 @@ cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
 go mod tidy
 
+cd $SRC/go/src/internal/zstd
+go mod init zstdPackage
+go mod tidy
+
 cd $SRC/go/src/debug/elf
 go mod init elfPackage
 go mod tidy
 go mod edit -replace internal/saferio=../../internal/saferio
 go get internal/saferio
+go mod edit -replace internal/zstd=../../internal/zstd
+go get internal/zstd
 cp $SRC/elf_fuzzer.go ./
 rm ./*_test.go
 compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
