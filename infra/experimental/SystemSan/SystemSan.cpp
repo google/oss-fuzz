@@ -178,6 +178,11 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for the sign of shell injection.
+
+  static bool is_enabled = check_enabled("shell_injection");
+  if (not is_enabled)
+    return;
+
   std::string path = read_string(pid, regs.rdi, kTripWire.length());
   if (!path.length()) {
     return;
@@ -271,6 +276,11 @@ void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
 
 void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
+
+  static bool is_enabled = check_enabled("shell_corruption");
+  if (not is_enabled)
+    return;
+
   std::string buffer = read_string(pid, regs.rsi, regs.rdx);
   debug_log("Write buffer: %s\n", buffer.c_str());
   match_error_pattern(buffer, g_shell_pids[pid], pid);
@@ -306,6 +316,11 @@ bool has_unprintable(const std::string &value) {
 
 void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's register for the sign of arbitrary file open.
+
+  static bool is_enabled = check_enabled("arbitrary_file_open");
+  if (not is_enabled)
+    return;
+
   std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
   if (!path.length()) {
     return;
@@ -347,6 +362,10 @@ void report_bug_in_process(std::string bug_type, pid_t pid) {
 
 void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
   (void) regs;
+
+  static bool is_enabled = check_enabled("malicious_symlink_following");
+  if (not is_enabled)
+    return;
   std::string contents = read_evil_link_bombfile();
   if ((contents.compare(kEvilLinkBombfileContents)) != 0) {
 
@@ -355,6 +374,10 @@ void inspect_for_evil_link(pid_t pid, const user_regs_struct &regs) {
 }
 
 void evil_openat_hook(pid_t pid, const user_regs_struct &regs) {
+  static bool is_enabled = check_enabled("malicious_symlink_following");
+  if (not is_enabled)
+    return;
+
   std::string path = read_string(pid, regs.rsi, kPathMax);
   if (!path.length()) {
     return;
