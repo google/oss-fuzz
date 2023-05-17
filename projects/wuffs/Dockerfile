@@ -30,9 +30,15 @@ RUN mkdir bmpsuite_corpus
 RUN unzip -j bmpsuite.zip -d bmpsuite_corpus
 RUN rm bmpsuite.zip
 
+RUN mkdir libjpeg_turbo_corpus && \
+    git clone --depth=1 https://github.com/libjpeg-turbo/seed-corpora && \
+    mv ./seed-corpora/afl-testcases/jpeg_turbo/full/images/*.jpg ./libjpeg_turbo_corpus && \
+    rm -rf seed-corpora
+
 RUN mkdir pngsuite_corpus && \
     git clone --depth=1 https://github.com/MozillaSecurity/fuzzdata && \
-    cp ./fuzzdata/samples/png/common/*.png ./pngsuite_corpus
+    mv ./fuzzdata/samples/png/common/*.png ./pngsuite_corpus && \
+    rm -rf fuzzdata
 
 RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
 RUN mkdir rapidjson_corpus

@@ -1,0 +1,16 @@
+diff --git a/src/libsec/port/x509.c b/src/libsec/port/x509.c
+index 4790025..77dfaed 100644
+--- a/src/libsec/port/x509.c
++++ b/src/libsec/port/x509.c
+@@ -2551,8 +2551,9 @@ asn1dump(uchar *der, int len)
+ 	Elem e;
+ 
+ 	if(decode(der, len, &e) != ASN_OK){
+-		print("didn't parse\n");
+-		exits("didn't parse");
++		//print("didn't parse\n");
++		//exits("didn't parse");
++		return;
+ 	}
+ 	edump(e);
+ }

@@ -1,0 +1,9 @@
+homepage: "https://github.com/oneapi-src/oneDNN"
+main_repo: "https://github.com/oneapi-src/oneDNN"
+language: c++
+vendor_ccs:
+- david@adalogics.com
+fuzzing_engines:
+- libfuzzer
+- honggfuzz
+- centipede
