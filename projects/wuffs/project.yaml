@@ -1,7 +1,7 @@
 homepage: "https://github.com/google/wuffs"
 language: c++
 primary_contact: "nigeltao@golang.org"
-auto_ccs :
+auto_ccs:
   - "raph.levien@gmail.com"
 sanitizers:
   - address
