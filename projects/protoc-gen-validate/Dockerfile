@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +14,8 @@
 #
 ################################################################################
 
-cd crosvm
-
-# Build crosvm fuzzers
-# Unset the SRC variable as it will interfere with minijail's common.mk framework.
-env -u SRC cargo +nightly fuzz build -O
-
-# Copy fuzzer binaries to $OUT
-FUZZ_TARGET_OUTPUT_DIR="target/x86_64-unknown-linux-gnu/release"
-for f in fuzz/fuzz_targets/*.rs; do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp "${FUZZ_TARGET_OUTPUT_DIR}/${FUZZ_TARGET_NAME}" "$OUT/"
-done
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN apt-get update && apt-get install -y protobuf-compiler
+RUN git clone --depth 1 https://github.com/bufbuild/protoc-gen-validate
+WORKDIR $SRC/protoc-gen-validate
+COPY build.sh fuzz_test.go $SRC/

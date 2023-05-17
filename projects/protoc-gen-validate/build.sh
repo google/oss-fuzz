@@ -15,15 +15,10 @@
 #
 ################################################################################
 
-cd crosvm
+make build
 
-# Build crosvm fuzzers
-# Unset the SRC variable as it will interfere with minijail's common.mk framework.
-env -u SRC cargo +nightly fuzz build -O
-
-# Copy fuzzer binaries to $OUT
-FUZZ_TARGET_OUTPUT_DIR="target/x86_64-unknown-linux-gnu/release"
-for f in fuzz/fuzz_targets/*.rs; do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp "${FUZZ_TARGET_OUTPUT_DIR}/${FUZZ_TARGET_NAME}" "$OUT/"
-done
+cp $SRC/fuzz_test.go ./validate
+go mod tidy
+printf "package validate\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./validate/register.go
+go mod tidy
+compile_native_go_fuzzer github.com/envoyproxy/protoc-gen-validate/validate FuzzTest FuzzTest
