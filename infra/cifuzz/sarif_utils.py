@@ -168,7 +168,6 @@ def get_error_frame(crash_info):
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
       # TODO(metzman): Do something less fragile here.
-      logging.info('framefunctionname %s', str(frame.function_name))
       if state in frame.function_name:
         return frame
   return None
