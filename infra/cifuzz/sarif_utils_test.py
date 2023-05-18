@@ -54,7 +54,7 @@ class GetSarifDataTest(unittest.TestCase):
                 'region': {
                     'startLine': 30,
                     # We don't have this granualarity fuzzing.
-                  'startColumn': 1,
+                    'startColumn': 1,
                 }
             }
         }],
