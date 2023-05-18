@@ -232,7 +232,8 @@ def get_sarif_data(stacktrace, target_path):
       'ruleId': rule_id,
       'ruleIndex': rule_idx
   }
-  data['runs'][0]['results'].append(result)
+  if uri:
+    data['runs'][0]['results'].append(result)
   return data
 
 
