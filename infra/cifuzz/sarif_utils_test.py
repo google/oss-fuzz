@@ -61,7 +61,6 @@ class GetSarifDataTest(unittest.TestCase):
       'ruleId': 'heap-buffer-overflow',
       'ruleIndex': 2
     }
-    # from remote_pdb import RemotePdb; RemotePdb('127.0.0.1', 4444).set_trace()
     actual_result = sarif_utils.get_sarif_data(
         stacktrace, '/root/target')['runs'][0]['results'][0]
     self.assertEqual(actual_result, expected_result)
