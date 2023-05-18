@@ -194,26 +194,6 @@ def get_rule_index(crash_type):
   return get_rule_index('no-crashes')
 
 
-def add_locations(sarif_data, error_source_info):
-  uri = error_source_info[0]
-  if not uri:
-    return None
-  locations = [{
-          'physicalLocation': {
-              'artifactLocation': {
-                  'uri': uri,
-                  'index': 0
-              },
-              'region': {
-                  'startLine': error_source_info[1],
-                  # We don't have this granualarity fuzzing.
-                  'startColumn': 1,
-              }
-          }
-  }]
-  sarif_data['locations'] = locations
-
-
 def get_sarif_data(stacktrace, target_path):
   """Returns a description of the crash in SARIF."""
   data = copy.deepcopy(SARIF_DATA)
@@ -229,16 +209,29 @@ def get_sarif_data(stacktrace, target_path):
   error_source_info = get_error_source_info(crash_info)
   rule_idx = get_rule_index(crash_info.crash_type)
   rule_id = SARIF_RULES[rule_idx]['id']
+  uri = error_source_info[0]
 
   result = {
       'level': 'error',
       'message': {
           'text': crash_info.crash_type
       },
+      'locations': [{
+          'physicalLocation': {
+              'artifactLocation': {
+                  'uri': uri,
+                  'index': 0
+              },
+              'region': {
+                  'startLine': error_source_info[1],
+                  # We don't have this granualarity fuzzing.
+                  'startColumn': 1,
+              }
+          }
+      }],
       'ruleId': rule_id,
       'ruleIndex': rule_idx
   }
-  add_locations(result, error_source_info)
   data['runs'][0]['results'].append(result)
   return data
 
