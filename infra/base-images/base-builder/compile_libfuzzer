@@ -17,6 +17,10 @@
 
 echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
 export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
+if [ "$FUZZING_LANGUAGE" = "go" ]; then
+    export LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE $GOPATH/gosigfuzz/gosigfuzz.o"
+fi
+
 cp /usr/local/lib/clang/*/lib/linux/libclang_rt.fuzzer-$ARCHITECTURE.a \
   $LIB_FUZZING_ENGINE_DEPRECATED
 echo " done."
