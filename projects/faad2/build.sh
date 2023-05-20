@@ -14,15 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-./bootstrap
-./configure
-cd libfaad
-make
-cd ../
-for fname in config decode; do
-  $CC $CFLAGS -c -I./include ./fuzz/fuzz_${fname}.c -o /tmp/fuzz_${fname}.o
-  for affix in "" "_drm"; do
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./include /tmp/fuzz_${fname}.o -o $OUT/fuzz${affix}_${fname} ./libfaad/.libs/libfaad${affix}.a
-  done
-done
+bazel_build_fuzz_tests
