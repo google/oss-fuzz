@@ -30,7 +30,7 @@ synchronize_coverage_directories() {
       "--exclude" "*")
 
     # Sync existing code.
-    ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
+    ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow_serving/ ${REMAP_PATH}
 
     # Sync generated proto files.
     if [ -d "./bazel-out/k8-opt/bin/tensorflow/" ]
