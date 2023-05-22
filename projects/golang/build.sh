@@ -177,11 +177,17 @@ cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
 go mod tidy
 
+cd $SRC/go/src/internal/zstd
+go mod init zstdPackage
+go mod tidy
+
 cd $SRC/go/src/debug/elf
 go mod init elfPackage
 go mod tidy
 go mod edit -replace internal/saferio=../../internal/saferio
 go get internal/saferio
+go mod edit -replace internal/zstd=../../internal/zstd
+go get internal/zstd
 cp $SRC/elf_fuzzer.go ./
 rm ./*_test.go
 compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
@@ -207,14 +213,14 @@ go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
+# golangs build from source currently breaks.
+exit 0
+
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
-
-# golangs build from source currently breaks.
-exit 0
 
 # Install latest Go from master branch and build fuzzers again
 cd $SRC

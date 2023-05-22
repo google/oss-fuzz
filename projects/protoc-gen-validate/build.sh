@@ -14,4 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-bazel_build_fuzz_tests
+
+make build
+
+cp $SRC/fuzz_test.go ./validate
+go mod tidy
+printf "package validate\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./validate/register.go
+go mod tidy
+compile_native_go_fuzzer github.com/envoyproxy/protoc-gen-validate/validate FuzzTest FuzzTest

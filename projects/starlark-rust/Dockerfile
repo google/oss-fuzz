@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-bazel_build_fuzz_tests
+
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth 1 https://github.com/facebookexperimental/starlark-rust.git starlark-rust
+WORKDIR starlark-rust
+COPY build.sh $SRC/

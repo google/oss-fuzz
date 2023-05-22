@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
-bazel_build_fuzz_tests
+
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get install -y build-essential libncurses5-dev gnutls-dev bison zlib1g-dev ccache
+RUN git clone --depth=1 https://github.com/MariaDB/server
+WORKDIR server
+COPY build.sh *.c $SRC/
