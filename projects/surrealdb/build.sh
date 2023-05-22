@@ -32,3 +32,5 @@ do
     # Create fuzz corpus, but don't fail if there aren't any.
     zip $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip fuzz/fuzz_targets/${FUZZ_TARGET_NAME}_seed_corpus/* || true
 done
+
+find $SRC/surrealdb_website -name '*.surql' -exec zip -r $OUT/fuzz_executor_seed_corpus.zip {} \;
