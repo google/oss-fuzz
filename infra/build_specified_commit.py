@@ -314,7 +314,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   # Change to oss-fuzz main directory so helper.py runs correctly.
   utils.chdir_to_root()
   if not _build_image_with_retries(project_name):
-    logging.error('Error: building %s image failed.', project_name)
+    logging.warning('Error: building %s image failed.', project_name)
     return None, None
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
