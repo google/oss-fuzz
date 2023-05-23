@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,10 @@
 #
 ################################################################################
 
-import sys
-import atheris
-
-import toml
-
-def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
-    try:
-        toml.decoder.loads(fdp.ConsumeString(sys.maxsize))
-    except toml.TomlDecodeError:
-        pass
-
-
-def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
-
-if __name__ == "__main__":
-    main()
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool m4 \
+                                         gettext help2man bison autopoint  \
+                                         lzip texinfo texlive flex
+RUN git clone --depth 1 https://github.com/westes/flex flex
+WORKDIR flex
+COPY build.sh *.c *.diff *.options $SRC/

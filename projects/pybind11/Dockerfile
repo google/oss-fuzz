@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-bazel_build_fuzz_tests
+FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && \
+    apt-get install -y python-is-python3 build-essential pip python3-dev
+RUN python3 -m pip install --upgrade pip
+
+RUN git clone https://github.com/pybind/pybind11
+COPY build.sh *_fuzzer.cc $SRC/
+
+WORKDIR $SRC/pybind11

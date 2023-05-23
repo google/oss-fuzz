@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,26 @@
 # limitations under the License.
 #
 ################################################################################
-bazel_build_fuzz_tests
+
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool default-jdk bison m4 \
+    build-essential\
+    curl \
+    doxygen \
+    flex \
+    libffi-dev \
+    libncurses5-dev \
+    libtool \
+    libsqlite3-dev \
+    mcpp \
+    sqlite \
+    uuid-runtime \
+    zlib1g-dev 
+RUN python3 -m pip install numpy
+RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildifier-linux-amd64 \
+    -O /usr/local/bin/buildifier && chmod a+x /usr/local/bin/buildifier
+
+RUN git clone https://github.com/tensorflow/serving serving
+
+COPY build.sh *.diff $SRC/
+WORKDIR $SRC/serving
