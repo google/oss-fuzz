@@ -17,7 +17,7 @@
 ################################################################################
 
 ./autogen.sh
-make install
+make install-libLTLIBRARIES
 
 # The media libraries has a significant set of dynamic library dependencies,
 # and to resolve this we copy them all over.
@@ -34,5 +34,6 @@ for f in $SRC/*_fuzzer.cc; do
     $SRC/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
     $LIB_FUZZING_ENGINE -lpthread $OUT/libffms2.so \
     $OUT/*.so*
+
   patchelf --set-rpath '$ORIGIN/' /out/${fuzzer}_fuzzer
 done

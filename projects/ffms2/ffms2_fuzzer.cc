@@ -16,6 +16,12 @@ limitations under the License.
 #include <sys/types.h>
 #include <unistd.h>
 
+
+/* Overwrite atexit to make linker happy */
+int atexit(void (*function)(void)) {
+  return 1;
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FFMS_Init(0, 0);
 
