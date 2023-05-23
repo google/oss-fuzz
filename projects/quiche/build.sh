@@ -67,11 +67,12 @@ bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //quiche:
 cp bazel-bin/quiche/http_frame_fuzzer $OUT/
 
 TARGET_FUZZER="http_frame_fuzzer@Http2FrameDecoderFuzzTest.fuzz_frame_decoder"
+
 echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 chmod +x \$this_dir/http_frame_fuzzer
-\$this_dir/http_frame_fuzzer --fuzz=Http2FrameDecoderFuzzTest.fuzz_frame_decoder" > $OUT/${TARGET_FUZZER}
+\$this_dir/http_frame_fuzzer --fuzz=Http2FrameDecoderFuzzTest.fuzz_frame_decode  -- -- \$@" > $OUT/${TARGET_FUZZER}
 chmod +x $OUT/${TARGET_FUZZER}
 patchelf --set-rpath '$ORIGIN/'  $OUT/http_frame_fuzzer
 
