@@ -187,6 +187,8 @@ The list of fuzzing engines to use.
 By default, `libfuzzer`, `afl`, `honggfuzz`, and `centipede` are used. It is recommended to
 use all of them if possible. `libfuzzer` is required by OSS-Fuzz.
 
+`nallocfuzz` is an optional fuzzing engine to test for allocation failures.
+
 ### help_url (optional) {#help_url}
 A link to a custom help URL that appears in bug reports instead of the default
 [OSS-Fuzz guide to reproducing crashes]({{ site.baseurl }}/advanced-topics/reproducing/). This can be useful if you assign
