@@ -118,7 +118,8 @@ Any changes to this list must follow these rules:
 - An organization email address is used.
 
 ### sanitizers (optional) {#sanitizers}
-The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a default list of supported
+The list of sanitizers to use. Possible values are: `address`, `memory` and `undefined`.
+If you don't specify a list, `sanitizers` uses a default list of supported
 sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.html) and
 ["undefined"](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)).
 
