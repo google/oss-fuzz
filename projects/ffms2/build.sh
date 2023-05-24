@@ -35,5 +35,5 @@ for f in $SRC/*_fuzzer.cc; do
     $LIB_FUZZING_ENGINE -lpthread $OUT/libffms2.so \
     $OUT/*.so*
 
-  patchelf --set-rpath '$ORIGIN/' /out/${fuzzer}_fuzzer
+  patchelf --set-rpath '$ORIGIN/' $OUT/${fuzzer}_fuzzer
 done
