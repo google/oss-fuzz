@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>3.4.10</version>
         </dependency>
 
         <dependency>
