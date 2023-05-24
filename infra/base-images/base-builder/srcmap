@@ -35,7 +35,7 @@ fi
 for DOT_GIT_DIR in $(find $PATHS_TO_SCAN -name ".git" -type d); do
   GIT_DIR=$(dirname $DOT_GIT_DIR)
   cd $GIT_DIR
-  GIT_URL=$(git config --get remote.origin.url)
+  GIT_URL=$(git config --get remote.$(git remote | head -1).url)
   GIT_REV=$(git rev-parse HEAD)
   jq_inplace $SRCMAP ".\"$GIT_DIR\" = { type: \"git\", url: \"$GIT_URL\", rev: \"$GIT_REV\" }"
 done
