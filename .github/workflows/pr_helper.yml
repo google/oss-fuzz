@@ -1,0 +1,44 @@
+name: PR helper
+on:
+  pull_request:
+    types:
+      - opened
+    paths:
+      - 'projects/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check if authors are authorized to modify.
+      id: checkAuthor
+      uses: ./infra/tools/py_actions/
+      with:
+        githubToken: ${{secrets.GITHUB_TOKEN}}
+        prAuthor: ${{ github.event.pull_request.user.login }}
+        prNumber: ${{ github.event.pull_request.number }} 
+
+    - name: Leave comments
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '${{ steps.checkAuthor.outputs.message }}'
+          })
+
+    - name: Add labels for valid PR
+      if: steps.checkAuthor.outputs.is_ready_for_merge == 'True'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.addLabels({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: ["Ready for merge"]
+          })

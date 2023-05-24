@@ -1,0 +1,23 @@
+name: 'PR helper'
+description: 'Add comments to indicate if authors are authorized.'
+inputs:
+  githubToken: 
+    description: 'The github action token.'
+    required: true
+    default: ''
+  prAuthor: 
+    description: 'The PR author.'
+    required: true
+    default: ''
+  prNumber: 
+    description: 'The PR number.'
+    required: true
+    default: ''
+outputs:
+  is_ready_for_merge:
+    description: "Output if the current PR is ready for merge."
+  message:
+    description: "Output the message."
+runs:
+  using: "docker"
+  image: "Dockerfile"
