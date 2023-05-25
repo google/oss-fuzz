@@ -11,7 +11,7 @@
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>2.7.0</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>3.0.0</fuzzedLibaryVersion>
 		<exec.mainClass>HtmlPageFuzzer</exec.mainClass>
 	</properties>
 	<dependencies>
