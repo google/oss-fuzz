@@ -48,6 +48,7 @@ RUN cd sof && west update
 # origin/commit info for .git directories automatically.  But it
 # assumes that the remote is named "origin", which is not true for
 # west (by design!).  Fix up a fake "origin"
+# FIXME: can remove this once srcmap.json support exists in the base image
 RUN cd sof; sh -c "$(west list -f '(cd {path}; git remote add origin {url});' | sed 1d)"
 
 # Zephyr has its own python requirements
@@ -73,3 +74,8 @@ RUN ln -s /usr/bin/strip /usr/local/bin/llvm-strip
 RUN touch empty.c; gcc -m32 -c empty.c; ar rs /usr/lib32/libstdc++.a empty.o
 
 COPY build.sh $SRC/
+
+# Could probably move this logic into build.sh?  It's not clear to me
+# if srcmap can be run before build.sh or not.
+COPY gen-srcmap.sh $SRC/
+RUN $SRC/gen-srcmap.sh > $SRC/srcmap.json
