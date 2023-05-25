@@ -5,4 +5,5 @@ pylint==2.5.3
 pytest==7.1.2
 pytest-xdist==2.5.0
 PyYAML==6.0
+requests==2.31.0
 yapf==0.32.0

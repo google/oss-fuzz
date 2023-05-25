@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-"""Script for implement PR helper."""
-import os
+"""Adds comments for PR to provide more information for approvers."""
 import base64
+import os
+
 import requests
 import yaml
 
@@ -68,7 +69,7 @@ def has_author_modified_project(project_path, pr_author, headers):
   return True, commit['sha']
 
 
-def get_pulls_url(commit, headers):
+def get_pull_request_url(commit, headers):
   """Gets the pull request url."""
   pr_response = requests.get(
       f'{BASE_URL}/commits/{commit}/pulls', headers=headers)
@@ -77,21 +78,36 @@ def get_pulls_url(commit, headers):
   return pr_response.json()[0]['html_url']
 
 
-def save_output(message, is_ready_for_merge):
-  """Saves the github output."""
-  with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-    print(f'message={message}', file=fh)
-    print(f'is_ready_for_merge={is_ready_for_merge}', file=fh)
+def is_author_internal_member(pr_author):
+  """Returns if the author is an internal member."""
+  internal_members = [
+    'Alan32Liu', 'hogo6002', 'jonathanmetzman', 'oliverchang']
+  if pr_author in internal_members:
+    save_env(None, None, True)
+    return True
+  return False
+
+
+def save_env(message, is_ready_for_merge, is_internal = False):
+  """Saves the outputs as environment variables."""
+  with open(os.environ['GITHUB_ENV'], 'a') as fh:
+    fh.write(f'MESSAGE={message}\n')
+    fh.write(f'IS_READY_FOR_MERGE={is_ready_for_merge}')
+    fh.write(f'IS_INTERNAL={is_internal}')
 
 
 def main():
   """Verifies if a PR is ready for merge."""
-  token = os.environ["INPUT_GITHUBTOKEN"]
-  pr_author = os.environ["INPUT_PRAUTHOR"]
-  pr_number = os.environ["INPUT_PRNUMBER"]
-  headers = {'Authorization': 'Bearer ' + token,
+  token = os.environ['GITHUBTOKEN']
+  pr_author = os.environ['PRAUTHOR']
+  pr_number = os.environ['PRNUMBER']
+  headers = {'Authorization': f'Bearer {token}',
              'X-GitHub-Api-Version': '2022-11-28'
              }
+
+  # Bypasses PRs of the internal members.
+  if is_author_internal_member(pr_author):
+    return
 
   # Gets the current project path.
   project_path = get_project_path(pr_number, headers)
@@ -100,9 +116,9 @@ def main():
   content_dict = get_project_yaml(project_path, headers)
   if content_dict is None:
     message = (f'@{pr_author} is adding a new project. '
-    f'The PR will be evaluated by the internal team before it can be merged. '
-    f'Please make sure to fill out all required information.')
-    save_output(message, False)
+    'The PR will be evaluated by the internal team before it can be merged. '
+    'Please make sure to fill out all required information.')
+    save_env(message, False)
     return
 
   primary_contact = content_dict['primary_contact']
@@ -111,29 +127,29 @@ def main():
   # Checks if the author is in contact list.
   if email == primary_contact or email in cc_contact:
     message = (f'@{pr_author} is either the primary contact or '
-    f'is in the auto CCs list.')
-    save_output(message, True)
+    'is in the auto CCs list.')
+    save_env(message, True)
     return
 
   # Checks the previous commits.
-  has_commit =  has_author_modified_project(project_path, pr_author, headers)
+  has_commit = has_author_modified_project(project_path, pr_author, headers)
   if not has_commit:
     message = (f'@{pr_author} is a new contributor to this project. '
-    f'The PR must be approved by known contributors before it can be merged. '
+    'The PR must be approved by known contributors before it can be merged. '
     f'The primary contact is {primary_contact}.')
-    save_output(message, False)
+    save_env(message, False)
     return
 
   commit = has_commit[1]
   message = (f'@{pr_author} has previously contributed to this project. '
   f'The previous commit was https://github.com/{OWNER}/{REPO}/commit/{commit}')
 
-  pr_url = get_pulls_url(commit, headers)
+  pr_url = get_pull_request_url(commit, headers)
   if pr_url is not None:
     message = (f'@{pr_author} has previously contributed to this project. '
     f'The previous PR was {pr_url}')
-  save_output(message, True)
+  save_env(message, True)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
