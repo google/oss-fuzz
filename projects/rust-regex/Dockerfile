@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 https://github.com/rust-lang/regex regex
 WORKDIR $SRC
 
-COPY build.sh $SRC/
+RUN cp regex/fuzz/oss-fuzz-build.sh $SRC/build.sh

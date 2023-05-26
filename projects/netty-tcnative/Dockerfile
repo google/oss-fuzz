@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +13,18 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/regex
-cargo fuzz build -O 
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_regex_match $OUT/
+
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+
+RUN apt install autoconf automake libtool build-essential xutils-dev libapr1-dev libapr1 ninja-build golang pkg-config -y
+
+RUN git clone https://github.com/netty/netty-tcnative netty-tcnative
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java *.diff $SRC/
+WORKDIR $SRC/netty-tcnative

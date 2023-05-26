@@ -16,8 +16,6 @@
 ################################################################################
 
 # Temporarily disable randomization and enforce a safe and sane setup
-export AFL_SKIP_OSSFUZZ=1
-export AFL_LLVM_INSTRUMENT=CLASSIC
 
 # In emergencies where afl++'s own compiler fails set this to "1":
 export AFL_LLVM_MODE_WORKAROUND=0
@@ -46,76 +44,6 @@ export AFL_IGNORE_PROBLEMS=1
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
 
-# To analyze build failures and set specific AFL++ settings, set
-# `export AFL_SKIP_OSSFUZZ=1`
-# The 'env|grep' setup ensures we do not trigger the linter.
-env | egrep -q '^AFL_SKIP_OSSFUZZ=' || {
-
-  # The variables need to be set to "1" here - or before running this script.
-  # AFL++ configuration options.
-  export AFL_ENABLE_DICTIONARY=0
-  export AFL_ENABLE_CMPLOG=1
-  export AFL_LAF_CHANCE=5
-
-  #
-  # AFL++ compile option roulette. It is OK if they all happen together.
-  #
-
-  # 20% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
-  # edge coverage).
-  test $(($RANDOM % 100)) -lt 20 && {
-    export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
-    export AFL_ENABLE_CMPLOG=0
-    # we increase the chance for LAF because we do not do CMPLOG with CTX
-    export AFL_LAF_CHANCE=20
-  }
-
-  # 40% chance to create a dictionary.
-  test $(($RANDOM % 100)) -lt 40 && {
-    export AFL_ENABLE_DICTIONARY=1
-  }
-
-  # 60% chance to perform CMPLOG/REDQUEEN.
-  rm -f "$OUT/afl_cmplog.txt"
-  test "$AFL_ENABLE_CMPLOG" = "1" -a $(($RANDOM % 100)) -lt 60 && {
-    export AFL_LLVM_CMPLOG=1
-    touch "$OUT/afl_cmplog.txt"
-  }
-
-  # chance to perform COMPCOV/LAF_INTEL - if CMPLOG is not enabled.
-  test $(($RANDOM % 100)) -lt $AFL_LAF_CHANCE -a "$AFL_ENABLE_CMPLOG" = "0" && {
-    export AFL_LLVM_LAF_ALL=1
-  }
-
-  #
-  # End of AFL++ compile option roulette
-  #
-
-  # Create a dictionary if one is wanted.
-  test "$AFL_ENABLE_DICTIONARY" = "1" && {
-    export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
-  }
-
-}
-
-# In case afl-clang-fast ever breaks, this is a workaround:
-test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
-  export CC=clang
-  export CXX=clang++
-  WORKAROUND_FLAGS=-fsanitize-coverage=trace-pc-guard
-  # We can still do CMPLOG light:
-  test -e "$OUT/afl_cmplog.txt" && {
-    WORKAROUND_FLAGS="$WORKAROUND_FLAGS",trace-cmp
-  }
-  export CFLAGS="$CFLAGS $WORKAROUND_FLAGS"
-  export CXXFLAGS="$CXXFLAGS $WORKAROUND_FLAGS"
-  unset AFL_LLVM_LAF_ALL
-  unset AFL_LLVM_DICT2FILE
-  unset AFL_ENABLE_DICTIONARY
-  # We need to create a new fuzzer lib however.
-  ar ru libAFLDrivernew.a afl-compiler-rt.o utils/aflpp_driver/aflpp_driver.o
-  cp -f libAFLDrivernew.a $LIB_FUZZING_ENGINE
-}
 
 # Provide a way to document the AFL++ options used in this build:
 echo
