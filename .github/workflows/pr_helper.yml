@@ -4,6 +4,8 @@ on:
     types: [opened, reopened]
     paths:
       - 'projects/**'
+    branches:
+      - 'test_helper/**'
 
 jobs:
   build:
@@ -53,5 +55,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ["Ready for merge"]
+              labels: ['Ready for merge']
             })
