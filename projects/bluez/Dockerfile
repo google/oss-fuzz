@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     libdbus-1-dev systemd
 
 RUN pip3 install -U meson ninja
+RUN git clone git://git.kernel.org/pub/scm/libs/ell/ell.git
 RUN git clone --depth 1 https://github.com/bluez/bluez bluez
 RUN git clone https://github.com/GNOME/glib  && \
     cd glib && \
