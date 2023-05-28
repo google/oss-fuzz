@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets
+RUN rm -rf bitcoin-core/assets/.git  # Remove git history to save storage
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
