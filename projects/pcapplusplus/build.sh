@@ -27,7 +27,7 @@ make -j$(nproc)
 # Build PcapPlusPlus linking statically against the built libpcap
 cd $SRC/PcapPlusPlus
 LIBPCAP_PATH=$SRC/libpcap/
-cmake -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_TESTS=ON -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_INCLUDE_DIR="${LIBPCAP_PATH}/" -DPCAP_LIBRARY="${LIBPCAP_PATH}/libpcap.a" -S . -B $TARGETS_DIR
+cmake -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_TESTS=OFF -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_INCLUDE_DIR="${LIBPCAP_PATH}/" -DPCAP_LIBRARY="${LIBPCAP_PATH}/libpcap.a" -S . -B $TARGETS_DIR
 cmake --build $TARGETS_DIR -j
 
 # Copy target and options
