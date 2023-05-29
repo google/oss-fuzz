@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y make libtool pkg-config vim libreadline
 RUN git clone --recursive --depth 1 git://git.ghostscript.com/jbig2dec.git jbig2dec
 RUN mkdir tests
 RUN cp $SRC/jbig2dec/annex-h.jbig2 tests/annex-h.jb2
+RUN cd tests && wget -O t89-halftone.zip 'https://git.ghostscript.com/?p=tests.git;a=blob;f=jbig2/t89-halftone.zip;hb=HEAD' && unzip t89-halftone.zip
+RUN cd tests && wget -O jb2streams.zip 'https://git.ghostscript.com/?p=tests.git;a=blob;f=jbig2/jb2streams.zip;hb=HEAD' && unzip jb2streams.zip
 RUN cd tests && zip -q $SRC/jbig2_fuzzer_seed_corpus.zip *.jb2
 RUN rm -rf tests
 COPY *.dict $SRC/
