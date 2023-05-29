@@ -2,10 +2,10 @@ name: PR helper
 on:
   pull_request:
     types: [opened, reopened]
+    branches:
+      - 'tests/**'
     paths:
       - 'projects/**'
-    branches:
-      - 'test_helper/**'
 
 jobs:
   build:

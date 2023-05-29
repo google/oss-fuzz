@@ -17,6 +17,7 @@
 """Adds comments for PR to provide more information for approvers."""
 import base64
 import os
+import subprocess
 
 import requests
 import yaml
@@ -24,7 +25,8 @@ import yaml
 OWNER = 'google'
 REPO = 'oss-fuzz'
 GITHUB_URL = 'https://github.com/'
-BASE_URL = f'https://api.github.com/repos/{OWNER}/{REPO}'
+API_URL = 'https://api.github.com'
+BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
 
 
@@ -52,13 +54,60 @@ def get_author_email(pr_number, headers):
 
 def get_project_yaml(project_path, headers):
   """Gets the project yaml file."""
-  project_response = requests.get(
-      f'{BASE_URL}/contents/{project_path}/project.yaml', headers=headers)
-  if project_response.status_code != 200:
-    return None
+  contents_url = f'{BASE_URL}/contents/{project_path}/project.yaml'
+  return get_yaml_file_content(contents_url, headers)
 
-  content = base64.b64decode(project_response.json()['content']).decode('UTF-8')
+
+def get_yaml_file_content(contents_url, headers):
+  """Gets yaml file content."""
+  response = requests.get(contents_url, headers=headers)
+  if not response.ok:
+    return None
+  content = base64.b64decode(response.json()['content']).decode('UTF-8')
   return yaml.safe_load(content)
+
+
+def get_integrated_project_info(pr_number, headers):
+  """Gets the new integrated project."""
+  response = requests.get(f'{BASE_URL}/pulls/{pr_number}/files',
+                          headers=headers)
+
+  for file in response.json():
+    file_path = file['filename']
+    if 'project.yaml' in file_path:
+      content = get_yaml_file_content(file['contents_url'], headers)
+      return content
+  return None
+
+
+def get_criticality_score(repo_url):
+  """Gets the criticality score of the project."""
+  report = subprocess.run(
+      ['criticality_score', '--format', 'json', '--repo', repo_url],
+      capture_output=True,
+      text=True)
+  content = report.stderr.split('\n')
+  scores = {}
+  for entry in content:
+    kv_entry = entry.split(': ')
+    if len(kv_entry) == 2:
+      key = kv_entry[0].strip().replace(',', '').replace('"', '')
+      value = kv_entry[1].strip().replace(',', '')
+      scores[key] = value
+
+  return scores['criticality_score']
+
+
+def is_known_contributor(content, email):
+  """Checks if the author is in the contact list."""
+  if content.get('primary_contact') == email:
+    return True
+  if content.get('vendor_ccs') is not None and email in content.get(
+      'vendor_ccs'):
+    return True
+  if content.get('auto_ccs') is not None and email in content.get('auto_ccs'):
+    return True
+  return False
 
 
 def has_author_modified_project(project_path, pr_author, headers):
@@ -67,7 +116,7 @@ def has_author_modified_project(project_path, pr_author, headers):
       f'{BASE_URL}/commits?path={project_path}&author={pr_author}',
       headers=headers)
 
-  if commits_response.status_code != 200:
+  if not commits_response.ok:
     return False
 
   commit = commits_response.json()[0]
@@ -78,15 +127,17 @@ def get_pull_request_url(commit, headers):
   """Gets the pull request url."""
   pr_response = requests.get(f'{BASE_URL}/commits/{commit}/pulls',
                              headers=headers)
-  if pr_response.status_code != 200:
+  if not pr_response.ok:
     return None
   return pr_response.json()[0]['html_url']
 
 
-def is_author_internal_member(pr_author):
+def is_author_internal_member(pr_author, headers):
   """Returns if the author is an internal member."""
-  internal_members = []
-  if pr_author in internal_members:
+  member_response = requests.get(
+      f'{API_URL}/orgs/google/teams/gosst/memberships/{pr_author}',
+      headers=headers)
+  if member_response.ok:
     save_env(None, None, True)
     return True
   return False
@@ -105,6 +156,7 @@ def main():
   token = os.environ['GITHUBTOKEN']
   pr_author = os.environ['PRAUTHOR']
   pr_number = os.environ['PRNUMBER']
+  os.environ['GITHUB_AUTH_TOKEN'] = token
   headers = {
       'Authorization': f'Bearer {token}',
       'X-GitHub-Api-Version': '2022-11-28'
@@ -113,7 +165,7 @@ def main():
   is_ready_for_merge = True
 
   # Bypasses PRs of the internal members.
-  if is_author_internal_member(pr_author):
+  if is_author_internal_member(pr_author, headers):
     return
 
   # Gets all modified projects path.
@@ -124,19 +176,26 @@ def main():
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
     content_dict = get_project_yaml(project_path, headers)
     if content_dict is None:
+      is_ready_for_merge = False
+      new_project = get_integrated_project_info(pr_number, headers)
+      if new_project is not None:
+        message += (f'@{pr_author} is integrating a new project:<br/>'
+                    '- Main repo: {}<br/>'
+                    '- Criticality score: {}<br/>').format(
+                        new_project['main_repo'],
+                        get_criticality_score(new_project['main_repo']))
+        continue
+
       message += (f'@{pr_author} is integrating a new project. '
                   'The PR will be evaluated by the internal team '
                   'before it can be merged.<br/>')
-      is_ready_for_merge = False
       continue
 
-    primary_contact = content_dict['primary_contact']
-
-    # Checks if the author is in contact list.
-    if email == primary_contact or email in content_dict.get('auto_ccs'):
+    # Checks if the author is in the contact list.
+    if is_known_contributor(content_dict, email):
       message += (
           f'@{pr_author} is either the primary contact or '
-          f'is in the auto CCs list for [{project_path}]({project_url}).<br/>')
+          f'is in the CCs list of [{project_path}]({project_url}).<br/>')
       continue
 
     # Checks the previous commits.
@@ -145,11 +204,9 @@ def main():
       message += (
           f'@{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
-          'contributors before it can be merged. '
-          f'The primary contact is {primary_contact}.<br/>')
+          'contributors before it can be merged. ')
       is_ready_for_merge = False
       continue
-
     commit = has_commit[1]
     pr_message = (f'@{pr_author} has previously contributed to '
                   f'[{project_path}]({project_url}). The previous commit was '
