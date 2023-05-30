@@ -129,12 +129,10 @@ def get_pull_request_url(commit, headers):
   return pr_response.json()[0]['html_url']
 
 
-def is_author_internal_member(pr_author, headers):
+def is_author_internal_member(pr_author):
   """Returns if the author is an internal member."""
-  member_response = requests.get(
-      f'{API_URL}/orgs/google/teams/gosst/memberships/{pr_author}',
-      headers=headers)
-  if member_response.ok:
+  internal_members = ['Alan32Liu', 'hogo6002', 'jonathanmetzman', 'oliverchang']
+  if pr_author in internal_members:
     save_env(None, None, True)
     return True
   return False
@@ -162,7 +160,7 @@ def main():
   is_ready_for_merge = True
 
   # Bypasses PRs of the internal members.
-  if is_author_internal_member(pr_author, headers):
+  if is_author_internal_member(pr_author):
     return
 
   # Gets all modified projects path.
@@ -197,7 +195,7 @@ def main():
       message += (
           f'@{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
-          'contributors before it can be merged. ')
+          'contributors before it can be merged.<br/>')
       is_ready_for_merge = False
       continue
     commit_sha = has_commit[1]
