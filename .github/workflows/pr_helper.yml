@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened]
     branches:
-      - 'tests/**'
+      - add_helper
     paths:
       - 'projects/**'
 

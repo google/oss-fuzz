@@ -48,6 +48,8 @@ def get_author_email(pr_number, headers):
   including non-public emails."""
   commits_response = requests.get(f'{BASE_URL}/pulls/{pr_number}/commits',
                                   headers=headers)
+  if not commits_response.ok:
+    return None
   email = commits_response.json()[0]['commit']['author']['email']
   return email
 
@@ -62,7 +64,7 @@ def get_yaml_file_content(contents_url, headers):
   """Gets yaml file content."""
   response = requests.get(contents_url, headers=headers)
   if not response.ok:
-    return None
+    return {}
   content = base64.b64decode(response.json()['content']).decode('UTF-8')
   return yaml.safe_load(content)
 
@@ -75,8 +77,8 @@ def get_integrated_project_info(pr_number, headers):
   for file in response.json():
     file_path = file['filename']
     if 'project.yaml' in file_path:
-      content = get_yaml_file_content(file['contents_url'], headers)
-      return content
+      return get_yaml_file_content(file['contents_url'], headers)
+
   return None
 
 
@@ -95,19 +97,16 @@ def get_criticality_score(repo_url):
       value = kv_entry[1].strip().replace(',', '')
       scores[key] = value
 
-  return scores['criticality_score']
+  return scores.get('criticality_score', 'N/A')
 
 
 def is_known_contributor(content, email):
   """Checks if the author is in the contact list."""
-  if content.get('primary_contact') == email:
-    return True
-  if content.get('vendor_ccs') is not None and email in content.get(
-      'vendor_ccs'):
-    return True
-  if content.get('auto_ccs') is not None and email in content.get('auto_ccs'):
-    return True
-  return False
+  return (
+      email == content.get('primary_contact') or
+      email in content.get('vendor_ccs', []) or
+      email in content.get('auto_ccs', [])
+  )
 
 
 def has_author_modified_project(project_path, pr_author, headers):
@@ -175,20 +174,16 @@ def main():
   for project_path in projects_path:
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
     content_dict = get_project_yaml(project_path, headers)
-    if content_dict is None:
+
+    # Gets information for the new integrating project
+    if not content_dict:
       is_ready_for_merge = False
       new_project = get_integrated_project_info(pr_number, headers)
-      if new_project is not None:
+      repo_url = new_project.get('main_repo')
+      if repo_url is not None:
         message += (f'@{pr_author} is integrating a new project:<br/>'
-                    '- Main repo: {}<br/>'
-                    '- Criticality score: {}<br/>').format(
-                        new_project['main_repo'],
-                        get_criticality_score(new_project['main_repo']))
-        continue
-
-      message += (f'@{pr_author} is integrating a new project. '
-                  'The PR will be evaluated by the internal team '
-                  'before it can be merged.<br/>')
+                    f'- Main repo: {repo_url}<br/> - Criticality score: '
+                    f'{get_criticality_score(repo_url)}<br/>')
       continue
 
     # Checks if the author is in the contact list.
@@ -207,12 +202,14 @@ def main():
           'contributors before it can be merged. ')
       is_ready_for_merge = False
       continue
-    commit = has_commit[1]
+    commit_sha = has_commit[1]
+
+    # If the previous commit is not associated with a pull request.
     pr_message = (f'@{pr_author} has previously contributed to '
                   f'[{project_path}]({project_url}). The previous commit was '
-                  f'{GITHUB_URL}/{OWNER}/{REPO}/commit/{commit}<br/>')
+                  f'{GITHUB_URL}/{OWNER}/{REPO}/commit/{commit_sha}<br/>')
 
-    pr_url = get_pull_request_url(commit, headers)
+    pr_url = get_pull_request_url(commit_sha, headers)
     if pr_url is not None:
       pr_message = (f'@{pr_author} has previously contributed to '
                     f'[{project_path}]({project_url}). '
