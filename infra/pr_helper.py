@@ -102,11 +102,9 @@ def get_criticality_score(repo_url):
 
 def is_known_contributor(content, email):
   """Checks if the author is in the contact list."""
-  return (
-      email == content.get('primary_contact') or
-      email in content.get('vendor_ccs', []) or
-      email in content.get('auto_ccs', [])
-  )
+  return (email == content.get('primary_contact') or
+          email in content.get('vendor_ccs', []) or
+          email in content.get('auto_ccs', []))
 
 
 def has_author_modified_project(project_path, pr_author, headers):
