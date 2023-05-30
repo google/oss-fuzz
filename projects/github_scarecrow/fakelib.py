@@ -8,6 +8,6 @@ def do_something(data):
     if not data:
         return
     if data[0]:
-        print('hi')
+        print('hello')
     else:
         print('bye')
