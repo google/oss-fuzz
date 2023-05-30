@@ -20,6 +20,7 @@ with atheris.instrument_imports():
      from adal.util import *
 
 def TestInput(data):
+    """Add a minor change to test PR helper function"""
     fdp = atheris.FuzzedDataProvider(data)
 
     is_http_success(fdp.ConsumeInt(10))
