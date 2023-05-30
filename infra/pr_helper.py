@@ -113,7 +113,7 @@ def has_author_modified_project(project_path, pr_author, headers):
       f'{BASE_URL}/commits?path={project_path}&author={pr_author}',
       headers=headers)
 
-  if not commits_response.ok:
+  if not commits_response.ok or not commits_response.json():
     return False
 
   commit = commits_response.json()[0]
