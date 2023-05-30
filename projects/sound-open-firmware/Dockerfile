@@ -44,6 +44,12 @@ WORKDIR $SRC
 RUN west init -m https://github.com/thesofproject/sof sof
 RUN cd sof && west update
 
+# Sort of a kludge: oss-fuzz has a "srcmap" tool to generate
+# origin/commit info for .git directories automatically.  But it
+# assumes that the remote is named "origin", which is not true for
+# west (by design!).  Fix up a fake "origin"
+RUN cd sof; sh -c "$(west list -f '(cd {path}; git remote add origin {url});' | sed 1d)"
+
 # Zephyr has its own python requirements
 RUN pip3 install -r sof/zephyr/scripts/requirements-base.txt
 

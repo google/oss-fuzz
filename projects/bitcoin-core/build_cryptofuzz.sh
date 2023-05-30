@@ -95,14 +95,6 @@ export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
 # Build Cryptofuzz
 cd $SRC/cryptofuzz
-( # Temporary workaround for clang-15 bug, see https://github.com/google/oss-fuzz/pull/8313#issuecomment-1223234359
-echo 'ZGlmZiAtLWdpdCBhL211dGF0b3Jwb29sLmggYi9tdXRhdG9ycG9vbC5oCmluZGV4IDIwMDA3YWUu
-LmFiMGVkMjggMTAwNjQ0Ci0tLSBhL211dGF0b3Jwb29sLmgKKysrIGIvbXV0YXRvcnBvb2wuaApA
-QCAtMTAzLDcgKzEwMyw3IEBAIHR5cGVkZWYgc3RydWN0IHsKIH0gRnAxMjsKIGV4dGVybiBNdXRh
-dG9yUG9vbDxGcDEyLCBjcnlwdG9mdXp6Ojpjb25maWc6OmtNdXRhdG9yUG9vbFNpemU+IFBvb2xf
-RnAxMjsKIAotdHlwZWRlZiBzdHJ1Y3QgewordHlwZWRlZiBzdHJ1Y3QgQU5PTl9TVFJVQ1RfYzFm
-NTg0MDFkMGQyNTlhYzM1M2NjYTM2MDdmOGVlZGYgewogICAgIHN0cnVjdCBHMSB7CiAgICAgICAg
-IHN0ZDo6c3RyaW5nIGcxX3g7CiAgICAgICAgIHN0ZDo6c3RyaW5nIGcxX3k7Cg=='|base64 --decode | patch -p 1 ; git diff ) || true
 python gen_repository.py
 rm extra_options.h
 echo -n '"' >>extra_options.h
