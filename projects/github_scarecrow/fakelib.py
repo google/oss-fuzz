@@ -25,4 +25,4 @@ def do_something(data):
     if data[0]:
         print('hello')
     else:
-        print('bye')
+        print('see you')
