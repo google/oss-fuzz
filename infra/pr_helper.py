@@ -16,6 +16,7 @@
 ################################################################################
 """Adds comments for PR to provide more information for approvers."""
 import base64
+import json
 import os
 import subprocess
 
@@ -84,20 +85,15 @@ def get_integrated_project_info(pr_number, headers):
 
 def get_criticality_score(repo_url):
   """Gets the criticality score of the project."""
-  report = subprocess.run(
-      ['criticality_score', '--format', 'json', '--repo', repo_url],
-      capture_output=True,
-      text=True)
-  content = report.stderr.split('\n')
-  scores = {}
-  for entry in content:
-    kv_entry = entry.split(': ')
-    if len(kv_entry) == 2:
-      key = kv_entry[0].strip().replace(',', '').replace('"', '')
-      value = kv_entry[1].strip().replace(',', '')
-      scores[key] = value
+  report = subprocess.run([
+      '/home/runner/go/bin/criticality_score', '--format', 'json',
+      '-gcp-project-id=clusterfuzz-external', '-depsdev-disable', repo_url
+  ],
+                          capture_output=True,
+                          text=True)
 
-  return scores.get('criticality_score', 'N/A')
+  report_dict = json.loads(report.stdout)
+  return report_dict.get('default_score', 'N/A')
 
 
 def is_known_contributor(content, email):
@@ -129,12 +125,18 @@ def get_pull_request_url(commit, headers):
   return pr_response.json()[0]['html_url']
 
 
-def is_author_internal_member(pr_author):
+def is_author_internal_member(pr_author, headers):
   """Returns if the author is an internal member."""
-  internal_members = ['Alan32Liu', 'hogo6002', 'jonathanmetzman', 'oliverchang']
-  if pr_author in internal_members:
-    save_env(None, None, True)
-    return True
+  response = requests.get(f'{BASE_URL}/contents/MAINTAINERS', headers=headers)
+  if not response.ok:
+    return False
+  maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
+  for line in maintainers.split('\n'):
+    print(f"username: {line.split(' @')[1]}")
+    if pr_author == line.split(' @')[1]:
+      save_env(None, None, True)
+      return True
+
   return False
 
 
@@ -160,7 +162,7 @@ def main():
   is_ready_for_merge = True
 
   # Bypasses PRs of the internal members.
-  if is_author_internal_member(pr_author):
+  if is_author_internal_member(pr_author, headers):
     return
 
   # Gets all modified projects path.

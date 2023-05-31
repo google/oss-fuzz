@@ -30,6 +30,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r infra/ci/requirements.txt
 
+      - name: setup go environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+      - run: go install github.com/ossf/criticality_score/cmd/criticality_score@latest
+
       - name: Check if authors are authorized to modify.
         id: checkAuthor
         env:
