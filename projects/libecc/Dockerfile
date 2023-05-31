@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip bsdmainutils
 RUN git clone --depth 1 --branch cryptofuzz https://github.com/libecc/libecc.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone https://github.com/wolfssl/wolfssl
