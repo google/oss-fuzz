@@ -53,6 +53,7 @@ cmake_args=(
     -DBUILD_SHARED_LIBS=OFF
     -DOSS_FUZZ=ON
     -DBUILD_FUZZERS=ON
+    -DBUILD_TESTING=ON
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
