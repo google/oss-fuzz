@@ -13,6 +13,6 @@ steps:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
-  timeout: 21600s # 6 hours
+  timeout: 86400s # 24 hours
 logsBucket: gs://oss-fuzz-trialbuild-logs
-timeout: 21600s
+timeout: 86400s # 24 hours
