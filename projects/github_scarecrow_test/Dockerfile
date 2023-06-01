@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,11 @@
 #
 ################################################################################
 
-# Install dependencies.
-npm install
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
-# Install Jazzer.js
-npm install --save-dev @jazzer.js/core
-
-# Build Fuzzers.
-#compile_javascript_fuzzer example fuzz_promise.js
-#compile_javascript_fuzzer example fuzz_string_compare.js --sync
-#compile_javascript_fuzzer example fuzz_value_profiling.js --sync
-compile_javascript_fuzzer ua-parser-js test/jazzer-fuzz-test.js --sync
+RUN pip3 install requests
+RUN git clone --depth 1 https://github.com/Alan32Liu/github-scarecrow.git $SRC/github-scarecrow
+WORKDIR $SRC/github-scarecrow
+RUN git clone --depth 1 https://github.com/google/oss-fuzz
+RUN cd oss-fuzz/infra/experimental/SystemSan && make
+COPY shell_injection_poc_fuzzer.py fakelib.py build.sh $SRC/

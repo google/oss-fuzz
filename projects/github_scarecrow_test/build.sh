@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2022 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,4 @@
 #
 ################################################################################
 
-# Install dependencies.
-npm install
-
-# Install Jazzer.js
-npm install --save-dev @jazzer.js/core
-
-# Build Fuzzers.
-#compile_javascript_fuzzer example fuzz_promise.js
-#compile_javascript_fuzzer example fuzz_string_compare.js --sync
-#compile_javascript_fuzzer example fuzz_value_profiling.js --sync
-compile_javascript_fuzzer ua-parser-js test/jazzer-fuzz-test.js --sync
+compile_python_fuzzer ../shell_injection_poc_fuzzer.py

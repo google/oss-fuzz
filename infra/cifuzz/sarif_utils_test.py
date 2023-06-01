@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for sarif_utils.py"""
+import copy
+import os
 import unittest
 from unittest import mock
 
 import sarif_utils
 
 CRASH_INFO_FILELINE = 403
+
+TEST_DATA = os.path.join(os.path.dirname(__file__), 'test_data')
 
 
 class GetSarifDataTest(unittest.TestCase):
@@ -30,6 +34,45 @@ class GetSarifDataTest(unittest.TestCase):
     """Tests get_sarif_data when there was no crash."""
     self.assertEqual(sarif_utils.get_sarif_data(None, '/root/target'),
                      sarif_utils.SARIF_DATA)
+
+  def test_ordinary_case(self):
+    stacktrace_filename = os.path.join(TEST_DATA,
+                                       'sarif_utils_systemd_stack.txt')
+    with open(stacktrace_filename, 'r') as fp:
+      stacktrace = fp.read()
+    expected_result = {
+        'level': 'error',
+        'message': {
+            'text': 'Heap-buffer-overflow\nREAD 4'
+        },
+        'locations': [{
+            'physicalLocation': {
+                'artifactLocation': {
+                    'uri': 'src/core/fuzz-unit-file.c',
+                    'index': 0
+                },
+                'region': {
+                    'startLine': 30,
+                    # We don't have this granualarity fuzzing.
+                    'startColumn': 1,
+                }
+            }
+        }],
+        'ruleId': 'heap-buffer-overflow',
+        'ruleIndex': 2
+    }
+    actual_result = sarif_utils.get_sarif_data(
+        stacktrace, '/root/target')['runs'][0]['results'][0]
+    self.assertEqual(actual_result, expected_result)
+
+  def test_llvmfuzzertestoneinput_case(self):
+    stacktrace_filename = os.path.join(TEST_DATA,
+                                       'sarif_utils_only_llvmfuzzer_stack.txt')
+    with open(stacktrace_filename, 'r') as fp:
+      stacktrace = fp.read()
+    actual_result = sarif_utils.get_sarif_data(
+        stacktrace, '/root/target')['runs'][0]['results']
+    self.assertEqual(actual_result, [])
 
 
 class RedactSrcPathTest(unittest.TestCase):

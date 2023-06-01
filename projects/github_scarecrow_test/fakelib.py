@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/usr/bin/env python
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
+RAN_ONCE = False
 
-# Install dependencies.
-npm install
-
-# Install Jazzer.js
-npm install --save-dev @jazzer.js/core
-
-# Build Fuzzers.
-#compile_javascript_fuzzer example fuzz_promise.js
-#compile_javascript_fuzzer example fuzz_string_compare.js --sync
-#compile_javascript_fuzzer example fuzz_value_profiling.js --sync
-compile_javascript_fuzzer ua-parser-js test/jazzer-fuzz-test.js --sync
+def do_something(data):
+    global RAN_ONCE
+    if not RAN_ONCE:
+        RAN_ONCE = True
+    if not data:
+        return
+    if data[0]:
+        print('hello')
+    else:
+        print('bye')

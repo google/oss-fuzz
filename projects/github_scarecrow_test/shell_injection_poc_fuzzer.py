@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2023 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 import atheris
-from markdown_it import MarkdownIt
-
+with atheris.instrument_imports():
+  import os
+  # To trick atheris
+  import fakelib
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  md = MarkdownIt()
-  raw_markdown = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  md.parse(raw_markdown)
-  md.render(raw_markdown)
-
+    fakelib.do_something(data)
+    if not data:
+        return
+    if not data[0]:
+        return
+    if any(0 == c for c in data):
+        return
+    try:
+        os.system(data)
+    except ValueError as e:
+        print(e)
+        return
+    return
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
-
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
 
 if __name__ == "__main__":
-  main()
+    main()

@@ -18,6 +18,9 @@
 # Install dependencies.
 npm install
 
+# Install Jazzer.js
+npm install --save-dev @jazzer.js/core
+
 # Build Fuzzers.
 compile_javascript_fuzzer example fuzz_promise.js
 compile_javascript_fuzzer example fuzz_string_compare.js --sync
