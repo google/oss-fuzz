@@ -18,4 +18,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
-  - centipede
+#  - centipede # temporarily disabled due to spurious "Step #22 - "build-check-centipede-none-x86_64": OSError: [Errno 28] No space left on device"
