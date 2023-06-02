@@ -194,52 +194,48 @@ def get_projects_to_build(specified_projects, build_type, force_build):
   return buildable_projects
 
 
-def _do_build_type_builds(args, config, credentials, build_type, projects):
-  """Does |build_type| test builds of |projects|."""
-  build_ids = {}
-  for project_name in projects:
-    logging.info('Getting steps for: "%s".', project_name)
-    try:
-      project_yaml, dockerfile_contents = (
-          build_project.get_project_data(project_name))
-    except FileNotFoundError:
-      logging.error('Couldn\'t get project data. Skipping %s.', project_name)
-      continue
+def _do_build_type_builds(args, config, credentials, build_type, projects, project_languages):
+    """Does |build_type| test builds of |projects|."""
+    build_ids = {}
+    for project_name in projects:
+        logging.info('Getting steps for: "%s".', project_name)
+        try:
+            project_yaml, dockerfile_contents = get_project_data(project_name, project_languages)
+        except FileNotFoundError:
+            logging.error('Couldn\'t get project data. Skipping %s.', project_name)
+            continue
 
-    build_project.set_yaml_defaults(project_yaml)
-    print(project_yaml['sanitizers'], args.sanitizers)
-    project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
-    project_yaml['sanitizers'] = list(
-        set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
+        build_project.set_yaml_defaults(project_yaml)
+        project_yaml_sanitizers = build_project.get_sanitizer_strings(project_yaml['sanitizers']) + ['coverage',
+                                                                                                       'introspector']
+        project_yaml['sanitizers'] = list(set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
-    project_yaml['fuzzing_engines'] = list(
-        set(project_yaml['fuzzing_engines']).intersection(
-            set(args.fuzzing_engines)))
+        project_yaml['fuzzing_engines'] = list(set(project_yaml['fuzzing_engines']).intersection(set(args.fuzzing_engines)))
 
-    if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
-      logging.info('Nothing to build for this project: %s.', project_name)
-      continue
+        if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
+            logging.info('Nothing to build for this project: %s.', project_name)
+            continue
 
-    steps = build_type.get_build_steps_func(project_name, project_yaml,
-                                            dockerfile_contents, config)
-    if not steps:
-      logging.error('No steps. Skipping %s.', project_name)
-      continue
+        steps = build_type.get_build_steps_func(project_name, project_yaml, dockerfile_contents, config)
+        if not steps:
+            logging.error('No steps. Skipping %s.', project_name)
+            continue
 
-    try:
-      build_ids[project_name] = (build_project.run_build(
-          project_name,
-          steps,
-          credentials,
-          build_type.type_name,
-          extra_tags=['trial-build', f'branch-{args.branch}']))
-      time.sleep(1)  # Avoid going over 75 requests per second limit.
-    except Exception as error:  # pylint: disable=broad-except
-      # Handle flake.
-      print('Failed to start build', project_name, error)
+        try:
+            build_ids[project_name] = (build_project.run_build(
+                project_name,
+                steps,
+                credentials,
+                build_type.type_name,
+                extra_tags=['trial-build', f'branch-{args.branch}']))
+            time.sleep(1)  
+            # Avoid going over 75 requests per second limit.
+        except Exception as error:
+            # Handle flake.
+            print('Failed to start build', project_name, error)
 
-  return build_ids
+    return build_ids
+
 
 
 def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
