@@ -18,7 +18,6 @@ import datetime
 import os
 import subprocess
 import threading
-
 import requests
 
 DATASTORE_READY_INDICATOR = b'is now running'
@@ -101,8 +100,9 @@ def reset_ds_emulator():
 
 def cleanup_emulator(ds_emulator):
   """Cleanup the system processes made by ds emulator."""
-  del ds_emulator  #To do, find a better way to cleanup emulator
-  os.system('pkill -f datastore')
+    ds_emulator.terminate()
+    ds_emulator.wait()
+    subprocess.run(['pkill', '-f', 'datastore'])
 
 
 def set_gcp_environment():
