@@ -40,7 +40,8 @@ def get_projects_path(pr_number, headers):
   for file in response.json():
     file_path = file['filename']
     dir_path = os.path.dirname(file_path)
-    projects_path.add(dir_path)
+    if 'projects' in dir_path:
+      projects_path.add(dir_path)
   return list(projects_path)
 
 
@@ -127,13 +128,15 @@ def get_pull_request_url(commit, headers):
 
 def is_author_internal_member(pr_author, headers):
   """Returns if the author is an internal member."""
-  response = requests.get(f'{BASE_URL}/contents/MAINTAINERS', headers=headers)
+  response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
+                          headers=headers)
   if not response.ok:
     return False
+
   maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
   for line in maintainers.split('\n'):
-    print(f"username: {line.split(' @')[1]}")
-    if pr_author == line.split(' @')[1]:
+    print(f"username: {line.split(',')[2]}")
+    if pr_author == line.split(',')[2]:
       save_env(None, None, True)
       return True
 
