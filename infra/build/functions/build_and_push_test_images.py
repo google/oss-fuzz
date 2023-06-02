@@ -22,11 +22,11 @@ import multiprocessing
 import os
 import subprocess
 import sys
-
 import yaml
-
 import base_images
 import build_lib
+import argparse
+
 
 CLOUD_PROJECT = 'oss-fuzz-base'
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -140,7 +140,19 @@ def build_and_push_images(test_image_suffix):
 def main():
   """Builds base-images tags them with "-testing" suffix (in addition to normal
   tag) and pushes testing suffixed images to docker registry."""
-  test_image_suffix = sys.argv[1]
+  parser = argparse.ArgumentParser()
+  parser.add_argument("test_image_suffix", help="Suffix for test images")
+  args = parser.parse_args()
+
+  test_image_suffix = args.test_image_suffix
+
+  # Validate the test image suffix
+  if not test_image_suffix:
+    print("Error: Test image suffix is required.")
+    sys.exit(1)
+
+  # Perform additional validation if necessary
+
   logging.basicConfig(level=logging.DEBUG)
   logging.info('Doing simple gcloud command to ensure 2FA passes.')
   subprocess.run(['gcloud', 'projects', 'list', '--limit=1'], check=True)
