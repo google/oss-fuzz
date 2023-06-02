@@ -15,35 +15,50 @@
 ################################################################################
 """Cloud datastore entity classes."""
 from google.cloud import ndb
+import re
+
+
+# Regular expression pattern for valid schedule format (e.g., "0 0 * * *")
+SCHEDULE_PATTERN = re.compile(r'^\d+\s\d+\s\d+\s\d+\s\d+$')
 
 
 # pylint: disable=too-few-public-methods
 class Project(ndb.Model):
-  """Represents an integrated OSS-Fuzz project."""
-  name = ndb.StringProperty()
-  schedule = ndb.StringProperty()
-  project_yaml_contents = ndb.TextProperty()
-  dockerfile_contents = ndb.TextProperty()
+    """Represents an integrated OSS-Fuzz project."""
+    name = ndb.StringProperty(required=True)
+    schedule = ndb.StringProperty(required=True)
+
+    @classmethod
+    def _validate_schedule(cls, prop, value):
+        if not SCHEDULE_PATTERN.match(value):
+            raise ValueError('Invalid schedule format')
+
+    project_yaml_contents = ndb.TextProperty(required=True)
+    dockerfile_contents = ndb.TextProperty(required=True)
+
+    _validators = {
+        'schedule': _validate_schedule
+    }
 
 
 # pylint: disable=too-few-public-methods
 class GithubCreds(ndb.Model):
-  """Represents GitHub credentials."""
-  client_id = ndb.StringProperty()
-  client_secret = ndb.StringProperty()
+    """Represents GitHub credentials."""
+    client_id = ndb.StringProperty(required=True)
+    client_secret = ndb.StringProperty(required=True)
 
 
 # pylint: disable=too-few-public-methods
 class BuildsHistory(ndb.Model):
-  """Container for build history of projects."""
-  build_tag = ndb.StringProperty()
-  project = ndb.StringProperty()
-  build_ids = ndb.StringProperty(repeated=True)
+    """Container for build history of projects."""
+    build_tag = ndb.StringProperty(required=True)
+    project = ndb.StringProperty(required=True)
+    build_ids = ndb.StringProperty(repeated=True)
 
 
 class LastSuccessfulBuild(ndb.Model):
-  """Container for storing last successful build of project."""
-  build_tag = ndb.StringProperty()
-  project = ndb.StringProperty()
-  build_id = ndb.StringProperty()
-  finish_time = ndb.StringProperty()
+    """Container for storing last successful build of project."""
+    build_tag = ndb.StringProperty(required=True)
+    project = ndb.StringProperty(required=True)
+    build_id = ndb.StringProperty(required=True)
+    finish_time = ndb.StringProperty(required=True)
