@@ -37,14 +37,14 @@ HttpINC=\
 	$(INCDIR)/iocore/net/quic \
 	$(INCDIR)/iocore/utils \
 	$(INCDIR)/lib \
-  $(INCDIR)/lib/swoc/include \
+	$(INCDIR)/lib/swoc/include \
 	$(INCDIR)/proxy/api \
 	$(INCDIR)/proxy/hdrs \
 	$(INCDIR)/proxy/http
 
 CoreLib=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/lib/yamlcpp \
-  $(LIBDIR)/lib/swoc/.libs/ -ltsswoc \
+	$(LIBDIR)/lib/swoc/.libs/ -ltsswoc \
 	$(LIBDIR)/proxy/hdrs -lhdrs \
 	$(LIBDIR)/proxy/http -lhttp \
 	$(LIBDIR)/src/tscore/.libs/ -ltscore \
