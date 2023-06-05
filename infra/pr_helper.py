@@ -68,12 +68,13 @@ def main():
   pr_author = github.get_pr_author()
 
   # Bypasses PRs of the internal members.
-  # if github.is_author_internal_member():
-  #   return
+  if github.is_author_internal_member():
+    save_env(None, None, True)
+    return
 
   # Gets all modified projects path.
   projects_path = github.get_projects_path()
-  email = github.get_author_email()
+  email_response = github.get_author_email()
 
   for project_path in projects_path:
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
@@ -95,11 +96,17 @@ def main():
       continue
 
     # Checks if the author is in the contact list.
-    if is_known_contributor(content_dict, email):
-      message += (
-          f'@{pr_author} is either the primary contact or '
-          f'is in the CCs list of [{project_path}]({project_url}).<br/>')
-      continue
+    if email_response[0] is not None:
+      if is_known_contributor(content_dict, email_response[1]):
+        # Checks if the email is verified.
+        if email_response[0]:
+          message += (
+              f'@{pr_author} is either the primary contact or '
+              f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+          continue
+        message += (f'@{pr_author} is either the primary contact or '
+                    f'is in the CCs list of [{project_path}]({project_url}), '
+                    'but their email is not verified.<br/>')
 
     # Checks the previous commits.
     has_commit = github.has_author_modified_project(project_path)
@@ -153,19 +160,27 @@ class GithubHandler:
     for file in response.json():
       file_path = file['filename']
       dir_path = os.path.dirname(file_path)
-      if dir_path is not None and dir_path.split('/')[0] == 'projects':
+      if dir_path is not None and dir_path.split(os.sep)[0] == 'projects':
         projects_path.add(dir_path)
     return list(projects_path)
 
   def get_author_email(self):
     """Retrieves the author's email address for a pull request,
     including non-public emails."""
+    user_response = requests.get(f'{API_URL}/users/{self._pr_author}')
+    if not user_response.ok:
+      return None
+    email = user_response.json()['email']
+    if email:
+      return True, email
+
     commits_response = requests.get(
         f'{BASE_URL}/pulls/{self._pr_number}/commits', headers=self._headers)
     if not commits_response.ok:
       return None
     email = commits_response.json()[0]['commit']['author']['email']
-    return email
+    verified = commits_response.json()[0]['commit']['verification']['verified']
+    return verified, email
 
   def get_project_yaml(self, project_path):
     """Gets the project yaml file."""
@@ -208,9 +223,8 @@ class GithubHandler:
       return False
 
     maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
-    for line in maintainers.split('\n'):
+    for line in maintainers.split(os.linesep):
       if self._pr_author == line.split(',')[2]:
-        save_env(None, None, True)
         return True
 
     return False
