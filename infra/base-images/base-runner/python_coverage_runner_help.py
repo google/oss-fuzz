@@ -32,7 +32,7 @@ def should_exclude_file(filepath):
     return True
 
   # Filter out all standard python libraries
-  if '/usr/local/lib/python' in filepath and 'site-packages' not in filepath:
+  if '/usr/local/lib/python' in filepath and 'site-packages' not in filepath and 'dist-packages' not in filepath:
     return True
 
   # Avoid all PyInstaller modules.
