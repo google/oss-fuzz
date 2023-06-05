@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/bazaarvoice/jolt
+language: jvm
+main_repo: https://github.com/bazaarvoice/jolt/
+sanitizers:
+- address
+vendor_ccs:
+- arthur.chan@adalogics.com
+- david@aalogics.com
+- adam@adalogics.com
