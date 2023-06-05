@@ -106,7 +106,8 @@ def main():
           continue
         message += (f'@{pr_author} is either the primary contact or '
                     f'is in the CCs list of [{project_path}]({project_url}), '
-                    'but their email is not verified.<br/>')
+                    f'but their email {email_response[1]} '
+                    'is not verified.<br/>')
 
     # Checks the previous commits.
     has_commit = github.has_author_modified_project(project_path)
@@ -168,11 +169,10 @@ class GithubHandler:
     """Retrieves the author's email address for a pull request,
     including non-public emails."""
     user_response = requests.get(f'{API_URL}/users/{self._pr_author}')
-    if not user_response.ok:
-      return None
-    email = user_response.json()['email']
-    if email:
-      return True, email
+    if user_response.ok:
+      email = user_response.json()['email']
+      if email:
+        return True, email
 
     commits_response = requests.get(
         f'{BASE_URL}/pulls/{self._pr_number}/commits', headers=self._headers)
