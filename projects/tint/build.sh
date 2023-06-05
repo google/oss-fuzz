@@ -38,6 +38,7 @@ fi
 # An un-instrumented build of spirv-as is used to generate a corpus of SPIR-V binaries.
 git clone --depth 1 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
 git clone https://github.com/KhronosGroup/SPIRV-Headers spirv-tools/external/spirv-headers --depth=1
+git clone https://github.com/abseil/abseil-cpp spirv-tools/external/abseil_cpp --depth=1
 mkdir -p out/spirv-tools-build
 pushd out/spirv-tools-build
 
