@@ -89,6 +89,11 @@ tint_mutation_batch_size = 5
 " > "$OUT/${fuzzer}.options"
 done
 
+# Clean up temporary directories and files
+rm -fr $WORK/spirv-corpus
+rm -fr $WORK/spirv-corpus-hashed-names
+rm $WORK/seed_corpus.zip
+
 # Now actually build tint
 
 cp scripts/standalone.gclient .gclient
