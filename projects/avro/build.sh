@@ -20,7 +20,7 @@ PROJECT_GROUP_ID=org.apache.avro
 PROJECT_ARTIFACT_ID=avro
 MAIN_REPOSITORY=https://github.com/apache/avro/
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=11 -Djavac.target.version=11 -DskipTests"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)

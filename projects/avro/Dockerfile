@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.8.1/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.2/bin/mvn
 
 # if not set python infra helper cannot be used for local testing
 
