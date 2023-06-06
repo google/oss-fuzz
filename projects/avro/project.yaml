@@ -5,6 +5,7 @@ fuzzing_engines:
 main_repo: "https://github.com/apache/avro"
 sanitizers:
   - address
+primary_contact: "mgrigorov@apache.org"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
