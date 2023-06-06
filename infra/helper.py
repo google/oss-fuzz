@@ -1201,7 +1201,7 @@ def coverage(args):
     if not download_corpora(args):
       return False
 
-  return coverage_impl(args.project, args.port, args.extra_args, args.corpus_dir, args.fuzz_target)
+  return coverage_impl(args.project, args.port, args.extra_args, args.corpus_dir, args.fuzz_target, args.architecture)
 
 def coverage_impl(project, port, extra_args, corpus_dir, fuzz_target, architecture):
   env = [
