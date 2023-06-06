@@ -1201,47 +1201,50 @@ def coverage(args):
     if not download_corpora(args):
       return False
 
+  return coverage_impl(args.project, args.port, args.extra_args, args.corpus_dir, args.fuzz_target)
+
+def coverage_impl(project, port, extra_args, corpus_dir, fuzz_target, architecture):
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'HELPER=True',
-      'FUZZING_LANGUAGE=%s' % args.project.language,
-      'PROJECT=%s' % args.project.name,
+      'FUZZING_LANGUAGE=%s' % project.language,
+      'PROJECT=%s' % project.name,
       'SANITIZER=coverage',
-      'HTTP_PORT=%s' % args.port,
-      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
-      'ARCHITECTURE=' + args.architecture,
+      'HTTP_PORT=%s' % port,
+      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(extra_args),
+      'ARCHITECTURE=' + architecture,
   ]
 
   run_args = _env_to_docker_args(env)
 
-  if args.port:
+  if port:
     run_args.extend([
         '-p',
-        '%s:%s' % (args.port, args.port),
+        '%s:%s' % (port, port),
     ])
 
-  if args.corpus_dir:
-    if not os.path.exists(args.corpus_dir):
+  if corpus_dir:
+    if not os.path.exists(corpus_dir):
       logger.error('The path provided in --corpus-dir argument does not '
                    'exist.')
       return False
-    corpus_dir = os.path.realpath(args.corpus_dir)
-    run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, args.fuzz_target)])
+    corpus_dir = os.path.realpath(corpus_dir)
+    run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, fuzz_target)])
   else:
-    run_args.extend(['-v', '%s:/corpus' % args.project.corpus])
+    run_args.extend(['-v', '%s:/corpus' % project.corpus])
 
   run_args.extend([
       '-v',
-      '%s:/out' % args.project.out,
+      '%s:/out' % project.out,
       '-t',
       BASE_RUNNER_IMAGE,
   ])
 
   run_args.append('coverage')
-  if args.fuzz_target:
-    run_args.append(args.fuzz_target)
+  if fuzz_target:
+    run_args.append(fuzz_target)
 
-  result = docker_run(run_args, architecture=args.architecture)
+  result = docker_run(run_args, architecture=architecture)
   if result:
     logger.info('Successfully generated clang code coverage report.')
   else:
