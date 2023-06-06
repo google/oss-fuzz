@@ -1,9 +1,9 @@
 diff --git a/pom.xml b/pom.xml
-index 03c5306e90..9d1466b531 100644
+index a5a8c2f082..70d01e306e 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -178,7 +178,7 @@
-                 <version>3.0.1</version>
+                 <version>3.1.0</version>
                  <executions>
                      <execution>
 -                        <phase>verify</phase>
@@ -15,15 +15,15 @@ index 03c5306e90..9d1466b531 100644
                  </configuration>
                  <executions>
                      <execution>
-+						<phase>none</phase>
++                        <phase>none</phase>
                          <goals>
                              <goal>check</goal>
                          </goals>
-@@ -253,6 +254,7 @@
+@@ -244,6 +245,7 @@
                  <version>1.17.0</version>
                  <executions>
                      <execution>
-+						<phase>none</phase>
++                        <phase>none</phase>
                          <goals>
                              <goal>check</goal>
                          </goals>

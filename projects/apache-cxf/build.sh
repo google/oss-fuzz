@@ -24,8 +24,12 @@ MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -Denforcer.skip=tru
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
-  # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  FUZZ_TARGET_DEPENDENCIES=":cxf-core :cxf-rt-frontend-jaxrs :cxf-rt-transports-http :cxf-rt-rs-client :cxf-rt-rs-json-basic"
+  
+  for dependency in $FUZZ_TARGET_DEPENDENCIES; do
+    # set dependency project version in fuzz-targets
+    (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID$dependency -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  done
 }
 
 cd project-parent

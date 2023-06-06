@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import unittest
@@ -26,6 +27,8 @@ import yaml
 import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VALID_PROJECT_REGEX_STR = '^[a-z0-9_-]+$'
+VALID_PROJECT_REGEX = re.compile(VALID_PROJECT_REGEX_STR)
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -56,9 +59,8 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
   for line_num, line in enumerate(build_sh_lines):
     uncommented_code = line.split('#')[0]
     if '-lFuzzingEngine' in uncommented_code:
-      print(
-          'Error: build.sh contains deprecated "-lFuzzingEngine" on line: {0}. '
-          'Please use "$LIB_FUZZING_ENGINE" instead.'.format(line_num))
+      print('Error: build.sh contains deprecated "-lFuzzingEngine" on line: '
+            f'{line_num}. Please use "$LIB_FUZZING_ENGINE" instead.')
       return False
   return True
 
@@ -123,6 +125,7 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
+        self.check_valid_project_name,
     ]
     for check_function in checks:
       check_function()
@@ -135,8 +138,17 @@ class ProjectYamlChecker:
   def error(self, message):
     """Prints an error message and sets self.success to False."""
     self.success = False
-    print('Error in {filename}: {message}'.format(filename=self.filename,
-                                                  message=message))
+    print(f'Error in {self.filename}: {message}')
+
+  def check_valid_project_name(self):
+    """Checks that the project has a valid name."""
+    banned_names = ['google', 'g00gle']
+    project_name = os.path.basename(os.path.dirname(self.filename))
+    for banned_name in banned_names:
+      if banned_name in project_name:
+        self.error('Projects can\'t have \'google\' in the name.')
+    if not VALID_PROJECT_REGEX.match(project_name):
+      self.error(f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
@@ -144,37 +156,33 @@ class ProjectYamlChecker:
       if section not in self.data:
         continue
       actual_constants = self.data[section]
+      allowed_constants_str = ', '.join(allowed_constants)
       for constant in actual_constants:
         if isinstance(constant, str):
           if constant not in allowed_constants:
-            self.error(('{constant} (in {section} section) is not a valid '
-                        'constant ({allowed_constants}).').format(
-                            constant=constant,
-                            section=section,
-                            allowed_constants=', '.join(allowed_constants)))
+            self.error(f'{constant} (in {section} section) is not a valid '
+                       f'constant ({allowed_constants_str}).')
         elif isinstance(constant, dict):
           # The only alternative value allowed is the experimental flag, i.e.
           # `constant == {'memory': {'experimental': True}}`. Do not check the
           # experimental flag, but assert that the sanitizer is a valid one.
           if (len(constant.keys()) > 1 or
               list(constant.keys())[0] not in allowed_constants):
-            self.error('Not allowed value in the project.yaml: ' +
-                       str(constant))
+            self.error(f'Not allowed value in the project.yaml: {constant}')
         else:
-          self.error('Not allowed value in the project.yaml: ' + str(constant))
+          self.error(f'Not allowed value in the project.yaml: {constant}')
 
   def check_valid_section_names(self):
     """Returns True if all section names are valid."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.error('{name} is not a valid section name ({valid_names})'.format(
-            name=name, valid_names=self.VALID_SECTION_NAMES))
+        self.error(f'{name} is not a valid section name ({valid_names})')
 
   def check_required_sections(self):
     """Returns True if all required sections are in |self.data|."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
-        self.error(section + ' section is missing.')
+        self.error(f'{section} section is missing.')
 
   def check_valid_emails(self):
     """Returns True if emails are valid looking.."""
@@ -190,7 +198,7 @@ class ProjectYamlChecker:
     # Check that email addresses seem normal.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
-        self.error(email_address + ' is an invalid email address.')
+        self.error(f'{email_address} is an invalid email address.')
 
   def check_valid_language(self):
     """Returns True if the language is specified and valid."""
@@ -199,8 +207,7 @@ class ProjectYamlChecker:
       self.error('Missing "language" attribute in project.yaml.')
     elif language not in constants.LANGUAGES:
       self.error(
-          '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=constants.LANGUAGES))
+          f'"language: {language}" is not supported ({constants.LANGUAGES}).')
 
 
 def _check_one_project_yaml(project_yaml_filename):
@@ -244,7 +251,7 @@ def check_seed_corpus(paths):
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_license, yapf, check_project_yaml, check_lib_fuzzing_engine,
       check_seed_corpus
   ]
   # Use a list comprehension here and in other cases where we use all() so that
@@ -362,8 +369,7 @@ def get_changed_files():
       if not os.path.isfile(file_path):
         continue
       changed_files.add(file_path)
-  print('Changed files: {changed_files}'.format(
-      changed_files=' '.join(changed_files)))
+  print(f'Changed files: {" ".join(changed_files)}')
   return [os.path.abspath(f) for f in changed_files]
 
 

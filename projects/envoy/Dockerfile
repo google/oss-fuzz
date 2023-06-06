@@ -33,3 +33,4 @@ RUN apt-get update && apt-get -y install  \
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
 COPY build.sh $SRC/
+COPY WORKSPACE $SRC/envoy/

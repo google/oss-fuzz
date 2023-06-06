@@ -1,7 +1,8 @@
 homepage: "https://thesofproject.github.io"
-primary_contact: "cujomalainey@chromium.org"
+primary_contact: "andyross@google.com"
 language: c
 auto_ccs:
+  - "cujomalainey@chromium.org"
   - "ranjani.sridharan@intel.corp-partner.google.com"
   - "lgirdwood@gmail.com"
   - "harsha.p.n@intel.corp-partner.google.com"
@@ -9,7 +10,9 @@ auto_ccs:
   - "adrian.bonislawski@intel.com"
   - "michal.wasko@intel.com"
 fuzzing_engines:
-  - afl
-  - honggfuzz
   - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - i386
 main_repo: "https://github.com/thesofproject/sof"

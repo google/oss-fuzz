@@ -19,12 +19,30 @@
 #
 ################################################################################
 
-cd $SRC/sof/tools/oss-fuzz
-cp corpus/* $OUT/
-rm -rf build_oss_fuzz
-mkdir -p build_oss_fuzz
-cd build_oss_fuzz
+# Environment: Zephyr has its own toolchain selection mechanism, and
+# the oss-fuzz environment generates warnings and confuses things when
+# building some of the (un-fuzzed) build-time tools that aren't quite
+# clang-compatible.
+export ZEPHYR_TOOLCHAIN_VARIANT=llvm
+unset CC
+unset CCC
+unset CXX
+unset CFLAGS
+unset CXXFLAGS
 
-export VERBOSE=1
-cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_LINKER=$CXX -DCMAKE_C_LINK_EXECUTABLE="<CMAKE_LINKER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" ..
-make install -j $(nproc)
+BASE_CFG=(
+-DCONFIG_ASSERT=y
+-DCONFIG_SYS_HEAP_BIG_ONLY=y
+-DCONFIG_ZEPHYR_NATIVE_DRIVERS=y
+-DCONFIG_ARCH_POSIX_LIBFUZZER=y
+-DCONFIG_ARCH_POSIX_FUZZ_TICKS=100
+-DCONFIG_ASAN=y
+)
+
+cd $SRC/sof/sof
+
+west build -p -b native_posix ./app -- "${BASE_CFG[@]}"
+cp build/zephyr/zephyr.exe $OUT/sof-ipc3
+
+west build -p -b native_posix ./app -- "${BASE_CFG[@]}" -DCONFIG_IPC_MAJOR_4=y
+cp build/zephyr/zephyr.exe $OUT/sof-ipc4
