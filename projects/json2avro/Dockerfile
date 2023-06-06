@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,4 +14,10 @@
 #
 ################################################################################
 
-$SRC/librawspeed/.ci/oss-fuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN git clone --depth 1 https://github.com/allegro/json-avro-converter/ json2avro
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/json2avro
