@@ -96,7 +96,7 @@ def main():
       continue
 
     # Checks if the author is in the contact list.
-    if email is not None:
+    if email:
       if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
         if verified:
