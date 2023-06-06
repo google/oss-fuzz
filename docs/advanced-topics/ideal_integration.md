@@ -49,7 +49,7 @@ it does not crash, hang, or run out of memory instantly. If you're having
 trouble, read about [what makes a good fuzz
 target](https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md).
 
-The interface between the [fuzz target]((https://llvm.org/docs/LibFuzzer.html#fuzz-target))
+The interface between the [fuzz target](https://llvm.org/docs/LibFuzzer.html#fuzz-target)
 and the fuzzing engines is C, so you can use either C or C++ to implement the
 fuzz target.
 

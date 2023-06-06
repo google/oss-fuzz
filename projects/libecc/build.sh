@@ -69,7 +69,7 @@ export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
 # Compile wolfSSL
 cd $SRC/wolfssl/
 # Checkout at commit that's known to be bug-free
-git checkout 42a5d0320ba9745617d3e2ba555ddc088b721be6
+git checkout 37aada031350a36143fcfdf188e0eeaa9b05366e
 # Note (to self):
 # Compiling wolfCrypt with SP math instead of normal math due to symbol collisions (specifically fp_* functions) between libecc and wolfCrypt otherwise.
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"
@@ -94,7 +94,7 @@ echo -n '--force-module=libecc ' >>extra_options.h
 echo -n '--operations=Digest,HMAC,ECC_PrivateToPublic,ECDSA_Sign,ECDSA_Verify,ECGDSA_Sign,ECGDSA_Verify,ECRDSA_Sign,ECRDSA_Verify,ECDH_Derive,ECC_Point_Add,ECC_Point_Mul,ECC_Point_Dbl,ECC_Point_Neg,BignumCalc ' >>extra_options.h
 echo -n '--curves=brainpool224r1,brainpool256r1,brainpool384r1,brainpool512r1,secp192r1,secp224r1,secp256r1,secp384r1,secp521r1,secp256k1,ed25519,ed448,x25519,x448 ' >>extra_options.h
 echo -n '--digests=NULL,SHA224,SHA256,SHA3-224,SHA3-256,SHA3-384,SHA3-512,SHA384,SHA512,SHA512-224,SHA512-256,SM3,SHAKE256_114,STREEBOG-256,STREEBOG-512,RIPEMD160,BASH224,BASH256,BASH384,BASH512 ' >>extra_options.h
-echo -n '--calcops=Add,AddMod,And,Bit,GCD,ExtGCD_X,ExtGCD_Y,InvMod,IsOdd,IsOne,IsZero,LShift1,Mod,Mul,MulMod,NumBits,Or,RShift,Sqr,Sub,SubMod,Xor,LRot,RRot ' >>extra_options.h
+echo -n '--calcops=Add,AddMod,And,Bit,Cmp,CondAdd,CondSub,Div,ExpMod,ExtGCD_X,ExtGCD_Y,GCD,InvMod,IsOdd,IsOne,IsZero,LRot,LShift1,Mod,Mul,MulMod,NegMod,NumBits,One,Or,RRot,RShift,RandMod,Sqr,Sub,SubMod,Xor,Zero ' >>extra_options.h
 echo -n '"' >>extra_options.h
 cd modules/libecc/
 make -B -j$(nproc)

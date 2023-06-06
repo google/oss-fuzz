@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +14,21 @@
 #
 ################################################################################
 
-pip3 install .
-cd tests
-cp -rf $SRC/fuzz_*.py .
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-if [ "$SANITIZER" = "address" ]
-then
-  # Enable pysecsan
-  export ENABLE_PYSECSAN="1"
-fi
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-for fuzzer in $(find . -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data _loop.py:.
-done
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+# if not set python infra helper cannot be used for local testing
+
+COPY project-parent $SRC/project-parent/
+
+RUN rm -rf $SRC/project-parent/qdox
+RUN apt update && apt install -y openjdk-11-jdk
+RUN git clone --depth 1 https://github.com/paul-hammant/qdox/ $SRC/project-parent/qdox
+
+COPY build.sh $SRC/
+WORKDIR $SRC/
