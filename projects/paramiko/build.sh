@@ -26,5 +26,5 @@ then
 fi
 
 for fuzzer in $(find . -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data loop.py:.
+  compile_python_fuzzer $fuzzer --add-data _loop.py:.
 done
