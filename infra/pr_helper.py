@@ -61,64 +61,63 @@ def save_env(message, is_ready_for_merge, is_internal=False):
 
 
 def main():
-  """Verifies if a PR is ready for merge."""
-  message = ''
-  is_ready_for_merge = True
+  """Verifies if a PR is ready to merge."""
   github = GithubHandler()
-  pr_author = github.get_pr_author()
 
   # Bypasses PRs of the internal members.
   if github.is_author_internal_member():
     save_env(None, None, True)
     return
 
+  message = ''
+  is_ready_for_merge = True
+  pr_author = github.get_pr_author()
   # Gets all modified projects path.
   projects_path = github.get_projects_path()
-  email_response = github.get_author_email()
+  verified, email = github.get_author_email()
 
   for project_path in projects_path:
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
     content_dict = github.get_project_yaml(project_path)
 
-    # Gets information for the new integrating project
+    # Gets information for the new integrating project.
     if not content_dict:
       is_ready_for_merge = False
       new_project = github.get_integrated_project_info()
       repo_url = new_project.get('main_repo')
-      if repo_url is not None:
-        message += (f'@{pr_author} is integrating a new project:<br/>'
-                    f'- Main repo: {repo_url}<br/> - Criticality score: '
-                    f'{get_criticality_score(repo_url)}<br/>')
-      else:
+      if repo_url is None:
         message += (f'@{pr_author} is integrating a new project, '
                     'but the `repo_url` is missing. '
                     'The criticality score cannot be computed.<br/>')
+      else:
+        message += (f'@{pr_author} is integrating a new project:<br/>'
+                    f'- Main repo: {repo_url}<br/> - Criticality score: '
+                    f'{get_criticality_score(repo_url)}<br/>')
       continue
 
     # Checks if the author is in the contact list.
-    if email_response[0] is not None:
-      if is_known_contributor(content_dict, email_response[1]):
+    if email is not None:
+      if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
-        if email_response[0]:
+        if verified:
           message += (
               f'@{pr_author} is either the primary contact or '
               f'is in the CCs list of [{project_path}]({project_url}).<br/>')
           continue
         message += (f'@{pr_author} is either the primary contact or '
                     f'is in the CCs list of [{project_path}]({project_url}), '
-                    f'but their email {email_response[1]} '
+                    f'but their email {email} '
                     'is not verified.<br/>')
 
     # Checks the previous commits.
-    has_commit = github.has_author_modified_project(project_path)
-    if not has_commit:
+    commit_sha = github.has_author_modified_project(project_path)
+    if commit_sha is None:
       message += (
           f'@{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
           'contributors before it can be merged.<br/>')
       is_ready_for_merge = False
       continue
-    commit_sha = has_commit[1]
 
     # If the previous commit is not associated with a pull request.
     pr_message = (f'@{pr_author} has previously contributed to '
@@ -177,7 +176,7 @@ class GithubHandler:
     commits_response = requests.get(
         f'{BASE_URL}/pulls/{self._pr_number}/commits', headers=self._headers)
     if not commits_response.ok:
-      return None
+      return False, None
     email = commits_response.json()[0]['commit']['author']['email']
     verified = commits_response.json()[0]['commit']['verification']['verified']
     return verified, email
@@ -236,10 +235,10 @@ class GithubHandler:
         headers=self._headers)
 
     if not commits_response.ok or not commits_response.json():
-      return False
+      return None
 
     commit = commits_response.json()[0]
-    return True, commit['sha']
+    return commit['sha']
 
 
 if __name__ == '__main__':
