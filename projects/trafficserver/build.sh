@@ -18,7 +18,7 @@
 # don't use __cxa_atexit for coverage sanitizer
 if [[ $SANITIZER = coverage ]]
 then
-    export CXXFLAGS="$CXXFLAGS - fno-use-cxa-atexit"
+    export CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit"
 fi
 
 autoreconf -if
