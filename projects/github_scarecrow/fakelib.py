@@ -23,6 +23,6 @@ def do_something(data):
     if not data:
         return
     if data[0]:
-        print('hello')
+        print('hello world')
     else:
         print('bye')
