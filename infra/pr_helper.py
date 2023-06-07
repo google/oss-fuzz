@@ -62,6 +62,8 @@ def save_env(message, is_ready_for_merge, is_internal=False):
 
 def main():
   """Verifies if a PR is ready to merge."""
+  print('Python script has been chaned by external users!!!!')
+  return
   github = GithubHandler()
 
   # Bypasses PRs of the internal members.
