@@ -14,8 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+if [[ $SANITIZER = coverage ]]
+then
+    export CXXFLAGS="$CXXFLAGS - fno-use-cxa-atexit"
+fi
+
 autoreconf -if
-./configure --enable-debug
+./configure --enable-debug --enable-malloc-allocator
 make -j$(nproc) --ignore-errors
 
 pushd fuzzer/
