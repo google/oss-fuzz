@@ -31,6 +31,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r infra/ci/requirements.txt
 
+      - name: Leave comments
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Modified by external fork PR.'
+            })
+
       - name: setup go environment
         uses: actions/setup-go@v4
         with:
