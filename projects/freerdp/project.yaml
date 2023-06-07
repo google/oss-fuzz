@@ -12,6 +12,5 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-  - memory
 architectures:
   - x86_64
