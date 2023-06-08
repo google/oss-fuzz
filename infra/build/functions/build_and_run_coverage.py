@@ -113,7 +113,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Skipping code coverage build for %s.', project.name)
     return []
 
-  build_steps.extend(download_corpora_steps)
+  # !!!
+  # build_steps.extend(download_corpora_steps)
+  build_steps = download_corpora_steps
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
@@ -279,9 +281,7 @@ def get_corpus_research_steps(project, config):
       'name':
           'gcr.io/cloud-builders/gsutil',
       'args': [
-          '-m',
-          'cp',
-          '-r',
+          '-m', 'cp', '-r',
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
           '/workspace/research-corpus'
       ],
