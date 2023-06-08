@@ -114,8 +114,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     return []
 
   # !!!
-  # build_steps.extend(download_corpora_steps)
-  build_steps = download_corpora_steps
+  build_steps.extend(download_corpora_steps)
+  # build_steps = download_corpora_steps
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
@@ -261,9 +261,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'report_summary_path':
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
-
-  # !!!
-  build_steps = []
   # Corpus research steps.
   if config.corpus_research:
     build_steps.extend(get_corpus_research_steps(project, config))
