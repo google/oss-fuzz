@@ -19,9 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && \
     apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip bsdmainutils
 
-RUN git clone --depth 1 https://github.com/golang/go
 RUN wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz
 RUN wget https://go.dev/dl/go1.20.4.linux-386.tar.gz
+RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN git clone --depth 1 https://github.com/openssl/openssl
