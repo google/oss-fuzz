@@ -285,12 +285,12 @@ def get_corpus_research_steps(project, config):
       'args': [
           '-m', 'cp', '-r',
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
-          f'/workspace/{project.name}'
+          f'/research-corpus/{project.name}'
       ],
       'volumes': [{
-          'name': 'workspace',
-          'path': '/workspace'
-          },
+          'name': 'rc',
+          'path': '/research-corpus'
+      },
   })
   #   build_steps.append({
   #     'name': build_lib.get_runner_image_name(config.test_image_suffix),
@@ -313,13 +313,17 @@ def get_corpus_research_steps(project, config):
   # })
   # 2.
   research_env = coverage_env.copy()
-  research_env.extend(['FUZZER=skcms', f'RESEARCH_CORPUS={project.name}'])
+  research_env.extend(['FUZZER=skcms', f'RESEARCH_CORPUS=/research-corpus'])
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner-research',
       'env': coverage_env,
       'args': [
         'corpus_research.py'
       ],
+      'volumes': [{
+          'name': 'rc',
+          'path': '/research-corpus'
+      }
       'volumes': [{
           'name': 'corpus',
           'path': '/corpus'
