@@ -265,8 +265,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   # # Corpus research steps.
   # if config.corpus_research:
   # !!!
-  # build_steps.extend(get_corpus_research_steps(project, config))
-  build_steps = get_corpus_research_steps(project, config, coverage_env)
+  build_steps.extend(get_corpus_research_steps(project, config))
+  # build_steps = get_corpus_research_steps(project, config, coverage_env)
 
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
@@ -291,25 +291,6 @@ def get_corpus_research_steps(project, config, coverage_env):
           'path': '/research-corpus'
       },]
   })
-  #   build_steps.append({
-  #     'name': build_lib.get_runner_image_name(config.test_image_suffix),
-  #     'env': coverage_env,
-  #     'args': [
-  #         'bash', '-c',
-  #         ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
-  #          'echo "Failed to unpack the corpus for $(basename ${f%.*}). '
-  #          'This usually means that corpus backup for a particular fuzz '
-  #          'target does not exist. If a fuzz target was added in the last '
-  #          '24 hours, please wait one more day. Otherwise, something is '
-  #          'wrong with the fuzz target or the infrastructure, and corpus '
-  #          'pruning task does not finish successfully." && exit 1'
-  #          '); done && coverage || (echo "' + failure_msg + '" && false)')
-  #     ],
-  #     'volumes': [{
-  #         'name': 'corpus',
-  #         'path': '/corpus'
-  #     }],
-  # })
   # 2.
   research_env = coverage_env.copy()
   research_env.extend(['FUZZER=skcms', f'RESEARCH_CORPUS=/research-corpus'])
@@ -324,10 +305,10 @@ def get_corpus_research_steps(project, config, coverage_env):
               'name': 'rc',
               'path': '/research-corpus'
           },
-          # {
-          #     'name': 'corpus',
-          #     'path': '/corpus'
-          # },
+          {
+              'name': 'corpus',
+              'path': '/corpus'
+          },
       ]
   })
   return steps
