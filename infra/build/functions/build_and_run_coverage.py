@@ -276,7 +276,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   return build_steps
 
 
-def get_corpus_research_steps(project, config):
+def get_corpus_research_steps(project, config, coverage_env):
   # 1. Download research corpus
   steps = []
   steps.append({
