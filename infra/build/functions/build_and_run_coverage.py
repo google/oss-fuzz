@@ -280,8 +280,7 @@ def get_corpus_research_steps(project, config):
   # 1. Download research corpus
   steps = []
   steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
+      'name': 'gcr.io/cloud-builders/gsutil',
       'args': [
           '-m', 'cp', '-r',
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
@@ -290,7 +289,7 @@ def get_corpus_research_steps(project, config):
       'volumes': [{
           'name': 'rc',
           'path': '/research-corpus'
-      },
+      },]
   })
   #   build_steps.append({
   #     'name': build_lib.get_runner_image_name(config.test_image_suffix),
@@ -315,21 +314,21 @@ def get_corpus_research_steps(project, config):
   research_env = coverage_env.copy()
   research_env.extend(['FUZZER=skcms', f'RESEARCH_CORPUS=/research-corpus'])
   steps.append({
-      'name': 'gcr.io/oss-fuzz-base/base-runner-research',
-      'env': coverage_env,
-      'args': [
-        'corpus_research.py'
-      ],
-      'volumes': [{
-          'name': 'rc',
-          'path': '/research-corpus'
-      }
-      'volumes': [{
-          'name': 'corpus',
-          'path': '/corpus'
+      'name':
+          'gcr.io/oss-fuzz-base/base-runner-research',
+      'env':
+          coverage_env,
+      'args': ['corpus_research.py'],
+      'volumes': [
+          {
+              'name': 'rc',
+              'path': '/research-corpus'
           },
-                  ],
-
+          {
+              'name': 'corpus',
+              'path': '/corpus'
+          },
+      ]
   })
   return steps
 
