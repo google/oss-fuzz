@@ -308,6 +308,8 @@ def gsutil_rm_rf_step(url):
 def get_pull_test_images_steps(test_image_suffix):
   """Returns steps to pull testing versions of base-images and tag them so that
   they are used in builds."""
+  # !!!
+  return []
   images = [
       'gcr.io/oss-fuzz-base/base-builder',
       'gcr.io/oss-fuzz-base/base-builder-swift',
