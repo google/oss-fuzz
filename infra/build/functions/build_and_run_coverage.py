@@ -285,7 +285,7 @@ def get_corpus_research_steps(project, config):
       'args': [
           '-m', 'cp', '-r',
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
-          '/workspace/research-corpus'
+          f'/workspace/{project.name}'
       ],
   })
   #   build_steps.append({
