@@ -24,6 +24,7 @@ CORPORA = BUCKET + '/corpus'
 
 OSS_FUZZ_ROOT = pathlib.Path(__file__).parent.parent.parent.parent
 
+
 def download_research_corpora(project, output_dir):
   corpora = CORPORA + '/' + project
   command = ['gsutil', 'ls', corpora]
@@ -34,31 +35,36 @@ def download_research_corpora(project, output_dir):
 
   output_dir = output_dir / project
   if os.path.exists(output_dir):
-    subprocess.run(['docker', 'run', '-v', f'{output_dir}:{output_dir}', 'gcr.io/oss-fuzz-base/base-runner', 'rm', '-rf', output_dir])
+    subprocess.run([
+        'docker', 'run', '-v', f'{output_dir}:{output_dir}',
+        'gcr.io/oss-fuzz-base/base-runner', 'rm', '-rf', output_dir
+    ])
   for corpus in corpora:
     command = ['gsutil', '-m', 'cp', '-r', corpus, output_dir]
     subprocess.run(command)
   return output_dir
 
+
 def _env_to_docker_args(env_list):
   """Turns envirnoment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
+
 
 def get_coverage(fuzzer, corpus, project):
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'HTTP_PORT=',
-      'FUZZING_LANGUAGE=c++' ,
+      'FUZZING_LANGUAGE=c++',
       'PROJECT=%s' % project,
       'SANITIZER=coverage',
       'ARCHITECTURE=x86_64',
       'COVERAGE_EXTRA_ARGS=',
   ]
   out_dir = OSS_FUZZ_ROOT / 'build' / 'out' / project
-  run_args = ['docker', 'run',
-              '-v', f'{out_dir}:/out',
-              '-v',
-              f'{corpus}:/corpus/{fuzzer}']
+  run_args = [
+      'docker', 'run', '-v', f'{out_dir}:/out', '-v',
+      f'{corpus}:/corpus/{fuzzer}'
+  ]
   run_args += _env_to_docker_args(env)
   run_args.extend(['gcr.io/oss-fuzz-base/base-runner', 'coverage'])
   print(run_args, flush=True)
@@ -68,13 +74,16 @@ def get_coverage(fuzzer, corpus, project):
   with open(stats_file) as fp:
     stats = json.load(fp)['data'][0]
   totals = stats['totals']
-  import ipdb; ipdb.set_trace()
+  import ipdb
+  ipdb.set_trace()
   return totals['lines']['percent']
+
 
 def compare_corpora(fuzzer, project, real_corpus, research_corpus):
   real_coverage = get_coverage(fuzzer, real_corpus, project)
   research_coverage = get_coverage(fuzzer, research_corpus, project)
   return research_coverage - real_coverage
+
 
 def analyze_research_corpus(project):
   research_corpus_dir = OSS_FUZZ_ROOT / 'build' / 'research-corpus' / project
@@ -88,4 +97,5 @@ def analyze_research_corpus(project):
     # !!!
     # shutil.copytree(real_corpus, fuzzer_research_corpus / 'actual-corpus')
     print('fuzzer', fuzzer)
-    print('cc', compare_corpora(fuzzer, project, real_corpus, fuzzer_research_corpus))
+    print('cc',
+          compare_corpora(fuzzer, project, real_corpus, fuzzer_research_corpus))
