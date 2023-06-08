@@ -221,7 +221,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       logging.info('Nothing to build for this project: %s.', project_name)
       continue
 
-    import pdb; pdb.set_trace()
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, config)
     if not steps:
