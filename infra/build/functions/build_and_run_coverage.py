@@ -109,9 +109,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_project.get_compile_step(project, build, env, config.parallel))
   download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
-  if not download_corpora_steps:
-    logging.info('Skipping code coverage build for %s.', project.name)
-    return []
+  # !!!
+  # if not download_corpora_steps:
+  #   logging.info('Skipping code coverage build for %s.', project.name)
+  #   return []
 
   # !!!
   build_steps.extend(download_corpora_steps)

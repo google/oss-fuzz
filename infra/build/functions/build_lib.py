@@ -209,8 +209,6 @@ def _normalized_name(name):
 def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
-  # !!!
-  return []
   fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)

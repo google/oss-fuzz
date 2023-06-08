@@ -145,7 +145,7 @@ def get_args(args=None):
   return parsed_args
 
 
-@functools.lru_cache
+@functools.lru_cache(1000)
 def get_all_projects():
   """Returns a list of all OSS-Fuzz projects."""
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
@@ -156,7 +156,7 @@ def get_all_projects():
   ])
 
 
-@functools.lru_cache
+@functools.lru_cache(1000)
 def get_project_languages():
   """Returns a dictionary mapping languages to projects."""
   all_projects = get_all_projects()
@@ -221,6 +221,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       logging.info('Nothing to build for this project: %s.', project_name)
       continue
 
+    import pdb; pdb.set_trace()
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, config)
     if not steps:
