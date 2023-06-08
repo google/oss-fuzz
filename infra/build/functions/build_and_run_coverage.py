@@ -261,9 +261,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'report_summary_path':
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
-  # Corpus research steps.
-  if config.corpus_research:
-    build_steps.extend(get_corpus_research_steps(project, config))
+  # # Corpus research steps.
+  # if config.corpus_research:
+  # !!!
+  build_steps.extend(get_corpus_research_steps(project, config))
 
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
