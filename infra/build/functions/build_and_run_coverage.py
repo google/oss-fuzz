@@ -284,7 +284,7 @@ def get_corpus_research_steps(project, config, coverage_env):
       'args': [
           '-m', 'cp', '-r',
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
-          f'/research-corpus/{project.name}'
+          f'/research-corpus'
       ],
       'volumes': [{
           'name': 'rc',
