@@ -31,4 +31,4 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS $SRC/fuzz_xml.cpp -o $OUT/fuzz_xml \
 
 cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so.11.0 $OUT/libcudart.so.11.0
 cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so $OUT/libcudart.so
-patchelf --set-rpath '$ORIGIN/' /out/fuzz_xml
+patchelf --set-rpath '$ORIGIN/' $OUT/fuzz_xml

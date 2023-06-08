@@ -90,7 +90,7 @@ cd $NTOPNG_HOME
 make -j$(nproc) fuzz_all
 
 # Copy fuzzers
-find fuzz/ -regex 'fuzz/fuzz_[a-z_]*' -exec cp {} {}.dict {}_seed_corpus.zip $OUT/ \;
+find fuzz/ -regex 'fuzz/fuzz_[a-z_]*\(\.\(zip\|dict\|options\)\)?' -exec cp {} $OUT/ \;
 
 # Create the directory structure needed for fuzzing
 mkdir -p $OUT/install $OUT/data-dir $OUT/docs $OUT/scripts/callbacks

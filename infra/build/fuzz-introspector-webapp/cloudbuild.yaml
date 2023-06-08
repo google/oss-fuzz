@@ -23,3 +23,7 @@ steps:
     - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
     - '--region'
     - 'us-central1'
+    - '--min-instances'
+    - '1'
+    - '--max-instances'
+    - '10'

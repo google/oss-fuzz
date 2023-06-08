@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+pushd $SRC/open5gs
+
 CFLAGS="$CFLAGS -Wno-compound-token-split-by-macro -Wno-format"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
@@ -26,8 +28,10 @@ ninja -C builddir -k 0 || true
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
 
-mkdir /out/lib/
-cp /lib/x86_64-linux-gnu/libtalloc.so* /out/lib/
+mkdir $OUT/lib/
+cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
+
+popd

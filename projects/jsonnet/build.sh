@@ -19,7 +19,7 @@ mkdir jsonnet/build
 pushd jsonnet/build
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
   -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_TESTS=OFF ..
-make -j$(nproc)
+make -j$(nproc) libjsonnet_static
 popd
 
 INSTALL_DIR="$SRC/jsonnet"

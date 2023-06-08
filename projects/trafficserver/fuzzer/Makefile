@@ -37,12 +37,14 @@ HttpINC=\
 	$(INCDIR)/iocore/net/quic \
 	$(INCDIR)/iocore/utils \
 	$(INCDIR)/lib \
+	$(INCDIR)/lib/swoc/include \
 	$(INCDIR)/proxy/api \
 	$(INCDIR)/proxy/hdrs \
 	$(INCDIR)/proxy/http
 
 CoreLib=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/lib/yamlcpp \
+	$(LIBDIR)/lib/swoc/.libs/ -ltsswoc \
 	$(LIBDIR)/proxy/hdrs -lhdrs \
 	$(LIBDIR)/proxy/http -lhttp \
 	$(LIBDIR)/src/tscore/.libs/ -ltscore \
@@ -51,8 +53,6 @@ CoreLib=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
 	$(LIBDIR)/iocore/eventsystem/ -linkevent \
 	$(LIBDIR)/src/records/ -lrecords_p \
-	$(LIBDIR)/mgmt/.libs/ -lmgmt_p \
-	$(LIBDIR)/proxy/shared/ -lUglyLogStubs \
 	-Wl,-rpath=lib/
 
 all: $(TARGET)
@@ -61,8 +61,8 @@ $(TARGET):
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(EsiINC) -c $(EsiEXE).cc
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
 
-#$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
-#$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
 
 clean:
 	rm $(EsiEXE) $(HttpEXE) *.o

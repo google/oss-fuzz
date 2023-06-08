@@ -67,3 +67,9 @@ make -j$(nproc)
 # Copy encoder fuzzers
 cd $SRC/flac/oss-fuzz
 cp fuzzer_encoder fuzzer_encoder_v2 $OUT
+
+# Copy seed corpus
+cd $SRC/flac/oss-fuzz/seedcorpus || exit 0
+for fuzzerName in *; do
+    zip -j $OUT/${fuzzerName}_seed_corpus.zip ${fuzzerName}/*
+done
