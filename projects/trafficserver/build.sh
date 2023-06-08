@@ -14,14 +14,21 @@
 # limitations under the License.
 #
 ################################################################################
+
+# don't use __cxa_atexit for coverage sanitizer
+if [[ $SANITIZER = coverage ]]
+then
+    export CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit"
+fi
+
 autoreconf -if
-./configure --enable-debug
+./configure --enable-debug --enable-malloc-allocator
 make -j$(nproc) --ignore-errors
 
 pushd fuzzer/
 make
 cp FuzzEsi $OUT/FuzzEsi
-#cp FuzzHTTP $OUT/FuzzHTTP
+cp FuzzHTTP $OUT/FuzzHTTP
 popd
 
 pushd $SRC/oss-fuzz-bloat/trafficserver/
@@ -29,6 +36,7 @@ cp FuzzEsi_seed_corpus.zip $OUT/FuzzEsi_seed_corpus.zip
 cp FuzzHTTP_seed_corpus.zip $OUT/FuzzHTTP_seed_corpus.zip
 popd
 
-mkdir $OUT/lib
+mkdir -p $OUT/lib
+cp lib/swoc/.libs/libtsswoc*.so* $OUT/lib/.
 cp src/tscore/.libs/libtscore.so* $OUT/lib/.
 cp src/tscpp/util/.libs/libtscpputil.so* $OUT/lib/.
