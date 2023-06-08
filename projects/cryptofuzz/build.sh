@@ -20,6 +20,33 @@
 
 export GO111MODULE=off
 
+# Install Go stable binaries
+mkdir $SRC/go-bootstrap
+cd $SRC/go-bootstrap
+if [[ $CFLAGS = *-m32* ]]
+then
+    tar zxf $SRC/go1.20.4.linux-386.tar.gz
+else
+    tar zxf $SRC/go1.20.4.linux-amd64.tar.gz
+fi
+mkdir $SRC/go-bootstrap/go/packages/
+
+# Compile and install Go development version
+cd $SRC/go/src/
+export GOROOT=$SRC/go-bootstrap/go/
+export GOPATH=$GOROOT/packages
+export OLD_PATH=$PATH
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOROOT/packages/bin:$PATH
+./make.bash
+export PATH=$OLD_PATH
+unset OLD_PATH
+export GOROOT=$(realpath ../)
+export GOPATH=$GOROOT/packages
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOROOT/packages/bin:$PATH
+rm -rf $SRC/go-bootstrap/
+
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Install nodejs/npm
@@ -45,6 +72,10 @@ CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
 
 export LINK_FLAGS=""
+if [[ $CFLAGS = *-m32* ]]
+then
+    export LINK_FLAGS="$LINK_FLAGS -latomic"
+fi
 export INCLUDE_PATH_FLAGS=""
 
 # Generate lookup tables. This only needs to be done once.
@@ -222,36 +253,39 @@ make -B -j$(nproc)
 #fi
 
 ## Compile SymCrypt
-cd $SRC/SymCrypt/
-
-# Disable speculative load hardening because
-# this results in MSAN false positives
-sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
-sed -i '/.*x86-speculative-load-hardening.*/d' modules_linux/common/ModuleCommon.cmake
-
-
-# Unittests don't build with clang and are not needed anyway
-sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
-
-mkdir b/
-cd b/
-if [[ $CFLAGS = *sanitize=memory* ]]
+if [[ $CFLAGS != *-m32* ]]
 then
-    cmake -DSYMCRYPT_USE_ASM=off ../
-else
-    cmake ../
+    cd $SRC/SymCrypt/
+
+    # Disable speculative load hardening because
+    # this results in MSAN false positives
+    sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
+    sed -i '/.*x86-speculative-load-hardening.*/d' modules_linux/common/ModuleCommon.cmake
+
+
+    # Unittests don't build with clang and are not needed anyway
+    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+    mkdir b/
+    cd b/
+    if [[ $CFLAGS = *sanitize=memory* ]]
+    then
+        cmake -DSYMCRYPT_USE_ASM=off ../
+    else
+        cmake ../
+    fi
+
+    make symcrypt_common symcrypt_generic -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/libsymcrypt_common.a)
+    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/symcrypt_generic.a)
+
+    # Compile Cryptofuzz SymCrypt module
+    cd $SRC/cryptofuzz/modules/symcrypt
+    make -B
 fi
-
-make symcrypt_common symcrypt_generic -j$(nproc)
-
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
-export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
-export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/libsymcrypt_common.a)
-export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/symcrypt_generic.a)
-
-# Compile Cryptofuzz SymCrypt module
-cd $SRC/cryptofuzz/modules/symcrypt
-make -B
 
 # Compile libgmp
 cd $SRC/libgmp/
@@ -460,7 +494,7 @@ make -B
 
 ##############################################################################
 # Compile Cryptofuzz Golang module
-if [[ $CFLAGS != *sanitize=memory* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
     cd $SRC/cryptofuzz/modules/golang
