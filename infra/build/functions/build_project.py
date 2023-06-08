@@ -57,8 +57,8 @@ PROJECTS_DIR = os.path.abspath(
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 Config = collections.namedtuple(
     'Config',
-    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
-    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
+    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload', 'corpus_research'],
+    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True, False))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 

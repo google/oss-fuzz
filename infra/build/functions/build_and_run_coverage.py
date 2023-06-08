@@ -260,12 +260,34 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
 
+  # Corpus research steps.
+  if config.corpus_research:
+    build_steps.extend(get_corpus_research_steps(project, config))
+
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
   return build_steps
+
+
+def get_corpus_research_steps(project, config):
+  # 1. Download research corpus
+  steps = []
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
+          '/workspace/research-corpus'
+      ],
+  })
+  # 2.
+  return steps
 
 
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument

@@ -27,6 +27,7 @@ else
       -e 'jazzer_driver_with_sanitizer' \
       -e 'sanitizer_with_fuzzer.so')"
 fi
+echo FUZZ_TARGETS, $FUZZ_TARGETS
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 

@@ -99,6 +99,7 @@ COPY bad_build_check \
     profraw_update.py \
     targets_list \
     test_all.py \
+    corpus_research.py \
     test_one.py \
     python_coverage_runner_help.py \
     /usr/local/bin/

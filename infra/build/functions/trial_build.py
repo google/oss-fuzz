@@ -315,6 +315,7 @@ def _do_test_builds(args, test_image_suffix):
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
+                                  corpus_research=True,
                                   upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
@@ -334,11 +335,11 @@ def trial_build_main(args=None, local_base_build=True):
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
-  if local_base_build:
-    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        test_image_suffix)
-  else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+  # if local_base_build:
+  #   build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
+  #       test_image_suffix)
+  # else:
+  #   build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 
