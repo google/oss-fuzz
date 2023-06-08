@@ -324,10 +324,10 @@ def get_corpus_research_steps(project, config, coverage_env):
               'name': 'rc',
               'path': '/research-corpus'
           },
-          {
-              'name': 'corpus',
-              'path': '/corpus'
-          },
+          # {
+          #     'name': 'corpus',
+          #     'path': '/corpus'
+          # },
       ]
   })
   return steps
