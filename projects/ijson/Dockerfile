@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get install -y libffi-dev mercurial ruby
+RUN apt-get update && apt-get install -y libffi-dev ruby mercurial
 RUN pip3 install --upgrade pip cffi
 RUN git clone https://github.com/ICRAR/ijson ijson
 RUN git clone https://github.com/lloyd/yajl

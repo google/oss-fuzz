@@ -15,13 +15,15 @@
 #
 ################################################################################
 ./autogen.sh
-./configure CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" --disable-shared --disable-hardening --enable-pie
+./configure --disable-shared --enable-pie --enable-fuzzer=$LIB_FUZZING_ENGINE
 make
 
-$CC $CFLAGS -fPIE -Wall -Werror -pipe -DHAVE_CONFIG_H -I. -I include/ -c FuzzDecode.c
-$CXX $CXXFLAGS -fPIE -pie -o FuzzDecode FuzzDecode.o $LIB_FUZZING_ENGINE src/daemon/.libs/liblldpd.a libevent/.libs/libevent.a
-cp FuzzDecode $OUT/FuzzDecode
+cp tests/fuzz_cdp $OUT/
+cp tests/fuzz_edp $OUT/
+cp tests/fuzz_lldp $OUT/
+cp tests/fuzz_sonmp $OUT/
 
-pushd $SRC/oss-fuzz-bloat/lldpd/
-cp FuzzDecode_seed_corpus.zip $OUT/FuzzDecode_seed_corpus.zip
-popd
+zip -r $OUT/fuzz_cdp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_cdp_seed_corpus
+zip -r $OUT/fuzz_edp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_edp_seed_corpus
+zip -r $OUT/fuzz_lldp_seed_corpus.zip   tests/fuzzing_seed_corpus/fuzz_lldp_seed_corpus
+zip -r $OUT/fuzz_sonmp_seed_corpus.zip  tests/fuzzing_seed_corpus/fuzz_sonmp_seed_corpus

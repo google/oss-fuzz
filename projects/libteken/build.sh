@@ -17,9 +17,13 @@
 
 # build the library.
 pmake -C libteken teken_state.h
-CFLAGS="$CFLAGS -D__unused=" pmake -C libteken libteken.a
+
+export CFLAGS="$CFLAGS -D__unused="
+$CC $CFLAGS -c teken.c -o teken.o -I./libteken
+ar -q libteken.a ./teken.o
+ranlib libteken.a
 
 $CC $CFLAGS -c $SRC/libteken_fuzzer.c -o $SRC/libteken_fuzzer.o -I.
 $CXX $CXXFLAGS $SRC/libteken_fuzzer.o \
     -o $OUT/libteken_fuzzer \
-    $LIB_FUZZING_ENGINE libteken/libteken.a
+    $LIB_FUZZING_ENGINE libteken.a

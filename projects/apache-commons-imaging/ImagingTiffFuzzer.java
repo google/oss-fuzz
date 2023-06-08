@@ -15,14 +15,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import java.io.IOException;
-import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.bytesource.ByteSource;
 import org.apache.commons.imaging.formats.tiff.TiffImageParser;
 
 public class ImagingTiffFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     try {
-      new TiffImageParser().getBufferedImage(input, null);
-    } catch (IOException | ImageReadException ignored) {
+      new TiffImageParser().getBufferedImage(ByteSource.array(input), null);
+    } catch (IOException ignored) {
     }
   }
 }
