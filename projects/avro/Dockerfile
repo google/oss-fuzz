@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,21 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir build && cd build
-cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
-make
 
-# Compile fuzzers
-cp $SRC/fuzz_* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.9.2/bin/mvn
+
+# if not set python infra helper cannot be used for local testing
+
+COPY project-parent $SRC/project-parent/
+
+RUN rm -rf $SRC/project-parent/avro
+RUN git clone --depth 1 https://github.com/apache/avro/ $SRC/project-parent/avro
+
+COPY build.sh $SRC/
+WORKDIR $SRC/
