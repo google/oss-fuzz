@@ -262,6 +262,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
 
+  # !!!
+  build_steps = []
   # Corpus research steps.
   if config.corpus_research:
     build_steps.extend(get_corpus_research_steps(project, config))
