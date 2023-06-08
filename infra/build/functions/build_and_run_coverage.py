@@ -266,7 +266,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   # if config.corpus_research:
   # !!!
   # build_steps.extend(get_corpus_research_steps(project, config))
-  build_steps = get_corpus_research_steps(project, config)
+  build_steps = get_corpus_research_steps(project, config, coverage_env)
 
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
@@ -308,25 +308,21 @@ def get_corpus_research_steps(project, config):
   #     }],
   # })
   # 2.
-  # steps.append({
-  #     'name': 'gcr.io/oss-fuzz-base/base-runner-research',
+  research_env = coverage_env.copy()
+  research_env.extend(['FUZZER=skcms', f'RESEARCH_CORPUS={project.name}')
+  steps.append({
+      'name': 'gcr.io/oss-fuzz-base/base-runner-research',
+      'env': coverage_env,
+      'args': [
+        'corpus_research.py'
+      ],
+      'volumes': [{
+          'name': 'corpus',
+          'path': '/corpus'
+          },
+                  ],
 
-  #     'args': [
-  #         '-m', 'cp', '-r',
-  #         f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
-  #         '/workspace/research-corpus'
-  #     ],
-  #     'volumes': [{
-  #         'name': 'corpus',
-  #         'path': '/corpus'
-  #     },
-  #     {
-  #         'name': 'research-corpus',
-  #         'path': '/research-corpus'
-  #     }
-  #                 ],
-
-  # })
+  })
   return steps
 
 
