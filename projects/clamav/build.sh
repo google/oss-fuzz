@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright (C) 2018 Cisco Systems, Inc. and/or its affiliates. All rights reserved.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ cmake ${SRC}/clamav \
     -DJSONC_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libjson-c.a"             \
     -DENABLE_JSON_SHARED=OFF                                           \
     -DBZIP2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"                 \
-    -DBZIP2_LIBRARY_RELEASE="$CLAMAV_DEPENDENCIES/lib/libbz2_static.a" \
+    -DBZIP2_LIBRARY_RELEASE="$CLAMAV_DEPENDENCIES/lib/libbz2.a"        \
     -DOPENSSL_ROOT_DIR="$CLAMAV_DEPENDENCIES"                          \
     -DOPENSSL_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"               \
     -DOPENSSL_CRYPTO_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libcrypto.a"    \
