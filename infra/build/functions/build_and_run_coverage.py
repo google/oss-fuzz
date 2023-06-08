@@ -287,6 +287,10 @@ def get_corpus_research_steps(project, config):
           f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
           f'/workspace/{project.name}'
       ],
+      'volumes': [{
+          'name': 'workspace',
+          'path': '/workspace'
+          },
   })
   #   build_steps.append({
   #     'name': build_lib.get_runner_image_name(config.test_image_suffix),
