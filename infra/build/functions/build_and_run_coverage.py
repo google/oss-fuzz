@@ -265,7 +265,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   # # Corpus research steps.
   # if config.corpus_research:
   # !!!
-  build_steps.extend(get_corpus_research_steps(project, config))
+  build_steps.extend(get_corpus_research_steps(project, config, coverage_env))
   # build_steps = get_corpus_research_steps(project, config, coverage_env)
 
   build_steps.append(
