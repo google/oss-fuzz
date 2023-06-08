@@ -298,7 +298,7 @@ def get_corpus_research_steps(project, config, coverage_env):
       'name':
           'gcr.io/oss-fuzz-base/base-runner-research',
       'env':
-          coverage_env,
+          research_env,
       'args': ['corpus_research.py'],
       'volumes': [
           {
