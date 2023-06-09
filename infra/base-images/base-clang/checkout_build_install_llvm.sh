@@ -50,7 +50,7 @@ LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutil
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
+OUR_LLVM_REVISION=llvmorg-16-init-17653-g39da55e8
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
