@@ -54,10 +54,8 @@ OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang
+git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
 cd clang
-# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
-git checkout 946a41a51f44207941b3729a0733dfc1e236644e
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
