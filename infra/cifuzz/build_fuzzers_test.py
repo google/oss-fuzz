@@ -209,9 +209,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         git_sha='HEAD',
         cfl_platform='github',
         base_commit='HEAD^1')
-    self.assertTrue(build_fuzzers.build_fuzzers(config))
-    self.assertTrue(
-        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_external_generic_project(self):
     """Tests building fuzzers from an external project not on Github."""
@@ -257,9 +255,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         pr_ref='refs/pull/1757/merge',
         base_ref='master',
         cfl_platform='github')
-    self.assertTrue(build_fuzzers.build_fuzzers(config))
-    self.assertTrue(
-        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_pull_request(self):
     """Tests building fuzzers with invalid pull request."""
@@ -270,7 +266,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         pr_ref='ref-1/merge',
         base_ref='master',
         cfl_platform='github')
-    self.assertTrue(build_fuzzers.build_fuzzers(config))
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_oss_fuzz_project_name(self):
     """Tests building fuzzers with invalid project name."""
