@@ -49,6 +49,7 @@ done
 
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
 SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
+COVERAGE_TARGET_FILE="$FUZZER_STATS_DIR/coverage_targets.txt"
 
 # Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
 PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
@@ -300,9 +301,17 @@ for fuzz_target in $FUZZ_TARGETS; do
     if [[ $FUZZING_ENGINE != "none" ]]; then
       grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || grep "testing\.T" $fuzz_target > /dev/null 2>&1 || continue
     fi
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_go_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     echo "Entering python fuzzing"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_python_fuzz_target $fuzz_target
   elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     # Continue if not a fuzz target.
@@ -311,6 +320,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_java_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
     # Continue if not a fuzz target.
@@ -319,6 +332,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_javascript_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
@@ -327,6 +344,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_fuzz_target $fuzz_target &
 
     # Rewrite object if its a FUZZTEST target
