@@ -18,6 +18,7 @@ MACROS=$(MANFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
 EsiINC=\
 	$(INCDIR)/include \
 	$(INCDIR)/plugins/esi \
+	$(INCDIR)/plugins/esi/common \
 	$(INCDIR)/plugins/esi/lib \
 	$(INCDIR)/plugins/esi/fetcher 
 
