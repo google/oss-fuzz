@@ -35,7 +35,13 @@ sed -i 's/flto/flto=thin/g' ./configure.ac
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib -j$(nproc)  # LTO=1 temporarily disabled due to https://github.com/google/oss-fuzz/pull/9461#issuecomment-1568189633
+  # LTO=1 temporarily disabled due to https://github.com/google/oss-fuzz/pull/9461#issuecomment-1568189633
+  if [ "$ARCHITECTURE" = "i386" ]; then
+    # DEBUG=1 temporarily disabled due to https://github.com/google/oss-fuzz/pull/10466#issuecomment-1576658462
+    make HOST=$BUILD_TRIPLET         NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib -j$(nproc)
+  else
+    make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib -j$(nproc)
+  fi
 )
 
 # Build the fuzz targets
