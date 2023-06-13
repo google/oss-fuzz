@@ -18,5 +18,5 @@ cmake -DBUILD_TESTING=OFF -DBUILD_BENCHMARK=OFF ../
 make
 
 # Compile fuzzers
-cp $SRC/fuzz* .
+cp $SRC/fuzz_* .
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_cctz.cc ./libcctz.a  -I../include/ -o $OUT/fuzz_cctz

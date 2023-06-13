@@ -13,6 +13,6 @@ steps:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
-  timeout: 21600s # 6 hours
+  timeout: 25200s # 7 hours, note build_lib.py sets timeout to 20 hours.
 logsBucket: gs://oss-fuzz-trialbuild-logs
-timeout: 21600s
+timeout: 25200s # 7 hours

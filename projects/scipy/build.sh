@@ -15,6 +15,12 @@
 #
 ###############################################################################
 
+# Avoid native LTO compilation for the dependencies under Fuzz Introspector
+if [ "$SANITIZER" == "introspector" ]; then
+    export CFLAGS=""
+    export CXXFLAGS=""
+fi
+
 git submodule update --init
 python3 -m pip install .
 

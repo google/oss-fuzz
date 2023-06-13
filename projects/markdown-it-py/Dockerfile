@@ -14,5 +14,5 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/executablebooks/markdown-it-py markdown-it-py
-COPY *.sh *py $SRC/
+COPY *.sh $SRC/
 WORKDIR $SRC/markdown-it-py

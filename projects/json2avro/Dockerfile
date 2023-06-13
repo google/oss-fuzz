@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-import atheris
-from markdown_it import MarkdownIt
+#
+################################################################################
 
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  md = MarkdownIt()
-  raw_markdown = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
-  md.parse(raw_markdown)
-  md.render(raw_markdown)
+RUN git clone --depth 1 https://github.com/allegro/json-avro-converter/ json2avro
 
-
-def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/json2avro
