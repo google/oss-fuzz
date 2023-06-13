@@ -95,7 +95,7 @@ def analyze_research_corpus(project):
     real_corpus = OSS_FUZZ_ROOT / 'build' / 'corpus' / project / fuzzer
     fuzzer_research_corpus = research_corpus_dir / fuzzer
     # !!!
-    shutil.copytree(real_corpus, fuzzer_research_corpus / 'actual-corpus')
+    # shutil.copytree(real_corpus, fuzzer_research_corpus / 'actual-corpus')
     print('fuzzer', fuzzer)
     print('cc',
           compare_corpora(fuzzer, project, real_corpus, fuzzer_research_corpus))
