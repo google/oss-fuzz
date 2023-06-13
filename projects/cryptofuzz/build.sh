@@ -59,7 +59,10 @@ mkdir -p $GOPATH_DEV/src/golang.org/x/sys/
 cp -R $SRC/go-sys/* $GOPATH_DEV/src/golang.org/x/sys/
 export PATH_GO_DEV=$GOROOT_DEV/bin:$GOROOT_DEV/packages/bin:$PATH
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
