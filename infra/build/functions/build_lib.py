@@ -95,6 +95,9 @@ DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
 _ARM64 = 'aarch64'
 
+OSS_FUZZ_ROOT = os.path.abspath(os.path.join(__file__, '..', '..', '..', '..'))
+print('OSS_FUZZ_ROOT', OSS_FUZZ_ROOT)
+
 
 def get_targets_list_filename(sanitizer):
   """Returns target list filename."""
@@ -373,7 +376,7 @@ def _make_image_name_architecture_specific(image_name, architecture):
 def get_docker_build_step(image_names,
                           directory,
                           use_buildkit_cache=False,
-                          src_root='oss-fuzz',
+                          src_root='.',
                           architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
@@ -540,6 +543,15 @@ def run_build(  # pylint: disable=too-many-arguments
                               body_overrides,
                               tags,
                               use_build_pool=use_build_pool)
+
+  import subprocess
+  import tempfile
+  import json
+  import ipdb; ipdb.set_trace()
+  with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
+    config_file.write(bytes(json.dumps(build_body), 'utf-8'))
+    config_file.seek(0)
+    subprocess.run(['gcloud', 'builds', 'submit', f'--config={config_file.name}', ], cwd=OSS_FUZZ_ROOT)
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
