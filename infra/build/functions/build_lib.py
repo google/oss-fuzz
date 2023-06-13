@@ -96,7 +96,6 @@ DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 _ARM64 = 'aarch64'
 
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(__file__, '..', '..', '..', '..'))
-print('OSS_FUZZ_ROOT', OSS_FUZZ_ROOT)
 
 
 def get_targets_list_filename(sanitizer):
@@ -547,7 +546,6 @@ def run_build(  # pylint: disable=too-many-arguments
   import subprocess
   import tempfile
   import json
-  import ipdb; ipdb.set_trace()
   with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
     config_file.write(bytes(json.dumps(build_body), 'utf-8'))
     config_file.seek(0)
