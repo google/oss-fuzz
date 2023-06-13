@@ -435,6 +435,10 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   classes_dir=$DUMPS_DIR/classes
   mkdir $classes_dir
   for fuzz_target in $FUZZ_TARGETS; do
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
     cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
   done
 
