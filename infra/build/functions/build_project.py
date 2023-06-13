@@ -556,7 +556,11 @@ def build_script_main(script_description, get_build_steps_func, build_type):
       error = True
       continue
 
-    run_build(project_name, steps, credentials, build_type, args.experiment)
+    run_build(project_name,
+              steps,
+              credentials,
+              build_type,
+              experiment=args.experiment)
   return 0 if not error else 1
 
 
