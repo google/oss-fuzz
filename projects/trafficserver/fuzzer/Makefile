@@ -24,7 +24,7 @@ EsiINC=\
 
 EsiLIB=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/plugins/esi/.libs/ \
-	$(EsiLib) -lesicore
+	-lesicore
 
 #HttpEXE
 HttpINC=\
