@@ -115,10 +115,10 @@ def main():
       continue
 
     # If the previous commit is not associated with a pull request.
-    pr_message = (f'{pr_author} has previously contributed to '
-                  f'[{project_path}]({project_url}). The previous commit was '
-                  f'{GITHUB_NONREF_URL}/{OWNER}/{REPO}/commit/{commit_sha}<br/>'
-                  )
+    pr_message = (
+        f'{pr_author} has previously contributed to '
+        f'[{project_path}]({project_url}). The previous commit was '
+        f'{GITHUB_NONREF_URL}/{OWNER}/{REPO}/commit/{commit_sha}<br/>')
 
     pr_url = github.get_pull_request_url(commit_sha)
     if pr_url is not None:
