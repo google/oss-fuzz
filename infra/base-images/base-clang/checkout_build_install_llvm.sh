@@ -56,7 +56,7 @@ mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
-# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
+# Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
 git checkout 946a41a51f44207941b3729a0733dfc1e236644e
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
