@@ -27,6 +27,7 @@ make -j$(nproc) --ignore-errors
 
 pushd fuzzer/
 make
+patchelf --set-rpath '$ORIGIN/lib' FuzzHTTP
 cp FuzzEsi $OUT/FuzzEsi
 cp FuzzHTTP $OUT/FuzzHTTP
 popd

@@ -53,8 +53,7 @@ CoreLib=$(LIB_FUZZING_ENGINE) \
 	-lpcre -lssl -lcrypto -lresolv \
 	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
 	$(LIBDIR)/iocore/eventsystem/ -linkevent \
-	$(LIBDIR)/src/records/ -lrecords_p \
-	-Wl,-rpath=lib/
+	$(LIBDIR)/src/records/ -lrecords_p
 
 all: $(TARGET)
 
