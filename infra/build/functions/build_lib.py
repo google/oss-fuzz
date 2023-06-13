@@ -537,7 +537,8 @@ def run_build(  # pylint: disable=too-many-arguments
     timeout,
     body_overrides=None,
     tags=None,
-    use_build_pool=True):
+    use_build_pool=True,
+    experiment):
   """Runs the build."""
 
   build_body = get_build_body(steps,
@@ -545,16 +546,19 @@ def run_build(  # pylint: disable=too-many-arguments
                               body_overrides,
                               tags,
                               use_build_pool=use_build_pool)
-  with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
-    config_file.write(bytes(json.dumps(build_body), 'utf-8'))
-    config_file.seek(0)
-    subprocess.run([
-        'gcloud',
-        'builds',
-        'submit',
-        f'--config={config_file.name}',
-    ],
-                   cwd=OSS_FUZZ_ROOT)
+  if experiment:
+    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
+      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
+      config_file.seek(0)
+      subprocess.run([
+          'gcloud',
+          'builds',
+          'submit',
+          f'--config={config_file.name}',
+      ],
+                     cwd=OSS_FUZZ_ROOT)
+
+      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',

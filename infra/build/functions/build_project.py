@@ -485,7 +485,8 @@ def run_build(oss_fuzz_project,
                              cloud_project,
                              timeout,
                              body_overrides=body_overrides,
-                             tags=tags)
+                             tags=tags,
+                             experiment=experiment)
 
 
 def get_args(description):
