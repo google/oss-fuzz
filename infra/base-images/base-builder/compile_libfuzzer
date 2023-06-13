@@ -21,5 +21,5 @@ if [ "$FUZZING_LANGUAGE" = "go" ]; then
     export LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE $GOPATH/gosigfuzz/gosigfuzz.o"
 fi
 
-cp /usr/local/lib/clang/17.0.0/lib/$ARCHITECTURE-unknown-linux-gnu/libclang_rt.fuzzer.a $LIB_FUZZING_ENGINE_DEPRECATED
+cp /usr/local/lib/clang/*/lib/$ARCHITECTURE-unknown-linux-gnu/libclang_rt.fuzzer.a $LIB_FUZZING_ENGINE_DEPRECATED
 echo " done."
