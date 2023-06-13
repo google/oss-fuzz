@@ -22,6 +22,9 @@ import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
+import subprocess
+import tempfile
+import json
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
@@ -542,14 +545,16 @@ def run_build(  # pylint: disable=too-many-arguments
                               body_overrides,
                               tags,
                               use_build_pool=use_build_pool)
-
-  import subprocess
-  import tempfile
-  import json
   with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
     config_file.write(bytes(json.dumps(build_body), 'utf-8'))
     config_file.seek(0)
-    subprocess.run(['gcloud', 'builds', 'submit', f'--config={config_file.name}', ], cwd=OSS_FUZZ_ROOT)
+    subprocess.run([
+        'gcloud',
+        'builds',
+        'submit',
+        f'--config={config_file.name}',
+    ],
+                   cwd=OSS_FUZZ_ROOT)
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
