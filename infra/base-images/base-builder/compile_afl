@@ -15,13 +15,8 @@
 #
 ################################################################################
 
-# Temporarily disable randomization and enforce a safe and sane setup
-
-# Since LLVM 15, pcguard creates LLVM 15+ specific IR and ASM, the AFL++
-# pcguard will need to emulate this, but this will take quite some time.
-# Until then we switch to LLVM's native instrumentation and loose about 3%+
-# effectiveness.
-export AFL_LLVM_INSTRUMENT=LLVM-NATIVE
+# If LLVM once again does weird changes then enable this:
+#export AFL_LLVM_INSTRUMENT=LLVM-NATIVE
 
 # AFL++ setup
 echo "Copying precompiled AFL++"
