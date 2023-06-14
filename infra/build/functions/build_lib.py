@@ -554,6 +554,7 @@ def run_build(  # pylint: disable=too-many-arguments
           'gcloud',
           'builds',
           'submit',
+          '--project=oss-fuzz',
           f'--config={config_file.name}',
       ],
                      cwd=OSS_FUZZ_ROOT)
