@@ -29,7 +29,7 @@ def TestOneInput(data):
   try:
     interpreter = asteval.asteval.Interpreter()
     interpreter.eval(fuzz_expr)
-  except (ValueError,):
+  except (ValueError, OSError):
     pass
 
 

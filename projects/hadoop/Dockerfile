@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,20 @@
 #
 ################################################################################
 
-# The current clang revision is broken, pin to older one.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
-RUN apt-get update && \
-    apt-get install -y autoconf automake libtool bison re2c pkg-config
-RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-WORKDIR php-src
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+# if not set python infra helper cannot be used for local testing
+
+COPY project-parent $SRC/project-parent/
+
+RUN rm -rf $SRC/project-parent/hadoop
+RUN git clone --depth 1 https://github.com/apache/hadoop/ $SRC/project-parent/hadoop
+
 COPY build.sh $SRC/
+WORKDIR $SRC/

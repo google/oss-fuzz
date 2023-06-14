@@ -23,29 +23,46 @@ export GO111MODULE=off
 # Install Go stable binaries
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
-if [[ $CFLAGS = *-m32* ]]
-then
-    tar zxf $SRC/go1.20.4.linux-386.tar.gz
-else
-    tar zxf $SRC/go1.20.4.linux-amd64.tar.gz
-fi
-mkdir $SRC/go-bootstrap/go/packages/
 
-# Compile and install Go development version
-cd $SRC/go/src/
-export GOROOT=$SRC/go-bootstrap/go/
-export GOPATH=$GOROOT/packages
+tar zxf $SRC/go1.19.10.linux-amd64.tar.gz
+mv go/ go-119
+export GOROOT_119=$SRC/go-bootstrap/go-119/
+export GOPATH_119=$GOROOT_119/packages/
+mkdir $GOPATH_119
+mkdir -p $GOPATH_119/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_119/src/golang.org/x/crypto/
+mkdir -p $GOPATH_119/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_119/src/golang.org/x/sys/
+export PATH_GO_119=$GOROOT_119/bin:$GOROOT_119/packages/bin:$PATH
+
+tar zxf $SRC/go1.20.5.linux-amd64.tar.gz
+mv go/ go-120
+export GOROOT_120=$SRC/go-bootstrap/go-120/
+export GOPATH_120=$GOROOT_120/packages/
+mkdir $GOPATH_120
+mkdir -p $GOPATH_120/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_120/src/golang.org/x/crypto/
+mkdir -p $GOPATH_120/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_120/src/golang.org/x/sys/
+export PATH_GO_120=$GOROOT_120/bin:$GOROOT_120/packages/bin:$PATH
+
+# Compile Go development version
+cd $SRC/go-dev/src/
 export OLD_PATH=$PATH
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-./make.bash
-export PATH=$OLD_PATH
-unset OLD_PATH
-export GOROOT=$(realpath ../)
-export GOPATH=$GOROOT/packages
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-rm -rf $SRC/go-bootstrap/
+PATH="$PATH_GO_120" ./make.bash
+export GOROOT_DEV=$(realpath ../)
+export GOPATH_DEV=$GOROOT_DEV/packages
+mkdir $GOPATH_DEV
+mkdir -p $GOPATH_DEV/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_DEV/src/golang.org/x/crypto/
+mkdir -p $GOPATH_DEV/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_DEV/src/golang.org/x/sys/
+export PATH_GO_DEV=$GOROOT_DEV/bin:$GOROOT_DEV/packages/bin:$PATH
+
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -81,9 +98,6 @@ export INCLUDE_PATH_FLAGS=""
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
-
-git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
-git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
@@ -493,12 +507,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang module
+# Compile Cryptofuzz Golang (119) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
     cd $SRC/cryptofuzz/modules/golang
-    make -B
+    GOROOT="$GOROOT_119" GOPATH="$GOPATH_119" PATH="$PATH_GO_119" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -527,6 +540,8 @@ then
     CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
     LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
 fi
+
+rm -f $SRC/cryptofuzz/modules/golang/module.a
 
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
@@ -567,6 +582,14 @@ export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
 # Compile Cryptofuzz wolfcrypt (without assembly) module
 cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
+
+##############################################################################
+# Compile Cryptofuzz Golang (120) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_120" GOPATH="$GOPATH_120" PATH="$PATH_GO_120" make -B
+fi
 
 # OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
 export SAVE_CXXFLAGS="$CXXFLAGS"
@@ -644,7 +667,17 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
+rm -f $SRC/cryptofuzz/modules/golang/module.a
+
 export CXXFLAGS="$SAVE_CXXFLAGS"
+
+##############################################################################
+# Compile Cryptofuzz Golang (dev branch) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" make -B
+fi
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -655,9 +688,9 @@ then
     cd build
     if [[ $CFLAGS = *-m32* ]]
     then
-        setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
     else
-        cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
     make -j$(nproc) crypto
 
@@ -694,7 +727,7 @@ make -B -f Makefile-mini-gmp
 cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
+GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
 make -j$(nproc) crypto
 
 # Compile Cryptofuzz BoringSSL (with assembly) module
