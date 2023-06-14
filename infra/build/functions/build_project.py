@@ -528,7 +528,7 @@ def create_config_from_commandline(args):
                 branch=args.branch,
                 parallel=args.parallel,
                 upload=True,
-                experiment=experiment)
+                experiment=args.experiment)
 
 
 def build_script_main(script_description, get_build_steps_func, build_type):
