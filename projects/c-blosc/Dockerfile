@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
+RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/Blosc/c-blosc.git c-blosc
 WORKDIR c-blosc
 COPY build.sh $SRC/
