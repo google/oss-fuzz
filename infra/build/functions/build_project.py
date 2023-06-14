@@ -525,7 +525,7 @@ def get_args(description):
 
 def create_config_from_commandline(args):
   """Create a Config object from parsed command line |args|."""
-  upload = not args.experiment:
+  upload = not args.experiment
   return Config(testing=args.testing,
                 test_image_suffix=args.test_image_suffix,
                 branch=args.branch,
