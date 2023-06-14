@@ -17,7 +17,7 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>6.1.1</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>6.1.2.1</fuzzedLibaryVersion>
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
