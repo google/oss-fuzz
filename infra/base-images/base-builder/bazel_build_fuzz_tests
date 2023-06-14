@@ -50,7 +50,6 @@ done
 declare -r BAZEL_BUILD_FLAGS=(
     "-c" "opt"
     "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
-    "--@rules_fuzzing//fuzzing:java_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_java_engine" \
     "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
     "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
     "--cxxopt=-stdlib=libc++" \
