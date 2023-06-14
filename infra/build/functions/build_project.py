@@ -58,8 +58,8 @@ PROJECTS_DIR = os.path.abspath(
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 Config = collections.namedtuple(
     'Config',
-    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
-    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
+    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload', 'experiment'],
+    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True, False))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -292,7 +292,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.image,
       project.fuzzing_language,
       config=config,
-      architectures=project.architectures)
+      architectures=project.architectures,
+      experiment=config.experiment)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -526,7 +527,8 @@ def create_config_from_commandline(args):
                 test_image_suffix=args.test_image_suffix,
                 branch=args.branch,
                 parallel=args.parallel,
-                upload=True)
+                upload=True,
+                experiment=experiment)
 
 
 def build_script_main(script_description, get_build_steps_func, build_type):

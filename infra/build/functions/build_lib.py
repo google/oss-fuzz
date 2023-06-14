@@ -378,7 +378,7 @@ def _make_image_name_architecture_specific(image_name, architecture):
 def get_docker_build_step(image_names,
                           directory,
                           use_buildkit_cache=False,
-                          src_root='.',
+                          src_root='oss-fuzz',
                           architecture='x86_64'):
   """Returns the docker build step."""
   assert len(image_names) >= 1
