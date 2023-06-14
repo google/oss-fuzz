@@ -29,15 +29,10 @@ rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 cd jazzer && \
-git checkout b12d1ea863b336b120e192700ac11c9744af6cfd # v0.17.1
-cat << 'EOF' >> .bazelrc
-build --java_runtime_version=local_jdk_15
-build --cxxopt=-stdlib=libc++
-build --linkopt=-lc++
-EOF
-bazel build //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar //deploy:jazzer-api //launcher:jazzer
-cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar
-cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver
-cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH
+git checkout c9f9347b7a72a4e65441d0442c7381790aa4c538
+bazel build --java_runtime_version=local_jdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
+  //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar
+cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/
+cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH
 rm -rf ~/.cache/bazel ~/.cache/bazelisk
 rm -rf $SRC/jazzer
