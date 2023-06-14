@@ -428,7 +428,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     image,
     language,
     config,
-    architectures=None):
+    architectures=None,
+    experiment=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
@@ -438,8 +439,10 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
+  src_root = 'oss-fuzz' if not experiment else '.'
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name))
+                                            os.path.join('projects', name),
+                                            src_root=src_root)
   steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
   steps.extend([{
