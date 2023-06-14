@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y subversion
+RUN apt-get update
 
 RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 WORKDIR llvm-project/libcxxabi
