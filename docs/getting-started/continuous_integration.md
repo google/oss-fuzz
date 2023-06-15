@@ -73,6 +73,9 @@ permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   # Uncomment this to get results in the GitHub security dashboard.
+   # permissions:
+   #   security-events: write
    steps:
    - name: Build Fuzzers
      id: build
@@ -143,6 +146,9 @@ permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   # Uncomment this to get results in the GitHub security dashboard.
+   # permissions:
+   #   security-events: write
    strategy:
      fail-fast: false
      matrix:
