@@ -9,6 +9,8 @@ auto_ccs:
   - "sathyanarayana.nujella@intel.corp-partner.google.com"
   - "adrian.bonislawski@intel.com"
   - "michal.wasko@intel.com"
+  - "jyri.sarha@intel.com"
+  - "rander.wang@intel.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
