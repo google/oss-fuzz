@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/allegro/json-avro-converter
+language: jvm
+main_repo: https://github.com/allegro/json-avro-converter
+sanitizers:
+- address
+vendor_ccs:
+- arthur.chan@adalogics.com
+- david@adalogics.com
+- adam@adalogics.com

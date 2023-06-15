@@ -8,3 +8,5 @@ sanitizers:
   - address
 main_repo: 'https://github.com/Alan32Liu/github-scarecrow'
 file_github_issue: True
+auto_ccs:
+  - 'gongh@google.com'

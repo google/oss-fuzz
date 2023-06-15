@@ -1,0 +1,302 @@
+/github/workspace/build-out/fuzz-bus-label -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpsngf52cy/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-bus-label >fuzz-0.log 2>&1
+================== Job 0 exited with exit code 0 ============
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 2 modules   (82577 inline 8-bit counters): 82573 [0x7fc55e6bedf0, 0x7fc55e6d307d), 4 [0x5e9c28, 0x5e9c2c), 
+2023-05-04 01:02:55,065 - root - INFO - Not reporting crash in fuzz-bus-label because process timed out.
+2023-05-04 01:02:55,069 - root - INFO - Deleting corpus and seed corpus of fuzz-bus-label to save disk.
+INFO: Loaded 2 PC tables (82577 PCs): 82573 [0x7fc55e6d3080,0x7fc55e815950), 4 [0x5a6c78,0x5a6cb8), 
+INFO:      256 files found in /github/workspace/cifuzz-corpus/fuzz-bus-label
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 1048576 bytes
+INFO: seed corpus: files: 256 min: 1b max: 5242880b total: 30968483b rss: 48Mb
+#257	INITED cov: 41 ft: 230 corp: 111/4360b exec/s: 0 rss: 73Mb
+#131072	pulse  cov: 41 ft: 230 corp: 111/4360b lim: 1048576 exec/s: 43690 rss: 76Mb
+#262144	pulse  cov: 41 ft: 230 corp: 111/4360b lim: 1048576 exec/s: 43690 rss: 76Mb
+#524288	pulse  cov: 41 ft: 230 corp: 111/4360b lim: 1048576 exec/s: 43690 rss: 77Mb
+#609082	DONE   cov: 41 ft: 230 corp: 111/4360b lim: 1048576 exec/s: 43505 rss: 77Mb
+Done 609082 runs in 14 second(s)
+stat::number_of_executed_units: 609082
+stat::average_exec_per_sec:     43505
+stat::new_units_added:          0
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              77
+/github/workspace/build-out/fuzz-bus-label -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpsngf52cy/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-bus-label >fuzz-1.log 2>&1
+2023-05-04 01:02:55,082 - root - INFO - Deleting fuzz target: fuzz-bus-label.
+2023-05-04 01:02:55,083 - root - INFO - Done deleting.
+2023-05-04 01:02:55,084 - root - INFO - Fuzzer fuzz-bus-label finished running without reportable crashes.
+2023-05-04 01:02:55,084 - root - INFO - Running fuzzer: fuzz-dhcp-server.
+2023-05-04 01:02:55,085 - root - INFO - Downloading corpus from OSS-Fuzz: https://storage.googleapis.com/systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-dhcp-server/public.zip
+2023-05-04 01:02:55,088 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): storage.googleapis.com:443
+2023-05-04 01:02:55,145 - urllib3.connectionpool - DEBUG - https://storage.googleapis.com:443 "GET /systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-dhcp-server/public.zip HTTP/1.1" 200 806749
+2023-05-04 01:02:55,350 - root - INFO - Starting fuzzing
+Fuzzing logs:
+/github/workspace/build-out/fuzz-dhcp-server -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpyxgwwsvr/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-dhcp-server >fuzz-0.log 2>&1
+================== Job 0 exited with exit code 0 ============
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 2 modules   (83640 inline 8-bit counters): 82573 [0x7fe86ff70df0, 0x7fe86ff8507d), 1067 [0x60c638, 0x60ca63), 
+INFO: Loaded 2 PC tables (83640 PCs): 82573 [0x7fe86ff85080,0x7fe8700c7950), 1067 [0x60ca68,0x610d18), 
+INFO:     1153 files found in /github/workspace/cifuzz-corpus/fuzz-dhcp-server
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 1048576 bytes
+INFO: seed corpus: files: 1153 min: 1b max: 5242879b total: 17056071b rss: 50Mb
+#1155	INITED cov: 577 ft: 1116 corp: 203/54Kb exec/s: 0 rss: 86Mb
+#1167	NEW    cov: 577 ft: 1117 corp: 204/54Kb lim: 1048576 exec/s: 0 rss: 86Mb L: 243/1071 MS: 2 ChangeASCIIInt-CrossOver-
+#1509	NEW    cov: 577 ft: 1118 corp: 205/54Kb lim: 1048576 exec/s: 0 rss: 86Mb L: 243/1071 MS: 2 ChangeBit-CopyPart-
+#63018	NEW    cov: 577 ft: 1119 corp: 206/55Kb lim: 1048576 exec/s: 21006 rss: 86Mb L: 245/1071 MS: 4 InsertByte-ChangeByte-CMP-InsertByte- DE: "2\000\000\000\000\000\000\000"-
+#65536	pulse  cov: 577 ft: 1119 corp: 206/55Kb lim: 1048576 exec/s: 21845 rss: 86Mb
+Loaded 1024/1155 files from /github/workspace/cifuzz-corpus/fuzz-dhcp-server
+#99784	NEW    cov: 577 ft: 1120 corp: 207/55Kb lim: 1048576 exec/s: 19956 rss: 105Mb L: 243/1071 MS: 2 ChangeASCIIInt-ChangeBinInt-
+#131072	pulse  cov: 577 ft: 1120 corp: 207/55Kb lim: 1048576 exec/s: 21845 rss: 105Mb
+#262144	pulse  cov: 577 ft: 1120 corp: 207/55Kb lim: 1048576 exec/s: 20164 rss: 105Mb
+#275639	DONE   cov: 577 ft: 1120 corp: 207/55Kb lim: 1048576 exec/s: 19688 rss: 105Mb
+###### Recommended dictionary. ######
+"2\000\000\000\000\000\000\000" # Uses: 17879
+###### End of recommended dictionary. ######
+Done 275639 runs in 14 second(s)
+stat::number_of_executed_units: 275639
+stat::average_exec_per_sec:     19688
+stat::new_units_added:          4
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              105
+/github/workspace/build-out/fuzz-dhcp-server -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpyxgwwsvr/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-dhcp-server >fuzz-1.log 2>&1
+2023-05-04 01:03:18,374 - root - INFO - Not reporting crash in fuzz-dhcp-server because process timed out.
+2023-05-04 01:03:18,377 - root - INFO - Deleting corpus and seed corpus of fuzz-dhcp-server to save disk.
+2023-05-04 01:03:18,399 - root - INFO - Deleting fuzz target: fuzz-dhcp-server.
+2023-05-04 01:03:18,400 - root - INFO - Done deleting.
+2023-05-04 01:03:18,400 - root - INFO - Fuzzer fuzz-dhcp-server finished running without reportable crashes.
+2023-05-04 01:03:18,401 - root - INFO - Running fuzzer: fuzz-bcd.
+2023-05-04 01:03:18,401 - root - INFO - Downloading corpus from OSS-Fuzz: https://storage.googleapis.com/systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-bcd/public.zip
+2023-05-04 01:03:18,404 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): storage.googleapis.com:443
+2023-05-04 01:03:18,582 - urllib3.connectionpool - DEBUG - https://storage.googleapis.com:443 "GET /systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-bcd/public.zip HTTP/1.1" 200 2293254
+2023-05-04 01:03:18,804 - root - INFO - Starting fuzzing
+Fuzzing logs:
+/github/workspace/build-out/fuzz-bcd -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpgvqlyr8q/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-bcd >fuzz-0.log 2>&1
+================== Job 0 exited with exit code 0 ============
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 2 modules   (83175 inline 8-bit counters): 82573 [0x7f1b5387edf0, 0x7f1b5389307d), 602 [0x5f8718, 0x5f8972), 
+INFO: Loaded 2 PC tables (83175 PCs): 82573 [0x7f1b53893080,0x7f1b539d5950), 602 [0x5f8978,0x5faf18), 
+INFO:     1260 files found in /github/workspace/cifuzz-corpus/fuzz-bcd
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 946175 bytes
+INFO: seed corpus: files: 1260 min: 1b max: 946175b total: 10373697b rss: 48Mb
+#1261	INITED cov: 137 ft: 653 corp: 282/1416Kb exec/s: 0 rss: 91Mb
+#65536	pulse  cov: 137 ft: 653 corp: 282/1416Kb lim: 946175 exec/s: 32768 rss: 98Mb
+#131072	pulse  cov: 137 ft: 653 corp: 282/1416Kb lim: 946175 exec/s: 32768 rss: 98Mb
+#262144	pulse  cov: 137 ft: 653 corp: 282/1416Kb lim: 946175 exec/s: 37449 rss: 98Mb
+#475081	DONE   cov: 137 ft: 653 corp: 282/1416Kb lim: 946175 exec/s: 33934 rss: 98Mb
+Done 475081 runs in 14 second(s)
+stat::number_of_executed_units: 475081
+stat::average_exec_per_sec:     33934
+stat::new_units_added:          0
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              98
+/github/workspace/build-out/fuzz-bcd -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpgvqlyr8q/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-bcd >fuzz-1.log 2>&1
+2023-05-04 01:03:41,821 - root - INFO - Not reporting crash in fuzz-bcd because process timed out.
+2023-05-04 01:03:41,822 - root - INFO - Deleting corpus and seed corpus of fuzz-bcd to save disk.
+2023-05-04 01:03:41,848 - root - INFO - Deleting fuzz target: fuzz-bcd.
+2023-05-04 01:03:41,848 - root - INFO - Done deleting.
+2023-05-04 01:03:41,848 - root - INFO - Fuzzer fuzz-bcd finished running without reportable crashes.
+2023-05-04 01:03:41,848 - root - INFO - Running fuzzer: fuzz-varlink.
+2023-05-04 01:03:41,849 - root - INFO - Downloading corpus from OSS-Fuzz: https://storage.googleapis.com/systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-varlink/public.zip
+2023-05-04 01:03:41,852 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): storage.googleapis.com:443
+2023-05-04 01:03:41,906 - urllib3.connectionpool - DEBUG - https://storage.googleapis.com:443 "GET /systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-varlink/public.zip HTTP/1.1" 200 2586434
+2023-05-04 01:03:42,671 - root - INFO - Starting fuzzing
+2023-05-04 01:04:05,709 - root - INFO - Not reporting crash in fuzz-varlink because process timed out.
+Fuzzing logs:
+/github/workspace/build-out/fuzz-varlink -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpbtf4f932/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-varlink >fuzz-0.log 2>&1
+2023-05-04 01:04:05,709 - root - INFO - Deleting corpus and seed corpus of fuzz-varlink to save disk.
+2023-05-04 01:04:05,806 - root - INFO - Deleting fuzz target: fuzz-varlink.
+2023-05-04 01:04:05,806 - root - INFO - Done deleting.
+2023-05-04 01:04:05,806 - root - INFO - Fuzzer fuzz-varlink finished running without reportable crashes.
+2023-05-04 01:04:05,806 - root - INFO - Running fuzzer: fuzz-unit-file.
+2023-05-04 01:04:05,807 - root - INFO - Downloading corpus from OSS-Fuzz: https://storage.googleapis.com/systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-unit-file/public.zip
+2023-05-04 01:04:05,809 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): storage.googleapis.com:443
+2023-05-04 01:04:05,897 - urllib3.connectionpool - DEBUG - https://storage.googleapis.com:443 "GET /systemd-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/systemd_fuzz-unit-file/public.zip HTTP/1.1" 200 4999974
+2023-05-04 01:04:07,869 - root - INFO - Starting fuzzing
+2023-05-04 01:04:09,516 - root - INFO - Fuzzer: fuzz-unit-file. Detected bug.
+Fuzzing logs:
+/github/workspace/build-out/fuzz-unit-file -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpjhswtxiw/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-unit-file >fuzz-0.log 2>&1
+2023-05-04 01:04:09,517 - root - INFO - Trying to reproduce crash using: /tmp/tmpjhswtxiw/crash-7be9e0f3a71d95f8d5e67c5a9d84273d6f4e3c03.
+================== Job 0 exited with exit code 77 ============
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 2 modules   (82576 inline 8-bit counters): 82573 [0x7f3b0de4cdf0, 0x7f3b0de6107d), 3 [0x5e9b28, 0x5e9b2b), 
+INFO: Loaded 2 PC tables (82576 PCs): 82573 [0x7f3b0de61080,0x7f3b0dfa3950), 3 [0x5a6af8,0x5a6b28), 
+INFO:    20907 files found in /github/workspace/cifuzz-corpus/fuzz-unit-file
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 604973 bytes
+INFO: seed corpus: files: 20907 min: 1b max: 604973b total: 16005340b rss: 61Mb
+=================================================================
+==74==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000005078 at pc 0x0000004ddffa bp 0x7fffeea64fe0 sp 0x7fffeea64fd8
+READ of size 4 at 0x602000005078 thread T0
+SCARINESS: 27 (4-byte-read-heap-buffer-overflow-far-from-bounds)
+    #0 0x4ddff9 in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:30:16
+    #1 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #2 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #3 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #4 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #5 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #6 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #7 0x7f3b0ce20082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #8 0x41f6ed in _start (build-out/fuzz-unit-file+0x41f6ed)
+
+DEDUP_TOKEN: samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*)
+0x602000005078 is located 38 bytes to the right of 2-byte region [0x602000005050,0x602000005052)
+freed by thread T0 here:
+    #0 0x4a0882 in __interceptor_free /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:52:3
+    #1 0x4ddfb7 in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:29:9
+    #2 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #5 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #6 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7f3b0ce20082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: __interceptor_free--samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+previously allocated by thread T0 here:
+    #0 0x4a0b26 in malloc /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:69:3
+    #1 0x4ddfac in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:28:25
+    #2 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #5 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #6 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7f3b0ce20082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: malloc--samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+SUMMARY: AddressSanitizer: heap-buffer-overflow /work/build/../../src/systemd/src/core/fuzz-unit-file.c:30:16 in samLLVM2FuzzerTestOneInput
+Shadow bytes around the buggy address:
+  0x0c047fff89b0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89c0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89d0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89e0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89f0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+=>0x0c047fff8a00: fa fa 00 02 fa fa 00 02 fa fa fd fa fa fa fa[fa]
+  0x0c047fff8a10: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a20: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==74==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x61,0x75,0x74,0x6f,0x6d,0x6f,0x75,0x6e,0x74,0x48,
+automountH
+artifact_prefix='/tmp/tmpjhswtxiw/'; Test unit written to /tmp/tmpjhswtxiw/crash-7be9e0f3a71d95f8d5e67c5a9d84273d6f4e3c03
+Base64: YXV0b21vdW50SA==
+stat::number_of_executed_units: 314
+stat::average_exec_per_sec:     0
+stat::new_units_added:          0
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              67
+/github/workspace/build-out/fuzz-unit-file -timeout=25 -rss_limit_mb=2560 -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmpjhswtxiw/ -max_total_time=13 -print_final_stats=1 /github/workspace/cifuzz-corpus/fuzz-unit-file >fuzz-1.log 2>&1
+================== Job 1 exited with exit code 77 ============
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 2 modules   (82576 inline 8-bit counters): 82573 [0x7ff1ba038df0, 0x7ff1ba04d07d), 3 [0x5e9b28, 0x5e9b2b), 
+INFO: Loaded 2 PC tables (82576 PCs): 82573 [0x7ff1ba04d080,0x7ff1ba18f950), 3 [0x5a6af8,0x5a6b28), 
+INFO:    20907 files found in /github/workspace/cifuzz-corpus/fuzz-unit-file
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 604973 bytes
+INFO: seed corpus: files: 20907 min: 1b max: 604973b total: 16005340b rss: 61Mb
+=================================================================
+==78==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000005078 at pc 0x0000004ddffa bp 0x7ffc2e6825c0 sp 0x7ffc2e6825b8
+READ of size 4 at 0x602000005078 thread T0
+SCARINESS: 27 (4-byte-read-heap-buffer-overflow-far-from-bounds)
+    #0 0x4ddff9 in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:30:16
+    #1 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #2 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #3 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #4 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #5 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #6 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #7 0x7ff1b900c082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #8 0x41f6ed in _start (build-out/fuzz-unit-file+0x41f6ed)
+
+DEDUP_TOKEN: samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*)
+0x602000005078 is located 38 bytes to the right of 2-byte region [0x602000005050,0x602000005052)
+freed by thread T0 here:
+    #0 0x4a0882 in __interceptor_free /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:52:3
+    #1 0x4ddfb7 in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:29:9
+    #2 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #5 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #6 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7ff1b900c082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: __interceptor_free--samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+previously allocated by thread T0 here:
+    #0 0x4a0b26 in malloc /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:69:3
+    #1 0x4ddfac in samLLVM2FuzzerTestOneInput /work/build/../../src/systemd/src/core/fuzz-unit-file.c:28:25
+    #2 0x4fc653 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x4fbe3a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x4fdca4 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:826:7
+    #5 0x4fded9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:857:3
+    #6 0x4ed53f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x516b92 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7ff1b900c082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: malloc--samLLVM2FuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+SUMMARY: AddressSanitizer: heap-buffer-overflow /work/build/../../src/systemd/src/core/fuzz-unit-file.c:30:16 in samsamLLVM2FuzzerTestOneInput
+Shadow bytes around the buggy address:
+  0x0c047fff89b0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89c0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89d0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89e0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+  0x0c047fff89f0: fa fa fd fd fa fa fd fd fa fa fd fd fa fa fd fd
+=>0x0c047fff8a00: fa fa 00 02 fa fa 00 02 fa fa fd fa fa fa fa[fa]
+  0x0c047fff8a10: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a20: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8a50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==78==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x61,0x75,0x74,0x6f,0x6d,0x6f,0x75,0x6e,0x74,0x48,
+automountH
+artifact_prefix='/tmp/tmpjhswtxiw/'; Test unit written to /tmp/tmpjhswtxiw/crash-7be9e0f3a71d95f8d5e67c5a9d84273d6f4e3c03
+Base64: YXV0b21vdW50SA==
+stat::number_of_executed_units: 314
+stat::average_exec_per_sec:     0
+stat::new_units_added:          0
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              68

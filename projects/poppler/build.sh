@@ -21,9 +21,6 @@ export PKG_CONFIG="`which pkg-config` --static"
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export PATH=$PREFIX/bin:$PATH
 
-# AFL++ specific setting
-export AFL_LLVM_INSTRUMENT=NATIVE
-
 BUILD=$WORK/build
 
 rm -rf $WORK/*

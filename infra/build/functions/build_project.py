@@ -40,6 +40,7 @@ import build_lib
 FUZZING_BUILD_TYPE = 'fuzzing'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
+GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
@@ -55,10 +56,12 @@ PROJECTS_DIR = os.path.abspath(
                  os.path.pardir, 'projects'))
 
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
-Config = collections.namedtuple(
-    'Config',
-    ['testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload'],
-    defaults=(False, None, DEFAULT_OSS_FUZZ_REPO, None, False, True))
+Config = collections.namedtuple('Config', [
+    'testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload',
+    'experiment'
+],
+                                defaults=(False, None, DEFAULT_OSS_FUZZ_REPO,
+                                          None, False, True, False))
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -291,7 +294,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
       project.image,
       project.fuzzing_language,
       config=config,
-      architectures=project.architectures)
+      architectures=project.architectures,
+      experiment=config.experiment)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -463,7 +467,8 @@ def run_build(oss_fuzz_project,
               credentials,
               build_type,
               cloud_project='oss-fuzz',
-              extra_tags=None):
+              extra_tags=None,
+              experiment=False):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
@@ -473,8 +478,9 @@ def run_build(oss_fuzz_project,
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
   tags.extend(extra_tags)
   timeout = build_lib.BUILD_TIMEOUT
+  bucket = GCB_LOGS_BUCKET if not experiment else GCB_EXPERIMENT_LOGS_BUCKET
   body_overrides = {
-      'logsBucket': GCB_LOGS_BUCKET,
+      'logsBucket': bucket,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
   return build_lib.run_build(build_steps,
@@ -482,7 +488,8 @@ def run_build(oss_fuzz_project,
                              cloud_project,
                              timeout,
                              body_overrides=body_overrides,
-                             tags=tags)
+                             tags=tags,
+                             experiment=experiment)
 
 
 def get_args(description):
@@ -508,16 +515,23 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Do builds in parallel.')
+  parser.add_argument('--experiment',
+                      action='store_true',
+                      required=False,
+                      default=False,
+                      help='Configuration for experiments.')
   return parser.parse_args()
 
 
 def create_config_from_commandline(args):
   """Create a Config object from parsed command line |args|."""
+  upload = not args.experiment
   return Config(testing=args.testing,
                 test_image_suffix=args.test_image_suffix,
                 branch=args.branch,
                 parallel=args.parallel,
-                upload=True)
+                upload=upload,
+                experiment=args.experiment)
 
 
 def build_script_main(script_description, get_build_steps_func, build_type):
@@ -547,7 +561,11 @@ def build_script_main(script_description, get_build_steps_func, build_type):
       error = True
       continue
 
-    run_build(project_name, steps, credentials, build_type)
+    run_build(project_name,
+              steps,
+              credentials,
+              build_type,
+              experiment=args.experiment)
   return 0 if not error else 1
 
 

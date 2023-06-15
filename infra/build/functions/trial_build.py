@@ -291,7 +291,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   for project, build_result in build_results.items():
     print(project, build_result)
 
-  return all(build_results.values())
+  # Return failure if nothing is built.
+  return all(build_results.values()) if build_results else False
 
 
 def _do_test_builds(args, test_image_suffix):

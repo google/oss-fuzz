@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" == "introspector" ]; then
+    export CFLAGS=""
+    export CXXFLAGS=""
+fi
+
 cd $SRC/yajl/
 ./configure
 make install

@@ -35,6 +35,8 @@ RUN cd $APP_HOME/static/assets/db/ && \
       --input-dir=$PWD
 
 ENV WEBAPP_PORT 8080
+ENV G_ANALYTICS_TAG "G-VDH9DCD8T8"
+
 RUN pip install gunicorn==20.1.0
 
 # Run the web service on container startup. Here we use the gunicorn

@@ -1,5 +1,6 @@
 homepage: "https://github.com/AsyncHttpClient/async-http-client/"
 language: jvm
+primary_contact: "aayush@shieldblaze.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/AsyncHttpClient/async-http-client/"
