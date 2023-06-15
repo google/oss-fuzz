@@ -8,6 +8,7 @@ auto_ccs:
   - "kichan@apache.org"
   - "bcall@apache.org"
   - "brian.neradt@gmail.com"
+  - "lhedstrom@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl
