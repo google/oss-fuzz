@@ -16,14 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN pip3 install --upgrade pip
-
 RUN git clone https://github.com/ansible/ansible
 RUN pip3 install --upgrade pip && \
     pip3 install cython cryptography
 
-RUN cd ansible && \
-    pip3 install -r ./requirements.txt
+RUN pip3 install -r ansible/requirements.txt
 
 WORKDIR ansible
 
