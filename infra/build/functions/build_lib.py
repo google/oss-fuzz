@@ -436,7 +436,12 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
 
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
-  steps = [clone_step]
+  if experiment:
+    # Skip cloning if we're in an experiment. The source is submitted to GCB
+    # via gcloud builds submit.
+    steps = []
+  else:
+    steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
