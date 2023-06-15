@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update && apt-get install -y make autoconf automake build-essential
 RUN pip3 install --upgrade pip
 
 RUN git clone https://github.com/ansible/ansible
