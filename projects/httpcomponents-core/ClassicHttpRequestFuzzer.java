@@ -1,4 +1,6 @@
+import com.code_intelligence.jazzer.api.BugDetectors;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.api.SilentCloseable;
 
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
@@ -80,7 +82,11 @@ public class ClassicHttpRequestFuzzer {
         final HttpHost target = new HttpHost(value, "localhost", 80);
         final HttpCoreContext context = HttpCoreContext.create();
         try {
-            requester.execute(target, request, Timeout.ofSeconds(0), context);
+            try (SilentCloseable ignored = BugDetectors.allowNetworkConnections(
+                (host, port) -> host.equals("localhost") && port == 80
+            )) {
+                requester.execute(target, request, Timeout.ofSeconds(0), context);
+            }
         } catch (HttpException | IOException e) { }
     }
 

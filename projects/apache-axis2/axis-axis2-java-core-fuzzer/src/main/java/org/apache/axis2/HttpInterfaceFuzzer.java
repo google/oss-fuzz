@@ -1,5 +1,6 @@
 package org.apache.axis2;
 
+import com.code_intelligence.jazzer.api.BugDetectors;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import java.io.DataOutputStream;
@@ -25,6 +26,7 @@ public class HttpInterfaceFuzzer extends SimpleAxis2Server {
     }
 
     void test() {
+        BugDetectors.allowNetworkConnections((host, port) -> host.equals("localhost") && port == 6060);
         try{
             start();
 
