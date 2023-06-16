@@ -68,7 +68,7 @@ def run_experiment(project_name, target_name, args, output_path):
       'args': [
           'bash',
           '-c',
-          f'run_fuzzer {target_name} {fuzzer_args} &> {local_output_path}',
+          f'run_fuzzer {target_name} {fuzzer_args} &> {local_output_path} || true',
       ]
   }
   steps.append(build_lib.dockerify_run_step(run_step, build))
