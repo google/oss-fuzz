@@ -102,8 +102,8 @@ def main():
         # Checks if the email is verified.
         verified_marker = ' (verified)' if verified else ''
         message += (
-              f'{pr_author}{verified_marker} is either the primary contact or '
-              f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+            f'{pr_author}{verified_marker} is either the primary contact or '
+            f'is in the CCs list of [{project_path}]({project_url}).<br/>')
         if verified:
           continue
 
