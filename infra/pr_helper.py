@@ -100,13 +100,12 @@ def main():
     if email:
       if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
-        if verified:
-          message += (
-              f'{pr_author} (verified) is either the primary contact or '
+        verified_marker = ' (verified)' if verified else ''
+        message += (
+              f'{pr_author}{verified_marker} is either the primary contact or '
               f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+        if verified:
           continue
-        message += (f'{pr_author} is either the primary contact or '
-                    f'is in the CCs list of [{project_path}]({project_url})')
 
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
