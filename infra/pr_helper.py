@@ -75,7 +75,7 @@ def main():
   pr_author = github.get_pr_author()
   # Gets all modified projects path.
   projects_path = github.get_projects_path()
-  email = github.get_author_email()
+  verified, email = github.get_author_email()
 
   for project_path in projects_path:
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
@@ -100,10 +100,13 @@ def main():
     if email:
       if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
-        message += (
-            f'{pr_author} is either the primary contact or is in the CCs list '
-            f'of [{project_path}]({project_url}).<br/>')
-        continue
+        if verified:
+          message += (
+              f'{pr_author} (verified) is either the primary contact or '
+              f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+          continue
+        message += (f'{pr_author} is either the primary contact or '
+                    f'is in the CCs list of [{project_path}]({project_url})')
 
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)

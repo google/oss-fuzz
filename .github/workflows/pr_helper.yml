@@ -56,3 +56,15 @@ jobs:
               repo: context.repo.repo,
               body: '${{env.MESSAGE}}'
             })
+
+      - name: Add labels for valid PR
+        if: env.IS_READY_FOR_MERGE == 'True'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['Ready to merge']
+            })
