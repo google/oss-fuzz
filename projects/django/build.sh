@@ -17,7 +17,7 @@
 
 # Build and install project (using current CFLAGS, CXXFLAGS). This is required
 # for projects with C extensions so that they're built with the proper flags.
-pip3 install .
+python3 -m pip install .
 
 export DJANGO_SETTINGS_MODULE=fuzzer_project.settings
 
