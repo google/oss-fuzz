@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
 	libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxkbfile-dev \
 	libxv-dev libxi-dev libxdamage-dev libxrender-dev libxrandr-dev \
 	libssl-dev libasound2-dev libcups2-dev libpulse-dev libcairo2-dev \
-	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev
+	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev libcjson-dev \
+	libpcsclite-dev krb5-multidev
 RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
 
 WORKDIR FreeRDP
