@@ -26,7 +26,7 @@ import yaml
 OWNER = 'google'
 REPO = 'oss-fuzz'
 GITHUB_URL = 'https://github.com/'
-GITHUB_NOREF_URL = 'https://www.github.com/'  # Github URL that doesn't send emails on linked issues.
+GITHUB_NONREF_URL = f'https://www.github.com/{OWNER}/{REPO}'  # Github URL that doesn't send emails on linked issues.
 API_URL = 'https://api.github.com'
 BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
@@ -100,9 +100,12 @@ def main():
     if email:
       if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
+        verified_marker = ' (verified)' if verified else ''
         message += (
-            f'{pr_author} is either the primary contact or is in the CCs list '
-            f'of [{project_path}]({project_url}).<br/>')
+            f'{pr_author}{verified_marker} is either the primary contact or '
+            f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+        if verified:
+          continue
 
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
@@ -115,16 +118,16 @@ def main():
       continue
 
     # If the previous commit is not associated with a pull request.
-    pr_message = (
-        f'{pr_author} has previously contributed to '
-        f'[{project_path}]({project_url}). The previous commit was '
-        f'{GITHUB_NONREF_URL}/{OWNER}/{REPO}/commit/{commit_sha}<br/>')
+    pr_message = (f'{pr_author} has previously contributed to '
+                  f'[{project_path}]({project_url}). The previous commit was '
+                  f'{GITHUB_NONREF_URL}/commit/{commit_sha}<br/>')
 
-    pr_url = github.get_pull_request_url(commit_sha)
-    if pr_url is not None:
+    previous_pr_number = github.get_pull_request_number(commit_sha)
+    if previous_pr_number is not None:
       pr_message = (f'{pr_author} has previously contributed to '
                     f'[{project_path}]({project_url}). '
-                    f'The previous PR was {pr_url}<br/>')
+                    f'The previous PR was [#{previous_pr_number}]'
+                    f'({GITHUB_NONREF_URL}/pull/{previous_pr_number})<br/>')
     message += pr_message
 
   save_env(message, is_ready_for_merge, False)
@@ -151,14 +154,16 @@ class GithubHandler:
     """Gets the current project path."""
     response = requests.get(f'{BASE_URL}/pulls/{self._pr_number}/files',
                             headers=self._headers)
+    if not response.ok:
+      return []
 
     projects_path = set()
     for file in response.json():
       file_path = file['filename']
-      dir_path = os.path.dirname(file_path)
-      if dir_path is not None and dir_path.split(os.sep)[0] == 'projects':
-        projects_path.add(dir_path)
-    return list(set(projects_path))
+      dir_path = file_path.split(os.sep)
+      if len(dir_path) > 1 and dir_path[0] == 'projects':
+        projects_path.add(os.sep.join(dir_path[0:2]))
+    return list(projects_path)
 
   def get_author_email(self):
     """Retrieves the author's email address for a pull request,
@@ -200,15 +205,15 @@ class GithubHandler:
       if 'project.yaml' in file_path:
         return self.get_yaml_file_content(file['contents_url'])
 
-    return None
+    return {}
 
-  def get_pull_request_url(self, commit):
-    """Gets the pull request url."""
+  def get_pull_request_number(self, commit):
+    """Gets the pull request number."""
     pr_response = requests.get(f'{BASE_URL}/commits/{commit}/pulls',
                                headers=self._headers)
     if not pr_response.ok:
       return None
-    return pr_response.json()[0]['html_url']
+    return pr_response.json()[0]['number']
 
   def is_author_internal_member(self):
     """Returns if the author is an internal member."""
