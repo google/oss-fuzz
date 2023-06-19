@@ -254,10 +254,6 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
-
-  if build_status != 'SUCCESS':
-    logging.debug(project, build_status, build_lib.get_logs_url(project))
-
   build_results[project] = build_status == 'SUCCESS'
   return True
 
@@ -273,20 +269,24 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
   wait_builds = build_ids.copy()
   build_results = {}
-  print('Printing failed project')
+  total_failed = 0
+  print('Printing failed projects')
   print('Project, Statuses, Logs')
   while wait_builds:
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
         if check_finished(build_id, project, cloudbuild_api, cloud_project,
                           build_results):
-
+          if not build_results[project]:
+            total_failed += 1
+            print(project, build_results[project], build_lib.get_logs_url(project))
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
             del wait_builds[project]
 
         time.sleep(1)  # Avoid rate limiting.
 
+  print(f'Summary: {total_failed} project(s) failed.')
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
 
