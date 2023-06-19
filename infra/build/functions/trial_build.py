@@ -189,8 +189,6 @@ def get_projects_to_build(specified_projects, build_type, force_build):
       buildable_projects.append(project)
       continue
 
-    logging.info('Skipping %s, last build failed.', project)
-
   return buildable_projects
 
 
@@ -198,7 +196,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
-    logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
@@ -207,7 +204,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     build_project.set_yaml_defaults(project_yaml)
-    print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
         project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
@@ -227,6 +223,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     try:
+      logging.info('Getting info for: "%s".', project_name)
       build_ids[project_name] = (build_project.run_build(
           project_name,
           steps,
@@ -257,7 +254,7 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
-  build_results[project] = build_status == 'SUCCESS'
+  build_results[project] = build_status
   return True
 
 
@@ -284,12 +281,11 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
         time.sleep(1)  # Avoid rate limiting.
 
-  print('Printing results')
+  print('Printing failed project')
   print('Project, Statuses, Logs')
   for project, build_result in build_results.items():
     if build_result != 'SUCCESS':
       print(project, build_result, build_lib.get_logs_url(wait_builds[project]))
-    print(project, build_result)
 
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
@@ -347,6 +343,9 @@ def main():
   """Builds and pushes test images of the base images. Then does test coverage
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
+  logging.info(
+      "----------------------------Trial build logs----------------------------"
+  )
   return 0 if trial_build_main() else 1
 
 
