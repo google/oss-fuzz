@@ -198,6 +198,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
+    logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
@@ -284,8 +285,10 @@ def wait_on_builds(build_ids, credentials, cloud_project):
         time.sleep(1)  # Avoid rate limiting.
 
   print('Printing results')
-  print('Project, Statuses')
+  print('Project, Statuses, Logs')
   for project, build_result in build_results.items():
+    if build_result != 'SUCCESS':
+      print(project, build_result, build_lib.get_logs_url(wait_builds[project]))
     print(project, build_result)
 
   # Return failure if nothing is built.
