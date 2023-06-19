@@ -490,7 +490,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
 
 def get_logs_url(build_id):
   """Returns url that displays the build logs."""
-  return (f'https://storage.cloud.google.com/oss-fuzz-gcb-logs/log-{build_id}.txt')
+  return (
+    f'https://storage.cloud.google.com/oss-fuzz-gcb-logs/log-{build_id}.txt')
 
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
