@@ -254,7 +254,11 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
-  build_results[project] = build_status
+
+  if build_status != 'SUCCESS':
+    logging.debug(project, build_status, build_lib.get_logs_url(project))
+
+  build_results[project] = build_status == 'SUCCESS'
   return True
 
 
@@ -269,6 +273,8 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
   wait_builds = build_ids.copy()
   build_results = {}
+  print('Printing failed project')
+  print('Project, Statuses, Logs')
   while wait_builds:
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
@@ -281,18 +287,15 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
         time.sleep(1)  # Avoid rate limiting.
 
-  print('Printing failed project')
-  print('Project, Statuses, Logs')
-  for project, build_result in build_results.items():
-    if build_result != 'SUCCESS':
-      print(project, build_result, build_lib.get_logs_url(wait_builds[project]))
-
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
 
 
 def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
+  logging.info(
+      "----------------------------Trial build logs----------------------------"
+  )
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
@@ -343,9 +346,6 @@ def main():
   """Builds and pushes test images of the base images. Then does test coverage
   and fuzzing builds using the test images."""
   logging.basicConfig(level=logging.INFO)
-  logging.info(
-      "----------------------------Trial build logs----------------------------"
-  )
   return 0 if trial_build_main() else 1
 
 
