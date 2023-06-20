@@ -293,8 +293,10 @@ def get_corpus_research_steps(project, config, coverage_env):
   })
   # 2.
   research_env = coverage_env.copy()
-  research_env.extend(
-      ['FUZZER=iccprofile_atf', 'RESEARCH_CORPUS=/research-corpus', f'FPROJECT={project.name}'])
+  research_env.extend([
+      'FUZZER=iccprofile_atf', 'RESEARCH_CORPUS=/research-corpus',
+      f'FPROJECT={project.name}'
+  ])
   steps.append({
       'name':
           'gcr.io/oss-fuzz-base/base-runner-research',
