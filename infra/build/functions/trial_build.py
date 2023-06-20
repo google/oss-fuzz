@@ -277,7 +277,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   logging.info(
       f'[{datetime.datetime.now().time()}] Total builds: {len(wait_builds)}, {wait_builds}'
   )
-  logging.info('Project, Statuses, Logs, Time')
+  logging.info('Failed project, Statuses, Logs, Time')
   while wait_builds:
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
@@ -285,11 +285,12 @@ def wait_on_builds(build_ids, credentials, cloud_project):
                           build_results):
           if not build_results[project]:
             total_failed += 1
+            logging.info(
+                f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.datetime.now().time()}'
+            )
           else:
             passed_build[project] = build_id
-          logging.debug(
-              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.datetime.now().time()}'
-          )
+            logging.debug(f'Build {project} passed.')
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -300,7 +301,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   logging.info(
       f'[{datetime.datetime.now().time()}] Total passed builds: {len(passed_build)}, {passed_build}'
   )
-  logging.debug(f'Summary: {total_failed} project(s) failed.')
+  logging.info(f'Summary: {total_failed} project(s) failed.')
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
 
