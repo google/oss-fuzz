@@ -272,9 +272,12 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   build_results = {}
   total_failed = 0
   passed_build = {}
-  print('----------------------------Build result----------------------------')
-  logging.info(f'Total builds: {len(wait_builds)}, {wait_builds}')
-  logging.info('Failed project, Statuses, Logs, Time')
+  logging.info(
+      '----------------------------Build result----------------------------')
+  logging.info(
+      f'[{datetime.time(datetime.now())}] Total builds: {len(wait_builds)}, {wait_builds}'
+  )
+  logging.info('Project, Statuses, Logs, Time')
   while wait_builds:
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
@@ -282,16 +285,21 @@ def wait_on_builds(build_ids, credentials, cloud_project):
                           build_results):
           if not build_results[project]:
             total_failed += 1
-            logging.debug(f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.time(datetime.now())}')
           else:
-            passed_build[project].add(build_id)
+            passed_build[project] = build_id
+          logging.debug(
+              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.time(datetime.now())}'
+          )
+
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
             del wait_builds[project]
 
         time.sleep(1)  # Avoid rate limiting.
 
-  logging.info(f'Total passed builds: {len(passed_build)}, {passed_build}')
+  logging.info(
+      f'[{datetime.time(datetime.now())}] Total passed builds: {len(passed_build)}, {passed_build}'
+  )
   logging.debug(f'Summary: {total_failed} project(s) failed.')
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
@@ -299,7 +307,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
 def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
-  print(
+  logging.info(
       '----------------------------Trial build logs----------------------------'
   )
   build_types = []
