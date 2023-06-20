@@ -259,7 +259,7 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   return True
 
 
-def wait_on_builds(build_ids, credentials, cloud_project):
+def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -271,16 +271,23 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   wait_builds = build_ids.copy()
   build_results = {}
   failed_builds = {}
+  total_builds = len(wait_builds)
+  last_check_time = datetime.datetime.now()
   logging.info(
       '----------------------------Build result----------------------------')
   logging.info(
-      f'[{datetime.datetime.now().time()}] Total builds: {len(wait_builds)}, {wait_builds}'
-  )
-  logging.info('Failed project, Statuses, Logs, Time')
+      f'[{last_check_time}] Total builds: {total_builds}, {wait_builds}')
+  logging.info('Failed project, Statuses, Logs')
   while wait_builds:
-    logging.debug(
-        f'[{datetime.datetime.now().time()}] Remaining builds: {len(wait_builds)}, {wait_builds}'
-    )
+    current = datetime.datetime.now()
+    if (current - last_check_time).total_seconds() >= 60:
+      logging.info(
+          f'[{current}] Remaining builds: {len(wait_builds)}, {wait_builds}')
+      last_check_time = current
+    if (end_time - current).total_second() <= 120:
+      logging.info(
+          f'[{current}] Timeout in 10 mins, remaining builds: {len(wait_builds)}/{total_builds}, {wait_builds}. Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
+      )
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
         if check_finished(build_id, project, cloudbuild_api, cloud_project,
@@ -288,9 +295,9 @@ def wait_on_builds(build_ids, credentials, cloud_project):
           if not build_results[project]:
             logs = build_lib.get_logs_url(build_id)
             failed_builds[project] = logs
-          logging.info(
-              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.datetime.now().time()}'
-          )
+            logging.info(
+                f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}'
+            )
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -299,13 +306,13 @@ def wait_on_builds(build_ids, credentials, cloud_project):
         time.sleep(1)  # Avoid rate limiting.
 
   logging.info(
-      f'[{datetime.datetime.now().time()}] Total failed builds: {len(failed_builds)}, {failed_builds}'
+      f'[{datetime.datetime.now()}] Total failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
   )
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
 
 
-def _do_test_builds(args, test_image_suffix):
+def _do_test_builds(args, test_image_suffix, end_time):
   """Does test coverage and fuzzing builds."""
   logging.info(
       '----------------------------Trial build logs----------------------------'
@@ -337,13 +344,17 @@ def _do_test_builds(args, test_image_suffix):
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
 
-  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT)
+  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
+                        end_time)
 
 
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
+  timeout = int(os.environ('TIMEOUT'))
+  end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
+  logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
@@ -353,7 +364,7 @@ def trial_build_main(args=None, local_base_build=True):
         test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
-  return _do_test_builds(args, test_image_suffix)
+  return _do_test_builds(args, test_image_suffix, end_time)
 
 
 def main():
