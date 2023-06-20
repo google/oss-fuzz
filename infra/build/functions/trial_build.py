@@ -352,7 +352,7 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  timeout = int(os.environ('TIMEOUT'))
+  timeout = int(os.environ['TIMEOUT'])
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
   logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
   if args.branch:
