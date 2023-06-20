@@ -273,6 +273,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   failed_builds = {}
   total_builds = len(wait_builds)
   last_check_time = datetime.datetime.now()
+  notified_timeout = False
   logging.info(
       '----------------------------Build result----------------------------')
   logging.info(
@@ -284,7 +285,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
       logging.info(
           f'[{current}] Remaining builds: {len(wait_builds)}, {wait_builds}')
       last_check_time = current
-    if (end_time - current).total_second() <= 120:
+    if (end_time - current).total_seconds() <= 120 and not notified_timeout:
+      notified_timeout = True
       logging.info(
           f'[{current}] Timeout in 10 mins, remaining builds: {len(wait_builds)}/{total_builds}, {wait_builds}. Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
       )
