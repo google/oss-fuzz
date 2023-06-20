@@ -17,6 +17,7 @@
 versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
+import datetime
 import functools
 import json
 import logging
@@ -270,8 +271,10 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   wait_builds = build_ids.copy()
   build_results = {}
   total_failed = 0
-  print('Printing failed projects')
-  print('Project, Statuses, Logs')
+  passed_build = {}
+  print('----------------------------Build result----------------------------')
+  logging.info(f'Total builds: {len(wait_builds)}, {wait_builds}')
+  logging.info('Failed project, Statuses, Logs, Time')
   while wait_builds:
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
@@ -279,22 +282,25 @@ def wait_on_builds(build_ids, credentials, cloud_project):
                           build_results):
           if not build_results[project]:
             total_failed += 1
-            print(project, build_results[project], build_lib.get_logs_url(project))
+            logging.debug(f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.time(datetime.now())}')
+          else:
+            passed_build[project].add(build_id)
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
             del wait_builds[project]
 
         time.sleep(1)  # Avoid rate limiting.
 
-  print(f'Summary: {total_failed} project(s) failed.')
+  logging.info(f'Total passed builds: {len(passed_build)}, {passed_build}')
+  logging.debug(f'Summary: {total_failed} project(s) failed.')
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
 
 
 def _do_test_builds(args, test_image_suffix):
   """Does test coverage and fuzzing builds."""
-  logging.info(
-      "----------------------------Trial build logs----------------------------"
+  print(
+      '----------------------------Trial build logs----------------------------'
   )
   build_types = []
   sanitizers = list(args.sanitizers)
