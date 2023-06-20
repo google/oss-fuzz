@@ -275,7 +275,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
   logging.info(
       '----------------------------Build result----------------------------')
   logging.info(
-      f'[{datetime.time(datetime.now())}] Total builds: {len(wait_builds)}, {wait_builds}'
+      f'[{datetime.datetime.now().time()}] Total builds: {len(wait_builds)}, {wait_builds}'
   )
   logging.info('Project, Statuses, Logs, Time')
   while wait_builds:
@@ -288,7 +288,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
           else:
             passed_build[project] = build_id
           logging.debug(
-              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.time(datetime.now())}'
+              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.datetime.now().time()}'
           )
 
           wait_builds[project].remove(build_id)
@@ -298,7 +298,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
         time.sleep(1)  # Avoid rate limiting.
 
   logging.info(
-      f'[{datetime.time(datetime.now())}] Total passed builds: {len(passed_build)}, {passed_build}'
+      f'[{datetime.datetime.now().time()}] Total passed builds: {len(passed_build)}, {passed_build}'
   )
   logging.debug(f'Summary: {total_failed} project(s) failed.')
   # Return failure if nothing is built.
