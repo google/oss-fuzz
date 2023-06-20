@@ -14,6 +14,6 @@ steps:
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
     - 'TIMEOUT=420'
-  timeout: 25200s # 7 hours, note build_lib.py sets timeout to 20 hours.
+  timeout: 420s # 7 hours, note build_lib.py sets timeout to 20 hours.
 logsBucket: gs://oss-fuzz-trialbuild-logs
-timeout: 25200s # 7 hours
+timeout: 420s # 7 hours
