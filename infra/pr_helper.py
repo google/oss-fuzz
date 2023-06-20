@@ -26,6 +26,7 @@ import yaml
 OWNER = 'google'
 REPO = 'oss-fuzz'
 GITHUB_URL = 'https://github.com/'
+GITHUB_NONREF_URL = f'https://www.github.com/{OWNER}/{REPO}'  # Github URL that doesn't send emails on linked issues.
 API_URL = 'https://api.github.com'
 BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
@@ -86,11 +87,11 @@ def main():
       new_project = github.get_integrated_project_info()
       repo_url = new_project.get('main_repo')
       if repo_url is None:
-        message += (f'@{pr_author} is integrating a new project, '
+        message += (f'{pr_author} is integrating a new project, '
                     'but the `repo_url` is missing. '
                     'The criticality score cannot be computed.<br/>')
       else:
-        message += (f'@{pr_author} is integrating a new project:<br/>'
+        message += (f'{pr_author} is integrating a new project:<br/>'
                     f'- Main repo: {repo_url}<br/> - Criticality score: '
                     f'{get_criticality_score(repo_url)}<br/>')
       continue
@@ -99,36 +100,34 @@ def main():
     if email:
       if is_known_contributor(content_dict, email):
         # Checks if the email is verified.
+        verified_marker = ' (verified)' if verified else ''
+        message += (
+            f'{pr_author}{verified_marker} is either the primary contact or '
+            f'is in the CCs list of [{project_path}]({project_url}).<br/>')
         if verified:
-          message += (
-              f'@{pr_author} is either the primary contact or '
-              f'is in the CCs list of [{project_path}]({project_url}).<br/>')
           continue
-        message += (f'@{pr_author} is either the primary contact or '
-                    f'is in the CCs list of [{project_path}]({project_url}), '
-                    f'but their email {email} '
-                    'is not verified.<br/>')
 
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
       message += (
-          f'@{pr_author} is a new contributor to '
+          f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
           'contributors before it can be merged.<br/>')
       is_ready_for_merge = False
       continue
 
     # If the previous commit is not associated with a pull request.
-    pr_message = (f'@{pr_author} has previously contributed to '
+    pr_message = (f'{pr_author} has previously contributed to '
                   f'[{project_path}]({project_url}). The previous commit was '
-                  f'{GITHUB_URL}/{OWNER}/{REPO}/commit/{commit_sha}<br/>')
+                  f'{GITHUB_NONREF_URL}/commit/{commit_sha}<br/>')
 
-    pr_url = github.get_pull_request_url(commit_sha)
-    if pr_url is not None:
-      pr_message = (f'@{pr_author} has previously contributed to '
+    previous_pr_number = github.get_pull_request_number(commit_sha)
+    if previous_pr_number is not None:
+      pr_message = (f'{pr_author} has previously contributed to '
                     f'[{project_path}]({project_url}). '
-                    f'The previous PR was {pr_url}<br/>')
+                    f'The previous PR was [#{previous_pr_number}]'
+                    f'({GITHUB_NONREF_URL}/pull/{previous_pr_number})<br/>')
     message += pr_message
 
   save_env(message, is_ready_for_merge, False)
@@ -155,13 +154,15 @@ class GithubHandler:
     """Gets the current project path."""
     response = requests.get(f'{BASE_URL}/pulls/{self._pr_number}/files',
                             headers=self._headers)
+    if not response.ok:
+      return []
 
     projects_path = set()
     for file in response.json():
       file_path = file['filename']
-      dir_path = os.path.dirname(file_path)
-      if dir_path is not None and dir_path.split(os.sep)[0] == 'projects':
-        projects_path.add(dir_path)
+      dir_path = file_path.split(os.sep)
+      if len(dir_path) > 1 and dir_path[0] == 'projects':
+        projects_path.add(os.sep.join(dir_path[0:2]))
     return list(projects_path)
 
   def get_author_email(self):
@@ -204,15 +205,15 @@ class GithubHandler:
       if 'project.yaml' in file_path:
         return self.get_yaml_file_content(file['contents_url'])
 
-    return None
+    return {}
 
-  def get_pull_request_url(self, commit):
-    """Gets the pull request url."""
+  def get_pull_request_number(self, commit):
+    """Gets the pull request number."""
     pr_response = requests.get(f'{BASE_URL}/commits/{commit}/pulls',
                                headers=self._headers)
     if not pr_response.ok:
       return None
-    return pr_response.json()[0]['html_url']
+    return pr_response.json()[0]['number']
 
   def is_author_internal_member(self):
     """Returns if the author is an internal member."""

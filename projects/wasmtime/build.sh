@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Waiting for denoland/rusty_v8#1248 to get fixed
+rustup default nightly-2023-06-01
+rustup component add rust-src
+
 # Commands migrated from Dockerfile to make CIFuzz work
 # REF: https://github.com/google/oss-fuzz/issues/6755
 git submodule update --init --recursive

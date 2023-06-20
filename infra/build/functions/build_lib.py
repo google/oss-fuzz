@@ -22,6 +22,9 @@ import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
+import subprocess
+import tempfile
+import json
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
@@ -94,6 +97,8 @@ US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
 _ARM64 = 'aarch64'
+
+OSS_FUZZ_ROOT = os.path.abspath(os.path.join(__file__, '..', '..', '..', '..'))
 
 
 def get_targets_list_filename(sanitizer):
@@ -425,18 +430,26 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     image,
     language,
     config,
-    architectures=None):
+    architectures=None,
+    experiment=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
 
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
-  steps = [clone_step]
+  if experiment:
+    # Skip cloning if we're in an experiment. The source is submitted to GCB
+    # via gcloud builds submit.
+    steps = []
+  else:
+    steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
+  src_root = 'oss-fuzz' if not experiment else '.'
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name))
+                                            os.path.join('projects', name),
+                                            src_root=src_root)
   steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
   steps.extend([{
@@ -534,7 +547,8 @@ def run_build(  # pylint: disable=too-many-arguments
     timeout,
     body_overrides=None,
     tags=None,
-    use_build_pool=True):
+    use_build_pool=True,
+    experiment=False):
   """Runs the build."""
 
   build_body = get_build_body(steps,
@@ -542,6 +556,20 @@ def run_build(  # pylint: disable=too-many-arguments
                               body_overrides,
                               tags,
                               use_build_pool=use_build_pool)
+  if experiment:
+    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
+      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
+      config_file.seek(0)
+      subprocess.run([
+          'gcloud',
+          'builds',
+          'submit',
+          '--project=oss-fuzz',
+          f'--config={config_file.name}',
+      ],
+                     cwd=OSS_FUZZ_ROOT)
+
+      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',

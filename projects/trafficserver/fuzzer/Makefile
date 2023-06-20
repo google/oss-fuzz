@@ -18,12 +18,13 @@ MACROS=$(MANFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
 EsiINC=\
 	$(INCDIR)/include \
 	$(INCDIR)/plugins/esi \
+	$(INCDIR)/plugins/esi/common \
 	$(INCDIR)/plugins/esi/lib \
 	$(INCDIR)/plugins/esi/fetcher 
 
 EsiLIB=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/plugins/esi/.libs/ \
-	$(EsiLib) -lesicore
+	-lesicore
 
 #HttpEXE
 HttpINC=\
@@ -52,8 +53,7 @@ CoreLib=$(LIB_FUZZING_ENGINE) \
 	-lpcre -lssl -lcrypto -lresolv \
 	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
 	$(LIBDIR)/iocore/eventsystem/ -linkevent \
-	$(LIBDIR)/src/records/ -lrecords_p \
-	-Wl,-rpath=lib/
+	$(LIBDIR)/src/records/ -lrecords_p
 
 all: $(TARGET)
 

@@ -1,0 +1,43 @@
+name: Presubmit checks
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+
+      - uses: actions/checkout@v3
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Setup python environment
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+          cache: pip
+          cache-dependency-path: |
+            infra/ci/requirements.txt
+            infra/build/functions/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r infra/ci/requirements.txt
+          pip install -r infra/build/functions/requirements.txt
+
+      - name: Run presubmit checks
+        run: python infra/presubmit.py

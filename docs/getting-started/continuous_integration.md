@@ -69,9 +69,12 @@ cifuzz.yml for an example project:
 ```yaml
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   permissions:
+     security-events: write
    steps:
    - name: Build Fuzzers
      id: build
@@ -138,9 +141,13 @@ can be used. To use a sanitizer add it to the list of sanitizers in the matrix f
 {% raw %}
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   # Uncomment this to get results in the GitHub security dashboard.
+   permissions:
+     security-events: write
    strategy:
      fail-fast: false
      matrix:
@@ -199,6 +206,7 @@ on:
       - '**.cpp'
       - '**.cxx'
       - '**.h'
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
