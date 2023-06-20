@@ -289,7 +289,7 @@ def wait_on_builds(build_ids, credentials, cloud_project):
             logs = build_lib.get_logs_url(build_id)
             failed_builds[project] = logs
           logging.info(
-              f'{project}, {build_results[project]}, {logs}, {datetime.datetime.now().time()}'
+              f'{project}, {build_results[project]}, {build_lib.get_logs_url(build_id)}, {datetime.datetime.now().time()}'
           )
 
           wait_builds[project].remove(build_id)
