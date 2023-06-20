@@ -90,3 +90,5 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
     fi
   )
 done
+
+cp assets/fuzz_dicts/*.dict $OUT/

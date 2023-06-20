@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/hyperledger/fabric
-RUN git clone https://github.com/AdamKorcz/instrumentation
-RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.20.5.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
-COPY build.sh ccprovider_fuzzer.go \
-	 persistence_fuzzer.go \
-	 policydsl_fuzzer.go \
-	 fabenc_fuzzer.go \
-	 msp_fuzzer.go $SRC/
-WORKDIR $SRC/fabric
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-COPY *.options $SRC/
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+
+# if not set python infra helper cannot be used for local testing
+
+COPY project-parent $SRC/project-parent/
+
+RUN rm -rf $SRC/project-parent/google-auth-library-java
+RUN git clone --depth 1 https://github.com/googleapis/google-auth-library-java/ $SRC/project-parent/google-auth-library-java
+
+COPY build.sh $SRC/
+WORKDIR $SRC/
