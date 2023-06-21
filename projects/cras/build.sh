@@ -63,6 +63,10 @@ done
 if [[ "$SANITIZER" == "undefined" ]]; then
     bazel_opts+=("--linkopt=-fsanitize-link-c++-runtime")
 fi
+if [[ "$SANITIZER" == "coverage" ]]; then
+    # Fix up paths.
+    bazel_opts+=("--copt=-fcoverage-compilation-dir=${SRC}/adhd")
+fi
 
 # Statlic linking hacks
 export OSS_FUZZ_STATIC_PKG_CONFIG_DEPS=1
@@ -86,9 +90,8 @@ if [ "$SANITIZER" = "coverage" ]; then
     echo "Collecting the repository source files for coverage tracking."
 
     ln -s ${SRC}/adhd/cras/src/server/rust/src/* ${SRC}
-
-    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
-    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r EXTERNAL_SOURCES="${OUT}/src/adhd/external"
+    mkdir -p "${EXTERNAL_SOURCES}"
     declare -r RSYNC_FILTER_ARGS=(
         "--include" "*.h"
         "--include" "*.cc"
@@ -100,6 +103,6 @@ if [ "$SANITIZER" = "coverage" ]; then
         "--exclude" "*"
     )
     rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
-        "$(bazel info execution_root)/" \
-        "${COVERAGE_SOURCES}/"
+        "$(bazel info execution_root)/external/" \
+        "${EXTERNAL_SOURCES}"
 fi
