@@ -272,24 +272,24 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   build_results = {}
   failed_builds = {}
   total_builds = len(wait_builds)
-  last_check_time = datetime.datetime.now()
+  next_check_time = datetime.datetime.now() + datetime.timedelta(seconds=3600)
+  notify_time = end_time - datetime.timedelta(seconds=900)  # Last 15 mins
   notified_timeout = False
   logging.info(
       '----------------------------Build result----------------------------')
   logging.info(f'Trial build end time: {end_time}')
-  logging.info(
-      f'[{last_check_time}] Total builds: {total_builds}, {wait_builds}')
+  logging.info(f'Total builds: {total_builds}, {wait_builds}')
   logging.info('Failed project, Statuses, Logs')
   while wait_builds:
     current = datetime.datetime.now()
     # Update status every hour
-    if (current - last_check_time).total_seconds() >= 3600:
+    if current >= next_check_time:
       logging.info(
           f'[{current}] Remaining builds: {len(wait_builds)}, {wait_builds}')
-      last_check_time = current
+      next_check_time = current
 
     # Notify if the build times out in the next 15 minutes.
-    if (end_time - current).total_seconds() <= 900 and not notified_timeout:
+    if not notified_timeout and current >= notify_time:
       notified_timeout = True
       logging.info(
           f'[{current}] Warning: trial build may time out in 15 minutes.\n'
@@ -304,7 +304,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
           if build_results[project] != 'SUCCESS':
             logs_url = build_lib.get_logs_url(build_id)
             failed_builds[project] = logs_url
-            logging.ERROR(f'{project}, {build_results[project]}, {logs_url}')
+            logging.info(f'{project}, {build_results[project]}, {logs_url}')
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -313,14 +313,11 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
         time.sleep(1)  # Avoid rate limiting.
 
   if not failed_builds:
-    logging.info(
-      f'Summary: trial build passed.'
-    )
+    logging.info(f'Summary: trial build passed.')
   else:
-    logging.ERROR(
-      f'Summary: trial build failed\n'
-      f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
-    )
+    logging.info(
+        f'Summary: trial build failed\n'
+        f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}')
 
   # Return failure if nothing is built.
   return all(build_results.values()) if build_results else False
@@ -329,8 +326,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
 def _do_test_builds(args, test_image_suffix, end_time):
   """Does test coverage and fuzzing builds."""
   logging.info(
-      '---------------------------Trial build logs---------------------------'
-  )
+      '---------------------------Trial build logs---------------------------')
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
