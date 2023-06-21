@@ -35,6 +35,10 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
+# Warning time in minutes before build times out.
+BUILD_TIMEOUT_WARNING_MINUTES = 15
+# Default timeout in seconds, 7 hours.
+DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
 FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
                            'EXPIRED')
@@ -273,7 +277,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   failed_builds = {}
   total_builds = len(wait_builds)
   next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
-  notify_time = end_time - datetime.timedelta(minutes=15)
+  timeout_warning_time = end_time - datetime.timedelta(
+      minutes=BUILD_TIMEOUT_WARNING_MINUTES)
   notified_timeout = False
   logging.info(
       '----------------------------Build result----------------------------')
@@ -289,11 +294,12 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
       )
       next_check_time += datetime.timedelta(hours=1)
 
-    # Notify if the build times out in the next 15 minutes.
-    if not notified_timeout and current_time >= notify_time:
+    # Warn users and write a summary if build is about to end.
+    if not notified_timeout and current_time >= timeout_warning_time:
       notified_timeout = True
       logging.info(
-          f'[{current_time}] Warning: trial build may time out in 15 minutes.\n'
+          f'[{current_time}] Warning: trial build may time out in '
+          f'{BUILD_TIMEOUT_WARNING_MINUTES} minutes.\n'
           f'Remaining builds: {len(wait_builds)}/{total_builds}, {wait_builds}.\n'
           f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
       )
@@ -313,15 +319,15 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
 
         time.sleep(1)  # Avoid rate limiting.
 
-  if not failed_builds:
-    logging.info(f'Summary: trial build passed.')
-  else:
+  # Return failure if any build fails or nothing is built
+  if failed_builds or not build_results:
     logging.info(
         f'Summary: trial build failed\n'
         f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}')
+    return False
 
-  # Return failure if nothing is built.
-  return all(build_results.values()) if build_results else False
+  logging.info(f'Summary: trial build passed.')
+  return True
 
 
 def _do_test_builds(args, test_image_suffix, end_time):
@@ -363,7 +369,7 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  timeout = int(os.environ.get('TIMEOUT', 0))
+  timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
   logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
   if args.branch:
