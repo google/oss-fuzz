@@ -50,8 +50,8 @@ def _env_to_docker_args(env_list):
   return sum([['-e', v] for v in env_list], [])
 
 
-def get_coverage(fuzzer, corpus, project):
-  env = [
+def get_run_args(fuzzer, corpus, project):
+    env = [
       'FUZZING_ENGINE=libfuzzer',
       'HTTP_PORT=',
       'FUZZING_LANGUAGE=c++',
@@ -66,6 +66,10 @@ def get_coverage(fuzzer, corpus, project):
       f'{corpus}:/corpus/{fuzzer}'
   ]
   run_args += _env_to_docker_args(env)
+  return run_args
+
+def get_coverage(fuzzer, corpus, project):
+  run_args = get_run_args()
   run_args.extend(['gcr.io/oss-fuzz-base/base-runner', 'coverage'])
   print(run_args, flush=True)
   # !!!
@@ -79,6 +83,12 @@ def get_coverage(fuzzer, corpus, project):
 
 def compare_corpora(fuzzer, project, real_corpus, research_corpus):
   real_coverage = get_coverage(fuzzer, real_corpus, project)
+  out_dir = OSS_FUZZ_ROOT / 'build' / 'out' / project
+  dumps = out_dir / 'dumps'
+  dumps_backup = out_dir / 'dumps-backup'
+  if os.path.exists(dumps_backup):
+    os.remove(dumps_backup)
+  shutil.copytree(dumps, dumps_backup)
   research_coverage = get_coverage(fuzzer, research_corpus, project)
   return research_coverage - real_coverage
 
@@ -88,7 +98,7 @@ def analyze_research_corpus(project):
   # !!!
   # research_corpus_dir = download_research_corpora(project, research_corpus_dir)
   for fuzzer in os.listdir(research_corpus_dir):
-    if not os.path.isdir(fuzzer):
+    if not os.path.isdir(research_corpus_dir / fuzzer):
       continue
     real_corpus = OSS_FUZZ_ROOT / 'build' / 'corpus' / project / fuzzer
     fuzzer_research_corpus = research_corpus_dir / fuzzer
