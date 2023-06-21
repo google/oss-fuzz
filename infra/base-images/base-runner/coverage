@@ -118,7 +118,7 @@ function run_fuzz_target {
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
-  rm $profraw_file_mask
+  # rm $profraw_file_mask
 
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
 

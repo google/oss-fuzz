@@ -74,8 +74,6 @@ def get_coverage(fuzzer, corpus, project):
   with open(stats_file) as fp:
     stats = json.load(fp)['data'][0]
   totals = stats['totals']
-  import ipdb
-  ipdb.set_trace()
   return totals['lines']['percent']
 
 
