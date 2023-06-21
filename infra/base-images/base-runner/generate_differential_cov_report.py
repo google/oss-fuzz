@@ -23,6 +23,7 @@ import sys
 
 
 class ProfData:
+
   def __init__(self, text):
     self.function_profs = []
     for function_prof in text.split('\n\n'):
@@ -31,7 +32,8 @@ class ProfData:
       self.function_profs.append(FunctionProf(function_prof))
 
   def to_string(self):
-    return '\n'.join([function_prof.to_string() for function_prof in self.function_profs])
+    return '\n'.join(
+        [function_prof.to_string() for function_prof in self.function_profs])
 
   def find_function(self, function, idx=None):
     if idx is not None:
@@ -55,13 +57,15 @@ class FunctionProf:
   FUNC_HASH_COMMENT_LINE = '# Func Hash:'
   NUM_COUNTERS_COMMENT_LINE = '# Num Counters:'
   COUNTER_VALUES_COMMENT_LINE = '# Counter Values:'
+
   def __init__(self, text):
     print(text)
     lines = text.splitlines()
     try:
       self.function = lines[0]
     except IndexError:
-      import ipdb; ipdb.set_trace()
+      import ipdb
+      ipdb.set_trace()
     assert self.FUNC_HASH_COMMENT_LINE == lines[1]
     self.func_hash = lines[2]
     assert self.NUM_COUNTERS_COMMENT_LINE == lines[3]
@@ -85,9 +89,11 @@ class FunctionProf:
       print(self.function, 'has no subtrahend')
       # Nothing to subtract.
       return
-    self.counter_values = [max(counter1 - counter2, 0)
-                           for counter1, counter2 in
-                           zip(self.counter_values, subtrahend_prof.counter_values)]
+    self.counter_values = [
+        max(counter1 - counter2, 0) for counter1, counter2 in zip(
+            self.counter_values, subtrahend_prof.counter_values)
+    ]
+
 
 def get_profdata_files(directory):
   profdatas = []
@@ -102,18 +108,24 @@ def convert_profdata_to_text(profdata):
   profdata_text = f'{profdata}.txt'
   if os.path.exists(profdata_text):
     os.remove(profdata_text)
-  command = ['llvm-profdata', 'merge', '-j=1', '-sparse', profdata, '--text', '-o', profdata_text]
+  command = [
+      'llvm-profdata', 'merge', '-j=1', '-sparse', profdata, '--text', '-o',
+      profdata_text
+  ]
   print(command)
   subprocess.run(command, check=True)
   return profdata_text
 
 
 def convert_text_profdata_to_bin(profdata_text):
-  profdata = profdata_text.replace('.txt', '').replace('.profdata', '') + '.profdata'
+  profdata = profdata_text.replace('.txt', '').replace('.profdata',
+                                                       '') + '.profdata'
   print('bin profdata', profdata)
   if os.path.exists(profdata):
     os.remove(profdata)
-  command = ['llvm-profdata', 'merge', '-j=1', '-sparse', profdata_text, '-o', profdata]
+  command = [
+      'llvm-profdata', 'merge', '-j=1', '-sparse', profdata_text, '-o', profdata
+  ]
   print(command)
   subprocess.run(command, check=True)
   return profdata
@@ -132,14 +144,20 @@ def get_difference(minuend_filename, subtrahend_filename):
 
 
 def profdatas_to_objects(profdatas):
-  return [os.path.splitext(os.path.basename(profdata))[0] for profdata in profdatas]
+  return [
+      os.path.splitext(os.path.basename(profdata))[0] for profdata in profdatas
+  ]
 
 
-def calculate_differences(
-    minuend_profdatas, subtrahend_profdatas, difference_dir):
+def calculate_differences(minuend_profdatas, subtrahend_profdatas,
+                          difference_dir):
   profdata_objects = profdatas_to_objects(minuend_profdatas)
-  real_profdata_objects = [binobject for binobject in profdata_objects if binobject != 'merged']
-  for minuend, subtrahend, binobject in zip(minuend_profdatas, subtrahend_profdatas, profdata_objects):
+  real_profdata_objects = [
+      binobject for binobject in profdata_objects if binobject != 'merged'
+  ]
+  for minuend, subtrahend, binobject in zip(minuend_profdatas,
+                                            subtrahend_profdatas,
+                                            profdata_objects):
     minuend_text = convert_profdata_to_text(minuend)
     subtrahend_text = convert_profdata_to_text(subtrahend)
     difference = get_difference(minuend_text, subtrahend_text)
@@ -149,10 +167,11 @@ def calculate_differences(
       fp.write(difference.to_string())
     difference_profdata = convert_text_profdata_to_bin(difference_text)
     if not difference_profdata.endswith('merged.profdata'):
-      generate_html_report(difference_profdata, [binobject], os.path.join(difference_dir, binobject))
+      generate_html_report(difference_profdata, [binobject],
+                           os.path.join(difference_dir, binobject))
     else:
-      generate_html_report(difference_profdata, real_profdata_objects, os.path.join(difference_dir, 'merged'))
-
+      generate_html_report(difference_profdata, real_profdata_objects,
+                           os.path.join(difference_dir, 'merged'))
 
 
 def generate_html_report(profdata, objects, directory):
@@ -163,7 +182,10 @@ def generate_html_report(profdata, objects, directory):
   os.makedirs(html_dir)
   basename = os.path.basename(profdata).split('.profdata')[0]
   out_dir = os.getenv('OUT', '/out')
-  command = ['llvm-cov', 'show', f'-path-equivalence=/,{out_dir}', '-format=html', '-Xdemangler', 'rcfilt', f'-instr-profile={profdata}']
+  command = [
+      'llvm-cov', 'show', f'-path-equivalence=/,{out_dir}', '-format=html',
+      '-Xdemangler', 'rcfilt', f'-instr-profile={profdata}'
+  ]
 
   objects = [os.path.join(out_dir, binobject) for binobject in objects]
   command += objects + ['-o', html_dir]
@@ -171,10 +193,10 @@ def generate_html_report(profdata, objects, directory):
   subprocess.run(command, check=True)
 
 
-
 def main():
   if len(sys.argv) != 4:
-    print(f'Usage: {sys.argv[0]} <minuend_dir> <subtrahend_dir> <difference_dir>')
+    print(
+        f'Usage: {sys.argv[0]} <minuend_dir> <subtrahend_dir> <difference_dir>')
   minuend_dir = sys.argv[1]
   subtrahend_dir = sys.argv[2]
   difference_dir = sys.argv[3]
