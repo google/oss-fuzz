@@ -272,8 +272,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   build_results = {}
   failed_builds = {}
   total_builds = len(wait_builds)
-  next_check_time = datetime.datetime.now() + datetime.timedelta(seconds=3600)
-  notify_time = end_time - datetime.timedelta(seconds=900)  # Last 15 mins
+  next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+  notify_time = end_time - datetime.timedelta(minutes=15)
   notified_timeout = False
   logging.info(
       '----------------------------Build result----------------------------')
@@ -281,18 +281,19 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   logging.info(f'Total builds: {total_builds}, {wait_builds}')
   logging.info('Failed project, Statuses, Logs')
   while wait_builds:
-    current = datetime.datetime.now()
+    current_time = datetime.datetime.now()
     # Update status every hour
-    if current >= next_check_time:
+    if current_time >= next_check_time:
       logging.info(
-          f'[{current}] Remaining builds: {len(wait_builds)}, {wait_builds}')
-      next_check_time = current
+          f'[{current_time}] Remaining builds: {len(wait_builds)}, {wait_builds}'
+      )
+      next_check_time += datetime.timedelta(hours=1)
 
     # Notify if the build times out in the next 15 minutes.
-    if not notified_timeout and current >= notify_time:
+    if not notified_timeout and current_time >= notify_time:
       notified_timeout = True
       logging.info(
-          f'[{current}] Warning: trial build may time out in 15 minutes.\n'
+          f'[{current_time}] Warning: trial build may time out in 15 minutes.\n'
           f'Remaining builds: {len(wait_builds)}/{total_builds}, {wait_builds}.\n'
           f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
       )
@@ -362,7 +363,7 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
-  timeout = int(os.environ['TIMEOUT'])
+  timeout = int(os.environ.get('TIMEOUT', 0))
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
   logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
   if args.branch:
