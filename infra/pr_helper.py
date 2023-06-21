@@ -35,6 +35,7 @@ CRITICALITY_SCORE_PATH = '/home/runner/go/bin/criticality_score'
 
 def get_criticality_score(repo_url):
   """Gets the criticality score of the project."""
+  # Criticality score does not support repo url ends with '.git'
   if repo_url.endswith('.git'):
     repo_url = repo_url[:-4]
   report = subprocess.run([
@@ -47,8 +48,8 @@ def get_criticality_score(repo_url):
   try:
     report_dict = json.loads(report.stdout)
   except:
-    print(f'stdout: {report.stdout}')
-    print(f'stderr: {report.stderr}')
+    print(f'Criticality score failed with stdout: {report.stdout}')
+    print(f'Criticality score failed with stderr: {report.stderr}')
     return 'N/A'
   return report_dict.get('default_score', 'N/A')
 
@@ -95,7 +96,7 @@ def main():
       repo_url = new_project.get('main_repo')
       if repo_url is None:
         message += (f'{pr_author} is integrating a new project, '
-                    'but the `main_repo` is missing. '
+                    'but the `repo_url` is missing. '
                     'The criticality score cannot be computed.<br/>')
       else:
         message += (f'{pr_author} is integrating a new project:<br/>'
