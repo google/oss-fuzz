@@ -45,15 +45,21 @@ bazel_opts=(
     "--spawn_strategy=standalone"
     "--action_env=CC=${CC}"
     "--action_env=CXX=${CXX}"
-    "--action_env=BAZEL_CONLYOPTS=${CFLAGS// /:}"
-    "--action_env=BAZEL_CXXOPTS=${CXXFLAGS// /:}"
-    "--action_env=BAZEL_LINKOPTS=${CXXFLAGS// /:}"
     "-c" "opt"
     "--cxxopt=-stdlib=libc++"
     "--linkopt=-lc++"
     "--config=fuzzer"
     "--//:system_cras_rust"
 )
+for f in ${CFLAGS}; do
+    bazel_opts+=("--conlyopt=${f}")
+done
+for f in ${CXXFLAGS}; do
+    bazel_opts+=(
+        "--cxxopt=${f}"
+        "--linkopt=${f}"
+    )
+done
 if [[ "$SANITIZER" == "undefined" ]]; then
     bazel_opts+=("--linkopt=-fsanitize-link-c++-runtime")
 fi
