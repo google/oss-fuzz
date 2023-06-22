@@ -96,7 +96,7 @@ def main():
       repo_url = new_project.get('main_repo')
       if repo_url is None:
         message += (f'{pr_author} is integrating a new project, '
-                    'but the `repo_url` is missing. '
+                    'but the `main_repo` is missing. '
                     'The criticality score cannot be computed.<br/>')
       else:
         message += (f'{pr_author} is integrating a new project:<br/>'
