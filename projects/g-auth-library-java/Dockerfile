@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +14,20 @@
 #
 ################################################################################
 
-./configure
-make -j$(nproc) clean
-make -j$(nproc) all
-make -j$(nproc) check
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-for f in $(find $SRC -name '*_fuzzer.cc'); do
-    b=$(basename -s .cc $f)
-    $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$b $LIB_FUZZING_ENGINE ./libz.a
-done
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-zip $OUT/seed_corpus.zip *.*
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
-for f in $(find $SRC -name '*_fuzzer.c'); do
-    b=$(basename -s .c $f)
-    $CC $CFLAGS -I. $f -c -o /tmp/$b.o
-    $CXX $CXXFLAGS -o $OUT/$b /tmp/$b.o -stdlib=libc++ $LIB_FUZZING_ENGINE ./libz.a
-    rm -f /tmp/$b.o
-    ln -sf $OUT/seed_corpus.zip $OUT/${b}_seed_corpus.zip
-done
+# if not set python infra helper cannot be used for local testing
+
+COPY project-parent $SRC/project-parent/
+
+RUN rm -rf $SRC/project-parent/google-auth-library-java
+RUN git clone --depth 1 https://github.com/googleapis/google-auth-library-java/ $SRC/project-parent/google-auth-library-java
+
+COPY build.sh $SRC/
+WORKDIR $SRC/
