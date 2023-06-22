@@ -27,6 +27,7 @@ else
       -e 'jazzer_driver_with_sanitizer' \
       -e 'sanitizer_with_fuzzer.so')"
 fi
+echo FUZZ_TARGETS, $FUZZ_TARGETS
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 
@@ -117,7 +118,7 @@ function run_fuzz_target {
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
-  rm $profraw_file_mask
+  # rm $profraw_file_mask
 
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
 

@@ -145,7 +145,7 @@ def get_args(args=None):
   return parsed_args
 
 
-@functools.lru_cache
+@functools.lru_cache(1000)
 def get_all_projects():
   """Returns a list of all OSS-Fuzz projects."""
   projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
@@ -156,7 +156,7 @@ def get_all_projects():
   ])
 
 
-@functools.lru_cache
+@functools.lru_cache(1000)
 def get_project_languages():
   """Returns a dictionary mapping languages to projects."""
   all_projects = get_all_projects()
@@ -227,6 +227,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       logging.error('No steps. Skipping %s.', project_name)
       continue
 
+    print(steps)
     try:
       build_ids[project_name] = (build_project.run_build(
           project_name,
@@ -316,6 +317,7 @@ def _do_test_builds(args, test_image_suffix):
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
+                                  corpus_research=True,
                                   upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
@@ -335,11 +337,13 @@ def trial_build_main(args=None, local_base_build=True):
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
     test_image_suffix = TEST_IMAGE_SUFFIX
-  if local_base_build:
-    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        test_image_suffix)
-  else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+
+  test_image_suffix = None
+  # if local_base_build:
+  #   build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
+  #       test_image_suffix)
+  # else:
+  #   build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
   return _do_test_builds(args, test_image_suffix)
 
 

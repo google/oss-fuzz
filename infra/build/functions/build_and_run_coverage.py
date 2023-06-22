@@ -109,11 +109,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_project.get_compile_step(project, build, env, config.parallel))
   download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
-  if not download_corpora_steps:
-    logging.info('Skipping code coverage build for %s.', project.name)
-    return []
+  # !!!
+  # if not download_corpora_steps:
+  #   logging.info('Skipping code coverage build for %s.', project.name)
+  #   return []
 
+  # !!!
   build_steps.extend(download_corpora_steps)
+  # build_steps = download_corpora_steps
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
@@ -259,6 +262,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       'report_summary_path':
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
+  # # Corpus research steps.
+  # if config.corpus_research:
+  # !!!
+  build_steps.extend(get_corpus_research_steps(project, config, coverage_env))
+  # build_steps = get_corpus_research_steps(project, config, coverage_env)
 
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
@@ -266,6 +274,47 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
 
   return build_steps
+
+
+def get_corpus_research_steps(project, config, coverage_env):
+  # 1. Download research corpus
+  steps = []
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m', 'cp', '-r',
+          f'gs://oss-fuzz-corpus-research/corpus/{project.name}',
+          f'/research-corpus'
+      ],
+      'volumes': [{
+          'name': 'rc',
+          'path': '/research-corpus'
+      },]
+  })
+  # 2.
+  research_env = coverage_env.copy()
+  research_env.extend([
+      'FUZZER=iccprofile_atf', 'RESEARCH_CORPUS=/research-corpus',
+      f'FPROJECT={project.name}'
+  ])
+  steps.append({
+      'name':
+          'gcr.io/oss-fuzz-base/base-runner-research',
+      'env':
+          research_env,
+      'args': ['corpus_research.py'],
+      'volumes': [
+          {
+              'name': 'rc',
+              'path': '/research-corpus'
+          },
+          {
+              'name': 'corpus',
+              'path': '/corpus'
+          },
+      ]
+  })
+  return steps
 
 
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
