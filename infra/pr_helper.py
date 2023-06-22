@@ -35,6 +35,9 @@ CRITICALITY_SCORE_PATH = '/home/runner/go/bin/criticality_score'
 
 def get_criticality_score(repo_url):
   """Gets the criticality score of the project."""
+  # Criticality score does not support repo url ends with '.git'
+  if repo_url.endswith('.git'):
+    repo_url = repo_url[:-4]
   report = subprocess.run([
       CRITICALITY_SCORE_PATH, '--format', 'json',
       '-gcp-project-id=clusterfuzz-external', '-depsdev-disable', repo_url
@@ -42,7 +45,12 @@ def get_criticality_score(repo_url):
                           capture_output=True,
                           text=True)
 
-  report_dict = json.loads(report.stdout)
+  try:
+    report_dict = json.loads(report.stdout)
+  except:
+    print(f'Criticality score failed with stdout: {report.stdout}')
+    print(f'Criticality score failed with stderr: {report.stderr}')
+    return 'N/A'
   return report_dict.get('default_score', 'N/A')
 
 
