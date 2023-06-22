@@ -15,14 +15,18 @@
 # limitations under the License.
 #
 ################################################################################
+"""Script for generating differential coverage reports.
+generate_differential_cov_report.py <profdata-dump-directory> \
+<profdata-directory-to-subtract-from-first> <output-directory>
+"""
 import os
 import shutil
 import subprocess
-import pathlib
 import sys
 
 
 class ProfData:
+  """Class representing a profdata file."""
 
   def __init__(self, text):
     self.function_profs = []
@@ -32,10 +36,12 @@ class ProfData:
       self.function_profs.append(FunctionProf(function_prof))
 
   def to_string(self):
+    """Convert back to a string."""
     return '\n'.join(
         [function_prof.to_string() for function_prof in self.function_profs])
 
   def find_function(self, function, idx=None):
+    """Find the same function in this profdata."""
     if idx is not None:
       try:
         possibility = self.function_profs[idx]
@@ -46,14 +52,17 @@ class ProfData:
     for function_prof in self.function_profs:
       if function_prof.func_hash == function.func_hash:
         return function_prof
+    return None
 
   def subtract(self, subtrahend):
+    """Subtract subtrahend from this profdata."""
     for idx, function_prof in enumerate(self.function_profs):
       subtrahend_function_prof = subtrahend.find_function(function_prof, idx)
       function_prof.subtract(subtrahend_function_prof)
 
 
 class FunctionProf:
+  """Profile of a function."""
   FUNC_HASH_COMMENT_LINE = '# Func Hash:'
   NUM_COUNTERS_COMMENT_LINE = '# Num Counters:'
   COUNTER_VALUES_COMMENT_LINE = '# Counter Values:'
@@ -61,11 +70,7 @@ class FunctionProf:
   def __init__(self, text):
     print(text)
     lines = text.splitlines()
-    try:
-      self.function = lines[0]
-    except IndexError:
-      import ipdb
-      ipdb.set_trace()
+    self.function = lines[0]
     assert self.FUNC_HASH_COMMENT_LINE == lines[1]
     self.func_hash = lines[2]
     assert self.NUM_COUNTERS_COMMENT_LINE == lines[3]
@@ -74,6 +79,7 @@ class FunctionProf:
     self.counter_values = [1 if int(line) else 0 for line in lines[6:]]
 
   def to_string(self):
+    """Convert back to text."""
     lines = [
         self.function,
         self.FUNC_HASH_COMMENT_LINE,
@@ -85,6 +91,7 @@ class FunctionProf:
     return '\n'.join(lines)
 
   def subtract(self, subtrahend_prof):
+    """Subtract this other function from this function."""
     if not subtrahend_prof:
       print(self.function, 'has no subtrahend')
       # Nothing to subtract.
@@ -96,6 +103,7 @@ class FunctionProf:
 
 
 def get_profdata_files(directory):
+  """Returns profdata files in |directory|."""
   profdatas = []
   for filename in os.listdir(directory):
     filename = os.path.join(directory, filename)
@@ -105,6 +113,7 @@ def get_profdata_files(directory):
 
 
 def convert_profdata_to_text(profdata):
+  """Convert a profdata binary file to a profdata text file."""
   profdata_text = f'{profdata}.txt'
   if os.path.exists(profdata_text):
     os.remove(profdata_text)
@@ -118,6 +127,7 @@ def convert_profdata_to_text(profdata):
 
 
 def convert_text_profdata_to_bin(profdata_text):
+  """Convert a profdata text file to a profdata binary file."""
   profdata = profdata_text.replace('.txt', '').replace('.profdata',
                                                        '') + '.profdata'
   print('bin profdata', profdata)
@@ -132,10 +142,11 @@ def convert_text_profdata_to_bin(profdata_text):
 
 
 def get_difference(minuend_filename, subtrahend_filename):
-  with open(minuend_filename) as minuend_file:
+  """Subtract subtrahend_filename from minuend_filename."""
+  with open(minuend_filename, 'r', encoding='utf-8') as minuend_file:
     print('minuend', minuend_filename)
     minuend = ProfData(minuend_file.read())
-  with open(subtrahend_filename) as subtrahend_file:
+  with open(subtrahend_filename, 'r', encoding='utf-8') as subtrahend_file:
     print('subtrahend', subtrahend_filename)
     subtrahend = ProfData(subtrahend_file.read())
 
@@ -144,13 +155,16 @@ def get_difference(minuend_filename, subtrahend_filename):
 
 
 def profdatas_to_objects(profdatas):
+  """Get the corresponding objects for each profdata."""
   return [
       os.path.splitext(os.path.basename(profdata))[0] for profdata in profdatas
   ]
 
 
-def calculate_differences(minuend_profdatas, subtrahend_profdatas,
-                          difference_dir):
+def generate_differential_cov_reports(minuend_profdatas, subtrahend_profdatas,
+                                      difference_dir):
+  """Calculate the differences between all profdatas and generate differential
+  coverage reports."""
   profdata_objects = profdatas_to_objects(minuend_profdatas)
   real_profdata_objects = [
       binobject for binobject in profdata_objects if binobject != 'merged'
@@ -163,8 +177,8 @@ def calculate_differences(minuend_profdatas, subtrahend_profdatas,
     difference = get_difference(minuend_text, subtrahend_text)
     basename = os.path.basename(minuend_text)
     difference_text = os.path.join(difference_dir, basename)
-    with open(difference_text, 'w') as fp:
-      fp.write(difference.to_string())
+    with open(difference_text, 'w', encoding='utf-8') as file_handle:
+      file_handle.write(difference.to_string())
     difference_profdata = convert_text_profdata_to_bin(difference_text)
     if not difference_profdata.endswith('merged.profdata'):
       generate_html_report(difference_profdata, [binobject],
@@ -175,12 +189,12 @@ def calculate_differences(minuend_profdatas, subtrahend_profdatas,
 
 
 def generate_html_report(profdata, objects, directory):
+  """Generate an HTML coverage report."""
   # TODO(metzman): Deal with shared libs.
   html_dir = os.path.join(directory, 'reports')
   if os.path.exists(html_dir):
     os.remove(html_dir)
   os.makedirs(html_dir)
-  basename = os.path.basename(profdata).split('.profdata')[0]
   out_dir = os.getenv('OUT', '/out')
   command = [
       'llvm-cov', 'show', f'-path-equivalence=/,{out_dir}', '-format=html',
@@ -194,6 +208,7 @@ def generate_html_report(profdata, objects, directory):
 
 
 def main():
+  """Generate differential coverage reports."""
   if len(sys.argv) != 4:
     print(
         f'Usage: {sys.argv[0]} <minuend_dir> <subtrahend_dir> <difference_dir>')
@@ -205,7 +220,8 @@ def main():
   os.makedirs(difference_dir, exist_ok=True)
   minuend_profdatas = get_profdata_files(minuend_dir)
   subtrahend_profdatas = get_profdata_files(subtrahend_dir)
-  calculate_differences(minuend_profdatas, subtrahend_profdatas, difference_dir)
+  generate_differential_cov_reports(minuend_profdatas, subtrahend_profdatas,
+                                    difference_dir)
 
 
 if __name__ == '__main__':
