@@ -228,7 +228,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     try:
-      logging.info('Getting info for: "%s".', project_name)
       build_ids[project_name] = (build_project.run_build(
           project_name,
           steps,
@@ -275,7 +274,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   wait_builds = build_ids.copy()
   build_results = {}
   failed_builds = {}
-  total_builds = len(wait_builds)
+  builds_count = len(wait_builds)
   next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
   timeout_warning_time = end_time - datetime.timedelta(
       minutes=BUILD_TIMEOUT_WARNING_MINUTES)
@@ -299,8 +298,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
       logging.info(
           f'[{current_time}] Warning: trial build may time out in '
           f'{BUILD_TIMEOUT_WARNING_MINUTES} minutes.\n'
-          f'Remaining builds: {len(wait_builds)}/{total_builds}, {wait_builds}.\n'
-          f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}'
+          f'Remaining builds: {len(wait_builds)}/{builds_count}, {wait_builds}.\n'
+          f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}'
       )
 
     for project, project_build_ids in list(wait_builds.items()):
@@ -322,7 +321,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   if failed_builds or not build_results:
     logging.info(
         f'Summary: trial build failed\n'
-        f'Failed builds: {len(failed_builds)}/{total_builds}, {failed_builds}')
+        f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}')
     return False
 
   logging.info(f'Summary: trial build passed.')
