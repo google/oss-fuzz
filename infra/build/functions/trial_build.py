@@ -283,11 +283,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   logging.info(
       '----------------------------Build result----------------------------')
   logging.info(f'Trial build end time: {end_time}')
-  logging.info(f'Total builds: {total_builds}, {wait_builds}')
   logging.info('Failed project, Statuses, Logs')
   while wait_builds:
     current_time = datetime.datetime.now()
-    # Update status every hour
+    # Update status every hour.
     if current_time >= next_check_time:
       logging.info(
           f'[{current_time}] Remaining builds: {len(wait_builds)}, {wait_builds}'
@@ -319,7 +318,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):
 
         time.sleep(1)  # Avoid rate limiting.
 
-  # Return failure if any build fails or nothing is built
+  # Return failure if any build fails or nothing is built.
   if failed_builds or not build_results:
     logging.info(
         f'Summary: trial build failed\n'

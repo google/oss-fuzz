@@ -539,6 +539,7 @@ def get_build_body(steps,
 
 
 def run_build(  # pylint: disable=too-many-arguments
+    oss_fuzz_project,
     steps,
     credentials,
     cloud_project,
@@ -580,7 +581,6 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_id = build_info['metadata']['build']['id']
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
+               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id
