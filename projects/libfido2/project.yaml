@@ -11,4 +11,9 @@ sanitizers:
     - address
     - undefined
     - memory
+fuzzing_engines:
+    - libfuzzer
+    - honggfuzz
+    - afl
+    # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163
 main_repo: 'https://github.com/Yubico/libfido2'
