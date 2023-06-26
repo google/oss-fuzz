@@ -100,7 +100,7 @@ Programming language the project is written in. Values you can specify include:
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
-* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift/)
+* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
 * [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
 
 ### primary_contact, auto_ccs {#primary}
