@@ -26,6 +26,7 @@
 
 #include <iostream>
 
+#include "arch.h"
 #include "inspect_utils.h"
 
 
@@ -38,12 +39,12 @@ const size_t kDnsHeaderLen = 12;
 
 
 void inspect_for_arbitrary_dns_connect(pid_t pid, const user_regs_struct &regs) {
-  auto memory = read_memory(pid, regs.rsi, sizeof(struct sockaddr_in));
+  auto memory = read_memory(pid, REGS_ARG2, sizeof(struct sockaddr_in));
   if (memory.size()) {
     struct sockaddr_in * sa = reinterpret_cast<struct sockaddr_in *>(memory.data());
     if (sa->sin_family == AF_INET && htons(sa->sin_port) == 53) {
       // save file descriptor for later sendmmsg
-      kFdDns = regs.rdi;
+      kFdDns = REGS_ARG1;
     }
   }
 }
@@ -168,8 +169,8 @@ void inspect_for_arbitrary_dns_pkt(std::vector<std::byte> data, pid_t pid) {
 }
 
 void inspect_for_arbitrary_dns_fdbuffer(pid_t pid, const user_regs_struct &regs) {
-  if (kFdDns > 0 && kFdDns == (int) regs.rdi) {
-    auto memory = read_memory(pid, regs.rsi, regs.rdx);
+  if (kFdDns > 0 && kFdDns == (int) REGS_ARG1) {
+    auto memory = read_memory(pid, REGS_ARG2, REGS_ARG3);
     if (memory.size()) {
       inspect_for_arbitrary_dns_pkt(memory, pid);
     }
@@ -188,8 +189,8 @@ void inspect_for_arbitrary_dns_iov(pid_t pid, unsigned long iov) {
 }
 
 void inspect_for_arbitrary_dns_sendmsg(pid_t pid, const user_regs_struct &regs) {
-  if (kFdDns > 0 && kFdDns == (int) regs.rdi) {
-    auto memory = read_memory(pid, regs.rsi, sizeof(struct msghdr));
+  if (kFdDns > 0 && kFdDns == (int) REGS_ARG1) {
+    auto memory = read_memory(pid, REGS_ARG2, sizeof(struct msghdr));
     if (memory.size()) {
       struct msghdr * msg = reinterpret_cast<struct msghdr *>(memory.data());
       if (msg->msg_iovlen == 1) {
@@ -200,8 +201,8 @@ void inspect_for_arbitrary_dns_sendmsg(pid_t pid, const user_regs_struct &regs) 
 }
 
 void inspect_for_arbitrary_dns_sendmmsg(pid_t pid, const user_regs_struct &regs) {
-  if (kFdDns > 0 && kFdDns == (int) regs.rdi) {
-    auto memory = read_memory(pid, regs.rsi, sizeof(struct mmsghdr));
+  if (kFdDns > 0 && kFdDns == (int) REGS_ARG1) {
+    auto memory = read_memory(pid, REGS_ARG2, sizeof(struct mmsghdr));
     if (memory.size()) {
       struct mmsghdr * msg = reinterpret_cast<struct mmsghdr *>(memory.data());
       if (msg->msg_hdr.msg_iovlen == 1) {
@@ -212,12 +213,12 @@ void inspect_for_arbitrary_dns_sendmmsg(pid_t pid, const user_regs_struct &regs)
 }
 
 void inspect_dns_syscalls(pid_t pid, const user_regs_struct &regs) {
-  switch (regs.orig_rax) {
+  switch (REGS_SYSCALL) {
     case __NR_connect:
       inspect_for_arbitrary_dns_connect(pid, regs);
       break;
     case __NR_close:
-      if (kFdDns > 0 && kFdDns == (int) regs.rdi) {
+      if (kFdDns > 0 && kFdDns == (int) REGS_ARG1) {
         // reset DNS file descriptor on close
         kFdDns = 0;
       }

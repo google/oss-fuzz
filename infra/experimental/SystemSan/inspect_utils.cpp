@@ -29,6 +29,7 @@
 #include <vector>
 #include <map>
 
+#include "arch.h"
 #include "inspect_utils.h"
 
 extern pid_t g_root_pid;
