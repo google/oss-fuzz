@@ -101,6 +101,7 @@ Programming language the project is written in. Values you can specify include:
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 * [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
+* [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
