@@ -488,10 +488,10 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
+def get_logs_url(build_id):
   """Returns url that displays the build logs."""
-  return ('https://console.developers.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
+  return (
+      f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt')
 
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
@@ -539,6 +539,7 @@ def get_build_body(steps,
 
 
 def run_build(  # pylint: disable=too-many-arguments
+    oss_fuzz_project,
     steps,
     credentials,
     cloud_project,
@@ -580,7 +581,6 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_id = build_info['metadata']['build']['id']
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
+               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id
