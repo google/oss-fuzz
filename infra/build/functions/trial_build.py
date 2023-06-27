@@ -17,6 +17,7 @@
 versions of all base images and the builds projects using those test images."""
 import argparse
 import collections
+import datetime
 import functools
 import json
 import logging
@@ -34,6 +35,10 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
+# Warning time in minutes before build times out.
+BUILD_TIMEOUT_WARNING_MINUTES = 15
+# Default timeout in seconds, 7 hours.
+DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
 FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
                            'EXPIRED')
@@ -189,8 +194,6 @@ def get_projects_to_build(specified_projects, build_type, force_build):
       buildable_projects.append(project)
       continue
 
-    logging.info('Skipping %s, last build failed.', project)
-
   return buildable_projects
 
 
@@ -198,7 +201,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   for project_name in projects:
-    logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
@@ -207,7 +209,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     build_project.set_yaml_defaults(project_yaml)
-    print(project_yaml['sanitizers'], args.sanitizers)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
         project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
@@ -218,7 +219,6 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
             set(args.fuzzing_engines)))
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
-      logging.info('Nothing to build for this project: %s.', project_name)
       continue
 
     steps = build_type.get_build_steps_func(project_name, project_yaml,
@@ -258,11 +258,11 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
-  build_results[project] = build_status == 'SUCCESS'
+  build_results[project] = build_status
   return True
 
 
-def wait_on_builds(build_ids, credentials, cloud_project):
+def wait_on_builds(build_ids, credentials, cloud_project, end_time):
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -273,12 +273,43 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
   wait_builds = build_ids.copy()
   build_results = {}
+  failed_builds = {}
+  builds_count = len(wait_builds)
+  next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+  timeout_warning_time = end_time - datetime.timedelta(
+      minutes=BUILD_TIMEOUT_WARNING_MINUTES)
+  notified_timeout = False
+  logging.info(
+      '----------------------------Build result----------------------------')
+  logging.info(f'Trial build end time: {end_time}')
+  logging.info('Failed project, Statuses, Logs')
   while wait_builds:
-    logging.info('Polling: %s', wait_builds)
+    current_time = datetime.datetime.now()
+    # Update status every hour.
+    if current_time >= next_check_time:
+      logging.info(
+          f'[{current_time}] Remaining builds: {len(wait_builds)}, {wait_builds}'
+      )
+      next_check_time += datetime.timedelta(hours=1)
+
+    # Warn users and write a summary if build is about to end.
+    if not notified_timeout and current_time >= timeout_warning_time:
+      notified_timeout = True
+      logging.info(
+          f'[{current_time}] Warning: trial build may time out in '
+          f'{BUILD_TIMEOUT_WARNING_MINUTES} minutes.\n'
+          f'Remaining builds: {len(wait_builds)}/{builds_count}, {wait_builds}.\n'
+          f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}'
+      )
+
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
         if check_finished(build_id, project, cloudbuild_api, cloud_project,
                           build_results):
+          if build_results[project] != 'SUCCESS':
+            logs_url = build_lib.get_logs_url(build_id)
+            failed_builds[project] = logs_url
+            logging.info(f'{project}, {build_results[project]}, {logs_url}')
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -286,17 +317,21 @@ def wait_on_builds(build_ids, credentials, cloud_project):
 
         time.sleep(1)  # Avoid rate limiting.
 
-  print('Printing results')
-  print('Project, Statuses')
-  for project, build_result in build_results.items():
-    print(project, build_result)
+  # Return failure if any build fails or nothing is built.
+  if failed_builds or not build_results:
+    logging.info(
+        f'Summary: trial build failed\n'
+        f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}')
+    return False
 
-  # Return failure if nothing is built.
-  return all(build_results.values()) if build_results else False
+  logging.info(f'Summary: trial build passed.')
+  return True
 
 
-def _do_test_builds(args, test_image_suffix):
+def _do_test_builds(args, test_image_suffix, end_time):
   """Does test coverage and fuzzing builds."""
+  logging.info(
+      '---------------------------Trial build logs---------------------------')
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
@@ -324,13 +359,17 @@ def _do_test_builds(args, test_image_suffix):
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
 
-  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT)
+  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
+                        end_time)
 
 
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
+  timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
+  end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
+  logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
   if args.branch:
     test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
   else:
@@ -340,7 +379,7 @@ def trial_build_main(args=None, local_base_build=True):
         test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
-  return _do_test_builds(args, test_image_suffix)
+  return _do_test_builds(args, test_image_suffix, end_time)
 
 
 def main():

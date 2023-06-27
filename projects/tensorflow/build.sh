@@ -17,6 +17,10 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
+if [ "$SANITIZER" = "undefined" ]; then
+  rm $SRC/tensorflow/tensorflow/security/fuzzing/cc/core/function/BUILD
+fi
+
 # Rename all fuzzer rules to oss-fuzz rules.
 find $SRC/tensorflow/tensorflow/ -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
 
