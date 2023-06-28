@@ -20,4 +20,4 @@ npm install
 npm install --save-dev @jazzer.js/core
 
 # Build Fuzzers.
-compile_javascript_fuzzer lodash fuzz.js -i lodash --sync
+compile_javascript_fuzzer lodash fuzz.js -i lodash
