@@ -24,9 +24,10 @@ ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
 RUN git clone --depth 1 https://github.com/ebourg/jsign.git
 
-RUN zip -j $SRC/AuthenticodeExeSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.exe && \
-    zip -j $SRC/AuthenticodeMsiSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.msi && \
-    zip -j $SRC/AuthenticodeCabSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/mscab/*.cab
+RUN zip -j $SRC/AuthenticodeExeSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/*.exe && \
+    zip -j $SRC/AuthenticodeMsiSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/*.msi && \
+    zip -j $SRC/AuthenticodeAppxSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.msix && \
+    zip -j $SRC/AuthenticodeCabSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/mscab/*.cab
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/

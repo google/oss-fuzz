@@ -14,9 +14,7 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python bsdmainutils libcrypt-dev:i386
 RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl

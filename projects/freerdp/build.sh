@@ -47,12 +47,17 @@ cmake_args=(
     -DWITH_KRB5=OFF
     -DWITH_FUSE=OFF
 
+    # clang-15 segfaults on linking binaries when LTO is enabled,
+    # see https://github.com/google/oss-fuzz/pull/10448#issuecomment-1578160436
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=FALSE
+
     $SANITIZERS_ARGS
 
     -DCMAKE_BUILD_TYPE=Debug
     -DBUILD_SHARED_LIBS=OFF
     -DOSS_FUZZ=ON
     -DBUILD_FUZZERS=ON
+    -DBUILD_TESTING=ON
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
@@ -72,7 +77,7 @@ cmake_args=(
 # Build the project and fuzzers.
 rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --parallel --target TestFuzzCryptoCertificateDataSetPEM
+cmake --build build --parallel --target fuzzers
 
 for f in $(find build/Testing/ -name 'TestFuzz*' -type f);
 do
