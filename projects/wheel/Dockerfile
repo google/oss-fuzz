@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/pypa/wheel wheel
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:254ba32c9e5a630865d0a4121fbe53ff7ba8c8394901005674ffa3de17efcd18
+RUN git clone https://github.com/pypa/wheel
 COPY *.sh *py $SRC/
 WORKDIR $SRC/wheel
