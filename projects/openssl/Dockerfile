@@ -21,6 +21,6 @@ RUN cd $SRC/openssl/ && git submodule update --init fuzz/corpora
 RUN git clone --depth 1 --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl.git openssl111
 RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl.git openssl30
 WORKDIR openssl
-COPY build.sh *.options $SRC/
+COPY build.sh *.options ngolo.py $SRC/
 ENV AFL_SKIP_OSSFUZZ=1
 ENV AFL_LLVM_MODE_WORKAROUND=0

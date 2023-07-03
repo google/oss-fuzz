@@ -64,6 +64,9 @@ function build_fuzzers() {
 
 cd $SRC/openssl/
 build_fuzzers ""
+$CC $CFLAGS -c fuzz/driver.c -o fuzz/driver.o -I include
+ls include/openssl/*.h.in | while read i; do python3 $SRC/ngolo.py $i; done
+cp fuzz_ng_* $OUT/
 cd $SRC/openssl111/
 build_fuzzers "_111"
 cd $SRC/openssl30/
