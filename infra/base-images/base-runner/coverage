@@ -518,12 +518,16 @@ else
 
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
+
+  set +e
 fi
 
 # Make sure report is readable.
 chmod -R +r $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR
 find $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR -type d -exec chmod +x {} +
 
+# HTTP_PORT is optional.
+set +u
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
