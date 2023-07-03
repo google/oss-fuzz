@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import subprocess
 import sys
 
@@ -102,12 +103,10 @@ def process_fun(funp, asntypes, owning):
         f2.close()
 
         # and now compile it
-        ret = subprocess.run(["clang", "-g", "-fsanitize=address,fuzzer-no-link", "-c", "fuzz/%s.c" % namefun, "-o", "fuzz/%s.o" % namefun, "-I", "include"])
+        ret = subprocess.run([os.environ.get("CC")] + os.environ.get("CFLAGS").split() + ["-c", "fuzz/%s.c" % namefun, "-o", "fuzz/%s.o" % namefun, "-I", "include"])
         if ret.returncode != 0:
             print("failed")
-        cmd = ["clang++", "-g", "-fsanitize=address,fuzzer", "fuzz/%s.o" % namefun, "-o", "fuzz_ng_%s" % namefun, "fuzz/driver.o", "libcrypto.a"]
-        print(cmd)
-        ret = subprocess.run(cmd)
+        ret = subprocess.run([os.environ.get("CXX")] + os.environ.get("CXXFLAGS") + [os.environ.get("LIB_FUZZING_ENGINE"), "fuzz/%s.o" % namefun, "-o", "fuzz_ng_%s" % namefun, "fuzz/driver.o", "libcrypto.a"])
         print(namefun, args)
 
 # first list all asn1 types
