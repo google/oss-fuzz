@@ -20,7 +20,6 @@ npm install
 npm install --save-dev @jazzer.js/core
 
 # Build Fuzzers.
-# Fuzzing is kinda slow and a resource hog so we have to adjust the timeout and
-# memory limit to satisfy libfuzzer
-compile_javascript_fuzzer TypeScript fuzz_ast -i typescript --sync --timeout=30000 -- -rss_limit_mb=4096
-compile_javascript_fuzzer TypeScript fuzz_compiler -i typescript --sync --timeout=30000 -- -rss_limit_mb=4096
+# Fuzzing TS is a resource hog so we have to adjust the rss limit a bit
+compile_javascript_fuzzer TypeScript fuzz_ast -i typescript -- -rss_limit_mb=4096
+compile_javascript_fuzzer TypeScript fuzz_compiler -i typescript --sync -- -rss_limit_mb=4096
