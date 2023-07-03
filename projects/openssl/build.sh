@@ -67,8 +67,17 @@ cd $SRC/openssl/
 sed -i -e 's/DECLARE_ASN1_ALLOC_FUNCTIONS(NAME_CONSTRAINTS)/DECLARE_ASN1_FUNCTIONS(NAME_CONSTRAINTS)/' include/openssl/x509v3.h.in
 sed -i -e 's/IMPLEMENT_ASN1_ALLOC_FUNCTIONS(NAME_CONSTRAINTS)/IMPLEMENT_ASN1_FUNCTIONS(NAME_CONSTRAINTS)/' crypto/x509/v3_ncons.c
 build_fuzzers ""
-$CC $CFLAGS -c fuzz/driver.c -o fuzz/driver.o -I include
-ls include/openssl/*.h.in | while read i; do python3 $SRC/ngolo.py $i; done
+if [[ $CFLAGS = *sanitize=address* ]]
+then
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        if [[ $FUZZING_ENGINE = *libfuzzer* ]]
+        then
+            $CC $CFLAGS -c fuzz/driver.c -o fuzz/driver.o -I include
+            ls include/openssl/*.h.in | while read i; do python3 $SRC/ngolo.py $i; done
+        fi
+    fi
+fi
 cp fuzz_ng_* $OUT/
 cd $SRC/openssl111/
 build_fuzzers "_111"
