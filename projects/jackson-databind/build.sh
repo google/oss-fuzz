@@ -16,9 +16,11 @@
 ################################################################################
 
 cd $SRC/javaparser
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
 $MVN package -DskipTests
-cp javaparser-core/target/javaparser-core-3.25.4-SNAPSHOT.jar $OUT/javaparser-core.jar
-cp javaparser-symbol-solver-core/target/javaparser-symbol-solver-core-3.25.4-SNAPSHOT.jar $OUT/javaparser-symbol-solver.jar
+cp javaparser-core/target/javaparser-core-$CURRENT_VERSION.jar $OUT/javaparser-core.jar
+cp javaparser-symbol-solver-core/target/javaparser-symbol-solver-core-$CURRENT_VERSION.jar $OUT/javaparser-symbol-solver.jar
 cd $SRC/jackson-databind
 
 # Move seed corpus and dictionary.
