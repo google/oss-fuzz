@@ -372,6 +372,9 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                help='do not download corpus backup from '
                                'OSS-Fuzz; use corpus located in '
                                'build/corpus/<project>/<fuzz_target>/')
+  coverage_parser.add_argument('--no-serve',
+                               action='store_true',
+                               help='do not serve a local HTTP server.')
   coverage_parser.add_argument('--port',
                                default='8008',
                                help='specify port for'
@@ -1207,10 +1210,12 @@ def coverage(args):
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
-      'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
       'ARCHITECTURE=' + args.architecture,
   ]
+
+  if not args.no_serve:
+    env.append(f'HTTP_PORT={args.port}')
 
   run_args = _env_to_docker_args(env)
 
