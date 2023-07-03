@@ -106,7 +106,7 @@ def process_fun(funp, asntypes, owning):
         ret = subprocess.run([os.environ.get("CC")] + os.environ.get("CFLAGS").split() + ["-c", "fuzz/%s.c" % namefun, "-o", "fuzz/%s.o" % namefun, "-I", "include"])
         if ret.returncode != 0:
             print("failed")
-        ret = subprocess.run([os.environ.get("CXX")] + os.environ.get("CXXFLAGS") + [os.environ.get("LIB_FUZZING_ENGINE"), "fuzz/%s.o" % namefun, "-o", "fuzz_ng_%s" % namefun, "fuzz/driver.o", "libcrypto.a"])
+        ret = subprocess.run([os.environ.get("CXX")] + os.environ.get("CXXFLAGS").split() + [os.environ.get("LIB_FUZZING_ENGINE"), "fuzz/%s.o" % namefun, "-o", "fuzz_ng_%s" % namefun, "fuzz/driver.o", "libcrypto.a"])
         print(namefun, args)
 
 # first list all asn1 types
