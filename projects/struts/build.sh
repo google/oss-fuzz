@@ -24,7 +24,7 @@ pushd "/tmp"
 	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
 		-DgroupId="com.code-intelligence" \
 		-DartifactId="jazzer-api" \
-		-Dversion="0.14.0" \
+		-Dversion="0.15.0" \
 		-Dpackaging=jar
 popd
 
