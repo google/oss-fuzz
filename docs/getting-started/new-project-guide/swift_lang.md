@@ -4,7 +4,7 @@ title: Integrating a Swift project
 parent: Setting up a new project
 grand_parent: Getting started
 nav_order: 1
-permalink: /getting-started/new-project-guide/swift/
+permalink: /getting-started/new-project-guide/swift-lang/
 ---
 
 # Integrating a Swift project

@@ -34,8 +34,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   };
   constexpr auto &s7 = magic_enum::enum_values<const FuzzEnum>();
 
-  auto m8 = magic_enum::detail::is_flags_enum<FuzzEnum>();
-
   auto c1 = magic_enum::enum_cast<FuzzEnum>(fdp.ConsumeIntegral<int>());
   auto c2 = magic_enum::enum_cast<FuzzEnum>(fdp.ConsumeRandomLengthString());
   auto c3 = magic_enum::enum_entries<FuzzEnum>();
