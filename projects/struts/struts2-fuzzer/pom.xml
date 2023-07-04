@@ -4,19 +4,19 @@
 
     <groupId>ossfuzz</groupId>
     <artifactId>parent-project</artifactId>
-    <version>${fuzzedLibaryVersion}</version>
+    <version>6.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <fuzzedLibaryVersion>6.1.2.1</fuzzedLibaryVersion>
+        <fuzzedLibaryVersion>6.3.0-SNAPSHOT</fuzzedLibaryVersion>
     </properties>
 
     <modules>
-        <module>fuzzer</module>
         <module>webapp</module>
+        <module>fuzzer</module>
     </modules>
 
     <dependencyManagement>
@@ -25,6 +25,17 @@
                 <groupId>com.code-intelligence</groupId>
                 <artifactId>jazzer-api</artifactId>
                 <version>0.15.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>jsp-api</artifactId>
+                <version>2.1</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>

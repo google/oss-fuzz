@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
 package org.apache.struts.test;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
