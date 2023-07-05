@@ -18,7 +18,7 @@ Brotli==1.0.9
 hiredis==1.1.0
 PyYaml==5.4
 PyGithub==1.51
-grpcio==1.49.1
+grpcio==1.53.0
 google-auth==1.21.1
 google-cloud-datastore<2.0
 google-cloud-ndb==1.7.1
