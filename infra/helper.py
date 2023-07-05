@@ -833,9 +833,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work',
       f'gcr.io/oss-fuzz/{project.name}'
   ]
+  if sys.stdin.isatty():
+    command.insert(-1, '-t')
 
   result = docker_run(command, architecture=architecture)
   if not result:
