@@ -16,23 +16,26 @@
 """Script to run target experiments on GCB."""
 
 import argparse
+import logging
+import os
 import sys
 
 import google.auth
 
 import build_lib
 import build_project
-import trial_build
 
 
-def run_experiment(project_name, target_name, args, output_path):
+def run_experiment(project_name, target_name, args, output_path,
+                   build_output_path, upload_corpus_path, upload_coverage_path):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
                                 branch=None,
                                 parallel=False,
                                 upload=False,
-                                experiment=True)
+                                experiment=True,
+                                upload_build_logs=build_output_path)
 
   try:
     project_yaml, dockerfile_contents = (
@@ -41,11 +44,15 @@ def run_experiment(project_name, target_name, args, output_path):
     logging.error('Couldn\'t get project data. Skipping %s.', project_name)
     return
 
+  project = build_project.Project(project_name, project_yaml,
+                                  dockerfile_contents)
+
   # Override sanitizers and engine because we only care about libFuzzer+ASan
   # for benchmarking purposes.
   build_project.set_yaml_defaults(project_yaml)
   project_yaml['sanitizers'] = ['address']
   project_yaml['fuzzing_engines'] = ['libfuzzer']
+  project_yaml['architectures'] = ['x86_64']
 
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
@@ -55,10 +62,13 @@ def run_experiment(project_name, target_name, args, output_path):
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
+  local_corpus_path = '/workspace/corpus'
+  local_corpus_zip_path = '/workspace/corpus/corpus.zip'
   fuzzer_args = ' '.join(args)
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
+  env.append('CORPUS_DIR=' + local_corpus_path)
 
   run_step = {
       'name':
@@ -68,15 +78,78 @@ def run_experiment(project_name, target_name, args, output_path):
       'args': [
           'bash',
           '-c',
-          f'run_fuzzer {target_name} {fuzzer_args} &> {local_output_path} || true',
+          (f'mkdir {local_corpus_path} && '
+           f'run_fuzzer {target_name} {fuzzer_args} '
+           f'|& tee {local_output_path} || true'),
       ]
   }
   steps.append(build_lib.dockerify_run_step(run_step, build))
-
-  # TODO: Save corpus too.
   steps.append({
       'name': 'gcr.io/cloud-builders/gsutil',
       'args': ['-m', 'cp', local_output_path, output_path]
+  })
+
+  # Upload corpus.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'entrypoint':
+          '/bin/bash',
+      'args': [
+          '-c',
+          (f'cd {local_corpus_path} && '
+           f'zip -r {local_corpus_zip_path} * && '
+           f'gsutil -m cp {local_corpus_zip_path} {upload_corpus_path} || '
+           f'true'),
+      ],
+  })
+
+  # Build for coverage.
+  build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
+  env = build_project.get_env(project_yaml['language'], build)
+
+  steps.append(
+      build_project.get_compile_step(project, build, env, config.parallel))
+
+  # Generate coverage report.
+  env.extend([
+      'CORPUS_DIR=' + local_corpus_path,
+      'HTTP_PORT=',
+      f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
+  ])
+  steps.append({
+      'name': build_lib.get_runner_image_name(''),
+      'env': env,
+      'args': [
+          'coverage',
+          target_name,
+      ],
+  })
+
+  # Upload coverage report.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'report'),
+          os.path.join(upload_coverage_path, 'report'),
+      ],
+  })
+
+  # Upload textcovs.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'textcov_reports'),
+          os.path.join(upload_coverage_path, 'textcov_reports'),
+      ],
   })
 
   credentials, _ = google.auth.default()
@@ -94,13 +167,23 @@ def main():
   parser.add_argument('args',
                       nargs='+',
                       help='Additional arguments to pass to the target')
-  parser.add_argument('--output_log', required=True, help='GCS log location.')
+  parser.add_argument('--upload_build_log',
+                      required=True,
+                      help='GCS build log location.')
+  parser.add_argument('--upload_output_log',
+                      required=True,
+                      help='GCS log location.')
+  parser.add_argument('--upload_corpus',
+                      required=True,
+                      help='GCS location to upload corpus.')
+  parser.add_argument('--upload_coverage',
+                      required=True,
+                      help='GCS location to upload coverage data.')
   args = parser.parse_args()
 
-  build_id = run_experiment(args.project, args.target, args.args,
-                            args.output_log)
-  #print('Link:', f'https://pantheon.corp.google.com/cloud-build/builds;region=us-central1/{build_id}?project=oss-fuzz'))
-  print(build_id)
+  run_experiment(args.project, args.target, args.args, args.upload_output_log,
+                 args.upload_build_log, args.upload_corpus,
+                 args.upload_coverage)
 
 
 if __name__ == '__main__':
