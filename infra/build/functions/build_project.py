@@ -60,6 +60,7 @@ DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 
 # Used if build logs are uploaded to a separate place.
 LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
+BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
 
 
 @dataclass
@@ -71,6 +72,7 @@ class Config:
   parallel: bool = False
   upload: bool = True
   experiment: bool = False
+  # TODO(ochang): This should be different per engine+sanitizer combination.
   upload_build_logs: str = None
 
 
@@ -252,8 +254,12 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
   compile_output_redirect = ''
+
   if upload_build_logs:
-    compile_output_redirect = f'&> {LOCAL_BUILD_LOG_PATH} '
+    # Also write a build success marker because this step needs to succeed first
+    # for a subsequent step to upload the log.
+    compile_output_redirect = (
+        f'&> {LOCAL_BUILD_LOG_PATH} && touch {BUILD_SUCCESS_MARKER}')
 
   compile_step = {
       'name': project.image,
@@ -271,6 +277,11 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
       ],
       'id': get_id('compile', build),
   }
+
+  if upload_build_logs:
+    # The failure will be reported in a subsequent step.
+    compile_step['allowFailure'] = True
+
   build_lib.dockerify_run_step(compile_step,
                                build,
                                use_architecture_image_name=build.is_arm)
@@ -335,6 +346,12 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
               'args': [
                   '-m', 'cp', LOCAL_BUILD_LOG_PATH, config.upload_build_logs
               ],
+          })
+
+          # Report the build failure if it happened.
+          build_steps.append({
+              'name': project.image,
+              'args': ['bash', '-c', f'test -f {BUILD_SUCCESS_MARKER}'],
           })
 
         if project.run_tests:
