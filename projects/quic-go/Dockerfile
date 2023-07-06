@@ -16,12 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN git clone --depth 1 https://github.com/quic-go/qpack/ && \
-  cd qpack && \
-  go build
+RUN git clone --depth 1 https://github.com/quic-go/qpack/
+RUN git clone --depth 1 https://github.com/quic-go/quic-go/
 
-RUN git clone --depth 1 https://github.com/quic-go/quic-go/ && \
-  cd quic-go && \
-  go build
-
-COPY build.sh .
+RUN cp quic-go/oss-fuzz.sh build.sh
+# Enable this for easier local testing / repro
+# COPY build.sh .

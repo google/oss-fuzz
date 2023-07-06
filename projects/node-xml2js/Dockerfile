@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,12 @@
 #
 ################################################################################
 
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-$SRC/cilium/test/fuzzing/oss-fuzz-build.sh
-$SRC/cncf-fuzzing/projects/cilium/build.sh
+COPY build.sh $SRC/
+
+RUN git clone --depth 1 https://github.com/Leonidas-from-XIV/node-xml2js
+
+COPY fuzz_parseString.js $SRC/node-xml2js
+
+WORKDIR $SRC/node-xml2js

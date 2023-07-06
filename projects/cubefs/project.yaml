@@ -1,0 +1,12 @@
+homepage: "https://github.com/cubefs/cubefs"
+main_repo: "https://github.com/cubefs/cubefs"
+primary_contact: "626148589@qq.com"
+auto_ccs:
+  - "changliang@oppo.com"
+  - "baijiaruo@126.com "
+  - "tangjingyu@oppo.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

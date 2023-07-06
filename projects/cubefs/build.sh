@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,4 @@
 #
 ################################################################################
 
-
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-$SRC/cilium/test/fuzzing/oss-fuzz-build.sh
-$SRC/cncf-fuzzing/projects/cilium/build.sh
+$SRC/cncf-fuzzing/projects/cubefs/build.sh

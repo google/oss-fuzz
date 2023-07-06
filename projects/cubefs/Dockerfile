@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y wget
-RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.dict -O $OUT/fuzz.dict
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
-RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.20.5.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
-RUN git clone --depth 1 https://github.com/cilium/cilium
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/cubefs/cubefs
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing.git
 COPY build.sh $SRC/
-WORKDIR $SRC/cilium
+RUN cd /src/cubefs && make cli 
+WORKDIR $SRC/cubefs
