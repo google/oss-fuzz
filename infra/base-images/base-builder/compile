@@ -164,8 +164,8 @@ EOF
 this_dir=$(dirname "$0")
 "$this_dir/jazzer_driver" --ubsan "$@"
 EOF
-  elif [ "$SANITIZER" = "coverage" ]; then
-    # Coverage builds require no instrumentation.
+  elif [ "$SANITIZER" = "coverage" ] ||  [ "$SANITIZER" = "introspector" ]; then
+    # Coverage & introspector builds require no instrumentation.
     cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
   fi
   chmod +x $jazzer_driver_with_sanitizer
