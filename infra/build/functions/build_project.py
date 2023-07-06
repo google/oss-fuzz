@@ -253,7 +253,7 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
       f'{build.architecture} {project.name}\n' + '*' * 80)
   compile_output_redirect = ''
   if upload_build_logs:
-    compile_output_redirect = f'|& tee {LOCAL_BUILD_LOG_PATH} '
+    compile_output_redirect = f'&> {LOCAL_BUILD_LOG_PATH} '
 
   compile_step = {
       'name': project.image,
