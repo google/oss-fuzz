@@ -27,3 +27,5 @@ steps:
     - '1'
     - '--max-instances'
     - '10'
+    - '--memory'
+    - '8Gi'

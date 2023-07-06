@@ -1,0 +1,14 @@
+homepage: https://github.com/jpeg-js/jpeg-js
+language: javascript
+main_repo: https://github.com/jpeg-js/jpeg-js
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "christopher.krah@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

@@ -1,100 +1,130 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>ossfuzz</groupId>
-	<artifactId>struts2-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
-	<packaging>jar</packaging>
+    <artifactId>struts2-fuzzer</artifactId>
+    <packaging>jar</packaging>
 
-	<parent>
-		<groupId>ossfuzz</groupId>
-		<artifactId>parent-project</artifactId>
-		<version>${fuzzedLibaryVersion}</version>
-	</parent>
+    <parent>
+        <groupId>ossfuzz</groupId>
+        <artifactId>parent-project</artifactId>
+        <version>6.3.0-SNAPSHOT</version>
+    </parent>
 
-	<properties>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>6.1.1</fuzzedLibaryVersion>
-	</properties>
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<!-- This repositories list is copy pasted from the projects' main BOM -->
-	
-	<dependencies>
-		<!--
-			On the CI, install the jazzer file with
-		
-				mvn install:install-file -Dfile=${JAZZER_API_PATH} \
-					-DgroupId="com.code-intelligence" \
-					-DartifactId="jazzer-api" \
-					-Dversion="0.14.0" \
-					-Dpackaging=jar
-		
-			in order to avoid mismatching driver/api versions.
-		-->
-		<dependency>
-			<groupId>com.code-intelligence</groupId>
-			<artifactId>jazzer-api</artifactId>
-			<version>0.14.0</version>
-		</dependency>
+    <!-- This repositories list is copy pasted from the projects' main BOM -->
+
+    <dependencies>
+        <!--
+            On the CI, install the jazzer file with
+
+                mvn install:install-file -Dfile=${JAZZER_API_PATH} \
+                    -DgroupId="com.code-intelligence" \
+                    -DartifactId="jazzer-api" \
+                    -Dversion="0.14.0" \
+                    -Dpackaging=jar
+
+            in order to avoid mismatching driver/api versions.
+        -->
+        <dependency>
+            <groupId>com.code-intelligence</groupId>
+            <artifactId>jazzer-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>9.3.29.v20201019</version>
+            <version>9.4.51.v20230217</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>9.3.29.v20201019</version>
+            <version>9.4.51.v20230217</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>9.3.29.v20201019</version>
+            <version>9.4.51.v20230217</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jsp</artifactId>
             <version>9.2.30.v20200428</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.el</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.4</version>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b12</version>
         </dependency>
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.SF</exclude>
-								<exclude>META-INF/*.DSA</exclude>
-								<exclude>META-INF/*.RSA</exclude>
-							</excludes>
-						</filter>
-					</filters>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.4.51.v20230217</version>
+                <configuration>
+                    <stopKey>CTRL+C</stopKey>
+                    <stopPort>8999</stopPort>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>slf4j</name>
+                            <value>false</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <httpConnector>
+                        <port>8080</port>
+                    </httpConnector>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webAppSourceDirectory>${basedir}/src/main/webapp/</webAppSourceDirectory>
+                    <webAppConfig>
+                        <contextPath>/</contextPath>
+                        <descriptor>${basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+                    </webAppConfig>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

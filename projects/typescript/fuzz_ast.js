@@ -14,17 +14,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const { FuzzedDataProvider } = require('@jazzer.js/core');
-const ts = require('typescript');
+const { FuzzedDataProvider } = require("@jazzer.js/core");
+const ts = require("typescript");
 
-module.exports.fuzz = function(data) {
+module.exports.fuzz = async function(data) {
   const provider = new FuzzedDataProvider(data);
 
   try {
-    const fileName = provider.consumeString(10) + '.ts';
+    const fileName = provider.consumeString(10) + ".ts";
     const fileContents = provider.consumeString(1000);
 
-    // Parse the source file
     const sourceFile = ts.createSourceFile(
       fileName,
       fileContents,
@@ -32,8 +31,11 @@ module.exports.fuzz = function(data) {
       /*setParentNodes */ true
     );
 
-    // Get the diagnostics for the source file
+    // Fuzzing parsing and lexing
     ts.getPreEmitDiagnostics(sourceFile);
+
+    // Fuzzing type inference
+    ts.getTypeChecker(sourceFile);
 
     // Consume a boolean and use it to randomly remove a node from the AST
     const shouldRemoveNode = provider.consumeBoolean();
@@ -75,13 +77,124 @@ module.exports.fuzz = function(data) {
         ts.replaceNode(nodeToReplace, newNode);
       }
     }
+
+    // Fuzzing transformation and emit
+    const transformed = ts.transform(sourceFile, [/* transformation functions */]);
+    const transformedSourceFile = transformed.transformed[0];
+
+    // Fuzzing language features
+    const shouldFuzzLanguageFeature = provider.consumeBoolean();
+    if (shouldFuzzLanguageFeature) {
+      // Fuzzing classes
+      const classDeclaration = ts.createClassDeclaration(
+        /* decorators */[],
+        /* modifiers */[],
+        provider.consumeString(10),
+        /* typeParameters */[],
+        /* heritageClauses */[],
+        /* members */[]
+      );
+      ts.addDeclaration(sourceFile, classDeclaration);
+
+      // Fuzzing interfaces
+      const interfaceDeclaration = ts.createInterfaceDeclaration(
+        /* decorators */[],
+        /* modifiers */[],
+        provider.consumeString(10),
+        /* typeParameters */[],
+        /* heritageClauses */[],
+        /* members */[]
+      );
+      ts.addDeclaration(sourceFile, interfaceDeclaration);
+
+      // Fuzzing modules
+      const moduleDeclaration = ts.createModuleDeclaration(
+        /* decorators */[],
+        /* modifiers */[],
+        ts.createIdentifier(provider.consumeString(10)),
+        ts.createModuleBlock([]),
+        ts.NodeFlags.Namespace
+      );
+      ts.addDeclaration(sourceFile, moduleDeclaration);
+
+      // Fuzzing generics
+      const genericFunctionDeclaration = ts.createFunctionDeclaration(
+        /* decorators */[],
+        /* modifiers */[],
+        /* asteriskToken */ undefined,
+        provider.consumeString(10),
+        /* typeParameters */[
+          ts.createTypeParameterDeclaration(
+            ts.createIdentifier(provider.consumeString(10)),
+            /* constraint */ undefined,
+            /* defaultType */ undefined
+          )
+        ],
+        /* parameters */[],
+        /* type */ undefined,
+        /* body */ undefined
+      );
+      ts.addDeclaration(sourceFile, genericFunctionDeclaration);
+
+      // Fuzzing decorators
+      const decorator = ts.createDecorator(
+        ts.createCall(
+          ts.createIdentifier(provider.consumeString(10)),
+          /* typeArguments */[],
+          /* argumentsArray */[]
+        )
+      );
+      ts.addDeclaration(sourceFile, decorator);
+
+      // Fuzzing async/await
+      const asyncFunctionDeclaration = ts.createFunctionDeclaration(
+        /* decorators */[],
+        /* modifiers */[],
+        /* asteriskToken */ undefined,
+        provider.consumeString(10),
+        /* typeParameters */[],
+        /* parameters */[],
+        /* type */ undefined,
+        ts.createBlock([
+          ts.createAwaitExpression(
+            ts.createCall(
+              ts.createIdentifier(provider.consumeString(10)),
+              /* typeArguments */[],
+              /* argumentsArray */[]
+            )
+          )
+        ])
+      );
+      ts.addDeclaration(sourceFile, asyncFunctionDeclaration);
+    }
+
+    // Fuzzing compiler options
+    const compilerOptions = {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.CommonJS,
+      strict: provider.consumeBoolean(),
+      // ...
+    };
+    const program = ts.createProgram([fileName], compilerOptions);
+    program.emit();
+
+    // Fuzzing API functions
+    const shouldFuzzApiFunction = provider.consumeBoolean();
+    if (shouldFuzzApiFunction) {
+      // Fuzzing type checking
+      const typeChecker = program.getTypeChecker();
+      const randomSymbol = typeChecker.getSymbolAtLocation(sourceFile);
+      typeChecker.getTypeOfSymbolAtLocation(randomSymbol, sourceFile);
+      // ...
+    }
+
   } catch (error) {
     if (!ignoredError(error)) throw error;
   }
-
 };
+
 function ignoredError(error) {
-  return !!ignored.find((message) => error.message.indexOf(message) !== -1);
+  return !!ignored.find(message => error.message.indexOf(message) !== -1);
 }
 
 const ignored = [
