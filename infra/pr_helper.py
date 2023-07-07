@@ -118,10 +118,15 @@ def main():
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
+      history_message = ''
+      if github.get_past_contributors(project_path):
+        contributors = ', '.join(
+            contributor.name for contributor in contributors)
+        history_message = f'The past contributors are: {contributors}.'
       message += (
           f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
-          'contributors before it can be merged.<br/>')
+          f'contributors before it can be merged. {history_message}<br/>')
       is_ready_for_merge = False
       continue
 
@@ -222,6 +227,21 @@ class GithubHandler:
     if not pr_response.ok:
       return None
     return pr_response.json()[0]['number']
+
+  def get_past_contributors(self, project_path):
+    """Returns a list of past contributors of a certain project."""
+    commits_response = requests.get(f'{BASE_URL}/commits?path={project_path}',
+                                    headers=self._headers)
+
+    if commits_response.ok:
+      commits = commits_response.json()
+      contributors = set()
+      for commit in commits:
+        contributors.add(
+            (commit['author']['login'], commit['committer']['date']))
+      return sorted(contributors, key=lambda x: x[1])
+
+    return []
 
   def is_author_internal_member(self):
     """Returns if the author is an internal member."""
