@@ -238,7 +238,7 @@ class GithubHandler:
       contributors = set()
       for commit in commits:
         contributors.add(
-            (commit['author']['login'], commit['committer']['date']))
+            (commit['author']['login'], commit['commit']['committer']['date']))
       return sorted(contributors, key=lambda x: x[1])
 
     return []
