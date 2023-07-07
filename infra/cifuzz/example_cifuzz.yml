@@ -23,11 +23,10 @@ jobs:
       with:
         name: artifacts
         path: ./out/artifacts   
-   # Uncomment this to get results in the GitHub security dashboard.
-   # - name: Upload Sarif
-   #  if: always() && steps.build.outcome == 'success'
-   #  uses: github/codeql-action/upload-sarif@v2
-   #  with:
-   #    # Path to SARIF file relative to the root of the repository
-   #    sarif_file: cifuzz-sarif/results.sarif
-   #    checkout_path: cifuzz-sarif
+   - name: Upload Sarif
+    if: always() && steps.build.outcome == 'success'
+    uses: github/codeql-action/upload-sarif@v2
+    with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
