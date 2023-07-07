@@ -119,10 +119,11 @@ def main():
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
       history_message = ''
-      if github.get_past_contributors(project_path):
-        contributors = ', '.join(
+      contributors = github.get_past_contributors(project_path)
+      if contributors:
+        history_message = 'The past contributors are: '
+        history_message += ', '.join(
             contributor.name for contributor in contributors)
-        history_message = f'The past contributors are: {contributors}.'
       message += (
           f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
