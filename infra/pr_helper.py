@@ -119,10 +119,10 @@ def main():
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
       history_message = ''
-      if github.get_past_contributors(project_path):
-        contributors = ', '.join(
-            contributor.name for contributor in contributors)
-        history_message = f'The past contributors are: {contributors}.'
+      contributors = github.get_past_contributors(project_path)
+      if contributors:
+        history_message = 'The past contributors are: '
+        history_message += ', '.join(contributors)
       message += (
           f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
@@ -235,11 +235,12 @@ class GithubHandler:
 
     if commits_response.ok:
       commits = commits_response.json()
-      contributors = set()
+      contributors = []
       for commit in commits:
-        contributors.add(
-            (commit['author']['login'], commit['committer']['date']))
-      return sorted(contributors, key=lambda x: x[1])
+        if commit['author']['login'] not in contributors:
+          contributors.append(commit['author']['login'])
+      contributors.reverse()
+      return contributors
 
     return []
 
