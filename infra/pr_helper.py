@@ -74,9 +74,9 @@ def main():
   github = GithubHandler()
 
   # Bypasses PRs of the internal members.
-  if github.is_author_internal_member():
-    save_env(None, None, True)
-    return
+  # if github.is_author_internal_member():
+  #   save_env(None, None, True)
+  #   return
 
   message = ''
   is_ready_for_merge = True

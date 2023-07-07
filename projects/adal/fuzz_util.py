@@ -20,6 +20,7 @@ with atheris.instrument_imports():
      from adal.util import *
 
 def TestInput(data):
+    '''Add comment'''
     fdp = atheris.FuzzedDataProvider(data)
 
     is_http_success(fdp.ConsumeInt(10))
