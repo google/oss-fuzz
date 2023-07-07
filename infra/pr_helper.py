@@ -235,12 +235,14 @@ class GithubHandler:
                                     headers=self._headers)
 
     if commits_response.ok:
-      print(f'response {commits_response}')
       commits = commits_response.json()
+      print(f'response {commits}')
       contributors = []
       for commit in commits:
         if commit['author']['login'] not in contributors:
+          print(f"Adding {commit['author']['login']}")
           contributors.append(commit['author']['login'])
+          print(f'added value: {contributors}')
       print(f'return value: {contributors.reverse()}')
       return contributors.reverse()
 
