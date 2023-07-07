@@ -6,6 +6,9 @@ main_repo: https://github.com/keycloak/keycloak
 sanitizers:
 - address
 vendor_ccs:
+- abstractj@redhat.com
+- keycloak-security@googlegroups.com
+- pigor.craveiro@gmail.com
 - adam@adalogics.com
 - david@adalogics.com
 - arthur.chan@adalogics.com
