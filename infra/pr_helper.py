@@ -127,6 +127,7 @@ def main():
           f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
           f'contributors before it can be merged. {history_message}<br/>')
+      print(f'message {message}')
       is_ready_for_merge = False
       continue
 
@@ -234,11 +235,13 @@ class GithubHandler:
                                     headers=self._headers)
 
     if commits_response.ok:
+      print(f'response {commits_response}')
       commits = commits_response.json()
       contributors = []
       for commit in commits:
         if commit['author']['login'] not in contributors:
           contributors.append(commit['author']['login'])
+      print(f'return value: {contributors.reverse()}')
       return contributors.reverse()
 
     return []
