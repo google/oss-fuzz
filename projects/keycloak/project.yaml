@@ -1,0 +1,15 @@
+fuzzing_engines:
+- libfuzzer
+homepage: "https://www.keycloak.org/"
+language: jvm
+main_repo: "https://github.com/keycloak/keycloak"
+sanitizers:
+- address
+primary_contact: "abstractj@redhat.com"
+auto_ccs:
+- "keycloak-security@googlegroups.com"
+- "pigor.craveiro@gmail.com"
+vendor_ccs:
+- "adam@adalogics.com"
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"
