@@ -1,0 +1,8 @@
+homepage: https://github.com/py-pdf/pypdf
+main_repo: https://github.com/py-pdf/pypdf
+language: python
+primary_contact: zbluemarco@gmail.com
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
