@@ -15,8 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config
-RUN git clone --recursive https://github.com/lldpd/lldpd/
-RUN git clone https://github.com/0x34d/oss-fuzz-bloat
+RUN git clone --recursive https://github.com/lldpd/lldpd.git
 COPY build.sh $SRC/
-COPY FuzzDecode.c $SRC/lldpd/FuzzDecode.c
 WORKDIR $SRC/lldpd/

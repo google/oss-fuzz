@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" == "introspector" ]; then
+    export CFLAGS=""
+    export CXXFLAGS=""
+fi
 # time.clock has been removed in OSS-Fuzz's Python version. Update pycrypto's source
 # code. Pycrypto is deprecated so we can't expect Pycrypto to be updated.
 sed -i 's/clock(/perf_counter(/g' lib/Crypto/Random/_UserFriendlyRNG.py

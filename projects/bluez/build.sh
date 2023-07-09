@@ -46,3 +46,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
  fuzz_hci.o ./gobex/gobex*.o -o $OUT/fuzz_hci \
  $STATIC_LIBS -ldl -lpthread
+
+echo "[libfuzzer]" > $OUT/fuzz_gobex.options
+echo "detect_leaks=0" >> $OUT/fuzz_gobex.options

@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.code-intelligence</groupId>
             <artifactId>jazzer-junit</artifactId>
-            <version>0.16.0</version>
+            <version>0.16.1</version>
         </dependency>
 
         <dependency>
@@ -31,39 +31,33 @@
         </dependency>
 
         <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.9.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
-            <version>4.0.1-SNAPSHOT</version>
+            <version>Fuzzing-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-            <version>4.0.1-SNAPSHOT</version>
+            <version>Fuzzing-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <version>4.0.1-SNAPSHOT</version>
+            <version>Fuzzing-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
-            <version>4.0.1-SNAPSHOT</version>
+            <version>Fuzzing-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-json-basic</artifactId>
-            <version>4.0.1-SNAPSHOT</version>
+            <version>Fuzzing-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         

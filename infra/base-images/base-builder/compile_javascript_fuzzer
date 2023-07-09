@@ -23,9 +23,6 @@ jazzerjs_args=${@:3}
 
 # Copy source code into the $OUT directory and install Jazzer.js into the project.
 if [ ! -d $OUT/$project ]; then
-  pushd $SRC/$project
-  npm install @jazzer.js/core
-  popd
   cp -r $SRC/$project $OUT/$project
 fi
 

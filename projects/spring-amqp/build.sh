@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,49 +15,79 @@
 #
 ################################################################################
 
-export JAVA_HOME="$OUT/open-jdk-17"
-mkdir -p $JAVA_HOME
-rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+PROJECT=spring-amqp
+PROJECT_GROUP_ID=org.springframework.amqp
+PROJECT_ARTIFACT_ID=spring-amqp
+MAIN_REPOSITORY=https://github.com/spring-projects/spring-amqp/
 
-patch build.gradle build.patch
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 
-./gradlew shadowJar
+function set_project_version_in_fuzz_targets_dependency {
+  PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+  # set dependency project version in fuzz-targets
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+}
 
-SPRING_AMQP_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+cd project-parent
 
-cp $SRC/spring-amqp/spring-amqp/build/libs/spring-amqp-$SPRING_AMQP_VERSION-all.jar $OUT/spring-amqp.jar
-cp $SRC/spring-amqp/spring-rabbit/build/libs/spring-rabbit-$SPRING_AMQP_VERSION-all.jar $OUT/spring-rabbit.jar
+# LOCAL_DEV env variable need to be set in local development env
+if [[ -v LOCAL_DEV ]]; then
+  MVN=mvn
 
-ALL_JARS="spring-amqp.jar spring-rabbit.jar"
+  # checkout latest project version
+  git -C $PROJECT pull || git clone $MAIN_REPOSITORY $PROJECT
 
-# The classpath at build-time includes the project jars in $OUT as well as the
-# Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+  set_project_version_in_fuzz_targets_dependency
 
-# All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+  #install
+  (cd $PROJECT && $MVN install $MAVEN_ARGS)
+  mvn -pl fuzz-targets install
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java'); do
-  fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
-  cp $SRC/[$fuzzer_basename]*.class $OUT/
-
-  # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/bash
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-  mem_settings='-Xmx1900m:-Xss900k'
 else
-  mem_settings='-Xmx2048m:-Xss1024k'
+  # Move seed corpus and dictionary.
+  # mv $SRC/{*.zip,*.dict} $OUT
+
+  # set_project_version_in_fuzz_targets_dependency
+
+  export JAVA_HOME="$OUT/open-jdk-17"
+  mkdir -p $JAVA_HOME
+  rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+
+  pushd $PROJECT
+    export SPRING_AMQP_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+  popd
+
+  #install
+  (cd $PROJECT && ./gradlew publishToMavenLocal -x javadoc -Dmaven.repo.local=$OUT/m2)
+  $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
+
+  # build classpath
+  $MVN -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
+  cp -r $SRC/project-parent/fuzz-targets/target/test-classes/ $OUT/test-classes
+  RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes"
+  # replace $OUT with placeholder $this_dir that will be dissolved at runtime
+  RUNTIME_CLASSPATH=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|\$this_dir|g")
+
+  for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
+    fuzzer_basename=$(basename -s .java $fuzzer)
+
+    # Create an execution wrapper for every fuzztarget
+    echo "#!/bin/bash
+  # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
+  this_dir=\$(dirname \"\$0\")
+  if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+    mem_settings='-Xmx1900m -Xss900k'
+  else
+    mem_settings='-Xmx2048m -Xss1024k'
+  fi
+  JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+  LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+  ./open-jdk-17/bin/java -cp $RUNTIME_CLASSPATH \
+  \$mem_settings \
+  com.code_intelligence.jazzer.Jazzer \
+  --target_class=com.example.$fuzzer_basename \
+  \$@" > $OUT/$fuzzer_basename
+    chmod u+x $OUT/$fuzzer_basename
+  done
+
 fi
-JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---cp=$RUNTIME_CLASSPATH \
---target_class=$fuzzer_basename \
---jvm_args=\"\$mem_settings\" \
---instrumentation_includes=org.springframework.** \
-\$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
-done

@@ -21,7 +21,12 @@ RUN wget https://raw.githubusercontent.com/google/AFL/master/dictionaries/json.d
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
-RUN git clone --depth 1 https://github.com/cilium/cilium/ cilium
+RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.20.5.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+RUN git clone --depth 1 https://github.com/cilium/cilium
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 COPY build.sh $SRC/
 WORKDIR $SRC/cilium

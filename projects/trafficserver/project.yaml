@@ -6,6 +6,9 @@ vendor_ccs:
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
   - "kichan@apache.org"
+  - "bcall@apache.org"
+  - "lhedstrom@gmail.com"
+  - "brian.neradt@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

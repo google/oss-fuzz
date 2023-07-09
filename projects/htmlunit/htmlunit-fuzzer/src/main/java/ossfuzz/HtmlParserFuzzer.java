@@ -45,6 +45,8 @@ public class HtmlParserFuzzer {
 	}
 
 	void test() {
+		com.code_intelligence.jazzer.api.BugDetectors.allowNetworkConnections();
+
 		try (WebClient webClient = new WebClient(getBrowserVersion())) {
 			// org.htmlunit.corejs.javascript.EvaluatorException seems to be fatal
 			webClient.getOptions().setThrowExceptionOnScriptError(false);

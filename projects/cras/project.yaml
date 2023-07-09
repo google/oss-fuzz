@@ -10,11 +10,10 @@ auto_ccs:
   - "benzh@chromium.org"
   - "judyhsiao@chromium.org"
   - "johnylin@chromium.org"
-  - "aaronyu@chromium.org"
+  - "aaronyu@google.com"
   - "hunghsienchen@chromium.org"
   - "htcheong@chromium.org"
   - "jrwu@chromium.org"
-  - "michelleyswang@google.com"
 sanitizers:
   - address
   - memory

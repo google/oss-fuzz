@@ -18,8 +18,8 @@
 echo -n "Precompiling centipede"
 
 # Build Centipede with bazel.
-cd "$SRC/centipede/"
-apt-get install libssl-dev -y
+cd "$SRC/fuzztest/centipede/"
+apt-get update && apt-get install libssl-dev -y
 unset CXXFLAGS CFLAGS
 echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
 bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
@@ -30,16 +30,16 @@ bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
 # data-flow tracing flags, but will still throw errors when they cannot find
 # the corresponding functions.
 # The weak symbols provides fake implementations for intermediate binaries.
-$CXX "$SRC/centipede/weak_sancov_stubs.cc" -c -o "$SRC/centipede/weak.o"
+$CXX "$SRC/fuzztest/centipede/weak_sancov_stubs.cc" -c -o "$SRC/fuzztest/centipede/weak.o"
 
 echo 'Removing extra stuff leftover to avoid bloating image.'
 
 rm -rf /clang-*.tgz /clang
 
-BAZEL_BIN_REAL_DIR=$(readlink -f $SRC/centipede/bazel-bin)
-rm -rf $SRC/centipede/bazel-bin
-mkdir -p $SRC/centipede/bazel-bin
-mv $BAZEL_BIN_REAL_DIR/{centipede,libcentipede_runner.pic.a} $SRC/centipede/bazel-bin/
+BAZEL_BIN_REAL_DIR=$(readlink -f $CENTIPEDE_BIN_DIR)
+rm -rf $CENTIPEDE_BIN_DIR
+mkdir -p $CENTIPEDE_BIN_DIR
+mv $BAZEL_BIN_REAL_DIR/centipede/{centipede,libcentipede_runner.pic.a} $CENTIPEDE_BIN_DIR
 rm -rf /root/.cache
 
 echo 'Done.'
