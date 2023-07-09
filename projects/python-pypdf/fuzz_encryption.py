@@ -54,7 +54,7 @@ def TestInputOne(data):
         # Decrypt
         reader.decrypt(key)
 
-        if reader.stream != dummy:
+        if reader.stream == dummy:
             raise Exception("Decryption error. Original stream != Decrypted stream")
 
     except Exception:
