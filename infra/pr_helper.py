@@ -235,12 +235,16 @@ class GithubHandler:
 
     if commits_response.ok:
       commits = commits_response.json()
-      contributors = []
+      contributors = set()
+      verified_contributors = []
       for commit in commits:
-        if commit['author']['login'] not in contributors:
-          contributors.append(commit['author']['login'])
-      contributors.reverse()
-      return contributors
+        username = commit['author']['login']
+        if username not in contributors:
+          verified = commit['commit']['verification']['verified']
+          username_verification = f'{username} (verified)' if verified else f'{username}'
+          contributors.add(username)
+          verified_contributors.append(username_verification)
+      return verified_contributors
 
     return []
 
