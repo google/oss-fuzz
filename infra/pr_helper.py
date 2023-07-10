@@ -238,12 +238,12 @@ class GithubHandler:
       contributors = set()
       verified_contributors = []
       for commit in commits:
-        username = commit['author']['login']
-        if username not in contributors:
+        login = commit['author']['login']
+        if login not in contributors:
           verified = commit['commit']['verification']['verified']
-          username_verification = f'{username} (verified)' if verified else f'{username}'
-          contributors.add(username)
-          verified_contributors.append(username_verification)
+          login_verification = f'{login} (verified)' if verified else f'{login}'
+          contributors.add(login)
+          verified_contributors.append(login_verification)
       return verified_contributors
 
     return []
