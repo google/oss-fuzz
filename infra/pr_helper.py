@@ -31,7 +31,7 @@ API_URL = 'https://api.github.com'
 BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
 CRITICALITY_SCORE_PATH = '/home/runner/go/bin/criticality_score'
-COMMITS_LIMIT = 15  # Only process the most recent 15 commits.
+COMMITS_LIMIT = 50  # Only process the most recent 50 commits.
 
 
 def get_criticality_score(repo_url):
@@ -238,8 +238,10 @@ class GithubHandler:
       return []
     commits = commits_response.json()
     contributors: dict[str, bool] = {}
-    count = 0
-    for commit in commits:
+    for i, commit in enumerate(commits):
+      if i >= COMMITS_LIMIT:
+        break
+
       login = commit['author']['login']
       verified = commit['commit']['verification']['verified']
       if login not in contributors:
@@ -247,16 +249,13 @@ class GithubHandler:
       if verified:
         # Override previous verification bit.
         contributors[login] = True
-      count += 1
-      if count >= COMMITS_LIMIT:
-        break
 
-    contributors_verify = []
+    all_contributors = []
     for login, verified in contributors.items():
-      login_verify = f'{login}' if verified else f'{login} (unverified)'
-      contributors_verify.append(login_verify)
+      login_verify = login if verified else f'{login} (unverified)'
+      all_contributors.append(login_verify)
 
-    return contributors_verify
+    return all_contributors
 
   def is_author_internal_member(self):
     """Returns if the author is an internal member."""
