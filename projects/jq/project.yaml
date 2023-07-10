@@ -1,6 +1,8 @@
 homepage: "https://github.com/jqlang/jq"
 main_repo: "https://github.com/jqlang/jq"
 language: c
-primary_contact: "nico@cryptonector.com"
+primary_contact: "cryptonector@gmail.com"
 auto_ccs :
-- "adam@adalogics.com"
+ - "torreemanuele6@gmail.com"
+ - "pkoppstein@gmail.com"
+ - "david@adalogics.com"
