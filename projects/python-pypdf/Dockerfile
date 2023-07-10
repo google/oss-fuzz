@@ -15,5 +15,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install pycryptodome
 RUN git clone https://github.com/py-pdf/pypdf.git pypdf
+WORKDIR $SRC/
 COPY *.sh *.py $SRC/
-WORKDIR $SRC/pypdf
+
