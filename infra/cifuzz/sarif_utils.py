@@ -240,5 +240,7 @@ def get_sarif_data(stacktrace, target_path):
 def write_stacktrace_to_sarif(stacktrace, target_path, workspace):
   """Writes a description of the crash in stacktrace to a SARIF file."""
   data = get_sarif_data(stacktrace, target_path)
+  if not os.path.exists(workspace.sarif):
+    os.makedirs(self.workspace.sarif)
   with open(os.path.join(workspace.sarif, 'results.sarif'), 'w') as file_handle:
     file_handle.write(json.dumps(data))
