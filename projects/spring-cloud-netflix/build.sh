@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-apt-get update && apt-get install -y openjdk-17-jdk-headless
-export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+cp -r $SRC/jdk-17.0.7+7 $OUT/jdk
+export JAVA_HOME="$OUT/jdk"
 
 MVN_FLAGS="-Dmaven.compiler.source=17 -Dmaven.compiler.target=17 -DskipTests"
 ALL_JARS=""
@@ -73,11 +73,9 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	
 	echo "#!/bin/sh
 # LLVMFuzzerTestOneInput Magic String required for infra/base-image/test_all.py. DO NOT REMOVE
-# We need java-17.
-apt-get update && apt-get install -y openjdk-17-jdk-headless
 
 this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"/usr/lib/jvm/java-17-openjdk-amd64\" \
+JAVA_HOME=\$this_dir/jdk \
 LD_LIBRARY_PATH=\"\$JAVA_HOME/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \

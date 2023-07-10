@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +14,15 @@
 #
 ################################################################################
 
-./autogen.sh --no-po4a --no-doxygen
-./configure \
-  --enable-static \
-  --disable-debug \
-  --disable-shared \
-  --disable-encoders \
-  --disable-xz \
-  --disable-xzdec \
-  --disable-lzmadec \
-  --disable-lzmainfo \
-  --disable-ifunc
-make clean
-make -j$(nproc) && make -C tests/ossfuzz && \
-    cp tests/ossfuzz/config/fuzz.options $OUT/ && \
-    cp tests/ossfuzz/config/fuzz.dict $OUT && \
-    find $SRC/xz/tests/files -name "*.xz" \
-    -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/kyverno/kyverno
+RUN wget https://go.dev/dl/go1.20.2.linux-amd64.tar.gz \ 
+    && mkdir temp-go \ 
+    && rm -rf /root/.go/* \ 
+    && tar -C temp-go/ -xzf go1.20.2.linux-amd64.tar.gz \ 
+    && mv temp-go/go/* /root/.go/ 
+
+COPY build.sh \
+         fuzz_policy_test.go \
+	 $SRC/
+WORKDIR $SRC/kyverno

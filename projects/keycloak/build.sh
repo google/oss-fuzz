@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-./autogen.sh --no-po4a --no-doxygen
-./configure \
-  --enable-static \
-  --disable-debug \
-  --disable-shared \
-  --disable-encoders \
-  --disable-xz \
-  --disable-xzdec \
-  --disable-lzmadec \
-  --disable-lzmainfo \
-  --disable-ifunc
-make clean
-make -j$(nproc) && make -C tests/ossfuzz && \
-    cp tests/ossfuzz/config/fuzz.options $OUT/ && \
-    cp tests/ossfuzz/config/fuzz.dict $OUT && \
-    find $SRC/xz/tests/files -name "*.xz" \
-    -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
+cp $SRC/cncf-fuzzing/projects/keycloak/*.java $SRC/
+$SRC/cncf-fuzzing/projects/keycloak/build.sh

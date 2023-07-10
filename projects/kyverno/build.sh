@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,11 @@
 #
 ################################################################################
 
-./autogen.sh --no-po4a --no-doxygen
-./configure \
-  --enable-static \
-  --disable-debug \
-  --disable-shared \
-  --disable-encoders \
-  --disable-xz \
-  --disable-xzdec \
-  --disable-lzmadec \
-  --disable-lzmainfo \
-  --disable-ifunc
-make clean
-make -j$(nproc) && make -C tests/ossfuzz && \
-    cp tests/ossfuzz/config/fuzz.options $OUT/ && \
-    cp tests/ossfuzz/config/fuzz.dict $OUT && \
-    find $SRC/xz/tests/files -name "*.xz" \
-    -exec zip -ujq $OUT/fuzz_seed_corpus.zip "{}" \;
+# required by Go 1.20
+export CXX="${CXX} -lresolv"
+
+printf "package policy\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/validation/policy/registerfuzzdep.go
+cp $SRC/fuzz_policy_test.go $SRC/kyverno/pkg/validation/policy/
+go mod tidy
+
+compile_native_go_fuzzer github.com/kyverno/kyverno/pkg/validation/policy FuzzValidatePolicy FuzzValidatePolicy

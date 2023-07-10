@@ -20,7 +20,7 @@ sed -i 's/1.6</1.7</g' ./pom.xml
 
 MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -X"
 $MVN package
-find ./dec -name "dec-*.jar" -exec mv {} $OUT/dec.jar \;
+find ./dec -name "org.brotli.dec-*.jar" -exec mv {} $OUT/dec.jar \;
 
 ALL_JARS="dec.jar"
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
