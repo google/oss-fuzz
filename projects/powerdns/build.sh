@@ -34,6 +34,7 @@ autoreconf -vi
     --enable-fuzz-targets \
     --disable-dependency-tracking \
     --disable-silent-rules || /bin/bash
+make -j$(nproc) -C ext/arc4random/
 make -j$(nproc) -C ext/yahttp/
 cd pdns
 make -j$(nproc) fuzz_targets
