@@ -91,6 +91,10 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
+OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool-experiments')
+
 US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
@@ -514,7 +518,8 @@ def get_build_body(steps,
                    timeout,
                    body_overrides,
                    build_tags,
-                   use_build_pool=True):
+                   use_build_pool=True,
+                   experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -522,7 +527,11 @@ def get_build_body(steps,
     options = {}
 
   if use_build_pool:
-    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+    if experiment:
+      options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    else:
+      options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
@@ -554,7 +563,8 @@ def run_build(  # pylint: disable=too-many-arguments
                               timeout,
                               body_overrides,
                               tags,
-                              use_build_pool=use_build_pool)
+                              use_build_pool=use_build_pool,
+                              experiment=experiment)
   if experiment:
     with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
       config_file.write(bytes(json.dumps(build_body), 'utf-8'))
