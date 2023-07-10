@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
   make flex bison libtool automake autoconf
 
-RUN git clone --depth 1 https://github.com/stedolan/jq
+RUN git clone --depth 1 https://github.com/jqlang/jq
 WORKDIR $SRC/jq
 
 COPY build.sh $SRC/
