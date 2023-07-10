@@ -18,6 +18,7 @@
 cd ntp-dev
 git apply ../patch.diff
 #avoids https://bugs.llvm.org/show_bug.cgi?id=34636
+# Add comments
 cp /usr/bin/ld.gold /usr/bin/ld
 ./bootstrap
 ./configure --enable-fuzztargets

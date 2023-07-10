@@ -31,7 +31,7 @@ API_URL = 'https://api.github.com'
 BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
 CRITICALITY_SCORE_PATH = '/home/runner/go/bin/criticality_score'
-COMMITS_LIMIT = 10  # Only process the latest 10 commits
+COMMITS_LIMIT = 10  # Only process the latest 10 commits.
 
 
 def get_criticality_score(repo_url):
