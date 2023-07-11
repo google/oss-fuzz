@@ -5,7 +5,7 @@ fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
-vender_ccs:
+vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
 - arthur.chan@adalogics.com
