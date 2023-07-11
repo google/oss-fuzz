@@ -44,13 +44,8 @@ do
 done
 cd $curr_dir
 
-# Retrieve apache-common-lang3 library
-# This library provides method to translate primitive type arrays to
-# their respective class object arrays to avoid compilation error.
-wget -P $OUT/ https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar
-
-BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp:$OUT/commons-lang3-3.12.0.jar
-RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir/commons-lang3-3.12.0.jar:\$this_dir
+BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp
+RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java')
 do
