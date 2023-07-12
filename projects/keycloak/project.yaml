@@ -7,7 +7,7 @@ sanitizers:
 - address
 primary_contact: "abstractj@redhat.com"
 auto_ccs:
-- "keycloak-security@googlegroups.com"
+- "keycloak-oss-fuzz@redhat.com"
 - "pigor.craveiro@gmail.com"
 vendor_ccs:
 - "adam@adalogics.com"
