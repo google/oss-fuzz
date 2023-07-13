@@ -23,6 +23,10 @@ RUN apt-get update && \
 		libavahi-client-dev ninja-build python3-venv python3-dev python3-pip \
 		unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
+# Ensure python that was just installed gets precedence over
+# the one already installed in /usr/local/bin
+ENV PATH="/usr/bin/:${PATH}"
+
 # PEP-517 needed for cryptography. Update pip
 RUN pip3 install --upgrade pip setuptools wheel
 
