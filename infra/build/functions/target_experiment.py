@@ -62,7 +62,8 @@ def run_experiment(project_name, target_name, args, output_path,
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
-  local_corpus_path = '/workspace/corpus'
+  local_corpus_path_base = '/workspace/corpus'
+  local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   local_corpus_zip_path = '/workspace/corpus/corpus.zip'
   fuzzer_args = ' '.join(args)
 
@@ -78,7 +79,7 @@ def run_experiment(project_name, target_name, args, output_path,
       'args': [
           'bash',
           '-c',
-          (f'mkdir {local_corpus_path} && '
+          (f'mkdir -p {local_corpus_path} && '
            f'run_fuzzer {target_name} {fuzzer_args} '
            f'|& tee {local_output_path} || true'),
       ]
@@ -100,7 +101,7 @@ def run_experiment(project_name, target_name, args, output_path,
           (f'cd {local_corpus_path} && '
            f'zip -r {local_corpus_zip_path} * && '
            f'gsutil -m cp {local_corpus_zip_path} {upload_corpus_path} || '
-           f'true'),
+           f'rm -f {local_corpus_zip_path}'),
       ],
   })
 
@@ -113,7 +114,8 @@ def run_experiment(project_name, target_name, args, output_path,
 
   # Generate coverage report.
   env.extend([
-      'CORPUS_DIR=' + local_corpus_path,
+      # The coverage script automatically adds the target name to this.
+      'CORPUS_DIR=' + local_corpus_path_base,
       'HTTP_PORT=',
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ])
