@@ -19,6 +19,10 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && \
     apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip bsdmainutils
 
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
+
 RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
 RUN wget https://go.dev/dl/go1.19.10.linux-amd64.tar.gz
 RUN git clone --depth 1 https://github.com/golang/go go-dev

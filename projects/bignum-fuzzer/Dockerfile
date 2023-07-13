@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     python-all-dev \
     python3-all-dev \
     python3-pip
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
 
 RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls
 # Install Python packages from PyPI

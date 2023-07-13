@@ -26,6 +26,10 @@ RUN bash nodesource_setup.sh
 RUN apt install -y nodejs
 RUN npm install -g browserify
 RUN npm install elliptic
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
+
 RUN git clone --depth 1 https://github.com/bellard/quickjs quickjs
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
