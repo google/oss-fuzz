@@ -24,7 +24,7 @@ RUN apt-get update && \
 		unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
 # PEP-517 needed for cryptography. Update pip
-RUN pip install --upgrade pip setuptools wheel
+RUN pip3 install --upgrade pip setuptools wheel
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
