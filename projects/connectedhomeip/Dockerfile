@@ -38,6 +38,9 @@ RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
+# Ensure global python has access to build requirements
+RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt
+
 # checkout submodules required for linux
 RUN cd $SRC/connectedhomeip && scripts/checkout_submodules.py --shallow --platform linux
 
