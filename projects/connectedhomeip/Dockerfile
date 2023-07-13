@@ -23,6 +23,9 @@ RUN apt-get update && \
 		libavahi-client-dev ninja-build python3-venv python3-dev python3-pip \
 		unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
+# PIP517 needed for cryptography. Update pip
+RUN pip install --upgrade pip setuptools wheel
+
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
