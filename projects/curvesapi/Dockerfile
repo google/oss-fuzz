@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip asgiref flask
-RUN git clone --depth=1 https://github.com/python-jsonschema/jsonschema-specifications jsonschema_specifications
-RUN git clone https://github.com/spec-first/connexion connexion
-COPY *.sh *py $SRC/
-WORKDIR $SRC/connexion
+#
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip \
+      -o maven.zip && \
+      unzip maven.zip -d $SRC/maven && \
+      rm maven.zip
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN git clone --depth 1 https://github.com/virtuald/curvesapi curvesapi
+COPY *.sh *.java $SRC/
+WORKDIR $SRC/curvesapi
