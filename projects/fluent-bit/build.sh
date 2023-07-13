@@ -24,11 +24,14 @@ EOF
 
 cd fluent-bit
 
-# Avoid building tests we don't need
-sed -i 's/prepare_unit_tests(flb/#prepare_unit_tests(flb/g' ./tests/internal/CMakeLists.txt
-
-sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
-sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
+# Patch files for fuzzing purposes. Only do if they have not already been patched.
+if [ $(grep "fuzz" -ic ./lib/msgpack-c/src/zone.c) -eq 0 ]
+then
+  # Avoid building tests we don't need
+  sed -i 's/prepare_unit_tests(flb/#prepare_unit_tests(flb/g' ./tests/internal/CMakeLists.txt
+  sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
+  sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
+fi
 
 cd build
 export CFLAGS="$CFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
