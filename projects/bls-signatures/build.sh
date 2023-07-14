@@ -91,6 +91,31 @@ then
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
 fi
 
+# Build Constantine
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        tar Jxf nim-1.6.12-linux_x64.tar.xz
+    else
+        tar Jxf nim-1.6.12-linux_x32.tar.xz
+    fi
+    export NIM_PATH=$(realpath nim-1.6.12)
+
+    export CONSTANTINE_PATH=$SRC/constantine/
+
+    cd $SRC/cryptofuzz/modules/constantine/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        make -f Makefile-i386
+    fi
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CONSTANTINE"
+fi
+
 if [[ $CFLAGS = *-m32* ]]
 then
     # Build and install libgmp
@@ -127,42 +152,6 @@ function build_blst() {
 cp -R $SRC/blst/ $SRC/blst_normal/
 cd $SRC/blst_normal/
 build_blst
-
-# Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    # Build and install libsodium
-    cd $SRC/
-    mkdir $SRC/libsodium-install
-    tar zxf libsodium-1.0.18-stable.tar.gz
-    cd $SRC/libsodium-stable/
-    autoreconf -ivf
-    ./configure --prefix="$SRC/libsodium-install/"
-    make -j$(nproc)
-    make install
-    export CXXFLAGS="$CXXFLAGS -I $SRC/libsodium-install/include/"
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libsodium-install/lib/libsodium.a"
-
-    cd $SRC/bls-signatures/
-    mkdir build/
-    cd build/
-    if [[ $CFLAGS = *-m32* ]]
-    then
-        export CHIA_ARCH="X86"
-    else
-        export CHIA_ARCH="X64"
-    fi
-    cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
-    make -j$(nproc)
-    export CHIA_BLS_LIBBLS_A_PATH=$(realpath src/libbls.a)
-    export CHIA_BLS_LIBRELIC_S_A_PATH=$(realpath _deps/relic-build/lib/librelic_s.a)
-    export CHIA_BLS_LIBSODIUM_A_PATH=$(realpath _deps/sodium-build/libsodium.a)
-    export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
-    export LINK_FLAGS="$LINK_FLAGS -lgmp"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
-fi
 
 # Build mcl
 if [[ "$SANITIZER" != "memory" && $CFLAGS != *-m32* ]]
@@ -221,12 +210,6 @@ make -B
 
 cd $SRC/cryptofuzz/modules/blst/
 make -B
-
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    cd $SRC/cryptofuzz/modules/chia_bls/
-    make -B
-fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
