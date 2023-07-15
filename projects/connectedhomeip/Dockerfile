@@ -23,6 +23,13 @@ RUN apt-get update && \
 		libavahi-client-dev ninja-build python3-venv python3-dev python3-pip \
 		unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
+# Ensure python that was just installed gets precedence over
+# the one already installed in /usr/local/bin
+ENV PATH="/usr/bin/:${PATH}"
+
+# PEP-517 needed for cryptography. Update pip
+RUN pip3 install --upgrade pip setuptools wheel
+
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -30,6 +37,9 @@ RUN rustup install nightly
 RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+
+# Ensure global python has access to build requirements
+RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt
 
 # checkout submodules required for linux
 RUN cd $SRC/connectedhomeip && scripts/checkout_submodules.py --shallow --platform linux
