@@ -18,13 +18,13 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python lzip libgmp-dev
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/supranational/blst
-RUN git clone --depth 1 https://github.com/Chia-Network/bls-signatures.git
 RUN git clone --depth 1 https://github.com/herumi/mcl.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
-RUN wget --no-check-certificate https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
-RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
-RUN wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
+RUN git clone --depth 1 https://github.com/mratsim/constantine
+RUN wget -q https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz
+RUN wget -q https://nim-lang.org/download/nim-1.6.12-linux_x64.tar.xz
+RUN wget -q https://nim-lang.org/download/nim-1.6.12-linux_x32.tar.xz
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
