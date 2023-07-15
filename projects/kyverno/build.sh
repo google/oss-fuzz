@@ -18,8 +18,4 @@
 # required by Go 1.20
 export CXX="${CXX} -lresolv"
 
-printf "package policy\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/validation/policy/registerfuzzdep.go
-cp $SRC/fuzz_policy_test.go $SRC/kyverno/pkg/validation/policy/
-go mod tidy
-
-compile_native_go_fuzzer github.com/kyverno/kyverno/pkg/validation/policy FuzzValidatePolicy FuzzValidatePolicy
+$SRC/cncf-fuzzing/projects/kyverno/build.sh
