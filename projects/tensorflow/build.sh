@@ -30,6 +30,7 @@ sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelr
 sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.bazelrc
 
 # Force Python3, run configure.py to pick the right build config
+export TF_PYTHON_VERSION=3.9
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
 
