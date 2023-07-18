@@ -20,11 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "s2/s2shapeutil_range_iterator.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 
-#include "s2/mutable_s2shape_index.h"
+#include "s2/s2shape_index.h"
 #include "s2/s2text_format.h"
 
 // A string-splitter used to help validate the string
@@ -90,10 +89,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (isValidFormat(nt_string, size)) {
     auto index = absl::make_unique<MutableS2ShapeIndex>();
     s2textformat::MakeIndex(nt_string, &index);
-    s2shapeutil::RangeIterator it(*index);
-    if (!it.done()) {
-      it.Next();
-    }
   }
   free(nt_string);
   return 0;
