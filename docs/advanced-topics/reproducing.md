@@ -12,7 +12,7 @@ permalink: /advanced-topics/reproducing/
 You've been CCed on an OSS-Fuzz issue
 ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=Type%3ABug%2CBug-Security)).
 Now what? Before attempting to fix the bug, you should be able to reliably
-reproduce it. 
+reproduce it.
 
 - TOC
 {:toc}
@@ -52,6 +52,13 @@ you can also use Docker commands to replicate the exact build steps used by
 OSS-Fuzz, then feed the reproducer input to the fuzz target ([how?]({{
 site.baseurl }}/getting-started/new-project-guide/#prerequisites), [why?]({{
 site.baseurl }}/faq/#why-do-you-use-docker)).
+
+Reproducing with docker is very likely to "just work". But if you are a project
+maintainer who is unfamiliar with OSS-Fuzz and docker trying to repro a crash in
+a hurry, you may want to try building your project with clang and the relevant
+sanitizer and fuzzer using your project's standard build process. If that fails,
+you should clone the [OSS-Fuzz git repo](https://github.com/google/oss-fuzz) and
+continue below.
 
 ## Building using Docker
 
@@ -108,7 +115,7 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and
 reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`,
-you would run: 
+you would run:
 
 ```bash
 $ python infra/helper.py build_image libxml2
@@ -129,7 +136,7 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
 Once you reproduce the bug, you can do the following:
 
 - **Fix issue:** Write a patch to fix the issue in your local checkout, then
-   use the previous command to verify the fix (i.e. no crash occurred). 
+   use the previous command to verify the fix (i.e. no crash occurred).
    [Use gdb]({{ site.baseurl }}/advanced-topics/debugging/#debugging-fuzzers-with-gdb)
    if needed.
 - **Submit fix:** Submit the fix in the project's repository. ClusterFuzz will
