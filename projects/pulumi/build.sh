@@ -15,12 +15,14 @@
 #
 ################################################################################
 
+# required by Go 1.20
+export CXX="${CXX} -lresolv"
+
 cd pkg
-#go mod download
-
 cp $SRC/schema_fuzzer.go $SRC/pulumi/pkg/codegen/schema/ 
-compile_go_fuzzer github.com/pulumi/pulumi/pkg/v3/codegen/schema SchemaFuzzer schema_fuzzer
-
 cp $SRC/config_fuzzer.go $SRC/pulumi/sdk/go/common/resource/config/
+go mod tidy
+
+compile_go_fuzzer github.com/pulumi/pulumi/pkg/v3/codegen/schema SchemaFuzzer schema_fuzzer
 compile_go_fuzzer github.com/pulumi/pulumi/sdk/v3/go/common/resource/config FuzzConfig fuzz
 compile_go_fuzzer github.com/pulumi/pulumi/sdk/v3/go/common/resource/config FuzzParseKey fuzz_parse_key
