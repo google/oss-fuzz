@@ -7,5 +7,5 @@ sanitizers:
 - address
 vendor_ccs:
 - arthur.chan@adalogics.com
-- david@aalogics.com
+- david@adalogics.com
 - adam@adalogics.com
