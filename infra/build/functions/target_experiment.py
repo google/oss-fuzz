@@ -27,11 +27,12 @@ import build_project
 
 
 def run_experiment(project_name, target_name, args, output_path,
-                   build_output_path, upload_corpus_path, upload_coverage_path):
+                   build_output_path, upload_corpus_path, upload_coverage_path,
+                   experiment_name):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
-                                branch=None,
+                                branch=experiment_name,
                                 parallel=False,
                                 upload=False,
                                 experiment=True,
@@ -181,11 +182,14 @@ def main():
   parser.add_argument('--upload_coverage',
                       required=True,
                       help='GCS location to upload coverage data.')
+  parser.add_argument('--experiment_name',
+                      required=True,
+                      help='Experiment name.')
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_build_log, args.upload_corpus,
-                 args.upload_coverage)
+                 args.upload_coverage, args.experiment_name)
 
 
 if __name__ == '__main__':
