@@ -21,7 +21,7 @@ RUN apt update && \
   git clone \
     --depth 1 \
     --branch 1.5.10 \
-    https://github.com/PyTorchLightning/pytorch-lightning.git
+    https://github.com/Lightning-AI/lightning.git
 
 COPY ./build.sh $SRC
 RUN  ./build.sh
