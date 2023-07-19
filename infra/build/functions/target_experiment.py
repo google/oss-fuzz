@@ -32,7 +32,7 @@ def run_experiment(project_name, target_name, args, output_path,
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
-                                branch=experiment_name,
+                                branch=None,
                                 parallel=False,
                                 upload=False,
                                 experiment=True,
@@ -160,7 +160,8 @@ def run_experiment(project_name, target_name, args, output_path,
                                  steps,
                                  credentials,
                                  'experiment',
-                                 experiment=True)
+                                 experiment=True,
+                                 extra_tags=[f'experiment-{experiment_name}'])
 
 
 def main():
