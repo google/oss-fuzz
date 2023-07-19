@@ -36,7 +36,7 @@ pytorch-lightning-1.5.10:
 	docker run -it systemsan_pytorch-lightning:latest;
 
 node-shell-quote-v1.7.3:
-	cp SystemSan.cpp PoEs/node-shell-quote-v1.7.3/; \
+	cp SystemSan.cpp inspect_*.* PoEs/node-shell-quote-v1.7.3/; \
 	cd PoEs/node-shell-quote-v1.7.3/; \
 	docker build . --tag systemsan_node-shell-quote; \
 	docker run -t systemsan_node-shell-quote:latest;
