@@ -27,7 +27,8 @@ import build_project
 
 
 def run_experiment(project_name, target_name, args, output_path,
-                   build_output_path, upload_corpus_path, upload_coverage_path, experiment_name):
+                   build_output_path, upload_corpus_path, upload_coverage_path,
+                   experiment_name):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
