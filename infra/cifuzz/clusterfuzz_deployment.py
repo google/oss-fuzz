@@ -375,7 +375,7 @@ _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING = {
 
 
 def get_clusterfuzz_deployment(config, workspace):
-  """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
+  """Returns object representing deployment of ClusterFuzz used by |config|."""
   deployment_cls = _PLATFORM_CLUSTERFUZZ_DEPLOYMENT_MAPPING[config.platform]
   if config.no_clusterfuzz_deployment:
     logging.info('Overriding ClusterFuzzDeployment. Using None.')

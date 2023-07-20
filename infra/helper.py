@@ -642,7 +642,7 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
 
 
 def _env_to_docker_args(env_list):
-  """Turns envirnoment variable list into docker arguments."""
+  """Turns environment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
 
 

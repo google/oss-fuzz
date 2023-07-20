@@ -23,7 +23,7 @@ set -x
 # searching the entire project. Additionally, it may include fuzzers in
 # dependencies, which should not be build as part of a given project.
 # Tensorflow is an example project that will fail when the entire project is
-# queried. FUZZTEST_TARGET_FOLDER makes it posible to specify the folder
+# queried. FUZZTEST_TARGET_FOLDER makes it possible to specify the folder
 # where fuzztest fuzzers should be search for. FUZZTEST_TARGET_FOLDER is passed
 # to "bazel query" below.
 if [[ ${FUZZTEST_TARGET_FOLDER:-"unset"} == "unset" ]];

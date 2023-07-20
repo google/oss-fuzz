@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fuzzer targetting command injection of eval."""
+"""Fuzzer targeting command injection of eval."""
 # pylint: disable=eval-used
 
 import sys

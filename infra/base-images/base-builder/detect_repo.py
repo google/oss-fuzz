@@ -20,7 +20,7 @@ Example Usage:
     b534f03eecd8a109db2b085ab24d419b6486de97
 
 Prints the location of the git remote repo as well as the repo's name
-seperated by a space.
+separated by a space.
 
   https://github.com/VirusTotal/yara.git yara
 
@@ -79,7 +79,7 @@ def get_dirs_to_search(src_dir, repo_name):
     repo_name: The name of the repo you are searching for.
 
   Returns:
-    A list of directorys to search.
+    A list of directories to search.
   """
   dirs_to_search = os.listdir(src_dir)
   if os.path.exists(GO_PATH) and repo_name:
