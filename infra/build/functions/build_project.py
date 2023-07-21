@@ -19,8 +19,6 @@
 Usage: build_project.py <project_dir>
 """
 
-from __future__ import print_function
-
 import argparse
 import collections
 from dataclasses import dataclass
@@ -61,6 +59,9 @@ DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 # Used if build logs are uploaded to a separate place.
 LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
 BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
+
+# The directory in the oss-fuzz image.
+JCC_DIR = '/usr/local/bin/jcc'
 
 
 @dataclass
@@ -244,7 +245,8 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel, upload_build_logs=None):
+def get_compile_step(project, build, env, parallel, upload_build_logs=None,
+                     jcc=False):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -260,6 +262,11 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
     # for a subsequent step to upload the log.
     compile_output_redirect = (
         f'&> {LOCAL_BUILD_LOG_PATH} && touch {BUILD_SUCCESS_MARKER}')
+
+  if jcc:
+    env = env.copy()
+    env['CC'] = os.path.join(JCC_DIR, 'clang')
+    env['CXX'] = os.path.join(JCC_DIR, 'clang++')
 
   compile_step = {
       'name': project.image,
