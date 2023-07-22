@@ -19,6 +19,10 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && \
     apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip bsdmainutils
 
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
+
 RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
 RUN wget https://go.dev/dl/go1.19.10.linux-amd64.tar.gz
 RUN git clone --depth 1 https://github.com/golang/go go-dev
@@ -42,7 +46,7 @@ RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
-    (wget --no-check-certificate 'https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+    (wget --no-check-certificate 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
