@@ -78,6 +78,8 @@ git config --global --add safe.directory '*'
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
 cmake --build build --parallel
 
+cp corpus_dir/*.options $OUT/
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/tests/ -name '*_test' -type f);
 do
