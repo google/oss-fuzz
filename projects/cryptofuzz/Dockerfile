@@ -46,7 +46,7 @@ RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
-    (wget --no-check-certificate 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
