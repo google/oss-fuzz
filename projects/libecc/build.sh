@@ -66,14 +66,16 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"
 export LIBGMP_INCLUDE_PATH=$(realpath .)
 export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
 
+cd $SRC/wolfssl/
+# Checkout at commit that's known to be bug-free
+git checkout a96983e6d38e8d093892dd9e5d58b72753bac3ac
+
 # Install support for wolfCrypt SM algorithms
 cd $SRC/wolfsm/
 ./install.sh
 
 # Compile wolfSSL
 cd $SRC/wolfssl/
-# Checkout at commit that's known to be bug-free
-git checkout a96983e6d38e8d093892dd9e5d58b72753bac3ac
 # Note (to self):
 # Compiling wolfCrypt with SP math instead of normal math due to symbol collisions (specifically fp_* functions) between libecc and wolfCrypt otherwise.
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"
