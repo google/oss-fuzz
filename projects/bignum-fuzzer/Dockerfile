@@ -36,6 +36,6 @@ RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone https://boringssl.googlesource.com/boringssl
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
-    (wget --no-check-certificate 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
 
 COPY build.sh $SRC/
