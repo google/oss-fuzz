@@ -25,6 +25,8 @@ import google.auth
 import build_lib
 import build_project
 
+JCC_DIR = '/usr/local/bin/jcc'
+
 
 def run_experiment(project_name, target_name, args, output_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
@@ -58,8 +60,15 @@ def run_experiment(project_name, target_name, args, output_path,
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
 
-  steps = build_project.get_build_steps(project_name, project_yaml,
-                                        dockerfile_contents, config)
+  jcc_env = [
+      f'CC={JCC_DIR}/clang',
+      f'CXX={JCC_DIR}/clang++',
+  ]
+  steps = build_project.get_build_steps(project_name,
+                                        project_yaml,
+                                        dockerfile_contents,
+                                        config,
+                                        additional_env=jcc_env)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
@@ -109,6 +118,7 @@ def run_experiment(project_name, target_name, args, output_path,
   # Build for coverage.
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project_yaml['language'], build)
+  env.extend(jcc_env)
 
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
