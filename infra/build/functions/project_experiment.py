@@ -25,7 +25,7 @@ import build_lib
 import build_project
 
 
-def run_experiment(project_name, command, experiment_name):
+def run_experiment(project_name, command, output_path, experiment_name):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -62,14 +62,34 @@ def run_experiment(project_name, command, experiment_name):
                                             architectures=project.architectures,
                                             experiment=config.experiment)
 
-  steps.append({
-      'name': project.image,
-      'args': [
-          'bash',
-          '-c',
-          command,
-      ]
-  })
+  steps.extend([
+      {
+          'name': project.image,
+          'args': [
+              'bash',
+              '-c',
+              'mkdir /workspace/out',
+          ]
+      },
+      {
+          'name': project.image,
+          'args': [
+              'bash',
+              '-c',
+              command,
+          ]
+      },
+      {
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': [
+              '-m',
+              'cp',
+              '-r',
+              '/workspace/out',
+              output_path,
+          ]
+      },
+  ])
 
   credentials, _ = google.auth.default()
   return build_project.run_build(project_name,
@@ -86,12 +106,16 @@ def main():
   parser.add_argument('--command',
                       required=True,
                       help='Command to run inside the project image.')
+  parser.add_argument('--upload_output',
+                      required=True,
+                      help='GCS bucket location to upload output to.')
   parser.add_argument('--experiment_name',
                       required=True,
                       help='Experiment name.')
   args = parser.parse_args()
 
-  run_experiment(args.project, args.command, args.experiment_name)
+  run_experiment(args.project, args.command, args.upload_output,
+                 args.experiment_name)
 
 
 if __name__ == '__main__':
