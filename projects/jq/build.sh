@@ -27,3 +27,9 @@ $CC $CFLAGS -c tests/jq_fuzz_parse.c \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_parse.o \
     ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
     -o $OUT/jq_fuzz_parse -I./src
+
+$CC $CFLAGS -c tests/jq_fuzz_compile.c \
+    -I./src -o ./jq_fuzz_compile.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_compile.o \
+    ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
+    -o $OUT/jq_fuzz_compile -I./src
