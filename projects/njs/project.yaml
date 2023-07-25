@@ -9,3 +9,9 @@ sanitizers:
   - undefined
 coverage_extra_args: -ignore-filename-regex=.*/pcre2/.*
 main_repo: 'https://github.com/nginx/njs.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

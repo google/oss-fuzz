@@ -5,3 +5,9 @@ auto_ccs:
   - "kleisauke@gmail.com"
   - "lovell.fuller@gmail.com"
 main_repo: 'https://github.com/libvips/libvips'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

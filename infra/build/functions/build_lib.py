@@ -22,6 +22,9 @@ import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
+import subprocess
+import tempfile
+import json
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
@@ -32,6 +35,7 @@ import requests
 import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
+IMAGE_PROJECT = 'oss-fuzz'
 
 BUILD_TIMEOUT = 20 * 60 * 60
 
@@ -58,10 +62,9 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds',
-            supported_sanitizers=['address', 'memory', 'undefined', 'none'],
-            supported_architectures=['x86_64', 'i386', 'aarch64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
                    supported_sanitizers=['address'],
@@ -88,12 +91,18 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
+OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool-experiments')
+
 US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
 _ARM64 = 'aarch64'
+
+OSS_FUZZ_ROOT = os.path.abspath(os.path.join(__file__, '..', '..', '..', '..'))
 
 
 def get_targets_list_filename(sanitizer):
@@ -235,7 +244,7 @@ def download_corpora_steps(project_name, test_image_suffix):
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     steps.append({
-        'name': get_runner_image_name(BASE_IMAGES_PROJECT, test_image_suffix),
+        'name': get_runner_image_name(test_image_suffix),
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
         'volumes': [{
@@ -423,18 +432,26 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     image,
     language,
     config,
-    architectures=None):
+    architectures=None,
+    experiment=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
 
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
-  steps = [clone_step]
+  if experiment:
+    # Skip cloning if we're in an experiment. The source is submitted to GCB
+    # via gcloud builds submit.
+    steps = []
+  else:
+    steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
+  src_root = 'oss-fuzz' if not experiment else '.'
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name))
+                                            os.path.join('projects', name),
+                                            src_root=src_root)
   steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
   steps.extend([{
@@ -475,10 +492,10 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
+def get_logs_url(build_id):
   """Returns url that displays the build logs."""
-  return ('https://console.developers.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
+  return (
+      f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt')
 
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
@@ -488,10 +505,10 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(base_images_project, test_image_suffix):
-  """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |test_image_suffix|."""
-  image = f'gcr.io/{base_images_project}/base-runner'
+def get_runner_image_name(test_image_suffix):
+  """Returns the runner image that should be used. Returns the testing image if
+  |test_image_suffix|."""
+  image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
     image += '-' + test_image_suffix
   return image
@@ -501,7 +518,8 @@ def get_build_body(steps,
                    timeout,
                    body_overrides,
                    build_tags,
-                   use_build_pool=True):
+                   use_build_pool=True,
+                   experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -509,7 +527,11 @@ def get_build_body(steps,
     options = {}
 
   if use_build_pool:
-    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+    if experiment:
+      options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    else:
+      options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
@@ -526,20 +548,37 @@ def get_build_body(steps,
 
 
 def run_build(  # pylint: disable=too-many-arguments
+    oss_fuzz_project,
     steps,
     credentials,
     cloud_project,
     timeout,
     body_overrides=None,
     tags=None,
-    use_build_pool=True):
+    use_build_pool=True,
+    experiment=False):
   """Runs the build."""
 
   build_body = get_build_body(steps,
                               timeout,
                               body_overrides,
                               tags,
-                              use_build_pool=use_build_pool)
+                              use_build_pool=use_build_pool,
+                              experiment=experiment)
+  if experiment:
+    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
+      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
+      config_file.seek(0)
+      subprocess.run([
+          'gcloud',
+          'builds',
+          'submit',
+          '--project=oss-fuzz',
+          f'--config={config_file.name}',
+      ],
+                     cwd=OSS_FUZZ_ROOT)
+
+      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -552,7 +591,6 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_id = build_info['metadata']['build']['id']
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
+               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id

@@ -1,11 +1,8 @@
 homepage: "https://github.com/google/wuffs"
 language: c++
 primary_contact: "nigeltao@golang.org"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
-  - centipede
+auto_ccs:
+  - "raph.levien@gmail.com"
 sanitizers:
   - address
   - undefined

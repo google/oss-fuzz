@@ -25,11 +25,16 @@ def TestOneInput(data: bytes) -> int:
       f = mutagen.File(io.BytesIO(data))
       if f is None:
           return 0
-      f.tags.pprint()
-      f.info.pprint()
-      f.info.pprint()
-      f.delete()
-      f.save()
+
+      if f.tags:
+        f.tags.pprint()
+      if f.info:
+        f.info.pprint()
+
+      out = io.BytesIO()
+      f.delete(out)
+      f.save(out)
+      mutagen.File(out)
   except mutagen.MutagenError:
     return 0
   return 0

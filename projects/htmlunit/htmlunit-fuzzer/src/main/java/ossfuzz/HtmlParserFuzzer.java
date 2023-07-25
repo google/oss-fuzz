@@ -45,12 +45,13 @@ public class HtmlParserFuzzer {
 	}
 
 	void test() {
+		com.code_intelligence.jazzer.api.BugDetectors.allowNetworkConnections();
+
 		try (WebClient webClient = new WebClient(getBrowserVersion())) {
-			/*
-			 * net.sourceforge.htmlunit.corejs.javascript.EvaluatorException
-			 * seems to be fatal
-			 */
+			// org.htmlunit.corejs.javascript.EvaluatorException seems to be fatal
 			webClient.getOptions().setThrowExceptionOnScriptError(false);
+			// no exception if linked resources are not available
+			webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
 			webClient.loadHtmlCodeIntoCurrentWindow(fuzzedDataProvider.consumeRemainingAsString());
 		} catch (IllegalArgumentException e) {

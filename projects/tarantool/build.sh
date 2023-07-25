@@ -51,6 +51,8 @@ cmake_args=(
     -DENABLE_BACKTRACE=OFF
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
+    -DLUA_USE_APICHECK=ON
+    -DLUA_USE_ASSERT=ON
     $SANITIZERS_ARGS
 
     # C compiler
@@ -89,5 +91,11 @@ do
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  [[ -e $corpus_dir ]] && zip -j $OUT/"$module"_fuzzer_seed_corpus.zip $corpus_dir/*
+  dict_path="test/static/$name.dict"
+  if [ -e "$dict_path" ]; then
+    cp $dict_path $OUT/
+  fi
+  if [ -e "$corpus_dir" ]; then
+    zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
+  fi
 done

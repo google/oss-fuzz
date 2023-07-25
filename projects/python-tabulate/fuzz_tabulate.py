@@ -13,32 +13,109 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+
 import sys
 import json
 import atheris
 import tabulate
 
 
+def ConsumeListofLists(fdp):
+    list = []
+    num_lists = fdp.ConsumeIntInRange(1, 100)
+    for _ in range(num_lists):
+        list.append(fdp.ConsumeFloatListInRange(num_lists, 1, 1000))
+    return list
+
+
+def ConsumeDictionary(fdp):
+    dictionary = {}
+    dict_size = fdp.ConsumeIntInRange(1, 100)
+    for _ in range(dict_size):
+        dictionary[fdp.ConsumeUnicodeNoSurrogates(
+            fdp.ConsumeIntInRange(0, 100))] = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 100))
+    return dictionary
+
+
+def ConsumeNestedDictionary(fdp):
+    dictionary = {}
+    dict_size = fdp.ConsumeIntInRange(1, 100)
+    for _ in range(dict_size):
+        t_or_f = fdp.ConsumeBool()
+        if t_or_f is True:
+            dictionary[fdp.ConsumeUnicodeNoSurrogates(
+                fdp.ConsumeIntInRange(0, 100))] = ConsumeDictionary(fdp)
+        else:
+            dictionary[fdp.ConsumeUnicodeNoSurrogates(
+                fdp.ConsumeIntInRange(0, 100))] = fdp.ConsumeUnicodeNoSurrogates(
+                fdp.ConsumeIntInRange(0, 100))
+    return dictionary
+
+
+def ConsumeDictionaryWithList(fdp):
+    dictionary = {}
+    dict_size = fdp.ConsumeIntInRange(1, 100)
+    for _ in range(dict_size):
+        dictionary[fdp.ConsumeUnicodeNoSurrogates(
+            fdp.ConsumeIntInRange(1, 100))] = fdp.ConsumeIntListInRange(
+            fdp.ConsumeIntInRange(1, 100), 1, 100)
+    return dictionary
+
+
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    tabulate_formats = list(tabulate._table_formats.keys())
-    table_format = tabulate_formats[fdp.ConsumeIntInRange(0, len(tabulate_formats)-1)]
-
+    table_format = fdp.PickValueInList(tabulate.tabulate_formats)
+    col_align_num = fdp.PickValueInList(
+        ["right", "center", "left", "decimal", None])
+    col_align_str = fdp.PickValueInList(
+        ["right", "center", "left", None])
 
     # Create random dictionary
     try:
-        fuzzed_dict = json.loads(fdp.ConsumeString(sys.maxsize))
+        fuzzed_dict = json.loads(
+            fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 100)))
     except:
         return
     if type(fuzzed_dict) is not dict:
         return
-    
+
+    # Test tabulate with various inputs
     t1 = tabulate.tabulate(
         fuzzed_dict,
         tablefmt=table_format
     )
-    return
+    t2 = tabulate.tabulate(
+        ConsumeDictionary(fdp),
+        tablefmt=table_format,
+        headers="keys"
+    )
+    t3 = tabulate.tabulate(
+        ConsumeListofLists(fdp),
+        tablefmt=table_format,
+        headers="firstrow"
+    )
+    t4 = tabulate.tabulate(
+        ConsumeNestedDictionary(fdp),
+        tablefmt=table_format
+    )
+    t5 = tabulate.tabulate(
+        ConsumeDictionaryWithList(fdp),
+        tablefmt=table_format
+    )
+    almost_all_args = tabulate.tabulate(
+        ConsumeListofLists(fdp),
+        tablefmt=table_format,
+        headers="firstrow",
+        showindex="always",
+        numalign=col_align_num,
+        stralign=col_align_str,
+        floatfmt=".4f"
+    )
+
+    # make and implement custom table formator
+    custom_separator = tabulate.simple_separated_format(
+        fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 100)))
+    tabulate.tabulate(ConsumeDictionary(fdp), tablefmt=custom_separator)
 
 
 def main():

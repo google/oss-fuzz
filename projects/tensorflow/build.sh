@@ -17,6 +17,10 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
+if [ "$SANITIZER" = "undefined" ]; then
+  rm $SRC/tensorflow/tensorflow/security/fuzzing/cc/core/function/BUILD
+fi
+
 # Rename all fuzzer rules to oss-fuzz rules.
 find $SRC/tensorflow/tensorflow/ -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
 
@@ -26,6 +30,7 @@ sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelr
 sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.bazelrc
 
 # Force Python3, run configure.py to pick the right build config
+export TF_PYTHON_VERSION=3.9
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
 
@@ -113,7 +118,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
 else
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.15 --strip=never"
 fi
 
 # Do not use compile_fuzztests.sh to synchronize coverage folders as we use
@@ -135,7 +140,7 @@ fi
 echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
 yes "" | ./configure
 
-declare FUZZERS=$(grep '^tf_ops_fuzz_target' tensorflow/core/kernels/fuzzing/BUILD | cut -d'"' -f2 | grep -v decode_base64)
+declare FUZZERS=$(grep '^tf_ops_fuzz_target' tensorflow/core/kernels/fuzzing/BUILD | cut -d'"' -f2 | grep -v decode_base64 | grep -v decode_compressed | grep -v one_hot | grep -v encode_base64 | grep -v scatter_nd | grep -v decode_csv | grep -v check_numerics)
 
 cat >> tensorflow/core/kernels/fuzzing/tf_ops_fuzz_target_lib.bzl << END
 

@@ -1,0 +1,8 @@
+homepage: https://github.com/faisalman/ua-parser-js
+language: javascript
+main_repo: https://github.com/faisalman/ua-parser-js.git
+primary_contact: fyzlman@gmail.com
+fuzzing_engines:
+- libfuzzer
+sanitizers: 
+- none

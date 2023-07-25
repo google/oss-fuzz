@@ -7,6 +7,7 @@ auto_ccs:
   - "jonas@chaincode.com"
   - "pieter@chaincode.com"
   - "n.goeggi@gmail.com"
+  - "achow101@gmail.com"
 sanitizers:
   - address
   - undefined
@@ -18,3 +19,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
+#  - centipede # temporarily disabled due to spurious "Step #22 - "build-check-centipede-none-x86_64": OSError: [Errno 28] No space left on device"

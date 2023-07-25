@@ -5,3 +5,9 @@ sanitizers:
 - address
 - undefined
 main_repo: 'https://github.com/tinyobjloader/tinyobjloader'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

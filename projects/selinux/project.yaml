@@ -13,3 +13,9 @@ auto_ccs:
   - jwcart2@gmail.com
   - cgzones@googlemail.com
 main_repo: 'https://github.com/SELinuxProject/selinux'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

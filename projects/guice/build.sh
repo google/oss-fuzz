@@ -21,7 +21,7 @@ cat > patch.diff <<- EOM
 @@ -120,7 +120,7 @@
       | The last stable release version id, used for generating API diffs between released versions
      -->
-     <guice.lastStableRelease>5.1.0</guice.lastStableRelease>
+     <guice.lastStableRelease>7.0.0</guice.lastStableRelease>
 -    <guice.skipTests>false</guice.skipTests>
 +    <guice.skipTests>true</guice.skipTests>
      <gpg.skip>true</gpg.skip>

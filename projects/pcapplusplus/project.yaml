@@ -3,13 +3,11 @@ language: c++
 primary_contact: "pcapplusplus@gmail.com"
 auto_ccs:
   - "zlowram@gmail.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
 sanitizers:
   - address
   - memory
   - undefined
 main_repo: 'https://github.com/seladb/PcapPlusPlus'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

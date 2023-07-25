@@ -131,6 +131,7 @@ class BaseConfig:
 
     self.parallel_fuzzing = os.environ.get('PARALLEL_FUZZING')
     self.extra_environment_variables = _get_extra_environment_variables()
+    self.output_sarif = environment.get_bool('OUTPUT_SARIF', False)
 
     # TODO(metzman): Fix tests to create valid configurations and get rid of
     # CIFUZZ_TEST here and in presubmit.py.

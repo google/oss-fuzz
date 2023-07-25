@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# making sure we got these compiled with our go version
+go install github.com/mdempsky/go114-fuzz-build@latest
+rm -f $GOPATH/bin/go-fuzz
+ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+go install github.com/AdamKorcz/go-118-fuzz-build@main
+
 make
 
 # Not all fuzzers can be compiled with --sanitizer=coverage.

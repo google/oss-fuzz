@@ -23,6 +23,8 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
+COPY gosigfuzz.c $GOPATH/gosigfuzz/
+
 RUN install_go.sh
 
 # TODO(jonathanmetzman): Install this file using install_go.sh.

@@ -10,8 +10,3 @@ sanitizers:
   - memory:
       experimental: true
 main_repo: 'https://github.com/gnuaspell/aspell.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

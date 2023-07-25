@@ -43,8 +43,8 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation; 
 import javax.tools.ToolProvider;
 
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.Problem;
+import static com.github.javaparser.StaticJavaParser.*;
+import com.github.javaparser.ParseProblemException;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,11 +57,8 @@ public class ObjectReaderRandomClassFuzzer {
 
         // Sanity check: Do we have valid java code? If not, exit early.
         try {
-            List<Problem> problems = Roaster.validateSnippet(classString);
-            if (problems.size()>0) {
-                return;
-            }            
-        } catch (ArrayIndexOutOfBoundsException e) {
+	    parse(classString); // StaticJavaParser.parse()
+        } catch (ArrayIndexOutOfBoundsException | ParseProblemException e) {
             return;
         }
 
@@ -178,11 +175,12 @@ public class ObjectReaderRandomClassFuzzer {
             ///////////////////////////
 
             // create an empty source file 
-            sourceFile = File.createTempFile("RandomFuzz", ".java"); 
+	    sourceFile = new File("/tmp/RandomFuzzClass.java");
+	    sourceFile.createNewFile();
             sourceFile.deleteOnExit();
      
             // generate the source code, using the source filename as the class name
-            classname = sourceFile.getName().split("\\.")[0]; 
+	    classname = "RandomFuzzClass";
             String sourceCode = "public class " + classname + "{" + classString + "}";
      
             // write the source code into the source file

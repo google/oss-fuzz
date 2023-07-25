@@ -8,3 +8,9 @@ sanitizers:
   - undefined
   - memory
 main_repo: "https://github.com/libigl/libigl"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

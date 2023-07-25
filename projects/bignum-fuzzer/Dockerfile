@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     python-all-dev \
     python3-all-dev \
     python3-pip
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
 
 RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls
 # Install Python packages from PyPI
@@ -32,5 +35,7 @@ RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.ta
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
+    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+
 COPY build.sh $SRC/

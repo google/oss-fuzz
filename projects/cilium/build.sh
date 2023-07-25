@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+
+# required by Go 1.20
+export CXX="${CXX} -lresolv"
 $SRC/cilium/test/fuzzing/oss-fuzz-build.sh
 $SRC/cncf-fuzzing/projects/cilium/build.sh

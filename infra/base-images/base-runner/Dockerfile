@@ -96,6 +96,7 @@ COPY bad_build_check \
     reproduce \
     run_fuzzer \
     parse_options.py \
+    generate_differential_cov_report.py \
     profraw_update.py \
     targets_list \
     test_all.py \

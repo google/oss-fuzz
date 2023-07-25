@@ -15,15 +15,14 @@
 #
 ################################################################################
 cd librdkafka
-./configure --install-deps --disable-regex-ext
+mkdir build
+cd build
+cmake -DRDKAFKA_BUILD_STATIC=ON -DRDKAFKA_BUILD_EXAMPLES=OFF -DHAVE_REGEX=OFF ../
 make
 
-export LIBZSTD=$PWD/mklove/deps/dest/usr/lib/libzstd.a
-
-cd tests
-$CC -g -fPIC $CFLAGS -I../src -c ./fuzzers/fuzz_regex.c -o fuzz_regex.o
+$CC -g -fPIC $CFLAGS -I$SRC/librdkafka/src -Igenerated/dummy \
+    -c $SRC/librdkafka/tests/fuzzers/fuzz_regex.c -o fuzz_regex.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
-    ../src/librdkafka.a -lm ${LIBZSTD} -lsasl2 -lssl -lcrypto \
+    ./src-cpp/librdkafka++.a ./src/librdkafka.a -lm -lssl -lcrypto \
     -lcrypto -lz -ldl -lpthread -lrt
-
 cp fuzzer $OUT/fuzz_regex

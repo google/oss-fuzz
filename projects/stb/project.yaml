@@ -3,17 +3,8 @@ language: c++
 primary_contact: "nothings.org@gmail.com"
 auto_ccs:
   - "randy440088@gmail.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
 sanitizers:
   - address
   - undefined
   - memory
 main_repo: 'https://github.com/nothings/stb.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

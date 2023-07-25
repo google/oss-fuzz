@@ -6,8 +6,3 @@ auto_ccs:
  - "covener@gmail.com"
  - "ylavic.dev@gmail.com"
 main_repo: "https://github.com/apache/httpd"
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede

@@ -26,7 +26,7 @@ RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.ta
     tar xzvf ./2021-08-25.tar.gz && \
     mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
 
-RUN git clone --depth 5000 --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
+RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
 WORKDIR $SRC/tarantool
 
 COPY build.sh $SRC/

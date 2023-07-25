@@ -6,7 +6,7 @@ auto_ccs:
   - "hj.tedd.an@gmail.com"
   - "david@adalogics.com"
 fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede
+  - libfuzzer
+  - honggfuzz
+  - afl
+  # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163

@@ -14,5 +14,6 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/sdispater/tomlkit tomlkit
+RUN pip3 install dictgen
 COPY *.sh *py $SRC/
 WORKDIR $SRC/tomlkit

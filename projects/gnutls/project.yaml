@@ -12,3 +12,9 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://gitlab.com/gnutls/gnutls.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

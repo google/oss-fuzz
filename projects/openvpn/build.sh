@@ -71,7 +71,7 @@ $CXX $CXXFLAGS -g -c $SRC/fuzz_randomizer.cpp -o $SRC/fuzz_randomizer.o
 
 # Compile the fuzzers
 for fuzzname in dhcp misc base64 proxy buffer route packet_id mroute list verify_cert; do
-    $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include -I../../src/compat \
+    $CC -DHAVE_CONFIG_H -I. -I../.. -I../../include -I../../src/compat -I/usr/include/libnl3/ \
       -DPLUGIN_LIBDIR=\"/usr/local/lib/openvpn/plugins\" -std=c99 $CFLAGS \
       -c $SRC/fuzz_${fuzzname}.c -o $SRC/fuzz_${fuzzname}.o
 
@@ -79,5 +79,5 @@ for fuzzname in dhcp misc base64 proxy buffer route packet_id mroute list verify
     $CXX ${CXXFLAGS} ${LIB_FUZZING_ENGINE} $SRC/fuzz_${fuzzname}.o -o $OUT/fuzz_${fuzzname} $SRC/fuzz_randomizer.o \
         libopenvpn.a ../../src/compat/.libs/libcompat.a /usr/lib/x86_64-linux-gnu/libnsl.a \
         /usr/lib/x86_64-linux-gnu/libresolv.a /usr/lib/x86_64-linux-gnu/liblzo2.a \
-        -lssl -lcrypto -ldl
+        -lssl -lcrypto -ldl -l:libnl-3.a -l:libnl-genl-3.a -lcap-ng
 done

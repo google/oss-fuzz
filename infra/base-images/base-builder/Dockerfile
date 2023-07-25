@@ -111,7 +111,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
+    git checkout 091d66fa92cd9e4caa5829d579b1b996c49db8c9 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     rm -rf .git && \
     chmod 755 oss.sh
@@ -132,11 +132,12 @@ COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
 RUN cd $SRC && \
-    git clone https://github.com/google/centipede.git && \
-    cd centipede && \
-    git checkout eb91dd2157710e6c82579f8be19d7fab9423b781 && \
+    git clone https://github.com/google/fuzztest && \
+    cd fuzztest && \
+    git checkout a37d133f714395cabc20dd930969a889495c9f53 && \
     rm -rf .git
 
+ENV CENTIPEDE_BIN_DIR=$SRC/fuzztest/bazel-bin
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
@@ -166,6 +167,11 @@ COPY bazel_build_fuzz_tests \
     srcmap \
     write_labels.py \
     /usr/local/bin/
+
+# TODO: Build this as part of a multi-stage build.
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang /usr/local/bin/jcc/
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++ /usr/local/bin/jcc/
+RUN chmod +x /usr/local/bin/jcc/clang && chmod +x /usr/local/bin/jcc/clang++
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/

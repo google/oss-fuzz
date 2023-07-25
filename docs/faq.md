@@ -144,7 +144,7 @@ coverage, it may mean several things:
   Need to add more seeds.
 - There is some crypto/crc stuff in the code that will prevent any fuzzing
   engine from going deeper, in which case the crypto should be disabled in
-  [fuzzing mode](http://libfuzzer.info#fuzzer-friendly-build-mode).
+  [fuzzing mode](https://llvm.org/docs/LibFuzzer.html#fuzzer-friendly-build-mode).
   Examples: [openssl](https://github.com/openssl/openssl/tree/master/fuzz#reproducing-issues),
   [boringssl](https://boringssl.googlesource.com/boringssl/+/HEAD/FUZZING.md#Fuzzer-mode)
 - It is also possible that the fuzzer is running too slow

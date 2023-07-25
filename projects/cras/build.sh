@@ -21,12 +21,20 @@
 # Builds fuzzers from within a container into /out/ directory.
 # Expects /src/cras to contain a cras checkout.
 
-cd ${SRC}/adhd/cras/src/server/rust
-export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-cargo build --release --target-dir=${WORK}/cargo_out
-cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
 
 cd ${SRC}/adhd
+
+#
+# Build Rust code.
+#
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
+cargo build --package=cras_rust --release --target-dir=${WORK}/cargo_out
+cp ${WORK}/cargo_out/${CARGO_BUILD_TARGET}/release/libcras_rust.a /usr/local/lib
+
+#
+# Build C code.
+#
+
 # Set bazel options.
 # See also:
 # https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests
@@ -37,17 +45,27 @@ bazel_opts=(
     "--spawn_strategy=standalone"
     "--action_env=CC=${CC}"
     "--action_env=CXX=${CXX}"
-    "--action_env=BAZEL_CONLYOPTS=${CFLAGS// /:}"
-    "--action_env=BAZEL_CXXOPTS=${CXXFLAGS// /:}"
-    "--action_env=BAZEL_LINKOPTS=${CXXFLAGS// /:}"
     "-c" "opt"
     "--cxxopt=-stdlib=libc++"
     "--linkopt=-lc++"
     "--config=fuzzer"
     "--//:system_cras_rust"
 )
+for f in ${CFLAGS}; do
+    bazel_opts+=("--conlyopt=${f}")
+done
+for f in ${CXXFLAGS}; do
+    bazel_opts+=(
+        "--cxxopt=${f}"
+        "--linkopt=${f}"
+    )
+done
 if [[ "$SANITIZER" == "undefined" ]]; then
     bazel_opts+=("--linkopt=-fsanitize-link-c++-runtime")
+fi
+if [[ "$SANITIZER" == "coverage" ]]; then
+    # Fix up paths.
+    bazel_opts+=("--copt=-fcoverage-compilation-dir=${SRC}/adhd")
 fi
 
 # Statlic linking hacks
@@ -72,9 +90,8 @@ if [ "$SANITIZER" = "coverage" ]; then
     echo "Collecting the repository source files for coverage tracking."
 
     ln -s ${SRC}/adhd/cras/src/server/rust/src/* ${SRC}
-
-    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
-    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r EXTERNAL_SOURCES="${OUT}/src/adhd/external"
+    mkdir -p "${EXTERNAL_SOURCES}"
     declare -r RSYNC_FILTER_ARGS=(
         "--include" "*.h"
         "--include" "*.cc"
@@ -86,6 +103,6 @@ if [ "$SANITIZER" = "coverage" ]; then
         "--exclude" "*"
     )
     rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
-        "$(bazel info execution_root)/" \
-        "${COVERAGE_SOURCES}/"
+        "$(bazel info execution_root)/external/" \
+        "${EXTERNAL_SOURCES}"
 fi

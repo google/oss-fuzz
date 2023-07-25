@@ -5,14 +5,10 @@ auto_ccs:
  - "cryptomilk@gmail.com"
  - "jakuje@gmail.com"
  - "anderson.sasaki@gmail.com"
+ - "norbertpocs0@gmail.com"
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
   - undefined
 main_repo: 'https://git.libssh.org/projects/libssh.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
- - centipede
