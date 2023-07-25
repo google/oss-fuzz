@@ -38,7 +38,7 @@ WORKDIR ${SRC}
 #
 # clone repository
 #
-RUN git clone https://github.com/apache/poi.git
+RUN git clone --depth 1 https://github.com/apache/poi.git
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/
