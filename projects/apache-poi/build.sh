@@ -84,6 +84,7 @@ this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \
+--instrumentation_includes=org.apache.poi.**:org.apache.xmlbeans.** \
 --target_class=${fuzzer_classname} \
 --jvm_args=\"-Xmx2048m\" \
 \$@" > $OUT/${fuzzer_basename}
