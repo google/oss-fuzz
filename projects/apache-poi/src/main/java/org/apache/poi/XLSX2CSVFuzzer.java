@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.commons.compress.archivers.dump.InvalidFormatException;
 import org.apache.poi.examples.xssf.eventusermodel.XLSX2CSV;
+import org.apache.poi.util.RecordFormatException;
 import org.xml.sax.SAXException;
 
 public class XLSX2CSVFuzzer {
@@ -32,18 +32,10 @@ public class XLSX2CSVFuzzer {
             OPCPackage p = OPCPackage.open(in);
             XLSX2CSV xlsx2csv = new XLSX2CSV(p, out, 5);
             xlsx2csv.process();
-        } catch (OpenXML4JException ex) {
+        } catch (IOException | OpenXML4JException | SAXException ex) {
             /* documented, ignore. */
-        } catch (SAXException ex) {
-            /* documented, ignore. */
-        } catch (InvalidFormatException ex) {
-            /* documented, ignore. */
-        } catch (UnsupportedFileFormatException ex) {
+        } catch (UnsupportedFileFormatException | RecordFormatException | EmptyFileException ex) {
             /* not so documented ... */
-        } catch (IOException ex) {
-
-        } catch (EmptyFileException ex) {
-
         }
 
     }
