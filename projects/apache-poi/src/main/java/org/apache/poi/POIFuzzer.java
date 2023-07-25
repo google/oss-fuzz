@@ -39,6 +39,14 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.DocumentFormatException;
 import org.apache.poi.util.RecordFormatException;
 
+/**
+ * This class provides a simple target for fuzzing Apache POI with Jazzer.
+ *
+ * It uses the byte-array to call various method which parse the various
+ * supported file-formats.
+ *
+ * It catches all exceptions that are currently expected.
+ */
 public class POIFuzzer {
 	public static void fuzzerTestOneInput(byte[] input) {
 		// try to invoke various methods which parse documents/workbooks/slide-shows/...
@@ -54,6 +62,8 @@ public class POIFuzzer {
 		POIHPSFFuzzer.fuzzerTestOneInput(input);
 
 		POIHSLFFuzzer.fuzzerTestOneInput(input);
+
+		POIHSMFFuzzer.fuzzerTestOneInput(input);
 
 		POIHSSFFuzzer.fuzzerTestOneInput(input);
 
@@ -109,6 +119,7 @@ public class POIFuzzer {
 		}
 	}
 
+	@SuppressWarnings("DuplicatedCode")
 	public static void checkExtractor(POITextExtractor extractor) throws IOException {
 		extractor.getDocument();
 		extractor.getFilesystem();

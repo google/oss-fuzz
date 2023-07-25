@@ -46,15 +46,15 @@ pushd "${SRC}/${LIBRARY_NAME}"
 	# determine current version-tag
 	CURRENT_VERSION=$(./gradlew properties ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 
-	# prepare some seed-corpus archives
-	# To provide a corpus for my_fuzzer, put my_fuzzer_seed_corpus.zip file next to the fuzz target’s binary in $OUT during the build.
-	# cannot do this autoamtically as there is not a 1:1 match of fuzz targets and formats
+	# prepare some seed-corpus archives based on the test-data of Apache POI
+	# we cannot do this automatically as there is not a 1:1 match of fuzz targets and formats
 	zip -r $OUT/POIFuzzer_seed_corpus.zip test-data
 	zip -jr $OUT/POIHDGFFuzzer_seed_corpus.zip test-data/diagram/*.vsd
 	zip -jr $OUT/POIHMEFFuzzer_seed_corpus.zip test-data/hmef/*
 	zip -jr $OUT/POIHPBFFuzzer_seed_corpus.zip test-data/publisher/*
 	zip -jr $OUT/POIHPSFFuzzer_seed_corpus.zip test-data/hpsf/*
 	zip -jr $OUT/POIHSLFFuzzer_seed_corpus.zip test-data/slideshow/*.ppt
+	zip -jr $OUT/POIHSMFFuzzer_seed_corpus.zip test-data/hsmf/*
 	zip -jr $OUT/POIHSSFFuzzer_seed_corpus.zip test-data/spreadsheet/*.xls
 	zip -jr $OUT/POIHWPFFuzzer_seed_corpus.zip test-data/document/*.doc test-data/document/*.DOC
 	zip -jr $OUT/POIOldExcelFuzzer_seed_corpus.zip test-data/spreadsheet/*.xls test-data/spreadsheet/*.bin
