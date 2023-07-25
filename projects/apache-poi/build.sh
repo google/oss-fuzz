@@ -40,7 +40,7 @@ popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
 	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
-	CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+	CURRENT_VERSION=$(./gradlew properties --console=plain ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 popd
 
 pushd "${SRC}"
