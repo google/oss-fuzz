@@ -1,0 +1,12 @@
+homepage: "https://aptos.dev"
+language: rust
+primary_contact: "gerardo@aptoslabs.com"
+main_repo: "https://github.com/aptos-labs/aptos-core"
+auto_ccs:
+  - "davidiw@aptoslabs.com"
+  - "security@aptoslabs.com"
+  - "wg@aptoslabs.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
