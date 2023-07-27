@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-MVN_FLAGS="-DskipTests"
+MVN_FLAGS="--no-transfer-progress -DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="poi"
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11"
+GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11 --console=plain"
 
 echo Main Java
 ${JAVA_HOME}/bin/java -version
@@ -35,12 +35,13 @@ pushd "/tmp"
 		-DgroupId="com.code-intelligence" \
 		-DartifactId="jazzer-api" \
 		-Dversion="0.12.0" \
-		-Dpackaging=jar
+		-Dpackaging=jar \
+		 ${MVN_FLAGS}
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
 	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
-	CURRENT_VERSION=$(./gradlew properties --console=plain ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
+	CURRENT_VERSION=$(./gradlew properties ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 popd
 
 pushd "${SRC}"
