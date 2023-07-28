@@ -89,17 +89,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	if isCPP {
+	if isCPP || !TryFixCCompilation(newArgs) {
 		// Nothing else we can do. Just print the error and exit.
 		fmt.Println(outb.String())
 		fmt.Println(errb.String())
 		os.Exit(cmd.ProcessState.ExitCode())
-	}
-
-	if !TryFixCCompilation(newArgs) {
-		// If we get here, it means we weren't able to try using C++ at all, so print the original error.
-		fmt.Println(outb.String())
-		fmt.Println(errb.String())
-		os.Exit(5)
 	}
 }
