@@ -84,8 +84,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
           'args': [
               '-m',
               'cp',
-              '-r',
-              '/workspace/out',
+              '/workspace/out/*',
               output_path,
           ]
       },
