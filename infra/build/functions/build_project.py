@@ -305,7 +305,11 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml, dockerfile, config):
+    project_name,
+    project_yaml,
+    dockerfile,
+    config,
+    additional_env=None):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
@@ -336,6 +340,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           continue
 
         env = get_env(project.fuzzing_language, build)
+        if additional_env:
+          env.extend(additional_env)
+
         compile_step = get_compile_step(project, build, env, config.parallel,
                                         config.upload_build_logs)
         build_steps.append(compile_step)

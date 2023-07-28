@@ -33,6 +33,10 @@ then
   sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
 fi
 
+# Remove the existing build, which makes it more convenient to build 
+# fuzzers with multiple sanitizers using the same working directory.
+rm -rf ./build
+mkdir build
 cd build
 export CFLAGS="$CFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
 export CXXFLAGS="$CXXFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"

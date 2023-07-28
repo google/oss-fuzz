@@ -16,13 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/kyverno/kyverno
-RUN wget https://go.dev/dl/go1.20.2.linux-amd64.tar.gz \ 
+RUN wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz \ 
     && mkdir temp-go \ 
     && rm -rf /root/.go/* \ 
-    && tar -C temp-go/ -xzf go1.20.2.linux-amd64.tar.gz \ 
+    && tar -C temp-go/ -xzf go1.20.6.linux-amd64.tar.gz \ 
     && mv temp-go/go/* /root/.go/ 
-
-COPY build.sh \
-         fuzz_policy_test.go \
-	 $SRC/
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+COPY build.sh $SRC/
 WORKDIR $SRC/kyverno

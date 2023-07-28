@@ -25,9 +25,12 @@ import google.auth
 import build_lib
 import build_project
 
+JCC_DIR = '/usr/local/bin/jcc'
+
 
 def run_experiment(project_name, target_name, args, output_path,
-                   build_output_path, upload_corpus_path, upload_coverage_path):
+                   build_output_path, upload_corpus_path, upload_coverage_path,
+                   experiment_name):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -57,8 +60,15 @@ def run_experiment(project_name, target_name, args, output_path,
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
 
-  steps = build_project.get_build_steps(project_name, project_yaml,
-                                        dockerfile_contents, config)
+  jcc_env = [
+      f'CC={JCC_DIR}/clang',
+      f'CXX={JCC_DIR}/clang++',
+  ]
+  steps = build_project.get_build_steps(project_name,
+                                        project_yaml,
+                                        dockerfile_contents,
+                                        config,
+                                        additional_env=jcc_env)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
@@ -108,6 +118,7 @@ def run_experiment(project_name, target_name, args, output_path,
   # Build for coverage.
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project_yaml['language'], build)
+  env.extend(jcc_env)
 
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
@@ -159,7 +170,8 @@ def run_experiment(project_name, target_name, args, output_path,
                                  steps,
                                  credentials,
                                  'experiment',
-                                 experiment=True)
+                                 experiment=True,
+                                 extra_tags=[f'experiment-{experiment_name}'])
 
 
 def main():
@@ -181,11 +193,14 @@ def main():
   parser.add_argument('--upload_coverage',
                       required=True,
                       help='GCS location to upload coverage data.')
+  parser.add_argument('--experiment_name',
+                      required=True,
+                      help='Experiment name.')
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_build_log, args.upload_corpus,
-                 args.upload_coverage)
+                 args.upload_coverage, args.experiment_name)
 
 
 if __name__ == '__main__':

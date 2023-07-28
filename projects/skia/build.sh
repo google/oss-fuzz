@@ -80,7 +80,9 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_embedded=false
            skia_enable_fontmgr_custom_empty=true
            skia_enable_ganesh=true
+           skia_enable_graphite=true
            skia_enable_skottie=true
+           skia_enable_precompile=true
            skia_use_vulkan=true
            skia_use_egl=false
            skia_use_gl=false
@@ -128,6 +130,7 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   api_path_measure \
   api_pathop \
   api_polyutils \
+  api_precompile \
   api_raster_n32_canvas \
   api_regionop \
   api_skparagraph \
@@ -289,6 +292,8 @@ mv out/Fuzz/skp $OUT/skp
 mv ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
 
 mv out/Fuzz/api_skparagraph $OUT/api_skparagraph
+
+mv out/Fuzz/api_precompile $OUT/api_precompile
 
 mv out/Fuzz/api_regionop $OUT/api_regionop
 
