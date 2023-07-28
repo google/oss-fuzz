@@ -22,11 +22,23 @@ rm -rf maven.zip
 
 ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
 
+RUN wget https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u382-b05/OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
+  tar xvf OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
+  rm -rf OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz
+
+ENV JAVA_HOME_8 $SRC/jdk8u382-b05
+
+RUN wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz && \
+  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz && \
+  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz
+
+ENV JAVA_HOME_11 $SRC/jdk-11.0.20+8
+
 WORKDIR ${SRC}
 #
 # clone repository
 #
-RUN git clone https://github.com/apache/poi.git
+RUN git clone --depth 1 https://github.com/apache/poi.git
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

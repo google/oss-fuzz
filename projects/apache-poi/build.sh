@@ -18,7 +18,16 @@
 MVN_FLAGS="-DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="poi"
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8"
+GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11"
+
+echo Main Java
+${JAVA_HOME}/bin/java -version
+
+echo Java 8
+${JAVA_HOME_8}/bin/java -version
+
+echo Java 11
+${JAVA_HOME_11}/bin/java -version
 
 # Install the build servers' jazzer-api into the maven repository.
 pushd "/tmp"
@@ -31,7 +40,7 @@ popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
 	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
-	CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+	CURRENT_VERSION=$(./gradlew properties --console=plain ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 popd
 
 pushd "${SRC}"
@@ -61,12 +70,12 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	if (echo ${stripped_path} | grep ".java$"); then
 		continue;
 	fi
-	
+
 	fuzzer_basename=$(basename -s .java $fuzzer)
 	fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
-	
+
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
-	
+
 	echo "#!/bin/sh
 # LLVMFuzzerTestOneInput Magic String required for infra/base-images/base-runner/test_all.py. DO NOT REMOVE
 
