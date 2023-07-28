@@ -25,7 +25,7 @@ import (
 	"strings"
 )
 
-func copy_file(src string, dst string) {
+func CopyFile(src string, dst string) {
 	contents, err := ioutil.ReadFile(src)
 	if err != nil {
 		panic(err)
@@ -36,8 +36,8 @@ func copy_file(src string, dst string) {
 	}
 }
 
-func fix_c_compilation(cmdline []string) bool {
-	var new_file string = ""
+func TryFixCCompilation(cmdline []string) bool {
+	var newFile string = ""
 	for i, arg := range cmdline {
 		if !strings.HasSuffix(arg, ".c") {
 			continue
@@ -45,13 +45,13 @@ func fix_c_compilation(cmdline []string) bool {
 		if _, err := os.Stat(arg); errors.Is(err, os.ErrNotExist) {
 			continue
 		}
-		new_file = strings.TrimSuffix(arg, ".c")
-		new_file += ".cpp"
-		copy_file(arg, new_file)
-		cmdline[i] = new_file
+		newFile = strings.TrimSuffix(arg, ".c")
+		newFile += ".cpp"
+		CopyFile(arg, newFile)
+		cmdline[i] = newFile
 		break
 	}
-	if new_file == "" {
+	if newFile == "" {
 		return false
 	}
 	cmd := exec.Command("clang++", cmdline...)
@@ -63,7 +63,7 @@ func fix_c_compilation(cmdline []string) bool {
 	fmt.Println(outb.String())
 	fmt.Println(errb.String())
 	if err != nil {
-		return false
+		os.Exit(cmd.ProcessState.ExitCode())
 	}
 	return true
 }
@@ -71,24 +71,35 @@ func fix_c_compilation(cmdline []string) bool {
 func main() {
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
-	is_cpp := (basename == "clang++")
-	new_args := []string{"-w"}
-	new_args = append(args, new_args...)
+	isCPP := basename == "clang++"
+	newArgs := []string{"-w"}
+	newArgs = append(args, newArgs...)
 	var cmd *exec.Cmd
-	if is_cpp {
-		cmd = exec.Command("clang++", new_args...)
+	if isCPP {
+		cmd = exec.Command("clang++", newArgs...)
 	} else {
-		cmd = exec.Command("clang", new_args...)
+		cmd = exec.Command("clang", newArgs...)
 	}
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	err := cmd.Run()
-	if (err != nil) && !is_cpp {
-		if !fix_c_compilation(new_args) {
-			fmt.Println(outb.String())
-			fmt.Println(errb.String())
-			os.Exit(5)
-		}
+
+	if err == nil {
+		os.Exit(0)
+	}
+
+	if isCPP {
+		// Nothing else we can do. Just print the error and exit.
+		fmt.Println(outb.String())
+		fmt.Println(errb.String())
+		os.Exit(cmd.ProcessState.ExitCode())
+	}
+
+	if !TryFixCCompilation(newArgs) {
+		// If we get here, it means we weren't able to try using C++ at all, so print the original error.
+		fmt.Println(outb.String())
+		fmt.Println(errb.String())
+		os.Exit(5)
 	}
 }
