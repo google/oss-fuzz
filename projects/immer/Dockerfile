@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake libgc-dev
+RUN apt-get update && apt-get install -y cmake libgc-dev pkg-config
 # install Catch2 from sources, since Ubuntu 20.04 (currently the base for
 # this image) does not ship it
 RUN git clone -b v2.x --depth 1 https://github.com/catchorg/Catch2.git && \
