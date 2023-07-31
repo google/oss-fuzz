@@ -54,7 +54,9 @@ func TryFixCCompilation(cmdline []string) bool {
 	if newFile == "" {
 		return false
 	}
-	cmd := exec.Command("clang++", cmdline...)
+	newCmdline := []string{"-stdlib=libc++"}
+	newCmdline = append(cmdline, newCmdline...)
+	cmd := exec.Command("clang++", newCmdline...)
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
