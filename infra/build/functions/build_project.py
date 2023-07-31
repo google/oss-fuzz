@@ -358,7 +358,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Report the build failure if it happened.
           build_steps.append({
               'name': project.image,
-              'args': ['bash', '-c', f'test -f {BUILD_SUCCESS_MARKER}'],
+              'args': ['bash', '-c', f'cat {LOCAL_BUILD_LOG_PATH} && test -f {BUILD_SUCCESS_MARKER}'],
           })
 
         if project.run_tests:
