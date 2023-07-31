@@ -20,6 +20,7 @@
 
 /* POSIX */
 #include <unistd.h>
+#include <limits.h>
 
 /* Linux */
 #include <sys/ptrace.h>
@@ -49,6 +50,43 @@ std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
   }
 
   return memory;
+}
+
+std::string read_null_terminated(pid_t pid, unsigned long long address) {
+  std::string str;
+  while (1) {
+    long word = ptrace(PTRACE_PEEKDATA, pid, address, 0);
+    if (word == -1) {
+      return str;
+    }
+    address += sizeof(long);
+    const char *word_bytes = reinterpret_cast<const char*>(&word);
+    for (size_t i = 0; i < sizeof(long); i++) {
+      if (word_bytes[i] == 0) {
+        debug_log("read_null_terminated() read %s (%lu bytes)", str.c_str(), str.length());
+        return str;
+      }
+      str.push_back(word_bytes[i]);
+    }
+  }
+}
+
+std::vector<std::string> read_argv(pid_t pid, unsigned long long address) {
+  std::vector<std::string> argv;
+  for (size_t i = 0; _POSIX_ARG_MAX; i++) {
+    long p = ptrace(PTRACE_PEEKDATA, pid, address, 0);
+    debug_log("argv[%lu] @ 0x%llx = 0x%lx", i, address, p);
+    if (p == -1) {
+      break;
+    }
+    address += sizeof(long);
+    std::string arg = read_null_terminated(pid, p);
+    argv.push_back(arg);
+    if (p == 0) {
+      break;
+    }
+  }
+  return argv;
 }
 
 void report_bug(std::string bug_type, pid_t tid) {

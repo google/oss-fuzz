@@ -22,6 +22,26 @@
 #include <string>
 #include <vector>
 
+#define DEBUG_LOGS 0
+
+#if DEBUG_LOGS
+#define debug_log(...)            \
+  do {                            \
+    fprintf(stderr, __VA_ARGS__); \
+    fflush(stdout);               \
+    fputc('\n', stderr);          \
+  } while (0)
+#else
+#define debug_log(...)
+#endif
+
+#define fatal_log(...)            \
+  do {                            \
+    fprintf(stderr, __VA_ARGS__); \
+    fputc('\n', stderr);          \
+    exit(EXIT_FAILURE);           \
+  } while (0)
+
 // Structure to know which thread id triggered the bug.
 struct ThreadParent {
   // Parent thread ID, ie creator.
@@ -35,5 +55,9 @@ struct ThreadParent {
 
 std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
                                    size_t size);
+
+std::vector<std::string> read_argv(pid_t pid, unsigned long long address);
+
+std::string read_null_terminated(pid_t pid, unsigned long long address);
 
 void report_bug(std::string bug_type, pid_t tid);

@@ -43,31 +43,15 @@
 #include "inspect_utils.h"
 #include "inspect_dns.h"
 
-#define DEBUG_LOGS 0
-
-#if DEBUG_LOGS
-#define debug_log(...)            \
-  do {                            \
-    fprintf(stderr, __VA_ARGS__); \
-    fflush(stdout);               \
-    fputc('\n', stderr);          \
-  } while (0)
-#else
-#define debug_log(...)
-#endif
-
-#define fatal_log(...)            \
-  do {                            \
-    fprintf(stderr, __VA_ARGS__); \
-    fputc('\n', stderr);          \
-    exit(EXIT_FAILURE);           \
-  } while (0)
-
 // The magic string that we'll use to detect full control over the command
 // executed.
 const std::string kTripWire = "/tmp/tripwire";
 // Shell injection bug confirmed with /tmp/tripwire.
 const std::string kInjectionError = "Shell injection";
+// Argument injection bug confirmed with --tripwire.
+const std::string kArgumentInjectionError = "Argument injection";
+// The magic string we'll use to detect argument injection
+const std::string kArgumentTripWire = "--tripwire";
 // Shell corruption bug detected based on syntax error.
 const std::string kCorruptionError = "Shell corruption";
 // The magic string that we'll use to detect arbitrary file open
@@ -169,13 +153,23 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for the sign of shell injection.
-  std::string path = read_string(pid, regs.rdi, kTripWire.length());
+  std::string path = read_null_terminated(pid, regs.rdi);
   if (!path.length()) {
     return;
   }
   debug_log("inspecting");
   if (path == kTripWire) {
     report_bug(kInjectionError, pid);
+  }
+
+  // Inspect a PID's argv for signs of argument injection
+  for (auto i: read_argv(pid, regs.rsi)) {
+    if (i == "--") {
+      break;
+    }
+    else if (i.find(kArgumentTripWire) == 0) {
+      report_bug(kArgumentInjectionError, pid);
+    }
   }
 }
 
