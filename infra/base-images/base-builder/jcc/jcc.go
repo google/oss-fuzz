@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package jcc
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -66,6 +68,36 @@ func TryFixCCompilation(cmdline []string) bool {
 		os.Exit(cmd.ProcessState.ExitCode())
 	}
 	return true
+}
+
+func getHeaderDirs(string root) {
+	headerDirs := make(map[string]string)
+	walk := func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(path, ".h") {
+			headerDirs[filepath.Dir(path)] = ""
+		}
+		return nil
+	}
+	filepath.Walk(os.Args[1], walk)
+	i := 0
+	headerDirsArr := make([]int, len(headerDirs))
+	for dir := range headerDirs {
+		headerDirsArr[i] = dir
+		i++
+	}
+	return HeaderDirs
+}
+
+func ExtractMissingHeader(string compilerOutput) {
+	r := regexp.MustCompile(`fatal error: '(?P<header>[a-zA-z0-9\/\.]+)' file not found`)
+	header := r.FindStringSubmatch(compilerOutput)[0]
+	return header
 }
 
 func main() {

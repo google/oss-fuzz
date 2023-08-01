@@ -171,7 +171,7 @@ def run_experiment(project_name, target_name, args, output_path,
                                  credentials,
                                  'experiment',
                                  experiment=True,
-                                 extra_tags=[f'experiment-{experiment_name}'])
+                                 extra_tags=[f'experiment-{experiment_name}', f'experiment-{project_name}'])
 
 
 def main():
