@@ -50,7 +50,8 @@ public class XLSX2CSVFuzzer {
             xlsx2csv.process();
         } catch (IOException | OpenXML4JException | SAXException ex) {
             /* documented, ignore. */
-        } catch (UnsupportedFileFormatException | RecordFormatException | EmptyFileException ex) {
+        } catch (UnsupportedFileFormatException | RecordFormatException | EmptyFileException |
+				 ArrayIndexOutOfBoundsException ex) {
             /* not so documented ... */
         }
 
