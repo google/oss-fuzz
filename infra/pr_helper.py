@@ -265,8 +265,8 @@ class GithubHandler:
 
   def get_maintainers(self):
     """Get a list of internal members."""
-    if not self._maintainers:
-      print(f'not maintainers: {self._maintainers}')
+    if self._maintainers:
+      print(f'if maintainers: {self._maintainers}')
 
       return self._maintainers
 
