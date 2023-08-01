@@ -76,8 +76,9 @@ def main():
 
   # Bypasses PRs of the internal members.
   if github.is_author_internal_member():
-    save_env(None, None, True)
-    return
+    # save_env(None, None, True)
+    # return
+    print('debug, disable internal check')
 
   message = ''
   is_ready_for_merge = True
@@ -149,6 +150,7 @@ def main():
 
 class GithubHandler:
   """Github requests handler."""
+  maintainers = set()
 
   def __init__(self):
     self._pr_author = os.environ['PRAUTHOR']
@@ -252,24 +254,32 @@ class GithubHandler:
 
     all_contributors = []
     for login, verified in contributors.items():
+      if login in self.maintainers:
+        continue
       login_verify = login if verified else f'{login} (unverified)'
       all_contributors.append(login_verify)
 
     return all_contributors
 
-  def is_author_internal_member(self):
-    """Returns if the author is an internal member."""
+  def get_maintainers(self):
+    """Get a list of internal members."""
+    if not self.maintainers:
+      return self.maintainers
+
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
                             headers=self._headers)
     if not response.ok:
       return False
 
-    maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
-    for line in maintainers.split(os.linesep):
-      if self._pr_author == line.split(',')[2]:
-        return True
+    self.maintainers = base64.b64decode(
+        response.json()['content']).decode('UTF-8')
+    for line in self.maintainers.split(os.linesep):
+      self.maintainers.add(line.split(',')[2])
+    return self.maintainers
 
-    return False
+  def is_author_internal_member(self):
+    """Returns if the author is an internal member."""
+    return self._pr_author in self.get_maintainers()
 
   def has_author_modified_project(self, project_path):
     """Checks if the author has modified this project before."""
