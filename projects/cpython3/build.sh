@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Ignore memory leaks from python scripts invoked in the build
+# Ignore memory leaks from python scripts invoked in the build add comment
 export ASAN_OPTIONS="detect_leaks=0"
 export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 
