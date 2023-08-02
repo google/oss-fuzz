@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-go build jcc.go
-cp jcc clang
-cp jcc clang++
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang++
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip \
+      -o maven.zip && \
+      unzip maven.zip -d $SRC/maven && \
+      rm maven.zip
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN git clone --depth 1 https://github.com/snazy/ohc ohc
+COPY *.sh *.java $SRC/
+WORKDIR $SRC/ohc

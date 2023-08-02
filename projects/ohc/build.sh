@@ -14,23 +14,17 @@
 # limitations under the License.
 #
 ##########################################################################
-# Retrieve JDK-11
-wget https://download.java.net/openjdk/jdk11.0.0.1/ri/openjdk-11.0.0.1_linux-x64_bin.tar.gz -O openjdk-11.tar.gz
-tar -zxf openjdk-11.tar.gz
-rm -f openjdk-11.tar.gz
-cp -r jdk-11.0.0.1 $OUT/
-JAVA_HOME=$OUT/jdk-11.0.0.1
-PATH=$JAVA_HOME/bin:$PATH
+$MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
+    -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
+    -Denforcer.fail=false org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
 
-# Gradle build with gradle wrapper
-rm -rf $HOME/.gradle/caches/
-./gradlew clean build shadowJar -x test
-./gradlew --stop
+cp "ohc-core/target/ohc-core-$CURRENT_VERSION.jar" $OUT/ohc-core.jar
+cp "ohc-jmh/target/ohc-jmh-$CURRENT_VERSION.jar" $OUT/ohc-jmh.jar
+cp "ohc-benchmark/target/ohc-benchmark-$CURRENT_VERSION.jar" $OUT/ohc-benchmark.jar
 
-cp "./build/libs/$(basename ./build/tmp/jar/*.jar)" $OUT/graphql-java.jar
-cp $(find ~/.gradle/caches/modules-2/files-2.1/ -name "slf4j-api-2.0.7.jar") $OUT/slf4j-api.jar
-
-ALL_JARS="graphql-java.jar slf4j-api.jar"
+ALL_JARS="ohc-core.jar ohc-jmh.jar ohc-benchmark.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -43,11 +37,10 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename.class $OUT/
+  cp $SRC/$fuzzer_basename*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
-
   # LLVMFuzzerTestOneInput for fuzzer detection.
   this_dir=\$(dirname "\$0")
   if [[ "\$@" =~ (^| )-runs=[0-9]+($| ) ]]
@@ -56,7 +49,6 @@ do
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
-
   LD_LIBRARY_PATH="$JVM_LD_LIBRARY_PATH":\$this_dir \
     \$this_dir/jazzer_driver                        \
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \

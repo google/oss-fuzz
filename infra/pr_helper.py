@@ -158,6 +158,7 @@ class GithubHandler:
         'Authorization': f'Bearer {self._token}',
         'X-GitHub-Api-Version': '2022-11-28'
     }
+    self._maintainers = set()
     os.environ['GITHUB_AUTH_TOKEN'] = self._token
 
   def get_pr_author(self):
@@ -244,6 +245,8 @@ class GithubHandler:
 
       login = commit['author']['login']
       verified = commit['commit']['verification']['verified']
+      if login in self._maintainers:
+        continue
       if login not in contributors:
         contributors[login] = verified
       if verified:
@@ -257,19 +260,25 @@ class GithubHandler:
 
     return all_contributors
 
-  def is_author_internal_member(self):
-    """Returns if the author is an internal member."""
+  def get_maintainers(self):
+    """Get a list of internal members."""
+    if self._maintainers:
+      return self._maintainers
+
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
                             headers=self._headers)
     if not response.ok:
-      return False
+      return self._maintainers
 
-    maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
-    for line in maintainers.split(os.linesep):
-      if self._pr_author == line.split(',')[2]:
-        return True
+    maintainers_file = base64.b64decode(
+        response.json()['content']).decode('UTF-8')
+    for line in maintainers_file.split(os.linesep):
+      self._maintainers.add(line.split(',')[2])
+    return self._maintainers
 
-    return False
+  def is_author_internal_member(self):
+    """Returns if the author is an internal member."""
+    return self._pr_author in self.get_maintainers()
 
   def has_author_modified_project(self, project_path):
     """Checks if the author has modified this project before."""

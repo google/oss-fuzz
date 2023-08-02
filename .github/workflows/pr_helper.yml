@@ -1,7 +1,7 @@
 name: PR helper
 on:
   pull_request_target:
-    types: [opened, reopened]
+    types: [opened]
     branches:
       - master
     paths:
