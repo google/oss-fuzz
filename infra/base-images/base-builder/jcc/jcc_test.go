@@ -64,7 +64,7 @@ func TestCorrectMissingHeaders(t *testing.T) {
 }
 
 func TestGetHeaderCorrectedCmd(t *testing.T) {
-	compilerErr := `path/to/file.cpp:8:10: fatal error: 'missingheader.h' file not found
+	compilerErr := `testdata/cpp.cc:8:10: fatal error: 'missingheader.h' file not found
 
 	#include "missingheader.h"
 
@@ -73,8 +73,8 @@ func TestGetHeaderCorrectedCmd(t *testing.T) {
 	1 error generated.
 	`
 
-	cmd := [2]string{"-fsanitize=address", "path/to/file.cpp"}
-	expectedFixedCmd := [2]string{"-fanitize=address", "path/to/jcc-corrected-file.cpp"}
+	cmd := [3]string{"-fsanitize=address", "file.cpp", "path/to/cpp.cc"}
+	expectedFixedCmd := [3]string{"-fanitize=address", "file.cpp", "path/to/jcc-corrected-cpp.cc"}
 	fixedCmd, _, _ := GetHeaderCorrectedCmd(cmd[:], compilerErr)
 	if strings.Compare(fixedCmd[1], expectedFixedCmd[1]) != 0 {
 		t.Errorf("Expected %s, got: %s", expectedFixedCmd, fixedCmd)

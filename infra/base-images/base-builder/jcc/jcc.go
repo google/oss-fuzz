@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package jcc
+package main
 
 import (
 	"bytes"
@@ -72,61 +72,12 @@ func TryFixCCompilation(cmdline []string) bool {
 	return true
 }
 
-// func getHeaderDirs() ([]string, string) {
-// 	headerDirs := make(map[string]string)
-// 	walk := func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		if info.IsDir() {
-// 			return nil, nil
-// 		}
-// 		if strings.HasSuffix(path, ".h") {
-// 			headerDirs[filepath.Dir(path)] = ""
-// 		}
-// 		return nil, nl
-// 	}
-// 	filepath.Walk(os.Args[1], walk)
-// 	i := 0
-// 	headerDirsArr := make([]string, len(headerDirs))
-// 	for dir := range headerDirs {
-// 		headerDirsArr[i] = dir
-// 		i++
-// 	}
-// 	return headerDirsArr
-// }
-
-// func FindHeaderDir(header string) string {
-// 	walk := func(path string, info fs.FileInfo, err error) error {
-// 		if err != nil {
-// 			return nil
-// 		}
-// 		if info.IsDir() {
-// 			return nil
-// 		}
-// 		if strings.Compare(path, ".h") {
-// 			headerDirs[filepath.Dir(path)] = ""
-// 		}
-// 		return nil
-// 	}
-// 	filepath.Walk(os.Args[1], walk)
-// 	i := 0
-// 	headerDirsArr := make([]string, len(headerDirs))
-// 	for dir := range headerDirs {
-// 		headerDirsArr[i] = dir
-// 		i++
-// 	}
-// 	return headerDirsArr
-// }
-
 func ExtractMissingHeader(compilerOutput string) (string, bool) {
 	r := regexp.MustCompile(`fatal error: ['|<](?P<header>[a-zA-z0-9\/\.]+)['|>] file not found`)
-	fmt.Println("co", compilerOutput)
 	matches := r.FindStringSubmatch(compilerOutput)
 	if len(matches) == 0 {
 		return "", false
 	}
-	fmt.Println("matches", matches[1])
 	return matches[1], true
 }
 
@@ -136,7 +87,6 @@ func ReplaceMissingHeaderInFile(srcFilename, curHeader, replacementHeader string
 		return err
 	}
 	srcBytes, err := ioutil.ReadAll(srcFile)
-	fmt.Println("READ")
 	if err != nil {
 		return err
 	}
@@ -144,28 +94,16 @@ func ReplaceMissingHeaderInFile(srcFilename, curHeader, replacementHeader string
 	newSrc := ReplaceMissingHeader(src, curHeader, replacementHeader)
 	b := []byte(newSrc)
 	err = ioutil.WriteFile(srcFilename, b, 0644)
-	fmt.Println("Write")
 	if err != nil {
-		fmt.Println("Write err")
 		return err
 	}
-	fmt.Println("Write succ", srcFilename, "newsrc", replacementHeader, newSrc)
 	return nil
 }
 func ReplaceMissingHeader(src, curHeader, replacementHeader string) string {
 	re := regexp.MustCompile(`#include ["|<]` + curHeader + `["|>]\n`)
 	replacement := "#include \"" + replacementHeader + "\"\n"
-	fmt.Println("re replacement", re, replacement, "replacementHeader", replacementHeader)
 	return re.ReplaceAllString(src, replacement)
 }
-
-// func MaybeCorrectMissingHeaders(string output, string bin, string []cmd) (bool, int) {
-// 	_, isMissing := ExtractMissingHeader(output)
-// 	if !isMissing {
-// 		return false, 0
-// 	}
-// 	return CorrectMissingHeaders(cmd, bin)
-// }
 
 func GetHeaderCorrectedFilename(compilerErr string) (string, string, bool) {
 	re := regexp.MustCompile(`(?P<buggy>[a-z\/\-\_0-9A-z\.]+):.* fatal error: .* file not found`)
@@ -202,20 +140,16 @@ func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, 
 	if found {
 		return newCmd, newFilename, nil
 	}
-	fmt.Println(cmd[1])
-	fmt.Printf("Couldn't find %s in %s\n", oldFilename, newCmd[0])
 	return cmd, "", errors.New("Couldn't find file")
 }
 
 func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	_, _, stderr := compile(bin, cmd)
 	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
-	fmt.Println("correctedFilename", correctedFilename)
 	if err != nil {
 		return false, err
 	}
 	for i := 0; i < MAX_MISSING_HEADER_FIXES; i++ {
-		fmt.Println("Tryign")
 		fixed, hasBrokenHeaders := TryCompileAndFixHeadersOnce(bin, cmd, correctedFilename)
 		if fixed {
 			return true, nil
@@ -247,12 +181,10 @@ func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (boo
 	}
 
 	newHeaderPath, found := FindMissingHeader(missingHeader)
-	fmt.Println("newHeaderPath", newHeaderPath, missingHeader)
 	if !found {
-		fmt.Printf("Cannot find header %s\n", missingHeader)
+                return false, true
 	}
 	ReplaceMissingHeaderInFile(filename, missingHeader, newHeaderPath)
-	fmt.Println("not missing")
 	return false, true
 }
 
@@ -283,7 +215,6 @@ func FindMissingHeader(missingHeader string) (string, bool) {
 	if headerLocation == "" {
 		return "", false
 	}
-	fmt.Println("headerLocation", headerLocation)
 	return headerLocation, true
 }
 
@@ -315,7 +246,7 @@ func main() {
 
 	if isCPP || !TryFixCCompilation(newArgs) {
 		// Nothing else we can do. Just print the error and exit.
-		fmt.Println(out)
+                		fmt.Println(out)
 		fmt.Println(err)
 		os.Exit(retcode)
 	}
