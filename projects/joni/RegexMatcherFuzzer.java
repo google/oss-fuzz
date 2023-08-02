@@ -17,6 +17,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.joni.Matcher;
 import org.joni.Regex;
 import org.joni.Syntax;
+import org.joni.exception.InternalException;
 import org.joni.exception.SyntaxException;
 
 // Generated with https://github.com/ossf/fuzz-introspector/tree/main/tools/auto-fuzz
@@ -31,7 +32,7 @@ public class RegexMatcherFuzzer {
       Integer int2 = data.consumeInt();
       Regex obj = new Regex(data.consumeString(data.remainingBytes() / 2));
       obj.matcher(data.consumeRemainingAsBytes(), int1, int2);
-    } catch (SyntaxException e) {
+    } catch (SyntaxException | InternalException e) {
     }
   }
 }
