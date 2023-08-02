@@ -76,9 +76,8 @@ def main():
 
   # Bypasses PRs of the internal members.
   if github.is_author_internal_member():
-    # save_env(None, None, True)
-    # return
-    print('debug, disable internal check')
+    save_env(None, None, True)
+    return
 
   message = ''
   is_ready_for_merge = True
@@ -150,7 +149,6 @@ def main():
 
 class GithubHandler:
   """Github requests handler."""
-  maintainers = set()
 
   def __init__(self):
     self._pr_author = os.environ['PRAUTHOR']
@@ -160,6 +158,7 @@ class GithubHandler:
         'Authorization': f'Bearer {self._token}',
         'X-GitHub-Api-Version': '2022-11-28'
     }
+    self._maintainers = set()
     os.environ['GITHUB_AUTH_TOKEN'] = self._token
 
   def get_pr_author(self):
@@ -246,6 +245,8 @@ class GithubHandler:
 
       login = commit['author']['login']
       verified = commit['commit']['verification']['verified']
+      if login in self._maintainers:
+        continue
       if login not in contributors:
         contributors[login] = verified
       if verified:
@@ -254,8 +255,6 @@ class GithubHandler:
 
     all_contributors = []
     for login, verified in contributors.items():
-      if login in self.maintainers:
-        continue
       login_verify = login if verified else f'{login} (unverified)'
       all_contributors.append(login_verify)
 
@@ -263,19 +262,19 @@ class GithubHandler:
 
   def get_maintainers(self):
     """Get a list of internal members."""
-    if not self.maintainers:
-      return self.maintainers
+    if self._maintainers:
+      return self._maintainers
 
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
                             headers=self._headers)
     if not response.ok:
       return False
 
-    self.maintainers = base64.b64decode(
+    maintainers_file = base64.b64decode(
         response.json()['content']).decode('UTF-8')
-    for line in self.maintainers.split(os.linesep):
-      self.maintainers.add(line.split(',')[2])
-    return self.maintainers
+    for line in maintainers_file.split(os.linesep):
+      self._maintainers.add(line.split(',')[2])
+    return self._maintainers
 
   def is_author_internal_member(self):
     """Returns if the author is an internal member."""
