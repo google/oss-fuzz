@@ -70,7 +70,7 @@ func TryFixCCompilation(cmdline []string) bool {
 	return true
 }
 
-func getHeaderDirs(string root) {
+func getHeaderDirs() []string {
 	headerDirs := make(map[string]string)
 	walk := func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -86,17 +86,17 @@ func getHeaderDirs(string root) {
 	}
 	filepath.Walk(os.Args[1], walk)
 	i := 0
-	headerDirsArr := make([]int, len(headerDirs))
+	headerDirsArr := make([]string, len(headerDirs))
 	for dir := range headerDirs {
 		headerDirsArr[i] = dir
 		i++
 	}
-	return HeaderDirs
+	return headerDirsArr
 }
 
-func ExtractMissingHeader(string compilerOutput) {
+func ExtractMissingHeader(compilerOutput string) string {
 	r := regexp.MustCompile(`fatal error: '(?P<header>[a-zA-z0-9\/\.]+)' file not found`)
-	header := r.FindStringSubmatch(compilerOutput)[0]
+	header := r.FindStringSubmatch(compilerOutput)[1]
 	return header
 }
 
