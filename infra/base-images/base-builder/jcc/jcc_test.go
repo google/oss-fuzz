@@ -1,6 +1,8 @@
 package jcc
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 )
@@ -15,8 +17,107 @@ func TestExtractMissingHeader(t *testing.T) {
 	1 error generated.
 	`
 
-	res := ExtractMissingHeader(missingHeaderMessage)
+	res, _ := ExtractMissingHeader(missingHeaderMessage)
 	expected := "missingheader.h"
+	if strings.Compare(res, expected) != 0 {
+		t.Errorf("Got: %s. Expected: %s.", res, expected)
+	}
+}
+
+func TestGetHeaderCorrectedFilename(t *testing.T) {
+	missingHeaderMessage := `path/to/file.cpp:8:10: fatal error: 'missingheader.h' file not found
+
+	#include "missingheader.h"
+
+		^~~~~~~~~~~~
+
+	1 error generated.
+	`
+	_, correctedFilename, _ := GetHeaderCorrectedFilename(missingHeaderMessage)
+	expected := "path/to/jcc-corrected-file.cpp"
+	if strings.Compare(correctedFilename, expected) != 0 {
+		t.Errorf("Got: %s. Expected: %s.", correctedFilename, expected)
+	}
+}
+
+func TestFindMissingHeader(t *testing.T) {
+	pwd, _ := os.Getwd()
+	t.Setenv("JCC_MISSING_HEADER_SEARCH_PATH", pwd)
+
+	location, _ := FindMissingHeader("header.h")
+	expected := pwd + "/testdata/path/to/header.h"
+	if strings.Compare(location, expected) != 0 {
+		t.Errorf("Got: %s. Expected: %s.", location, expected)
+	}
+}
+
+func TestCorrectMissingHeaders(t *testing.T) {
+	pwd, _ := os.Getwd()
+	t.Setenv("JCC_MISSING_HEADER_SEARCH_PATH", pwd)
+	cfile := pwd + "/testdata/cfile.c"
+	cmd := [4]string{"-fsanitize=address", cfile, "-o", "/tmp/blah"}
+	res, err := CorrectMissingHeaders("clang", cmd[:])
+	if !res {
+		fmt.Println(err)
+		t.Errorf("Expected successful compilation")
+	}
+}
+
+func TestGetHeaderCorrectedCmd(t *testing.T) {
+	compilerErr := `path/to/file.cpp:8:10: fatal error: 'missingheader.h' file not found
+
+	#include "missingheader.h"
+
+		^~~~~~~~~~~~
+
+	1 error generated.
+	`
+
+	cmd := [2]string{"-fsanitize=address", "path/to/file.cpp"}
+	expectedFixedCmd := [2]string{"-fanitize=address", "path/to/jcc-corrected-file.cpp"}
+	fixedCmd, _, _ := GetHeaderCorrectedCmd(cmd[:], compilerErr)
+	if strings.Compare(fixedCmd[1], expectedFixedCmd[1]) != 0 {
+		t.Errorf("Expected %s, got: %s", expectedFixedCmd, fixedCmd)
+	}
+}
+
+func TestExtractMissingHeaderNonHeaderFailure(t *testing.T) {
+	missingHeaderMessage := `clang: error: no such file or directory: 'x'
+clang: error: no input files`
+
+	header, res := ExtractMissingHeader(missingHeaderMessage)
+	if res {
+		t.Errorf("Expected no match, got: %s", header)
+	}
+}
+
+func TestReplaceMissingHeader(t *testing.T) {
+	cfile := `// Copyright 2035 Robots
+#include <stddef.h>
+
+#include <cstdint>
+
+// Some libraries like OpenSSL will use brackets for their own headers.
+#include <missingheader.h>
+
+int LLVMFuzzerTestOneInput(uint8_t* data,  size_t size) {
+  return 0;
+}
+`
+
+	res := ReplaceMissingHeader(cfile, "missingheader.h", "path/to/includes/missingheader.h")
+	expected := `// Copyright 2035 Robots
+#include <stddef.h>
+
+#include <cstdint>
+
+// Some libraries like OpenSSL will use brackets for their own headers.
+#include "path/to/includes/missingheader.h"
+
+int LLVMFuzzerTestOneInput(uint8_t* data,  size_t size) {
+  return 0;
+}
+`
 	if strings.Compare(res, expected) != 0 {
 		t.Errorf("Got: %s. Expected: %s.", res, expected)
 	}
