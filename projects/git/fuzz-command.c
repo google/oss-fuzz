@@ -10,7 +10,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "builtin.h"
+#include "hex.h"
 #include "repository.h"
+#include "strbuf.h"
 #include "fuzz-cmd-base.h"
 
 int cmd_add(int argc, const char **argv, const char *prefix);
