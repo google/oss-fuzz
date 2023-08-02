@@ -267,7 +267,6 @@ class GithubHandler:
     """Get a list of internal members."""
     if self._maintainers:
       print(f'if maintainers: {self._maintainers}')
-
       return self._maintainers
 
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
@@ -275,9 +274,9 @@ class GithubHandler:
     if not response.ok:
       return False
 
-    self._maintainers = base64.b64decode(
+    maintainers_file = base64.b64decode(
         response.json()['content']).decode('UTF-8')
-    for line in self._maintainers.split(os.linesep):
+    for line in maintainers_file.split(os.linesep):
       self._maintainers.add(line.split(',')[2])
     print(f'maintainers: {self._maintainers}')
     return self._maintainers
