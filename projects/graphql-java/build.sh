@@ -28,8 +28,9 @@ rm -rf $HOME/.gradle/caches/
 ./gradlew --stop
 
 cp "./build/libs/$(basename ./build/tmp/jar/*.jar)" $OUT/graphql-java.jar
+cp $(find ~/.gradle/caches/modules-2/files-2.1/ -name "slf4j-api-2.0.7.jar") $OUT/slf4j-api.jar
 
-ALL_JARS="graphql-java.jar"
+ALL_JARS="graphql-java.jar slf4j-api.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
