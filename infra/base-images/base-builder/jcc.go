@@ -18,12 +18,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+var MAX_MISSING_HEADER_FIXES = 10
 
 func CopyFile(src string, dst string) {
 	contents, err := ioutil.ReadFile(src)
@@ -54,20 +58,164 @@ func TryFixCCompilation(cmdline []string) bool {
 	if newFile == "" {
 		return false
 	}
-	newCmdline := []string{"-stdlib=libc++"}
-	newCmdline = append(cmdline, newCmdline...)
-	cmd := exec.Command("clang++", newCmdline...)
+	retcode, out, err := compile("clang++", cmdline)
+	fmt.Println(retcode)
+	fmt.Println(out)
+	fmt.Println(err)
+	if retcode == 0 {
+		return true
+	}
+	corrected, _ := CorrectMissingHeaders("clang++", cmdline)
+	if !corrected {
+		os.Exit(retcode)
+	}
+	return true
+}
+
+func ExtractMissingHeader(compilerOutput string) (string, bool) {
+	r := regexp.MustCompile(`fatal error: ['|<](?P<header>[a-zA-z0-9\/\.]+)['|>] file not found`)
+	matches := r.FindStringSubmatch(compilerOutput)
+	if len(matches) == 0 {
+		return "", false
+	}
+	return matches[1], true
+}
+
+func ReplaceMissingHeaderInFile(srcFilename, curHeader, replacementHeader string) error {
+	srcFile, err := os.Open(srcFilename)
+	if err != nil {
+		return err
+	}
+	srcBytes, err := ioutil.ReadAll(srcFile)
+	if err != nil {
+		return err
+	}
+	src := string(srcBytes)
+	newSrc := ReplaceMissingHeader(src, curHeader, replacementHeader)
+	b := []byte(newSrc)
+	err = ioutil.WriteFile(srcFilename, b, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func ReplaceMissingHeader(src, curHeader, replacementHeader string) string {
+	re := regexp.MustCompile(`#include ["|<]` + curHeader + `["|>]\n`)
+	replacement := "#include \"" + replacementHeader + "\"\n"
+	return re.ReplaceAllString(src, replacement)
+}
+
+func GetHeaderCorrectedFilename(compilerErr string) (string, string, bool) {
+	re := regexp.MustCompile(`(?P<buggy>[a-z\/\-\_0-9A-z\.]+):.* fatal error: .* file not found`)
+	matches := re.FindStringSubmatch(compilerErr)
+	if len(matches) < 2 {
+		return "", "", false
+	}
+	oldFilename := matches[1]
+	base := filepath.Base(oldFilename)
+	root := filepath.Dir(oldFilename)
+	newFilename := root + "/jcc-corrected-" + base
+	return oldFilename, newFilename, true
+}
+
+func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, error) {
+	oldFilename, newFilename, success := GetHeaderCorrectedFilename(compilerErr)
+	if !success {
+		return cmd, "", errors.New("Couldn't find buggy file")
+	}
+	// Make new cmd.
+	newCmd := make([]string, len(cmd))
+	for i, part := range cmd {
+		newCmd[i] = part
+	}
+	found := false
+	for i, filename := range newCmd {
+		if filename == oldFilename {
+			newCmd[i] = newFilename
+			found = true
+			break
+		}
+	}
+	CopyFile(oldFilename, newFilename)
+	if found {
+		return newCmd, newFilename, nil
+	}
+	return cmd, "", errors.New("Couldn't find file")
+}
+
+func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
+	_, _, stderr := compile(bin, cmd)
+	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
+	if err != nil {
+		return false, err
+	}
+	for i := 0; i < MAX_MISSING_HEADER_FIXES; i++ {
+		fixed, hasBrokenHeaders := TryCompileAndFixHeadersOnce(bin, cmd, correctedFilename)
+		if fixed {
+			return true, nil
+		}
+		if !hasBrokenHeaders {
+			return false, nil
+		}
+	}
+	return false, nil
+}
+
+func compile(bin string, args []string) (int, string, string) {
+	cmd := exec.Command(bin, args...)
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
-	fmt.Println(cmd)
-	err := cmd.Run()
-	fmt.Println(outb.String())
-	fmt.Println(errb.String())
-	if err != nil {
-		os.Exit(cmd.ProcessState.ExitCode())
+	cmd.Run()
+	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
+}
+
+func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (bool, bool) {
+	retcode, _, err := compile(bin, cmd)
+	if retcode == 0 {
+		return true, false
 	}
-	return true
+	missingHeader, isMissing := ExtractMissingHeader(err)
+	if !isMissing {
+		return false, false
+	}
+
+	newHeaderPath, found := FindMissingHeader(missingHeader)
+	if !found {
+                return false, true
+	}
+	ReplaceMissingHeaderInFile(filename, missingHeader, newHeaderPath)
+	return false, true
+}
+
+func FindMissingHeader(missingHeader string) (string, bool) {
+	envVar := "JCC_MISSING_HEADER_SEARCH_PATH"
+	var searchPath string
+	searchPath, exists := os.LookupEnv(envVar)
+	if !exists {
+		searchPath = "/src"
+	}
+	searchPath, _ = filepath.Abs(searchPath)
+	var headerLocation string
+	missingHeader = "/" + missingHeader
+	find := func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(path, missingHeader) {
+			headerLocation = path
+			return nil
+		}
+		return nil
+	}
+	filepath.WalkDir(searchPath, find)
+	if headerLocation == "" {
+		return "", false
+	}
+	return headerLocation, true
 }
 
 func main() {
@@ -76,25 +224,30 @@ func main() {
 	isCPP := basename == "clang++"
 	newArgs := []string{"-w"}
 	newArgs = append(args, newArgs...)
-	var cmd *exec.Cmd
+	var retcode int
+	var out string
+	var err string
+	var bin string
 	if isCPP {
-		cmd = exec.Command("clang++", newArgs...)
+		bin = "clang++"
+		retcode, out, err = compile(bin, newArgs)
 	} else {
-		cmd = exec.Command("clang", newArgs...)
+		bin = "clang"
+		retcode, out, err = compile(bin, newArgs)
 	}
-	var outb, errb bytes.Buffer
-	cmd.Stdout = &outb
-	cmd.Stderr = &errb
-	err := cmd.Run()
+	if retcode == 0 {
+		os.Exit(0)
+	}
 
-	if err == nil {
+	headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
+	if headersFixed {
 		os.Exit(0)
 	}
 
 	if isCPP || !TryFixCCompilation(newArgs) {
 		// Nothing else we can do. Just print the error and exit.
-		fmt.Println(outb.String())
-		fmt.Println(errb.String())
-		os.Exit(cmd.ProcessState.ExitCode())
+                		fmt.Println(out)
+		fmt.Println(err)
+		os.Exit(retcode)
 	}
 }

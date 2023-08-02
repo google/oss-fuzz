@@ -58,6 +58,10 @@ func TryFixCCompilation(cmdline []string) bool {
 	if newFile == "" {
 		return false
 	}
+       newCmdline := []string{"-stdlib=libc++"}
+       newCmdline = append(cmdline, newCmdline...)
+       cmd := exec.Command("clang++", newCmdline...)
+
 	retcode, out, err := compile("clang++", cmdline)
 	fmt.Println(retcode)
 	fmt.Println(out)
@@ -246,7 +250,7 @@ func main() {
 
 	if isCPP || !TryFixCCompilation(newArgs) {
 		// Nothing else we can do. Just print the error and exit.
-                		fmt.Println(out)
+        	fmt.Println(out)
 		fmt.Println(err)
 		os.Exit(retcode)
 	}
