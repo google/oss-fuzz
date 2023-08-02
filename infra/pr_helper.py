@@ -246,9 +246,7 @@ class GithubHandler:
 
       login = commit['author']['login']
       verified = commit['commit']['verification']['verified']
-      print(f'login: {login} maintainers: {self._maintainers}')
       if login in self._maintainers:
-        print(f'filter out {login}')
         continue
       if login not in contributors:
         contributors[login] = verified
@@ -266,7 +264,6 @@ class GithubHandler:
   def get_maintainers(self):
     """Get a list of internal members."""
     if self._maintainers:
-      print(f'if maintainers: {self._maintainers}')
       return self._maintainers
 
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
@@ -278,7 +275,6 @@ class GithubHandler:
         response.json()['content']).decode('UTF-8')
     for line in maintainers_file.split(os.linesep):
       self._maintainers.add(line.split(',')[2])
-    print(f'maintainers: {self._maintainers}')
     return self._maintainers
 
   def is_author_internal_member(self):
