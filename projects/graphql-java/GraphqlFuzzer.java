@@ -40,7 +40,7 @@ public class GraphqlFuzzer {
       }
 
       GraphQL.newGraphQL(graphQLSchema).build().execute(data.consumeRemainingAsString());
-    } catch (GraphQLException e) {
+    } catch (GraphQLException | ClassCastException e) {
       // Known exception
     }
   }
