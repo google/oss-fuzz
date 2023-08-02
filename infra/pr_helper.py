@@ -268,7 +268,7 @@ class GithubHandler:
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
                             headers=self._headers)
     if not response.ok:
-      return False
+      return self._maintainers
 
     maintainers_file = base64.b64decode(
         response.json()['content']).decode('UTF-8')
