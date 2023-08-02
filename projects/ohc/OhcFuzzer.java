@@ -108,7 +108,7 @@ public class OhcFuzzer {
       wbc.close();
       ohCache.close();
     } catch (IllegalArgumentException | UnsupportedOperationException | IOException
-        | InterruptedException | ExecutionException e) {
+        | InterruptedException | ExecutionException | IllegalStateException e) {
       // Known exception
     }
   }
