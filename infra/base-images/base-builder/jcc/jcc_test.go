@@ -1,4 +1,4 @@
-package jcc
+package main
 
 import (
 	"fmt"

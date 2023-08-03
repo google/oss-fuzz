@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-var MAX_MISSING_HEADER_FIXES = 10
+var MaxMissingHeaderFiles = 10
 
 func CopyFile(src string, dst string) {
 	contents, err := ioutil.ReadFile(src)
@@ -60,7 +60,6 @@ func TryFixCCompilation(cmdline []string) bool {
 	}
        newCmdline := []string{"-stdlib=libc++"}
        newCmdline = append(cmdline, newCmdline...)
-       cmd := exec.Command("clang++", newCmdline...)
 
 	retcode, out, err := compile("clang++", cmdline)
 	fmt.Println(retcode)
@@ -153,7 +152,7 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	for i := 0; i < MAX_MISSING_HEADER_FIXES; i++ {
+	for i := 0; i < MaxMissingHeaderFiles; i++ {
 		fixed, hasBrokenHeaders := TryCompileAndFixHeadersOnce(bin, cmd, correctedFilename)
 		if fixed {
 			return true, nil
@@ -174,18 +173,24 @@ func compile(bin string, args []string) (int, string, string) {
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
 
-func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (bool, bool) {
+func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed , hasBrokenHeaders bool) {
 	retcode, _, err := compile(bin, cmd)
 	if retcode == 0 {
-		return true, false
+                fixed = true
+                hasBrokenHeaders = false
+		return
 	}
 	missingHeader, isMissing := ExtractMissingHeader(err)
 	if !isMissing {
-		return false, false
+                fixed = false
+                hasBrokenHeaders = false
+		return
 	}
 
 	newHeaderPath, found := FindMissingHeader(missingHeader)
 	if !found {
+                fixed = false
+                hasBrokenHeaders = true
                 return false, true
 	}
 	ReplaceMissingHeaderInFile(filename, missingHeader, newHeaderPath)
