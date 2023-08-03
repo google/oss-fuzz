@@ -22,15 +22,28 @@ cp -r jdk-11.0.0.1 $OUT/
 JAVA_HOME=$OUT/jdk-11.0.0.1
 PATH=$JAVA_HOME/bin:$PATH
 
+# Add task for copy dependency jars
+echo "
+task copyToLib(type: Copy) {
+    into \"\${buildDir}/dependencies\"
+    from configurations.runtimeClasspath
+}" >> ./build.gradle
+
 # Gradle build with gradle wrapper
 rm -rf $HOME/.gradle/caches/
-./gradlew clean build shadowJar -x test
+./gradlew clean build shadowJar copyToLib -x test -x javadoc -x sources
 ./gradlew --stop
 
 cp "./build/libs/$(basename ./build/tmp/jar/*.jar)" $OUT/graphql-java.jar
-cp $(find ~/.gradle/caches/modules-2/files-2.1/ -name "slf4j-api-2.0.7.jar") $OUT/slf4j-api.jar
 
-ALL_JARS="graphql-java.jar slf4j-api.jar"
+ALL_JARS="graphql-java.jar"
+
+# Copy dependency jars
+for JARFILE in $(ls ./build/dependencies/*.jar)
+do
+  cp $JARFILE $OUT/
+  ALL_JARS=$ALL_JARS" $(basename $JARFILE)"
+done
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
