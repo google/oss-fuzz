@@ -18,6 +18,7 @@ import org.joni.Regex;
 import org.joni.Syntax;
 import org.joni.UnsetAddrList;
 import org.joni.exception.SyntaxException;
+import org.jcodings.exception.CharacterPropertyException;
 
 // Generated with https://github.com/ossf/fuzz-introspector/tree/main/tools/auto-fuzz
 // Minor modifications to beautify code and ensure exception is caught.
@@ -29,7 +30,7 @@ public class AddrListFixFuzzer {
     UnsetAddrList obj = new UnsetAddrList(data.consumeInt(0, 1000));
     try {
       obj.fix(new Regex(data.consumeRemainingAsString()));
-    } catch (SyntaxException e) {
+    } catch (SyntaxException | CharacterPropertyException e) {
     }
   }
 }

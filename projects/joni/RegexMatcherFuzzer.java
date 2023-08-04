@@ -32,7 +32,7 @@ public class RegexMatcherFuzzer {
       Integer int2 = data.consumeInt();
       Regex obj = new Regex(data.consumeString(data.remainingBytes() / 2));
       obj.matcher(data.consumeRemainingAsBytes(), int1, int2);
-    } catch (SyntaxException | InternalException e) {
+    } catch (SyntaxException | InternalException | IllegalArgumentException e) {
     }
   }
 }
