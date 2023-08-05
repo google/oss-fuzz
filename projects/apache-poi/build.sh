@@ -40,8 +40,29 @@ pushd "/tmp"
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
+	# build and publish current binaries
 	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
+
+	# determine current version-tag
 	CURRENT_VERSION=$(./gradlew properties ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
+
+	# prepare some seed-corpus archives based on the test-data of Apache POI
+	# we cannot do this automatically as there is not a 1:1 match of fuzz targets and formats
+	zip -r $OUT/POIFuzzer_seed_corpus.zip test-data
+	zip -jr $OUT/POIHDGFFuzzer_seed_corpus.zip test-data/diagram/*.vsd
+	zip -jr $OUT/POIHMEFFuzzer_seed_corpus.zip test-data/hmef/*
+	zip -jr $OUT/POIHPBFFuzzer_seed_corpus.zip test-data/publisher/*
+	zip -jr $OUT/POIHPSFFuzzer_seed_corpus.zip test-data/hpsf/*
+	zip -jr $OUT/POIHSLFFuzzer_seed_corpus.zip test-data/slideshow/*.ppt
+	zip -jr $OUT/POIHSMFFuzzer_seed_corpus.zip test-data/hsmf/*
+	zip -jr $OUT/POIHSSFFuzzer_seed_corpus.zip test-data/spreadsheet/*.xls
+	zip -jr $OUT/POIHWPFFuzzer_seed_corpus.zip test-data/document/*.doc test-data/document/*.DOC
+	zip -jr $OUT/POIOldExcelFuzzer_seed_corpus.zip test-data/spreadsheet/*.xls test-data/spreadsheet/*.bin
+	zip -jr $OUT/POIVisioFuzzer_seed_corpus.zip test-data/diagram/*
+	zip -jr $OUT/POIXSLFFuzzer_seed_corpus.zip test-data/slideshow/* test-data/integration/*.pptx
+	zip -jr $OUT/POIXSSFFuzzer_seed_corpus.zip test-data/spreadsheet/* test-data/integration/*.xslx
+	zip -jr $OUT/POIXWPFFuzzer_seed_corpus.zip test-data/document/* test-data/integration/*.docx
+	zip -jr $OUT/XLSX2CSVFuzzer_seed_corpus.zip test-data/spreadsheet/*
 popd
 
 pushd "${SRC}"
