@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 # Ensure we work from right python version
-RUN apt-get install -y python3.9 python3.9-dev && \
+RUN apt-get install -y pkg-config python3.9 python3.9-dev libopenblas-dev && \
     ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
     apt-get install -y python3-pip && \
     python3 -m pip install cython "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2"
