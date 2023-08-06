@@ -15,7 +15,8 @@
 #
 ################################################################################
 cd pyyaml
-pip3 install .
+echo 'Cython < 3.0' > /tmp/constraint.txt
+PIP_CONSTRAINT=/tmp/constraint.txt pip3 install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
