@@ -18,7 +18,7 @@ echo -e "OPENDAL_MEMORY_TEST=on\nOPENDAL_FS_TEST=on\nOPENDAL_FS_ROOT=/tmp" > $SR
 
 # build fuzz targets
 cd $SRC/opendal/core
-cargo fuzz build -O --debug-assertions
+cargo +nightly fuzz build -O --debug-assertions
 
 # copy fuzz targets to $OUT
 targets=(
