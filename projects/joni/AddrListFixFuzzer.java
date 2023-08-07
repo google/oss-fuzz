@@ -17,6 +17,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.joni.Regex;
 import org.joni.Syntax;
 import org.joni.UnsetAddrList;
+import org.joni.exception.InternalException;
 import org.joni.exception.SyntaxException;
 
 // Generated with https://github.com/ossf/fuzz-introspector/tree/main/tools/auto-fuzz
@@ -29,7 +30,7 @@ public class AddrListFixFuzzer {
     UnsetAddrList obj = new UnsetAddrList(data.consumeInt(0, 1000));
     try {
       obj.fix(new Regex(data.consumeRemainingAsString()));
-    } catch (SyntaxException e) {
+    } catch (SyntaxException | InternalException e) {
     }
   }
 }
