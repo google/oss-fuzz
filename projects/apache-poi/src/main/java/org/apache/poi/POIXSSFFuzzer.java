@@ -36,6 +36,13 @@ public class POIXSSFFuzzer {
 			try (SXSSFWorkbook swb = new SXSSFWorkbook(wb)) {
 				swb.write(NullOutputStream.INSTANCE);
 			}
+		} catch (NoClassDefFoundError e) {
+			// only allow one missing class related to Font-handling
+			// we cannot install JDK font packages in oss-fuzz images currently
+			// see https://github.com/google/oss-fuzz/issues/7380
+			if (!e.getMessage().contains("java.awt.Font")) {
+				throw e;
+			}
 		} catch (IOException | POIXMLException | RecordFormatException | IllegalStateException |
 				 OpenXML4JRuntimeException | IllegalArgumentException | IndexOutOfBoundsException e) {
 			// expected here

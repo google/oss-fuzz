@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install pycryptodome
+RUN git clone https://github.com/py-pdf/pypdf.git pypdf
+WORKDIR $SRC/
+COPY *.sh *.py $SRC/
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint python3
-RUN git clone --depth 1 https://github.com/p11-glue/p11-kit.git p11-kit
-WORKDIR p11-kit
-COPY build.sh $SRC/

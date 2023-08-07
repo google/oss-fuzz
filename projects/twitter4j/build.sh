@@ -14,36 +14,14 @@
 # limitations under the License.
 #
 ##########################################################################
-# Retrieve JDK-11
-wget https://download.java.net/openjdk/jdk11.0.0.1/ri/openjdk-11.0.0.1_linux-x64_bin.tar.gz -O openjdk-11.tar.gz
-tar -zxf openjdk-11.tar.gz
-rm -f openjdk-11.tar.gz
-cp -r jdk-11.0.0.1 $OUT/
-JAVA_HOME=$OUT/jdk-11.0.0.1
-PATH=$JAVA_HOME/bin:$PATH
+./gradlew clean build -x test -x javadoc -x sources
 
-# Add task for copy dependency jars
-echo "
-task copyToLib(type: Copy) {
-    into \"\${buildDir}/dependencies\"
-    from configurations.runtimeClasspath
-}" >> ./build.gradle
+CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
 
-# Gradle build with gradle wrapper
-rm -rf $HOME/.gradle/caches/
-./gradlew clean build shadowJar copyToLib -x test -x javadoc -x sources
-./gradlew --stop
+cp "./build/libs/twitter4j-$CURRENT_VERSION.jar" $OUT/twitter4j.jar
+cp "./twitter4j-core/build/libs/twitter4j-core-$CURRENT_VERSION.jar" $OUT/twitter4j-core.jar
 
-cp "./build/libs/$(basename ./build/tmp/jar/*.jar)" $OUT/graphql-java.jar
-
-ALL_JARS="graphql-java.jar"
-
-# Copy dependency jars
-for JARFILE in $(ls ./build/dependencies/*.jar)
-do
-  cp $JARFILE $OUT/
-  ALL_JARS=$ALL_JARS" $(basename $JARFILE)"
-done
+ALL_JARS="twitter4j.jar twitter4j-core.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -60,7 +38,6 @@ do
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
-
   # LLVMFuzzerTestOneInput for fuzzer detection.
   this_dir=\$(dirname "\$0")
   if [[ "\$@" =~ (^| )-runs=[0-9]+($| ) ]]
@@ -69,7 +46,6 @@ do
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
-
   LD_LIBRARY_PATH="$JVM_LD_LIBRARY_PATH":\$this_dir \
     \$this_dir/jazzer_driver                        \
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \

@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint python3
-RUN git clone --depth 1 https://github.com/p11-glue/p11-kit.git p11-kit
-WORKDIR p11-kit
-COPY build.sh $SRC/
+cd pypdf
+pip3 install --upgrade pip
+pip3 install .
+
+# Build fuzzers
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done

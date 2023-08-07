@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint python3
-RUN git clone --depth 1 https://github.com/p11-glue/p11-kit.git p11-kit
-WORKDIR p11-kit
-COPY build.sh $SRC/
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN git clone --depth 1 https://github.com/Twitter4J/Twitter4J/ Twitter4J
+COPY *.sh *.java $SRC/
+WORKDIR $SRC/Twitter4J
