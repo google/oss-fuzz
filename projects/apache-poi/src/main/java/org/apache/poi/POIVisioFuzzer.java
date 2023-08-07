@@ -22,8 +22,6 @@ import java.nio.BufferUnderflowException;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.poi.EmptyFileException;
-import org.apache.poi.UnsupportedFileFormatException;
 import org.apache.poi.hdgf.extractor.VisioTextExtractor;
 import org.apache.poi.ooxml.POIXMLException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JRuntimeException;
@@ -35,9 +33,9 @@ public class POIVisioFuzzer {
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (XmlVisioDocument visio = new XmlVisioDocument(new ByteArrayInputStream(input))) {
 			visio.write(NullOutputStream.INSTANCE);
-		} catch (IOException | POIXMLException | EmptyFileException | UnsupportedFileFormatException |
+		} catch (IOException | POIXMLException |
 				 BufferUnderflowException | RecordFormatException | OpenXML4JRuntimeException |
-				 XmlValueOutOfRangeException | NumberFormatException e) {
+				 IllegalArgumentException e) {
 			// expected here
 		}
 
