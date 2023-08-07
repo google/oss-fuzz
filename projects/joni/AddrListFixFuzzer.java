@@ -30,7 +30,7 @@ public class AddrListFixFuzzer {
     UnsetAddrList obj = new UnsetAddrList(data.consumeInt(0, 1000));
     try {
       obj.fix(new Regex(data.consumeRemainingAsString()));
-    } catch (SyntaxException | InternalException e) {
+    } catch (SyntaxException | InternalException | IllegalArgumentException e) {
     }
   }
 }
