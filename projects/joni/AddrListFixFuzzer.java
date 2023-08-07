@@ -17,6 +17,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.joni.Regex;
 import org.joni.Syntax;
 import org.joni.UnsetAddrList;
+import org.joni.exception.InternalException;
 import org.joni.exception.SyntaxException;
 import org.jcodings.exception.CharacterPropertyException;
 
@@ -30,7 +31,7 @@ public class AddrListFixFuzzer {
     UnsetAddrList obj = new UnsetAddrList(data.consumeInt(0, 1000));
     try {
       obj.fix(new Regex(data.consumeRemainingAsString()));
-    } catch (SyntaxException | CharacterPropertyException e) {
+    } catch (SyntaxException | CharacterPropertyException | InternalException | IllegalArgumentException e) {
     }
   }
 }
