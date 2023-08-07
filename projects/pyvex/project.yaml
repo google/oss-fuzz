@@ -1,0 +1,9 @@
+homepage: "https://api.angr.io/projects/pyvex/en/latest/api.html"
+language: python
+primary_contact: "yans@yancomm.net"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/angr/pyvex.git'
