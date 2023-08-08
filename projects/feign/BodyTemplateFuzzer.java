@@ -16,6 +16,7 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import feign.template.BodyTemplate;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException
 
 // Generated with https://github.com/ossf/fuzz-introspector/tree/main/tools/auto-fuzz
 // Heuristic name: jvm-autofuzz-heuristics-1
@@ -24,6 +25,6 @@ public class BodyTemplateFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       BodyTemplate.create(Pattern.quote(data.consumeRemainingAsString()));
-    } catch (IllegalArgumentException e1) {}
+    } catch (IllegalArgumentException | PatternSyntaxException e1) {}
   }
 }
