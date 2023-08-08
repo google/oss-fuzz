@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,7 +41,7 @@ func CopyFile(src string, dst string) {
 	}
 }
 
-func TryFixCCompilation(cmdline []string) bool {
+func TryFixCCompilation(cmdline []string) (int, string, string) {
 	var newFile string = ""
 	for i, arg := range cmdline {
 		if !strings.HasSuffix(arg, ".c") {
@@ -56,23 +57,21 @@ func TryFixCCompilation(cmdline []string) bool {
 		break
 	}
 	if newFile == "" {
-		return false
+		return 1, "", ""
 	}
-       newCmdline := []string{"-stdlib=libc++"}
-       newCmdline = append(cmdline, newCmdline...)
+	newCmdline := []string{"-stdlib=libc++"}
+	newCmdline = append(cmdline, newCmdline...)
 
-	retcode, out, err := compile("clang++", cmdline)
-	fmt.Println(retcode)
-	fmt.Println(out)
-	fmt.Println(err)
+	fmt.Println("FIXXING")
+	retcode, out, err := compile("clang++", newCmdline)
 	if retcode == 0 {
-		return true
+		return retcode, out, err
 	}
-	corrected, _ := CorrectMissingHeaders("clang++", cmdline)
-	if !corrected {
-		os.Exit(retcode)
+	corrected, _ := CorrectMissingHeaders("clang++", newCmdline)
+	if corrected {
+		return 0, "", ""
 	}
-	return true
+	return retcode, out, err
 }
 
 func ExtractMissingHeader(compilerOutput string) (string, bool) {
@@ -147,6 +146,8 @@ func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, 
 }
 
 func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
+	fmt.Println("FIXING HEADERS")
+
 	_, _, stderr := compile(bin, cmd)
 	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
 	if err != nil {
@@ -173,25 +174,25 @@ func compile(bin string, args []string) (int, string, string) {
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
 
-func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed , hasBrokenHeaders bool) {
+func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
 	retcode, _, err := compile(bin, cmd)
 	if retcode == 0 {
-                fixed = true
-                hasBrokenHeaders = false
+		fixed = true
+		hasBrokenHeaders = false
 		return
 	}
 	missingHeader, isMissing := ExtractMissingHeader(err)
 	if !isMissing {
-                fixed = false
-                hasBrokenHeaders = false
+		fixed = false
+		hasBrokenHeaders = false
 		return
 	}
 
 	newHeaderPath, found := FindMissingHeader(missingHeader)
 	if !found {
-                fixed = false
-                hasBrokenHeaders = true
-                return false, true
+		fixed = false
+		hasBrokenHeaders = true
+		return false, true
 	}
 	ReplaceMissingHeaderInFile(filename, missingHeader, newHeaderPath)
 	return false, true
@@ -227,11 +228,31 @@ func FindMissingHeader(missingHeader string) (string, bool) {
 	return headerLocation, true
 }
 
+func RewriteIncludesToWorkWithC(src_file string) {
+     contents, err := ioutil.ReadFile(src)
+     if err != nil {
+     	panic(err)
+     }
+     
+}
+
 func main() {
+	f, err2 := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err2 != nil {
+		log.Println(err2)
+	}
+	defer f.Close()
+	if _, err2 := f.WriteString(fmt.Sprintf("%s\no", os.Args)); err2 != nil {
+		log.Println(err2)
+	}
+
+	fmt.Println("args: ", os.Args)
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
-	isCPP := basename == "clang++"
-	newArgs := []string{"-w"}
+	isCPP := basename == "clang++-jcc"
+	fmt.Println("isCPP", isCPP)
+	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
 	var retcode int
 	var out string
@@ -245,6 +266,8 @@ func main() {
 		retcode, out, err = compile(bin, newArgs)
 	}
 	if retcode == 0 {
+		fmt.Println(out)
+		fmt.Println(err)
 		os.Exit(0)
 	}
 
@@ -253,10 +276,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	if isCPP || !TryFixCCompilation(newArgs) {
+	if isCPP {
 		// Nothing else we can do. Just print the error and exit.
-        	fmt.Println(out)
+		fmt.Println(out)
 		fmt.Println(err)
+		os.Exit(retcode)
+	}
+	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
+	if fixret != 0 {
+		fmt.Println(out)
+		fmt.Println(err)
+		fmt.Println("Fix failure")
+		fmt.Println(fixout)
+		fmt.Println(fixerr)
 		os.Exit(retcode)
 	}
 }
