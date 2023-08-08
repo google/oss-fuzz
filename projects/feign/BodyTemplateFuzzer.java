@@ -24,7 +24,7 @@ import java.util.regex.PatternSyntaxException
 public class BodyTemplateFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      BodyTemplate.create(Pattern.quote(data.consumeRemainingAsString()));
+      BodyTemplate.create(data.consumeRemainingAsString());
     } catch (IllegalArgumentException | PatternSyntaxException e1) {}
   }
 }
