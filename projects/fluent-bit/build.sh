@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+find /usr/ -name "libyaml*.so" -exec rm {} \;
+find /usr/ -name "libyaml-0*" -exec rm {} \;
+
 # For fuzz-introspector, cxclude all functions in the fluent-bit/lib/ directory
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
@@ -110,7 +113,7 @@ EXTRA_FLAGS="-DFLB_BINARY=OFF \
   -DFLB_METRICS=ON   \
   -DFLB_DEBUG=ON     \
   -DMBEDTLS_FATAL_WARNINGS=OFF \
-  -DFLB_CONFIG_YAML=OFF"
+  -DFLB_CONFIG_YAML=ON"
 
 cmake -DFLB_TESTS_INTERNAL=ON \
       -DFLB_TESTS_INTERNAL_FUZZ=ON \
