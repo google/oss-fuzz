@@ -19,3 +19,5 @@ RUN git clone --depth 1 https://github.com/apache/incubator-opendal.git opendal
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY .fs.env $SRC/
+COPY .memory.env $SRC/

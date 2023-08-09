@@ -13,9 +13,6 @@
 # limitations under the License.
 ################################################################################
 
-# create env file
-echo -e "OPENDAL_MEMORY_TEST=on\nOPENDAL_FS_TEST=on\nOPENDAL_FS_ROOT=/tmp" > $SRC/opendal/.env
-
 # build fuzz targets
 cd $SRC/opendal/core
 cargo +nightly fuzz build -O --debug-assertions
@@ -25,6 +22,12 @@ targets=(
   fuzz_reader
   fuzz_writer
 )
-for target in "${targets[@]}"; do
-  cp ../target/x86_64-unknown-linux-gnu/release/$target $OUT/
-done
+
+cp $SRC/.fs.env $OUT/.fs.env
+cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
+cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
+
+cp $SRC/.memory.env $OUT/.memory.env
+cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
+cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
+
