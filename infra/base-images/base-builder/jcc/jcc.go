@@ -63,7 +63,6 @@ func TryFixCCompilation(cmdline []string) (int, string, string) {
 	newCmdline := []string{"-stdlib=libc++"}
 	newCmdline = append(cmdline, newCmdline...)
 
-	fmt.Println("FIXXING")
 	retcode, out, err := compile("clang++", newCmdline)
 	if retcode == 0 {
 		return retcode, out, err
@@ -147,7 +146,6 @@ func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, 
 }
 
 func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
-	fmt.Println("FIXING HEADERS")
 
 	_, _, stderr := compile(bin, cmd)
 	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
@@ -241,7 +239,6 @@ func CppifyHeaderIncludesFromFile(srcFile string) (string, error) {
 func CppifyHeaderIncludes(contents string) (string, error) {
 	shouldCppify, exists := os.LookupEnv("JCC_CPPIFY_PROJECT_HEADERS")
 	if !exists || strings.Compare(shouldCppify, "0") == 0 {
-		fmt.Println("exists")
 		return contents, nil
 	}
 	if strings.Contains(contents, CppifyHeadersMagicString) {
@@ -249,19 +246,15 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 	}
 	re := regexp.MustCompile(`\#include \"(?P<header>.+)\"\n`)
 	matches := re.FindAllStringSubmatch(contents, -1)
-	fmt.Println("matches", matches)
 	if len(matches) == 0 {
 		return "", nil // !!!
 	}
-	fmt.Println("matches", matches)
 	for i, match := range matches {
-		fmt.Println("i", i)
 		if i == 0 {
 			// So we don't cppify twice.
 			contents += CppifyHeadersMagicString
 		}
 		oldStr := match[0]
-		fmt.Println("OldStr " + oldStr)
 		replacement := "extern \"C\" {\n#include \"" + match[1] + "\"\n}\n"
 		contents = strings.Replace(contents, oldStr, replacement, 1)
 		if strings.Compare(contents, "") == 0 {
@@ -282,11 +275,9 @@ func main() {
 		log.Println(err2)
 	}
 
-	fmt.Println("args: ", os.Args)
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	fmt.Println("isCPP", isCPP)
 	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
 	var retcode int
