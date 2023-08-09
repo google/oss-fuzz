@@ -20,4 +20,4 @@ WORKDIR $SRC
 
 COPY build.sh $SRC/
 COPY .fs.env $SRC/
-COPY .memory.emv $SRC/
+COPY .memory.env $SRC/
