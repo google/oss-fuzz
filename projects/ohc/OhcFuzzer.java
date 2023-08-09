@@ -155,12 +155,16 @@ public class OhcFuzzer {
 
     @Override
     public int read(ByteBuffer dst) throws IOException {
-      if (bytes.length > dst.remaining()) {
+      if (dst.remaining() <= 0) {
         return -1;
       }
 
-      dst.put(bytes);
-      return bytes.length;
+      int length = (bytes.length > dst.remaining())? dst.remaining() : bytes.length;
+      for (int i = 0; i < length; i++) {
+        dst.put(bytes[i]);
+      }
+
+      return length;
     }
 
     @Override
