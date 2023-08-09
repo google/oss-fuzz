@@ -23,11 +23,11 @@ targets=(
   fuzz_writer
 )
 
+cp $SRC/.fs.env $OUT/.fs.env
 cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
 cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
 
+cp $SRC/.memory.env $OUT/.memory.env
 cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
 cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
 
-echo -e "OPENDAL_FS_TEST=on\nOPENDAL_FS_ROOT=/tmp" > $OUT/.fs.env
-echo -e "OPENDAL_MEMORY_TEST=on\n" > $OUT/.memory.env
