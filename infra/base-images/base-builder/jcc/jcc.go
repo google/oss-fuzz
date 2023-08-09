@@ -54,6 +54,7 @@ func TryFixCCompilation(cmdline []string) (int, string, string) {
 		newFile = strings.TrimSuffix(arg, ".c")
 		newFile += ".cpp"
 		CopyFile(arg, newFile)
+		CppifyHeaderIncludesFromFile(newFile)
 		cmdline[i] = newFile
 		break
 	}
@@ -227,13 +228,19 @@ func FindMissingHeader(missingHeader string) (string, bool) {
 	return headerLocation, true
 }
 
-func CppifyHeaderIncludesFromFile(srcFile string) (string, error) {
+func CppifyHeaderIncludesFromFile(srcFile string) error {
 	contentsBytes, err := ioutil.ReadFile(srcFile)
 	if err != nil {
-		return "", err
+		return err
 	}
 	contents := string(contentsBytes[:])
-	return CppifyHeaderIncludes(contents)
+	contents, err = CppifyHeaderIncludes(contents)
+	if err != nil {
+		return err
+	}
+	b := []byte(contents)
+	err = ioutil.WriteFile(srcFile, b, 0644)
+	return err
 }
 
 func CppifyHeaderIncludes(contents string) (string, error) {
