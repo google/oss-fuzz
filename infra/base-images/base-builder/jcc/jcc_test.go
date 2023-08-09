@@ -81,6 +81,68 @@ func TestGetHeaderCorrectedCmd(t *testing.T) {
 	}
 }
 
+func TestCppifyHeaderIncludes(t *testing.T) {
+	t.Setenv("JCC_CPPIFY_PROJECT_HEADERS", "1")
+	src := `// Copyright blah
+#include <stddef.h>
+
+#include "fuzz.h"
+#include "x/y.h"
+extern "C" LLVMFuzzerTestOneInput(uint8_t* data, size_t sz) {
+  return 0;
+}`
+	newFile, _ := CppifyHeaderIncludes(src)
+	expected := `// Copyright blah
+#include <stddef.h>
+
+extern "C" {
+#include "fuzz.h"
+}
+extern "C" {
+#include "x/y.h"
+}
+extern "C" LLVMFuzzerTestOneInput(uint8_t* data, size_t sz) {
+  return 0;
+}
+/* JCCCppifyHeadersMagicString */
+`
+	if strings.Compare(newFile, expected) != 0 {
+		t.Errorf("Expected: %s, got: %s", expected, newFile)
+	}
+}
+
+func TestCppifyHeaderIncludesShouldnt(t *testing.T) {
+	src := `// Copyright blah
+#include <stddef.h>
+
+#include "fuzz.h"
+#include "x/y.h"
+extern "C" LLVMFuzzerTestOneInput(uint8_t* data, size_t sz) {
+  return 0;
+}`
+	newFile, _ := CppifyHeaderIncludes(src)
+	if strings.Compare(newFile, src) != 0 {
+		t.Errorf("Expected: %s. Got: %s", src, newFile)
+	}
+}
+
+func TestCppifyHeaderIncludesAlready(t *testing.T) {
+	src := `// Copyright blah
+#include <stddef.h>
+
+#include "fuzz.h"
+#include "x/y.h"
+extern "C" LLVMFuzzerTestOneInput(uint8_t* data, size_t sz) {
+  return 0;
+}
+/* JCCCppifyHeadersMagicString */
+`
+	newFile, _ := CppifyHeaderIncludes(src)
+	if strings.Compare(newFile, src) != 0 {
+		t.Errorf("Expected %s, got: %s", src, newFile)
+	}
+}
+
 func TestExtractMissingHeaderNonHeaderFailure(t *testing.T) {
 	missingHeaderMessage := `clang: error: no such file or directory: 'x'
 clang: error: no input files`
