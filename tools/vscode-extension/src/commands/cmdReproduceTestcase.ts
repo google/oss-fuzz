@@ -23,8 +23,6 @@ import {buildFuzzersFromWorkspace} from '../ossfuzzWrappers';
 import {extensionConfig} from '../config';
 const readline = require('readline');
 
-// Directory where crash files are stored.
-//const crashesDirectory = '/home/dav/crashes/';
 
 export async function cmdInputCollectorReproduceTestcase() {
   // Runs a fuzzer from a given project.
