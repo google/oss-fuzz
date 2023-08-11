@@ -27,7 +27,6 @@ import org.apache.poi.ooxml.POIXMLException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JRuntimeException;
 import org.apache.poi.util.RecordFormatException;
 import org.apache.poi.xdgf.usermodel.XmlVisioDocument;
-import org.apache.xmlbeans.impl.values.XmlValueOutOfRangeException;
 
 public class POIVisioFuzzer {
 	public static void fuzzerTestOneInput(byte[] input) {
@@ -35,7 +34,7 @@ public class POIVisioFuzzer {
 			visio.write(NullOutputStream.INSTANCE);
 		} catch (IOException | POIXMLException |
 				 BufferUnderflowException | RecordFormatException | OpenXML4JRuntimeException |
-				 IllegalArgumentException e) {
+				 IllegalArgumentException | IndexOutOfBoundsException e) {
 			// expected here
 		}
 
