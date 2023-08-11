@@ -175,6 +175,14 @@ def main():
 if __name__ == "__main__":
     main()`;
 
+const javaLangBareTemplate = `import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+public class SampleFuzzer {
+  public static void fuzzerTestOneInput(FuzzedDataProvider fdp) {
+    // Use fdp to create arbitrary types seeded with fuzz data
+  }
+}
+`;
+
 /**
  * C templates
  */
@@ -293,6 +301,36 @@ async function pythonTepmlates() {
   return;
 }
 
+/**
+ * Java templates
+ */
+async function javaTemplates() {
+  let template = '';
+  const result = await vscode.window.showQuickPick(['Bare template'], {
+    placeHolder: 'Pick which template',
+  });
+  vscode.window.showInformationMessage(`Got: ${result}`);
+
+  if (result === 'Bare template') {
+    template = javaLangBareTemplate;
+  } else {
+    template = 'empty';
+  }
+  const workspaceFolder = vscode.workspace.workspaceFolders;
+  if (!workspaceFolder) {
+    return;
+  }
+
+  const wsPath = workspaceFolder[0].uri.fsPath; // gets the path of the first workspace folder
+
+  const cifuzzYml = vscode.Uri.file(wsPath + '/oss-fuzz-template.java');
+  const wsedit = new vscode.WorkspaceEdit();
+  wsedit.createFile(cifuzzYml, {ignoreIfExists: true});
+  wsedit.insert(cifuzzYml, new vscode.Position(0, 0), template);
+  vscode.workspace.applyEdit(wsedit);
+  return;
+}
+
 export async function cmdDispatcherTemplate(context: vscode.ExtensionContext) {
   println('Creating template');
   const options: {
@@ -301,6 +339,7 @@ export async function cmdDispatcherTemplate(context: vscode.ExtensionContext) {
     C: cTemplates,
     CPP: cppTemplates,
     Python: pythonTepmlates,
+    Java: javaTemplates,
   };
 
   const quickPick = vscode.window.createQuickPick();
