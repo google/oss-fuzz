@@ -5,6 +5,7 @@ fuzzing_engines:
 - libfuzzer
 sanitizers:
 - none
+primary_contact: "lovell.fuller@gmail.com"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
