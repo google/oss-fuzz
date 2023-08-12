@@ -17,6 +17,7 @@
 
 # b44ExpLogTable.cpp only contains a definition of main().
 sed -i 's/Source\/OpenEXR\/IlmImf\/b44ExpLogTable.cpp//' Makefile.srcs
+sed -i 's/Source\/LibTIFF4\/tif_getimage.c/Source\/LibTIFF4\/tif_getimage.c Source\/LibTIFF4\/tif_hash_set.c/g' ./Makefile.srcs
 make LIBRARIES=-lc++ -j$(nproc)
 
 INSTALL_DIR="$PWD/Dist"

@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/madler/zlib
-RUN git clone --depth 1 git://git.code.sf.net/p/matio/matio matio
+RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
 ADD https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz hdf5-1.12.1.tar.gz
 WORKDIR matio
 COPY build.sh $SRC/

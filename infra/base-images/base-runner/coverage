@@ -442,6 +442,35 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
   done
 
+  # Dump classes in jar file to dump directory. This action includes all
+  # the classes of the project that are not executed by the fuzzers to
+  # the dump directory. Duplicate classes in the dump directory will be
+  # overwritten. We need to do this to include all possible classes in
+  # the coverage report and avoid duplicate classes from different jar
+  # files which jacoco fails to handle.
+  for jar_file in $(ls $OUT/*.jar)
+  do
+    if [[ $jar_file != $OUT/jazzer* ]]
+    then
+      tempdir=$(mktemp -d)
+      cd $tempdir && jar xvf $jar_file && cd -
+      cp -r $tempdir/* $classes_dir/
+      rm -r $tempdir
+    fi
+  done
+
+  # Clean up files that can create duplicate class names which breaks Jacoco.
+  # Remove META-INF folder because some jar may store duplications of the same
+  # class file in the META-INF for other java versions.
+  find $classes_dir -name "META-INF" | xargs rm -rf
+  # Remove all files that are not a java class because some jar may contain
+  # Kotlin class which has the same name as a java class and Jacoco fail to
+  # distinguish them.
+  find $classes_dir -type f -not -name "*.class" | xargs rm -f
+  # Remove all class files which have a dot in their file name which are normally
+  # used to name a duplication of the legitimate class file.
+  find $classes_dir -type f -name "*.*.class" | xargs rm -f
+
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
   sourcefiles_args=(--sourcefiles $OUT/$SRC)

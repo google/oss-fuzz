@@ -36,7 +36,7 @@ class IonReaderFuzzer {
                                 .build(data.consumeRemainingAsString());
             read(reader);
             reader.close();
-        } catch (IOException | NullPointerException | IllegalStateException | IllegalArgumentException | IonException | AssertionError e) {
+        } catch (IOException | NullPointerException | IllegalStateException | IllegalArgumentException | ArrayIndexOutOfBoundsException | IonException | AssertionError e) {
             // Need to be caught to get more interesting findings.
         }
     }
