@@ -2,7 +2,7 @@ homepage: "https://icalendar.readthedocs.io/en/latest/"
 language: python
 primary_contact: "johannes@raggam.co.at"
 auto_ccs: 
-  - "dallmeyerm@att.net"
+  - "ennamarie19@gmail.com"
   - "maxm@mxm.dk"
 sanitizers: 
   - address
