@@ -15,6 +15,8 @@
 #
 ################################################################################
 import sys
+from enum import IntEnum
+
 import atheris
 
 with atheris.instrument_imports(include=["pyvex"]):
@@ -24,6 +26,8 @@ with atheris.instrument_imports(include=["pyvex"]):
 import archinfo
 from contextlib import contextmanager
 from io import StringIO
+
+from enhanced_fdp import EnhancedFuzzedDataProvider
 
 
 @contextmanager
@@ -41,23 +45,11 @@ def nostdout():
 available_archs = [tup[3]() for tup in archinfo.arch.arch_id_map if len(tup) >= 3]
 
 
-def consume_random_bytes(fdp: atheris.FuzzedDataProvider) -> bytes:
-    """
-    Returns a fuzz-guided "random" number of bytes
-    :param fdp: FuzzedDataProvider to generate bytes with
-    :return: A sequence of bytes
-    """
-    count = fdp.ConsumeIntInRange(0, fdp.remaining_bytes())
-    return fdp.ConsumeBytes(count)
-
-
-def consume_random_address(fdp: atheris.FuzzedDataProvider) -> bytes:
-    """
-    Generates a meaningful memory address to mark the beginning of the IRSB being lifted
-    :param fdp: FuzzedDataProvider to generate address with
-    :return: A random address
-    """
-    return fdp.ConsumeInt(4)
+class SupportedOptLevels(IntEnum):
+    StrictUnopt = -1
+    Unopt = 0
+    Opt = 1
+    StrictOpt = 2
 
 
 def consume_random_arch(fdp: atheris.FuzzedDataProvider) -> archinfo.Arch:
@@ -65,16 +57,27 @@ def consume_random_arch(fdp: atheris.FuzzedDataProvider) -> archinfo.Arch:
 
 
 def TestOneInput(data: bytes):
-    fdp = atheris.FuzzedDataProvider(data)
+    fdp = EnhancedFuzzedDataProvider(data)
+
+    arch = consume_random_arch(fdp)
 
     try:
         with nostdout():
+            data = fdp.ConsumeRandomBytes()
+
             irsb = pyvex.lift(
-                consume_random_bytes(fdp),
-                consume_random_address(fdp),
-                consume_random_arch(fdp))
+                data,
+                fdp.ConsumeInt(arch.bits),
+                arch,
+                max_bytes=fdp.ConsumeIntInRange(0, len(data)),
+                max_inst=fdp.ConsumeInt(16),
+                bytes_offset=fdp.ConsumeIntInRange(0, len(data)),
+                opt_level=fdp.PickValueInEnum(SupportedOptLevels)
+            )
             irsb.pp()
     except pyvex.PyVEXError:
+        return -1
+    except OverflowError:
         return -1
 
 
