@@ -1,0 +1,10 @@
+homepage: "https://icalendar.readthedocs.io/en/latest/"
+language: python
+primary_contact: "johannes@raggam.co.at"
+auto_ccs: 
+  - "dallmeyerm@att.net"
+  - "maxm@mxm.dk"
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/collective/icalendar"
