@@ -14,5 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
+$SRC/keycloak/fuzzing/oss_fuzz_build.sh
 cp $SRC/cncf-fuzzing/projects/keycloak/*.java $SRC/
 $SRC/cncf-fuzzing/projects/keycloak/build.sh
