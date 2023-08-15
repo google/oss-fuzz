@@ -63,11 +63,7 @@ manual effort.
 Google created OSS-Fuzz to fill this gap: it's a free service that runs fuzzers
 for open source projects and privately alerts developers to the bugs detected.
 Since its launch, OSS-Fuzz has become a critical service for the open source
-community, helping get
-[more than 10,000 security vulnerabilities](https://bugs.chromium.org/p/oss-fuzz/issues/list?q=type%3Dbug-security%20-status%3Aduplicate%2Cwontfix%20label%3Aclusterfuzz&can=1)
-and more than
-[31,000 other bugs](https://bugs.chromium.org/p/oss-fuzz/issues/list?q=type%3Dbug%20status%3Averified%2Cfixed%20label%3Aclusterfuzz&can=1)
-in open source projects fixed. With time, OSS-Fuzz has grown beyond C/C++ to
+community, growing beyond C/C++ to
 detect problems in memory-safe languages such as Go, Rust, and Python.
 
 ## Learn more about fuzzing
@@ -82,8 +78,8 @@ other resources are listed on the [useful links] page.
 [useful links]: {{ site.baseurl }}/reference/useful-links/#tutorials
 
 ## Trophies
-As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabilities and [28,000] bugs across [850] projects.
+As of February 2023, OSS-Fuzz has helped identify and fix over [10,000] vulnerabilities and [31,000] bugs across [1,000] projects.
 
-[8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
-[28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
-[850]: https://github.com/google/oss-fuzz/tree/master/projects
+[10,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
+[31,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
+[1,000]: https://github.com/google/oss-fuzz/tree/master/projects
