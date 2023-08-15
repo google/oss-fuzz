@@ -47,22 +47,23 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabilities and [28,000] bugs across [850] projects.
+As of August 2023, OSS-Fuzz has helped identify and fix over [10,000] vulnerabilities and [36,000] bugs across [1,000] projects.
 
-[8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
-[28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
-[850]: https://github.com/google/oss-fuzz/tree/master/projects
+[10,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=Type%3DBug-Security%20label%3Aclusterfuzz%20-status%3ADuplicate%2CWontFix&can=1
+[36,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=Type%3DBug%20label%3Aclusterfuzz%20-status%3ADuplicate%2CWontFix&can=1
+[1,000]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
-* 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
-* 2017-05-08 - [OSS-Fuzz: Five months later, and rewarding projects]
-* 2018-11-06 - [A New Chapter for OSS-Fuzz]
-* 2020-10-09 - [Fuzzing internships for Open Source Software]
-* 2020-12-07 - [Improving open source security during the Google summer internship program]
-* 2021-03-10 - [Fuzzing Java in OSS-Fuzz]
-* 2021-12-16 - [Improving OSS-Fuzz and Jazzer to catch Log4Shell]
-* 2022-09-08 - [Fuzzing beyond memory corruption: Finding broader classes of vulnerabilities automatically]
 * 2023-02-01 - [Taking the next step: OSS-Fuzz in 2023]
+* 2022-09-08 - [Fuzzing beyond memory corruption: Finding broader classes of vulnerabilities automatically]
+* 2021-12-16 - [Improving OSS-Fuzz and Jazzer to catch Log4Shell]
+* 2021-03-10 - [Fuzzing Java in OSS-Fuzz]
+* 2020-12-07 - [Improving open source security during the Google summer internship program]
+* 2020-10-09 - [Fuzzing internships for Open Source Software]
+* 2018-11-06 - [A New Chapter for OSS-Fuzz]
+* 2017-05-08 - [OSS-Fuzz: Five months later, and rewarding projects]
+* 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
+
 
 [Announcing OSS-Fuzz: Continuous fuzzing for open source software]: https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html
 [OSS-Fuzz: Five months later, and rewarding projects]: https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html
