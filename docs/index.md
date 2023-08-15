@@ -66,7 +66,7 @@ Since its launch, OSS-Fuzz has become a critical service for the open source
 community, helping get
 [more than 10,000 security vulnerabilities](https://bugs.chromium.org/p/oss-fuzz/issues/list?q=type%3Dbug-security%20-status%3Aduplicate%2Cwontfix%20label%3Aclusterfuzz&can=1)
 and more than
-[26,000 other bugs](https://bugs.chromium.org/p/oss-fuzz/issues/list?q=type%3Dbug%20status%3Averified%2Cfixed%20label%3Aclusterfuzz&can=1)
+[31,000 other bugs](https://bugs.chromium.org/p/oss-fuzz/issues/list?q=type%3Dbug%20status%3Averified%2Cfixed%20label%3Aclusterfuzz&can=1)
 in open source projects fixed. With time, OSS-Fuzz has grown beyond C/C++ to
 detect problems in memory-safe languages such as Go, Rust, and Python.
 
