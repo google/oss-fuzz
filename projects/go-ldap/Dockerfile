@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +14,8 @@
 #
 ################################################################################
 
-# Install dependencies.
-npm install
-npm install --save-dev @jazzer.js/core
-
-# Build Fuzzers.
-compile_javascript_fuzzer js-yaml fuzz.js -i js-yaml --sync
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/go-ldap/ldap.git
+RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
+COPY build.sh $SRC/
+WORKDIR $SRC/ldap

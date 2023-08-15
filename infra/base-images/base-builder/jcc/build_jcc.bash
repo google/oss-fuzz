@@ -1,4 +1,5 @@
 #!/bin/bash -eu
+#
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +16,8 @@
 #
 ################################################################################
 
-# Install dependencies.
-npm install
-npm install --save-dev @jazzer.js/core
-
-# Build Fuzzers.
-compile_javascript_fuzzer js-yaml fuzz.js -i js-yaml --sync
+go build jcc.go
+cp jcc clang
+cp jcc clang++
+gsutil cp jcc gs://clusterfuzz-builds/jcc/clang++-jcc
+gsutil cp jcc gs://clusterfuzz-builds/jcc/clang-jcc

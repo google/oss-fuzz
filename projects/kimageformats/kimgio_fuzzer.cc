@@ -34,6 +34,7 @@
 #include "jxl_p.h"
 #include "kra.h"
 #include "ora.h"
+#include "qoi.h"
 #include "pcx_p.h"
 #include "pic_p.h"
 #include "psd_p.h"

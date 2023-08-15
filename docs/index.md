@@ -48,6 +48,27 @@ and i386 builds.
 
 [LLVM]: https://llvm.org
 
+
+## Project history
+OSS-Fuzz was launched in 2016 in response to the
+[Heartbleed] vulnerability, discovered in [OpenSSL], one of the
+most popular open source projects for encrypting web traffic. The vulnerability
+had the potential to affect almost every internet user, yet was caused by a
+relatively simple memory buffer overflow bug that could have been detected by
+fuzzing—that is, by running the code on randomized inputs to intentionally cause
+unexpected behaviors or crashes. At the time, though, fuzzing
+was not widely used and was cumbersome for developers, requiring extensive
+manual effort.
+
+Google created OSS-Fuzz to fill this gap: it's a free service that runs fuzzers
+for open source projects and privately alerts developers to the bugs detected.
+Since its launch, OSS-Fuzz has become a critical service for the open source
+community, growing beyond C/C++ to
+detect problems in memory-safe languages such as Go, Rust, and Python.
+
+[Heartbleed]: https://heartbleed.com/ 
+[OpenSSL]: https://www.openssl.org/
+
 ## Learn more about fuzzing
 
 This documentation describes how to use OSS-Fuzz service for your open source
@@ -60,8 +81,8 @@ other resources are listed on the [useful links] page.
 [useful links]: {{ site.baseurl }}/reference/useful-links/#tutorials
 
 ## Trophies
-As of February 2023, OSS-Fuzz has helped identify and fix over [8,900] vulnerabilities and [28,000] bugs across [850] projects.
+As of August 2023, OSS-Fuzz has helped identify and fix over [10,000] vulnerabilities and [36,000] bugs across [1,000] projects.
 
-[8,900]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug-Security&can=1
-[28,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=status%3AFixed%2CVerified%20Type%3DBug&can=1
-[850]: https://github.com/google/oss-fuzz/tree/master/projects
+[10,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=Type%3DBug-Security%20label%3Aclusterfuzz%20-status%3ADuplicate%2CWontFix&can=1
+[36,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=Type%3DBug%20label%3Aclusterfuzz%20-status%3ADuplicate%2CWontFix&can=1
+[1,000]: https://github.com/google/oss-fuzz/tree/master/projects

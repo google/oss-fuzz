@@ -37,7 +37,7 @@ public class XLSX2CSVFuzzer {
 		} catch (IOException | OpenXML4JException | SAXException |
 				 POIXMLException | RecordFormatException |
 				IllegalStateException | IllegalArgumentException |
-				ArrayIndexOutOfBoundsException e) {
+				IndexOutOfBoundsException e) {
 			// expected here
 		}
 	}
