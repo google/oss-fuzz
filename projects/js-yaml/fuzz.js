@@ -15,15 +15,60 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const { FuzzedDataProvider } = require('@jazzer.js/core');
-const yaml = require('js-yaml');
+const yaml = require('./index');
 
-module.exports.fuzz = function (data) {
+module.exports.fuzz = function(data) {
   const provider = new FuzzedDataProvider(data);
+  const loadOptions = generateRandomLoadOptions(provider);
+  const dumpOptions = generateRandomDumpOptions(provider);
   const yamlString = provider.consumeRemainingAsString();
 
+
   try {
-    const parsedYaml = yaml.load(yamlString);
-    const serializedYaml = yaml.dump(parsedYaml);
+    const parsedYaml = yaml.load(yamlString, loadOptions);
+    const _serializedYaml = yaml.dump(parsedYaml, dumpOptions);
   } catch (YAMLException) {
   }
 };
+
+
+function generateRandomLoadOptions(provider) {
+  const options = {};
+  options.schema = getSchema(provider.consumeIntegralInRange(0, 3));
+  options.json = provider.consumeBoolean();
+  return options;
+}
+
+function generateRandomDumpOptions(provider) {
+  const options = {};
+  options.indent = provider.consumeIntegralInRange(0, 4096);
+  options.skipInvalid = provider.consumeBoolean();
+  options.flowLevel = provider.consumeIntegralInRange(-1, 100);
+  options.schema = getSchema(provider.consumeIntegralInRange(0, 3));
+  options.sortKeys = provider.consumeBoolean();
+  options.lineWidth = provider.consumeIntegralInRange(0, 4096);
+  options.noRefs = provider.consumeBoolean();
+  options.noCompatMode = provider.consumeBoolean();
+  options.condenseFlow = provider.consumeBoolean();
+  options.forceQuotes = provider.consumeBoolean();
+  return options;
+}
+
+
+function getSchema(number) {
+
+  switch (number) {
+    case 0:
+      options.schema = "DEFAULT_SCHEMA";
+      break
+    case 1:
+      options.schema = "FAILSAFE_SCHEMA";
+      break
+    case 2:
+      options.schema = "JSON_SCHEMA";
+      break
+    case 3:
+      options.schema = "CORE_SCHEMA";
+      break
+  }
+}
