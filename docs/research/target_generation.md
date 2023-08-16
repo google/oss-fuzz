@@ -203,7 +203,9 @@ The best result we’ve had is with the TinyXML2 project, where we managed to in
 ![alt_text]({{ site.baseurl }}/images/tinyxml2_examples.png "image_tooltip")
 
 
-Additionally, we targeted OpenSSL from the perspective of discovering past vulnerabilities that were not found due to lack of fuzzing coverage. We were able to replicate [a similar fuzz target](https://storage.googleapis.com/oss-fuzz-llm-targets-public/openssl-ossl_punycode_decode/targets/15.c) that rediscovered [CVE-2022-3602](https://nvd.nist.gov/vuln/detail/CVE-2022-3602). 
+Additionally, we targeted OpenSSL from the perspective of discovering past vulnerabilities that were not found due to lack of fuzzing coverage. We were able to replicate [a similar fuzz target](https://storage.googleapis.com/oss-fuzz-llm-targets-public/openssl-ossl_punycode_decode/targets/15.c) that rediscovered [CVE-2022-3602](https://nvd.nist.gov/vuln/detail/CVE-2022-3602).
+
+![alt_text]({{ site.baseurl }}/images/punycode.png "Stacktrace from LLM-generated target finding CVE-2022-3602")
 
 
 # Future work
