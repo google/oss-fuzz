@@ -16,11 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
-
 RUN  git clone --depth 1 https://github.com/microsoft/TypeScript.git
 
 COPY build.sh $SRC/
 COPY fuzz_ast.js $SRC/TypeScript
 COPY fuzz_compiler.js $SRC/TypeScript
+COPY fuzz_scanner.js $SRC/TypeScript
+COPY fuzz_json_parser.js $SRC/TypeScript
+COPY fuzz_transpile_module.js $SRC/TypeScript
 
 WORKDIR $SRC/TypeScript
