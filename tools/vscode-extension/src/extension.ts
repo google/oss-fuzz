@@ -142,7 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('oss-fuzz.Re', async () => {
+    vscode.commands.registerCommand('oss-fuzz.Redo', async () => {
       println('CMD start: Re');
       await cmdDispatcherRe();
       println('CMD end: Re');

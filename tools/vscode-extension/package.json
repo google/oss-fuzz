@@ -91,7 +91,7 @@
         "title": "OSS-Fuzz: sets the default project name in the session"
       },
       {
-        "command": "oss-fuzz.Re",
+        "command": "oss-fuzz.Redo",
         "title": "OSS-Fuzz: Redo the exact same command as previously, with same input"
       },
       {
