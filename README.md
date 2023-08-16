@@ -54,6 +54,7 @@ As of August 2023, OSS-Fuzz has helped identify and fix over [10,000] vulnerabil
 [1,000]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
+* 2023-08-16 - [AI-Powered Fuzzing: Breaking the Bug Hunting Barrier]
 * 2023-02-01 - [Taking the next step: OSS-Fuzz in 2023]
 * 2022-09-08 - [Fuzzing beyond memory corruption: Finding broader classes of vulnerabilities automatically]
 * 2021-12-16 - [Improving OSS-Fuzz and Jazzer to catch Log4Shell]
@@ -64,7 +65,7 @@ As of August 2023, OSS-Fuzz has helped identify and fix over [10,000] vulnerabil
 * 2017-05-08 - [OSS-Fuzz: Five months later, and rewarding projects]
 * 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
 
-
+[AI-Powered Fuzzing: Breaking the Bug Hunting Barrier]: https://security.googleblog.com/2023/08/ai-powered-fuzzing-breaking-bug-hunting.html
 [Announcing OSS-Fuzz: Continuous fuzzing for open source software]: https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html
 [OSS-Fuzz: Five months later, and rewarding projects]: https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html
 [A New Chapter for OSS-Fuzz]: https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html
