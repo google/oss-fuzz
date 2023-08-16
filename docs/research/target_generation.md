@@ -244,18 +244,13 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
 
 ## Successful benchmark results
 
-
 <table>
   <tr>
    <td style="background-color: null"><strong>Project</strong>
    </td>
    <td style="background-color: null"><strong>Function</strong>
    </td>
-   <td style="background-color: null"><strong>Prompt</strong>
-   </td>
-   <td style="background-color: null"><strong>Fix iterations</strong>
-   </td>
-   <td style="background-color: null"><strong>Final fuzz targets</strong>
+   <td style="background-color: null"><strong>Output</strong>
    </td>
    <td style="background-color: null"><strong>Build rate</strong>
    </td>
@@ -271,11 +266,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmldocument-print
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-print/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-print/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-print/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-print/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-print/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-print/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -297,11 +292,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmldocument-deepcopy
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-deepcopy/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-deepcopy/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-deepcopy/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-deepcopy/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-deepcopy/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-deepcopy/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -323,11 +318,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-setattribute
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-setattribute/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-setattribute/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-setattribute/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-setattribute/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-setattribute/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-setattribute/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 75</p>
@@ -349,11 +344,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">plist_print
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libplist-plist_print/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_print/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_print/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libplist-plist_print/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_print/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_print/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -375,11 +370,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-doubletext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-doubletext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-doubletext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-doubletext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-doubletext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-doubletext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-doubletext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -401,11 +396,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-booltext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-booltext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-booltext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-booltext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-booltext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-booltext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-booltext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -427,11 +422,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-insertnewunknown
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewunknown/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewunknown/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewunknown/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewunknown/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewunknown/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewunknown/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -453,11 +448,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-int64text
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-int64text/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-int64text/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-int64text/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-int64text/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-int64text/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-int64text/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -479,11 +474,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_compare
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_compare/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_compare/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_compare/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_compare/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_compare/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_compare/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 75</p>
@@ -505,11 +500,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-floattext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-floattext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-floattext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-floattext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-floattext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-floattext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-floattext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -531,11 +526,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-inttext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-inttext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-inttext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-inttext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-inttext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-inttext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-inttext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 75</p>
@@ -557,11 +552,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-unsigned64text
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-unsigned64text/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsigned64text/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsigned64text/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-unsigned64text/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsigned64text/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsigned64text/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -583,11 +578,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyobj-objreader-parsefromfile
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-objreader-parsefromfile/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-objreader-parsefromfile/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-objreader-parsefromfile/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-objreader-parsefromfile/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-objreader-parsefromfile/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-objreader-parsefromfile/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -609,11 +604,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-unsignedtext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-unsignedtext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsignedtext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsignedtext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-unsignedtext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsignedtext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-unsignedtext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -635,11 +630,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-shallowclone
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-shallowclone/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowclone/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowclone/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-shallowclone/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowclone/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowclone/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -661,11 +656,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_replaceiteminobject
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_replaceiteminobject/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobject/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobject/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_replaceiteminobject/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobject/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobject/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -687,11 +682,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-gettext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-gettext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-gettext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-gettext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-gettext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-gettext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-gettext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -713,11 +708,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-shallowequal
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-shallowequal/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowequal/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowequal/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-shallowequal/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowequal/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-shallowequal/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -739,11 +734,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_duplicate
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_duplicate/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_duplicate/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_duplicate/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_duplicate/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_duplicate/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_duplicate/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -765,11 +760,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xml_externalentityparsercreate
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/expat-xml_externalentityparsercreate/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_externalentityparsercreate/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_externalentityparsercreate/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/expat-xml_externalentityparsercreate/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_externalentityparsercreate/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_externalentityparsercreate/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 12.5</p>
@@ -791,11 +786,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_replaceiteminobjectcasesensitive
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_replaceiteminobjectcasesensitive/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobjectcasesensitive/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobjectcasesensitive/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_replaceiteminobjectcasesensitive/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobjectcasesensitive/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_replaceiteminobjectcasesensitive/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -817,11 +812,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-insertnewcomment
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewcomment/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewcomment/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewcomment/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewcomment/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewcomment/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewcomment/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -843,11 +838,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xml_parsercreatens
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/expat-xml_parsercreatens/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_parsercreatens/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_parsercreatens/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/expat-xml_parsercreatens/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_parsercreatens/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=expat-xml_parsercreatens/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 12.5</p>
@@ -869,11 +864,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-deleteattribute
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-deleteattribute/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-deleteattribute/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-deleteattribute/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-deleteattribute/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-deleteattribute/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-deleteattribute/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -895,11 +890,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-insertnewdeclaration
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewdeclaration/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -921,11 +916,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-insertnewchildelement
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewchildelement/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewchildelement/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewchildelement/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewchildelement/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewchildelement/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewchildelement/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -947,11 +942,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlnode-previoussiblingelement
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlnode-previoussiblingelement/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlnode-previoussiblingelement/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlnode-previoussiblingelement/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlnode-previoussiblingelement/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlnode-previoussiblingelement/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlnode-previoussiblingelement/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -973,11 +968,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyobj-loadobj
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-loadobj/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-loadobj/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-loadobj/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-loadobj/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-loadobj/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-loadobj/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -999,11 +994,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyobj-material_t-material_t
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-material_t-material_t/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-material_t-material_t/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-material_t-material_t/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyobjloader-tinyobj-material_t-material_t/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-material_t-material_t/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyobjloader-tinyobj-material_t-material_t/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1025,11 +1020,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmlelement-insertnewtext
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewtext/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewtext/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewtext/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmlelement-insertnewtext/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewtext/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmlelement-insertnewtext/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -1051,11 +1046,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">dwfl_module_relocate_address
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/elfutils-dwfl_module_relocate_address/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwfl_module_relocate_address/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwfl_module_relocate_address/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/elfutils-dwfl_module_relocate_address/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwfl_module_relocate_address/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwfl_module_relocate_address/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -1077,11 +1072,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xmlschemavalidatefile
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmlschemavalidatefile/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmlschemavalidatefile/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmlschemavalidatefile/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmlschemavalidatefile/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmlschemavalidatefile/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmlschemavalidatefile/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -1103,11 +1098,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">tinyxml2-xmldocument-loadfile
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-loadfile/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-loadfile/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-loadfile/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/tinyxml2-tinyxml2-xmldocument-loadfile/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-loadfile/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-loadfile/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1129,11 +1124,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ogg_stream_packetin
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/speex-ogg_stream_packetin/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_packetin/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_packetin/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/speex-ogg_stream_packetin/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_packetin/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_packetin/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1155,11 +1150,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xmltextreadersetschema
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreadersetschema/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreadersetschema/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreadersetschema/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreadersetschema/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreadersetschema/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreadersetschema/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -1181,11 +1176,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xmltextreaderschemavalidate
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreaderschemavalidate/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidate/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidate/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreaderschemavalidate/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidate/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidate/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -1207,11 +1202,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">plist_dict_merge
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libplist-plist_dict_merge/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_dict_merge/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_dict_merge/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libplist-plist_dict_merge/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_dict_merge/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libplist-plist_dict_merge/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 12.5</p>
@@ -1233,11 +1228,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xmltextreaderschemavalidatectxt
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreaderschemavalidatectxt/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidatectxt/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidatectxt/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libxml2-xmltextreaderschemavalidatectxt/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidatectxt/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libxml2-xmltextreaderschemavalidatectxt/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1259,11 +1254,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_printpreallocated
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_printpreallocated/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_printpreallocated/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_printpreallocated/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_printpreallocated/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_printpreallocated/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_printpreallocated/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 75</p>
@@ -1285,11 +1280,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ucl_parser_insert_chunk
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_parser_insert_chunk/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_insert_chunk/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_insert_chunk/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_parser_insert_chunk/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_insert_chunk/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_insert_chunk/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1311,11 +1306,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ucl_object_compare
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_compare/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_compare/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_compare/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_compare/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_compare/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_compare/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 12.5</p>
@@ -1337,11 +1332,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">dwarf_getlocations
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/elfutils-dwarf_getlocations/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwarf_getlocations/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwarf_getlocations/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/elfutils-dwarf_getlocations/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwarf_getlocations/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=elfutils-dwarf_getlocations/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -1363,11 +1358,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ucl_parser_add_fd_priority
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_parser_add_fd_priority/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_add_fd_priority/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_add_fd_priority/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_parser_add_fd_priority/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_add_fd_priority/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_parser_add_fd_priority/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 71.43</p>
@@ -1389,11 +1384,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">json-value-resize
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/jsoncpp-json-value-resize/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-resize/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-resize/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/jsoncpp-json-value-resize/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-resize/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-resize/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -1415,11 +1410,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">mosquitto_topic_matches_sub2
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/mosquitto-mosquitto_topic_matches_sub2/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub2/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub2/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/mosquitto-mosquitto_topic_matches_sub2/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub2/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub2/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 87.5</p>
@@ -1441,11 +1436,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">xvid_encore
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/xvid-xvid_encore/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=xvid-xvid_encore/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=xvid-xvid_encore/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/xvid-xvid_encore/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=xvid-xvid_encore/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=xvid-xvid_encore/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 31.25</p>
@@ -1467,11 +1462,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_parse
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_parse/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parse/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parse/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_parse/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parse/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parse/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 75</p>
@@ -1493,11 +1488,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">cjson_parsewithlength
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_parsewithlength/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parsewithlength/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parsewithlength/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/cjson-cjson_parsewithlength/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parsewithlength/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=cjson-cjson_parsewithlength/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -1519,11 +1514,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">json-value-removeindex
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/jsoncpp-json-value-removeindex/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-removeindex/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-removeindex/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/jsoncpp-json-value-removeindex/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-removeindex/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=jsoncpp-json-value-removeindex/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1545,11 +1540,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ucl_object_merge
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_merge/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_merge/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_merge/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_merge/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_merge/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_merge/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1571,11 +1566,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ogg_stream_pageout_fill
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/speex-ogg_stream_pageout_fill/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_pageout_fill/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_pageout_fill/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/speex-ogg_stream_pageout_fill/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_pageout_fill/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=speex-ogg_stream_pageout_fill/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 6.25</p>
@@ -1597,11 +1592,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">sf_command
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libsndfile-sf_command/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_command/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_command/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libsndfile-sf_command/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_command/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_command/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 25</p>
@@ -1623,11 +1618,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">mosquitto_topic_matches_sub
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/mosquitto-mosquitto_topic_matches_sub/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/mosquitto-mosquitto_topic_matches_sub/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=mosquitto-mosquitto_topic_matches_sub/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 62.5</p>
@@ -1649,11 +1644,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">sf_format_check
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libsndfile-sf_format_check/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_format_check/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_format_check/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libsndfile-sf_format_check/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_format_check/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libsndfile-sf_format_check/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 12.5</p>
@@ -1675,11 +1670,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">ucl_object_replace_key
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_replace_key/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_replace_key/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_replace_key/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libucl-ucl_object_replace_key/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_replace_key/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libucl-ucl_object_replace_key/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 50</p>
@@ -1701,11 +1696,11 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
    </td>
    <td style="background-color: null">dwarf_find_die_given_sig8
    </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libdwarf-dwarf_find_die_given_sig8/prompts.txt">Prompt</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libdwarf-dwarf_find_die_given_sig8/fixes/">Fixes</a>
-   </td>
-   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libdwarf-dwarf_find_die_given_sig8/targets/">Targets</a>
+   <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/libdwarf-dwarf_find_die_given_sig8/prompts.txt">Prompt</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libdwarf-dwarf_find_die_given_sig8/fixes/">Fixes</a>;
+<br>
+<a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=libdwarf-dwarf_find_die_given_sig8/targets/">Targets</a>.
    </td>
    <td style="background-color: null"><p style="text-align: right">
 37.5</p>
@@ -1724,4 +1719,6 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
   </tr>
 </table>
 
+
+<script>jtd.setTheme('wider');</script>
 
