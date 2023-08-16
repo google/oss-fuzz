@@ -45,10 +45,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Command registration
   context.subscriptions.push(
-    vscode.commands.registerCommand('oss-fuzz.SetUpOssFuzz', async () => {
-      println('CMD start: SetUpOssFuzz');
+    vscode.commands.registerCommand('oss-fuzz.SetUp', async () => {
+      println('CMD start: SetUp');
       await setUpOssFuzzHandler();
-      println('CMD end: SetUpOssFuzz');
+      println('CMD end: SetUp');
     })
   );
 

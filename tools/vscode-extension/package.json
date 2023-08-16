@@ -35,7 +35,7 @@
     ],
     "commands": [
       {
-        "command": "oss-fuzz.SetUpOssFuzz",
+        "command": "oss-fuzz.SetUp",
         "title": "OSS-Fuzz: Set up OSS-Fuzz"
       },
       {
