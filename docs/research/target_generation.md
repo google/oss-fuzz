@@ -280,7 +280,7 @@ Ultimately, the goal is to integrate the results of this research into OSS-Fuzz,
 
    </td>
    <td style="background-color: null"><p style="text-align: right">
-<a href="https://llm-exp.oss-fuzz.com/test-ochang-test-everything06144d5c-fc1e-4b21-ba32-44534a6a78f8.coverage/report/linux/report.html">11.16</a></p>
+11.16</p>
 
    </td>
    <td style="background-color: null"><a href="https://storage.googleapis.com/oss-fuzz-llm-targets-public/index.html?prefix=tinyxml2-tinyxml2-xmldocument-print/report/">Reports</a>
