@@ -5,6 +5,8 @@ permalink: /research/llms/target_generation/
 ---
 # Fuzz target generation using LLMs
 
+[Read our announcement blog.](https://security.googleblog.com/2023/08/ai-powered-fuzzing-breaking-bug-hunting.html)
+
 # Background
 
 [OSS-Fuzz](http://github.com/google/oss-fuzz) performs continuous fuzzing of [1000+](https://github.com/google/oss-fuzz/tree/master/projects) open source projects across most major languages. To integrate a new project, a human typically analyzes the attack surface of a library and writes [fuzz targets](https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzz-target) (also called fuzzing harnesses ) to exercise the relevant code. Linked with a [fuzzing engine](https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzzing-engine) (e.g. libFuzzer, AFL, Centipede), this enables coverage-guided fuzzing for all OSS-Fuzz projects. Depending on the complexity of the project, writing fuzz targets typically requires several hours of manual work and sufficient background knowledge of the project.  
