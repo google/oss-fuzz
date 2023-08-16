@@ -1,7 +1,7 @@
 ---
 layout: default
 nav_exclude: true
-permalink: /research/llms/target_generation/
+permalink: /research/llms/target-generation/
 ---
 # Fuzz target generation using LLMs
 
