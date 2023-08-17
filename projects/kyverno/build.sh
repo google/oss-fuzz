@@ -18,4 +18,4 @@
 # required by Go 1.20
 export CXX="${CXX} -lresolv"
 
-$SRC/cncf-fuzzing/projects/kyverno/build.sh
+$SRC/kyverno/test/fuzz/oss_fuzz_build.sh
