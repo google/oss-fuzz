@@ -38,7 +38,7 @@ module.exports.fuzz = function(data) {
       scanner.getTokenStart();
       scanner.getTokenEnd();
 
-      if (provider.consumeProbabilityFloat() < 0.1) {
+      if (provider.remainingBytes > 0 && provider.consumeProbabilityFloat() < 0.1) {
         scanner.resetTokenState(provider.consumeIntegralInRange(0, text.length));
       }
 
