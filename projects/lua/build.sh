@@ -78,6 +78,8 @@ git config --global --add safe.directory '*'
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
 cmake --build build --parallel
 
+cp corpus_dir/*.options $OUT/
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/tests/ -name '*_test' -type f);
 do
@@ -90,5 +92,5 @@ do
   if [ -e "$dict_path" ]; then
     cp $dict_path "$OUT/$name.dict"
   fi
-  [[ -e $corpus_dir ]] && zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done
