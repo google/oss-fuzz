@@ -18,16 +18,21 @@ const { FuzzedDataProvider } = require('@jazzer.js/core');
 const ts = require('typescript');
 
 module.exports.fuzz = function(data) {
+  const provider = new FuzzedDataProvider(data);
+
+  const fileContent = provider.consumeString(provider.consumeIntegralInRange(1, 10000));
+  const host = createHost(provider);
+  const basePath = provider.consumeString(provider.consumeIntegralInRange(1, 100));
+  const existingOptions = createExistingOptions(provider);
+  const configFileName = provider.consumeString(provider.consumeIntegralInRange(1, 100));
+  let json;
   try {
-    const provider = new FuzzedDataProvider(data);
+    json = JSON.parse(fileContent);
+  } catch (error) {
+    return;
+  }
 
-    const fileContent = provider.consumeString(provider.consumeIntegralInRange(1, 10000));
-    const host = createHost(provider);
-    const basePath = provider.consumeString(provider.consumeIntegralInRange(1, 100));
-    const existingOptions = createExistingOptions(provider);
-    const configFileName = provider.consumeString(provider.consumeIntegralInRange(1, 100));
-
-    const json = JSON.parse(fileContent);
+  try {
     ts.parseJsonConfigFileContent(
       json,
       host,
