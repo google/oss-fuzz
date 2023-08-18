@@ -459,6 +459,60 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     fi
   done
 
+  # Check if TARGET_PACKAGE_PREFIX has been set and remove classes not
+  # in the target package prefix to exclude them in the resulting HTML
+  # report. By default, Jacoco includes all classes in the classes dump
+  # directory to the resulting HTML report. Removing classes not in target
+  # package could concentrate the result on small subset of class and
+  # decrease the noise from project dependencies.
+  dir_to_remove=
+  have_target_package="NO"
+  # Duplicate classes_dir for dependency classes removal
+  reduced_classes_dir=$DUMPS_DIR/classes_reduced
+  cp -r $classes_dir $reduced_classes_dir
+  if [[ -n ${TARGET_PACKAGE_PREFIX:-} ]]
+  then
+    # Translate the colon separated target package prefix environment
+    # variable to space separated directories for deciding which
+    # classes directory needed to be removed.
+    package_prefix=$(echo $TARGET_PACKAGE_PREFIX | sed "s#:# #g" | sed "s#\.#/#g" | sed "s#/\*##g")
+    for dir in $(find $reduced_classes_dir -mindepth 1 -type d)
+    do
+      # Check if each directory matches one of the target package prefix. If
+      # not, mark them as candidate for removal with a space separated variable.
+      # As the directory structure of java classes follow their package name,
+      # then directories that do not match the provided list of package prefix
+      # can be removed and exclude from the HTML report.
+      need_remove="YES"
+      for prefix in $package_prefix
+      do
+        if [[ "./$prefix" == "$dir"* ]]
+        then
+          have_target_package="YES"
+          need_remove="NO"
+        fi
+      done
+      if [[ "$need_remove" == "YES" ]]
+      then
+        # Mark the directory for removal with a space separated variable
+        dir_to_remove="$dir_to_remove$dir "
+      fi
+    done
+  fi
+
+  # Remove unwanted directory for Jacoco HTML report if
+  # at least one target package prefix does exist
+  if [[ "$have_target_package" == "YES" ]]
+  then
+    for dir in $dir_to_remove
+    do
+      rm -rf $dir
+    done
+   # Point classes_dir to reduced_classes_dir if at least one target package
+   # prefix does exist.
+   classes_dir=$reduced_classes_dir
+  fi
+
   # Clean up files that can create duplicate class names which breaks Jacoco.
   # Remove META-INF folder because some jar may store duplications of the same
   # class file in the META-INF for other java versions.
