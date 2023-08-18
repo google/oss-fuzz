@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+PACKAGES="build-essential ninja-build cmake make"
+if [ "$ARCHITECTURE" = "i386" ]; then
+    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
+else
+    PACKAGES="$PACKAGES zlib1g-dev libreadline-dev libunwind-dev"
+fi
+apt-get update
+apt-get install -y $PACKAGES
+
 # Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
 # contain paths with slashes.
 sed "s~CFLAGS=~CFLAGS+=~g" -i $SRC/lua/makefile
