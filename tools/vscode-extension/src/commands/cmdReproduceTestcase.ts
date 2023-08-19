@@ -85,6 +85,29 @@ export async function reproduceTestcase(crashInfoFileInput: string) {
   // Project: project-name
   // Fuzzing Engine: libFuzzer
   // Fuzz Target: fuzzer-name
+  //
+  // Example:
+  // The following URL: https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=59747
+  // has the bug information:
+  // """
+  // Project: my-fuzzing-project
+  // Fuzzing Engine: libFuzzer
+  // Fuzz Target: the-fuzzer-name-fuzz-parseXX
+  // Job Type: libfuzzer_asan_my-fuzzing-project
+  // Platform Id: linux
+  // """
+  // and a link to a reproducer test case:
+  // https://oss-fuzz.com/download?testcase_id=5009071179431936
+  // which, when accessed will download the file
+  // clusterfuzz-testcase-minimized-flb-it-fuzz-config_map_fuzzer_OSSFUZZ-5009071179431936
+  //
+  // To enable reproducing of this issue we need to:
+  // - 1) Download the crash file and place it in the directory given in config.ts
+  //      and "crashesDirectory" variable.
+  // - 2) create a file "5009071179431936.info" with the information above
+  //      (Project:... Fuzz Target: ...) into it.
+  // - 3) the reproducer can now be reproduced using the reproduce command
+  //      with argument "5009071179431936" as argument.
   r.on('line', (text: string) => {
     println(text);
     if (text.startsWith('Project: ')) {
