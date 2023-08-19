@@ -104,8 +104,10 @@ export async function reproduceTestcase(crashInfoFileInput: string) {
   // To enable reproducing of this issue we need to:
   // - 1) Download the crash file and place it in the directory given in config.ts
   //      and "crashesDirectory" variable.
-  // - 2) create a file "5009071179431936.info" with the information above
-  //      (Project:... Fuzz Target: ...) into it.
+  // - 2) create a file "5009071179431936.info" and paste the information above
+  //      (Project:... Fuzz Target: ...) into the file. This information is
+  //      needed because we need to know project name and fuzzer name in order
+  //      to reproduce the crash.
   // - 3) the reproducer can now be reproduced using the reproduce command
   //      with argument "5009071179431936" as argument.
   r.on('line', (text: string) => {
