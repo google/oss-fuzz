@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+cp $SRC/expr/test/fuzz/fuzz_expr_seed_corpus.zip $OUT/
+cp $SRC/expr/test/fuzz/fuzz_expr.dict $OUT/
+
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
-compile_native_go_fuzzer github.com/antonmedv/expr FuzzExpr fuzz_expr
+compile_native_go_fuzzer github.com/antonmedv/expr/test/fuzz FuzzExpr fuzz_expr
