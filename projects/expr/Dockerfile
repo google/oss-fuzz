@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/uber-go/atomic
+RUN git clone --depth 1 https://github.com/google/expr.git $SRC/expr
 COPY build.sh $SRC/
-WORKDIR $SRC/atomic
+WORKDIR $SRC/expr
