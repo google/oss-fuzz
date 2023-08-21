@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
-	build-essential cmake make coreutils sed \
+	build-essential cmake make coreutils sed lld \
 	autoconf automake libtool zlib1g-dev \
 	libreadline-dev libncurses5-dev libssl-dev \
 	libunwind-dev luajit wget ninja-build \
