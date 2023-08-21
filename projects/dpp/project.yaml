@@ -1,6 +1,6 @@
 homepage: "https://github.com/brainboxdotcc/DPP"
 language: c++
-primary_contact: "braindigitalis@gmail.com"
+primary_contact: "craigedwardsbrainbox@gmail.com"
 auto_ccs:
   - "craigedwards@brainbox.cc"
 sanitizers:
