@@ -139,6 +139,19 @@ def run_experiment(project_name, target_name, args, output_path,
       ],
   })
 
+  # Upload raw coverage data.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'dumps'),
+          os.path.join(upload_coverage_path, 'dumps'),
+      ],
+  })
+
   # Upload coverage report.
   steps.append({
       'name':
@@ -171,7 +184,7 @@ def run_experiment(project_name, target_name, args, output_path,
                                  credentials,
                                  'experiment',
                                  experiment=True,
-                                 extra_tags=[f'experiment-{experiment_name}'])
+                                 extra_tags=[f'experiment-{experiment_name}', 'experiment-{project_name}])
 
 
 def main():

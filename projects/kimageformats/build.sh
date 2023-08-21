@@ -119,6 +119,7 @@ HANDLER_TYPES="ANIHandler ani
         PCXHandler pcx
         SoftimagePICHandler pic
         PSDHandler psd
+        QOIHandler qoi
         RASHandler ras
         RAWHandler raw
         RGBHandler rgb

@@ -57,7 +57,7 @@ class BaseFuzzTargetRunner:
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
     Returns True on success."""
-    # Use a seperate initialization function so we can return False on failure
+    # Use a separate initialization function so we can return False on failure
     # instead of exceptioning like we need to do if this were done in the
     # __init__ method.
 

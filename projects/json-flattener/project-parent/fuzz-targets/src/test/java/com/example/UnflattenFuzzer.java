@@ -36,7 +36,6 @@ class UnflattenFuzzer {
 
     @FuzzTest
     void myFuzzTest(FuzzedDataProvider data) {
-
         try {
             JsonUnflattenerFactory jsonUnflattenerFactory = jsonUnflattenerFactory(data.pickValue(printModes), data.pickValue(flattenModes), data.pickValue(jsonCores));
             String json = data.consumeRemainingAsString();

@@ -40,5 +40,5 @@ popd
 
 mkdir -p $OUT/lib
 cp lib/swoc/.libs/libtsswoc*.so* $OUT/lib/.
-cp src/tscore/.libs/libtscore.so* $OUT/lib/.
+cp src/api/.libs/libtsapi.so* $OUT/lib/.
 cp src/tscpp/util/.libs/libtscpputil.so* $OUT/lib/.

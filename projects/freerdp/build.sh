@@ -35,21 +35,20 @@ esac
 
 cmake_args=(
     # Specific to FreeRDP.
-    -DWITH_CLIENT_CHANNELS=OFF 	# Disable libusb.
-    -DWITH_FFMPEG=OFF
-    -DWITH_WAYLAND=OFF
+    -DWITH_SAMPLE=OFF
+    -DWITH_SERVER=ON
+    -DWITH_PROXY=OFF
+    -DWITH_SHADOW=OFF
+    -DWITH_CLIENT=OFF
     -DWITH_ALSA=OFF
     -DWITH_X11=OFF
     -DWITH_LIBSYSTEMD=OFF
-    -DWITH_PCSC=OFF
-    -DWITH_GSTREAMER_0_10=OFF
-    -DWITH_GSTREAMER_1_0=OFF
-    -DWITH_KRB5=OFF
     -DWITH_FUSE=OFF
+    -DWITH_AAD=OFF
 
     # clang-15 segfaults on linking binaries when LTO is enabled,
     # see https://github.com/google/oss-fuzz/pull/10448#issuecomment-1578160436
-    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=FALSE
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
 
     $SANITIZERS_ARGS
 
