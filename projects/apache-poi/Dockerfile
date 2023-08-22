@@ -21,6 +21,7 @@ unzip maven.zip -d $SRC/maven-3.6.3 && \
 rm -rf maven.zip
 
 ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+ENV TARGET_PACKAGE_PREFIX org.apache.poi.*:org.apache.xmlbeans.*
 
 RUN curl -L https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u382-b05/OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz -o OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
   tar xvf OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
