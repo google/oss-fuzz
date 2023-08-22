@@ -45,6 +45,8 @@ cmake_args=(
     -DWITH_LIBSYSTEMD=OFF
     -DWITH_FUSE=OFF
     -DWITH_AAD=OFF
+    -DWITH_FFMPEG=OFF
+    -DWITH_SWSCALE=OFF
 
     # clang-15 segfaults on linking binaries when LTO is enabled,
     # see https://github.com/google/oss-fuzz/pull/10448#issuecomment-1578160436
