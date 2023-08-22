@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
+RUN git clone --branch ligurio/add-oss-fuzz-scripts --depth 1 https://github.com/ligurio/FreeRDP.git
 
 WORKDIR FreeRDP
 COPY build.sh $SRC/
