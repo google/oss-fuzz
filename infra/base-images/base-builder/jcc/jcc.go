@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var MaxMissingHeaderFiles = 10
@@ -165,13 +166,74 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
-func compile(bin string, args []string) (int, string, string) {
-	cmd := exec.Command(bin, args...)
+func RunCommand(cmd *exec.Cmd) (int, string, string) {
+	// Executes a command and returns the output.
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	cmd.Run()
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
+}
+
+func ExecOriginalCommand(bin string, args []string) (int, string, string) {
+	// Executes the original command.
+	cmd := exec.Command(bin, args...)
+	return RunCommand(cmd)
+}
+
+func Contains(slice []string, item string) bool {
+	// Checks if the slice contains item.
+	for _, s := range slice {
+		if strings.ToLower(s) == strings.ToLower(item) {
+			return true
+		}
+	}
+	return false
+}
+
+func FindTargetFile(args []string) string {
+	// Finds the fuzz target file by file extension.
+	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c"}
+	for _, arg := range args {
+		ext := strings.ToLower(filepath.Ext(arg));
+		if Contains(suffixes, ext) {
+			return filepath.Base(arg)
+		}
+	}
+	// Uses a time stamp as AST filename if no target file is found.
+	return time.Now().Format("20060102_150405.000")
+}
+
+func RemoveIfEmpty(filepath string) {
+	// Removes filepath if it is empty.
+	info, _ := os.Stat(filepath)
+	if info.Size() == 0 { os.Remove(filepath) }
+}
+
+func GenerateAST(bin string, args []string) (int, string, string) {
+	// Generates AST.
+	newArgs := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
+	newArgs = append(args, newArgs...)
+
+	target_file := FindTargetFile(args)
+	filePath := filepath.Join("/tmp", fmt.Sprintf("%s.txt", target_file))
+
+	cmdStr := fmt.Sprintf("%s %s > %s", bin, strings.Join(newArgs, " "), filePath)
+	cmd := exec.Command("sh", "-c", cmdStr)
+	ret_code, stdout, stderr := RunCommand(cmd)
+
+	RemoveIfEmpty(filePath)
+	return ret_code, stdout, stderr
+}
+
+func compile(bin string, args []string) (int, string, string) {
+	var ret_code int
+	var stdout, stderr string
+	// Generate AST.
+	ret_code, stdout, stderr = GenerateAST(bin, args)
+	// Run the actual command.
+	ret_code, stdout, stderr = ExecOriginalCommand(bin, args)
+	return ret_code, stdout, stderr
 }
 
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
