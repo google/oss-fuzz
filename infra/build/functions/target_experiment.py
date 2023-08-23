@@ -179,12 +179,13 @@ def run_experiment(project_name, target_name, args, output_path,
   })
 
   credentials, _ = google.auth.default()
-  return build_project.run_build(project_name,
-                                 steps,
-                                 credentials,
-                                 'experiment',
-                                 experiment=True,
-                                 extra_tags=[f'experiment-{experiment_name}', 'experiment-{project_name}])
+  return build_project.run_build(
+      project_name,
+      steps,
+      credentials,
+      'experiment',
+      experiment=True,
+      extra_tags=[f'experiment-{experiment_name}', 'experiment-{project_name}'])
 
 
 def main():
