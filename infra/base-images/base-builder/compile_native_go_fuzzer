@@ -29,7 +29,7 @@ function build_native_go_fuzzer() {
 		cp "${fuzzer_filename}" "${OUT}/rawfuzzers/${fuzzer}"
 		cd $current_dir
 	else
-		go-118-fuzz-build -o $fuzzer.a -func $function $abs_file_dir
+		go-118-fuzz-build $tags -o $fuzzer.a -func $function $abs_file_dir
 		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 	fi
 }
