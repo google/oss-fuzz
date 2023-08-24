@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 <git_url> icalendar     # or use other version control
-WORKDIR icalendar
-COPY build.sh $SRC/
+RUN pip3 install --upgrade pip 
+RUN git clone --depth 1 https://github.com/collective/icalendar.git icalendar
+COPY *.sh *.py $SRC/
+WORKDIR $SRC/icalendar 

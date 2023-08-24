@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,29 @@
 # limitations under the License.
 #
 ################################################################################
+import atheris
+import sys
 
-cd "$SRC"/icalendar
-pip3 install .
+with atheris.instrument_imports(include=['icalendar']):
+    from icalendar import Calendar
 
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py');do
-  compile_python_fuzzer "$fuzzer" 
-done
+from enhanced_fdp import EnhancedFuzzedDataProvider
+
+
+def TestOneInput(data):
+    fdp = EnhancedFuzzedDataProvider(data)
+    try:
+        Calendar.from_ical(fdp.ConsumeRemainingString())
+    except ValueError as e:
+        if "component" in str(e) or "parse" in str(e):
+            return -1
+        raise e
+
+
+def main():
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()
