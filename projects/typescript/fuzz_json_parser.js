@@ -75,6 +75,8 @@ function createExistingOptions(provider) {
 }
 
 const ignored = [
+  // TypeScript not interested: https://github.com/microsoft/TypeScript/issues/55480
+  "maximum call stack size exceeded",
   "cannot read",
   "cannot create",
   "expected",
