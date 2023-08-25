@@ -214,7 +214,7 @@ func GenerateAST(bin string, args []string) (int, string, string) {
 	newArgs := append(args, "-Xclang", "-ast-dump=json", "-fsyntax-only")
 
 	targetFile := FindTargetFile(args)
-	filePath := filepath.Join("/tmp", fmt.Sprintf("%s.txt", targetFile))
+	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
 
 	cmdStr := fmt.Sprintf("%s %s > %s", bin, strings.Join(newArgs, " "), filePath)
 	cmd := exec.Command("sh", "-c", cmdStr)
