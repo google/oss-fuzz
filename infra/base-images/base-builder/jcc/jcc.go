@@ -184,7 +184,7 @@ func ExecOriginalCommand(bin string, args []string) (int, string, string) {
 func Contains(slice []string, item string) bool {
 	// Checks if the slice contains item.
 	for _, s := range slice {
-		if strings.ToLower(s) == strings.ToLower(item) {
+		if strings.EqualFold(s, item) {
 			return true
 		}
 	}
@@ -195,8 +195,7 @@ func FindTargetFile(args []string) string {
 	// Finds the fuzz target file by file extension.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c"}
 	for _, arg := range args {
-		ext := strings.ToLower(filepath.Ext(arg));
-		if Contains(suffixes, ext) {
+		if Contains(suffixes, filepath.Ext(arg)) {
 			return filepath.Base(arg)
 		}
 	}
@@ -212,28 +211,25 @@ func RemoveIfEmpty(filepath string) {
 
 func GenerateAST(bin string, args []string) (int, string, string) {
 	// Generates AST.
-	newArgs := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
-	newArgs = append(args, newArgs...)
+	newArgs := append(args, "-Xclang", "-ast-dump=json", "-fsyntax-only")
 
-	target_file := FindTargetFile(args)
-	filePath := filepath.Join("/tmp", fmt.Sprintf("%s.txt", target_file))
+	targetFile := FindTargetFile(args)
+	filePath := filepath.Join("/tmp", fmt.Sprintf("%s.txt", targetFile))
 
 	cmdStr := fmt.Sprintf("%s %s > %s", bin, strings.Join(newArgs, " "), filePath)
 	cmd := exec.Command("sh", "-c", cmdStr)
-	ret_code, stdout, stderr := RunCommand(cmd)
+	retCode, stdout, stderr := RunCommand(cmd)
 
 	RemoveIfEmpty(filePath)
-	return ret_code, stdout, stderr
+	return retCode, stdout, stderr
 }
 
 func compile(bin string, args []string) (int, string, string) {
-	var ret_code int
-	var stdout, stderr string
 	// Generate AST.
-	ret_code, stdout, stderr = GenerateAST(bin, args)
+	retCode, stdout, stderr := GenerateAST(bin, args)
 	// Run the actual command.
-	ret_code, stdout, stderr = ExecOriginalCommand(bin, args)
-	return ret_code, stdout, stderr
+	retCode, stdout, stderr = ExecOriginalCommand(bin, args)
+	return retCode, stdout, stderr
 }
 
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
