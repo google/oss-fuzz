@@ -23,10 +23,10 @@ def get_env(config, workspace):
   vars set to values needed to run a fuzzer."""
   env = os.environ.copy()
   env['SANITIZER'] = config.sanitizer
+  env['FUZZING_ENGINE'] = config.fuzzing_engine
   env['FUZZING_LANGUAGE'] = config.language
   env['OUT'] = workspace.out
   env['CIFUZZ'] = 'True'
-  env['FUZZING_ENGINE'] = config_utils.DEFAULT_ENGINE
   env['ARCHITECTURE'] = config.architecture
   # Do this so we don't fail in tests.
   env['FUZZER_ARGS'] = '-rss_limit_mb=2560 -timeout=25'

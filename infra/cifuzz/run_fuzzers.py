@@ -61,7 +61,8 @@ class BaseFuzzTargetRunner:
     # instead of exceptioning like we need to do if this were done in the
     # __init__ method.
 
-    logging.info('Using %s sanitizer.', self.config.sanitizer)
+    logging.info('Using %s sanitizer, %s fuzzing engine.',
+                 self.config.sanitizer, self.config.fuzzing_engine)
 
     # TODO(metzman) Add a check to ensure we aren't over time limit.
     if not self.config.fuzz_seconds or self.config.fuzz_seconds < 1:

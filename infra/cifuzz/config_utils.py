@@ -27,10 +27,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import platform_config
 import constants
 
-SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
+SANITIZERS = ['address', 'memory', 'undefined', 'coverage', 'introspector']
+
+FUZZING_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
-DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_FUZZING_ENGINE = 'libfuzzer'
 
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
@@ -42,6 +44,10 @@ DEFAULT_ENGINE = 'libfuzzer'
 
 def _get_sanitizer():
   return os.getenv('SANITIZER', constants.DEFAULT_SANITIZER).lower()
+
+
+def _get_engine():
+  return os.getenv('FUZZING_ENGINE', constants.DEFAULT_FUZZING_ENGINE).lower()
 
 
 def _get_architecture():
@@ -115,6 +121,7 @@ class BaseConfig:
 
     self.dry_run = _is_dry_run()  # Check if failures should not be reported.
     self.sanitizer = _get_sanitizer()
+    self.fuzzing_engine = _get_engine()
     self.architecture = _get_architecture()
     self.language = _get_language()
     self.low_disk_space = environment.get_bool('LOW_DISK_SPACE', False)
@@ -150,6 +157,11 @@ class BaseConfig:
     if self.sanitizer not in SANITIZERS:
       logging.error('Invalid SANITIZER: %s. Must be one of: %s.',
                     self.sanitizer, SANITIZERS)
+      return False
+
+    if self.fuzzing_engine not in FUZZING_ENGINES:
+      logging.error('Invalid FUZZING_ENGINE: %s. Must be one of: %s.',
+                    self.fuzzing_engine, FUZZING_ENGINES)
       return False
 
     if self.architecture not in constants.ARCHITECTURES:

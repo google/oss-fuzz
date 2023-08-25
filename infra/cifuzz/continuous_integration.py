@@ -239,8 +239,9 @@ class InternalGithub(GithubCiMixin, BaseCi):
     host_repo_path = os.path.join(self._repo_dir, repo_name)
     bash_command = f'cp -r {image_repo_path} {host_repo_path}'
     docker_args, _ = docker.get_base_docker_run_args(
-        self.workspace, self.config.sanitizer, self.config.language,
-        self.config.architecture, self.config.docker_in_docker)
+        self.workspace, self.config.sanitizer, self.config.fuzzing_engine,
+        self.config.language, self.config.architecture,
+        self.config.docker_in_docker)
     docker_args.extend([
         docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash', '-c', bash_command

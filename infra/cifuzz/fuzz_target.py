@@ -151,10 +151,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
   def prune(self):
     """Prunes the corpus and returns the result."""
     self._download_corpus()
-    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
-                                             self.config.sanitizer,
-                                             self.target_path):
-      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+    with clusterfuzz.environment.Environment(
+        config_utils.DEFAULT_FUZZING_ENGINE, self.config.sanitizer,
+        self.target_path):
+      engine_impl = clusterfuzz.fuzz.get_engine(
+          config_utils.DEFAULT_FUZZING_ENGINE)
       result = engine_impl.minimize_corpus(self.target_path, [],
                                            [self.latest_corpus_path],
                                            self.pruned_corpus_path,
@@ -177,10 +178,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
     logging.info('Starting fuzzing')
     with tempfile.TemporaryDirectory() as artifacts_dir:
-      with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
-                                               self.config.sanitizer,
-                                               self.target_path) as env:
-        engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+      with clusterfuzz.environment.Environment(
+          config_utils.DEFAULT_FUZZING_ENGINE, self.config.sanitizer,
+          self.target_path) as env:
+        engine_impl = clusterfuzz.fuzz.get_engine(
+            config_utils.DEFAULT_FUZZING_ENGINE)
         options = engine_impl.prepare(corpus_path, env.target_path,
                                       env.build_dir)
         options.merge_back_new_testcases = False
@@ -247,10 +249,11 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
 
   def minimize_testcase(self, testcase_path):
     """Minimizes the testcase located at |testcase_path|."""
-    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
-                                             self.config.sanitizer,
-                                             self.target_path):
-      engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+    with clusterfuzz.environment.Environment(
+        config_utils.DEFAULT_FUZZING_ENGINE, self.config.sanitizer,
+        self.target_path):
+      engine_impl = clusterfuzz.fuzz.get_engine(
+          config_utils.DEFAULT_FUZZING_ENGINE)
       minimized_testcase_path = testcase_path + '-minimized'
       return engine_impl.minimize_testcase(self.target_path, [],
                                            testcase_path,
@@ -304,13 +307,14 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     os.chmod(target_path, stat.S_IRWXO)
 
     logging.info('Trying to reproduce crash using: %s.', testcase)
-    with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
-                                             self.config.sanitizer,
-                                             target_path):
+    with clusterfuzz.environment.Environment(
+        config_utils.DEFAULT_FUZZING_ENGINE, self.config.sanitizer,
+        target_path):
       reproduce_time_seconds = PER_LANGUAGE_REPRODUCE_TIMEOUTS.get(
           self.config.language, DEFAULT_REPRODUCE_TIME_SECONDS)
       for _ in range(REPRODUCE_ATTEMPTS):
-        engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
+        engine_impl = clusterfuzz.fuzz.get_engine(
+            config_utils.DEFAULT_FUZZING_ENGINE)
         try:
           result = engine_impl.reproduce(target_path,
                                          testcase,

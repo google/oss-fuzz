@@ -40,10 +40,10 @@ class TestRunCoverageCommand(unittest.TestCase):
     expected_command = 'coverage'
     expected_env = {
         'SANITIZER': config.sanitizer,
+        'FUZZING_ENGINE': 'libfuzzer',
         'FUZZING_LANGUAGE': config.language,
         'OUT': workspace.out,
         'CIFUZZ': 'True',
-        'FUZZING_ENGINE': 'libfuzzer',
         'ARCHITECTURE': 'x86_64',
         'FUZZER_ARGS': '-rss_limit_mb=2560 -timeout=25',
         'HTTP_PORT': '',
