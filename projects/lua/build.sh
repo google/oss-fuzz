@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+# For some reason the linker will complain if address sanitizer is not used
+# in introspector builds.
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS="${CFLAGS} -fsanitize=address"
+  export CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+fi
+
 PACKAGES="build-essential ninja-build cmake make"
 if [ "$ARCHITECTURE" = "i386" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
