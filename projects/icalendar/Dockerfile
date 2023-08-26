@@ -17,5 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip 
 RUN git clone --depth 1 https://github.com/collective/icalendar.git icalendar
-COPY *.sh *.py $SRC/
+COPY *.sh *.py $SRC/ 
+COPY corpus $SRC/corpus
 WORKDIR $SRC/icalendar 
+
