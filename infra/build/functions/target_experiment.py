@@ -25,7 +25,7 @@ import google.auth
 import build_lib
 import build_project
 
-JCC_DIR = '/usr/local/bin/jcc'
+JCC_DIR = '/usr/local/bin'
 
 
 def run_experiment(project_name, target_name, args, output_path,
@@ -61,8 +61,8 @@ def run_experiment(project_name, target_name, args, output_path,
   project_yaml['run_tests'] = False
 
   jcc_env = [
-      f'CC={JCC_DIR}/clang',
-      f'CXX={JCC_DIR}/clang++',
+      f'CC={JCC_DIR}/clang-jcc',
+      f'CXX={JCC_DIR}/clang++-jcc',
   ]
   steps = build_project.get_build_steps(project_name,
                                         project_yaml,
@@ -179,12 +179,13 @@ def run_experiment(project_name, target_name, args, output_path,
   })
 
   credentials, _ = google.auth.default()
-  return build_project.run_build(project_name,
-                                 steps,
-                                 credentials,
-                                 'experiment',
-                                 experiment=True,
-                                 extra_tags=[f'experiment-{experiment_name}'])
+  return build_project.run_build(
+      project_name,
+      steps,
+      credentials,
+      'experiment',
+      experiment=True,
+      extra_tags=[f'experiment-{experiment_name}', f'experiment-{project_name}'])
 
 
 def main():

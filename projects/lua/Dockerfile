@@ -15,9 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-	build-essential ninja-build cmake make \
-	zlib1g-dev libreadline-dev libunwind-dev
 RUN git clone https://github.com/lua/lua
 RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
 WORKDIR testdir

@@ -20,4 +20,4 @@ npm install
 npm install --save-dev @jazzer.js/core
 
 # Build Fuzzers.
-compile_javascript_fuzzer js-yaml fuzz.js --sync
+compile_javascript_fuzzer js-yaml fuzz.js -i js-yaml --sync

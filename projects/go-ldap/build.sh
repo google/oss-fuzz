@@ -1,5 +1,4 @@
 #!/bin/bash -eu
-#
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +15,8 @@
 #
 ################################################################################
 
-go build jcc.go
-cp jcc clang
-cp jcc clang++
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang++
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzParseDN                 fuzz_parse_dn
+compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzDecodeEscapedSymbols    fuzz_decode_escaped_symbols
+compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzEscapeDN                fuzz_escape_dn

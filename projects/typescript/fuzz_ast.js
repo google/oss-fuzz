@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const { FuzzedDataProvider } = require("@jazzer.js/core");
+const { getCompilerOptions } = require("./fuzz_util");
 const ts = require("typescript");
 
 module.exports.fuzz = async function(data) {
@@ -31,13 +32,9 @@ module.exports.fuzz = async function(data) {
       /*setParentNodes */ true
     );
 
-    // Fuzzing parsing and lexing
     ts.getPreEmitDiagnostics(sourceFile);
-
-    // Fuzzing type inference
     ts.getTypeChecker(sourceFile);
 
-    // Consume a boolean and use it to randomly remove a node from the AST
     const shouldRemoveNode = provider.consumeBoolean();
     if (shouldRemoveNode) {
       const nodes = [];
@@ -49,7 +46,6 @@ module.exports.fuzz = async function(data) {
       }
     }
 
-    // Consume a boolean and use it to randomly add a new node to the AST
     const shouldAddNode = provider.consumeBoolean();
     if (shouldAddNode) {
       const newNode = ts.createEmptyStatement();
@@ -65,7 +61,6 @@ module.exports.fuzz = async function(data) {
       }
     }
 
-    // Consume an integral and use it to randomly replace a node in the AST
     const numNodes = provider.consumeIntegral(1, true);
     for (let i = 0; i < numNodes; i++) {
       const nodes = [];
@@ -78,14 +73,11 @@ module.exports.fuzz = async function(data) {
       }
     }
 
-    // Fuzzing transformation and emit
     const transformed = ts.transform(sourceFile, [/* transformation functions */]);
-    const transformedSourceFile = transformed.transformed[0];
+    transformed.transformed[0];
 
-    // Fuzzing language features
     const shouldFuzzLanguageFeature = provider.consumeBoolean();
     if (shouldFuzzLanguageFeature) {
-      // Fuzzing classes
       const classDeclaration = ts.createClassDeclaration(
         /* decorators */[],
         /* modifiers */[],
@@ -96,7 +88,6 @@ module.exports.fuzz = async function(data) {
       );
       ts.addDeclaration(sourceFile, classDeclaration);
 
-      // Fuzzing interfaces
       const interfaceDeclaration = ts.createInterfaceDeclaration(
         /* decorators */[],
         /* modifiers */[],
@@ -107,7 +98,6 @@ module.exports.fuzz = async function(data) {
       );
       ts.addDeclaration(sourceFile, interfaceDeclaration);
 
-      // Fuzzing modules
       const moduleDeclaration = ts.createModuleDeclaration(
         /* decorators */[],
         /* modifiers */[],
@@ -117,7 +107,6 @@ module.exports.fuzz = async function(data) {
       );
       ts.addDeclaration(sourceFile, moduleDeclaration);
 
-      // Fuzzing generics
       const genericFunctionDeclaration = ts.createFunctionDeclaration(
         /* decorators */[],
         /* modifiers */[],
@@ -136,7 +125,6 @@ module.exports.fuzz = async function(data) {
       );
       ts.addDeclaration(sourceFile, genericFunctionDeclaration);
 
-      // Fuzzing decorators
       const decorator = ts.createDecorator(
         ts.createCall(
           ts.createIdentifier(provider.consumeString(10)),
@@ -146,7 +134,6 @@ module.exports.fuzz = async function(data) {
       );
       ts.addDeclaration(sourceFile, decorator);
 
-      // Fuzzing async/await
       const asyncFunctionDeclaration = ts.createFunctionDeclaration(
         /* decorators */[],
         /* modifiers */[],
@@ -168,24 +155,15 @@ module.exports.fuzz = async function(data) {
       ts.addDeclaration(sourceFile, asyncFunctionDeclaration);
     }
 
-    // Fuzzing compiler options
-    const compilerOptions = {
-      target: ts.ScriptTarget.ES5,
-      module: ts.ModuleKind.CommonJS,
-      strict: provider.consumeBoolean(),
-      // ...
-    };
+    const compilerOptions = getCompilerOptions(provider);
     const program = ts.createProgram([fileName], compilerOptions);
     program.emit();
 
-    // Fuzzing API functions
     const shouldFuzzApiFunction = provider.consumeBoolean();
     if (shouldFuzzApiFunction) {
-      // Fuzzing type checking
       const typeChecker = program.getTypeChecker();
       const randomSymbol = typeChecker.getSymbolAtLocation(sourceFile);
       typeChecker.getTypeOfSymbolAtLocation(randomSymbol, sourceFile);
-      // ...
     }
 
   } catch (error) {
@@ -194,10 +172,10 @@ module.exports.fuzz = async function(data) {
 };
 
 function ignoredError(error) {
-  return !!ignored.find(message => error.message.indexOf(message) !== -1);
+  return !!ignored.find(message => error.message.toLowerCase().indexOf(message) !== -1);
 }
 
 const ignored = [
-  "is not a function"
+  // TypeScript not interested: https://github.com/microsoft/TypeScript/issues/55480
+  "maximum call stack size exceeded",
 ];
-
