@@ -245,7 +245,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
-  apt-get install -y libjpeg-dev zlib1g-dev
+  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
   python3 -m pip install --upgrade setuptools
   python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
   python3 -m pip install --prefer-binary matplotlib
