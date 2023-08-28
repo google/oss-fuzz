@@ -1,0 +1,10 @@
+homepage: "https://github.com/privacyresearchgroup/mp4san"
+language: rust
+primary_contact: "usual.beach5937@jessacake.com"
+main_repo: "https://github.com/privacyresearchgroup/mp4san"
+vendor_ccs:
+  - "security@signal.org"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

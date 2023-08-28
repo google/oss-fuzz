@@ -16,13 +16,13 @@
 
 package com.example;
 
-import com.amazon.ion.system.IonBinaryWriterBuilder;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
 
 import com.amazon.ion.*;
 import com.amazon.ion.system.IonReaderBuilder;
 import com.amazon.ion.system.IonTextWriterBuilder;
+import com.amazon.ion.system.IonBinaryWriterBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

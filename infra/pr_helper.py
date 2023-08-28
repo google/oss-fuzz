@@ -31,6 +31,7 @@ API_URL = 'https://api.github.com'
 BASE_URL = f'{API_URL}/repos/{OWNER}/{REPO}'
 BRANCH = 'master'
 CRITICALITY_SCORE_PATH = '/home/runner/go/bin/criticality_score'
+COMMITS_LIMIT = 50  # Only process the most recent 50 commits.
 
 
 def get_criticality_score(repo_url):
@@ -118,10 +119,15 @@ def main():
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
+      history_message = ''
+      contributors = github.get_past_contributors(project_path)
+      if contributors:
+        history_message = 'The past contributors are: '
+        history_message += ', '.join(contributors)
       message += (
           f'{pr_author} is a new contributor to '
           f'[{project_path}]({project_url}). The PR must be approved by known '
-          'contributors before it can be merged.<br/>')
+          f'contributors before it can be merged. {history_message}<br/>')
       is_ready_for_merge = False
       continue
 
@@ -152,6 +158,7 @@ class GithubHandler:
         'Authorization': f'Bearer {self._token}',
         'X-GitHub-Api-Version': '2022-11-28'
     }
+    self._maintainers = set()
     os.environ['GITHUB_AUTH_TOKEN'] = self._token
 
   def get_pr_author(self):
@@ -223,19 +230,55 @@ class GithubHandler:
       return None
     return pr_response.json()[0]['number']
 
-  def is_author_internal_member(self):
-    """Returns if the author is an internal member."""
+  def get_past_contributors(self, project_path):
+    """Returns a list of past contributors of a certain project."""
+    commits_response = requests.get(f'{BASE_URL}/commits?path={project_path}',
+                                    headers=self._headers)
+
+    if not commits_response.ok:
+      return []
+    commits = commits_response.json()
+    contributors: dict[str, bool] = {}
+    for i, commit in enumerate(commits):
+      if i >= COMMITS_LIMIT:
+        break
+
+      login = commit['author']['login']
+      verified = commit['commit']['verification']['verified']
+      if login in self._maintainers:
+        continue
+      if login not in contributors:
+        contributors[login] = verified
+      if verified:
+        # Override previous verification bit.
+        contributors[login] = True
+
+    all_contributors = []
+    for login, verified in contributors.items():
+      login_verify = login if verified else f'{login} (unverified)'
+      all_contributors.append(login_verify)
+
+    return all_contributors
+
+  def get_maintainers(self):
+    """Get a list of internal members."""
+    if self._maintainers:
+      return self._maintainers
+
     response = requests.get(f'{BASE_URL}/contents/infra/MAINTAINERS.csv',
                             headers=self._headers)
     if not response.ok:
-      return False
+      return self._maintainers
 
-    maintainers = base64.b64decode(response.json()['content']).decode('UTF-8')
-    for line in maintainers.split(os.linesep):
-      if self._pr_author == line.split(',')[2]:
-        return True
+    maintainers_file = base64.b64decode(
+        response.json()['content']).decode('UTF-8')
+    for line in maintainers_file.split(os.linesep):
+      self._maintainers.add(line.split(',')[2])
+    return self._maintainers
 
-    return False
+  def is_author_internal_member(self):
+    """Returns if the author is an internal member."""
+    return self._pr_author in self.get_maintainers()
 
   def has_author_modified_project(self, project_path):
     """Checks if the author has modified this project before."""

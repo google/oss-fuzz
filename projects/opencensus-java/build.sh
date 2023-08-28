@@ -19,7 +19,7 @@ PROJECT=opencensus-java
 PROJECT_GROUP_ID=io.opencensus
 PROJECT_ARTIFACT_ID=opencensus-api
 MAIN_REPOSITORY=https://github.com/census-instrumentation/opencensus-java/
-MAVEN_ARGS="-Djavac.src.version=8 -Djavac.target.version=8 -Denforcer.skip=true -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=1.8 -Djavac.target.version=1.8 -Denforcer.skip=true -DskipTests"
 GRADLE_ARGS="-x javadoc -x test"
 
 function set_project_version_in_fuzz_targets_dependency {
@@ -82,16 +82,17 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
   JAVA_HOME=\"\$this_dir/open-jdk-8/\" \
-  ./open-jdk-8/bin/java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.$fuzzer_basename \
-  \$@" > $OUT/$fuzzer_basename
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=com.example.$fuzzer_basename \
+--jvm_args=\"\$mem_settings\" \
+\$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
 
@@ -112,16 +113,17 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
   JAVA_HOME=\"\$this_dir/open-jdk-8/\" \
-  ./open-jdk-8/bin/java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=$PACKAGE_NAME.JsonConversionFuzzer \
-  \$@" > $OUT/JsonConversionFuzzer
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=$PACKAGE_NAME.JsonConversionFuzzer \
+--jvm_args=\"\$mem_settings\" \
+\$@" > $OUT/JsonConversionFuzzer
   chmod u+x $OUT/JsonConversionFuzzer
 
   rm -rf $PACKAGE_DIR

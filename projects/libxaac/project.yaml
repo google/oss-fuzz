@@ -1,0 +1,19 @@
+homepage: "https://github.com/ittiam-systems/libxaac"
+language: c++
+primary_contact: "harish.mahendrakar@ittiam.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+auto_ccs:
+  - divya.bm@ittiam.com
+  - harish.mahendrakar@ittiam.com
+  - nikhil.bhavikatti@ittiam.com
+  - reshma.rai@ittiam.com
+  - saketh.sathuvalli@ittiam.com
+  - sandesh.venkatesh@ittiam.com
+  - tripti.tiwari@ittiam.com
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/ittiam-systems/libxaac.git'

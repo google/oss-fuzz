@@ -88,22 +88,20 @@ jobs:
        oss-fuzz-project-name: 'example'
        language: c++
        fuzz-seconds: 600
-       # Uncomment this to get results in the GitHub security dashboard.
-       # output-sarif: true
+       output-sarif: true
    - name: Upload Crash
      uses: actions/upload-artifact@v3
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
        path: ./out/artifacts
-   # Uncomment this to get results in the GitHub security dashboard.
-   # - name: Upload Sarif
-   #  if: always() && steps.build.outcome == 'success'
-   #  uses: github/codeql-action/upload-sarif@v2
-   #  with:
-   #    # Path to SARIF file relative to the root of the repository
-   #    sarif_file: cifuzz-sarif/results.sarif
-   #    checkout_path: cifuzz-sarif
+   - name: Upload Sarif
+     if: always() && steps.build.outcome == 'success'
+     uses: github/codeql-action/upload-sarif@v2
+     with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 ```
 
 
@@ -145,7 +143,6 @@ permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
-   # Uncomment this to get results in the GitHub security dashboard.
    permissions:
      security-events: write
    strategy:
@@ -167,22 +164,20 @@ jobs:
        language: c++
        fuzz-seconds: 600
        sanitizer: ${{ matrix.sanitizer }}
-       # Uncomment this to get results in the GitHub security dashboard.
-       # output-sarif: true
+       output-sarif: true
    - name: Upload Crash
      uses: actions/upload-artifact@v3
      if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
-   # Uncomment this to get results in the GitHub security dashboard.
-   # - name: Upload Sarif
-   #  if: always() && steps.build.outcome == 'success'
-   #  uses: github/codeql-action/upload-sarif@v2
-   #  with:
-   #    # Path to SARIF file relative to the root of the repository
-   #    sarif_file: cifuzz-sarif/results.sarif
-   #    checkout_path: cifuzz-sarif
+   - name: Upload Sarif
+    if: always() && steps.build.outcome == 'success'
+    uses: github/codeql-action/upload-sarif@v2
+    with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 {% endraw %}
 ```
 
