@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -181,21 +182,11 @@ func ExecOriginalCommand(bin string, args []string) (int, string, string) {
 	return RunCommand(cmd)
 }
 
-func Contains(slice []string, item string) bool {
-	// Checks if the slice contains item.
-	for _, s := range slice {
-		if strings.EqualFold(s, item) {
-			return true
-		}
-	}
-	return false
-}
-
 func FindTargetFile(args []string) string {
 	// Finds the fuzz target file by file extension.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c"}
 	for _, arg := range args {
-		if Contains(suffixes, filepath.Ext(arg)) {
+		if slices.Contains(suffixes, strings.ToLower(filepath.Ext(arg))) {
 			return filepath.Base(arg)
 		}
 	}
