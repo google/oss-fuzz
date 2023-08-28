@@ -167,19 +167,14 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
-func RunCommand(cmd *exec.Cmd) (int, string, string) {
-	// Executes a command and returns the output.
+func ExecOriginalCommand(bin string, args []string) (int, string, string) {
+	// Executes the original command.
+	cmd := exec.Command(bin, args...)
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	cmd.Run()
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
-}
-
-func ExecOriginalCommand(bin string, args []string) (int, string, string) {
-	// Executes the original command.
-	cmd := exec.Command(bin, args...)
-	return RunCommand(cmd)
 }
 
 func FindTargetFile(args []string) string {
@@ -206,20 +201,28 @@ func GenerateAST(bin string, args []string) (int, string, string) {
 
 	targetFile := FindTargetFile(args)
 	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer outFile.Close()
 
-	cmdStr := fmt.Sprintf("%s %s > %s", bin, strings.Join(newArgs, " "), filePath)
-	cmd := exec.Command("sh", "-c", cmdStr)
-	retCode, stdout, stderr := RunCommand(cmd)
-
+	cmd := exec.Command(bin, newArgs...)
+	var errb bytes.Buffer
+	cmd.Stdout = outFile
+	cmd.Stderr = &errb
+	cmd.Run()
+	// Cleans up useless empty AST files. They are generated when the cmd
+	// does not contain C/CPP file.
 	RemoveIfEmpty(filePath)
-	return retCode, stdout, stderr
+	return cmd.ProcessState.ExitCode(), "", errb.String()
 }
 
 func compile(bin string, args []string) (int, string, string) {
 	// Generate AST.
-	retCode, stdout, stderr := GenerateAST(bin, args)
+	retCode, _, stderr := GenerateAST(bin, args)
 	// Run the actual command.
-	retCode, stdout, stderr = ExecOriginalCommand(bin, args)
+	retCode, stdout, stderr := ExecOriginalCommand(bin, args)
 	return retCode, stdout, stderr
 }
 
