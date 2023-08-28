@@ -1,4 +1,4 @@
-.vscode/
+/.vscode/
 *.pyc
 /build/
 *~

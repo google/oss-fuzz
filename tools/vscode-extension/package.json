@@ -1,0 +1,131 @@
+{
+  "name": "oss-fuzz",
+  "displayName": "OssFuzz",
+  "description": "",
+  "version": "0.0.2",
+  "publisher": "OSS-Fuzz maintainers",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionDependencies": [
+    "mindaro-dev.file-downloader"
+  ],
+  "activationEvents": [],
+  "main": "./build/src/extension.js",
+  "contributes": {
+    "configurations": [
+      {
+        "id": "OSS-Fuzz-Base",
+        "title": "Base path to OSS-Fuzz",
+        "properties": {
+          "oss-fuzz.OSS.Path": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "workbench.explorer.emptyView",
+        "contents": "You can have paragraphs of text here. You can have [links](https://code.visualstudio.com) to external sources or [internal commands](command:welcome-view-content-sample.hello).\nUse new lines to have new paragraphs.\nPlace a link alone in a paragraph to make it a button\n[Hello](command:welcome-view-content-sample.hello)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "oss-fuzz.SetUp",
+        "title": "OSS-Fuzz: Set up OSS-Fuzz"
+      },
+      {
+        "command": "oss-fuzz.RunFuzzer",
+        "title": "OSS-Fuzz: Run fuzzer from OSS-Fuzz project"
+      },
+      {
+        "command": "oss-fuzz.ListFuzzers",
+        "title": "OSS-Fuzz: List all fuzzers in a given project"
+      },
+      {
+        "command": "oss-fuzz.SetOSSFuzzPath",
+        "title": "OSS-Fuzz: Set OSS-Fuzz path"
+      },
+      {
+        "command": "oss-fuzz.RunIntrospector",
+        "title": "OSS-Fuzz: Run Fuzz Introspector on a project"
+      },
+      {
+        "command": "oss-fuzz.GetCodeCoverage",
+        "title": "OSS-Fuzz: get code coverage from OSS-Fuzz storage."
+      },
+      {
+        "command": "oss-fuzz.ClearCodeCoverage",
+        "title": "OSS-Fuzz: clear code coverage"
+      },
+      {
+        "command": "oss-fuzz.CreateOSSFuzzSetup",
+        "title": "OSS-Fuzz: Create template files for OSS-Fuzz"
+      },
+      {
+        "command": "oss-fuzz.WSBuildFuzzers",
+        "title": "OSS-Fuzz: Build fuzzers from workspace"
+      },
+      {
+        "command": "oss-fuzz.SetupCIFuzz",
+        "title": "OSS-Fuzz: Set up CIFuzz"
+      },
+      {
+        "command": "oss-fuzz.testFuzzer",
+        "title": "OSS-Fuzz: test specific fuzzer"
+      },
+      {
+        "command": "oss-fuzz.testCodeCoverage",
+        "title": "OSS-Fuzz: run end-to-end test of project and collect code coverage"
+      },
+      {
+        "command": "oss-fuzz.Reproduce",
+        "title": "OSS-Fuzz: reproduce a testcase"
+      },
+      {
+        "command": "oss-fuzz.SetGlobalProjectName",
+        "title": "OSS-Fuzz: sets the default project name in the session"
+      },
+      {
+        "command": "oss-fuzz.Redo",
+        "title": "OSS-Fuzz: Redo the exact same command as previously, with same input"
+      },
+      {
+        "command": "oss-fuzz.Template",
+        "title": "OSS-Fuzz: Template fuzzer creation"
+      }      
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "posttest": "npm run lint"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^14.11.2",
+    "@types/vscode": "^1.76.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "~4.7.0",
+    "gts": "^3.1.1"
+  },
+  "dependencies": {
+    "@microsoft/vscode-file-downloader-api": "^1.0.1"
+  }
+}
