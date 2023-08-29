@@ -185,14 +185,8 @@ func FindTargetFile(args []string) string {
 			return filepath.Base(arg)
 		}
 	}
-	// Uses a time stamp as AST filename if no target file is found.
-	return time.Now().Format("20060102_150405.000")
-}
-
-func RemoveIfEmpty(filepath string) {
-	// Removes filepath if it is empty.
-	info, _ := os.Stat(filepath)
-	if info.Size() == 0 { os.Remove(filepath) }
+	// Returns an empty string when not found. This happens during linking.
+	return ""
 }
 
 func GenerateAST(bin string, args []string) (int, string, string) {
@@ -200,6 +194,10 @@ func GenerateAST(bin string, args []string) (int, string, string) {
 	newArgs := append(args, "-Xclang", "-ast-dump=json", "-fsyntax-only")
 
 	targetFile := FindTargetFile(args)
+	if targetFile != "" {
+		// No need to generate AST when target file is not found.
+		return 0, "", ""
+	}
 	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
 	outFile, err := os.Create(filePath)
 	if err != nil {
@@ -212,9 +210,6 @@ func GenerateAST(bin string, args []string) (int, string, string) {
 	cmd.Stdout = outFile
 	cmd.Stderr = &errb
 	cmd.Run()
-	// Cleans up useless empty AST files. They are generated when the cmd
-	// does not contain C/CPP file.
-	RemoveIfEmpty(filePath)
 	return cmd.ProcessState.ExitCode(), "", errb.String()
 }
 
