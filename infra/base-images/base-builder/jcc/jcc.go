@@ -27,7 +27,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"time"
 )
 
 var MaxMissingHeaderFiles = 10
@@ -167,6 +166,41 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
+func GenerateAST(bin string, args []string, targetFile string) {
+	// Generates AST.
+	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer outFile.Close()
+
+	cmd := exec.Command(bin, args...)
+	cmd.Stdout = outFile
+	cmd.Run()
+}
+
+func GenerateASTs(bin string, args []string) {
+	// Generates an AST for each C/CPP file in the command.
+	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
+	// C/CPP targets in the command.
+	targets := []string{}
+	// Flags to generate AST.
+	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
+	for _, arg := range args {
+		target_ext := strings.ToLower(filepath.Ext(arg))
+		if slices.Contains(suffixes, target_ext) {
+			targets = append(targets, arg)
+			continue
+		}
+		flags = append(flags, arg)
+	}
+	// Generate an AST for each target.
+	for _, target := range targets {
+		GenerateAST(bin, append(flags, target), filepath.Base(target))
+	}
+}
+
 func ExecOriginalCommand(bin string, args []string) (int, string, string) {
 	// Executes the original command.
 	cmd := exec.Command(bin, args...)
@@ -177,48 +211,11 @@ func ExecOriginalCommand(bin string, args []string) (int, string, string) {
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
 
-func FindTargetFile(args []string) string {
-	// Finds the fuzz target file by file extension.
-	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
-	for _, arg := range args {
-		if slices.Contains(suffixes, strings.ToLower(filepath.Ext(arg))) {
-			return filepath.Base(arg)
-		}
-	}
-	// Returns an empty string when not found. This happens during linking.
-	return ""
-}
-
-func GenerateAST(bin string, args []string) (int, string, string) {
-	// Generates AST.
-	newArgs := append(args, "-Xclang", "-ast-dump=json", "-fsyntax-only")
-
-	targetFile := FindTargetFile(args)
-	if targetFile != "" {
-		// No need to generate AST when target file is not found.
-		return 0, "", ""
-	}
-	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
-	outFile, err := os.Create(filePath)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer outFile.Close()
-
-	cmd := exec.Command(bin, newArgs...)
-	var errb bytes.Buffer
-	cmd.Stdout = outFile
-	cmd.Stderr = &errb
-	cmd.Run()
-	return cmd.ProcessState.ExitCode(), "", errb.String()
-}
-
 func compile(bin string, args []string) (int, string, string) {
 	// Generate AST.
-	retCode, _, stderr := GenerateAST(bin, args)
+	GenerateASTs(bin, args)
 	// Run the actual command.
-	retCode, stdout, stderr := ExecOriginalCommand(bin, args)
-	return retCode, stdout, stderr
+	return ExecOriginalCommand(bin, args)
 }
 
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
