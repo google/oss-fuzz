@@ -177,7 +177,7 @@ func EnsureDir(dirPath string) {
 		return
 	}
 
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, fs.ErrNotExist) {
 		panic("An error occurred in os.Stat(" + dirPath + "): ", err)
 		return
 	}
