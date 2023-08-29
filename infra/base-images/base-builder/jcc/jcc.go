@@ -195,7 +195,8 @@ func GenerateASTs(bin string, args []string) {
 		}
 		flags = append(flags, arg)
 	}
-	// Generate an AST for each target.
+	// Generate an AST for each target. Skips AST generation when a command
+	// has no target file (e.g., during linking).
 	for _, target := range targets {
 		GenerateAST(bin, append(flags, target), filepath.Base(target))
 	}
