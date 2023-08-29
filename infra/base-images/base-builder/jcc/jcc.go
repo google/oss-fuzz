@@ -168,25 +168,18 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 
 func EnsureDir(dirPath string) {
 	// Checks if a path is an existing directory, otherwise create one.
-	pathInfo, err := os.Stat(dirPath)
-	if err == nil {
-		isDir := pathInfo.IsDir()
-		if !isDir {
+	if pathInfo, err := os.Stat(dirPath); err == nil {
+		if isDir := pathInfo.IsDir(); !isDir {
 			panic(dirPath + "exists but is not a directory.")
 		}
-		return
-	}
-
-	if !errors.Is(err, fs.ErrNotExist) {
+	} else if errors.Is(err, fs.ErrNotExist) {
+		if err := os.MkdirAll(dirPath, 0755); err != nil {
+			panic("Failed to create directory" + dirPath + ".")
+		}
+		fmt.Println("Created directory" + dirPath + ".")
+	} else {
 		panic("An error occurred in os.Stat(" + dirPath + "): ", err)
-		return
 	}
-
-	if err := os.MkdirAll(dirPath, 0755); err != nil {
-		panic("Failed to create directory" + dirPath + ".")
-		return
-	}
-	fmt.Println("Created directory" + dirPath + ".")
 }
 
 func GenerateAST(bin string, args []string, filePath string) {
