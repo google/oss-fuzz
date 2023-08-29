@@ -170,13 +170,13 @@ func EnsureDir(dirPath string) {
 	// Checks if a path is an existing directory, otherwise create one.
 	if pathInfo, err := os.Stat(dirPath); err == nil {
 		if isDir := pathInfo.IsDir(); !isDir {
-			panic(dirPath + "exists but is not a directory.")
+			panic(dirPath + " exists but is not a directory.")
 		}
 	} else if errors.Is(err, fs.ErrNotExist) {
 		if err := os.MkdirAll(dirPath, 0755); err != nil {
-			panic("Failed to create directory" + dirPath + ".")
+			panic("Failed to create directory: " + dirPath + ".")
 		}
-		fmt.Println("Created directory" + dirPath + ".")
+		fmt.Println("Created directory: " + dirPath + ".")
 	} else {
 		panic("An error occurred in os.Stat(" + dirPath + "): ", err)
 	}
