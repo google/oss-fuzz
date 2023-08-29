@@ -179,7 +179,7 @@ func ExecOriginalCommand(bin string, args []string) (int, string, string) {
 
 func FindTargetFile(args []string) string {
 	// Finds the fuzz target file by file extension.
-	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c"}
+	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
 	for _, arg := range args {
 		if slices.Contains(suffixes, strings.ToLower(filepath.Ext(arg))) {
 			return filepath.Base(arg)
