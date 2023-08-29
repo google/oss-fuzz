@@ -215,8 +215,8 @@ func GenerateASTs(bin string, args []string, astDir string) {
 	// Flags to generate AST.
 	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
 	for _, arg := range args {
-		targetFile_ext := strings.ToLower(filepath.Ext(arg))
-		if slices.Contains(suffixes, targetFile_ext) {
+		targetFileExt := strings.ToLower(filepath.Ext(arg))
+		if slices.Contains(suffixes, targetFileExt) {
 			targetFiles = append(targetFiles, arg)
 			continue
 		}
