@@ -204,7 +204,7 @@ func GenerateAST(bin string, args []string, filePath string) {
 
 func GenerateASTs(bin string, args []string, astDir string) {
 	// Generates an AST for each C/CPP file in the command.
-	// Cannot save AST when astDir does not exist.
+	// Cannot save AST when astDir is not available.
 	if !EnsureDir(astDir) { return }
 
 	// Target file suffixes.
