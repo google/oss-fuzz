@@ -177,16 +177,17 @@ func EnsureDir(dirPath string) bool {
 		return isDir
 	}
 
-	if os.IsNotExist(err) {
-		if err := os.MkdirAll(dirPath, 0755); err != nil {
-			fmt.Println("Failed to create directory" + dirPath + ".")
-			return false
-		}
-		fmt.Println("Created directory" + dirPath + ".")
-		return true
+	if !os.IsNotExist(err) {
+		fmt.Println("An error occurred in os.Stat(" + dirPath + "): ", err)
+		return false
 	}
-	fmt.Println("An error occurred in os.Stat(" + dirPath + "): ", err)
-	return false
+
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		fmt.Println("Failed to create directory" + dirPath + ".")
+		return false
+	}
+	fmt.Println("Created directory" + dirPath + ".")
+	return true
 }
 
 func GenerateAST(bin string, args []string, filePath string) {
