@@ -178,7 +178,7 @@ func EnsureDir(dirPath string) {
 		}
 		fmt.Println("Created directory: " + dirPath + ".")
 	} else {
-		panic("An error occurred in os.Stat(" + dirPath + "): ", err)
+		panic("An error occurred in os.Stat(" + dirPath + "): " + err.Error())
 	}
 }
 
