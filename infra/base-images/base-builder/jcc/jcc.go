@@ -65,7 +65,7 @@ func TryFixCCompilation(cmdline []string) (int, string, string) {
 	newCmdline := []string{"-stdlib=libc++"}
 	newCmdline = append(cmdline, newCmdline...)
 
-	retcode, out, err := compile("clang++", newCmdline)
+	retcode, out, err := Compile("clang++", newCmdline)
 	if retcode == 0 {
 		return retcode, out, err
 	}
@@ -149,7 +149,7 @@ func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, 
 
 func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 
-	_, _, stderr := compile(bin, cmd)
+	_, _, stderr := Compile(bin, cmd)
 	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
 	if err != nil {
 		return false, err
@@ -211,7 +211,7 @@ func ExecBuildCommand(bin string, args []string) (int, string, string) {
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
 
-func compile(bin string, args []string) (int, string, string) {
+func Compile(bin string, args []string) (int, string, string) {
 	// Generate AST.
 	GenerateASTs(bin, args)
 	// Run the actual command.
@@ -219,7 +219,7 @@ func compile(bin string, args []string) (int, string, string) {
 }
 
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
-	retcode, _, err := compile(bin, cmd)
+	retcode, _, err := Compile(bin, cmd)
 	if retcode == 0 {
 		fixed = true
 		hasBrokenHeaders = false
@@ -337,10 +337,10 @@ func main() {
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		retcode, out, err = compile(bin, newArgs)
+		retcode, out, err = Compile(bin, newArgs)
 	} else {
 		bin = "clang"
-		retcode, out, err = compile(bin, newArgs)
+		retcode, out, err = Compile(bin, newArgs)
 	}
 	if retcode == 0 {
 		fmt.Println(out)
