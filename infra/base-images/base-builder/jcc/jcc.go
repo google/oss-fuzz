@@ -166,9 +166,31 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
-func GenerateAST(bin string, args []string, targetFile string) {
+func EnsureDir(dirPath string) bool {
+	// Checks if a path is an existing directory, otherwise create one.
+	pathInfo, err := os.Stat(dirPath)
+	if err == nil {
+		isDir := pathInfo.IsDir()
+		if !isDir {
+			fmt.Println(dirPath, "exists but is not a directory.")
+		}
+		return isDir
+	}
+
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(dirPath, 0755); err != nil {
+			fmt.Println("Failed to create directory" + dirPath + ".")
+			return false
+		}
+		fmt.Println("Created directory" + dirPath + ".")
+		return true
+	}
+	fmt.Println("An error occurred in os.Stat(" + dirPath + "): ", err)
+	return false
+}
+
+func GenerateAST(bin string, args []string, filePath string) {
 	// Generates AST.
-	filePath := filepath.Join("/out", fmt.Sprintf("%s.ast", targetFile))
 	outFile, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -180,26 +202,31 @@ func GenerateAST(bin string, args []string, targetFile string) {
 	cmd.Run()
 }
 
-func GenerateASTs(bin string, args []string) {
+func GenerateASTs(bin string, args []string, astDir string) {
 	// Generates an AST for each C/CPP file in the command.
+	// Cannot save AST when astDir does not exist.
+	if !EnsureDir(astDir) { return }
+
 	// Target file suffixes.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
 	// C/CPP targets in the command.
-	targets := []string{}
+	targetFiles := []string{}
 	// Flags to generate AST.
 	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
 	for _, arg := range args {
-		target_ext := strings.ToLower(filepath.Ext(arg))
-		if slices.Contains(suffixes, target_ext) {
-			targets = append(targets, arg)
+		targetFile_ext := strings.ToLower(filepath.Ext(arg))
+		if slices.Contains(suffixes, targetFile_ext) {
+			targetFiles = append(targetFiles, arg)
 			continue
 		}
 		flags = append(flags, arg)
 	}
-	// Generate an AST for each target. Skips AST generation when a command
-	// has no target file (e.g., during linking).
-	for _, target := range targets {
-		GenerateAST(bin, append(flags, target), filepath.Base(target))
+
+	// Generate an AST for each target file. Skips AST generation when a
+	// command has no target file (e.g., during linking).
+	for _, targetFile := range targetFiles {
+		filePath := filepath.Join(astDir, fmt.Sprintf("%s.ast", filepath.Base(targetFile)))
+		GenerateAST(bin, append(flags, targetFile), filePath)
 	}
 }
 
@@ -215,8 +242,8 @@ func ExecBuildCommand(bin string, args []string) (int, string, string) {
 
 func Compile(bin string, args []string) (int, string, string) {
 	// Generate ASTs f we define this ENV var.
-	if os.Getenv("JCC_GENERATE_AST") == "1" {
-		GenerateASTs(bin, args)
+	if astDir := os.Getenv("JCC_GENERATE_AST_DIR"); astDir != "" {
+		GenerateASTs(bin, args, astDir)
 	}
 	// Run the actual command.
 	return ExecBuildCommand(bin, args)
