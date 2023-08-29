@@ -166,28 +166,27 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
-func EnsureDir(dirPath string) bool {
+func EnsureDir(dirPath string) {
 	// Checks if a path is an existing directory, otherwise create one.
 	pathInfo, err := os.Stat(dirPath)
 	if err == nil {
 		isDir := pathInfo.IsDir()
 		if !isDir {
-			fmt.Println(dirPath, "exists but is not a directory.")
+			panic(dirPath + "exists but is not a directory.")
 		}
-		return isDir
+		return
 	}
 
 	if !os.IsNotExist(err) {
-		fmt.Println("An error occurred in os.Stat(" + dirPath + "): ", err)
-		return false
+		panic("An error occurred in os.Stat(" + dirPath + "): ", err)
+		return
 	}
 
 	if err := os.MkdirAll(dirPath, 0755); err != nil {
-		fmt.Println("Failed to create directory" + dirPath + ".")
-		return false
+		panic("Failed to create directory" + dirPath + ".")
+		return
 	}
 	fmt.Println("Created directory" + dirPath + ".")
-	return true
 }
 
 func GenerateAST(bin string, args []string, filePath string) {
@@ -206,7 +205,7 @@ func GenerateAST(bin string, args []string, filePath string) {
 func GenerateASTs(bin string, args []string, astDir string) {
 	// Generates an AST for each C/CPP file in the command.
 	// Cannot save AST when astDir is not available.
-	if !EnsureDir(astDir) { return }
+	EnsureDir(astDir)
 
 	// Target file suffixes.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
