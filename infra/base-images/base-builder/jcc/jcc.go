@@ -201,7 +201,7 @@ func GenerateASTs(bin string, args []string) {
 	}
 }
 
-func ExecOriginalCommand(bin string, args []string) (int, string, string) {
+func ExecBuildCommand(bin string, args []string) (int, string, string) {
 	// Executes the original command.
 	cmd := exec.Command(bin, args...)
 	var outb, errb bytes.Buffer
@@ -215,7 +215,7 @@ func compile(bin string, args []string) (int, string, string) {
 	// Generate AST.
 	GenerateASTs(bin, args)
 	// Run the actual command.
-	return ExecOriginalCommand(bin, args)
+	return ExecBuildCommand(bin, args)
 }
 
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
