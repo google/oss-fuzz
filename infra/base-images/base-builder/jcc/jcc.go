@@ -182,6 +182,7 @@ func GenerateAST(bin string, args []string, targetFile string) {
 
 func GenerateASTs(bin string, args []string) {
 	// Generates an AST for each C/CPP file in the command.
+	// Target file suffixes.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
 	// C/CPP targets in the command.
 	targets := []string{}
@@ -213,8 +214,10 @@ func ExecBuildCommand(bin string, args []string) (int, string, string) {
 }
 
 func Compile(bin string, args []string) (int, string, string) {
-	// Generate AST.
-	GenerateASTs(bin, args)
+	// Generate ASTs f we define this ENV var.
+	if os.Getenv("JCC_GENERATE_AST") == "1" {
+		GenerateASTs(bin, args)
+	}
 	// Run the actual command.
 	return ExecBuildCommand(bin, args)
 }
