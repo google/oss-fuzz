@@ -53,6 +53,8 @@ function ignoredError(error) {
 }
 
 const ignored = [
+  // TypeScript not interested: https://github.com/microsoft/TypeScript/issues/55480
+  "maximum call stack size exceeded",
   "expected",
   "unexpected",
   "invalid",

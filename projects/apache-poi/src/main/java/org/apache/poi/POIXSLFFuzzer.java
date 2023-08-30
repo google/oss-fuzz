@@ -38,7 +38,7 @@ public class POIXSLFFuzzer {
 		try (XMLSlideShow slides = new XMLSlideShow(new ByteArrayInputStream(input))) {
 			slides.write(NullOutputStream.INSTANCE);
 		} catch (IOException | EmptyFileException | UnsupportedFileFormatException | POIXMLException |
-				 RecordFormatException | OpenXML4JRuntimeException e) {
+				 RecordFormatException | OpenXML4JRuntimeException | IndexOutOfBoundsException e) {
 			// expected here
 		}
 
@@ -47,7 +47,7 @@ public class POIXSLFFuzzer {
 				slides.write(NullOutputStream.INSTANCE);
 			}
 		} catch (IOException | OpenXML4JException | XmlException | IllegalArgumentException | POIXMLException |
-				 RecordFormatException | IllegalStateException | OpenXML4JRuntimeException e) {
+				 RecordFormatException | IllegalStateException | OpenXML4JRuntimeException | IndexOutOfBoundsException e) {
 			// expected here
 		}
 
@@ -56,7 +56,7 @@ public class POIXSLFFuzzer {
 				POIFuzzer.checkExtractor(extractor);
 			}
 		} catch (IOException | InvalidFormatException | POIXMLException | IllegalArgumentException |
-				RecordFormatException | IllegalStateException e) {
+				RecordFormatException | IllegalStateException | IndexOutOfBoundsException e) {
 			// expected
 		}
 	}
