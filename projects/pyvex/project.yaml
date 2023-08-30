@@ -3,6 +3,8 @@ language: python
 primary_contact: "yans@yancomm.net"
 auto_ccs:
   - "capuanobailey@gmail.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
   - undefined

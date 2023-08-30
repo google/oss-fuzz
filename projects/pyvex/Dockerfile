@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip
 RUN git clone https://github.com/angr/archinfo.git archinfo
 RUN git clone --recursive https://github.com/angr/pyvex.git pyvex
-COPY *.sh *py $SRC/
+COPY *.sh *.py $SRC/
 WORKDIR $SRC/pyvex

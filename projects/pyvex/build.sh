@@ -22,19 +22,12 @@ pip3 install .
 cd "$SRC"/pyvex
 pip3 install .
 
-if [ "$SANITIZER" = "address" ]
-then
-    # Enable pysecsan
-    export ENABLE_PYSECSAN="1"
-fi
-
 # Generate a simple binary for the corpus
 echo -ne "start:\n\txor %edi, %edi\nmov \$60, %eax\nsyscall" > /tmp/corpus.s
 clang -Os -s /tmp/corpus.s -nostdlib -nostartfiles -m32 -o corpus
 zip -r "$OUT"/irsb_fuzzer_seed_corpus.zip corpus
 
 # Build fuzzers in $OUT
-echo "=========================="
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   compile_python_fuzzer "$fuzzer" --add-binary="pyvex/lib/libpyvex.so:pyvex/lib"
 done
