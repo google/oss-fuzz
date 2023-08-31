@@ -103,6 +103,7 @@ func ReplaceMissingHeaderInFile(srcFilename, curHeader, replacementHeader string
 	}
 	return nil
 }
+
 func ReplaceMissingHeader(src, curHeader, replacementHeader string) string {
 	re := regexp.MustCompile(`#include ["|<]` + curHeader + `["|>]\n`)
 	replacement := "#include \"" + replacementHeader + "\"\n"
@@ -229,6 +230,7 @@ func ExecBuildCommand(bin string, args []string) (int, string, string) {
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
+	cmd.Stdin = os.Stdin
 	cmd.Run()
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
@@ -367,8 +369,8 @@ func main() {
 		retcode, out, err = Compile(bin, newArgs)
 	}
 	if retcode == 0 {
-		fmt.Println(out)
-		fmt.Println(err)
+		fmt.Print(out)
+		fmt.Print(err)
 		os.Exit(0)
 	}
 
@@ -379,17 +381,17 @@ func main() {
 
 	if isCPP {
 		// Nothing else we can do. Just print the error and exit.
-		fmt.Println(out)
-		fmt.Println(err)
+		fmt.Print(out)
+		fmt.Print(err)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
-		fmt.Println(out)
-		fmt.Println(err)
-		fmt.Println("Fix failure")
-		fmt.Println(fixout)
-		fmt.Println(fixerr)
+		fmt.Print(out)
+		fmt.Print(err)
+		fmt.Println("\nFix failure")
+		fmt.Print(fixout)
+		fmt.Print(fixerr)
 		os.Exit(retcode)
 	}
 }
