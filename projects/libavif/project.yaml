@@ -5,6 +5,7 @@ auto_ccs:
   - "fgalligan@google.com"
   - "joedrago@gmail.com"
   - "jzern@google.com"
+  - "maryla@google.com"
   - "yguyon@google.com"
 main_repo: 'https://github.com/AOMediaCodec/libavif.git'
 
