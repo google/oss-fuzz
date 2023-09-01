@@ -43,7 +43,7 @@ To discover whether an LLM could successfully write new fuzz targets, we built a
 
 We leverage [Fuzz Introspector](https://introspector.oss-fuzz.com/) ([example JSON endpoint](https://introspector.oss-fuzz.com/api/far-reach-but-low-coverage?project=tinyxml2)) to provide us with a list of functions with low runtime coverage (but high potential to reach more code coverage). These are turned into benchmark YAML files, which consist of an OSS-Fuzz project, and a list of function signatures to generate new targets for. 
 
-We have started with a small set of benchmarks, and will gradually scaling this to larger, automated sets of benchmarks taken from all of OSS-Fuzz as we improve the function selection and prompt generation process.
+We have started with a small set of benchmarks, and will gradually scale this to larger, automated sets of benchmarks taken from all of OSS-Fuzz as we improve the function selection and prompt generation process.
 
 Example benchmark (YAML):
 
@@ -86,7 +86,7 @@ We leverage the OSS-Fuzz build infrastructure to build new targets by replacing 
 OSS-Fuzz projects often have strict compiler flags on by default. To make compilation easier, we also implemented a [compiler wrapper](https://github.com/google/oss-fuzz/blob/d78275b4e2e17d3d8f12b99db2b51de4b114edb3/infra/base-images/base-builder/jcc.go) that:
 
 *   Turns off compiler warnings to prevent trivial issues such as missing pointer casts from blocking compilation. 
-*   Re-compile targets as C++ (to leverage [FuzzedDataProvider](https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider)).
+*   Re-compiles targets as C++ (to leverage [FuzzedDataProvider](https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider)).
 
 
 ## 4. Measuring quality of generated targets
