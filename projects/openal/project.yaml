@@ -1,0 +1,9 @@
+homepage: "://github.com/kcat/openal-soft"
+language: c++
+primary_contact: "chris.kcat@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/kcat/openal-soft'
