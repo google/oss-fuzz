@@ -1,0 +1,11 @@
+homepage: "https://github.com/mapbox/tippecanoe"
+main_repo: "https://github.com/mapbox/tippecanoe"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+
