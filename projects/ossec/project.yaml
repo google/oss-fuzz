@@ -1,0 +1,6 @@
+homepage: "https://github.com/ossec/ossec-hids"
+main_repo: 'https://github.com/ossec/ossec-hids'
+primary_contact: "david@adalogics.com"
+language: c
+auto_ccs:
+  - "david@adalogics.com"
