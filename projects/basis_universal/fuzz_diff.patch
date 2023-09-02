@@ -1,0 +1,47 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 78dd110..70388ce 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,6 +5,7 @@ option(BUILD_X64 "build 64-bit" TRUE)
+ option(STATIC "static linking" FALSE)
+ option(SSE "SSE 4.1 support" FALSE)
+ option(ZSTD "ZSTD support for KTX2 transcoding/encoding" TRUE)
++option(OSS_FUZZ "Build Basis_Universal with OSS-fuzz support" FALSE)
+ 
+ message("Initial BUILD_X64=${BUILD_X64}")
+ message("Initial CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+@@ -36,10 +37,19 @@ else()
+ endif()
+ 
+ if (NOT MSVC)
+-   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
++   if (OSS_FUZZ)
++      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  $ENV{CXXFLAGS} -g")
++   else()
++      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
++   endif()
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+ 
+-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
++   if (OSS_FUZZ)
++      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} $ENV{CXXFLAGS}")
++   else()
++      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
++   endif()
++
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+ 
+    set(CMAKE_CXX_FLAGS -std=c++11)
+@@ -63,7 +73,11 @@ if (NOT MSVC)
+ 		set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBASISU_SUPPORT_SSE=0")
+ 	  endif()
+ 	  
+-	  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS} -static-libgcc -static-libstdc++ -static")
++      if (OSS_FUZZ)
++         set(CMAKE_EXE_LINKER_FLAGS  $ENV{CXXFLAGS})
++      else()
++	     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS} -static-libgcc -static-libstdc++ -static")
++      endif()
+    else()
+    	  if (SSE)
+ 		set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DBASISU_SUPPORT_SSE=1 -msse4.1")

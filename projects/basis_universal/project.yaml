@@ -1,0 +1,9 @@
+homepage: "https://github.com/BinomialLLC/basis_universal"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/BinomialLLC/basis_universal"
