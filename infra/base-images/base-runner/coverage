@@ -471,6 +471,13 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   # used to name a duplication of the legitimate class file.
   find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
 
+  # Add fuzzer class from $OUT to the classes dump directory
+  for fuzzer_class in $(ls $OUT/*.class)
+  do
+    rm -f $classes_dir/$(basename -s .class $fuzzer).*.class
+    cp $fuzzer_class $classes_dir
+  done
+
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
   sourcefiles_args=(--sourcefiles $OUT/$SRC)
