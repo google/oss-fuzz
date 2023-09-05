@@ -25,7 +25,7 @@ function build_native_go_fuzzer() {
 		current_dir=$(pwd)
 		mkdir $OUT/rawfuzzers || true
 		cd $abs_file_dir
-		go test -c -run $fuzzer -o $OUT/$fuzzer -cover
+		go test $tags -c -run $fuzzer -o $OUT/$fuzzer -cover
 		cp "${fuzzer_filename}" "${OUT}/rawfuzzers/${fuzzer}"
 		cd $current_dir
 	else
