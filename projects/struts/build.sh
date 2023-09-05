@@ -18,6 +18,7 @@
 SRC_SUBDIR=""
 MVN_FLAGS="-DskipTests"
 ALL_JARS=""
+FUZZER_VERSION=1.1
 
 # Install the build servers' jazzer-api into the maven repository.
 pushd "/tmp"
@@ -30,14 +31,15 @@ popd
 
 pushd "${SRC}/${LIBRARY_NAME}/${SRC_SUBDIR}"
 	${MVN} --no-transfer-progress install ${MVN_FLAGS}
-	CURRENT_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+	STRUTS_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
-	${MVN} --no-transfer-progress package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
-	install -v fuzzer/target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
+  FUZZER_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -DfuzzedLibraryVersion="${STRUTS_VERSION}" -Dexpression=project.version -q -DforceStdout)
+	${MVN} --no-transfer-progress package -DfuzzedLibraryVersion="${STRUTS_VERSION}" ${MVN_FLAGS}
+	install -v fuzzer/target/${LIBRARY_NAME}-fuzzer-${FUZZER_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${FUZZER_VERSION}.jar
 	install -v webapp/target/struts2-webapp.war ${OUT}/struts2-webapp.war
-	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
+	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${FUZZER_VERSION}.jar"
 popd
 
 # The classpath at build-time includes the project jars in $OUT as well as the
@@ -59,12 +61,12 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	if (echo ${stripped_path} | grep ".java$"); then
 		continue;
 	fi
-	
+
 	fuzzer_basename=$(basename -s .java $fuzzer)
 	fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
-	
+
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
-	
+
 	echo "#!/bin/bash
 # LLVMFuzzerTestOneInput Magic String required for infra/base-images/base-runner/test_all.py. DO NOT REMOVE
 

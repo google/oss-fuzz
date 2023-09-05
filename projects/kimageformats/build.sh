@@ -91,6 +91,15 @@ make -j$(nproc)
 make install -j$(nproc)
 
 cd $SRC
+cd openexr
+mkdir _build
+cd _build
+cmake  -DBUILD_SHARED_LIBS=OFF .. 
+make -j$(nproc)
+make install -j$(nproc)
+
+
+cd $SRC
 cd libheif
 #Reduce max width and height to avoid allocating too much memory
 sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_WIDTH = 8192;/g" libheif/security_limits.h
@@ -112,6 +121,8 @@ cd $SRC
 cd kimageformats
 HANDLER_TYPES="ANIHandler ani
         QAVIFHandler avif
+        EXRHandler exr
+        HDRHandler hdr
         HEIFHandler heif
         QJpegXLHandler jxl
         KraHandler kra
@@ -133,7 +144,7 @@ echo "$HANDLER_TYPES" | while read class format; do
   $SRC/qtbase/bin/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
   header=`ls $SRC/kimageformats/src/imageformats/$format*.h`
   $SRC/qtbase/bin/moc $header -o moc_`basename $header .h`.cpp
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DKIMG_JXL_API_VERSION=70 -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec-static.a $SRC/libjxl/build/third_party/brotli/libbrotlienc-static.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon-static.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DKIMG_JXL_API_VERSION=70 -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/Imath -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec-static.a $SRC/libjxl/build/third_party/brotli/libbrotlienc-static.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon-static.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_2.a /usr/local/lib/libIex-3_2.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_2.a /usr/local/lib/libOpenEXRCore-3_2.a /usr/local/lib/libOpenEXRUtil-3_2.a
 
   find . -name "*.${format}" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
 )
