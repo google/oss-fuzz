@@ -395,7 +395,7 @@ def get_docker_build_step(image_names,
         'buildx', 'build', '--platform', 'linux/arm64', '--progress', 'plain',
         '--load'
     ]
-    # TODO(metzman): This wont work when we want to build the base-images.
+    # TODO(metzman): This won't work when we want to build the base-images.
     image_names = [
         _make_image_name_architecture_specific(image_name, architecture)
         for image_name in image_names

@@ -28,7 +28,7 @@ def get_all_substr_prefixes(main_str, sub_str):
       return
     yield main_str[0:idx]
     # Increase idx the length of the substring from the current position
-    # where an occurence of the substring was found.
+    # where an occurrence of the substring was found.
     idx += len(sub_str)
 
 

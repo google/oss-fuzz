@@ -83,7 +83,7 @@ def patch_environ(testcase_obj, env=None, empty=False, runner=False):
       del os.environ[key]
 
   if runner:
-    # Add the scripts for base-runner to the path since the wont be in
+    # Add the scripts for base-runner to the path since the won't be in
     # /usr/local/bin on host machines during testing.
     base_runner_dir = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
     os.environ['PATH'] = (os.environ.get('PATH', '') + os.pathsep +

@@ -25,7 +25,7 @@ START_RE_TIME = None
 
 
 # Hooks for regular expressions.
-# Main problem is to identify ReDOS attemps. This is a non-trivial task
+# Main problem is to identify ReDOS attempts. This is a non-trivial task
 # - https://arxiv.org/pdf/1701.04045.pdf
 # - https://dl.acm.org/doi/pdf/10.1145/3236024.3236027
 # and the current approach we use is simply check for extensive computing time.
@@ -45,7 +45,7 @@ START_RE_TIME = None
 #   - 'taint' in findall(XX) calls.
 # pylint: disable=global-statement
 def hook_post_exec_re_pattern_findall(self, re_str):
-  """Hook post exeution re.compile().findall()."""
+  """Hook post execution re.compile().findall()."""
   _ = self  # Satisfy lint
   global START_RE_TIME
   try:

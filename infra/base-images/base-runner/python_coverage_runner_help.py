@@ -82,7 +82,7 @@ def translate_coverage(all_file_paths):
 def convert_coveragepy_cov_to_summary_json(src, dst):
   """
   Converts a json file produced by coveragepy into a summary.json file
-  similary to llvm-cov output. `src` is the source coveragepy json file,
+  similarly to llvm-cov output. `src` is the source coveragepy json file,
   `dst` is the destination json file, which will be overwritten.
   """
   dst_dict = {'data': [{'files': {}}]}

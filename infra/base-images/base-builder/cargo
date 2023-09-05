@@ -16,7 +16,7 @@
 # This is a wrapper around calling cargo
 # This just expands RUSTFLAGS in case of a coverage build
 # We need this until https://github.com/rust-lang/cargo/issues/5450 is merged
-# because cargo uses relative paths for the current crate
+# because cargo uses relative paths for the current create
 # and absolute paths for its dependencies
 #
 ################################################################################

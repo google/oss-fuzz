@@ -145,14 +145,14 @@ class RunFuzzersConfigTest(unittest.TestCase):
     return config_utils.RunFuzzersConfig()
 
   def test_coverage(self):
-    """Tests that mode is overriden properly based on is_coverage."""
-    # Test that it is overriden when it is supposed to be.
+    """Tests that mode is overridden properly based on is_coverage."""
+    # Test that it is overridden when it is supposed to be.
     os.environ['SANITIZER'] = 'coverage'
     os.environ['MODE'] = 'code-change'
     config = self._create_config()
     self.assertEqual(config.mode, 'coverage')
 
-    # Test that it isn't overriden when it isn't supposed to be.
+    # Test that it isn't overridden when it isn't supposed to be.
     os.environ['SANITIZER'] = 'address'
     mode = 'code-change'
     os.environ['MODE'] = mode
