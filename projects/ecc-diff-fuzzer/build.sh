@@ -95,7 +95,7 @@ make install
 (
 cd libecc
 #required by libecc
-(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r src/* /usr/local/include/)
+(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r include/* /usr/local/include/)
 )
 
 #botan
