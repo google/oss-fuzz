@@ -17,12 +17,17 @@
 
 import argparse
 import logging
+import os
 import sys
-
-import google.auth
 
 import build_lib
 import build_project
+import google.auth
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+import helper
 
 
 def run_experiment(project_name, command, output_path, experiment_name):
@@ -51,6 +56,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
   project_yaml['sanitizers'] = ['address']
   project_yaml['fuzzing_engines'] = ['libfuzzer']
   project_yaml['architectures'] = ['x86_64']
+  workdir = helper._workdir_from_dockerfile(helper.Project(project_name, False))
 
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
@@ -76,7 +82,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
           'args': [
               'bash',
               '-c',
-              command,
+              f'(cd {workdir}; {command})',
           ]
       },
       {
