@@ -6,5 +6,5 @@ require github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20221110144148-3ffc89b74f8
 
 require (
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20220824214621-3c06a36a6952 // indirect
-	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
+	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 )
