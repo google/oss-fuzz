@@ -77,7 +77,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
           'args': [
               'bash',
               '-c',
-              f'(cd {os.path.join("/src", project.workdir)}; {command})',
+              f'(cd "/src"; cd {project.workdir}; {command})',
           ]
       },
       {
