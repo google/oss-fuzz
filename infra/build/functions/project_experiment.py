@@ -17,12 +17,12 @@
 
 import argparse
 import logging
-import os
 import sys
+
+import google.auth
 
 import build_lib
 import build_project
-import google.auth
 
 
 def run_experiment(project_name, command, output_path, experiment_name):
