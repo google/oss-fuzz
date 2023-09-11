@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import argparse
 import collections
+from dataclasses import dataclass
 import datetime
 import json
 import logging
@@ -56,12 +57,24 @@ PROJECTS_DIR = os.path.abspath(
                  os.path.pardir, 'projects'))
 
 DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
-Config = collections.namedtuple('Config', [
-    'testing', 'test_image_suffix', 'repo', 'branch', 'parallel', 'upload',
-    'experiment'
-],
-                                defaults=(False, None, DEFAULT_OSS_FUZZ_REPO,
-                                          None, False, True, False))
+
+# Used if build logs are uploaded to a separate place.
+LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
+BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
+
+
+@dataclass
+class Config:
+  testing: bool = False
+  test_image_suffix: str = None
+  repo: str = DEFAULT_OSS_FUZZ_REPO
+  branch: str = None
+  parallel: bool = False
+  upload: bool = True
+  experiment: bool = False
+  # TODO(ochang): This should be different per engine+sanitizer combination.
+  upload_build_logs: str = None
+
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -231,7 +244,7 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel):
+def get_compile_step(project, build, env, parallel, upload_build_logs=None):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -240,6 +253,14 @@ def get_compile_step(project, build, env, parallel):
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
       f'{build.architecture} {project.name}\n' + '*' * 80)
+  compile_output_redirect = ''
+
+  if upload_build_logs:
+    # Also write a build success marker because this step needs to succeed first
+    # for a subsequent step to upload the log.
+    compile_output_redirect = (
+        f'&> {LOCAL_BUILD_LOG_PATH} && touch {BUILD_SUCCESS_MARKER}')
+
   compile_step = {
       'name': project.image,
       'env': env,
@@ -251,11 +272,16 @@ def get_compile_step(project, build, env, parallel):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile || '
+           f'mkdir -p {build.out} && compile {compile_output_redirect}|| '
            f'(echo "{failure_msg}" && false)'),
       ],
       'id': get_id('compile', build),
   }
+
+  if upload_build_logs:
+    # The failure will be reported in a subsequent step.
+    compile_step['allowFailure'] = True
+
   build_lib.dockerify_run_step(compile_step,
                                build,
                                use_architecture_image_name=build.is_arm)
@@ -279,7 +305,11 @@ def get_id(step_type, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name, project_yaml, dockerfile, config):
+    project_name,
+    project_yaml,
+    dockerfile,
+    config,
+    additional_env=None):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
@@ -310,8 +340,30 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           continue
 
         env = get_env(project.fuzzing_language, build)
-        compile_step = get_compile_step(project, build, env, config.parallel)
+        if additional_env:
+          env.extend(additional_env)
+
+        compile_step = get_compile_step(project, build, env, config.parallel,
+                                        config.upload_build_logs)
         build_steps.append(compile_step)
+        if config.upload_build_logs:
+          build_steps.append({
+              'name':
+                  'gcr.io/cloud-builders/gsutil',
+              'args': [
+                  '-m', 'cp', LOCAL_BUILD_LOG_PATH, config.upload_build_logs
+              ],
+          })
+
+          # Report the build failure if it happened.
+          build_steps.append({
+              'name':
+                  project.image,
+              'args': [
+                  'bash', '-c',
+                  f'cat {LOCAL_BUILD_LOG_PATH} && test -f {BUILD_SUCCESS_MARKER}'
+              ],
+          })
 
         if project.run_tests:
           failure_msg = (
@@ -483,7 +535,8 @@ def run_build(oss_fuzz_project,
       'logsBucket': bucket,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-  return build_lib.run_build(build_steps,
+  return build_lib.run_build(oss_fuzz_project,
+                             build_steps,
                              credentials,
                              cloud_project,
                              timeout,

@@ -129,9 +129,6 @@ compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 #compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
 #zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
-cd $SRC/instrumentation
-go run main.go --target_dir=$SRC/go/src/archive/tar --check_io_length=true
-
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
 cd $SRC/instrumentation && go run main.go --target_dir=$SRC/net --check_io_length=true && cd -
@@ -180,18 +177,6 @@ go mod tidy
 cd $SRC/go/src/internal/zstd
 go mod init zstdPackage
 go mod tidy
-
-cd $SRC/go/src/debug/elf
-go mod init elfPackage
-go mod tidy
-go mod edit -replace internal/saferio=../../internal/saferio
-go get internal/saferio
-go mod edit -replace internal/zstd=../../internal/zstd
-go get internal/zstd
-cp $SRC/elf_fuzzer.go ./
-rm ./*_test.go
-compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
-zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
 
 cd $SRC/go/src/image/png
 go mod init pngPackage

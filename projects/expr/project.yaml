@@ -1,0 +1,11 @@
+homepage: "https://github.com/antonmedv/expr"
+primary_contact: "martin.swende@ethereum.org"
+auto_ccs:
+  - "anton@medv.io"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/antonmedv/expr.git"
+file_github_issue: True

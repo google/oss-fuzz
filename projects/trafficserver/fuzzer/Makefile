@@ -43,17 +43,12 @@ HttpINC=\
 	$(INCDIR)/proxy/hdrs \
 	$(INCDIR)/proxy/http
 
-CoreLib=$(LIB_FUZZING_ENGINE) \
-	$(LIBDIR)/lib/yamlcpp \
+CoreLib=$(LIB_FUZZING_ENGINE) ../proxy/hdrs/libhdrs.a ../proxy/http/libhttp.a ../proxy/shared/libdiagsconfig.a ../iocore/eventsystem/libinkevent.a ../src/records/librecords_p.a ../src/tscore/libtscore.a \
 	$(LIBDIR)/lib/swoc/.libs/ -ltsswoc \
-	$(LIBDIR)/proxy/hdrs -lhdrs \
-	$(LIBDIR)/proxy/http -lhttp \
-	$(LIBDIR)/src/tscore/.libs/ -ltscore \
+	$(LIBDIR)/src/api/.libs/ -ltsapi \
 	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
 	-lpcre -lssl -lcrypto -lresolv \
-	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
-	$(LIBDIR)/iocore/eventsystem/ -linkevent \
-	$(LIBDIR)/src/records/ -lrecords_p
+	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil
 
 all: $(TARGET)
 

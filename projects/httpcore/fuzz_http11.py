@@ -16,7 +16,7 @@ import sys
 import atheris
 
 import httpcore
-from httpcore.backends.mock import MockStream
+from httpcore._backends.mock import MockStream
 
 
 def TestOneInput(data):

@@ -259,7 +259,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   generate_parser.add_argument(
       '--language',
       default=constants.DEFAULT_LANGUAGE,
-      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python'],
+      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python', 'javascript'],
       help='Project language.')
   _add_external_project_args(generate_parser)
 
@@ -372,6 +372,9 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                help='do not download corpus backup from '
                                'OSS-Fuzz; use corpus located in '
                                'build/corpus/<project>/<fuzz_target>/')
+  coverage_parser.add_argument('--no-serve',
+                               action='store_true',
+                               help='do not serve a local HTTP server.')
   coverage_parser.add_argument('--port',
                                default='8008',
                                help='specify port for'
@@ -830,9 +833,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work',
       f'gcr.io/oss-fuzz/{project.name}'
   ]
+  if sys.stdin.isatty():
+    command.insert(-1, '-t')
 
   result = docker_run(command, architecture=architecture)
   if not result:
@@ -1207,10 +1212,12 @@ def coverage(args):
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
-      'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
       'ARCHITECTURE=' + args.architecture,
   ]
+
+  if not args.no_serve:
+    env.append(f'HTTP_PORT={args.port}')
 
   run_args = _env_to_docker_args(env)
 

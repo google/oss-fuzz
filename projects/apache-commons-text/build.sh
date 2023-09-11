@@ -69,17 +69,15 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.$fuzzer_basename \
-  `# Ignores reported RCE caused by class loading during interpolation of constant strings.` \
-  `# Should be fixed in newer versions of Jazzer  https://github.com/CodeIntelligenceTesting/jazzer/pull/531#discussion_r1115478731` \
-  --disabled_hooks=\"com.code_intelligence.jazzer.sanitizers.ReflectiveCall\" \
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=com.example.$fuzzer_basename \
+--jvm_args=\"\$mem_settings\" \
   \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done

@@ -91,6 +91,10 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
+OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool-experiments')
+
 US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
@@ -436,7 +440,12 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
 
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
-  steps = [clone_step]
+  if experiment:
+    # Skip cloning if we're in an experiment. The source is submitted to GCB
+    # via gcloud builds submit.
+    steps = []
+  else:
+    steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
@@ -483,10 +492,10 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
+def get_logs_url(build_id):
   """Returns url that displays the build logs."""
-  return ('https://console.developers.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
+  return (
+      f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt')
 
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
@@ -509,7 +518,8 @@ def get_build_body(steps,
                    timeout,
                    body_overrides,
                    build_tags,
-                   use_build_pool=True):
+                   use_build_pool=True,
+                   experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -517,7 +527,11 @@ def get_build_body(steps,
     options = {}
 
   if use_build_pool:
-    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+    if experiment:
+      options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    else:
+      options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
@@ -534,6 +548,7 @@ def get_build_body(steps,
 
 
 def run_build(  # pylint: disable=too-many-arguments
+    oss_fuzz_project,
     steps,
     credentials,
     cloud_project,
@@ -548,7 +563,8 @@ def run_build(  # pylint: disable=too-many-arguments
                               timeout,
                               body_overrides,
                               tags,
-                              use_build_pool=use_build_pool)
+                              use_build_pool=use_build_pool,
+                              experiment=experiment)
   if experiment:
     with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
       config_file.write(bytes(json.dumps(build_body), 'utf-8'))
@@ -575,7 +591,6 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_id = build_info['metadata']['build']['id']
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
+               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id

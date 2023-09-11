@@ -168,6 +168,11 @@ COPY bazel_build_fuzz_tests \
     write_labels.py \
     /usr/local/bin/
 
+# TODO: Build this as part of a multi-stage build.
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc /usr/local/bin/
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc /usr/local/bin/
+RUN chmod +x /usr/local/bin/clang-jcc && chmod +x /usr/local/bin/clang++-jcc
+
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc

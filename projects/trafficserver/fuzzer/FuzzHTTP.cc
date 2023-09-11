@@ -36,7 +36,8 @@ LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     http_parser_init(&parser);
 
-    start = (char *)Data;
+    std::string input(reinterpret_cast<const char*>(Data), Size);
+    start = input.c_str();
     end   = start + Size;
 
     {

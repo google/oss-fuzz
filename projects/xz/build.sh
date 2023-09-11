@@ -24,7 +24,8 @@
   --disable-xz \
   --disable-xzdec \
   --disable-lzmadec \
-  --disable-lzmainfo
+  --disable-lzmainfo \
+  --disable-ifunc
 make clean
 make -j$(nproc) && make -C tests/ossfuzz && \
     cp tests/ossfuzz/config/fuzz.options $OUT/ && \
