@@ -29,7 +29,7 @@ RUN git clone  https://github.com/WasmEdge/WasmEdge.git
 
 ADD "https://api.github.com/repos/second-state/WasmEdge-unittest/commits?per_page=1&sha=wasm-dev-0.11.0" latest_commit
 RUN rm latest_commit
-RUN git clone --branch wasm-dev-0.11.0 https://github.com/second-state/WasmEdge-unittest.git
+RUN git clone --branch wasm-dev-0.13.0 https://github.com/second-state/WasmEdge-unittest.git
 
 COPY build.sh $SRC/
 WORKDIR $SRC
