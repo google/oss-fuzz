@@ -36,15 +36,6 @@ public class POIXSSFFuzzer {
 			try (SXSSFWorkbook swb = new SXSSFWorkbook(wb)) {
 				swb.write(NullOutputStream.INSTANCE);
 			}
-		} catch (NoClassDefFoundError e) {
-			// only allow some missing classes related to Font-handling
-			// we cannot install JDK font packages in oss-fuzz images currently
-			// see https://github.com/google/oss-fuzz/issues/7380
-			if (!e.getMessage().contains("java.awt.Font") &&
-					!e.getMessage().contains("java.awt.Toolkit") &&
-					!e.getMessage().contains("sun.awt.X11FontManager")) {
-				throw e;
-			}
 		} catch (IOException | POIXMLException | RecordFormatException | IllegalStateException |
 				 OpenXML4JRuntimeException | IllegalArgumentException | IndexOutOfBoundsException e) {
 			// expected here
@@ -53,15 +44,6 @@ public class POIXSSFFuzzer {
 		try (OPCPackage pkg = OPCPackage.open(new ByteArrayInputStream(input))) {
 			try (XSSFEventBasedExcelExtractor extractor = new XSSFEventBasedExcelExtractor(pkg)) {
 				POIFuzzer.checkExtractor(extractor);
-			}
-		} catch (NoClassDefFoundError e) {
-			// only allow some missing classes related to Font-handling
-			// we cannot install JDK font packages in oss-fuzz images currently
-			// see https://github.com/google/oss-fuzz/issues/7380
-			if (!e.getMessage().contains("java.awt.Font") &&
-					!e.getMessage().contains("java.awt.Toolkit") &&
-					!e.getMessage().contains("sun.awt.X11FontManager")) {
-				throw e;
 			}
 		} catch (IOException | XmlException | OpenXML4JException | POIXMLException | RecordFormatException |
 				IllegalStateException | IllegalArgumentException | IndexOutOfBoundsException e) {

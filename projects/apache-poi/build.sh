@@ -20,6 +20,18 @@ ALL_JARS=""
 LIBRARY_NAME="poi"
 GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11 --console=plain"
 
+echo Copy libraries for java.awt in place
+ls /usr/lib/x86_64-linux-gnu/
+cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
+  /usr/lib/x86_64-linux-gnu/libX11.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXrender.so.1* \
+  /usr/lib/x86_64-linux-gnu/libXtst.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXi.so.6* \
+  /usr/lib/x86_64-linux-gnu/libxcb.so.1* \
+  /usr/lib/x86_64-linux-gnu/libXau.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* \
+  ${OUT}/
+
 echo Main Java
 ${JAVA_HOME}/bin/java -version
 
@@ -70,8 +82,6 @@ pushd "${SRC}"
 	install -v target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
 	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
 popd
-
-
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
