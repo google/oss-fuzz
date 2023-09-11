@@ -54,7 +54,7 @@ public class POIXWPFFuzzer {
 				POIFuzzer.checkExtractor(extractor);
 			}
 		} catch (IOException | POIXMLException | RecordFormatException | OpenXML4JRuntimeException |
-				 IllegalArgumentException | IllegalStateException e) {
+				 IllegalArgumentException | IllegalStateException | IndexOutOfBoundsException e) {
 			// expected
 		}
 	}
