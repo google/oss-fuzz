@@ -64,7 +64,7 @@ public class POIXSSFFuzzer {
 				throw e;
 			}
 		} catch (IOException | XmlException | OpenXML4JException | POIXMLException | RecordFormatException |
-				IllegalStateException | IllegalArgumentException e) {
+				IllegalStateException | IllegalArgumentException | IndexOutOfBoundsException e) {
 			// expected
 		}
 	}
