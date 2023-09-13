@@ -19,6 +19,12 @@ MAINTAINER s@sevki.org
 
 RUN git clone --depth 1 https://github.com/hugelgupf/p9
 
+RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.21.0.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+
 WORKDIR $SRC/p9
 
 COPY build.sh $SRC/

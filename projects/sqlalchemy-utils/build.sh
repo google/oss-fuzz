@@ -16,10 +16,14 @@
 ################################################################################
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install --upgrade pip
-pip3 install sqlalchemy arrow colour babel
-pip3 install -e .
+python3 -m pip install --upgrade pip
+python3 -m pip install sqlalchemy arrow colour babel
+python3 -m pip install .
+
+mkdir $SRC/tmp
+cd $SRC/tmp
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-   compile_python_fuzzer $fuzzer 
+   #compile_python_fuzzer $fuzzer --hidden-import=sqlalchemy_utils --hidden-import=sqlalchemy_utils.models
+   compile_python_fuzzer $fuzzer
 done

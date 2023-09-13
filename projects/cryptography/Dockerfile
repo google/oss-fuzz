@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN git clone https://github.com/pyca/cryptography
 RUN apt-get update
-RUN apt-get install build-essential libssl-dev libffi-dev python3-dev cargo -y
+RUN apt-get install build-essential libssl-dev libffi-dev pkg-config python3-dev cargo -y
 RUN pip3 install --upgrade pip
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 

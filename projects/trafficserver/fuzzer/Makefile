@@ -18,12 +18,13 @@ MACROS=$(MANFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
 EsiINC=\
 	$(INCDIR)/include \
 	$(INCDIR)/plugins/esi \
+	$(INCDIR)/plugins/esi/common \
 	$(INCDIR)/plugins/esi/lib \
 	$(INCDIR)/plugins/esi/fetcher 
 
 EsiLIB=$(LIB_FUZZING_ENGINE) \
 	$(LIBDIR)/plugins/esi/.libs/ \
-	$(EsiLib) -lesicore
+	-lesicore
 
 #HttpEXE
 HttpINC=\
@@ -37,23 +38,17 @@ HttpINC=\
 	$(INCDIR)/iocore/net/quic \
 	$(INCDIR)/iocore/utils \
 	$(INCDIR)/lib \
+	$(INCDIR)/lib/swoc/include \
 	$(INCDIR)/proxy/api \
 	$(INCDIR)/proxy/hdrs \
 	$(INCDIR)/proxy/http
 
-CoreLib=$(LIB_FUZZING_ENGINE) \
-	$(LIBDIR)/lib/yamlcpp \
-	$(LIBDIR)/proxy/hdrs -lhdrs \
-	$(LIBDIR)/proxy/http -lhttp \
-	$(LIBDIR)/src/tscore/.libs/ -ltscore \
+CoreLib=$(LIB_FUZZING_ENGINE) ../proxy/hdrs/libhdrs.a ../proxy/http/libhttp.a ../proxy/shared/libdiagsconfig.a ../iocore/eventsystem/libinkevent.a ../src/records/librecords_p.a ../src/tscore/libtscore.a \
+	$(LIBDIR)/lib/swoc/.libs/ -ltsswoc \
+	$(LIBDIR)/src/api/.libs/ -ltsapi \
 	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
 	-lpcre -lssl -lcrypto -lresolv \
-	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil \
-	$(LIBDIR)/iocore/eventsystem/ -linkevent \
-	$(LIBDIR)/src/records/ -lrecords_p \
-	$(LIBDIR)/mgmt/.libs/ -lmgmt_p \
-	$(LIBDIR)/proxy/shared/ -lUglyLogStubs \
-	-Wl,-rpath=lib/
+	$(LIBDIR)/src/tscpp/util/.libs/ -ltscpputil
 
 all: $(TARGET)
 
@@ -61,8 +56,8 @@ $(TARGET):
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(EsiINC) -c $(EsiEXE).cc
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(EsiEXE) $(EsiEXE).o $(EsiLIB)
 
-#$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
-#$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(MACROS) $(HttpINC) -c $(HttpEXE).cc
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) -o $(HttpEXE) $(HttpEXE).o $(CoreLib)
 
 clean:
 	rm $(EsiEXE) $(HttpEXE) *.o

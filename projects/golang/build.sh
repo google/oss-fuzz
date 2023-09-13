@@ -129,9 +129,6 @@ compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 #compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
 #zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
-cd $SRC/instrumentation
-go run main.go --target_dir=$SRC/go/src/archive/tar --check_io_length=true
-
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
 cd $SRC/instrumentation && go run main.go --target_dir=$SRC/net --check_io_length=true && cd -
@@ -177,15 +174,9 @@ cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
 go mod tidy
 
-cd $SRC/go/src/debug/elf
-go mod init elfPackage
+cd $SRC/go/src/internal/zstd
+go mod init zstdPackage
 go mod tidy
-go mod edit -replace internal/saferio=../../internal/saferio
-go get internal/saferio
-cp $SRC/elf_fuzzer.go ./
-rm ./*_test.go
-compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
-zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
 
 cd $SRC/go/src/image/png
 go mod init pngPackage
@@ -207,14 +198,14 @@ go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
+# golangs build from source currently breaks.
+exit 0
+
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
-
-# golangs build from source currently breaks.
-exit 0
 
 # Install latest Go from master branch and build fuzzers again
 cd $SRC

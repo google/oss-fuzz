@@ -24,7 +24,7 @@ make -C tests/libtest -j"$(nproc)" all V=1
 
 LIBISC_CFLAGS="-Ilib/isc/include"
 LIBDNS_CFLAGS="-Ilib/dns/include"
-LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -lurcu-memb -lurcu-cds -luv -lnghttp2 -Wl,-Bdynamic"
+LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -lurcu-memb -lurcu-cds -lurcu-common -luv -lnghttp2 -Wl,-Bdynamic"
 LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -lcrypto -lurcu-memb -lurcu-cds -Wl,-Bdynamic"
 LIBTEST_LIBS="tests/libtest/.libs/libtest.a"
 

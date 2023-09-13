@@ -162,11 +162,13 @@ def get_error_frame(crash_info):
   if not crash_info.crash_state:
     return None
   state = crash_info.crash_state.split('\n')[0]
+  logging.info('state: %s frames %s, %s', state, crash_info.frames,
+               [f.function_name for f in crash_info.frames[0]])
 
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
       # TODO(metzman): Do something less fragile here.
-      if frame.function_name.startswith(state):
+      if state in frame.function_name:
         return frame
   return None
 
@@ -205,9 +207,9 @@ def get_sarif_data(stacktrace, target_path):
                                          include_ubsan=True)
   crash_info = stack_parser.parse(stacktrace)
   error_source_info = get_error_source_info(crash_info)
-  uri = error_source_info[0]
   rule_idx = get_rule_index(crash_info.crash_type)
   rule_id = SARIF_RULES[rule_idx]['id']
+  uri = error_source_info[0]
 
   result = {
       'level': 'error',
@@ -230,12 +232,15 @@ def get_sarif_data(stacktrace, target_path):
       'ruleId': rule_id,
       'ruleIndex': rule_idx
   }
-  data['runs'][0]['results'].append(result)
+  if uri:
+    data['runs'][0]['results'].append(result)
   return data
 
 
 def write_stacktrace_to_sarif(stacktrace, target_path, workspace):
   """Writes a description of the crash in stacktrace to a SARIF file."""
   data = get_sarif_data(stacktrace, target_path)
+  if not os.path.exists(workspace.sarif):
+    os.makedirs(workspace.sarif)
   with open(os.path.join(workspace.sarif, 'results.sarif'), 'w') as file_handle:
     file_handle.write(json.dumps(data))

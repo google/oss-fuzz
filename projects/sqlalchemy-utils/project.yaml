@@ -3,12 +3,11 @@ fuzzing_engines:
 homepage: https://github.com/kvesteri/sqlalchemy-utils
 language: python
 main_repo: https://github.com/kvesteri/sqlalchemy-utils
-primary_contact: kurtmckee@gmail.com
+primary_contact: david@adalogics.com
 sanitizers:
 - address
 - undefined
 vendor_ccs:
-- david@adalogics.com
 - adam@adalogics.com
 - arthur.chan@adalogics.com
 - riccardo.schirone@trailofbits.com

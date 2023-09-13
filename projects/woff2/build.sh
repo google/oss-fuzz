@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" == "introspector" ]; then
+  cd $SRC/
+  python3 -m pip install Brotli
+  cd $SRC/woff2
+fi
+
 # Build the library. Actually there is no 'library' target, so we use .o files.
 # '-no-canonical-prefixes' flag makes clang crazy. Need to avoid it.
 cat brotli/shared.mk | sed -e "s/-no-canonical-prefixes//" \

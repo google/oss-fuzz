@@ -20,7 +20,7 @@ PROJECT_GROUP_ID=com.google.http-client
 PROJECT_ARTIFACT_ID=google-http-client
 MAIN_REPOSITORY=https://github.com/googleapis/google-http-java-client/
 
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=11 -Djavac.target.version=11 -Denforcer.skip=true -DskipTests"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -72,15 +72,16 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.$fuzzer_basename \
-  \$@" > $OUT/$fuzzer_basename
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--jvm_args=\"\$mem_settings\" \
+--target_class=com.example.$fuzzer_basename \
+\$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
 

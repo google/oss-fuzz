@@ -57,11 +57,11 @@ cmake_args=(
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS}"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # Linker
     -DCMAKE_LINKER="${LD}"
@@ -91,7 +91,11 @@ do
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
+  dict_path="test/static/$name.dict"
+  if [ -e "$dict_path" ]; then
+    cp $dict_path $OUT/
+  fi
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$module"_fuzzer_seed_corpus.zip $corpus_dir/*
+    zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done

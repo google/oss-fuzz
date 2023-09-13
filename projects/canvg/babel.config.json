@@ -1,0 +1,9 @@
+
+{
+  "presets": ["@babel/preset-typescript"],
+  "plugins": [
+    "@babel/plugin-transform-modules-commonjs",
+    "@babel/plugin-transform-typescript"
+  ],
+  "ignore": ["**/@jazzer.js", "**/@babel", "**/istanbul-reports", "**/test/**", "**/tests/**", "**/__tests__/**"]
+}

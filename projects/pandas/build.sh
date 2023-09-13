@@ -15,6 +15,12 @@
 #
 ###############################################################################
 
+if [ $SANITIZER == "coverage" ]; then
+    export CFLAGS=""
+    export CXXFLAGS=""
+fi
+PYTHON_CONFIG_STR=$(python3.9-config --cflags --ldflags)
+export LDSHARED="${CC} ${PYTHON_CONFIG_STR} -nostartfiles -shared"
 python3 setup.py install
 python3 -m pip install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do

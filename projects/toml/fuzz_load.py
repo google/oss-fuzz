@@ -19,13 +19,27 @@ import atheris
 import io
 
 import toml
+from toml import ordered as toml_ordered
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
+
+    # Pick from a random set of decoders
+    DECODERS = [
+        None,
+        toml_ordered.TomlOrderedDecoder(),
+        toml.TomlPreserveCommentDecoder()
+    ]
+
     try:
         f = io.StringIO(fdp.ConsumeString(sys.maxsize))
-        result = toml.decoder.load(f)
-    except toml.TomlDecodeError:
+        result = toml.decoder.load(f, decoder=fdp.PickValueInList(DECODERS))
+    except (toml.TomlDecodeError, IndexError) as e:
+        if isinstance(e, IndexError):
+            if "IndexError: list index out of range" in str(e) or "IndexError: string index out of range" in str(e):
+                pass
+            else:
+                raise e
         pass
 
 

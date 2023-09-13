@@ -20,7 +20,9 @@ import atheris
 with atheris.instrument_imports():
   import logging
   import warnings
-  from bs4 import BeautifulSoup
+  from bs4 import BeautifulSoup, ParserRejectedMarkup
+  import soupsieve
+  from soupsieve.util import SelectorSyntaxError
 
 
 try:
@@ -37,7 +39,7 @@ except ImportError:
 @atheris.instrument_func
 def TestOneInput(data):
   """TestOneInput gets random data from the fuzzer, and throws it at bs4."""
-  if len(data) < 1:
+  if len(data) < 12:
     return
 
   parsers = ['lxml-xml', 'html5lib', 'html.parser', 'lxml']
@@ -46,14 +48,25 @@ def TestOneInput(data):
   except ValueError:
     return
 
+  css_selector, data = data[1:10], data[10:]
+
   try:
     soup = BeautifulSoup(data[1:], features=parsers[idx])
   except HTMLParseError:
     return
   except ValueError:
     return
+  except ParserRejectedMarkup:
+    return
 
   list(soup.find_all(True))
+  if soup.css:
+      try:
+          soup.css.select(css_selector.decode('utf-8', 'replace'))
+      except SelectorSyntaxError:
+          return
+      except NotImplementedError:
+          return
   soup.prettify()
 
 

@@ -34,7 +34,7 @@ elif __file__:
 else:
     raise Exception("Could not extract path needed to import loop.py")
 sys.path.append(app_path)
-from loop import LoopSocket
+from _loop import LoopSocket
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)

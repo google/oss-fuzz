@@ -80,7 +80,9 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_embedded=false
            skia_enable_fontmgr_custom_empty=true
            skia_enable_ganesh=true
+           skia_enable_graphite=true
            skia_enable_skottie=true
+           skia_enable_precompile=true
            skia_use_vulkan=true
            skia_use_egl=false
            skia_use_gl=false
@@ -128,6 +130,7 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   api_path_measure \
   api_pathop \
   api_polyutils \
+  api_precompile \
   api_raster_n32_canvas \
   api_regionop \
   api_skparagraph \
@@ -151,7 +154,8 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   webp_encoder
 
 $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
-  cubic_quad_roots \
+  cubic_roots \
+  quad_roots \
   skmeshspecification \
   skruntimeeffect \
   sksl2glsl \
@@ -289,6 +293,8 @@ mv ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
 
 mv out/Fuzz/api_skparagraph $OUT/api_skparagraph
 
+mv out/Fuzz/api_precompile $OUT/api_precompile
+
 mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
@@ -296,5 +302,6 @@ mv out/Fuzz/api_triangulation $OUT/api_triangulation
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
 
-# This just takes 4 floats - no seed corpus necessary
-mv out/FuzzDebug/cubic_quad_roots $OUT/cubic_quad_roots
+# These only take a few floats - no seed corpus necessary
+mv out/FuzzDebug/quad_roots $OUT/quad_roots
+mv out/FuzzDebug/cubic_roots $OUT/cubic_roots

@@ -32,10 +32,15 @@ fi
 sed -i 's/flto/flto=thin/g' ./depends/hosts/linux.mk
 sed -i 's/flto/flto=thin/g' ./configure.ac
 
+if [ "$ARCHITECTURE" = "i386" ]; then
+# Temporary workaround for building sqlite for 32-bit. Due to https://github.com/google/oss-fuzz/pull/10466#issuecomment-1576658462
+export FIX_32BIT=" -m32"
+fi
+
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET LTO=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib -j$(nproc)
+  make HOST=$BUILD_TRIPLET DEBUG=1 LTO=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE ${FIX_32BIT:-}" -j$(nproc)
 )
 
 # Build the fuzz targets
@@ -52,15 +57,6 @@ else
   CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --with-seccomp=no --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 fi
 
-if [ "$SANITIZER" = "memory" ]; then
-  # MemorySanitizer (MSAN) does not support tracking memory initialization done by
-  # using the Linux getrandom syscall. Avoid using getrandom by undefining
-  # HAVE_SYS_GETRANDOM. See https://github.com/google/sanitizers/issues/852 for
-  # details.
-  grep -v HAVE_SYS_GETRANDOM src/config/bitcoin-config.h > src/config/bitcoin-config.h.tmp
-  mv src/config/bitcoin-config.h.tmp src/config/bitcoin-config.h
-fi
-
 make -j$(nproc)
 
 WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./src/test/fuzz/fuzz" || true
@@ -72,14 +68,18 @@ fi
 
 # OSS-Fuzz requires a separate and self-contained binary for each fuzz target.
 # To inject the fuzz target name in the finished binary, compile the fuzz
-# executable with the name of the fuzz target injected into the source code.
+# executable with a "magic string" as the name of the fuzz target.
+#
+# An alternative to mocking the string in the finished binary would be to
+# replace the string in the source code and re-invoke 'make'. This is slower,
+# so use the hack.
+export MAGIC_STR="b5813eee2abc9d3358151f298b75a72264ffa119d2f71ae7fefa15c4b70b4bc5b38e87e3107a730f25891ea428b2b4fabe7a84f5bfa73c79e0479e085e4ff157"
+sed -i "s|std::getenv(\"FUZZ\")|\"$MAGIC_STR\"|g" "./src/test/fuzz/fuzz.cpp"
+make -j$(nproc)
+
+# Replace the magic string with the actual name of each fuzz target
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
-  git checkout --                                                                       "./src/test/fuzz/fuzz.cpp"
-  sed -i "s|static std::string_view g_fuzz_target;|static std::string g_fuzz_target;|g" "./src/test/fuzz/fuzz.cpp"
-  sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g"                                   "./src/test/fuzz/fuzz.cpp"
-  sed -i "s|.find(g_fuzz_target)|.find(g_fuzz_target.c_str())|g"                        "./src/test/fuzz/fuzz.cpp"
-  make -j$(nproc)
-  mv './src/test/fuzz/fuzz' "$OUT/$fuzz_target"
+  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./src/test/fuzz/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
 
   chmod +x "$OUT/$fuzz_target"
   (
@@ -89,3 +89,5 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
     fi
   )
 done
+
+cp assets/fuzz_dicts/*.dict $OUT/

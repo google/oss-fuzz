@@ -32,7 +32,6 @@ import java.util.List;
 
 
 public class FileUploadFuzzer {
-
     @FuzzTest
     void myFuzzTest(FuzzedDataProvider data)
             throws IOException, FileUploadException, MultipartStream.MalformedStreamException {
