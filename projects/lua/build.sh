@@ -31,18 +31,6 @@ fi
 apt-get update
 apt-get install -y $PACKAGES
 
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed "s~CFLAGS=~CFLAGS+=~g" -i $SRC/lua/makefile
-sed "s~MYLDFLAGS=~MYLDFLAGS=${CFLAGS} ~g" -i $SRC/lua/makefile
-sed "s|CC= gcc|CC= ${CC}|g" -i $SRC/lua/makefile
-
-cd $SRC/lua
-make
-cp ../fuzz_lua.c .
-$CC $CFLAGS -c fuzz_lua.c -o fuzz_lua.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua ./liblua.a
-
 cd $SRC/testdir
 
 # Avoid compilation issue due to some undefined references. They are defined in
@@ -93,6 +81,10 @@ git config --global --add safe.directory '*'
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
 cmake --build build --parallel
+
+LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
+$CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua $LUALIB_PATH/liblua.a
 
 cp corpus_dir/*.options $OUT/
 
