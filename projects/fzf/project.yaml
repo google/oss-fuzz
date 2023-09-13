@@ -1,0 +1,8 @@
+homepage: "https://github.com/junegunn/fzf"
+language: go
+primary_contact: "secsys-go@hotmail.com"
+main_repo: "https://github.com/junegunn/fzf"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
