@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --single-branch --branch add-fuzz https://github.com/manunio/askama askama
+RUN git clone --depth 1 https://github.com/djc/askama askama
 WORKDIR askama
 COPY build.sh $SRC/
