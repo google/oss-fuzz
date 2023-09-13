@@ -5,6 +5,7 @@ fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
+primary_contact: "daniel@lemire.me"
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
