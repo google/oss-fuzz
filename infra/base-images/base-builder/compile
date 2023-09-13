@@ -131,6 +131,11 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
+if [ "$FUZZING_LANGUAGE" = "go" ]; then
+  # required by Go 1.20
+  export CXX="${CXX} -lresolv"
+fi
+
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
   sanitizer_with_fuzzer_lib_dir=`python3 -c "import atheris; import os; print(atheris.path())"`
   sanitizer_with_fuzzer_output_lib=$OUT/sanitizer_with_fuzzer.so

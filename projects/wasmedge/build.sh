@@ -35,6 +35,7 @@ cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   .
 ninja -C build
 cp -a build/lib/api/libwasmedge*.so* build/tools/fuzz/wasmedge-fuzz* "$OUT"/
+patchelf --set-rpath \$ORIGIN "$OUT"/libwasmedge*.so*
 cd utils/corpus/po
 zip -9 "$OUT/wasmedge-fuzzpo_seed_corpus.zip" -R '*.txt'
 cd -

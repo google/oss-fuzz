@@ -14,7 +14,35 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data $SRC/jsonschema_specifications/jsonschema_specifications/schemas:jsonschema_specifications/schemas --add-data /usr/local/lib/python3.8/site-packages/jupyter_events/schemas:jupyter_events/schemas
+
+BUILD=$WORK/build
+
+rm -rf $BUILD
+
+# build project
+
+meson setup $BUILD \
+  -Ddefault_library=static \
+  -Db_lundef=false \
+  -Dfuzzing=true \
+  -Dglib:libmount=disabled \
+  -Dglib:selinux=disabled \
+  -Dgpt=disabled \
+  -Djson=disabled \
+  -Dnetwork=false \
+  -Dservice=false \
+  -Dstreaming=false \
+  --wrap-mode=forcefallback
+
+ninja -C $BUILD
+
+# collect fuzzers and data
+
+find $BUILD/fuzz -maxdepth 1 -executable -type f -exec cp "{}" $OUT \;
+
+find fuzz -type f -name "*.dict" -exec cp "{}" $OUT \;
+
+for CORPUS in $(find fuzz -type f -name "*.corpus"); do
+  BASENAME=${CORPUS##*/}
+  zip $OUT/${BASENAME%%.*}_seed_corpus.zip . -ws -r -i@$CORPUS
 done
