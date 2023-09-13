@@ -23,11 +23,6 @@ RUN git clone --depth 1 https://github.com/golang/image
 RUN git clone --depth 1 https://github.com/golang/crypto
 RUN git clone --depth 1 https://github.com/golang/text
 RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
-RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.20.5.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
 COPY build.sh text_fuzzer.go \
      math_big_fuzzer.go \
      fuzz_tar_reader.go \

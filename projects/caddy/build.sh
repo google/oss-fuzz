@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 # We move the caddy folder in here rather than the Dockerfile to make CI work.
 # See here for the failure that triggered this: https://github.com/caddyserver/caddy/pull/4449
 mkdir -p $GOPATH/src/github.com/caddyserver/caddy/
