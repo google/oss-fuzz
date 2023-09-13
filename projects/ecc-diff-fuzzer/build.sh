@@ -73,6 +73,9 @@ sed -i -e s/aria_encrypt/ariagencrypt/ /usr/local/lib/libgcrypt.a
 #mbedtls
 (
 cd mbedtls
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    export CFLAGS="$CFLAGS -maes -mpclmul"
+fi
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
 make install
@@ -95,7 +98,7 @@ make install
 (
 cd libecc
 #required by libecc
-(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r src/* /usr/local/include/)
+(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r include/* /usr/local/include/)
 )
 
 #botan

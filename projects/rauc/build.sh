@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +15,34 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+BUILD=$WORK/build
 
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    dpkg-dev \
-    ninja-build \
-    llvm-12-dev \
-    liblld-12-dev
+rm -rf $BUILD
 
-ADD "https://api.github.com/repos/WasmEdge/WasmEdge/commits?per_page=1" latest_commit
-RUN rm latest_commit
-RUN git clone  https://github.com/WasmEdge/WasmEdge.git
+# build project
 
-ADD "https://api.github.com/repos/second-state/WasmEdge-unittest/commits?per_page=1&sha=wasm-dev-0.11.0" latest_commit
-RUN rm latest_commit
-RUN git clone --branch wasm-dev-0.13.0 https://github.com/second-state/WasmEdge-unittest.git
+meson setup $BUILD \
+  -Ddefault_library=static \
+  -Db_lundef=false \
+  -Dfuzzing=true \
+  -Dglib:libmount=disabled \
+  -Dglib:selinux=disabled \
+  -Dgpt=disabled \
+  -Djson=disabled \
+  -Dnetwork=false \
+  -Dservice=false \
+  -Dstreaming=false \
+  --wrap-mode=forcefallback
 
-COPY build.sh $SRC/
-WORKDIR $SRC
+ninja -C $BUILD
+
+# collect fuzzers and data
+
+find $BUILD/fuzz -maxdepth 1 -executable -type f -exec cp "{}" $OUT \;
+
+find fuzz -type f -name "*.dict" -exec cp "{}" $OUT \;
+
+for CORPUS in $(find fuzz -type f -name "*.corpus"); do
+  BASENAME=${CORPUS##*/}
+  zip $OUT/${BASENAME%%.*}_seed_corpus.zip . -ws -r -i@$CORPUS
+done
