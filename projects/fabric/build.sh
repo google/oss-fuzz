@@ -16,9 +16,6 @@
 ################################################################################
 
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 # Temporarily disable coverage build in OSS-Fuzz's CI
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
