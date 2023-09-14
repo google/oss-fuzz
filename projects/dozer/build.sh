@@ -20,12 +20,12 @@ $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 
-cp ./building-tools/target/dozer-building-tools-6.5.3-SNAPSHOT.jar /out/dozer-building-tools.jar
-cp ./dozer-integrations/dozer-proto3/target/dozer-proto3-6.5.3-SNAPSHOT.jar /out/dozer-proto3.jar
-cp ./dozer-integrations/dozer-spring-support/dozer-spring-boot-starter/target/dozer-spring-boot-starter-6.5.3-SNAPSHOT.jar /out/dozer-spring-boot-starter.jar
-cp ./dozer-integrations/dozer-spring-support/dozer-spring4/target/dozer-spring4-6.5.3-SNAPSHOT.jar /out/dozer-spring4.jar
-cp ./dozer-integrations/dozer-spring-support/dozer-spring-boot-autoconfigure/target/dozer-spring-boot-autoconfigure-6.5.3-SNAPSHOT.jar /out/dozer-spring-boot-config.jar
-cp ./core/target/dozer-core-6.5.3-SNAPSHOT-jar-with-dependencies.jar /out/dozer.jar
+cp ./building-tools/target/dozer-building-tools-6.5.3-SNAPSHOT.jar $OUT/dozer-building-tools.jar
+cp ./dozer-integrations/dozer-proto3/target/dozer-proto3-6.5.3-SNAPSHOT.jar $OUT/dozer-proto3.jar
+cp ./dozer-integrations/dozer-spring-support/dozer-spring-boot-starter/target/dozer-spring-boot-starter-6.5.3-SNAPSHOT.jar $OUT/dozer-spring-boot-starter.jar
+cp ./dozer-integrations/dozer-spring-support/dozer-spring4/target/dozer-spring4-6.5.3-SNAPSHOT.jar $OUT/dozer-spring4.jar
+cp ./dozer-integrations/dozer-spring-support/dozer-spring-boot-autoconfigure/target/dozer-spring-boot-autoconfigure-6.5.3-SNAPSHOT.jar $OUT/dozer-spring-boot-config.jar
+cp ./core/target/dozer-core-6.5.3-SNAPSHOT-jar-with-dependencies.jar $OUT/dozer.jar
 
 ALL_JARS='dozer.jar dozer-building-tools.jar dozer-proto3.jar dozer-spring-boot-starter.jar dozer-spring4.jar dozer-spring-boot-config.jar'
 
