@@ -257,11 +257,13 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
-  generate_parser.add_argument(
-      '--language',
-      default=constants.DEFAULT_LANGUAGE,
-      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python', 'javascript'],
-      help='Project language.')
+  generate_parser.add_argument('--language',
+                               default=constants.DEFAULT_LANGUAGE,
+                               choices=[
+                                   'c', 'c++', 'rust', 'go', 'jvm', 'swift',
+                                   'python', 'javascript'
+                               ],
+                               help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
