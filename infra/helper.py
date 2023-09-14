@@ -24,6 +24,7 @@ import datetime
 import errno
 import logging
 import os
+import platform
 import re
 import shlex
 import shutil
@@ -562,12 +563,18 @@ def _get_out_dir(project=''):
   return _get_project_build_subdir(project, 'out')
 
 
+def _get_default_architecture():
+  if is_host_aarch64():
+    return 'aarch64'
+  return constants.DEFAULT_ARCHITECTURE
+
+
 def _add_architecture_args(parser, choices=None):
   """Adds common architecture args."""
   if choices is None:
     choices = constants.ARCHITECTURES
   parser.add_argument('--architecture',
-                      default=constants.DEFAULT_ARCHITECTURE,
+                      default=_get_default_architecture(),
                       choices=choices)
 
 
@@ -618,8 +625,14 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
 
   build_args = []
   image_name = 'gcr.io/%s/%s' % (image_project, image_name)
-  if architecture == 'aarch64':
-    build_args += [
+  if not cache:
+    build_args.append('--no-cache')
+
+  build_args += ['-t', image_name, '--file', dockerfile_path]
+  build_args.append(docker_build_dir)
+  if architecture == 'aarch64' and not is_host_aarch64():
+    command = [
+        'docker',
         'buildx',
         'build',
         '--platform',
@@ -627,17 +640,14 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
         '--progress',
         'plain',
         '--load',
-    ]
-  if not cache:
-    build_args.append('--no-cache')
-
-  build_args += ['-t', image_name, '--file', dockerfile_path]
-  build_args.append(docker_build_dir)
-
-  if architecture == 'aarch64':
-    command = ['docker'] + build_args
-    subprocess.check_call(command)
+    ] + build_args
+    logger.info('Running: %s.', _get_command_string(command))
+    try:
+      subprocess.check_call(command)
+    except CalledProcessError:
+      return False
     return True
+
   return docker_build(build_args)
 
 
@@ -648,7 +658,7 @@ def _env_to_docker_args(env_list):
 
 def workdir_from_lines(lines, default='/src'):
   """Gets the WORKDIR from the given lines."""
-  for line in reversed(lines):  # reversed to get last WORKDIR.
+  for line in reversed(lines):  # Reversed to get last WORKDIR.
     match = re.match(WORKDIR_REGEX, line)
     if match:
       workdir = match.group(1)
@@ -660,6 +670,10 @@ def workdir_from_lines(lines, default='/src'):
       return os.path.normpath(workdir)
 
   return default
+
+
+def is_host_aarch64():
+  return platform.uname().machine == 'aarch64'
 
 
 def _workdir_from_dockerfile(project):
