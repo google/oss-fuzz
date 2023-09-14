@@ -4,10 +4,6 @@ import "bytes"
 
 func FuzzToml(data []byte) int {
 
-	if len(data) >= 10240 {
-		return 0
-	}
-
 	buf := make([]byte, 0, 2048)
 
 	var m interface{}
