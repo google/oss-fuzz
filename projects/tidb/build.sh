@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 mv $SRC/fuzzMarshalJSON.go $SRC/tidb/types/
 mv $SRC/fuzzNewBitLiteral.go $SRC/tidb/types/
 mv $SRC/fuzzNewHexLiteral.go $SRC/tidb/types/

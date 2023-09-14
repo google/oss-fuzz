@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/google/gonids
-
-ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
-
-COPY build.sh $SRC/
-COPY *.diff $SRC/
-WORKDIR $SRC/gonids
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip \
+      -o maven.zip && \
+      unzip maven.zip -d $SRC/maven && \
+      rm maven.zip
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN git clone --depth 1 https://github.com/Mashape/unirest-java unirest-java
+COPY *.sh *.java $SRC/
+WORKDIR $SRC/unirest-java
