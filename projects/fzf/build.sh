@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-go env -w GOPROXY=https://goproxy.cn,direct
 go mod tidy
 printf "package main\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
 go mod tidy
