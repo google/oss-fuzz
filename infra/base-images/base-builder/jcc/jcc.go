@@ -342,14 +342,14 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 }
 
 func main() {
-	f, err2 := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	if err2 != nil {
-		log.Println(err2)
+	if err != nil {
+		log.Println(err)
 	}
 	defer f.Close()
-	if _, err2 := f.WriteString(fmt.Sprintf("%s\no", os.Args)); err2 != nil {
-		log.Println(err2)
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
+		log.Println(err)
 	}
 
 	args := os.Args[1:]
@@ -357,20 +357,20 @@ func main() {
 	isCPP := basename == "clang++-jcc"
 	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
-	var retcode int
-	var out string
-	var err string
+
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		retcode, out, err = Compile(bin, newArgs)
+		// TODO: Should `-stdlib=libc++` be added only here?
 	} else {
 		bin = "clang"
-		retcode, out, err = Compile(bin, newArgs)
 	}
+	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Print(errstr)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(0)
 	}
 
@@ -388,10 +388,12 @@ func main() {
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Print(errstr)
 		fmt.Println("\nFix failure")
 		fmt.Print(fixout)
 		fmt.Print(fixerr)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(retcode)
 	}
 }
