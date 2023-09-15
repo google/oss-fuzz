@@ -342,14 +342,14 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 }
 
 func main() {
-	f, err2 := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	if err2 != nil {
-		log.Println(err2)
+	if err != nil {
+		log.Println(err)
 	}
 	defer f.Close()
-	if _, err2 := f.WriteString(fmt.Sprintf("%s\no", os.Args)); err2 != nil {
-		log.Println(err2)
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
+		log.Println(err)
 	}
 
 	args := os.Args[1:]
