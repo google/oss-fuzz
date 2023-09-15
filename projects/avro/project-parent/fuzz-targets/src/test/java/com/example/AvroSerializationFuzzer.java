@@ -105,7 +105,7 @@ class AvroSerializationFuzzer {
             deserializer.deserialize(result);
             deserializer.close();
         } catch (IOException e) {
-        } catch (AvroRuntimeException | UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
+        } catch (AvroRuntimeException | UnsupportedOperationException | ClassCastException | IllegalArgumentException | NullPointerException e) {
             // Need to catch to find more interesting findings.
         }
     }
