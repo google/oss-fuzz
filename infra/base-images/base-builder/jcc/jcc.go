@@ -357,20 +357,18 @@ func main() {
 	isCPP := basename == "clang++-jcc"
 	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
-	var retcode int
-	var out string
-	var err string
+
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		retcode, out, err = Compile(bin, newArgs)
+		// TODO: Should `-stdlib=libc++` be added only here?
 	} else {
 		bin = "clang"
-		retcode, out, err = Compile(bin, newArgs)
 	}
+	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Print(errstr)
 		os.Exit(0)
 	}
 
@@ -388,7 +386,7 @@ func main() {
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Print(errstr)
 		fmt.Println("\nFix failure")
 		fmt.Print(fixout)
 		fmt.Print(fixerr)
