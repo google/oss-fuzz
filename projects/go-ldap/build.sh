@@ -17,9 +17,13 @@
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer github.com/go-ldap/ldap        FuzzParseDNv0                 fuzz_parse_dn_v0
-compile_native_go_fuzzer github.com/go-ldap/ldap        FuzzDecodeEscapedSymbolsv0    fuzz_decode_escaped_symbols_v0
-compile_native_go_fuzzer github.com/go-ldap/ldap        FuzzEscapeDNv0                fuzz_escape_dn_v0
-compile_native_go_fuzzer github.com/go-ldap/ldap/v3     FuzzParseDNv3                 fuzz_parse_dn_v3
-compile_native_go_fuzzer github.com/go-ldap/ldap/v3     FuzzDecodeEscapedSymbolsv3    fuzz_decode_escaped_symbols_v3
-compile_native_go_fuzzer github.com/go-ldap/ldap/v3     FuzzEscapeDNv3                fuzz_escape_dn_v3
+compile_native_go_fuzzer /src/ldap         FuzzParseDNv0                 fuzz_parse_dn_v0
+compile_native_go_fuzzer /src/ldap         FuzzDecodeEscapedSymbolsv0    fuzz_decode_escaped_symbols_v0
+compile_native_go_fuzzer /src/ldap         FuzzEscapeDNv0                fuzz_escape_dn_v0
+
+pushd v3
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+compile_native_go_fuzzer /src/ldap/v3      FuzzParseDNv3                 fuzz_parse_dn_v3
+compile_native_go_fuzzer /src/ldap/v3      FuzzDecodeEscapedSymbolsv3    fuzz_decode_escaped_symbols_v3
+compile_native_go_fuzzer /src/ldap/v3      FuzzEscapeDNv3                fuzz_escape_dn_v3
+popd
