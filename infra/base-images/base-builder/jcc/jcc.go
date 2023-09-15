@@ -390,6 +390,8 @@ func main() {
 		fmt.Println("\nFix failure")
 		fmt.Print(fixout)
 		fmt.Print(fixerr)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(retcode)
 	}
 }
