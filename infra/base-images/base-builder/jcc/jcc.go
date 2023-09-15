@@ -369,6 +369,8 @@ func main() {
 	if retcode == 0 {
 		fmt.Print(out)
 		fmt.Print(errstr)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(0)
 	}
 
