@@ -1,0 +1,5 @@
+homepage: "py-tarfile"
+language: python
+primary_contact: "dnnkskn@gmail.com"
+main_repo: "https://github.com/python/cpython.git"
+file_github_issue: true
