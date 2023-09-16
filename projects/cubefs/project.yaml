@@ -5,6 +5,8 @@ auto_ccs:
   - "changliang@oppo.com"
   - "baijiaruo@126.com "
   - "tangjingyu@oppo.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
 language: go
 fuzzing_engines:
   - libfuzzer
