@@ -1,0 +1,7 @@
+homepage: "py-tarfile"
+language: python
+primary_contact: "adoxalim@gmail.com"
+auto_ccs:
+  - "dnnkskn@gmail.com"
+main_repo: "https://github.com/python/cpython.git"
+file_github_issue: true
