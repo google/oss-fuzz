@@ -87,6 +87,7 @@ else
   --cp=$RUNTIME_CLASSPATH \
   --target_class=com.example.$fuzzer_basename \
   --jvm_args=\"\$mem_settings\" \
+  --instrumentation_includes=\"com.**:org.**\" \
   \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
