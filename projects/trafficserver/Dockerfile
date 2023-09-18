@@ -14,9 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpcre3-dev zlib1g-dev
-RUN git clone --depth 1 https://github.com/apache/trafficserver
-RUN git clone https://github.com/0x34d/oss-fuzz-bloat
+RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev cmake libssl-dev
+RUN git clone --depth 1 https://github.com/apache/trafficserver.git 
 COPY build.sh $SRC/
-COPY fuzzer/ $SRC/trafficserver/fuzzer/
 WORKDIR $SRC/trafficserver/
