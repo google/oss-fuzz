@@ -62,9 +62,12 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
     # copy the fuzzing target binaries
     cp fuzz_target_* "${OUT}/"
 
-    # back to the checkout directory
-    cd ../..
+    # back to the pdns/ directory
+    cd ..
 fi
+
+# back to the checkout directory
+cd ..
 
 # copy the zones used in the regression tests to the "zones" corpus
 cp regression-tests/zones/* fuzzing/corpus/zones/
