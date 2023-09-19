@@ -77,6 +77,7 @@ else
 --cp=$RUNTIME_CLASSPATH \
 --target_class=com.example.$fuzzer_basename \
 --jvm_args=\"\$mem_settings\" \
+--instrumentation_includes=\"com.**:org.**\" \
 --disabled_hooks=com.code_intelligence.jazzer.sanitizers.ExpressionLanguageInjection:com.code_intelligence.jazzer.sanitizers.RegexInjection \
   \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename

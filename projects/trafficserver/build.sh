@@ -21,24 +21,22 @@ then
     export CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit"
 fi
 
-autoreconf -if
-./configure --enable-debug --enable-malloc-allocator
+# don't use unsigned-integer-overflow sanitizer {Bug in system include files}
+if [[ $SANITIZER = undefined ]]
+then
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
+fi
+
+mkdir -p build && cd build/
+cmake -DENABLE_POSIX_CAP=OFF -DENABLE_FUZZING=ON -DYAML_BUILD_SHARED_LIBS=OFF ../.
 make -j$(nproc) --ignore-errors
 
-pushd fuzzer/
-make
-# change rpath for fuzzers
-patchelf --set-rpath '$ORIGIN/lib' FuzzHTTP
-cp FuzzEsi $OUT/FuzzEsi
-cp FuzzHTTP $OUT/FuzzHTTP
-popd
+cp tests/fuzzing/fuzz_* $OUT/
+cp -r tests/fuzzing/lib/ $OUT/
+cp $SRC/trafficserver/tests/fuzzing/*.zip  $OUT/
 
-pushd $SRC/oss-fuzz-bloat/trafficserver/
-cp FuzzEsi_seed_corpus.zip $OUT/FuzzEsi_seed_corpus.zip
-cp FuzzHTTP_seed_corpus.zip $OUT/FuzzHTTP_seed_corpus.zip
-popd
-
-mkdir -p $OUT/lib
-cp lib/swoc/.libs/libtsswoc*.so* $OUT/lib/.
-cp src/api/.libs/libtsapi.so* $OUT/lib/.
-cp src/tscpp/util/.libs/libtscpputil.so* $OUT/lib/.
+if [[ $SANITIZER = undefined ]]
+then
+    rm $OUT/fuzz_http
+    rm $OUT/fuzz_hpack
+fi
