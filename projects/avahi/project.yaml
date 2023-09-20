@@ -18,4 +18,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+file_github_issue: True
