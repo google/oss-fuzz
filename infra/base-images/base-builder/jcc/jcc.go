@@ -368,32 +368,45 @@ func main() {
 	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
 		fmt.Print(out)
-		fmt.Print(errstr)
-		// Print error back to stderr so tooling that relies on this can proceed
 		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(0)
 	}
 
+	// Note that on failures or when we succeed on the first try, we should
+	// try to write the first out/err to stdout/stderr.
+	// When we fail we should try to write the original out/err and one from
+	// the corrected.
+
 	headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
 	if headersFixed {
+		// We succeeded here but it's kind of complicated to get out and
+		// err from TryCompileAndFixHeadersOnce. The output and err is
+		// not so important on success so just be silent.
 		os.Exit(0)
 	}
 
 	if isCPP {
-		// Nothing else we can do. Just print the error and exit.
+		// Nothing else we can do. Just write the error and exit.
+		// Just print the original error for debugging purposes and
+		//  to make build systems happy.
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
+		// We failed, write stdout and stderr from the first failure and
+		// from fix failures so we can know what the code did wrong and
+		// how to improve jcc to fix more issues.
 		fmt.Print(out)
-		fmt.Print(errstr)
+		fmt.Fprint(os.Stderr, errstr)
 		fmt.Println("\nFix failure")
 		fmt.Print(fixout)
-		fmt.Print(fixerr)
 		// Print error back to stderr so tooling that relies on this can proceed
-		fmt.Fprint(os.Stderr, errstr)
+		fmt.Fprint(os.Stderr, fixerr)
 		os.Exit(retcode)
 	}
+	// The fix suceeded, write its out and err.
+	fmt.Print(fixout)
+	fmt.Fprint(os.Stderr, fixerr)
 }
