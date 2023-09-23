@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -64,7 +65,7 @@ func TryFixCCompilation(cmdline []string) (int, string, string) {
 	newCmdline := []string{"-stdlib=libc++"}
 	newCmdline = append(cmdline, newCmdline...)
 
-	retcode, out, err := compile("clang++", newCmdline)
+	retcode, out, err := Compile("clang++", newCmdline)
 	if retcode == 0 {
 		return retcode, out, err
 	}
@@ -102,6 +103,7 @@ func ReplaceMissingHeaderInFile(srcFilename, curHeader, replacementHeader string
 	}
 	return nil
 }
+
 func ReplaceMissingHeader(src, curHeader, replacementHeader string) string {
 	re := regexp.MustCompile(`#include ["|<]` + curHeader + `["|>]\n`)
 	replacement := "#include \"" + replacementHeader + "\"\n"
@@ -148,7 +150,7 @@ func GetHeaderCorrectedCmd(cmd []string, compilerErr string) ([]string, string, 
 
 func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 
-	_, _, stderr := compile(bin, cmd)
+	_, _, stderr := Compile(bin, cmd)
 	cmd, correctedFilename, err := GetHeaderCorrectedCmd(cmd, stderr)
 	if err != nil {
 		return false, err
@@ -165,17 +167,85 @@ func CorrectMissingHeaders(bin string, cmd []string) (bool, error) {
 	return false, nil
 }
 
-func compile(bin string, args []string) (int, string, string) {
+func EnsureDir(dirPath string) {
+	// Checks if a path is an existing directory, otherwise create one.
+	if pathInfo, err := os.Stat(dirPath); err == nil {
+		if isDir := pathInfo.IsDir(); !isDir {
+			panic(dirPath + " exists but is not a directory.")
+		}
+	} else if errors.Is(err, fs.ErrNotExist) {
+		if err := os.MkdirAll(dirPath, 0755); err != nil {
+			panic("Failed to create directory: " + dirPath + ".")
+		}
+		fmt.Println("Created directory: " + dirPath + ".")
+	} else {
+		panic("An error occurred in os.Stat(" + dirPath + "): " + err.Error())
+	}
+}
+
+func GenerateAST(bin string, args []string, filePath string) {
+	// Generates AST.
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer outFile.Close()
+
+	cmd := exec.Command(bin, args...)
+	cmd.Stdout = outFile
+	cmd.Run()
+}
+
+func GenerateASTs(bin string, args []string, astDir string) {
+	// Generates an AST for each C/CPP file in the command.
+	// Cannot save AST when astDir is not available.
+	EnsureDir(astDir)
+
+	// Target file suffixes.
+	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
+	// C/CPP targets in the command.
+	targetFiles := []string{}
+	// Flags to generate AST.
+	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
+	for _, arg := range args {
+		targetFileExt := strings.ToLower(filepath.Ext(arg))
+		if slices.Contains(suffixes, targetFileExt) {
+			targetFiles = append(targetFiles, arg)
+			continue
+		}
+		flags = append(flags, arg)
+	}
+
+	// Generate an AST for each target file. Skips AST generation when a
+	// command has no target file (e.g., during linking).
+	for _, targetFile := range targetFiles {
+		filePath := filepath.Join(astDir, fmt.Sprintf("%s.ast", filepath.Base(targetFile)))
+		GenerateAST(bin, append(flags, targetFile), filePath)
+	}
+}
+
+func ExecBuildCommand(bin string, args []string) (int, string, string) {
+	// Executes the original command.
 	cmd := exec.Command(bin, args...)
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
+	cmd.Stdin = os.Stdin
 	cmd.Run()
 	return cmd.ProcessState.ExitCode(), outb.String(), errb.String()
 }
 
+func Compile(bin string, args []string) (int, string, string) {
+	// Generate ASTs f we define this ENV var.
+	if astDir := os.Getenv("JCC_GENERATE_AST_DIR"); astDir != "" {
+		GenerateASTs(bin, args, astDir)
+	}
+	// Run the actual command.
+	return ExecBuildCommand(bin, args)
+}
+
 func TryCompileAndFixHeadersOnce(bin string, cmd []string, filename string) (fixed, hasBrokenHeaders bool) {
-	retcode, _, err := compile(bin, cmd)
+	retcode, _, err := Compile(bin, cmd)
 	if retcode == 0 {
 		fixed = true
 		hasBrokenHeaders = false
@@ -272,14 +342,14 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 }
 
 func main() {
-	f, err2 := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	if err2 != nil {
-		log.Println(err2)
+	if err != nil {
+		log.Println(err)
 	}
 	defer f.Close()
-	if _, err2 := f.WriteString(fmt.Sprintf("%s\no", os.Args)); err2 != nil {
-		log.Println(err2)
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
+		log.Println(err)
 	}
 
 	args := os.Args[1:]
@@ -287,41 +357,56 @@ func main() {
 	isCPP := basename == "clang++-jcc"
 	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
-	var retcode int
-	var out string
-	var err string
+
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		retcode, out, err = compile(bin, newArgs)
+		// TODO: Should `-stdlib=libc++` be added only here?
 	} else {
 		bin = "clang"
-		retcode, out, err = compile(bin, newArgs)
 	}
+	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
-		fmt.Println(out)
-		fmt.Println(err)
+		fmt.Print(out)
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(0)
 	}
 
+	// Note that on failures or when we succeed on the first try, we should
+	// try to write the first out/err to stdout/stderr.
+	// When we fail we should try to write the original out/err and one from
+	// the corrected.
+
 	headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
 	if headersFixed {
+		// We succeeded here but it's kind of complicated to get out and
+		// err from TryCompileAndFixHeadersOnce. The output and err is
+		// not so important on success so just be silent.
 		os.Exit(0)
 	}
 
 	if isCPP {
-		// Nothing else we can do. Just print the error and exit.
-		fmt.Println(out)
-		fmt.Println(err)
+		// Nothing else we can do. Just write the error and exit.
+		// Just print the original error for debugging purposes and
+		//  to make build systems happy.
+		fmt.Print(out)
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
-		fmt.Println(out)
-		fmt.Println(err)
-		fmt.Println("Fix failure")
-		fmt.Println(fixout)
-		fmt.Println(fixerr)
+		// We failed, write stdout and stderr from the first failure and
+		// from fix failures so we can know what the code did wrong and
+		// how to improve jcc to fix more issues.
+		fmt.Print(out)
+		fmt.Fprint(os.Stderr, errstr)
+		fmt.Println("\nFix failure")
+		fmt.Print(fixout)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, fixerr)
 		os.Exit(retcode)
 	}
+	// The fix suceeded, write its out and err.
+	fmt.Print(fixout)
+	fmt.Fprint(os.Stderr, fixerr)
 }

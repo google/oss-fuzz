@@ -371,16 +371,16 @@ make -B
 ##############################################################################
 # Compile mbed TLS
 cd $SRC/mbedtls/
-scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
-scripts/config.pl set MBEDTLS_CMAC_C
-scripts/config.pl set MBEDTLS_NIST_KW_C
-scripts/config.pl set MBEDTLS_ARIA_C
+scripts/config.py set MBEDTLS_PLATFORM_MEMORY
+scripts/config.py set MBEDTLS_CMAC_C
+scripts/config.py set MBEDTLS_NIST_KW_C
+scripts/config.py set MBEDTLS_ARIA_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
-    scripts/config.pl unset MBEDTLS_HAVE_ASM
-    scripts/config.pl unset MBEDTLS_PADLOCK_C
-    scripts/config.pl unset MBEDTLS_AESNI_C
-    scripts/config.pl unset MBEDTLS_AESCE_C
+    scripts/config.py unset MBEDTLS_HAVE_ASM
+    scripts/config.py unset MBEDTLS_PADLOCK_C
+    scripts/config.py unset MBEDTLS_AESNI_C
+    scripts/config.py unset MBEDTLS_AESCE_C
 fi
 mkdir build/
 cd build/
