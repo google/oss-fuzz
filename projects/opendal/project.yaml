@@ -4,6 +4,9 @@ language: rust
 primary_contact: "xuanwo.cn@gmail.com"
 auto_ccs:
     - "dqhl76@gmail.com"
+    - "ouyangjun1999@gmail.com"
+    - "suyanhanx@gmail.com"
+    - "yinmingzhuo@gmail.com"
 vendor_ccs:
     - "commits@opendal.apache.org"
 sanitizers:

@@ -16,5 +16,5 @@
 ################################################################################
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data $SRC/jsonschema_specifications/jsonschema_specifications/schemas:jsonschema_specifications/schemas
+  compile_python_fuzzer $fuzzer --add-data $SRC/jsonschema_specifications/jsonschema_specifications/schemas:jsonschema_specifications/schemas --add-data /usr/local/lib/python3.8/site-packages/jupyter_events/schemas:jupyter_events/schemas
 done

@@ -72,11 +72,12 @@ def run_experiment(project_name, command, output_path, experiment_name):
           ]
       },
       {
-          'name': project.image,
+          'name':
+              project.image,
           'args': [
               'bash',
               '-c',
-              command,
+              f'(cd "/src"; cd {project.workdir}; {command})',
           ]
       },
       {
