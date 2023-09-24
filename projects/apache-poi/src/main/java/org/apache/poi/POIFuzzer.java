@@ -110,13 +110,6 @@ public class POIFuzzer {
 	public static void checkExtractor(byte[] input) {
 		try (POITextExtractor extractor = ExtractorFactory.createExtractor(new ByteArrayInputStream(input))) {
 			checkExtractor(extractor);
-		} catch (UnsatisfiedLinkError e) {
-			// only allow one missing library related to Font/Color-handling
-			// we cannot install additional libraries in oss-fuzz images currently
-			// see https://github.com/google/oss-fuzz/issues/7380
-			if (!e.getMessage().contains("libawt_xawt.so")) {
-				throw e;
-			}
 		} catch (IOException | POIXMLException | IllegalArgumentException | RecordFormatException |
 				 IndexOutOfBoundsException | HSLFException | RecordInputStream.LeftoverDataException |
 				 NoSuchElementException | IllegalStateException | ArithmeticException |
