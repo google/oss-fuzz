@@ -53,15 +53,17 @@ cmake_args=(
     -DOSS_FUZZ=ON
     -DLUA_USE_APICHECK=ON
     -DLUA_USE_ASSERT=ON
+    -DLUAJIT_USE_SYSMALLOC=ON
+    -DLUAJIT_ENABLE_GC64=ON
     $SANITIZERS_ARGS
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS}"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # Linker
     -DCMAKE_LINKER="${LD}"

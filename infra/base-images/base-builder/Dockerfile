@@ -111,7 +111,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 091d66fa92cd9e4caa5829d579b1b996c49db8c9 && \
+    git checkout 0688c779ec543c4f5f84363b06c72ac11a14f716 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     rm -rf .git && \
     chmod 755 oss.sh
@@ -169,9 +169,9 @@ COPY bazel_build_fuzz_tests \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
-ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang /usr/local/bin/jcc/
-ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++ /usr/local/bin/jcc/
-RUN chmod +x /usr/local/bin/jcc/clang && chmod +x /usr/local/bin/jcc/clang++
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc /usr/local/bin/
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc /usr/local/bin/
+RUN chmod +x /usr/local/bin/clang-jcc && chmod +x /usr/local/bin/clang++-jcc
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/

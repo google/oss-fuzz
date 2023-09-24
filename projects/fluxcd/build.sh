@@ -20,9 +20,6 @@
 # - Supporting single (during PR checks) or multiple repositories (oss-fuzz).
 # - Enabling execution via CI builds and Makefile targets for each repo.
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 GOPATH="${GOPATH:-/root/go}"
 ORG_ROOT="${ORG_ROOT:-${GOPATH}/src/github.com/fluxcd}"
 PREBUILD_SCRIPT_PATH="${PREBUILD_SCRIPT_PATH:-tests/fuzz/oss_fuzz_prebuild.sh}"

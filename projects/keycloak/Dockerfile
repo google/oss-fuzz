@@ -24,6 +24,7 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+ENV TARGET_PACKAGE_PREFIX org.keycloak.*
 
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing cncf-fuzzing
 RUN git clone --depth 1 https://github.com/keycloak/keycloak keycloak

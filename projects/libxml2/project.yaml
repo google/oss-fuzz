@@ -10,6 +10,7 @@ vendor_ccs:
   - "phan@apple.com"
   - "lglovin@apple.com"
   - "ebanniettis@apple.com"
+  - "jm.park@apple.com"
 sanitizers:
   - address
   - memory

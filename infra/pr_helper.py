@@ -243,6 +243,9 @@ class GithubHandler:
       if i >= COMMITS_LIMIT:
         break
 
+      if not commit['author'] or not commit['commit']:
+        continue
+
       login = commit['author']['login']
       verified = commit['commit']['verification']['verified']
       if login in self._maintainers:

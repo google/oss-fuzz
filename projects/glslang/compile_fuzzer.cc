@@ -26,10 +26,12 @@ void compile(glslang::TShader *shader, const std::string &code,
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  glslang::InitializeProcess();
   std::string input_code(reinterpret_cast<const char *>(data), size);
   EShMessages controls;
   glslang::TShader shader(EShLangVertex);
   std::string shaderName = "shaderName";
   compile(&shader, input_code, "ep", controls, &shaderName);
+  glslang::FinalizeProcess();
   return 0;
 }

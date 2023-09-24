@@ -469,7 +469,7 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   find $classes_dir -type f -not -name "*.class" | xargs rm -f
   # Remove all class files which have a dot in their file name which are normally
   # used to name a duplication of the legitimate class file.
-  find $classes_dir -type f -name "*.*.class" | xargs rm -f
+  find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.

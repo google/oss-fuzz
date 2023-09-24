@@ -27,7 +27,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON -DBUILD_SHARED_LIBS=OFF -DW
 -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
 ../
 
-make -j$(nproc)
+make -j$(nproc) Fuzz_json Fuzz_http
 
 pushd test/
 cp Fuzz_json $OUT/Fuzz_json

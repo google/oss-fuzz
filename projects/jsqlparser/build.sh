@@ -46,6 +46,10 @@ else
   # Move seed corpus and dictionary.
   mv $SRC/{*.zip,*.dict} $OUT
 
+  export JAVA_HOME="$OUT/open-jdk-11"
+  mkdir -p $JAVA_HOME
+  rsync -aL --exclude=*.zip --exclude 'lib/security/blacklisted.certs' "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
+
   set_project_version_in_fuzz_targets_dependency
 
   #install
@@ -71,11 +75,13 @@ else
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+JAVA_HOME=\"\$this_dir/open-jdk-11/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=com.example.$fuzzer_basename \
 --jvm_args=\"\$mem_settings\" \
+--instrumentation_includes=\"com.**:org.**:net.**\" \
 \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
