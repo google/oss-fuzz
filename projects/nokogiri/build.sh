@@ -43,6 +43,11 @@ then
   export SANITIZER_OPTS="-fsanitize=address"
   export SANITIZER_LINK="$(find $(llvm-config --libdir) -name libclang_rt.asan_cxx-x86_64.a | head -1)"
 fi
+if [ "$SANITIZER" = "coverage" ]
+then
+  export SANITIZER_OPTS="-g -fprofile-instr-generate -fcoverage-mapping"
+  export SANITIZER_LINK=""
+fi
 
 
 export CXXFLAGS="-O0 $CXXFLAGS $SANITIZER_OPTS"
