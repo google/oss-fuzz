@@ -52,6 +52,10 @@ then
   echo "--cxxopt=-fsanitize=address --linkopt=-fsanitize=address"
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.asan_cxx-x86_64.a | head -1)\""
 fi
+if [ "$SANITIZER" = "coverage" ]
+then
+  echo "--cxxopt=-g --linkopt=-g --cxxopt=-fprofile-instr-generate --cxxopt=-fcoverage-mapping --linkopt=-fprofile-instr-generate --linkopt=-fcoverage-mapping"
+fi
 
 )"
 
