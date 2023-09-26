@@ -341,6 +341,18 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 	return contents, nil
 }
 
+func appendStringToFile(filepath, new_content string) error {
+    // Appends |new_content| to the content of |filepath|.
+	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(new_content)
+    return err
+}
+
 func main() {
 	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
@@ -391,6 +403,7 @@ func main() {
 		//  to make build systems happy.
 		fmt.Print(out)
 		fmt.Fprint(os.Stderr, errstr)
+               appendStringToFile("/out/err.log", errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
