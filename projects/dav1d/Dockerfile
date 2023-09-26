@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y curl python3-pip python3-setuptools python3-wheel nasm && \
     pip3 install meson ninja
 RUN curl --silent -O https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuzzer_seed_corpus.zip
-RUN curl --silent -O https://jannau.net/dav1d_fuzzer_seed_corpus.zip
+RUN curl --silent -O https://download.videolan.org/contrib/dav1d/dav1d_fuzzer_seed_corpus.zip
 RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d.git dav1d
 WORKDIR dav1d
 COPY build.sh $SRC/
