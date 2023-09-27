@@ -15,7 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-RUN git clone https://github.com/markdown-it/markdown-it.git
-WORKDIR $SRC/markdown-it
+
 COPY build.sh $SRC/
+
+RUN git clone https://github.com/markdown-it/markdown-it.git
+
+WORKDIR $SRC/markdown-it
+
 COPY fuzz*.js $SRC/markdown-it/
