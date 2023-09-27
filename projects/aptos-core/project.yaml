@@ -5,6 +5,8 @@ main_repo: "https://github.com/aptos-labs/aptos-core"
 auto_ccs:
   - "oss-fuzz-notifications@aptoslabs.com"
   - "security@aptoslabs.com"
+vendor_ccs:
+  - "google-oss-fuzz@aptos-fuzzing.iam.gserviceaccount.com"
 sanitizers:
   - address
 fuzzing_engines:
