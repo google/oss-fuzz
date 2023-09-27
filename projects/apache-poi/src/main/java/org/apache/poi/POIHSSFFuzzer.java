@@ -45,13 +45,6 @@ public class POIHSSFFuzzer {
 							new POIFSFileSystem(new ByteArrayInputStream(input)).getRoot())) {
 				POIFuzzer.checkExtractor(extractor);
 			}
-		} catch (UnsatisfiedLinkError e) {
-			// only allow one missing library related to Font-handling
-			// we cannot install JDK font packages in oss-fuzz images currently
-			// see https://github.com/google/oss-fuzz/issues/7380
-			if (!e.getMessage().contains("libawt_xawt.so")) {
-				throw e;
-			}
 		} catch (IOException | IllegalArgumentException | RecordFormatException | IllegalStateException |
 				 IndexOutOfBoundsException | RecordInputStream.LeftoverDataException |
 				 BufferUnderflowException | UnsupportedOperationException | NoSuchElementException |

@@ -342,14 +342,14 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 }
 
 func main() {
-	f, err2 := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	if err2 != nil {
-		log.Println(err2)
+	if err != nil {
+		log.Println(err)
 	}
 	defer f.Close()
-	if _, err2 := f.WriteString(fmt.Sprintf("%s\no", os.Args)); err2 != nil {
-		log.Println(err2)
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
+		log.Println(err)
 	}
 
 	args := os.Args[1:]
@@ -357,41 +357,56 @@ func main() {
 	isCPP := basename == "clang++-jcc"
 	newArgs := []string{"-w", "-stdlib=libc++"}
 	newArgs = append(args, newArgs...)
-	var retcode int
-	var out string
-	var err string
+
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		retcode, out, err = Compile(bin, newArgs)
+		// TODO: Should `-stdlib=libc++` be added only here?
 	} else {
 		bin = "clang"
-		retcode, out, err = Compile(bin, newArgs)
 	}
+	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(0)
 	}
 
+	// Note that on failures or when we succeed on the first try, we should
+	// try to write the first out/err to stdout/stderr.
+	// When we fail we should try to write the original out/err and one from
+	// the corrected.
+
 	headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
 	if headersFixed {
+		// We succeeded here but it's kind of complicated to get out and
+		// err from TryCompileAndFixHeadersOnce. The output and err is
+		// not so important on success so just be silent.
 		os.Exit(0)
 	}
 
 	if isCPP {
-		// Nothing else we can do. Just print the error and exit.
+		// Nothing else we can do. Just write the error and exit.
+		// Just print the original error for debugging purposes and
+		//  to make build systems happy.
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Fprint(os.Stderr, errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
+		// We failed, write stdout and stderr from the first failure and
+		// from fix failures so we can know what the code did wrong and
+		// how to improve jcc to fix more issues.
 		fmt.Print(out)
-		fmt.Print(err)
+		fmt.Fprint(os.Stderr, errstr)
 		fmt.Println("\nFix failure")
 		fmt.Print(fixout)
-		fmt.Print(fixerr)
+		// Print error back to stderr so tooling that relies on this can proceed
+		fmt.Fprint(os.Stderr, fixerr)
 		os.Exit(retcode)
 	}
+	// The fix suceeded, write its out and err.
+	fmt.Print(fixout)
+	fmt.Fprint(os.Stderr, fixerr)
 }
