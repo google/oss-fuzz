@@ -30,13 +30,13 @@ fi
 
 cd $SRC/abseil-cpp
 mkdir build && cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make -j$(nproc) && make install
 ldconfig
 
 # Build Protobuf
 mkdir $SRC/protobuf-install
 cd $SRC/protobuf-install
-cmake $SRC/protobuf -Dprotobuf_BUILD_TESTS=OFF -DABSL_ROOT_DIR=$SRC/abseil-cpp
+cmake $SRC/protobuf/cmake -Dprotobuf_BUILD_TESTS=OFF -DABSL_ROOT_DIR=$SRC/abseil-cpp
 make -j$(nproc)
 make install
 cp $SRC/protobuf/src/google/protobuf/*.inc /usr/local/include/google/protobuf/
@@ -76,14 +76,15 @@ sed -i 's/# Safeguarding/find_package(absl REQUIRED) # Safeguarding/g' CMakeList
 mkdir build
 cd build
 cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
+      -DBUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF \
       -DPROTOBUF_LIB="/src/protobuf-install/libprotobuf.a" \
-      -DBUILD_STATIC_LIB=ON \
+      -DBUILD_TESTING=OFF \
       -DICU_UC_INCLUDE_DIR=$SRC/icu/source/comon \
       -DICU_UC_LIB=$DEPS_PATH/lib/libicuuc.a \
       -DICU_I18N_INCLUDE_DIR=$SRC/icu/source/i18n/ \
       -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  \
       ../
-make
+make -j$(nproc)
 
 # Build our fuzzer
 $CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o phonefuzz.o -c ../test/phonenumbers/fuzz_phone.cc
