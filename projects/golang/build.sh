@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Temporarily disable coverage build in OSS-Fuzz's CI
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+	if [ "${SANITIZER}" = 'coverage' ]
+	then
+		exit 0
+	fi
+
+fi
+
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
 cd $SRC/text
@@ -110,28 +120,25 @@ compile_go_fuzzer regexpPackage FuzzCompilePOSIX fuzz_compile_posix
 compile_go_fuzzer regexpPackage FuzzReplaceAll fuzz_replace_all
 compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 
-cd $SRC/go/src/archive/tar
-go mod init tarPackage
-go mod tidy
-find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
-compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
-zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
-
-cd $SRC/instrumentation
-go run main.go $SRC/go/src/archive/tar
+#cd $SRC/go/src/archive/tar
+#go mod init tarPackage
+#go mod tidy
+#find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+#go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+#go get github.com/AdamKorcz/go-118-fuzz-build/utils
+#compile_native_go_fuzzer tarPackage FuzzReader fuzz_std_lib_tar_reader
+#zip $OUT/fuzz_std_lib_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
-cd $SRC/instrumentation && go run main.go $SRC/net && cd -
+cd $SRC/instrumentation && go run main.go --target_dir=$SRC/net --check_io_length=true && cd -
 go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
 compile_go_fuzzer . FuzzH2c fuzz_x_h2c
 mv $SRC/fuzz_x_h2c.options $OUT/
 
 cp $SRC/openpgp_fuzzer.go $SRC/crypto/openpgp/packet
 cd $SRC/crypto/openpgp/packet
-cd $SRC/instrumentation && go run main.go $SRC/crypto && cd -
+cd $SRC/instrumentation && go run main.go --target_dir=$SRC/crypto --check_io_length=true && cd -
 go mod tidy
 compile_go_fuzzer . FuzzOpenpgpRead fuzz_openpgp_read
 
@@ -150,44 +157,36 @@ cd $SRC/go/src/archive/tar
 cp $SRC/fuzz_tar_reader.go ./
 rm ./*_test.go
 
-compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
-mv $SRC/fuzz_tar_reader.options $OUT/
-zip $OUT/fuzz_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
+#compile_go_fuzzer tarPackage FuzzTarReader fuzz_tar_reader
+#mv $SRC/fuzz_tar_reader.options $OUT/
+#zip $OUT/fuzz_tar_reader_seed_corpus.zip $SRC/go/src/archive/tar/testdata/*.tar
 
-cd $SRC/go/src/archive/zip
-go mod init zipPackage
-go mod tidy
-find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
-compile_native_go_fuzzer zipPackage FuzzReader fuzz_std_lib_zip_reader
-zip $OUT/fuzz_std_lib_zip_reader_seed_corpus.zip $SRC/go/src/archive/zip/testdata/*.zip
+#cd $SRC/go/src/archive/zip
+#go mod init zipPackage
+#go mod tidy
+#find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
+#go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
+#go get github.com/AdamKorcz/go-118-fuzz-build/utils
+#compile_native_go_fuzzer zipPackage FuzzReader fuzz_std_lib_zip_reader
+#zip $OUT/fuzz_std_lib_zip_reader_seed_corpus.zip $SRC/go/src/archive/zip/testdata/*.zip
 
 cd $SRC/go/src/internal/saferio
 go mod init saferioPackage
 go mod tidy
 
-cd $SRC/go/src/debug/elf
-go mod init elfPackage
+cd $SRC/go/src/internal/zstd
+go mod init zstdPackage
 go mod tidy
-go mod edit -replace internal/saferio=../../internal/saferio
-go get internal/saferio
-cp $SRC/elf_fuzzer.go ./
-rm ./*_test.go
-compile_go_fuzzer elfPackage FuzzElfOpen fuzz_elf_open
-zip $OUT/fuzz_elf_open_seed_corpus.zip ./testdata/*
 
 cd $SRC/go/src/image/png
 go mod init pngPackage
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer pngPackage FuzzDecode fuzz_png_decode
 zip $OUT/fuzz_png_decode_seed_corpus.zip ./testdata/*.png
 
 cd $SRC/go/src/image/gif
 go mod init gifPackage
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gifPackage FuzzDecode fuzz_gif_decode
 zip $OUT/fuzz_gif_decode_seed_corpus.zip $SRC/go/src/image/testdata/*.gif
 
@@ -195,16 +194,17 @@ cd $SRC/go/src/compress/gzip
 go mod init gzipPackage
 go mod tidy
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
+
+# golangs build from source currently breaks.
+exit 0
 
 cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
-go get github.com/AdamKorcz/go-118-fuzz-build/testingtypes
-go get github.com/AdamKorcz/go-118-fuzz-build/utils
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_go_fuzzer htmlPackage Fuzz fuzz_html_escape_unescape
 
 # Install latest Go from master branch and build fuzzers again

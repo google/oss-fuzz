@@ -1,0 +1,10 @@
+homepage: "https://netty.io/wiki/forked-tomcat-native.html"
+main_repo: "https://github.com/netty/netty-tcnative.git"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "david@adalogics.com"
+  - "arthur.chan@adalogics.com"

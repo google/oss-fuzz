@@ -26,23 +26,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-extern BZFILE* BZ2_bzWriteOpen(
-  int*  bzerror,
-  FILE* f,
-  int   blockSize100k,
-  int   verbosity,
-  int   workFactor );
-
-extern BZFILE* BZ2_bzReadOpen(
-  int*  bzerror,
-  FILE* f,
-  int   verbosity,
-  int   small,
-  void* unused,
-  int   nUnused );
-
 static void fuzzer_write_data(FILE *file, const uint8_t *data, size_t size) {
-  int    bzerr;
+  int    bzerr         = 0;
   int    blockSize100k = 9;
   int    verbosity     = 0;
   int    workFactor    = 30;
@@ -57,23 +42,21 @@ static void fuzzer_write_data(FILE *file, const uint8_t *data, size_t size) {
   BZ2_bzWriteClose64 ( &bzerr, bzf, 0,
                         &nbytes_in_lo32, &nbytes_in_hi32,
                         &nbytes_out_lo32, &nbytes_out_hi32 );
+  return;
 }
 
-static void fuzzer_read_data(FILE *file) {
-  int    bzerr;
-  int    verbosity = 0;
+static void fuzzer_read_data(char *filename) {
+  int    bzerr          = 0;
   char   obuf[BZ_MAX_UNUSED];
-  char   unused[BZ_MAX_UNUSED];
-  int    nUnused = 0;
-  bool   smallMode = 0;
-
-  BZFILE* bzf2 = BZ2_bzReadOpen (&bzerr, file, verbosity, (int)smallMode, unused, nUnused);
+ 
+  BZFILE* bzf2 = BZ2_bzopen(filename,"rb");
 
   while (bzerr == BZ_OK) {
       BZ2_bzRead ( &bzerr, bzf2, obuf, BZ_MAX_UNUSED);
   }
 
   BZ2_bzReadClose ( &bzerr, bzf2);
+  return;
 }
 
 int
@@ -95,11 +78,14 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     close(file_descriptor);
     abort();
   }
-  
+
   fuzzer_write_data(file, data, size);
 
-  fuzzer_read_data(file);
+  fuzzer_read_data(filename);
 
+  BZ2_bzlibVersion();
+
+  BZ2_bzflush(file);
   fclose(file);
 
   if (unlink(filename) != 0) {

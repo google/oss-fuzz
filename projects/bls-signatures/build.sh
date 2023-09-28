@@ -74,8 +74,47 @@ echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
 echo -n "Misc " >>extra_options.h
 echo -n "--digests=SHA256 " >>extra_options.h
+echo -n "--curves=BLS12_381 " >>extra_options.h
 echo -n '"' >>extra_options.h
 
+# Build arkworks-algebra
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/cryptofuzz/modules/arkworks-algebra/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        rustup target add i686-unknown-linux-gnu
+        make -f Makefile-i386
+    fi
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
+fi
+
+# Build Constantine
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        tar Jxf nim-1.6.12-linux_x64.tar.xz
+    else
+        tar Jxf nim-1.6.12-linux_x32.tar.xz
+    fi
+    export NIM_PATH=$(realpath nim-1.6.12)
+
+    export CONSTANTINE_PATH=$SRC/constantine/
+
+    cd $SRC/cryptofuzz/modules/constantine/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        make -f Makefile-i386
+    fi
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CONSTANTINE"
+fi
 
 if [[ $CFLAGS = *-m32* ]]
 then
@@ -99,17 +138,7 @@ fi
 function build_blst() {
     if [[ "$SANITIZER" == "memory" ]]
     then
-        # Patch to disable assembly
-        touch new_no_asm.h
-        echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-        echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-        echo "#else" >>new_no_asm.h
-        echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-        echo "#endif" >>new_no_asm.h
-        cat src/no_asm.h >>new_no_asm.h
-        mv new_no_asm.h src/no_asm.h
-
-        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__ -Dllimb_t=__uint128_t -D__builtin_assume(x)=(void)(x)" ./build.sh
     else
         ./build.sh
     fi
@@ -124,47 +153,10 @@ cp -R $SRC/blst/ $SRC/blst_normal/
 cd $SRC/blst_normal/
 build_blst
 
-# Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    # Build and install libsodium
-    cd $SRC/
-    mkdir $SRC/libsodium-install
-    tar zxf libsodium-1.0.18-stable.tar.gz
-    cd $SRC/libsodium-stable/
-    autoreconf -ivf
-    ./configure --prefix="$SRC/libsodium-install/"
-    make -j$(nproc)
-    make install
-    export CXXFLAGS="$CXXFLAGS -I $SRC/libsodium-install/include/"
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libsodium-install/lib/libsodium.a"
-
-    cd $SRC/bls-signatures/
-    mkdir build/
-    cd build/
-    if [[ $CFLAGS = *-m32* ]]
-    then
-        export CHIA_ARCH="X86"
-    else
-        export CHIA_ARCH="X64"
-    fi
-    cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
-    make -j$(nproc)
-    export CHIA_BLS_LIBBLS_A_PATH=$(realpath src/libbls.a)
-    export CHIA_BLS_LIBRELIC_S_A_PATH=$(realpath _deps/relic-build/lib/librelic_s.a)
-    export CHIA_BLS_LIBSODIUM_A_PATH=$(realpath _deps/sodium-build/libsodium.a)
-    export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
-    export LINK_FLAGS="$LINK_FLAGS -lgmp"
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
-fi
-
 # Build mcl
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" && $CFLAGS != *-m32* ]]
 then
     cd $SRC/mcl/
-    make bint_header
     mkdir build/
     cd build/
     if [[ $CFLAGS != *-m32* ]]
@@ -194,7 +186,7 @@ then
     ./configure.py --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 else
@@ -202,7 +194,7 @@ else
     --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 fi
@@ -220,12 +212,6 @@ cd $SRC/cryptofuzz/modules/blst/
 make -B
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    cd $SRC/cryptofuzz/modules/chia_bls/
-    make -B
-fi
-
-if [[ "$SANITIZER" != "memory" ]]
 then
     cd $SRC/cryptofuzz/modules/mcl/
     make -B

@@ -33,7 +33,7 @@ import constants
 CANARY_PROJECT = 'skcms'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
+DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer', 'centipede']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
@@ -111,6 +111,8 @@ def should_build_coverage(project_yaml):
     assert_message = ('Forbidden to specify multiple engines for '
                       '"fuzzing_engines" if "none" is specified.')
     assert len(engines) == 1, assert_message
+    return False
+  if 'wycheproof' in engines:
     return False
 
   language = project_yaml.get('language')
@@ -234,7 +236,6 @@ def build_base_images():
       'base-image',
       'base-builder',
       'base-builder-go',
-      'base-builder-go-codeintelligencetesting',
       'base-builder-javascript',
       'base-builder-jvm',
       'base-builder-python',

@@ -5,3 +5,9 @@ auto_ccs:
   - "george@nlnetlabs.nl"
   - "philip@nlnetlabs.nl"
 main_repo: 'https://github.com/NLnetLabs/unbound'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

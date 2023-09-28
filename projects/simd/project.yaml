@@ -7,3 +7,9 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/ermig1979/Simd'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -122,16 +122,15 @@ function check_engine {
     # binaries if they are from trial build and production build.
     # TODO(Dongge): Support run test with sanitized binaries for trial and
     # production build.
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
-    CHECK_PASSED=$(egrep "\[0] begin-fuzz: ft: 0 cov: 0" -c $FUZZER_OUTPUT)
+    SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "\[S0.0] begin-fuzz: ft: 0 corp: 0/0" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
       echo "BAD BUILD: fuzzing $FUZZER with centipede failed."
       cat $FUZZER_OUTPUT
       return 1
     fi
   fi
-
-  # TODO: add checks for other fuzzing engines if possible.
+  
   return 0
 }
 
@@ -315,9 +314,21 @@ function check_mixed_sanitizers {
     return 0
   fi
 
+  if [ "${FUZZING_LANGUAGE:-}" = "javascript" ]; then
+    # Jazzer.js currently does not support using sanitizers with native Node.js addons.
+    # This is not relevant anyways since supporting this will be done by preloading
+    # the sanitizers in the wrapper script starting Jazzer.js.
+    return 0
+  fi
+
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
     return 0
+  fi
+
+  # For fuzztest fuzzers point to the binary instead of launcher script.
+  if [[ $FUZZER == *"@"* ]]; then
+    FUZZER=(${FUZZER//@/ }[0])
   fi
 
   CALL_INSN=
@@ -397,8 +408,19 @@ function check_architecture {
     return 0;
   fi
 
+  if [ "${FUZZING_LANGUAGE:-}" = "javascript" ]; then
+    # Jazzer.js fuzzers are wrapper scripts that start the fuzz target with
+    # the Jazzer.js CLI.
+    return 0;
+  fi
+
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     FUZZER=${FUZZER}.pkg
+  fi
+
+  # For fuzztest fuzzers point to the binary instead of launcher script.
+  if [[ $FUZZER == *"@"* ]]; then
+    FUZZER=(${FUZZER//@/ }[0])
   fi
 
   FILE_OUTPUT=$(file $FUZZER)

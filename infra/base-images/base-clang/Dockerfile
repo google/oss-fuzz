@@ -20,26 +20,27 @@ FROM gcr.io/oss-fuzz-base/base-image
 
 ARG arch=x86_64
 
-ARG introspector
-ENV INTROSPECTOR_PATCHES=$introspector
 ENV FUZZINTRO_OUTDIR=$SRC
-ENV FUZZ_INTROSPECTOR=$introspector
+
 
 # Install newer cmake.
-ENV CMAKE_VERSION 3.21.1
+ENV CMAKE_VERSION 3.24.2
 RUN apt-get update && apt-get install -y wget sudo && \
-    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
+    wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     chmod +x cmake-$CMAKE_VERSION-Linux-$arch.sh && \
     ./cmake-$CMAKE_VERSION-Linux-$arch.sh --skip-license --prefix="/usr/local" && \
     rm cmake-$CMAKE_VERSION-Linux-$arch.sh && \
-    SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo && \
+    SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout b0e2a4327197b0064ba28892489423013148bd0d && \
-    apt-get remove --purge -y git
+    git checkout 54ade08f03b3144a67fa9da704b54093b36eabde && \
+    git submodule init && \
+    git submodule update && \
+    apt-get autoremove --purge -y git && \
+    rm -rf .git
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
@@ -53,7 +54,7 @@ ENV CXX "clang++"
 ENV CCC "clang++"
 
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
-# http://libfuzzer.info#fuzzer-friendly-build-mode
+# https://llvm.org/docs/LibFuzzer.html#fuzzer-friendly-build-mode
 
 ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"

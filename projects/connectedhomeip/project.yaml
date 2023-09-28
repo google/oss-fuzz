@@ -1,0 +1,14 @@
+homepage: "https://buildwithmatter.com/"
+language: c++
+primary_contact: "andreilitvin@google.com"
+auto_ccs:
+  - "mboyington@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - centipede
+main_repo: 'https://github.com/project-chip/connectedhomeip.git'

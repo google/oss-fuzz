@@ -14,4 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+# helm specifies Go 1.17 as the minimum Go version, and this causes go mod tidy
+# to fail because Go 1.17 and Go 1.16 would select different versions of
+# a dependency (github.com/mattn/go-isatty). By default, tidy acts as if
+# the -compat flag were set to the version prior to the one indicated by
+# the 'go' directive in the go.mod file.
+#
+# Since we use Go 1.19 to instrument the code, we patch the minimum version in go.mod.
+sed -i 's/go 1.17/go 1.19/g' $SRC/helm/go.mod
+
 $SRC/cncf-fuzzing/projects/helm/build.sh

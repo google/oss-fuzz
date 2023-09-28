@@ -22,6 +22,9 @@ import pygments.lexers
 import pygments.util
 
 def TestOneInput(data: bytes) -> int:
+  if len(data) > (2 << 18):
+    return
+
   try:
     lexer = pygments.lexers.guess_lexer(str(data))
   except pygments.util.ClassNotFound:

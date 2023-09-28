@@ -7,7 +7,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"encoding/xml"
-	"runtime"
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
 
@@ -21,16 +20,7 @@ func FuzzEncoding(data []byte) int {
 	if err != nil {
 		return 0
 	}
-	b2, err := f.GetBytes()
-	if err != nil {
-		return 0
-	}
-	defer func() {
-		if r := recover(); r != nil {
-		}
-		runtime.GC()
-	}()
-	switch decType%5 {
+	switch decType % 5 {
 	case 0:
 		e, err := f.GetString()
 		if err != nil || len(e) != 32 {
@@ -38,8 +28,8 @@ func FuzzEncoding(data []byte) int {
 		}
 		enc := base32.NewEncoding(e)
 		d := base32.NewDecoder(enc, bytes.NewReader(b1))
-		_, _ = d.Read(b2)
-		return 1
+		dbuf := make([]byte, enc.DecodedLen(len(e)))
+		_, _ = d.Read(dbuf)
 	case 1:
 		e, err := f.GetString()
 		if err != nil || len(e) != 64 {
@@ -52,20 +42,25 @@ func FuzzEncoding(data []byte) int {
 		}
 		enc := base64.NewEncoding(e)
 		d := base64.NewDecoder(enc, bytes.NewReader(b1))
-		_, _ = d.Read(b2)
-		return 1
+		dbuf := make([]byte, enc.DecodedLen(len(e)))
+		_, _ = d.Read(dbuf)
 	case 2:
+		b2, err := f.GetBytes()
+		if err != nil {
+			return 0
+		}
 		d := gob.NewDecoder(bytes.NewReader(b1))
 		_ = d.Decode(b2)
-		return 1
 	case 3:
+		b2, err := f.GetBytes()
+		if err != nil {
+			return 0
+		}
 		d := json.NewDecoder(bytes.NewReader(b1))
 		_ = d.Decode(b2)
-		return 1
 	case 4:
 		d := xml.NewDecoder(bytes.NewReader(b1))
 		_, _ = d.Token()
-		return 1
 	}
 	return 1
 }

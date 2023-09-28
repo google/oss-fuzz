@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Copy seed corpora
+mv $SRC/hermes_seed_corpus.zip $OUT
+
+# Copy dictionary file
+mv $SRC/hermes.dict $OUT
+
 # build ICU for linking statically.
 cd $SRC/icu/source
 ./configure --disable-shared --enable-static --disable-layoutex \

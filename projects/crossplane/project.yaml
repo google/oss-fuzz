@@ -5,6 +5,7 @@ auto_ccs :
   - "me@muvaf.com"
   - "nicc@rk0n.org"
   - "alper.oss.fuzz@gmail.com"
+  - "p.scorsolini@gmail.com"
 vendor_ccs :
   - "adam@adalogics.com"
 language: go

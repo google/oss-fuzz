@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN mkdir -p /opt/oracle
-WORKDIR /opt/oracle
-RUN wget https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip && \
+RUN cd /opt/oracle && \
+    wget https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip && \
     unzip instantclient-basic-linux.x64-21.6.0.0.0dbru.zip && \
     rm instantclient-basic-linux.x64-21.6.0.0.0dbru.zip && \
     echo /opt/oracle/instantclient_21_6 > /etc/ld.so.conf.d/oracle-instantclient.conf && \
@@ -27,9 +27,9 @@ ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_21_6
 RUN apt-get install libaio1 libaio-dev
 RUN pip3 install --upgrade pip && pip install requests
 
-RUN git clone https://github.com/oracle/python-cx_Oracle oracle-py-cx
-WORKDIR oracle-py-cx
-RUN  git submodule init && \
-     git submodule update
+RUN git clone https://github.com/oracle/python-cx_Oracle oracle-py-cx && \
+    cd oracle-py-cx && \
+    git submodule init && \
+    git submodule update
 
 COPY build.sh fuzz_*.py $SRC/

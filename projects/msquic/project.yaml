@@ -2,8 +2,11 @@ homepage: "https://github.com/microsoft/msquic"
 language: c
 primary_contact: "msquicinfra@microsoft.com"
 auto_ccs:
-  - "quicdev@microsoft.com"
   - "daikiaminaka@microsoft.com"
+  - "anrossi@microsoft.com"
+  - "maolson@microsoft.com"
+  - "huanyi@microsoft.com"
+  - "nibanks@microsoft.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

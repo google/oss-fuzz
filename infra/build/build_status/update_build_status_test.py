@@ -18,15 +18,13 @@ import os
 import sys
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock
 
 from google.cloud import ndb
 
 sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
-from datastore_entities import BuildsHistory
-from datastore_entities import LastSuccessfulBuild
+import datastore_entities
 import test_utils
 import update_build_status
 
@@ -40,9 +38,8 @@ class MockGetBuild:
   def __init__(self, builds):
     self.builds = builds
 
-  def get_build(self, cloudbuild, image_project, build_id):
+  def get_build(self, build_id):
     """Mimic build object retrieval."""
-    del cloudbuild, image_project
     for build in self.builds:
       if build['build_id'] == build_id:
         return build
@@ -63,7 +60,7 @@ class TestGetBuildHistory(unittest.TestCase):
     mock_upload_log.return_value = True
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
+    update_build_status.BuildGetter.get_build = mock_get_build.get_build
 
     expected_projects = {
         'history': [{
@@ -79,17 +76,6 @@ class TestGetBuildHistory(unittest.TestCase):
     self.assertDictEqual(update_build_status.get_build_history(['1']),
                          expected_projects)
 
-  def test_get_build_history_missing_log(self, mock_upload_log,
-                                         mock_cloud_build, mock_google_auth):
-    """Test for missing build log file."""
-    del mock_cloud_build, mock_google_auth
-    builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
-    mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
-    mock_upload_log.return_value = False
-    self.assertRaises(update_build_status.MissingBuildLogError,
-                      update_build_status.get_build_history, ['1'])
-
   def test_get_build_history_no_last_success(self, mock_upload_log,
                                              mock_cloud_build,
                                              mock_google_auth):
@@ -97,7 +83,7 @@ class TestGetBuildHistory(unittest.TestCase):
     del mock_cloud_build, mock_google_auth
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'FAILURE'}]
     mock_get_build = MockGetBuild(builds)
-    update_build_status.get_build = mock_get_build.get_build
+    update_build_status.BuildGetter.get_build = mock_get_build.get_build
     mock_upload_log.return_value = True
 
     expected_projects = {
@@ -162,17 +148,18 @@ class TestUpdateLastSuccessfulBuild(unittest.TestCase):
       expected_build_id = '1'
       self.assertEqual(
           expected_build_id,
-          ndb.Key(LastSuccessfulBuild, 'test-project-fuzzing').get().build_id)
+          ndb.Key(datastore_entities.LastSuccessfulBuild,
+                  'test-project-fuzzing').get().build_id)
 
   def test_update_last_successful_build_datastore(self):
     """When last successful build is only available in datastore."""
     with ndb.Client().context():
       project = {'name': 'test-project'}
-      LastSuccessfulBuild(id='test-project-fuzzing',
-                          build_tag='fuzzing',
-                          project='test-project',
-                          build_id='1',
-                          finish_time='test_time').put()
+      datastore_entities.LastSuccessfulBuild(id='test-project-fuzzing',
+                                             build_tag='fuzzing',
+                                             project='test-project',
+                                             build_id='1',
+                                             finish_time='test_time').put()
 
       update_build_status.update_last_successful_build(project, 'fuzzing')
       expected_project = {
@@ -194,17 +181,18 @@ class TestUpdateLastSuccessfulBuild(unittest.TestCase):
               'finish_time': 'test_time'
           }
       }
-      LastSuccessfulBuild(id='test-project-fuzzing',
-                          build_tag='fuzzing',
-                          project='test-project',
-                          build_id='1',
-                          finish_time='test_time').put()
+      datastore_entities.LastSuccessfulBuild(id='test-project-fuzzing',
+                                             build_tag='fuzzing',
+                                             project='test-project',
+                                             build_id='1',
+                                             finish_time='test_time').put()
 
       update_build_status.update_last_successful_build(project, 'fuzzing')
       expected_build_id = '2'
       self.assertEqual(
           expected_build_id,
-          ndb.Key(LastSuccessfulBuild, 'test-project-fuzzing').get().build_id)
+          ndb.Key(datastore_entities.LastSuccessfulBuild,
+                  'test-project-fuzzing').get().build_id)
 
   @classmethod
   def tearDownClass(cls):
@@ -232,24 +220,37 @@ class TestUpdateBuildStatus(unittest.TestCase):
                                mock_google_auth):
     """Testing update build status as a whole."""
     del self, mock_cloud_build, mock_google_auth
-    update_build_status.upload_status = MagicMock()
+    update_build_status.upload_status = mock.MagicMock()
     mock_upload_log.return_value = True
     status_filename = 'status.json'
     with ndb.Client().context():
-      BuildsHistory(id='test-project-1-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-1',
-                    build_ids=['1']).put()
+      datastore_entities.Project(
+          name='test-project-1',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo1"')).put()
+      datastore_entities.Project(
+          name='test-project-2',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo2"')).put()
+      datastore_entities.Project(
+          name='test-project-3',
+          project_yaml_contents=(
+              'main_repo: "https://github/com/main/repo3"')).put()
 
-      BuildsHistory(id='test-project-2-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-2',
-                    build_ids=['2']).put()
+      datastore_entities.BuildsHistory(id='test-project-1-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-1',
+                                       build_ids=['1']).put()
 
-      BuildsHistory(id='test-project-3-fuzzing',
-                    build_tag='fuzzing',
-                    project='test-project-3',
-                    build_ids=['3']).put()
+      datastore_entities.BuildsHistory(id='test-project-2-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-2',
+                                       build_ids=['2']).put()
+
+      datastore_entities.BuildsHistory(id='test-project-3-fuzzing',
+                                       build_tag='fuzzing',
+                                       project='test-project-3',
+                                       build_ids=['3']).put()
 
       builds = [{
           'build_id': '1',
@@ -264,7 +265,7 @@ class TestUpdateBuildStatus(unittest.TestCase):
           'status': 'WORKING'
       }]
       mock_get_build = MockGetBuild(builds)
-      update_build_status.get_build = mock_get_build.get_build
+      update_build_status.BuildGetter.get_build = mock_get_build.get_build
 
       expected_data = {
           'projects': [{
@@ -273,7 +274,8 @@ class TestUpdateBuildStatus(unittest.TestCase):
                   'finish_time': 'test_time',
                   'success': False
               }],
-              'name': 'test-project-2'
+              'name': 'test-project-2',
+              'main_repo': 'https://github/com/main/repo2',
           }, {
               'history': [{
                   'build_id': '1',
@@ -284,10 +286,12 @@ class TestUpdateBuildStatus(unittest.TestCase):
                   'build_id': '1',
                   'finish_time': 'test_time'
               },
-              'name': 'test-project-1'
+              'name': 'test-project-1',
+              'main_repo': 'https://github/com/main/repo1',
           }, {
               'history': [],
-              'name': 'test-project-3'
+              'name': 'test-project-3',
+              'main_repo': 'https://github/com/main/repo3',
           }]
       }
 

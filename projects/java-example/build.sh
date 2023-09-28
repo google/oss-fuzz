@@ -42,13 +42,13 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java' -or -name '*FuzzerNative.java'); 
   echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir/native \
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
-if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
   mem_settings='-Xmx1900m:-Xss900k'
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
+LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir/native \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \

@@ -15,6 +15,6 @@
 ################################################################################
 
 
-# pass variables from environment
+# Pass variables from environment.
 build --action_env=FUZZ_INTROSPECTOR
 build --action_env=FUZZINTRO_OUTDIR

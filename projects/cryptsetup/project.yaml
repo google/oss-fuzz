@@ -1,5 +1,6 @@
 homepage: "https://gitlab.com/cryptsetup/cryptsetup"
 language: c
+builds_per_day: 2
 primary_contact: "gmazyland@gmail.com"
 auto_ccs:
   - okozina@redhat.com
@@ -12,3 +13,9 @@ sanitizers:
 architectures:
   - x86_64
 main_repo: "https://gitlab.com/cryptsetup/cryptsetup.git"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

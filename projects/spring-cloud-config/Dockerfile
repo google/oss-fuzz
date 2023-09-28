@@ -16,9 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
 unzip maven.zip -d $SRC/maven-3.6.3 && \
 rm -rf maven.zip
+
+RUN curl -L https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.7%2B7/OpenJDK17U-jdk_x64_linux_hotspot_17.0.7_7.tar.gz -o jdk.tar.gz && \
+tar xvf jdk.tar.gz && \
+rm -rf jdk.tar.gz
 
 ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
 

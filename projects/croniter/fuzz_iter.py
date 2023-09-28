@@ -17,27 +17,26 @@ import atheris
 import sys
 
 from datetime import datetime
-
-with atheris.instrument_imports():
-  from croniter import (
-    croniter,
-    CroniterBadCronError,
-    CroniterBadDateError
-  )
+from croniter import croniter
+from croniter.croniter import CroniterError, CroniterBadTypeRangeError
 
 
-@atheris.instrument_func
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   base = datetime(2012, 4, 6, 13, 26, 10)
   try:
-    itr = croniter(fdp.ConsumeString(50), base)
+    cron_str = fdp.ConsumeString(50)
+    hash_id = fdp.ConsumeBytes(2)
+    croniter.is_valid(cron_str, hash_id=hash_id)
+    itr = croniter(cron_str, base, hash_id=hash_id)
     idx = 0
     for v in itr.all_next():
       idx += 1
       if idx > 10:
         break
-  except (CroniterBadCronError, CroniterBadDateError) as e:
+    itr.get_next()
+    itr.get_prev()
+  except (CroniterError, CroniterBadTypeRangeError) as e:
     pass
   except NameError as e:
     # Catch https://github.com/kiorky/croniter/blob/bb5a45196e5f8f15fd0890f4ee5e9697671a3fe2/src/croniter/croniter.py#L781
@@ -47,7 +46,7 @@ def TestOneInput(data):
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 if __name__ == "__main__":

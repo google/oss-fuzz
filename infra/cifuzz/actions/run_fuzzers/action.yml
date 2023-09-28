@@ -48,6 +48,10 @@ inputs:
     description: "Whether to use all available cores for fuzzing."
     required: false
     default: false
+  output-sarif:
+    description: "Whether to output fuzzing results to SARIF."
+    required: false
+    default: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -65,3 +69,4 @@ runs:
     CIFUZZ_DEBUG: 'True'
     CFL_PLATFORM: 'github'
     PARALLEL_FUZZING: ${{ inputs.parallel-fuzzing }}
+    OUTPUT_SARIF: ${{ inputs.output-sarif }}

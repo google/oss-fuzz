@@ -1,3 +1,17 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -61,9 +75,15 @@ func isFunctionCovered(s token.Position, e token.Position, blocks []cover.Profil
 }
 
 func computePercent(s *CoverageTotals) {
-	s.Regions.Percent = float64(100*s.Regions.Covered) / float64(s.Regions.Count)
-	s.Lines.Percent = float64(100*s.Lines.Covered) / float64(s.Lines.Count)
-	s.Functions.Percent = float64(100*s.Functions.Covered) / float64(s.Functions.Count)
+	if s.Regions.Count > 0 {
+		s.Regions.Percent = float64(100*s.Regions.Covered) / float64(s.Regions.Count)
+	}
+	if s.Lines.Count > 0 {
+		s.Lines.Percent = float64(100*s.Lines.Covered) / float64(s.Lines.Count)
+	}
+	if s.Functions.Count > 0 {
+		s.Functions.Percent = float64(100*s.Functions.Covered) / float64(s.Functions.Count)
+	}
 }
 
 func main() {
@@ -84,7 +104,8 @@ func main() {
 		fset := token.NewFileSet() // positions are relative to fset
 		f, err := parser.ParseFile(fset, p.FileName, nil, 0)
 		if err != nil {
-			panic(err)
+			log.Printf("failed to parse go file: %v", err)
+			continue
 		}
 		fileCov := CoverageFile{}
 		fileCov.Filename = p.FileName
@@ -142,6 +163,9 @@ func main() {
 	}
 
 	computePercent(&r.Data[0].Totals)
-	o, _ := json.Marshal(r)
+	o, err := json.Marshal(r)
+	if err != nil {
+		log.Fatalf("failed to generate json: %v", err)
+	}
 	fmt.Printf(string(o))
 }

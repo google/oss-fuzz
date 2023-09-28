@@ -36,6 +36,13 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int r;
     lzo_uint out_len;
     lzo_uint new_len;
+
+    /* Since we allocate in/out on the stack,
+     * we can't handle too large size.
+     */
+    if (size > (1 << 20))
+        size = 1 << 20;
+
     /* We want to compress the data block at 'in' with length 'IN_LEN' to
      * the block at 'out'. Because the input block may be incompressible,
      * we must provide a little more output space in case that compression

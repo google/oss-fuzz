@@ -56,6 +56,18 @@ EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 # pylint: disable=no-self-use,protected-access,too-few-public-methods,unused-argument
 
 
+def docker_command_has_env_var_arg(command, env_var_arg):
+  """Returns True if a docker command has a specific env var argument."""
+  for idx, element in enumerate(command):
+    if idx == 0:
+      # We're looking for the variable which can't be the first argument.
+      continue
+
+    if element == env_var_arg and command[idx - 1] == '-e':
+      return True
+  return False
+
+
 class BuildFuzzersTest(unittest.TestCase):
   """Unit tests for build_fuzzers."""
 
@@ -77,16 +89,30 @@ class BuildFuzzersTest(unittest.TestCase):
 
       docker_run_command = mock_docker_run.call_args_list[0][0][0]
 
-    def command_has_env_var_arg(command, env_var_arg):
-      for idx, element in enumerate(command):
-        if idx == 0:
-          continue
+    self.assertTrue(
+        docker_command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
 
-        if element == env_var_arg and command[idx - 1] == '-e':
-          return True
-      return False
+  @mock.patch('build_specified_commit.detect_main_repo',
+              return_value=('example.com', '/path'))
+  @mock.patch('repo_manager._clone', return_value=None)
+  @mock.patch('continuous_integration.checkout_specified_commit')
+  @mock.patch('helper.docker_run', return_value=False)  # We want to quit early.
+  def test_extra_env_var(self, mock_docker_run, _, __, ___):
+    """Tests that the CIFUZZ env var is set."""
 
-    self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
+    extra_env_var = 'CFL_EXTRA_TOKEN'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      with mock.patch.dict(os.environ, {extra_env_var: 'BLAH'}):
+        build_fuzzers.build_fuzzers(
+            test_helpers.create_build_config(
+                oss_fuzz_project_name=EXAMPLE_PROJECT,
+                project_repo_name=EXAMPLE_PROJECT,
+                workspace=tmp_dir,
+                pr_ref='refs/pull/1757/merge'))
+
+    docker_run_command = mock_docker_run.call_args_list[0][0][0]
+    self.assertTrue(
+        docker_command_has_env_var_arg(docker_run_command, extra_env_var))
 
 
 class InternalGithubBuildTest(unittest.TestCase):

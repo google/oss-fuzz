@@ -40,6 +40,9 @@
 #include <string>
 #include <vector>
 
+#include "inspect_utils.h"
+#include "inspect_dns.h"
+
 #define DEBUG_LOGS 0
 
 #if DEBUG_LOGS
@@ -77,16 +80,6 @@ constexpr int kRootDirMaxLength = 16;
 // The PID of the root process we're fuzzing.
 pid_t g_root_pid;
 
-// Structure to know which thread id triggered the bug.
-struct ThreadParent {
-  // Parent thread ID, ie creator.
-  pid_t parent_tid;
-  // Current thread ID ran exec to become another process.
-  bool ran_exec = false;
-
-  ThreadParent() : parent_tid(0) {}
-  ThreadParent(pid_t tid) : parent_tid(tid) {}
-};
 // Map of a PID/TID its PID/TID creator and wether it ran exec.
 std::map<pid_t, ThreadParent> root_pids;
 
@@ -162,23 +155,6 @@ pid_t run_child(char **argv) {
   return pid;
 }
 
-std::vector<std::byte> read_memory(pid_t pid, unsigned long long address,
-                                   size_t size) {
-  std::vector<std::byte> memory;
-
-  for (size_t i = 0; i < size; i += sizeof(long)) {
-    long word = ptrace(PTRACE_PEEKTEXT, pid, address + i, 0);
-    if (word == -1) {
-      return memory;
-    }
-
-    std::byte *word_bytes = reinterpret_cast<std::byte *>(&word);
-    memory.insert(memory.end(), word_bytes, word_bytes + sizeof(long));
-  }
-
-  return memory;
-}
-
 // Construct a string with the memory specified in a register.
 std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   auto memory = read_memory(pid, reg, length);
@@ -189,27 +165,6 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
   std::string content(reinterpret_cast<char *>(memory.data()),
                       std::min(memory.size(), length));
   return content;
-}
-
-void report_bug(std::string bug_type, pid_t tid) {
-  // Report the bug found based on the bug code.
-  std::cerr << "===BUG DETECTED: " << bug_type.c_str() << "===\n";
-  // Rely on sanitizers/libFuzzer to produce a stacktrace by sending SIGABRT
-  // to the root process.
-  // Note: this may not be reliable or consistent if shell injection happens
-  // in an async way.
-  // Find the thread group id, that is the pid.
-  pid_t pid = tid;
-  auto parent = root_pids[tid];
-  while (!parent.ran_exec) {
-    // Find the first parent which ran exec syscall.
-    if (parent.parent_tid == g_root_pid) {
-      break;
-    }
-    pid = parent.parent_tid;
-    parent = root_pids[parent.parent_tid];
-  }
-  tgkill(pid, tid, SIGABRT);
 }
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
@@ -234,14 +189,18 @@ std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
 std::string match_shell(std::string binary_pathname);
 
 // Identify the exact shell behind sh
-std::string identify_sh(std::string binary_name) {
+std::string identify_sh(std::string path) {
   char shell_pathname[kShellPathnameLength];
-  if (readlink(binary_name.c_str(), shell_pathname, kShellPathnameLength) ==
-      -1) {
-    std::cerr << "Cannot query which shell is behind sh: readlink failed\n";
+  auto written = readlink(path.c_str(), shell_pathname, kShellPathnameLength - 1);
+  if (written == -1) {
+    std::cerr << "Cannot query which shell is behind sh: readlink failed on "
+              << path << ": "
+              << strerror(errno) << "\n";
     std::cerr << "Assuming the shell is dash\n";
     return "dash";
   }
+  shell_pathname[written] = '\0';
+
   debug_log("sh links to %s\n", shell_pathname);
   std::string shell_pathname_str(shell_pathname);
 
@@ -253,13 +212,17 @@ std::string match_shell(std::string binary_pathname) {
   if (!binary_pathname.length()) {
     return "";
   }
+
+  // We use c_str() to accept only the null terminated string.
+  std::string binary_name = binary_pathname.substr(
+      binary_pathname.find_last_of("/") + 1).c_str();
+
+  debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
+            binary_name.length());
+
   for (const auto &item : kShellSyntaxErrors) {
     std::string known_shell = item.first;
-    std::string binary_name = binary_pathname.substr(
-        binary_pathname.find_last_of("/") + 1, known_shell.length());
-    debug_log("Binary is %s (%lu)\n", binary_name.c_str(),
-              binary_name.length());
-    if (!binary_name.compare(0, 2, "sh")) {
+    if (binary_name == "sh") {
       debug_log("Matched sh: Needs to identify which specific shell it is.\n");
       return identify_sh(binary_pathname);
     }
@@ -280,8 +243,6 @@ std::string get_shell(pid_t pid, const user_regs_struct &regs) {
 void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
   auto error_patterns = kShellSyntaxErrors.at(shell);
   for (const auto &pattern : error_patterns) {
-    debug_log("Pattern : %s\n", pattern.c_str());
-    debug_log("Found at: %lu\n", buffer.find(pattern));
     if (buffer.find(pattern) != std::string::npos) {
       std::cerr << "--- Found a sign of shell corruption ---\n"
                 << buffer.c_str()
@@ -308,7 +269,7 @@ void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
 
 void log_file_open(std::string path, int flags, pid_t pid) {
   report_bug(kArbitraryFileOpenError, pid);
-  std::cerr << "===File opened: " << path << ", flags = " << flags << ",";
+  std::cerr << "===File opened: " << path.c_str() << ", flags = " << flags << ",";
   switch (flags & 3) {
     case O_RDONLY:
       std::cerr << "O_RDONLY";
@@ -382,8 +343,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         ++it;
         continue;
       }
-
-      debug_log("finished waiting %d", pid);
 
       if (WIFEXITED(status) || WIFSIGNALED(status)) {
         debug_log("%d exited", pid);
@@ -459,8 +418,11 @@ int trace(std::map<pid_t, Tracee> pids) {
             }
           }
 
+          inspect_dns_syscalls(pid, regs);
+
           if (regs.orig_rax == __NR_openat) {
-            inspect_for_arbitrary_file_open(pid, regs);
+            // TODO(metzman): Re-enable this once we have config/flag support.
+            // inspect_for_arbitrary_file_open(pid, regs);
           }
 
           if (regs.orig_rax == __NR_write &&
@@ -479,7 +441,6 @@ int trace(std::map<pid_t, Tracee> pids) {
         tracee.syscall_enter = !tracee.syscall_enter;
       }
 
-      debug_log("tracing %d %d", pid, sig);
       if (ptrace(PTRACE_SYSCALL, pid, nullptr, sig) == -1) {
         debug_log("ptrace(PTRACE_SYSCALL, %d): %s", pid, strerror(errno));
         continue;

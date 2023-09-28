@@ -6,3 +6,9 @@ sanitizers:
 - undefined
 - memory
 main_repo: 'https://github.com/darktable-org/rawspeed.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

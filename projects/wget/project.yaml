@@ -5,4 +5,8 @@ auto_ccs:
   - "tim.ruehsen@gmx.de"
   - "darnir@gmail.com"
   - "gscrivan@redhat.com"
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"
 main_repo: 'https://git.savannah.gnu.org/git/wget.git'

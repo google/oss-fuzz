@@ -21,6 +21,7 @@ RUN git clone --depth 1 https://github.com/google/AFL
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 RUN git clone --depth 1 https://github.com/kubernetes/kops
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
 WORKDIR $SRC/
 
 COPY build.sh $SRC/

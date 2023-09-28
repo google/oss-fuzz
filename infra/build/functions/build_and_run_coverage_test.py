@@ -71,8 +71,7 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
     build_steps = build_and_run_coverage.get_build_steps(
-        test_utils.PROJECT, project_yaml, dockerfile, test_utils.IMAGE_PROJECT,
-        test_utils.BASE_IMAGES_PROJECT, config)
+        test_utils.PROJECT, project_yaml, dockerfile, config)
     self.assertEqual(build_steps, expected_coverage_build_steps)
 
 

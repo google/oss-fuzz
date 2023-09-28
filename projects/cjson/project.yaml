@@ -4,10 +4,6 @@ primary_contact: "max@maxbruckner.de"
 auto_ccs:
   - "randy440088@gmail.com"
   - "wp_scut@163.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
 sanitizers:
   - address
   - undefined

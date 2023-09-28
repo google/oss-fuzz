@@ -26,8 +26,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     parser.SetExpr(line_string);
     parser.Eval();
   } catch (mu::Parser::exception_type &e) {
-     // Skip logging errors to avoid log spam.
-     // std::cout << e.GetMsg() << std::endl;
+  } catch (mu::ParserError &e) {
   }
   return 0;
 }

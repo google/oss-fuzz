@@ -41,7 +41,9 @@ make install
 GMP_CONFIGURE_FLAGS="--disable-assembly --disable-fat"
 
 cd $SRC/gmp
-bash .bootstrap
+if [[ -e .bootstrap ]]; then
+    bash .bootstrap
+fi
 ASAN_OPTIONS=detect_leaks=0 \
   ./configure --disable-shared --prefix=$DEPS_PATH $GMP_CONFIGURE_FLAGS
 make -j$(nproc)

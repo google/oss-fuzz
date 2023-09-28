@@ -17,7 +17,6 @@ limitations under the License.
 #include "sysdep.h"
 #include "bfd.h"
 #include "libiberty.h"
-#include "progress.h"
 #include "getopt.h"
 #include "aout/ar.h"
 #include "bucomm.h"

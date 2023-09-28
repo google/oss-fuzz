@@ -31,6 +31,8 @@ fi
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
 
 DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
+FUZZERS_COVERAGE_DUMPS_DIR="$DUMPS_DIR/fuzzers_coverage"
+MERGED_COVERAGE_DIR="$COVERAGE_OUTPUT_DIR/merged_coverage"
 FUZZER_STATS_DIR="$COVERAGE_OUTPUT_DIR/fuzzer_stats"
 TEXTCOV_REPORT_DIR="$COVERAGE_OUTPUT_DIR/textcov_reports"
 LOGS_DIR="$COVERAGE_OUTPUT_DIR/logs"
@@ -40,13 +42,14 @@ PLATFORM=linux
 REPORT_PLATFORM_DIR="$COVERAGE_OUTPUT_DIR/report/$PLATFORM"
 
 for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR $TEXTCOV_REPORT_DIR\
-                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR; do
+                 $REPORT_PLATFORM_DIR $REPORT_BY_TARGET_ROOT_DIR $FUZZERS_COVERAGE_DUMPS_DIR $MERGED_COVERAGE_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
 
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
 SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
+COVERAGE_TARGET_FILE="$FUZZER_STATS_DIR/coverage_targets.txt"
 
 # Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
 PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
@@ -100,13 +103,16 @@ function run_fuzz_target {
   fi
 
   rm -rf $corpus_dummy
-
   if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce profile dumps.
     return 0
   fi
 
   # If necessary translate to latest profraw version.
+  if [[ $target == *"@"* ]]; then
+    # Extract fuzztest binary name from fuzztest wrapper script.
+    target=(${target//@/ }[0])
+  fi
   profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
@@ -129,18 +135,30 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
 
+  # setup for native go fuzzers
+  cd $OUT
+  mkdir -p "testdata/fuzz/${target}"
+  cp -r "${FUZZ_CORPUS_DIR}" "testdata/fuzz/"
+
+  # rewrite libFuzzer corpus to Std Go corpus if native fuzzing
+  grep "TestFuzzCorpus" $target > /dev/null 2>&1 && $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
+  cd -
+
   timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
 
+  # cleanup after native go fuzzers
+  rm -r "${OUT}/testdata/fuzz/${target}"
+
   # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
   # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
   # Since the copies named "*_fuzz_.go" do not exist in the file tree during
   # the coverage build, we change the references in the .profdata files
   # to the original file names.
-  sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
+  #sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS
@@ -207,6 +225,51 @@ function run_java_fuzz_target {
   jacoco_report_converter.py $xml_report $summary_file
 }
 
+function run_javascript_fuzz_target {
+  local target=$1
+  local corpus_real="$CORPUS_DIR/${target}"
+
+  # -merge=1 requires an output directory, create a new, empty dir for that.
+  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
+  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # IstanbulJS currently does not work when the tested program creates
+  # subprocesses. For this reason, we first minimize the corpus removing
+  # any crashing inputs so that we can report source-based code coverage
+  # with a single sweep over the minimized corpus
+  local merge_args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  timeout $TIMEOUT $OUT/$target $merge_args &> $LOGS_DIR/$target.log
+
+  # nyc saves the coverage reports in a directory with the default name "coverage"
+  local coverage_dir="$DUMPS_DIR/coverage_dir_for_${target}"
+  rm -rf $coverage_dir && mkdir -p $coverage_dir
+
+  local nyc_json_coverage_file="$coverage_dir/coverage-final.json"
+  local nyc_json_summary_file="$coverage_dir/coverage-summary.json"
+
+  local args="-runs=0 $corpus_dummy"
+  local jazzerjs_args="--coverage --coverageDirectory $coverage_dir --coverageReporters json --coverageReporters json-summary"
+
+  JAZZERJS_EXTRA_ARGS=$jazzerjs_args $OUT/$target $args &> $LOGS_DIR/$target.log
+
+  if (( $? != 0 )); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+
+  if [ ! -s $nyc_json_coverage_file ]; then
+    # Skip fuzz targets that failed to produce coverage-final.json file.
+    echo "$target failed to produce coverage-final.json file."
+    return 0
+  fi
+
+  cp $nyc_json_coverage_file $FUZZERS_COVERAGE_DUMPS_DIR/$target.json
+
+  local summary_file="$FUZZER_STATS_DIR/$target.json"
+
+  nyc_report_converter.py $nyc_json_summary_file $summary_file
+}
+
 function generate_html {
   local profdata=$1
   local shared_libraries=$2
@@ -236,11 +299,19 @@ for fuzz_target in $FUZZ_TARGETS; do
   if [[ $FUZZING_LANGUAGE == "go" ]]; then
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
+      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || grep "testing\.T" $fuzz_target > /dev/null 2>&1 || continue
     fi
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_go_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     echo "Entering python fuzzing"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_python_fuzz_target $fuzz_target
   elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     # Continue if not a fuzz target.
@@ -249,7 +320,23 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_java_fuzz_target $fuzz_target &
+  elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+
+    echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
+    run_javascript_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
@@ -257,8 +344,17 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_fuzz_target $fuzz_target &
 
+    # Rewrite object if its a FUZZTEST target
+    if [[ $fuzz_target == *"@"* ]]; then
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    fi
     if [[ -z $objects ]]; then
       # The first object needs to be passed without -object= flag.
       objects="$fuzz_target"
@@ -266,6 +362,7 @@ for fuzz_target in $FUZZ_TARGETS; do
       objects="$objects -object=$fuzz_target"
     fi
   fi
+
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
@@ -279,6 +376,7 @@ done
 wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  echo $DUMPS_DIR
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
   gotoolcover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
@@ -304,16 +402,25 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     mv $OUT/.coverage_$fuzzer .coverage
     python3 /usr/local/bin/python_coverage_runner_help.py translate /pythoncovmergedfiles/medio
     cp .new_coverage $PYCOVDIR/.coverage_$fuzzer
+    cp .new_coverage $OUT/coverage_d_$fuzzer
   done
 
   # Combine coverage
   cd $PYCOVDIR
   python3 /usr/local/bin/python_coverage_runner_help.py combine .coverage_*
   python3 /usr/local/bin/python_coverage_runner_help.py html
-  mv htmlcov/* $REPORT_PLATFORM_DIR/
+  # Produce all_cov file used by fuzz introspector.
+  python3 /usr/local/bin/python_coverage_runner_help.py json -o ${TEXTCOV_REPORT_DIR}/all_cov.json
 
-  # Create an empty summary file for now
-  echo "{}" >> $SUMMARY_FILE
+  # Generate .json with similar format to llvm-cov output.
+  python3 /usr/local/bin/python_coverage_runner_help.py \
+      convert-to-summary-json ${TEXTCOV_REPORT_DIR}/all_cov.json $SUMMARY_FILE
+
+  # Copy coverage date out
+  cp htmlcov/status.json ${TEXTCOV_REPORT_DIR}/html_status.json
+
+  mv htmlcov/* $REPORT_PLATFORM_DIR/
+  mv .coverage_* $REPORT_PLATFORM_DIR/
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
 
   # From this point on the script does not tolerate any errors.
@@ -328,8 +435,41 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   classes_dir=$DUMPS_DIR/classes
   mkdir $classes_dir
   for fuzz_target in $FUZZ_TARGETS; do
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
     cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
   done
+
+  # Dump classes in jar file to dump directory. This action includes all
+  # the classes of the project that are not executed by the fuzzers to
+  # the dump directory. Duplicate classes in the dump directory will be
+  # overwritten. We need to do this to include all possible classes in
+  # the coverage report and avoid duplicate classes from different jar
+  # files which jacoco fails to handle.
+  for jar_file in $(ls $OUT/*.jar)
+  do
+    if [[ $jar_file != $OUT/jazzer* ]]
+    then
+      tempdir=$(mktemp -d)
+      cd $tempdir && jar xvf $jar_file && cd -
+      cp -r $tempdir/* $classes_dir/
+      rm -r $tempdir
+    fi
+  done
+
+  # Clean up files that can create duplicate class names which breaks Jacoco.
+  # Remove META-INF folder because some jar may store duplications of the same
+  # class file in the META-INF for other java versions.
+  find $classes_dir -name "META-INF" | xargs rm -rf
+  # Remove all files that are not a java class because some jar may contain
+  # Kotlin class which has the same name as a java class and Jacoco fail to
+  # distinguish them.
+  find $classes_dir -type f -not -name "*.class" | xargs rm -f
+  # Remove all class files which have a dot in their file name which are normally
+  # used to name a duplication of the legitimate class file.
+  find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
@@ -351,9 +491,26 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   # automated analysis.
   cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
   cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
+  cp $xml_report $TEXTCOV_REPORT_DIR/jacoco.xml
 
   # Write llvm-cov summary file.
   jacoco_report_converter.py $xml_report $SUMMARY_FILE
+
+  set +e
+elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
+
+  # From this point on the script does not tolerate any errors.
+  set -e
+
+  json_report=$MERGED_COVERAGE_DIR/coverage.json
+  nyc merge $FUZZERS_COVERAGE_DUMPS_DIR $json_report
+
+  nyc report -t $MERGED_COVERAGE_DIR --report-dir $REPORT_PLATFORM_DIR --reporter=html --reporter=json-summary
+
+  nyc_json_summary_file=$REPORT_PLATFORM_DIR/coverage-summary.json
+
+  # Write llvm-cov summary file.
+  nyc_report_converter.py $nyc_json_summary_file $SUMMARY_FILE
 
   set +e
 else
@@ -374,21 +531,32 @@ else
 
   # Per target reports.
   for fuzz_target in $FUZZ_TARGETS; do
-    profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+    if [[ $fuzz_target == *"@"* ]]; then
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+      # Extract fuzztest binary name from fuzztest wrapper script.
+      fuzz_target=(${fuzz_target//@/ }[0])
+    else
+      profdata_path=$DUMPS_DIR/$fuzz_target.profdata
+      report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
+    fi
     if [[ ! -f "$profdata_path" ]]; then
       echo "WARNING: $fuzz_target has no profdata generated."
       continue
     fi
 
-    report_dir=$REPORT_BY_TARGET_ROOT_DIR/$fuzz_target
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
+
+  set +e
 fi
 
 # Make sure report is readable.
 chmod -R +r $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR
 find $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR -type d -exec chmod +x {} +
 
+# HTTP_PORT is optional.
+set +u
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"

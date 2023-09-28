@@ -1,0 +1,10 @@
+homepage: https://github.com/prompt-toolkit/python-prompt-toolkit
+main_repo: https://github.com/prompt-toolkit/python-prompt-toolkit
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

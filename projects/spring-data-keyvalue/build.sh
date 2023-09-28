@@ -21,7 +21,10 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 MAVEN_ARGS="-DskipTests -Djavac.src.version=17 -Djavac.target.version=17 -Dmaven.repo.local=$WORK/m2"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 
-cp "target/spring-data-keyvalue-3.0.0-SNAPSHOT.jar" $OUT/spring-data-keyvalue.jar
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
+
+cp "target/spring-data-keyvalue-$CURRENT_VERSION.jar" $OUT/spring-data-keyvalue.jar
 
 # remove signature files
 mkdir $OUT/tmp
@@ -32,9 +35,10 @@ cd -
 rm -rf $OUT/tmp
 
 # need lombok for fuzz test
-find $WORK -name "lombok*.jar" -exec cp {} $OUT/lombok.jar \;
+find $WORK -name "spring-tx*.jar" -exec cp {} $OUT/spring-tx.jar \;
+wget -O "$OUT/lombok.jar" "https://repo.maven.apache.org/maven2/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar"
 
-ALL_JARS="spring-data-keyvalue.jar lombok.jar"
+ALL_JARS="spring-data-keyvalue.jar lombok.jar spring-tx.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -53,13 +57,13 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-if [[ \"$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
   mem_settings='-Xmx1900m:-Xss900k'
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
+JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \

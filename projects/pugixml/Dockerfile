@@ -14,7 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/zeux/pugixml
+RUN git clone --depth=1 https://github.com/zeux/pugixml
 
 WORKDIR $SRC
 COPY build.sh $SRC/

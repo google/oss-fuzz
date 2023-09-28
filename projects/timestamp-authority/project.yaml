@@ -1,0 +1,13 @@
+homepage: "https://sigstore.dev"
+main_repo: "https://github.com/sigstore/timestamp-authority"
+primary_contact: "hblauzvern@sigstore.dev"
+auto_ccs:
+  - malancas@sigstore.dev
+  - bcallaway@sigstore.dev
+  - lhinds@sigstore.dev
+  - codysoyland@sigstore.dev
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

@@ -6,7 +6,6 @@ main_repo: https://github.com/kjd/idna
 primary_contact: kim@cynosure.com.au
 sanitizers:
 - address
-- undefined
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
