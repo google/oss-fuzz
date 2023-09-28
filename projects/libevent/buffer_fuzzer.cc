@@ -44,6 +44,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cp = NULL;
   }
   struct evbuffer *buf2 = evbuffer_new();
+  struct evbuffer *buf3 = evbuffer_new();
+  struct evbuffer_iovec vec[1];
+
   evbuffer_add(buf2, s1.c_str(), s1.size());
   evbuffer_add_reference(buf2, s2.c_str(), s2.size(), NULL, NULL);
   evbuffer_add_buffer(buf, buf2);
@@ -52,9 +55,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   evbuffer_prepend(buf, s3.c_str(), s3.size());
   evbuffer_prepend_buffer(buf, buf2);
   evbuffer_find(buf2, (const unsigned char *)s4.c_str(), s4.size());
+  evbuffer_commit_space(buf, vec, 1);
+  evbuffer_add_buffer_reference(buf, buf2);
+  evbuffer_remove_buffer(buf, buf3, 10);
 
   evbuffer_free(buf);
   evbuffer_free(buf2);
+  evbuffer_free(buf3);
 
   return 0;
 }
