@@ -47,6 +47,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider data_provider(data, size);
   std::string s1 = data_provider.ConsumeRandomLengthString();
+
   struct evbuffer *buf = evbuffer_new();
   evbuffer_add(buf, s1.c_str(), s1.size());
 
@@ -69,6 +70,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         evhttp_request_get_input_headers(req);
       }
     }
+  }
+  evhttp_request_get_host(req);
+
+  char *encoded = evhttp_encode_uri(s1.c_str());
+  if (encoded != NULL) {
+    free(encoded);
   }
 
   // Cleanup
