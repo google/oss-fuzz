@@ -38,7 +38,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Prepare in case it's used.
   struct evhttp_connection evcon;
   evcon.ext_method_cmp = NULL;
-  evcon.http_server = NULL;
+
+  struct evhttp *http_val = NULL;
+  http_val = evhttp_new(NULL);
+  if (http_val == NULL) {
+    return 0;
+  }
+  evcon.http_server = http_val;
 
   // Decider to determine which request type to parse.
   uint8_t decider = data[0];
@@ -81,5 +87,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Cleanup
   evhttp_request_free(req);
   evbuffer_free(buf);
+  evhttp_free(http_val);
   return 0;
 }
