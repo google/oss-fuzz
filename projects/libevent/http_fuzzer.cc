@@ -32,12 +32,25 @@ extern "C" {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 1) {
+  if (size < 5) {
     return 0;
   }
+
+  // Decider to determine which request type to parse.
+  uint8_t decider = data[0];
+  data++;
+  size--;
+  int maxHeaderSize = *(int*)data;
+  data += 4;
+  size -= 4;
+  if (maxHeaderSize < 0) {
+    return 0;
+  }
+
   // Prepare in case it's used.
   struct evhttp_connection evcon;
   evcon.ext_method_cmp = NULL;
+  evcon.max_headers_size = maxHeaderSize % 2048;
 
   struct evhttp *http_val = NULL;
   http_val = evhttp_new(NULL);
@@ -45,11 +58,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
   evcon.http_server = http_val;
-
-  // Decider to determine which request type to parse.
-  uint8_t decider = data[0];
-  data++;
-  size--;
 
   FuzzedDataProvider data_provider(data, size);
   std::string s1 = data_provider.ConsumeRandomLengthString();
@@ -82,6 +90,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *encoded = evhttp_encode_uri(s1.c_str());
   if (encoded != NULL) {
     free(encoded);
+  }
+
+  // Minor utils function
+  evhttp_htmlescape(s1.c_str());
+
+  // URI utils
+  struct evhttp_uri *uri;
+  uri = evhttp_uri_parse(s1.c_str());
+  if (uri != NULL) {
+    char uri_buf[256];
+    evhttp_uri_join(uri, uri_buf, 256);
+    evhttp_uri_free(uri);
   }
 
   // Cleanup

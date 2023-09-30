@@ -44,3 +44,5 @@ then
       ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/fuzz_request
 fi
+
+cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer2.dict
