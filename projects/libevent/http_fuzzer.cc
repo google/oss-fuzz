@@ -93,7 +93,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   // Minor utils function
-  evhttp_htmlescape(s1.c_str());
+  char *tmp_escaped = evhttp_htmlescape(s1.c_str());
+  if (tmp_escaped != NULL) {
+    free(tmp_escaped);
+  }
 
   // URI utils
   struct evhttp_uri *uri;
