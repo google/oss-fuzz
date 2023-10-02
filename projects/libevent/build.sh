@@ -45,4 +45,4 @@ then
       -o $OUT/fuzz_request
 fi
 
-cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer2.dict
+cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
