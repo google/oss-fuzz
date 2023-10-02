@@ -45,4 +45,7 @@ then
       -o $OUT/fuzz_request
 fi
 
-cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer2.dict
+# The dictionary is not compatible with AFL
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+  cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
+fi
