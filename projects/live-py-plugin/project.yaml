@@ -1,0 +1,10 @@
+homepage: https://donkirkby.github.io/live-py-plugin
+language: python
+primary_contact: donkirkby@gmail.com
+main_repo: https://github.com/donkirkby/live-py-plugin.git
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
