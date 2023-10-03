@@ -22,5 +22,10 @@ RUN apt-get update && \
     python3 -m pip install -v --no-cache-dir "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2"
 RUN git clone --depth 1 https://github.com/donkirkby/live-py-plugin.git live-py-plugin     # or use other version control
 WORKDIR live-py-plugin
-RUN python3 -m pip install -e .
+RUN python3 -m pip install -e . && \
+    mv test/PySrc/tests/*_fuzzer.py $SRC/
+
+# The fuzzer scripts live in the main live-py-plugin repository, but you can
+# copy them to the same folder as this Dockerfile to test them without pushing
+# to GitHub. Don't commit the local copies, or they'll overwrite the main repo.
 COPY build.sh *_fuzzer.py $SRC/
