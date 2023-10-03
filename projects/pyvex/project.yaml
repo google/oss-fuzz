@@ -2,6 +2,7 @@ homepage: "https://api.angr.io/projects/pyvex/en/latest/api.html"
 language: python
 primary_contact: "yans@yancomm.net"
 auto_ccs:
+  - "fishw@asu.edu"
   - "capuanobailey@gmail.com"
 fuzzing_engines:
   - libfuzzer
