@@ -33,7 +33,6 @@ export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
 icu/
-tarantool/test
 tarantool/build/test
 EOF
 
