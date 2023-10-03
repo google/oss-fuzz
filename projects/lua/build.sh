@@ -39,7 +39,6 @@ cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
 testdir/build/tests/external.protobuf_mutator
 testdir/build/tests/luaL_loadbuffer_proto/
-testdir/tests
 EOF
 
 cd $SRC/testdir
