@@ -1,12 +1,13 @@
 {
-  "name": "oss-fuzz",
-  "displayName": "OssFuzz",
+  "name": "OSS-Fuzz",
+  "displayName": "OSS-Fuzz",
   "description": "",
   "version": "0.0.2",
-  "publisher": "OSS-Fuzz maintainers",
+  "publisher": "OSS-FuzzMaintainers",
   "engines": {
     "vscode": "^1.76.0"
   },
+  "repository": "https://github.com/google/oss-fuzz",
   "categories": [
     "Other"
   ],
