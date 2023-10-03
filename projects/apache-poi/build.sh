@@ -20,6 +20,18 @@ ALL_JARS=""
 LIBRARY_NAME="poi"
 GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11 --console=plain"
 
+echo Copy libraries for java.awt in place
+ls /usr/lib/x86_64-linux-gnu/
+cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
+  /usr/lib/x86_64-linux-gnu/libX11.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXrender.so.1* \
+  /usr/lib/x86_64-linux-gnu/libXtst.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXi.so.6* \
+  /usr/lib/x86_64-linux-gnu/libxcb.so.1* \
+  /usr/lib/x86_64-linux-gnu/libXau.so.6* \
+  /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* \
+  ${OUT}/
+
 echo Main Java
 ${JAVA_HOME}/bin/java -version
 
@@ -71,8 +83,6 @@ pushd "${SRC}"
 	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
 popd
 
-
-
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
@@ -108,7 +118,7 @@ LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --cp=${RUNTIME_CLASSPATH} \
 --instrumentation_includes=org.apache.poi.**:org.apache.xmlbeans.** \
 --target_class=${fuzzer_classname} \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"-Xmx1024m\" \
 \$@" > $OUT/${fuzzer_basename}
 	chmod u+x $OUT/${fuzzer_basename}
 done

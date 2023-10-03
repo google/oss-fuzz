@@ -26,6 +26,17 @@ mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
   --disable-tests --disable-samples --with-data-packaging=static
 make install -j$(nproc)
 
+# For fuzz-introspector, exclude all functions in the tests directory,
+# libprotobuf-mutator and protobuf source code.
+# See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+icu/
+tarantool/test
+tarantool/build/test
+EOF
+
 cd $SRC/tarantool
 
 # Avoid compilation issue due to some undefined references. They are defined in

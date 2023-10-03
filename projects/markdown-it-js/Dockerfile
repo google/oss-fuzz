@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build \
-        libgl-dev libgl-dev \
-        libx11-dev libx11-dev:i386 \
-        libx11-xcb-dev \
-        libxcursor-dev \
-        libxext-dev \
-        libxi-dev \
-        libxinerama-dev \
-        libxrandr-dev
-RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
-ENV PATH="${SRC}/depot_tools:${PATH}"
-RUN git clone --depth 1 https://dawn.googlesource.com/dawn dawn
-WORKDIR dawn
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
+
 COPY build.sh $SRC/
+
+RUN git clone https://github.com/markdown-it/markdown-it.git
+
+WORKDIR $SRC/markdown-it
+
+COPY fuzz*.js $SRC/markdown-it/

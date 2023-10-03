@@ -31,6 +31,17 @@ fi
 apt-get update
 apt-get install -y $PACKAGES
 
+# For fuzz-introspector, exclude all functions in the tests directory,
+# libprotobuf-mutator and protobuf source code.
+# See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+testdir/build/tests/external.protobuf_mutator
+testdir/build/tests/luaL_loadbuffer_proto/
+testdir/tests
+EOF
+
 cd $SRC/testdir
 
 # Avoid compilation issue due to some undefined references. They are defined in
