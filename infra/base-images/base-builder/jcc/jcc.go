@@ -353,8 +353,9 @@ func AppendStringToFile(filepath, new_content string) error {
 	return err
 }
 
-func RecordError(errstr string) {
-	// Prints |errstr| to stderr, and saves it to err log.
+func WriteStdErrOut(outstr string, errstr string) {
+	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
+	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
 	AppendStringToFile("/out/err.log", errstr)
 }
@@ -385,8 +386,7 @@ func main() {
 	}
 	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
-		fmt.Print(out)
-		RecordError(errstr)
+		WriteStdErrOut(out, errstr)
 		os.Exit(0)
 	}
 
@@ -407,8 +407,7 @@ func main() {
 		// Nothing else we can do. Just write the error and exit.
 		// Just print the original error for debugging purposes and
 		//  to make build systems happy.
-		fmt.Print(out)
-		RecordError(errstr)
+		WriteStdErrOut(out, errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
@@ -416,15 +415,12 @@ func main() {
 		// We failed, write stdout and stderr from the first failure and
 		// from fix failures so we can know what the code did wrong and
 		// how to improve jcc to fix more issues.
-		fmt.Print(out)
-		RecordError(errstr)
+		WriteStdErrOut(out, errstr)
 		fmt.Println("\nFix failure")
-		fmt.Print(fixout)
 		// Print error back to stderr so tooling that relies on this can proceed
-		RecordError(fixerr)
+		WriteStdErrOut(fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.
-	fmt.Print(fixout)
-	RecordError(fixerr)
+	WriteStdErrOut(fixout, fixerr)
 }
