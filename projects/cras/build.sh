@@ -18,6 +18,6 @@
 # limitations under the License.
 #
 ################################################################################
-
+# dry run
 cd ${SRC}/adhd
 devtools/oss-fuzz-build.sh
