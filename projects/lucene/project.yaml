@@ -6,6 +6,7 @@ fuzzing_engines:
 sanitizers:
   - address
 primary_contact:
+  - "david.w.smiley@gmail.com"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
