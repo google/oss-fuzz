@@ -7,9 +7,8 @@ main_repo: 'https://github.com/sparklemotion/nokogiri.git'
 sanitizers:
   - address
   - undefined
-architectures:
-  - x86_64
 fuzzing_engines:
   - afl
+  - centipede
   - honggfuzz
   - libfuzzer

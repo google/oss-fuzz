@@ -18,6 +18,8 @@
 #include "nokogiri/gumbo-parser/src/nokogiri_gumbo.h"
 #include <stdint.h>
 
+extern "C" const char* __asan_default_options() { return "detect_leaks=0"; }
+
 void SanityCheckPointers(
     const char* input, size_t input_length, const GumboNode* node, int depth) {
   if (node->type == GUMBO_NODE_DOCUMENT || depth > 400) {

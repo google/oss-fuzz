@@ -14,6 +14,15 @@
 #
 ###############################################################################
 
+export SANITIZER_OPTS=""
+export SANITIZER_LINK=""
+
+if [ "$FUZZING_ENGINE" = "centipede" ]
+then
+  export CXXFLAGS="-fsanitize-coverage=trace-pc-guard,pc-table,trace-cmp -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fno-builtin -gline-tables-only"
+  export CFLAGS="-fsanitize-coverage=trace-pc-guard,pc-table,trace-cmp -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fno-builtin -gline-tables-only"
+  export ENGINE_LINK="$LIB_FUZZING_ENGINE -lc++"
+fi
 if [ "$FUZZING_ENGINE" = "libfuzzer" ]
 then
   export CXXFLAGS="-fsanitize=fuzzer-no-link"
@@ -56,4 +65,4 @@ cd nokogiri/gumbo-parser/src && make clean && make && cd -
 $CXX $CXXFLAGS -o parse_fuzzer parse_fuzzer.cc nokogiri/gumbo-parser/src/libgumbo.a $ENGINE_LINK $SANITIZER_LINK
 mv parse_fuzzer $OUT/parse_fuzzer
 mv gumbo.dict $OUT/parse_fuzzer.dict
-mv corpus.zip $OUT/parse_fuzzer_seed_corpus.zip
+mv nokogiri_corpus.zip $OUT/parse_fuzzer_seed_corpus.zip
