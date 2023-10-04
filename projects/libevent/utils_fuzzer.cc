@@ -42,6 +42,28 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   struct evutil_addrinfo *addr_info = NULL;
   std::string s1 = data_provider.ConsumeRandomLengthString();
   evutil_getaddrinfo(s1.c_str(), NULL, NULL, &addr_info);
+  if (addr_info != NULL) {
+    evutil_freeaddrinfo(addr_info);
+  }
+
+  int portnum=-1;
+  struct evutil_addrinfo *res = NULL;
+  struct evutil_addrinfo hints;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = PF_UNSPEC;
+  evutil_getaddrinfo_common_(NULL, s1.c_str(), &hints, &res, &portnum);
+  if (res != NULL) {
+    evutil_freeaddrinfo(res);
+  }
+
+  res = NULL;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = PF_UNSPEC;
+  evutil_getaddrinfo_common_(s1.c_str(), NULL, &hints, &res, &portnum);
+  if (res != NULL) {
+    evutil_freeaddrinfo(res);
+  }
 
   return 0;
 }

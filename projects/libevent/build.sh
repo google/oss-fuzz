@@ -44,3 +44,8 @@ then
       ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/fuzz_request
 fi
+
+# The dictionary is not compatible with AFL
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+  cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
+fi
