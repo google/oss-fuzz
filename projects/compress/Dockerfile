@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/klauspost/compress
+RUN git clone --depth 1 https://github.com/klauspost/compress-fuzz
 WORKDIR compress
-COPY build.sh setup_dicts.go $SRC/
+COPY build.sh $SRC/
