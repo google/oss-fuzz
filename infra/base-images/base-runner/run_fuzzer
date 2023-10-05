@@ -147,6 +147,11 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
 
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* -- $OUT/$FUZZER"
 
+  # If this is a non persistent harness then run accordingly.
+  if [[ ! $(LC_ALL=C grep -P "##SIG_AFL_PERSISTENT##" "$FUZZER" ) ]]; then
+    CMD_LINE="$CMD_LINE @@"
+  fi
+
   echo afl++ setup:
   env|grep AFL_
   cat "$OUT/afl_options.txt"
