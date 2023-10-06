@@ -15,8 +15,10 @@
 package mypackagebeingfuzzed
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 	"testing"
 )
@@ -25,11 +27,6 @@ func TestFuzzCorpus(t *testing.T) {
 	dir := os.Getenv("FUZZ_CORPUS_DIR")
 	if dir == "" {
 		t.Logf("No fuzzing corpus directory set")
-		return
-	}
-	infos, err := ioutil.ReadDir(dir)
-	if err != nil {
-		t.Logf("Not fuzzing corpus directory %s", err)
 		return
 	}
 	filename := ""
@@ -47,13 +44,27 @@ func TestFuzzCorpus(t *testing.T) {
 			_ = pprof.StartCPUProfile(f)
 		}
 	}
-	for i := range infos {
-		filename = dir + infos[i].Name()
-		data, err := ioutil.ReadFile(filename)
+	_, err := ioutil.ReadDir(dir)
+	if err != nil {
+		t.Logf("Not fuzzing corpus directory %s", err)
+		return
+	}
+	// recurse for regressions subdirectory
+	err = filepath.Walk(dir, func(fname string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		data, err := ioutil.ReadFile(fname)
 		if err != nil {
 			t.Error("Failed to read corpus file", err)
+			return err
 		}
+		filename = fname
 		FuzzFunction(data)
+		return nil
+	})
+	if err != nil {
+		t.Error("Failed to run corpus", err)
 	}
 	if profname != "" {
 		pprof.StopCPUProfile()

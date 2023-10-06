@@ -15,23 +15,56 @@
 #
 ################################################################################
 
-CONFIGURE_FLAGS=""
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-  CONFIGURE_FLAGS="no-asm"
+  CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
+fi
+if [[ $CFLAGS != *-m32* ]]
+then
+  CONFIGURE_FLAGS="$CONFIGURE_FLAGS enable-ec_nistp_64_gcc_128"
+fi
+if [[ $CFLAGS = *-m32* ]]
+then
+  # Prevent error:
+  #
+  # error while loading shared libraries:
+  # libatomic.so.1: cannot open shared object file:
+  # No such file or directory
+  CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-threads"
 fi
 
-./config --debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment $CONFIGURE_FLAGS
+function build_fuzzers() {
+    SUFFIX=$1
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        setarch i386 ./config $CONFIGURE_FLAGS
+    else
+        ./config $CONFIGURE_FLAGS
+    fi
 
-make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
+    make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
-fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl '!' -name \*.sh)
-for f in $fuzzers; do
-	fuzzer=$(basename $f)
-	cp $f $OUT/
-	zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
-done
+    fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl '!' -name \*.sh)
+    for f in $fuzzers; do
+        fuzzer=$(basename $f)
+        cp $f $OUT/${fuzzer}${SUFFIX}
+        zip -j $OUT/${fuzzer}${SUFFIX}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
+    done
 
-cp $SRC/*.options $OUT/
-cp fuzz/oids.txt $OUT/asn1.dict
-cp fuzz/oids.txt $OUT/x509.dict
+    options=$(find $SRC/ -maxdepth 1 -name '*.options')
+    for o in $options; do
+        o_base=$(basename $o)
+        fuzzer=${o_base%".options"}
+        cp $o $OUT/${fuzzer}${SUFFIX}.options
+    done
+    cp fuzz/oids.txt $OUT/asn1${SUFFIX}.dict
+    cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
+}
+
+cd $SRC/openssl/
+build_fuzzers ""
+cd $SRC/openssl111/
+build_fuzzers "_111"
+cd $SRC/openssl30/
+build_fuzzers "_30"

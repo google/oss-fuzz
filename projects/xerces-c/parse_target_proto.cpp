@@ -28,7 +28,6 @@
 #include <iostream>
 
 namespace {
-    protobuf_mutator::protobuf::LogSilencer log_silincer;
     void ignore(void* ctx, const char* msg, ...) {}
 
     template <class T, class D>

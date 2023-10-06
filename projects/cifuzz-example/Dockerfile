@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make
 
-RUN git clone https://github.com/jonathanmetzman/cifuzz-example.git
+RUN git clone https://github.com/jonathanmetzman/cifuzz-example.git --depth 1
 WORKDIR cifuzz-example
-RUN echo "hi" > untracked-file
 COPY build.sh $SRC/

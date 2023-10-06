@@ -1,0 +1,19 @@
+homepage: "https://netty.io/"
+language: jvm
+main_repo: "https://github.com/netty/netty.git"
+primary_contact: "mr.chrisvest@gmail.com"
+auto_ccs:
+  - "norman_maurer@apple.com"
+  - "t@motd.kr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

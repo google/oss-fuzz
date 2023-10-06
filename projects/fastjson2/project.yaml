@@ -1,12 +1,13 @@
-homepage: "https://github.com/alibaba/fastjson"
+homepage: "https://github.com/alibaba/fastjson2"
 language: jvm
 primary_contact: "shaojin.wensj@alibaba-inc.com"
-auto_ccs:
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/alibaba/fastjson2"
+sanitizers:
+  - address
+vendor_ccs:
   - "meumertzheim@code-intelligence.com"
   - "norbert.schneider@code-intelligence.com"
   - "hlin@code-intelligence.com"
-fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/alibaba/fastjson"
-sanitizers:
-  - address
+  - "bug-disclosure@code-intelligence.com"

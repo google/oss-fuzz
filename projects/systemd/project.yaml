@@ -6,6 +6,10 @@ sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl

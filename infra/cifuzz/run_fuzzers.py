@@ -22,6 +22,7 @@ import clusterfuzz_deployment
 import fuzz_target
 import generate_coverage_report
 import workspace_utils
+import sarif_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -56,7 +57,7 @@ class BaseFuzzTargetRunner:
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
     Returns True on success."""
-    # Use a seperate initialization function so we can return False on failure
+    # Use a separate initialization function so we can return False on failure
     # instead of exceptioning like we need to do if this were done in the
     # __init__ method.
 
@@ -145,8 +146,21 @@ class BaseFuzzTargetRunner:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
+    # pylint: disable=undefined-loop-variable
+    if not target_path:
+      logging.error('Ran no fuzz targets.')
+    elif self.config.output_sarif:
+      # TODO(metzman): Handle multiple crashes.
+      write_fuzz_result_to_sarif(result, target_path, self.workspace)
     self.clusterfuzz_deployment.upload_crashes()
     return bug_found
+
+
+def write_fuzz_result_to_sarif(fuzz_result, target_path, workspace):
+  """Write results of fuzzing to SARIF."""
+  logging.info('Writing sarif results.')
+  sarif_utils.write_stacktrace_to_sarif(fuzz_result.stacktrace, target_path,
+                                        workspace)
 
 
 class PruneTargetRunner(BaseFuzzTargetRunner):

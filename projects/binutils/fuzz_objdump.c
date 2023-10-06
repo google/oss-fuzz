@@ -17,9 +17,6 @@ limitations under the License.
  */
 #include "fuzz_objdump.h"
 
-/* for precondition checking */
-#include "ada_objdump.h"
-
 void objdump_reset() {
   process_links = true;
   do_follow_links = true;
@@ -66,14 +63,6 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   //dump_dynamic_reloc_info = true;
   //dump_ctf_section_info = true;
   disassemble = true;
-#else
-  // Check preconditions are met, so the fuzzer wont exit (too often) prematurely.
-  // Reset objdump variables before and after this call, to ensure nothing no globals
-  // are carried over.
-  if (fuzz_preconditions(filename) == 0) {
-    return 0;
-  }
-  objdump_reset();
 #endif
 
   // Main fuzz entrypoint in objdump.c

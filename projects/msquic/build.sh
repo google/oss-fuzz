@@ -15,11 +15,11 @@
 #
 ################################################################################
 
-pwsh ./scripts/build.ps1 -Static -DisableTools -DisablePerf -Parallel 1
+pwsh ./scripts/build.ps1 -Static -DisableTest -DisablePerf -DisableLogs -Parallel 1
 
 cd $SRC/msquic/src/fuzzing
 
-$CXX $CXXFLAGS \
+$CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS \
     -I/src/msquic/src/test \
     -I/src/msquic/src/inc \
     -I/src/msquic/src/generated/common \
@@ -30,4 +30,19 @@ $CXX $CXXFLAGS \
     -c fuzz.cc -o fuzz.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o -o $OUT/fuzz \
+    /src/msquic/artifacts/bin/linux/x64_Debug_openssl/libmsquic.a
+
+cd $SRC
+
+$CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS -DFUZZING -DQUIC_BUILD_STATIC \
+    -I/src/msquic/src/test \
+    -I/src/msquic/src/inc \
+    -I/src/msquic/src/generated/common \
+    -I/src/msquic/src/generated/linux \
+    -I/src/msquic/build/linux/x64_openssl/_deps/opensslquic-build/openssl/include \
+    -isystem /src/msquic/submodules/googletest/googletest/include \
+    -isystem /src/msquic/submodules/googletest/googletest \
+    -c ./msquic/src/tools/spin/spinquic.cpp -o spinquic.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE spinquic.o -o $OUT/spinquic \
     /src/msquic/artifacts/bin/linux/x64_Debug_openssl/libmsquic.a

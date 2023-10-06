@@ -1,0 +1,11 @@
+homepage: "https://scrapy.org/"
+language: python
+primary_contact: "wrar42@gmail.com"
+auto_ccs:
+  - "lbl4gojevic@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/scrapy/scrapy.git"

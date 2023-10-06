@@ -24,7 +24,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from paramiko import Message, Packetizer
-from paramiko.common import byte_chr, zero_byte, asbytes
+from paramiko.common import byte_chr, zero_byte
 
 # Extract path of fuzzer so we can include loop.py
 if getattr(sys, 'frozen', False):
@@ -34,7 +34,7 @@ elif __file__:
 else:
     raise Exception("Could not extract path needed to import loop.py")
 sys.path.append(app_path)
-from loop import LoopSocket
+from _loop import LoopSocket
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)

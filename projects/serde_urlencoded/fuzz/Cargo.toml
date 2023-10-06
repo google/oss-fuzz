@@ -23,6 +23,7 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
+arbitrary = { version = "1.2.3", features = ["derive"] }
 libfuzzer-sys = "0.4"
 serde = { version = "1.0.100", features = ["derive"] }
 
@@ -44,3 +45,9 @@ doc = false
 
 [profile.release]
 debug = true
+
+[[bin]]
+name = "reverse_roundtrip"
+path = "fuzz_targets/reverse_roundtrip.rs"
+test = false
+doc = false

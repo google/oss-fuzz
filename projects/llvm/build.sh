@@ -65,7 +65,8 @@ mkdir build
 cd build
 
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
-    -DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;compiler-rt;lld;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
+    -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;compiler-rt" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \

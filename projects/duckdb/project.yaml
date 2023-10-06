@@ -6,3 +6,9 @@ auto_ccs:
   - "hannes.muehleisen@gmail.com"
   - "mark@duckdblabs.com"
   - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

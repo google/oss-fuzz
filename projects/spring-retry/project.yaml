@@ -1,11 +1,13 @@
 homepage: "https://ci.spring.io/teams/spring-retry/pipelines/spring-retry-2.0.x"
 language: jvm
 main_repo: "https://github.com/spring-projects/spring-retry.git"
-primary_contact: ""
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+primary_contact: "pwebb@vmware.com"
+auto_ccs:
+  - "wilkinsona@vmware.com"
 vendor_ccs:
   - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
@@ -14,3 +16,4 @@ vendor_ccs:
   - "hlin@code-intelligence.com"
   - "jacek.trossen@code-intelligence.com"
   - "peter.samarin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

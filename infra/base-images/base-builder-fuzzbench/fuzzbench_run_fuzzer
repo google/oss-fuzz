@@ -1,0 +1,41 @@
+#! /bin/bash -eux
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+export RUNNER_NICENESS="-5"
+export EXPERIMENT_FILESTORE=$OUT/filestore
+export EXPERIMENT=oss-fuzz-on-demand
+export OSS_FUZZ_ON_DEMAND=1
+export OUTPUT_CORPUS_DIR=/output-corpus
+export SEED_CORPUS_DIR=/input-corpus
+mkdir $SEED_CORPUS_DIR
+rm -rf $OUTPUT_CORPUS_DIR
+mkdir $OUTPUT_CORPUS_DIR
+export FUZZER=$FUZZING_ENGINE
+# TODO(metzman): Make this configurable.
+export MAX_TOTAL_TIME=120
+export SNAPSHOT_PERIOD=30
+export TRIAL_ID=1
+export FORCE_LOCAL=1
+
+# BENCHMARK, FUZZ_TARGET
+cd $OUT
+
+# Prevent permissions issues with pyc files and docker.
+cp -r $FUZZBENCH_PATH /tmp/fuzzbench
+
+PYTHONPATH=/tmp/fuzzbench nice -n $RUNNER_NICENESS python3 -B -u /tmp/fuzzbench/experiment/runner.py
+cat $EXPERIMENT_FILESTORE/$EXPERIMENT/experiment-folders/$BENCHMARK-$FUZZER/trial-$TRIAL_ID/results/fuzzer-log.txt

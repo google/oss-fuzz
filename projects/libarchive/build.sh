@@ -23,20 +23,8 @@ FILES_TO_AVOID
 libxml2
 EOF
 
-# compile libxml2 from source so we can statically link
 DEPS=/deps
-mkdir ${DEPS}
-cd $SRC/libxml2
-./autogen.sh \
-    --without-debug \
-    --without-ftp \
-    --without-http \
-    --without-legacy \
-    --without-python \
-    --enable-static
-make -j$(nproc)
-make install
-cp .libs/libxml2.a ${DEPS}/
+
 cd $SRC/libarchive
 
 sed -i 's/-Wall//g' ./CMakeLists.txt
@@ -44,7 +32,7 @@ sed -i 's/-Werror//g' ./CMakeLists.txt
 
 mkdir build2
 cd build2
-cmake ../
+cmake -DCHECK_CRC_ON_SOLID_SKIP=1 -DDONT_FAIL_ON_CRC_ERROR=1 ../
 make -j$(nproc)
 
 # build seed

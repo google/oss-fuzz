@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-ARG parent_image=gcr.io/oss-fuzz-base/base-clang
-FROM $parent_image
+FROM gcr.io/oss-fuzz-base/base-clang
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -112,8 +111,9 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout a7877416a87506424053e52e41f7a995c05367a4 && \
+    git checkout 0688c779ec543c4f5f84363b06c72ac11a14f716 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    rm -rf .git && \
     chmod 755 oss.sh
 
 # Do precompiles before copying other scripts for better cache efficiency.
@@ -124,7 +124,7 @@ RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
     mkdir honggfuzz && \
     cd honggfuzz && \
-    tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    tar -xz --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 
@@ -132,30 +132,46 @@ COPY precompile_honggfuzz /usr/local/bin/
 RUN precompile_honggfuzz
 
 RUN cd $SRC && \
-    git clone https://github.com/google/centipede.git && \
-    cd centipede && \
-    git checkout baa82e7189677bb9086beb5d9b5e58018d991607
+    git clone https://github.com/google/fuzztest && \
+    cd fuzztest && \
+    git checkout a37d133f714395cabc20dd930969a889495c9f53 && \
+    rm -rf .git
 
+ENV CENTIPEDE_BIN_DIR=$SRC/fuzztest/bazel-bin
 COPY precompile_centipede /usr/local/bin/
 RUN precompile_centipede
 
-COPY cargo compile compile_afl compile_libfuzzer compile_honggfuzz \
+COPY sanitizers /usr/local/lib/sanitizers
+
+COPY bazel_build_fuzz_tests \
+    cargo \
+    compile \
+    compile_afl \
     compile_centipede \
+    compile_honggfuzz \
+    compile_fuzztests.sh \
     compile_go_fuzzer \
+    compile_javascript_fuzzer \
+    compile_libfuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
-    python_coverage_helper.py \
-    debug_afl srcmap \
-    write_labels.py bazel_build_fuzz_tests \
-    # Go, java, and swift installation scripts.
+    debug_afl \
+    # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
     install_go.sh \
-    install_go_CodeIntelligenceTesting.sh \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \
     install_rust.sh \
     install_swift.sh \
+    python_coverage_helper.py \
+    srcmap \
+    write_labels.py \
     /usr/local/bin/
+
+# TODO: Build this as part of a multi-stage build.
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc /usr/local/bin/
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc /usr/local/bin/
+RUN chmod +x /usr/local/bin/clang-jcc && chmod +x /usr/local/bin/clang++-jcc
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/

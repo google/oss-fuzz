@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/benjaminp/six
+language: python
+main_repo: https://github.com/benjaminp/six
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

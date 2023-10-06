@@ -15,15 +15,18 @@
 #
 ################################################################################
 
-cd $SRC/roaster
-$MVN clean install
-cp ./api/target/roaster-api-2.26.1-SNAPSHOT.jar $OUT/roaster.jar
-cp ./impl/target/roaster-jdt-2.26.1-SNAPSHOT.jar $OUT/roaster-jdt.jar
+cd $SRC/javaparser
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
+$MVN package -DskipTests
+cp javaparser-core/target/javaparser-core-$CURRENT_VERSION.jar $OUT/javaparser-core.jar
+cp javaparser-symbol-solver-core/target/javaparser-symbol-solver-core-$CURRENT_VERSION.jar $OUT/javaparser-symbol-solver.jar
 cd $SRC/jackson-databind
 
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 mv $SRC/github-samples/jackson/*.zip $OUT/
+zip $OUT/ObjectReaderRandomClassFuzzer_seed_corpus.zip $SRC/javaparser/javaparser-core/src/main/java/com/github/javaparser/Processor.java
 
 # jackson-databind
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
@@ -46,7 +49,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout -f "jackson-annotations/pom.xml")
 cp "jackson-annotations/target/jackson-annotations-$CURRENT_VERSION.jar" "$OUT/jackson-annotations.jar"
 
-ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar roaster.jar roaster-jdt.jar"
+ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar javaparser-symbol-solver.jar javaparser-core.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -63,17 +66,26 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
     cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
   fi
+  if [ "$fuzzer_basename" == "AdaLObjectReader3Fuzzer" ]; then
+    cp $SRC/$fuzzer_basename\$NoCheckSubTypeValidator.class $OUT/
+    cp $SRC/$fuzzer_basename\$MockFuzzDataInput.class $OUT/
+  fi
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --instrumentation_excludes=com.fasterxml.jackson.core.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

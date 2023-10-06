@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+ln -sf /usr/local/bin/python3 /usr/bin/python3
 export CXXFLAGS="${CXXFLAGS} -std=c++14"
 
 git grep cc_fuzz_target.bzl | grep BUILD | cut -d: -f1 | uniq | while read i; do sed -i -e 's=//bazel:cc_fuzz_target.bzl=@rules_fuzzing//fuzzing:cc_defs.bzl=' $i; done

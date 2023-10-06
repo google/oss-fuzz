@@ -20,10 +20,16 @@ RUN apt-get update && apt-get install -y \
     python-all-dev \
     python3-all-dev \
     python3-pip
-RUN pip3 install jinja2
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
 
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
+RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
+
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
-RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
+RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl && \
+    cd openssl && \
+    git submodule update --init fuzz/corpora
 WORKDIR mbedtls
 COPY build.sh $SRC/

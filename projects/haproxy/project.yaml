@@ -13,3 +13,9 @@ sanitizers:
 # Bug reports are public by default:
 view_restrictions: none
 main_repo: 'https://github.com/haproxy/haproxy'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -5,3 +5,9 @@ main_repo: "git://thekelleys.org.uk/dnsmasq.git"
 auto_ccs:
  - "david@adalogics.com"
  - "pemensik@redhat.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

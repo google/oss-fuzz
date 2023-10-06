@@ -24,12 +24,12 @@ def TestOneInput(data):
     """Fuzz encode and decode"""
     fdp = atheris.FuzzedDataProvider(data)
     try:
-        idna.encode(fdp.ConsumeString(1024))
+        idna.core.encode(fdp.ConsumeString(1024))
     except idna.IDNAError:
         pass
     
     try:
-        idna.decode(fdp.ConsumeString(1024))
+        idna.core.decode(fdp.ConsumeString(1024))
     except idna.IDNAError:
         pass
 

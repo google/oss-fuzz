@@ -26,17 +26,21 @@ RUN bash nodesource_setup.sh
 RUN apt install -y nodejs
 RUN npm install -g browserify
 RUN npm install elliptic
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
+
 RUN git clone --depth 1 https://github.com/bellard/quickjs quickjs
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
-# needed to compile mbedtls
-RUN pip3 install jinja2
 RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
-RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
+# needed to compile mbedtls
+RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
+RUN git clone --depth 1 https://github.com/libecc/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git gcrypt
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp cryptopp
-ADD https://gmplib.org/download/gmp/gmp-6.2.1.tar.bz2 gmp-6.2.1.tar.bz2
+ADD https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.bz2 gmp-6.2.1.tar.bz2
 RUN git clone --depth 1 https://github.com/gnutls/nettle.git nettle
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan
 WORKDIR $SRC/

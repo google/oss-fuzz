@@ -1,5 +1,6 @@
 homepage: "https://github.com/rust-lang/regex"
 primary_contact: "jamslam@gmail.com"
+main_repo: "https://github.com/rust-lang/regex"
 sanitizers:
   - address
 fuzzing_engines:
@@ -7,3 +8,4 @@ fuzzing_engines:
 language: rust
 auto_ccs:
   - "david@adalogics.com"
+  - "me@addisoncrump.info"

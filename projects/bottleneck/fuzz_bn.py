@@ -67,16 +67,22 @@ def TestOneInput(data):
   # Test move operations
   window = fdp.ConsumeIntInRange(2, 50)
   min_count = fdp.ConsumeIntInRange(1, window)
-  actual = bn.move_median(
-    a,
-    window=window,
-    min_count = fdp.ConsumeIntInRange(1,100)
-  )
-  desired = bn.slow.move_median(
-    a,
-    window=window,
-    min_count=fdp.ConsumeIntInRange(1, 100)
-  )
+  try:
+    actual = bn.move_median(
+      a,
+      window=window,
+      min_count = fdp.ConsumeIntInRange(1,100)
+    )
+  except ValueError:
+    return
+  try:
+    desired = bn.slow.move_median(
+      a,
+      window=window,
+      min_count=fdp.ConsumeIntInRange(1, 100)
+    )
+  except ValueError:
+    return
   assert_array_almost_equal(
     actual,
     desired,

@@ -11,3 +11,9 @@ auto_ccs:
 sanitizers:
   - "address"
 main_repo: 'https://github.com/facebook/rocksdb'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

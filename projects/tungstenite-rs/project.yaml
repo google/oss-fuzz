@@ -1,0 +1,16 @@
+homepage: "https://crates.io/crates/tungstenite"
+language: rust
+primary_contact: "venkatamaturi98@gmail.com"
+auto_ccs:
+  - "dnaka91@gmail.com"
+  - "slomo@coaxion.net"
+  - "ran@unusedvar.com"
+  - "leckey.ryan@gmail.com"
+  - "redrield@gmail.com"
+  - "dushistov@mail.ru"
+
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/snapview/tungstenite-rs'

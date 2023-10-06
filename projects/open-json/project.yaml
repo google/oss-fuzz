@@ -1,0 +1,11 @@
+homepage: https://github.com/tdunning/open-json
+main_repo: https://github.com/tdunning/open-json
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- arthur.chan@adalogics.com
+- david@adalogics.com
+- adam@adalogics.com

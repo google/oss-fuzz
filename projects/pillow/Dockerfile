@@ -38,7 +38,7 @@ RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
     && bash $SRC/build_depends.sh
 
 # install extra test images for a better starting corpus
-RUN cd Pillow && depends/install_extra_test_images.sh
+RUN cd Pillow/depends && ./install_extra_test_images.sh
 
 COPY build.sh $SRC/
 

@@ -16,6 +16,7 @@
 package fuzztext
 
 import (
+	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 	"golang.org/x/text/unicode/cldr"
 )
@@ -27,7 +28,7 @@ func FuzzMultipleParsers(data []byte) int {
 	parser_type := int(data[0])
 	data = data[1:]
 
-	switch parser_type % 6 {
+	switch parser_type % 7 {
 	case 0:
 		_, _ = language.ParseExtension(string(data))
 	case 1:
@@ -40,6 +41,8 @@ func FuzzMultipleParsers(data []byte) int {
 		_, _ = language.ParseVariant(string(data))
 	case 5:
 		_, _ = cldr.ParseDraft(string(data))
+	case 6:
+		_, _ = currency.ParseISO(string(data))
 	}
 	return 1
 }

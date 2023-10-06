@@ -1,11 +1,15 @@
 .POSIX:
 CXX     = clang++
-CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3
+CFLAGS = -std=c++17 -Wall -Wextra -O3 -g3 -Werror
 
-all: clean SystemSan target target_file
+all: SystemSan target target_file target_dns
 
-SystemSan: SystemSan.cpp
+SystemSan: SystemSan.cpp inspect_dns.cpp inspect_utils.cpp
 	$(CXX) $(CFLAGS) -lpthread -o $@ $^
+
+# Needs atheris.
+python-test: all
+	./SystemSan python shell_injection_poc_fuzzer.py
 
 target: target.cpp
 	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
@@ -13,9 +17,13 @@ target: target.cpp
 target_file: target_file.cpp
 	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
 
+target_dns: target_dns.cpp
+	$(CXX) $(CFLAGS) -fsanitize=address,fuzzer -o $@ $^
+
 test:  all vuln.dict
 	./SystemSan ./target -dict=vuln.dict
 	./SystemSan ./target_file -dict=vuln.dict
+	./SystemSan ./target_dns -dict=vuln.dict
 
 pytorch-lightning-1.5.10:
 	cp SystemSan.cpp PoEs/pytorch-lightning-1.5.10/; \
@@ -30,4 +38,4 @@ node-shell-quote-v1.7.3:
 	docker run -t systemsan_node-shell-quote:latest;
 
 clean:
-	rm -f SystemSan /tmp/tripwire target target_file
+	rm -f SystemSan /tmp/tripwire target target_file target_dns

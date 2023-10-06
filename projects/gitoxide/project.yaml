@@ -1,0 +1,13 @@
+homepage: "https://crates.io/crates/gitoxide"
+language: rust
+primary_contact: "byronimo@gmail.com"
+auto_ccs:
+  - "nathaniel.brough@gmail.com"
+main_repo: "https://github.com/Byron/gitoxide"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

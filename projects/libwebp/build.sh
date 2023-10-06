@@ -44,6 +44,7 @@ webp_libs=(
 webp_c_fuzzers=(
   advanced_api_fuzzer
   animation_api_fuzzer
+  huffman_fuzzer
   mux_demux_api_fuzzer
   simple_api_fuzzer
 )

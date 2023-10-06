@@ -24,8 +24,8 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -q $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
-RUN git clone --depth 1 https://github.com/alibaba/fastjson
+RUN git clone --depth 1 https://github.com/alibaba/fastjson2
 
 COPY build.sh $SRC/
 COPY JsonFuzzer.java $SRC/
-WORKDIR $SRC/fastjson
+WORKDIR $SRC/fastjson2

@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "fuzzer_common.h"
+#include "common.h"
 
 #define LOG_TAG "FLACParser"
 

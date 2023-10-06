@@ -16,6 +16,13 @@
 ################################################################################
 
 pip3 install .
+
+if [ "$SANITIZER" = "address" ]
+then
+  # Enable pysecsan
+  export ENABLE_PYSECSAN="1"
+fi
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

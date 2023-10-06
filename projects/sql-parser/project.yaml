@@ -5,3 +5,9 @@ language: c++
 auto_ccs:
   - "klauck2@gmail.com"
   - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

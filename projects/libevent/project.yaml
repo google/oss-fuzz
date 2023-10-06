@@ -12,3 +12,9 @@ architectures:
 main_repo: 'https://github.com/libevent/libevent.git'
 auto_ccs:
   - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+
