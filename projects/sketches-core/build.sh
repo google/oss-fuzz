@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 ##########################################################################
-./gradlew clean build -x test -x javadoc -x sources
+$MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
+    -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
+    -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
 
-CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
+cp "./target/datasketches-java-$CURRENT_VERSION.jar" $OUT/sketches-core.jar
 
-cp "./RoaringBitmap/build/libs/RoaringBitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
-
-ALL_JARS="roaring-bitmap.jar"
+ALL_JARS='sketches-core.jar'
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -29,11 +31,13 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
+cp -r $JAVA_HOME $OUT/
+
+for fuzzer in $(find $SRC -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename.class $OUT/
+  $JAVA_HOME/bin/javac -cp $BUILD_CLASSPATH $fuzzer
+  cp $SRC/$fuzzer_basename*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
@@ -45,8 +49,11 @@ do
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  LD_LIBRARY_PATH="$JVM_LD_LIBRARY_PATH":\$this_dir \
-    \$this_dir/jazzer_driver                        \
+  export JAVA_HOME=\$this_dir/$(basename $JAVA_HOME)
+  export LD_LIBRARY_PATH="\$JAVA_HOME/lib/server":\$this_dir
+  export PATH=\$JAVA_HOME/bin:\$PATH
+
+  \$this_dir/jazzer_driver                          \
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \
     --cp=$RUNTIME_CLASSPATH                         \
     --target_class=$fuzzer_basename                 \

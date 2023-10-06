@@ -14,13 +14,18 @@
 # limitations under the License.
 #
 ##########################################################################
-./gradlew clean build -x test -x javadoc -x sources
+$MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
+    -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
+    -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
 
-CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
+cp "./common/common-io/target/twelvemonkeys-common-io-$CURRENT_VERSION.jar" $OUT/common-io.jar
+cp "./common/common-lang/target/twelvemonkeys-common-lang-$CURRENT_VERSION.jar" $OUT/common-lang.jar
+cp "./common/common-image/target/twelvemonkeys-common-image-$CURRENT_VERSION.jar" $OUT/common-image.jar
+cp "./contrib/target/twelvemonkeys-contrib-$CURRENT_VERSION.jar" $OUT/contrib.jar
 
-cp "./RoaringBitmap/build/libs/RoaringBitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
-
-ALL_JARS="roaring-bitmap.jar"
+ALL_JARS='common-io.jar common-lang.jar common-image.jar contrib.jar'
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -29,7 +34,7 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
@@ -53,5 +58,5 @@ do
     --jvm_args="\$mem_settings"                     \
     \$@" > $OUT/$fuzzer_basename
 
-    chmod u+x $OUT/$fuzzer_basename
+  chmod u+x $OUT/$fuzzer_basename
 done

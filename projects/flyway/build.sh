@@ -14,22 +14,37 @@
 # limitations under the License.
 #
 ##########################################################################
-./gradlew clean build -x test -x javadoc -x sources
+$MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
+    -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
+    -DperformRelease=True dependency:copy-dependencies
 
-CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
+JARFILE_LIST=
+for JARFILE in $(find ./  -name *.jar)
+do
+  if [[ "$JARFILE" == *"target/"* ]] || [[ "$JARFILE" == *"build/"* ]] || [[ "$JARFILE" == *"dist/"* ]]
+  then
+    if [[ "$JARFILE" != *sources.jar ]] && [[ "$JARFILE" != *javadoc.jar ]] && [[ "$JARFILE" != *tests.jar ]]
+    then
+      cp $JARFILE $OUT/
+      JARFILE_LIST="$JARFILE_LIST$(basename $JARFILE) "
+    fi
+  fi
+done
 
-cp "./RoaringBitmap/build/libs/RoaringBitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
+curr_dir=$(pwd)
+rm -rf $OUT/jar_temp
+mkdir $OUT/jar_temp
+cd $OUT/jar_temp
+for JARFILE in $JARFILE_LIST
+do
+  jar -xf $OUT/$JARFILE
+done
+cd $curr_dir
 
-ALL_JARS="roaring-bitmap.jar"
+BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp
+RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir
 
-# The classpath at build-time includes the project jars in $OUT as well as the
-# Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
-
-# All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
-
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
@@ -53,5 +68,5 @@ do
     --jvm_args="\$mem_settings"                     \
     \$@" > $OUT/$fuzzer_basename
 
-    chmod u+x $OUT/$fuzzer_basename
+  chmod u+x $OUT/$fuzzer_basename
 done

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/klauspost/compress
-RUN git clone --depth 1 https://github.com/klauspost/compress-fuzz
-WORKDIR compress
-COPY build.sh $SRC/
+##########################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN git clone --depth 1 https://github.com/xerial/sqlite-jdbc sqlite-jdbc
+COPY *.sh *.java $SRC/
+WORKDIR $SRC/sqlite-jdbc
