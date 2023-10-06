@@ -17,7 +17,7 @@
 
 # build project
 ./autogen.sh
-./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
+./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000
 make -j$(nproc) clean
 make -j$(nproc) all
 

@@ -23,7 +23,7 @@ mkdir -p ${WORK}/jbig2dec
 cd ${WORK}/jbig2dec
 ${SRC}/jbig2dec/configure
 
-LDFLAGS="$CXXFLAGS" make -C ${WORK}/jbig2dec -j$(nproc)
+LDFLAGS="$CXXFLAGS" make -C ${WORK}/jbig2dec jbig2dec -j$(nproc)
 fuzz_target=jbig2_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -I$SRC/jbig2dec -fno-inline-functions \

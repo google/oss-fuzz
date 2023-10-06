@@ -15,6 +15,7 @@
 
 import atheris
 import sys
+import binascii
 with atheris.instrument_imports():
      from adal.util import *
 
@@ -47,10 +48,19 @@ def TestInput(data):
         }
     })
 
-    copy_url(fdp.ConsumeString(100))
-    copy_url(DummyClass())
+    try:
+        copy_url(fdp.ConsumeString(100))
+        copy_url(DummyClass())
+    except ValueError as e:
+        if (("contains invalid characters" not in str(e)) and
+            ("Invalid IPv6 URL" not in str(e))):
+            raise e
 
-    base64_urlsafe_decode(fdp.ConsumeString(100))
+    try:
+        base64_urlsafe_decode(fdp.ConsumeUnicodeNoSurrogates(100))
+    except binascii.Error as e:
+        if "Invalid base64-encoded string" not in str(e):
+            raise e
 
 def main():
     atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
@@ -58,3 +68,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

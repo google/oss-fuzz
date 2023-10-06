@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" == "introspector" ]; then
+  export WARNING_CFLAGS="${CFLAGS}"
+fi
+
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
                             --disable-dtls                       \
     && make -j$(nproc)

@@ -1,0 +1,10 @@
+homepage: https://github.com/pydata/numexpr
+main_repo: https://github.com/pydata/numexpr
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -48,6 +48,7 @@ cmake \
     -DBUILD_SHARED_LIBS=on \
     -DBUILD_TESTING=off \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+    -DDOWNLOAD_SEXP:BOOL=ON \
     $SRC/rnp
 make -j$(nproc)
 

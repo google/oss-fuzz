@@ -18,21 +18,26 @@ import base64
 import collections
 import logging
 import os
+import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
+import subprocess
+import tempfile
+import json
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
-from google.api_core.client_options import ClientOptions
+import google.api_core.client_options
 import google.auth
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import service_account as service_account_lib
 import requests
 import yaml
 
 BASE_IMAGES_PROJECT = 'oss-fuzz-base'
+IMAGE_PROJECT = 'oss-fuzz'
 
-BUILD_TIMEOUT = 16 * 60 * 60
+BUILD_TIMEOUT = 20 * 60 * 60
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
@@ -42,6 +47,9 @@ GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 # Where corpus backups can be downloaded from.
 CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
                      'corpus/libFuzzer/{fuzzer}/latest.zip')
+
+# Regex to match special chars in project name.
+SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
@@ -83,12 +91,18 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
-US_CENTRAL_CLIENT_OPTIONS = ClientOptions(
+OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/buildpool-experiments')
+
+US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
 _ARM64 = 'aarch64'
+
+OSS_FUZZ_ROOT = os.path.abspath(os.path.join(__file__, '..', '..', '..', '..'))
 
 
 def get_targets_list_filename(sanitizer):
@@ -114,7 +128,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
     platform = 'linux/arm64'
   else:
     platform = 'linux/amd64'
-  new_args = ['run', '--platform', platform, '-v', '/workspace:/workspace']
+  new_args = [
+      'run', '--platform', platform, '-v', '/workspace:/workspace',
+      '--privileged', '--cap-add=all'
+  ]
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
@@ -162,8 +179,9 @@ def get_signed_url(path, method='PUT', content_type=''):
 
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    creds = (
+        service_account_lib.ServiceAccountCredentials.from_json_keyfile_name(
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
     client_id = creds.service_account_email
     signature = base64.b64encode(creds.sign_blob(blob)[1])
   else:
@@ -190,6 +208,13 @@ def get_signed_url(path, method='PUT', content_type=''):
   return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
+def _normalized_name(name):
+  """Return normalized name with special chars like slash, colon, etc normalized
+  to hyphen(-). This is important as otherwise these chars break local and cloud
+  storage paths."""
+  return SPECIAL_CHARS_REGEX.sub('-', name).strip('-')
+
+
 def download_corpora_steps(project_name, test_image_suffix):
   """Returns GCB steps for downloading corpora backups for the given project.
   """
@@ -208,6 +233,9 @@ def download_corpora_steps(project_name, test_image_suffix):
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
 
+      # Normalize qualified_name name.
+      qualified_name = _normalized_name(qualified_name)
+
       url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
                                                     fuzzer=qualified_name),
                            method='GET')
@@ -216,7 +244,7 @@ def download_corpora_steps(project_name, test_image_suffix):
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     steps.append({
-        'name': get_runner_image_name(BASE_IMAGES_PROJECT, test_image_suffix),
+        'name': get_runner_image_name(test_image_suffix),
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
         'volumes': [{
@@ -241,23 +269,12 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
       'args': ['bash', '-c', (f'mkdir -p {out_dir}/textcov_reports')]
   })
 
-  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_coverage_args = []
-    for target_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      bucket_path = (f'/{bucket_name}/{project_name}/textcov_reports/'
-                     f'{latest}/{target_name}.covreport')
-      url = 'https://storage.googleapis.com' + bucket_path
-      coverage_data_path = os.path.join(f'{out_dir}/textcov_reports',
-                                        target_name + '.covreport')
-      download_coverage_args.append('%s %s' % (coverage_data_path, url))
-
-    steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'entrypoint': 'download_corpus',
-        'args': download_coverage_args
-    })
-
+  coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
+  bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+  })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
       'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
@@ -364,7 +381,7 @@ def _make_image_name_architecture_specific(image_name, architecture):
 
 def get_docker_build_step(image_names,
                           directory,
-                          buildkit_cache_image=None,
+                          use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64'):
   """Returns the docker build step."""
@@ -391,17 +408,15 @@ def get_docker_build_step(image_names,
       'args': args,
       'dir': directory,
   }
+  # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
-
-  if buildkit_cache_image is not None:
+  if use_buildkit_cache:
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
-    assert buildkit_cache_image in args
-    additional_args = [
-        '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from',
-        buildkit_cache_image
-    ]
-    args.extend(additional_args)
+    args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
+    for image in image_names:
+      args.extend(['--cache-from', image])
+
   args.append('.')
 
   return step
@@ -417,18 +432,26 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     image,
     language,
     config,
-    architectures=None):
+    architectures=None,
+    experiment=False):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
 
   # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
-  steps = [clone_step]
+  if experiment:
+    # Skip cloning if we're in an experiment. The source is submitted to GCB
+    # via gcloud builds submit.
+    steps = []
+  else:
+    steps = [clone_step]
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
+  src_root = 'oss-fuzz' if not experiment else '.'
   docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name))
+                                            os.path.join('projects', name),
+                                            src_root=src_root)
   steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
   steps.extend([{
@@ -469,10 +492,10 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_logs_url(build_id, project_id='oss-fuzz-base'):
+def get_logs_url(build_id):
   """Returns url that displays the build logs."""
-  return ('https://console.developers.google.com/logs/viewer?'
-          f'resource=build%2Fbuild_id%2F{build_id}&project={project_id}')
+  return (
+      f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt')
 
 
 def get_gcb_url(build_id, cloud_project='oss-fuzz'):
@@ -482,10 +505,10 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(base_images_project, test_image_suffix):
-  """Returns the runner image that should be used, based on
-  |base_images_project|. Returns the testing image if |test_image_suffix|."""
-  image = f'gcr.io/{base_images_project}/base-runner'
+def get_runner_image_name(test_image_suffix):
+  """Returns the runner image that should be used. Returns the testing image if
+  |test_image_suffix|."""
+  image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
     image += '-' + test_image_suffix
   return image
@@ -495,7 +518,8 @@ def get_build_body(steps,
                    timeout,
                    body_overrides,
                    build_tags,
-                   use_build_pool=True):
+                   use_build_pool=True,
+                   experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -503,7 +527,11 @@ def get_build_body(steps,
     options = {}
 
   if use_build_pool:
-    options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+    if experiment:
+      options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    else:
+      options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
+
   build_body = {
       'steps': steps,
       'timeout': str(timeout) + 's',
@@ -520,20 +548,37 @@ def get_build_body(steps,
 
 
 def run_build(  # pylint: disable=too-many-arguments
+    oss_fuzz_project,
     steps,
     credentials,
     cloud_project,
     timeout,
     body_overrides=None,
     tags=None,
-    use_build_pool=True):
+    use_build_pool=True,
+    experiment=False):
   """Runs the build."""
 
   build_body = get_build_body(steps,
                               timeout,
                               body_overrides,
                               tags,
-                              use_build_pool=use_build_pool)
+                              use_build_pool=use_build_pool,
+                              experiment=experiment)
+  if experiment:
+    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
+      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
+      config_file.seek(0)
+      subprocess.run([
+          'gcloud',
+          'builds',
+          'submit',
+          '--project=oss-fuzz',
+          f'--config={config_file.name}',
+      ],
+                     cwd=OSS_FUZZ_ROOT)
+
+      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -546,7 +591,6 @@ def run_build(  # pylint: disable=too-many-arguments
 
   build_id = build_info['metadata']['build']['id']
 
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', get_logs_url(build_id, cloud_project))
-  logging.info('Cloud build page: %s', get_gcb_url(build_id, cloud_project))
+  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
+               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id

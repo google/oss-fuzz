@@ -62,11 +62,11 @@ ENV GOPATH /root/go
 
 # /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+ENV PATH $PATH:$GOPATH/bin
 COPY gocoverage $GOPATH/gocoverage
 
 COPY install_go.sh /
-RUN /install_go.sh && rm /install_go.sh
+RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
@@ -82,16 +82,21 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check && \
     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
 
+COPY install_javascript.sh /
+RUN /install_javascript.sh && rm /install_javascript.sh
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     coverage \
     coverage_helper \
     download_corpus \
     jacoco_report_converter.py \
+    nyc_report_converter.py \
     rcfilt \
     reproduce \
     run_fuzzer \
     parse_options.py \
+    generate_differential_cov_report.py \
     profraw_update.py \
     targets_list \
     test_all.py \

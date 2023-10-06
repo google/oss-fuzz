@@ -27,6 +27,9 @@ CFLAGS=${CFLAGS//"-pthread"/}
 # earlier if those fire.
 CFLAGS="${CFLAGS} -UNDEBUG"
 
+# We use some internal CPython API.
+CFLAGS="${CFLAGS} -IInclude/internal/"
+
 FLAGS=()
 case $SANITIZER in
   address)

@@ -29,13 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.lang.IllegalStateException;
 
 public class StrictHttpFirewallFuzzer {
     record Header(String n, String v) {};
-
-    // https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/firewall/StrictHttpFirewall.java#L127
-    private static Pattern ASSIGNED_AND_NOT_ISO_CONTROL_PATTERN = Pattern.compile("[\\p{IsAssigned}||[\\p{IsControl}]]*");
-    private static Predicate<String> ASSIGNED_AND_NOT_ISO_CONTROL_PREDICATE = (s) -> ASSIGNED_AND_NOT_ISO_CONTROL_PATTERN.matcher(s).matches();
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) throws Exception {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
@@ -72,7 +70,7 @@ public class StrictHttpFirewallFuzzer {
                     maliciousUrls.add(url);
                     break;
                 case 4:
-                    String parameterName = data.consumeAsciiString(100).trim();
+                    String parameterName = data.consumeString(100);
                     if (parameterName.isEmpty()) {
                         break;
                     }
@@ -102,7 +100,7 @@ public class StrictHttpFirewallFuzzer {
                 servletRequest.getParameter(parameterName);
             }
 
-        } catch (RequestRejectedException e) {
+        } catch (RequestRejectedException | IllegalStateException e) {
             return;
         }
 
@@ -126,10 +124,13 @@ public class StrictHttpFirewallFuzzer {
         }
     }
 
-    // Wrapper for validateAllowedHeaderName, validateAllowedHeaderValue, validateAllowedParameterName & validateAllowedParameterValue 
+    // Check for invalid chars
+    // https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/web/firewall/StrictHttpFirewall.html#setAllowedHeaderNames(java.util.function.Predicate)
     private static void validate(String value) {
-        if (!value.isEmpty() && ASSIGNED_AND_NOT_ISO_CONTROL_PREDICATE.test(value)) {
-            throw new FuzzerSecurityIssueMedium("Malicious char not filtered: " + value);
+        for (char c : value.toCharArray()) {
+            if (Character.isISOControl(c) || !Character.isDefined(c)) {
+                throw new FuzzerSecurityIssueMedium("Malicious char not filtered: \\x" + String.format("%04x", (int) c) + " in `" + value + "`");
+            }
         }
     }
 } 

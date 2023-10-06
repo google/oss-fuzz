@@ -18,5 +18,5 @@
 pip3 install -e ".[test]"
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data $SRC/jupyter_events/jupyter_events/schemas/:./jupyter_events/schemas/
+  compile_python_fuzzer $fuzzer --add-data $SRC/jupyter_events/jupyter_events/schemas/:./jupyter_events/schemas/ --hidden-import=tornado.web
 done

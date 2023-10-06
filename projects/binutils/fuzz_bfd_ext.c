@@ -41,16 +41,12 @@ static int bufferToFile(char *name, const uint8_t *Data, size_t Size) {
   return 0;
 }
 
-static int initialized = 0;
-
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   char tmpfilename[32];
-  if (initialized == 0) {
-    if (bfd_init() != BFD_INIT_MAGIC) {
-      abort();
-    }
-    initialized = 1;
-  }
+
+  if (bfd_init() != BFD_INIT_MAGIC)
+    abort();
+
   /*
       char **names = bfd_target_list();
       while (*names != NULL) {

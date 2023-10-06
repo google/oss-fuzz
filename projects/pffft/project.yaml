@@ -1,4 +1,5 @@
 homepage: "https://bitbucket.org/jpommier/pffft"
+main_repo: "https://bitbucket.org/jpommier/pffft.git"
 language: c++
 primary_contact: "pommier@modartt.com"
 auto_ccs:

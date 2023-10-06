@@ -1,0 +1,9 @@
+homepage: https://github.com/scrapy/w3lib
+main_repo: https://github.com/scrapy/w3lib
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

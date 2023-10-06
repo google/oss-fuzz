@@ -17,7 +17,7 @@
 
 sed -i '34 a $ENV{CXXFLAGS}' CMakeLists.txt
 mkdir -p build-dir && cd build-dir
-cmake -DCMAKE_BUILD_TYPE="release" \
+cmake -DCMAKE_BUILD_TYPE="release" -DMUDUO_BUILD_EXAMPLES=OFF \
       ..
 make -j$(nproc)
 

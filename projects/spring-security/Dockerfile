@@ -22,5 +22,11 @@ RUN git clone --depth 1 https://github.com/spring-projects/spring-security
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+COPY oauth2-core/*Fuzzer.java $SRC/
+COPY oauth2-client/*Fuzzer.java $SRC/
+COPY oauth2-jose/*Fuzzer.java $SRC/
+COPY acl/*Fuzzer.java $SRC/
 COPY *.patch $SRC/
+RUN  cd spring-security && (for i in ${SRC}/*.patch; do tr -d '\015' < $i | git apply; done )
+
 WORKDIR $SRC/spring-security

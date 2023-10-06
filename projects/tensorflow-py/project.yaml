@@ -6,6 +6,7 @@ auto_ccs:
  - "mihaimaruseac@google.com"
  - "rostam@google.com"
  - "unda@google.com"
+ - "david@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

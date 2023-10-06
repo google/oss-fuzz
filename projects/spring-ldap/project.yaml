@@ -1,0 +1,19 @@
+homepage: "https://github.com/spring-projects/spring-ldap.git"
+language: jvm
+main_repo: "https://github.com/spring-projects/spring-ldap.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "pwebb@vmware.com"
+auto_ccs:
+  - "wilkinsona@vmware.com"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "peter.samarin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

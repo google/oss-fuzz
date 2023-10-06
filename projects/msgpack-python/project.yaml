@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/msgpack/msgpack-python
+language: python
+main_repo: https://github.com/msgpack/msgpack-python
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -1,0 +1,11 @@
+--- a/pom.xml
++++ b/pom.xml
+@@ -361,7 +361,7 @@
+   </dependencies>
+ 
+   <build>
+-    <defaultGoal>clean apache-rat:check checkstyle:check verify javadoc:javadoc</defaultGoal>
++    <defaultGoal>clean checkstyle:check verify javadoc:javadoc</defaultGoal>
+     <plugins>
+       <plugin>
+         <groupId>org.apache.felix</groupId>

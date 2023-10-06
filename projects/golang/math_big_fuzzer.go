@@ -17,6 +17,7 @@ package mathfuzzer
 
 import (
 	"fmt"
+	fuzz "github.com/AdaLogics/go-fuzz-headers"
 	"math"
 	"math/big"
 	"strconv"
@@ -60,6 +61,60 @@ func FuzzBigIntCmp2(data []byte) int {
 
 func FuzzRatSetString(data []byte) int {
 	_, _ = new(big.Rat).SetString(string(data))
+	return 1
+}
+
+func FuzzFloatSetString(data []byte) int {
+	f := fuzz.NewConsumer(data)
+	f64, err := f.GetFloat64()
+	if err != nil {
+		return 0
+	}
+	if math.IsNaN(f64) {
+		return 0
+	}
+	s, err := f.GetString()
+	if err != nil {
+		return 0
+	}
+	fl := big.NewFloat(f64)
+	fl.SetString(s)
+	return 1
+}
+
+func FuzzBigGobdecode(data []byte) int {
+	f := fuzz.NewConsumer(data)
+	buf, err := f.GetBytes()
+	if err != nil {
+		return 0
+	}
+	target, err := f.GetInt()
+	if err != nil {
+		return 0
+	}
+	switch target % 2 {
+	case 0:
+		i, err := f.GetInt()
+		if err != nil {
+			return 0
+		}
+		bi := big.NewInt(int64(i))
+		bi.GobDecode(buf)
+	case 1:
+		i1, err := f.GetInt()
+		if err != nil {
+			return 0
+		}
+		i2, err := f.GetInt()
+		if err != nil {
+			return 0
+		}
+		if int64(i2) == 0 {
+			return 0
+		}
+		r := big.NewRat(int64(i1), int64(i2))
+		r.GobDecode(buf)
+	}
 	return 1
 }
 

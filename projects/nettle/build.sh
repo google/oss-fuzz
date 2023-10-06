@@ -37,10 +37,10 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile libgmp
         cd $SRC/
-        lzip -d gmp-6.2.0.tar.lz
-        tar xf gmp-6.2.0.tar
+        lzip -d gmp-6.2.1.tar.lz
+        tar xf gmp-6.2.1.tar
 
-        cd gmp-6.2.0/
+        cd gmp-6.2.1/
         autoreconf -ivf
         if [[ $CFLAGS != *-m32* ]]
         then

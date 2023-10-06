@@ -15,13 +15,9 @@
 #
 ################################################################################
 
-cd oak_functions/loader/
-
 if [ "$SANITIZER" = "coverage" ]
 then
   export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-  chmod +x $SRC/rustc.py
-  export RUSTC="$SRC/rustc.py"
   export CFLAGS=""
 fi
 
@@ -33,5 +29,3 @@ do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
 done
-
-

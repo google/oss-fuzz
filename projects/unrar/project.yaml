@@ -3,8 +3,15 @@ language: c++
 primary_contact: "roshal@rarlab.com"
 auto_ccs:
   - "vakh@chromium.org"
+  - "drubery@chromium.org"
 sanitizers:
   - address
   - memory
   - undefined
 main_repo: 'https://github.com/aawc/unrar.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

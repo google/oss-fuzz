@@ -1,0 +1,9 @@
+homepage: "https://github.com/google/pprof"
+language: go
+main_repo: "https://github.com/google/pprof"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

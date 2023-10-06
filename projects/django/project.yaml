@@ -1,13 +1,13 @@
-homepage: "https://www.djangoproject.com/"
-language: python
-primary_contact: "f.apolloner@gmail.com"
 auto_ccs:
-  - "jammamarkus@gmail.com"
-  - "guidovranken@gmail.com"
-  - "info+django+security@markusholtermann.eu"
+- jammamarkus@gmail.com
+- guidovranken@gmail.com
+- info+django+security@markusholtermann.eu
 fuzzing_engines:
-  - libfuzzer
+- libfuzzer
+homepage: https://www.djangoproject.com/
+language: python
+main_repo: https://github.com/django/django.git
+primary_contact: f.apolloner@gmail.com
 sanitizers:
-  - address
-  - undefined
-main_repo: "https://github.com/django/django.git"
+- address
+- undefined

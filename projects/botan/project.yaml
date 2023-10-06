@@ -2,8 +2,8 @@ homepage: "https://botan.randombit.net"
 language: c++
 primary_contact: "jack.lloyd@gmail.com"
 auto_ccs:
-  - "r.korthaus@sirrix.com"
-  - "daniel.neus@googlemail.com"
+  - "re.korthaus@googlemail.com"
+  - "droelf@googlemail.com"
   - "norritt@bytefortress.de"
 sanitizers:
   - address
@@ -11,3 +11,8 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/randombit/botan.git'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

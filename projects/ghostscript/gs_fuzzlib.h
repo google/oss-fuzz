@@ -32,7 +32,8 @@ int fuzz_gs_device(
 	size_t size,
 	int color_scheme,
 	const char *device_target,
-	const char *output_file
+	const char *output_file,
+	int do_interpolation
 );
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
@@ -62,7 +63,7 @@ int gs_to_raster_fuzz(
 	int color_scheme
 )
 {
-	return fuzz_gs_device(buf, size, color_scheme, "cups", "/dev/null");
+	return fuzz_gs_device(buf, size, color_scheme, "cups", "/dev/null", 0);
 }
 
 int fuzz_gs_device(
@@ -70,7 +71,8 @@ int fuzz_gs_device(
 	size_t size,
 	int color_scheme,
 	const char *device_target,
-	const char *output_file
+	const char *output_file,
+	int do_interpolation
 )
 {
 	int ret;
@@ -78,6 +80,7 @@ int fuzz_gs_device(
 	char color_space[50];
 	char gs_device[50];
 	char gs_o[100];
+	char opt_interpolation[50];
 	/*
 	 * We are expecting color_scheme to be in the [0:62] interval.
 	 * This corresponds to the color schemes defined here:
@@ -86,6 +89,12 @@ int fuzz_gs_device(
 	sprintf(color_space, "-dcupsColorSpace=%d", color_scheme);
 	sprintf(gs_device, "-sDEVICE=%s", device_target);
 	sprintf(gs_o, "-sOutputFile=%s", output_file);
+	if (do_interpolation) {
+		sprintf(opt_interpolation, "-dDOINTERPOLATE");
+	}
+	else {
+		sprintf(opt_interpolation, "-dNOINTERPOLATE");
+	}
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
 		"gs",
@@ -100,7 +109,7 @@ int fuzz_gs_device(
 		"-dSAFER",
 		"-dNOPAUSE",
 		"-dBATCH",
-		"-dNOINTERPOLATE",
+		opt_interpolation,
 		"-dNOMEDIAATTRS",
 		"-sstdout=%%stderr",
 		gs_o,

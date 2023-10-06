@@ -1,3 +1,15 @@
+/* Copyright 2022 Google LLC
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -85,9 +97,9 @@ int test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   CHECK_ERR(err, "inflateSync");
 
   err = inflate(&d_stream, Z_FINISH);
-  if (err != Z_DATA_ERROR) {
-    fprintf(stderr, "inflate should report DATA_ERROR\n");
-    /* Because of incorrect adler32 */
+  if (err != Z_DATA_ERROR && err != Z_STREAM_END) {
+    fprintf(stderr, "inflate should report DATA_ERROR or Z_STREAM_END\n");
+    /* v1.1.11= reports DATA_ERROR because of incorrect adler32. v1.1.12+ reports Z_STREAM END because it skips the adler32 check. */
     return 0;
   }
   err = inflateEnd(&d_stream);

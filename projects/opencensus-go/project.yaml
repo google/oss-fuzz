@@ -1,0 +1,9 @@
+homepage: "https://github.com/census-instrumentation/opencensus-go"
+main_repo: "https://github.com/census-instrumentation/opencensus-go"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

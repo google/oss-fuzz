@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y openssl libssl-dev git make cmake libssl-dev 
-RUN git clone --depth 1 -b poco-1.11.0 https://github.com/pocoproject/poco
+RUN git clone --depth 1 https://github.com/pocoproject/poco
 WORKDIR $SRC/poco
 COPY build.sh \
      json_parse_fuzzer.cc \

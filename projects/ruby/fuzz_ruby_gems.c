@@ -204,6 +204,12 @@ static void init_date_parse(struct TargetFunction *target) {
                       argTypes);
 }
 
+static void init_regexp_new(struct TargetFunction *target) {
+  static const enum RubyDataType argTypes[1] = {RDT_CString};
+  init_TargetFunction(target, "regexp", "Regexp", "new",
+                      ARRAYSIZE(argTypes), argTypes);
+}
+
 static void init_json_parse(struct TargetFunction *target) {
   static const enum RubyDataType argTypes[1] = {RDT_CString};
   init_TargetFunction(target, "json", "JSON", "parse", ARRAYSIZE(argTypes),
@@ -245,7 +251,8 @@ typedef void (*init_TargetFunction_ptr)(struct TargetFunction *target);
 static init_TargetFunction_ptr init_functions[] = {
     init_date_parse,         init_date_strptime,   init_date_httpdate,
     init_json_parse,         init_psych_parse,     init_openssl_read,
-    init_openssl_read_smime, init_openssl_sprintf, init_CGI_unescapeHTML};
+    init_openssl_read_smime, init_openssl_sprintf, init_CGI_unescapeHTML,
+    init_regexp_new };
 
 // setenv("RUBYLIB", ...) so that dynamic loading of ruby gems
 // (which are in an unusual location due to the OSS-Fuzz infrastructure)
@@ -397,6 +404,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     uint32_t x = 0;
     BytesStream_get_uint32_t(&bs, &x);
     workaround_UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD(x);
+
+    // Reset the byte stream
+    ByteStream_init(&bs, data, size);
   }
 
   // Choose a function from `target_functions`.

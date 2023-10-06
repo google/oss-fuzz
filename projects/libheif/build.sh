@@ -68,19 +68,29 @@ rm -f $DEPS_PATH/lib/*.so
 rm -f $DEPS_PATH/lib/*.so.*
 
 cd $SRC/libheif
-./autogen.sh
-PKG_CONFIG="pkg-config --static" PKG_CONFIG_PATH="$DEPS_PATH/lib/pkgconfig" ./configure \
-    --disable-shared \
-    --enable-static \
-    --disable-examples \
-    --disable-go \
-    --enable-libfuzzer="$LIB_FUZZING_ENGINE" \
-    CPPFLAGS="-I$DEPS_PATH/include"
-make clean
+mkdir build
+cd build
+cmake .. --preset=fuzzing \
+      -DFUZZING_COMPILE_OPTIONS="" \
+      -DFUZZING_LINKER_OPTIONS="$LIB_FUZZING_ENGINE" \
+      -DFUZZING_C_COMPILER=$CC -DFUZZING_CXX_COMPILER=$CXX \
+      -DWITH_DEFLATE_HEADER_COMPRESSION=OFF
+
 make -j$(nproc)
 
-cp libheif/*-fuzzer $OUT
-cp fuzzing/dictionary.txt $OUT/box-fuzzer.dict
-cp fuzzing/dictionary.txt $OUT/file-fuzzer.dict
+#./autogen.sh
+#PKG_CONFIG="pkg-config --static" PKG_CONFIG_PATH="$DEPS_PATH/lib/pkgconfig" ./configure \
+#    --disable-shared \
+#    --enable-static \
+#    --disable-examples \
+#    --disable-go \
+#    --enable-libfuzzer="$LIB_FUZZING_ENGINE" \
+#    CPPFLAGS="-I$DEPS_PATH/include"
+#make clean
+#make -j$(nproc)
 
-zip -r $OUT/file-fuzzer_seed_corpus.zip fuzzing/corpus/*.heic
+cp fuzzing/*_fuzzer $OUT
+cp ../fuzzing/data/dictionary.txt $OUT/box-fuzzer.dict
+cp ../fuzzing/data/dictionary.txt $OUT/file-fuzzer.dict
+
+zip -r $OUT/file-fuzzer_seed_corpus.zip ../fuzzing/data/corpus/*.heic

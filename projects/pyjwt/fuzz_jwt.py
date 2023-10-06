@@ -44,8 +44,11 @@ def test_roundtrip(data):
         return
 
     key = "fuzzing"
-    jwt_message = jwt.encode(payload, key, algorithm="HS256")
-    decoded_payload = jwt.decode(jwt_message, key, algorithms=["HS256"])
+    try:
+        jwt_message = jwt.encode(payload, key, algorithm="HS256")
+        decoded_payload = jwt.decode(jwt_message, key, algorithms=["HS256"])
+    except jwt.exceptions.PyJWTError:
+        return
     assert decoded_payload == payload 
 
 

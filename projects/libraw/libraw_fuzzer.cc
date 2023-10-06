@@ -40,6 +40,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   FuzzedDataProvider fdp(data, size);
   LibRaw lib_raw;
+
   for(int i =0; i < 4; i++)
     lib_raw.output_params_ptr()->aber[i] = fdp.ConsumeFloatingPoint<double>();
   for(int i =0; i < 4; i++)
@@ -68,6 +69,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  result = lib_raw.unpack_thumb();
+  if (result != LIBRAW_SUCCESS) {
+    return 0;
+  }
+
+  result = lib_raw.raw2image();
+  if (result != LIBRAW_SUCCESS) {
+    return 0;
+  }
+  lib_raw.free_image();
 
   for (int i = 0; i < sizeof(options)/sizeof(*options); i++) {
     lib_raw.output_params_ptr()->user_qual = static_cast<int>(options[i]);

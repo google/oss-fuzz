@@ -39,8 +39,8 @@ index 0775abe35d..f53b3580b3 100644
 +       {
 +#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 +
- 	AssertArg(dbname != NULL);
- 	AssertArg(username != NULL);
+ 	Assert(dbname != NULL);
+ 	Assert(username != NULL);
  
 @@ -4312,6 +4325,11 @@ PostgresMain(const char *dbname, const char *username)
  	if (!ignore_till_sync)

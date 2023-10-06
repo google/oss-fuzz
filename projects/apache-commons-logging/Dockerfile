@@ -16,17 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone https://github.com/apache/commons-logging
-
-RUN curl 'https://dlcdn.apache.org/logging/log4j/2.18.0/apache-log4j-2.18.0-bin.tar.gz' -o apache-log4j-2.18.0-bin.tar.gz && \
-tar xf apache-log4j-2.18.0-bin.tar.gz && \
-unlink apache-log4j-2.18.0-bin.tar.gz
 
 COPY build.sh $SRC/
 COPY *.java *.xml $SRC/

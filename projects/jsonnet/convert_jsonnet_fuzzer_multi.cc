@@ -22,13 +22,12 @@ extern "C" {
 #include "libjsonnet.h"
 }
 
-char* ImportCallback(void* ctx, const char* base, const char* rel,
-                     char** found_here, int* success) {
+int ImportCallback(void* ctx, const char* base, const char* rel,
+                     char** found_here, char **buf, size_t *buflen) {
   // Don't load file and mark it as failure.
-  *success = 0;
-  char* res = jsonnet_realloc(static_cast<struct JsonnetVm*>(ctx), nullptr, 1);
-  res[0] = 0;
-  return res;
+  *buf = NULL;
+  *buflen = 0;
+  return 1;
 }
 
 std::string ConvertJsonnetToJson(const std::string& jsonnet) {

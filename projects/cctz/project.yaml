@@ -1,4 +1,11 @@
 homepage: https://github.com/google/cctz
+main_repo: https://github.com/google/cctz
 language: c++
 vendor_ccs:
 - david@adalogics.com
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

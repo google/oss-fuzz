@@ -1,6 +1,6 @@
 homepage: "https://www.libreoffice.org/"
 language: c++
-primary_contact: "caolanm@redhat.com"
+primary_contact: "caolanm@gmail.com"
 sanitizers:
   - address
   - memory:

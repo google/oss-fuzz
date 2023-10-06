@@ -1,0 +1,80 @@
+diff --git a/boringssl-static/pom.xml b/boringssl-static/pom.xml
+index 6471b6f..55581d2 100644
+--- a/boringssl-static/pom.xml
++++ b/boringssl-static/pom.xml
+@@ -58,7 +58,7 @@
+     <msvcSslIncludeDirs>${boringsslSourceDir}/include</msvcSslIncludeDirs>
+     <msvcSslLibDirs>${boringsslHome}/ssl;${boringsslHome}/crypto</msvcSslLibDirs>
+     <msvcSslLibs>ssl.lib;crypto.lib</msvcSslLibs>
+-    <cflags>-Werror -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
++    <cflags> -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
+     <cppflags>-DHAVE_OPENSSL -I${boringsslSourceDir}/include</cppflags>
+     <ldflags>-L${boringsslHome}/ssl -L${boringsslHome}/crypto -lssl -lcrypto</ldflags>
+     <skipJapicmp>true</skipJapicmp>
+@@ -202,7 +202,7 @@
+                               <!-- Use -DOPENSSL_C11_ATOMIC so we replace most of the locking code with atomics-->
+                               <property name="cmakeCFlags" value="-O3 -fno-omit-frame-pointer -DOPENSSL_C11_ATOMIC" />
+                               <!-- We need to define __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS when building boringssl on centos 6 -->
+-                              <property name="cmakeCxxFlags" value="-O3 -fno-omit-frame-pointer -Wno-error=maybe-uninitialized -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS" />
++                              <property name="cmakeCxxFlags" value="-O3 -fno-omit-frame-pointer -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS" />
+                             </then>
+                           </elseif>
+                           <else>
+@@ -543,7 +543,7 @@
+                               <!-- Use -DOPENSSL_C11_ATOMIC so we replace most of the locking code with atomics-->
+                               <property name="cmakeCFlags" value="-O3 -fno-omit-frame-pointer -DOPENSSL_C11_ATOMIC" />
+                               <!-- We need to define __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS when building boringssl on centos 6 -->
+-                              <property name="cmakeCxxFlags" value="-O3 -fno-omit-frame-pointer -Wno-error=maybe-uninitialized -Wno-error=shadow -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS" />
++                              <property name="cmakeCxxFlags" value="-O3 -fno-omit-frame-pointer -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS" />
+                             </then>
+                           </elseif>
+                           <else>
+@@ -673,7 +673,7 @@
+                     <configureArg>--with-ssl=no</configureArg>
+                     <configureArg>--with-static-libs</configureArg>
+                     <configureArg>--libdir=${project.build.directory}/native-build/target/lib</configureArg>
+-                    <configureArg>CFLAGS=-O3 -Werror -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value</configureArg>
++                    <configureArg>CFLAGS=-O3  -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value</configureArg>
+                     <configureArg>CPPFLAGS=-DHAVE_OPENSSL -I${boringsslSourceDir}/include</configureArg>
+                     <configureArg>LDFLAGS=-L${boringsslHome}/ssl -L${boringsslHome}/crypto -lssl -lcrypto</configureArg>
+                     <configureArg>--host=aarch64-linux-gnu</configureArg>
+@@ -874,7 +874,7 @@
+         <!-- Use -DOPENSSL_C11_ATOMIC so we replace most of the locking code with atomics-->
+         <cmakeCFlags>-O3 -fno-omit-frame-pointer -target ${target} -DOPENSSL_C11_ATOMIC</cmakeCFlags>
+         <cmakeCxxFlags>-O3 -fno-omit-frame-pointer -target ${target} -Wno-error=range-loop-analysis</cmakeCxxFlags>
+-        <cflags>-target ${target} -Werror -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
++        <cflags>-target ${target}  -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
+         <cppflags>-target ${target} -DHAVE_OPENSSL -I${boringsslSourceDir}/include</cppflags>
+         <ldflags>-arch arm64 -L${boringsslHome}/ssl -L${boringsslHome}/crypto -lssl -lcrypto</ldflags>
+         <!-- use aarch_64 as this is also what os.detected.arch will use on an aarch64 system -->
+@@ -1120,7 +1120,7 @@
+         <!-- Use -DOPENSSL_C11_ATOMIC so we replace most of the locking code with atomics-->
+         <cmakeCFlags>-O3 -fno-omit-frame-pointer -target ${target} -DOPENSSL_C11_ATOMIC</cmakeCFlags>
+         <cmakeCxxFlags>-O3 -fno-omit-frame-pointer -target ${target} -Wno-error=range-loop-analysis</cmakeCxxFlags>
+-        <cflags>-target ${target} -Werror -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
++        <cflags>-target ${target}  -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -O3</cflags>
+         <cppflags>-target ${target} -DHAVE_OPENSSL -I${boringsslSourceDir}/include</cppflags>
+         <ldflags>-arch x86_64 -L${boringsslHome}/ssl -L${boringsslHome}/crypto -lssl -lcrypto</ldflags>
+         <!-- use aarch_64 as this is also what os.detected.arch will use on an aarch64 system -->
+@@ -1354,7 +1354,7 @@
+       <id>boringssl-static-asan</id>
+       <properties>
+         <!-- We do not use an -O flag to ensure we have all functions in the stack when a leak is reported later on -->
+-        <cflags>-Werror -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -fsanitize=address</cflags>
++        <cflags> -fno-omit-frame-pointer -fvisibility=hidden -Wunused -Wno-unused-value -fsanitize=address</cflags>
+         <cppflags>-DHAVE_OPENSSL -I${boringsslSourceDir}/include -fsanitize=address</cppflags>
+         <ldflags>-L${boringsslHome}/ssl -L${boringsslHome}/crypto -lssl -lcrypto -fsanitize=address</ldflags>
+       </properties>
+diff --git a/openssl-dynamic/src/main/native-package/m4/tcnative.m4 b/openssl-dynamic/src/main/native-package/m4/tcnative.m4
+index 136cbb3..97bcda7 100644
+--- a/openssl-dynamic/src/main/native-package/m4/tcnative.m4
++++ b/openssl-dynamic/src/main/native-package/m4/tcnative.m4
+@@ -276,7 +276,7 @@ AC_DEFUN([TCN_CHECK_STATIC],[
+           ;;
+       *linux*)
+           dnl On linux we also statically link libstdc++ etc to make it as backward / forward compatible as possible.
+-          LD_FLAGS_STATIC="-static-libstdc++ -static-libgcc -l:libgcc.a -l:libstdc++.a -Wl,--exclude-libs,ALL"
++          LD_FLAGS_STATIC=""
+ 
+           dnl Cleanup libtool postdeps so it will not link against libtdc++ dynamically.
+           AC_MSG_NOTICE([Cleanup libtool C++ postdeps: $postdeps_CXX])

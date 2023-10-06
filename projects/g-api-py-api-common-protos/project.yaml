@@ -7,3 +7,5 @@ sanitizers:
 - address
 vendor_ccs:
 - david@adalogics.com
+- riccardo.schirone@trailofbits.com
+- facundo.tuesca@trailofbits.com

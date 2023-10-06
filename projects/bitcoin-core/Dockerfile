@@ -20,12 +20,12 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
 # * https://github.com/bitcoin/bitcoin/blob/master/depends/README.md#for-linux-including-i386-arm-cross-compilation
 RUN apt-get update && apt-get install -y \
-  build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 \
-  make automake cmake curl g++-multilib libtool binutils-gold bsdmainutils pkg-config patch bison \
-  wget zip
+  automake autotools-dev bsdmainutils build-essential cmake curl g++-multilib libtool make \
+  patch pkg-config python3 wget zip
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
-RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets
+RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets && \
+  rm -rf bitcoin-core/assets/.git  # Remove git history to save storage
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git

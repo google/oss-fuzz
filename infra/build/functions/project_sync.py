@@ -16,19 +16,21 @@
 """Cloud functions for build scheduling."""
 
 from collections import namedtuple
+import io
 import logging
 import os
 import re
-import yaml
+import tempfile
+import urllib.request
+import zipfile
 
-from github import Github
 from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
+import yaml
 
 import build_and_run_coverage
 import build_project
-from datastore_entities import GithubCreds
 from datastore_entities import Project
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
@@ -43,7 +45,52 @@ INTROSPECTOR_BUILD_TOPIC = 'request-introspector-build'
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
 
+Content = namedtuple('Content', 'type path name decoded_content')
+
 logging.basicConfig(level=logging.INFO)
+
+
+# pylint: disable=too-few-public-methods
+class OssFuzzRepo:
+  """OSS-Fuzz repo."""
+
+  _MASTER_ZIP_LINK = (
+      'https://github.com/google/oss-fuzz/archive/refs/heads/master.zip')
+
+  def __init__(self, out_dir):
+    with urllib.request.urlopen(self._MASTER_ZIP_LINK) as response:
+      zip_contents = response.read()
+
+    with zipfile.ZipFile(io.BytesIO(zip_contents)) as zip_file:
+      zip_file.extractall(out_dir)
+
+    self._out_dir = out_dir
+
+  @property
+  def _repo_dir(self):
+    return os.path.join(self._out_dir, 'oss-fuzz-master')
+
+  def get_contents(self, path):
+    """Gets contents of path."""
+    contents = []
+    list_path = os.path.join(self._repo_dir, path)
+    for item in os.listdir(list_path):
+      full_path = os.path.join(list_path, item)
+      rel_path = os.path.relpath(full_path, self._repo_dir)
+
+      if os.path.isdir(full_path):
+        file_type = 'dir'
+        decoded_content = None
+      else:
+        file_type = 'file'
+        with open(full_path, mode='rb') as file:
+          decoded_content = file.read()
+
+      contents.append(
+          Content(file_type, rel_path, os.path.basename(rel_path),
+                  decoded_content))
+
+    return contents
 
 
 class ProjectYamlError(Exception):
@@ -222,22 +269,13 @@ def get_projects(repo):
   return projects
 
 
-def get_github_creds():
-  """Retrieves GitHub client credentials."""
-  git_creds = GithubCreds.query().get()
-  if git_creds is None:
-    raise RuntimeError('Git credentials not available.')
-  return git_creds
-
-
 def sync(event, context):
   """Sync projects with cloud datastore."""
   del event, context  # Unused.
 
   with ndb.Client().context():
-    git_creds = get_github_creds()
-    github_client = Github(git_creds.client_id, git_creds.client_secret)
-    repo = github_client.get_repo('google/oss-fuzz')
-    projects = get_projects(repo)
-    cloud_scheduler_client = scheduler_v1.CloudSchedulerClient()
-    sync_projects(cloud_scheduler_client, projects)
+    with tempfile.TemporaryDirectory() as temp_dir:
+      repo = OssFuzzRepo(temp_dir)
+      projects = get_projects(repo)
+      cloud_scheduler_client = scheduler_v1.CloudSchedulerClient()
+      sync_projects(cloud_scheduler_client, projects)

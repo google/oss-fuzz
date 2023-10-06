@@ -22,8 +22,8 @@ with atheris.instrument_imports():
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
-    s1 = fdp.ConsumeString(sys.maxsize)
-    s2 = fdp.ConsumeString(sys.maxsize)
+    s1 = fdp.ConsumeString(fdp.ConsumeIntInRange(0, 1024))
+    s2 = fdp.ConsumeString(fdp.ConsumeIntInRange(0, 1024))
     try:
         IPAddress(s1)
         IPNetwork(s1)

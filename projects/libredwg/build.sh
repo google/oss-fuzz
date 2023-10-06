@@ -21,7 +21,9 @@ sh ./autogen.sh
 ./configure --disable-shared --disable-bindings --enable-release
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE examples/llvmfuzz.c -o $OUT/llvmfuzz \
-    src/.libs/libredwg.a -I./include -I./src
+$CC $CFLAGS src/.libs/libredwg.a -I./include -I./src -c examples/llvmfuzz.c
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE llvmfuzz.o src/.libs/libredwg.a \
+  -o $OUT/llvmfuzz
 
 cp $SRC/llvmfuzz.options $OUT/llvmfuzz.options

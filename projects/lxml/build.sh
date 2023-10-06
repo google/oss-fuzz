@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+export LIBXML2_VERSION=2.10.3
+export LIBXSLT_VERSION=1.1.37
+export STATIC_DEPS=true
+export CFLAGS="$CFLAGS -fPIC"
+python3 ./setup.py build --with-cython
 python3 ./setup.py install
 
 # Build fuzzers in $OUT.

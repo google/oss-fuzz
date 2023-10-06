@@ -1,7 +1,8 @@
 homepage: "https://tukaani.org/xz/"
 language: c++
-primary_contact: "lasse.collin@tukaani.org"
+primary_contact: "jiat0218@gmail.com"
 auto_ccs:
+  - "lasse.collin@tukaani.org"
   - "bshas3@gmail.com"
 fuzzing_engines:
   - libfuzzer
@@ -11,4 +12,4 @@ sanitizers:
   - address
   - memory
   - undefined
-main_repo: 'https://git.tukaani.org/xz.git'
+main_repo: 'https://github.com/tukaani-project/xz.git'

@@ -2,3 +2,9 @@ homepage: "https://www.wxwidgets.org/"
 language: c++
 primary_contact: "vzeitlin@gmail.com"
 main_repo: 'https://github.com/wxWidgets/wxWidgets.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

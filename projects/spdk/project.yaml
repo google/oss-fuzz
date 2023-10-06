@@ -6,8 +6,12 @@ auto_ccs:
   - "Adam@adalogics.com"
   - "tomasz.zawadzki@intel.com"
   - "konrad.sztyber@intel.com"
-  - "MichalX.Berger@intel.com"
+  - "michal.berger@intel.com"
 sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

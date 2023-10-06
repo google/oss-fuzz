@@ -6,3 +6,9 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'git://people.freedesktop.org/~dvdhrm/libtsm'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

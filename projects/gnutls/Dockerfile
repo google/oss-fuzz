@@ -33,13 +33,15 @@ RUN apt-get update && apt-get install -y \
  python \
  mercurial \
  gtk-doc-tools \
- libtasn1-bin
+ libtasn1-bin \
+ lzip
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
-RUN hg clone https://gmplib.org/repo/gmp/ gmp
+RUN hg clone https://gmplib.org/repo/gmp/ gmp || \
+    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1 $SRC/gmp)
 RUN git clone https://gitlab.com/gnutls/libtasn1.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 

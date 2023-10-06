@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN apt-get install -y bzr python-lxml python-html5lib
-RUN pip3 install 2to3 soupsieve html5lib lxml
+RUN pip3 install soupsieve html5lib lxml
 RUN pip3 install bzr+lp:beautifulsoup
 
 COPY build.sh bs4_fuzzer.py $SRC/

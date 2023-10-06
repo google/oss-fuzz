@@ -17,6 +17,10 @@
 
 pip3 install .
 
+# Workaround for oss-fuzz not being able to recognise which croniter modules are used
+# See https://github.com/ossf/fuzz-introspector/issues/1010
+export PYFUZZPACKAGE=$SRC/croniter/src/croniter
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
