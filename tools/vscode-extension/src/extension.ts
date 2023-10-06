@@ -33,6 +33,7 @@ import {cmdInputCollectorReproduceTestcase} from './commands/cmdReproduceTestcas
 import {cmdDispatcherTemplate} from './commands/cmdTemplate';
 import {setUpOssFuzzHandler} from './commands/cmdSetupOSSFuzz';
 import {setOssFuzzPath} from './commands/cmdSetOSSFuzzPath';
+import {getSummaryRemoteCoverage} from './commands/cmdRemoteSummaryCoverage';
 import {extensionConfig} from './config';
 
 /**

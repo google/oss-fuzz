@@ -17,6 +17,8 @@
 import * as vscode from 'vscode';
 import {Uri} from 'vscode';
 import {println} from './logger';
+import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
+import {extensionConfig} from './config';
 
 const path = require('path');
 let isCodeCoverageEnabled = false;
@@ -50,6 +52,90 @@ const missingLineDecorationType = vscode.window.createTextEditorDecorationType({
     borderColor: 'lightblue',
   },
 });
+
+export async function loadSummaryJsonCoverage(
+  context: vscode.ExtensionContext,
+  codeCoverageFile: Uri
+) {
+  const coverageSummaryRawJson = await vscode.workspace.openTextDocument(codeCoverageFile);
+  const jsonCodeCoverage = JSON.parse(coverageSummaryRawJson.getText());
+  return jsonCodeCoverage;
+}
+
+export async function compareLocalToRemoteCoverage(
+  context: vscode.ExtensionContext,
+  projectName: string
+){
+  println("Checking the file matching");
+  /* Get the coverage from the remote server */
+  const fileDownloader: FileDownloader = await getApi();
+
+  const currentDate = new Date();
+  const yesterday = new Date(currentDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const day = yesterday.getDate();
+  const month = yesterday.getMonth();
+  const year = yesterday.getFullYear();
+
+  var urlString = 'https://storage.googleapis.com/oss-fuzz-coverage/' +
+  projectName +
+  '/reports/' +
+  year.toString();
+
+  if (month < 10) {
+    urlString += "0";
+  }
+  urlString += month.toString();
+  if (day < 10) {
+    urlString += "0";
+  }
+  urlString += day.toString();
+  urlString += '/linux/summary.json';
+
+  println("URL: " + urlString);
+  var codeCoverageFile: vscode.Uri;
+  try {
+    codeCoverageFile = await fileDownloader.downloadFile(
+      vscode.Uri.parse(
+        urlString
+      ),
+      'summary.json',
+      context
+    );
+
+  } catch (err) {
+    println(
+      'Could not get the URL. Currently, this feature is only supported for Python projects'
+    );
+    return;
+  }
+  const remoteCoverage = await loadSummaryJsonCoverage(context, codeCoverageFile);
+
+  /* Get the local coverage report */
+  // Compare the local coverage to the upstream coverage
+  const summaryCovPath =
+    extensionConfig.ossFuzzPepositoryWorkPath +
+    '/build/out/' +
+    projectName +
+    '/report/linux/summary.json';
+  const localCodeCoverage = await loadSummaryJsonCoverage(context, vscode.Uri.file(summaryCovPath));
+
+  for (var i = 0; i < localCodeCoverage.data[0].files.length; i++) {
+    for (var j = 0; j < remoteCoverage.data[0].files.length; j++) {
+      if (localCodeCoverage.data[0].files[i].filename == remoteCoverage.data[0].files[j].filename) {
+        const remoteFuncCount = remoteCoverage.data[0].files[j].summary.functions.count;
+        const localFuncCount = localCodeCoverage.data[0].files[i].summary.functions.count;
+
+        if (localFuncCount > remoteFuncCount) {
+          println("Coverage improved in :" +
+            localCodeCoverage.data[0].files[i].filename +
+            " [" + localFuncCount + " : " + remoteFuncCount + "]");
+        }
+      }
+    }
+  }
+}
 
 /**
  *

@@ -20,7 +20,7 @@ import {println} from '../logger';
 import {commandHistory} from '../commandUtils';
 import {buildFuzzersFromWorkspace, runFuzzerHandler} from '../ossfuzzWrappers';
 import {listFuzzersForProject, systemSync} from '../utils';
-import {loadCoverageIntoWorkspace} from '../coverageHelper';
+import {compareLocalToRemoteCoverage, loadSummaryJsonCoverage, loadCoverageIntoWorkspace} from '../coverageHelper';
 import {extensionConfig} from '../config';
 
 /**
@@ -157,4 +157,6 @@ async function endToEndRun(
     const generatedCodeCoverageFile = vscode.Uri.file(allCovPath);
     await loadCoverageIntoWorkspace(context, generatedCodeCoverageFile);
   }
+
+  await compareLocalToRemoteCoverage(context, ossFuzzProjectNameInput.toString());
 }
