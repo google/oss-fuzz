@@ -17,5 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/go-git/go-git.git
 RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-COPY build.sh $SRC/
+RUN cp $SRC/go-git/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/go-git
