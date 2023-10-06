@@ -85,7 +85,10 @@ async function endToEndRun(
   vscode.window.showInformationMessage(
     'Building project: ' + ossFuzzProjectNameInput.toString()
   );
-  await buildFuzzersFromWorkspace(ossFuzzProjectNameInput.toString(), '', true);
+  if (await buildFuzzersFromWorkspace(ossFuzzProjectNameInput.toString(), '', true) == false) {
+    println("Failed to build project");
+    return;
+  }
   println('Build projects');
 
   // List all of the fuzzers in the project
