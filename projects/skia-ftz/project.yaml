@@ -11,3 +11,9 @@ sanitizers:
  - memory
 help_url: "https://skia.org/dev/testing/fuzz"
 main_repo: 'https://skia.googlesource.com/skia.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

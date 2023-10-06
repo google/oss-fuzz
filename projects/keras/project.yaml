@@ -1,0 +1,9 @@
+homepage: "https://keras.io"
+main_repo: 'https://github.com/keras-team/keras'
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+ - "david@adalogics.com"

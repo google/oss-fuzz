@@ -9,3 +9,8 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: "https://gitlab.freedesktop.org/spice/usbredir.git"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

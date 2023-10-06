@@ -1,0 +1,11 @@
+homepage: "https://tokio.rs/"
+language: rust
+primary_contact: aliceryhl@google.com
+main_repo: "https://github.com/tokio-rs/tokio"
+auto_ccs:
+  - security@tokio.rs
+  - nathaniel.brough@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

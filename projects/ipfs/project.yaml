@@ -2,6 +2,7 @@ homepage: "https://github.com/ipfs/go-datastore"
 primary_contact: "will.scott@protocol.ai"
 auto_ccs :
 - "stebalien@protocol.ai"
+- "yolan@protocol.ai"
 language: go
 fuzzing_engines:
 - libfuzzer

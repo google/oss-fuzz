@@ -1,4 +1,5 @@
 homepage: "https://www.qubes-os.org/"
+main_repo: "https://github.com/QubesOS"
 language: c++
 primary_contact: "jpo@vt.edu"
 auto_ccs:

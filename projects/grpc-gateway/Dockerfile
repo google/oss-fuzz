@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go-codeintelligencetesting
+FROM gcr.io/oss-fuzz-base/base-builder-go
 ENV GO111MODULE on
 RUN git clone https://github.com/grpc-ecosystem/grpc-gateway
 COPY build.sh $SRC/

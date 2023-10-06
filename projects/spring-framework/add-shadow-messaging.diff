@@ -1,0 +1,11 @@
+diff --git a/spring-messaging/spring-messaging.gradle b/spring-messaging/spring-messaging.gradle
+index cb54d42e59..e48a0d00a7 100644
+--- a/spring-messaging/spring-messaging.gradle
++++ b/spring-messaging/spring-messaging.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring Messaging"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ apply plugin: "kotlinx-serialization"
+ 

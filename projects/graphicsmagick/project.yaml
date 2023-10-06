@@ -1,4 +1,5 @@
 homepage: "http://www.graphicsmagick.org/"
+main_repo: "https://github.com/kstep/graphicsmagick"
 language: c++
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:

@@ -15,7 +15,7 @@ limitations under the License.
 #include <string.h>
 #include "ntpd.h"
 
-#define kMinInputLength 4
+#define kMinInputLength 20
 #define kMaxInputLength 1024
 
 bool nts_client_process_response_core(uint8_t *buff, int transferred, struct peer* peer);
@@ -27,6 +27,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/te
     }
 
 	struct peer peer;
+
+	peer.nts_state.aead = 42; /* Dummy init values */
+	peer.nts_state.cookielen = 0;
+	peer.nts_state.writeIdx = 0;
+	peer.nts_state.count = 0;
+
 	peer.srcadr.sa4.sin_family = AF_INET;
 	peer.srcadr.sa4.sin_port = htons(9999);
 	peer.srcadr.sa4.sin_addr.s_addr= htonl(0x04030201);

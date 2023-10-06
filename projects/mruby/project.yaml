@@ -8,3 +8,9 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/mruby/mruby'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

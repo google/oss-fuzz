@@ -21,9 +21,6 @@ with atheris.instrument_imports():
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
-    iam.IAMCredentialsClient._get_default_mtls_endpoint(None)
-    iam.IAMCredentialsClient._get_default_mtls_endpoint(fdp.ConsumeString(100))
-
     iam.IAMCredentialsClient.service_account_path(
         fdp.ConsumeString(100),
         fdp.ConsumeString(100)

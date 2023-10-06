@@ -11,3 +11,9 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/dnp3/opendnp3.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

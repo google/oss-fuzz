@@ -16,10 +16,8 @@
 import atheris
 import sys
 
-with atheris.instrument_imports():
-  from glom import glom
-  import glom.core as glom_core
-  import json
+import glom
+import json
 
 
 def TestOneInput(data):
@@ -27,29 +25,30 @@ def TestOneInput(data):
 
   val = {'d': {'e': ['f']}}
   try:
-    glom(val, fdp.ConsumeString(30))
-  except glom_core.PathAccessError:
+    glom.core.glom(val, fdp.ConsumeString(30))
+  except glom.core.PathAccessError:
     pass
 
   # Create a random dictionary. In this case if any
   # error happens during random dict creation we just
   # exit.
   try:
-    data = json.loads(fdp.ConsumeString(100))
+    json_dict = json.loads(fdp.ConsumeString(100))
   except Exception:
     return
-  if type(data) == dict:
+  if not isinstance(json_dict, dict):
     return
 
   # Use random dict as input to glom
   try:
-    glom(data, fdp.ConsumeString(30))
-  except glom_core.PathAccessError:
+    glom.core.glom(json_dict, fdp.ConsumeString(30))
+  except glom.core.PathAccessError:
     pass
 
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 

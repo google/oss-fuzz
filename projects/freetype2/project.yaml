@@ -19,3 +19,9 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/freetype/freetype2-testing.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./autogen.sh --no-po4a
+./autogen.sh --no-po4a --no-doxygen
 ./configure \
   --enable-static \
   --disable-debug \
@@ -24,7 +24,8 @@
   --disable-xz \
   --disable-xzdec \
   --disable-lzmadec \
-  --disable-lzmainfo
+  --disable-lzmainfo \
+  --disable-ifunc
 make clean
 make -j$(nproc) && make -C tests/ossfuzz && \
     cp tests/ossfuzz/config/fuzz.options $OUT/ && \

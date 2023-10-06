@@ -30,7 +30,12 @@ def TestOneInput(data):
                 pass
         except (olefile.olefile.OleFileError, IOError) as e:
             pass
-    os.remove(fuzz_olefile)
+    try:
+        # Ensure the file gets closed, however the file should usually be closed
+        # by olefile itself, so ignore FileNotFoundError if raised.
+        os.remove(fuzz_olefile)
+    except FileNotFoundError:
+        pass
 
 
 def main():

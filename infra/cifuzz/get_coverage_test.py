@@ -17,6 +17,7 @@ import json
 import unittest
 from unittest import mock
 
+import parameterized
 from pyfakefs import fake_filesystem_unittest
 import pytest
 
@@ -126,6 +127,19 @@ class OSSFuzzCoverageGetFilesCoveredByTargetTest(unittest.TestCase):
                     return_value=PROJECT_COV_INFO):
       self.oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(
           REPO_PATH, PROJECT_NAME)
+
+  @parameterized.parameterized.expand([({
+      'data': []
+  },), ({
+      'data': [[]]
+  },), ({
+      'data': [{}]
+  },)])
+  def test_malformed_cov_data(self, coverage_data):
+    """Tests that covered files can be retrieved from a coverage report."""
+    with mock.patch('get_coverage.OSSFuzzCoverage.get_target_coverage',
+                    return_value=coverage_data):
+      self.oss_fuzz_coverage.get_files_covered_by_target(FUZZ_TARGET)
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""

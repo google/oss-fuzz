@@ -20,6 +20,50 @@
 
 export GO111MODULE=off
 
+# Install Go stable binaries
+mkdir $SRC/go-bootstrap
+cd $SRC/go-bootstrap
+
+tar zxf $SRC/go1.19.10.linux-amd64.tar.gz
+mv go/ go-119
+export GOROOT_119=$SRC/go-bootstrap/go-119/
+export GOPATH_119=$GOROOT_119/packages/
+mkdir $GOPATH_119
+mkdir -p $GOPATH_119/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_119/src/golang.org/x/crypto/
+mkdir -p $GOPATH_119/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_119/src/golang.org/x/sys/
+export PATH_GO_119=$GOROOT_119/bin:$GOROOT_119/packages/bin:$PATH
+
+tar zxf $SRC/go1.20.5.linux-amd64.tar.gz
+mv go/ go-120
+export GOROOT_120=$SRC/go-bootstrap/go-120/
+export GOPATH_120=$GOROOT_120/packages/
+mkdir $GOPATH_120
+mkdir -p $GOPATH_120/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_120/src/golang.org/x/crypto/
+mkdir -p $GOPATH_120/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_120/src/golang.org/x/sys/
+export PATH_GO_120=$GOROOT_120/bin:$GOROOT_120/packages/bin:$PATH
+
+# Compile Go development version
+cd $SRC/go-dev/src/
+export OLD_PATH=$PATH
+PATH="$PATH_GO_120" ./make.bash
+export GOROOT_DEV=$(realpath ../)
+export GOPATH_DEV=$GOROOT_DEV/packages
+mkdir $GOPATH_DEV
+mkdir -p $GOPATH_DEV/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_DEV/src/golang.org/x/crypto/
+mkdir -p $GOPATH_DEV/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_DEV/src/golang.org/x/sys/
+export PATH_GO_DEV=$GOROOT_DEV/bin:$GOROOT_DEV/packages/bin:$PATH
+
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+fi
+
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Install nodejs/npm
@@ -45,14 +89,15 @@ CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
 
 export LINK_FLAGS=""
+if [[ $CFLAGS = *-m32* ]]
+then
+    export LINK_FLAGS="$LINK_FLAGS -latomic"
+fi
 export INCLUDE_PATH_FLAGS=""
 
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
-
-git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
-git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
@@ -94,6 +139,17 @@ then
     make
 fi
 
+if [[ $CFLAGS != *-m32* && "$SANITIZER" != "coverage" ]]
+then
+    cd $SRC/
+    tar Jxf zig-latest.tar.xz
+    export ZIG_BIN=$(realpath zig-linux-x86_64*/zig)
+
+    cd $SRC/cryptofuzz/modules/zig/
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ZIG"
+fi
+
 # Compile NSS
 if [[ $CFLAGS != *-m32* ]]
 then
@@ -115,17 +171,6 @@ then
     cd $SRC/cryptofuzz/modules/nss
     make -B
 fi
-
-# Compile Monocypher
-cd $SRC/Monocypher/
-make CC="$CC" CFLAGS="$CFLAGS"
-export LIBMONOCYPHER_A_PATH=$(realpath lib/libmonocypher.a)
-export MONOCYPHER_INCLUDE_PATH=$(realpath src/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
-
-# Compile Cryptofuzz monocypher module
-cd $SRC/cryptofuzz/modules/monocypher
-make -B
 
 # Rename blake2b_* functions to avoid symbol collisions with other libraries
 cd $SRC/trezor-firmware/crypto
@@ -222,23 +267,37 @@ make -B -j$(nproc)
 #fi
 
 ## Compile SymCrypt
-cd $SRC/SymCrypt/
-# Unittests don't build with clang and are not needed anyway
-sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+if [[ $CFLAGS != *-m32* ]]
+then
+    cd $SRC/SymCrypt/
 
-mkdir b/
-cd b/
-cmake ../
-make symcrypt_common symcrypt_generic -j$(nproc)
+    # Disable speculative load hardening because
+    # this results in MSAN false positives
+    sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
-export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
-export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
-export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+    # Unittests don't build with clang and are not needed anyway
+    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
 
-# Compile Cryptofuzz SymCrypt module
-cd $SRC/cryptofuzz/modules/symcrypt
-make -B
+    mkdir b/
+    cd b/
+    if [[ $CFLAGS = *sanitize=memory* ]]
+    then
+        cmake -DSYMCRYPT_USE_ASM=off ../
+    else
+        cmake ../
+    fi
+
+    make symcrypt_common symcrypt_generic -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/libsymcrypt_common.a)
+    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/symcrypt_generic.a)
+
+    # Compile Cryptofuzz SymCrypt module
+    cd $SRC/cryptofuzz/modules/symcrypt
+    make -B
+fi
 
 # Compile libgmp
 cd $SRC/libgmp/
@@ -310,15 +369,16 @@ make -B
 ##############################################################################
 # Compile mbed TLS
 cd $SRC/mbedtls/
-scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
-scripts/config.pl set MBEDTLS_CMAC_C
-scripts/config.pl set MBEDTLS_NIST_KW_C
-scripts/config.pl set MBEDTLS_ARIA_C
+scripts/config.py set MBEDTLS_PLATFORM_MEMORY
+scripts/config.py set MBEDTLS_CMAC_C
+scripts/config.py set MBEDTLS_NIST_KW_C
+scripts/config.py set MBEDTLS_ARIA_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
-    scripts/config.pl unset MBEDTLS_HAVE_ASM
-    scripts/config.pl unset MBEDTLS_PADLOCK_C
-    scripts/config.pl unset MBEDTLS_AESNI_C
+    scripts/config.py unset MBEDTLS_HAVE_ASM
+    scripts/config.py unset MBEDTLS_PADLOCK_C
+    scripts/config.py unset MBEDTLS_AESNI_C
+    scripts/config.py unset MBEDTLS_AESCE_C
 fi
 mkdir build/
 cd build/
@@ -406,24 +466,25 @@ export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
 cd $SRC/cryptofuzz/modules/libsodium
 make -B
 
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    # Compile EverCrypt (with assembly)
-    cd $SRC/evercrypt/dist
-    make -C portable -j$(nproc) libevercrypt.a
-    make -C kremlin/kremlib/dist/minimal -j$(nproc)
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
-    export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/portable/libevercrypt.a"
-    export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
-    export EVERCRYPT_INCLUDE_PATH="$SRC/evercrypt/dist"
-    export KREMLIN_INCLUDE_PATH="$SRC/evercrypt/dist/kremlin/include"
-    export INCLUDE_PATH_FLAGS="$INCLUDE_PATH_FLAGS -I $EVERCRYPT_INCLUDE_PATH -I $KREMLIN_INCLUDE_PATH"
-
-    # Compile Cryptofuzz EverCrypt (with assembly) module
-    cd $SRC/cryptofuzz/modules/evercrypt
-    make -B
-fi
+# Disabled because NSS now also embeds evercrypt, leading to symbol collisions
+#if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+#then
+#    # Compile EverCrypt (with assembly)
+#    cd $SRC/evercrypt/dist
+#    make -C portable -j$(nproc) libevercrypt.a
+#    make -C kremlin/kremlib/dist/minimal -j$(nproc)
+#
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
+#    export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/portable/libevercrypt.a"
+#    export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
+#    export EVERCRYPT_INCLUDE_PATH="$SRC/evercrypt/dist"
+#    export KREMLIN_INCLUDE_PATH="$SRC/evercrypt/dist/kremlin/include"
+#    export INCLUDE_PATH_FLAGS="$INCLUDE_PATH_FLAGS -I $EVERCRYPT_INCLUDE_PATH -I $KREMLIN_INCLUDE_PATH"
+#
+#    # Compile Cryptofuzz EverCrypt (with assembly) module
+#    cd $SRC/cryptofuzz/modules/evercrypt
+#    make -B
+#fi
 
 ##############################################################################
 # Compile Cryptofuzz reference (without assembly) module
@@ -444,12 +505,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang module
-if [[ $CFLAGS != *sanitize=memory* ]]
+# Compile Cryptofuzz Golang (119) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
     cd $SRC/cryptofuzz/modules/golang
-    make -B
+    GOROOT="$GOROOT_119" GOPATH="$GOPATH_119" PATH="$PATH_GO_119" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -460,6 +520,11 @@ then
 
     # Generate dictionary
     ./generate_dict
+
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
 
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
@@ -473,6 +538,8 @@ then
     CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
     LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
 fi
+
+rm -f $SRC/cryptofuzz/modules/golang/module.a
 
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
@@ -491,7 +558,7 @@ cd $SRC/wolfssl
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -513,6 +580,14 @@ export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
 # Compile Cryptofuzz wolfcrypt (without assembly) module
 cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
+
+##############################################################################
+# Compile Cryptofuzz Golang (120) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_120" GOPATH="$GOPATH_120" PATH="$PATH_GO_120" make -B
+fi
 
 # OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
 export SAVE_CXXFLAGS="$CXXFLAGS"
@@ -541,6 +616,11 @@ then
 
     # Generate dictionary
     ./generate_dict
+
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
 
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl
@@ -573,6 +653,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 # Generate dictionary
 ./generate_dict
 
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
+
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-noasm
 # Copy dictionary
@@ -580,7 +665,17 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
+rm -f $SRC/cryptofuzz/modules/golang/module.a
+
 export CXXFLAGS="$SAVE_CXXFLAGS"
+
+##############################################################################
+# Compile Cryptofuzz Golang (dev branch) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" make -B
+fi
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -591,9 +686,9 @@ then
     cd build
     if [[ $CFLAGS = *-m32* ]]
     then
-        setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
     else
-        cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
     make -j$(nproc) crypto
 
@@ -607,6 +702,11 @@ then
 
     # Generate dictionary
     ./generate_dict
+
+    # Patch fuzzer
+    if [ "$SANITIZER" = undefined ]; then
+        patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+    fi
 
     # Copy fuzzer
     cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl
@@ -625,7 +725,7 @@ make -B -f Makefile-mini-gmp
 cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
+GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
 make -j$(nproc) crypto
 
 # Compile Cryptofuzz BoringSSL (with assembly) module
@@ -638,6 +738,11 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include
 
 # Generate dictionary
 ./generate_dict
+
+# Patch fuzzer
+if [ "$SANITIZER" = undefined ]; then
+    patchelf --set-rpath '$ORIGIN/lib/jdk-18.0.1/lib/server/' $SRC/cryptofuzz/cryptofuzz
+fi
 
 # Copy fuzzer
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm

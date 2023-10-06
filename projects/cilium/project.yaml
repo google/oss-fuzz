@@ -6,8 +6,9 @@ auto_ccs:
 - "joe@isovalent.com"
 - "natalia@isovalent.com"
 - "robin@isovalent.com"
-- "tom.payne@isovalent.com"
 - "adam@adalogics.com"
+- "david@adalogics.com"
+- "liz@isovalent.com"
 main_repo: "https://github.com/cilium/cilium.git"
 fuzzing_engines:
 - libfuzzer

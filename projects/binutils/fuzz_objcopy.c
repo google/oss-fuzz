@@ -19,8 +19,6 @@ limitations under the License.
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 
-static int initialized = 0;
-
 void
 init_objcopy_global_state() {
   // status is a global variable that is set to 0 initially,
@@ -106,18 +104,23 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   program_name = filename;
 
-  if (initialized == 0) {
-    if (bfd_init () != BFD_INIT_MAGIC) {
-      abort();
-    }
-    set_default_bfd_target();
-    initialized = 1;
-  }
+  if (bfd_init() != BFD_INIT_MAGIC)
+    abort();
+
+  set_default_bfd_target();
 
   init_objcopy_global_state();
 
+  /* glibc getopt has internal static state.  Setting optind to zero
+     reinitialises it.  Do this every second run, which effectively
+     alternates objcopy with options then objcopy without options.
+     (optind will be 9 when copy_main returns.)  */
+  static int iter;
+  if (++iter & 1)
+    optind = 0;
+
   char *fakeArgv[12];
-  fakeArgv[0] = "fuzz_objdump";
+  fakeArgv[0] = "fuzz_objcopy";
   fakeArgv[1] = "-S";
   fakeArgv[2] = "--decompress-debug-sections";
   fakeArgv[3] = "--extract-dwo";
@@ -133,19 +136,13 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   // Cleanup
   free (strip_specific_buffer);
-  strip_specific_buffer = NULL;
   free (strip_unneeded_buffer);
-  strip_unneeded_buffer = NULL;
   free (keep_specific_buffer);
-  keep_specific_buffer = NULL;
   free (localize_specific_buffer);
-  localize_specific_buffer = NULL;
   free (globalize_specific_buffer);
-  globalize_specific_buffer = NULL;
   free (keepglobal_specific_buffer);
-  keepglobal_specific_buffer = NULL;
   free (weaken_specific_buffer);
-  weaken_specific_buffer = NULL;
+  delete_symbol_htabs ();
 
   unlink(filename);
   remove("/tmp/random.out");

@@ -15,8 +15,12 @@
 package mock
 
 import (
+	"bytes"
+	"compress/gzip"
+	fuzz "github.com/AdaLogics/go-fuzz-headers"
 	"github.com/hyperledger/fabric/core/chaincode/persistence"
 	tm "github.com/stretchr/testify/mock"
+	"os"
 )
 
 func FuzzPersistence(data []byte) int {
@@ -25,5 +29,30 @@ func FuzzPersistence(data []byte) int {
 	mockMetaProvider.On("GetDBArtifacts", tm.Anything).Return([]byte("DB artefacts"), nil)
 	ccpp.MetadataProvider = mockMetaProvider
 	_, _ = ccpp.Parse(data)
+	return 1
+}
+
+func FuzzChaincodePackageStreamerMetadatabytes(data []byte) int {
+	err := os.WriteFile("demoTar.tar", data, 0666)
+	if err != nil {
+		return 0
+	}
+	defer os.Remove("demoTar.tar")
+	cps := &persistence.ChaincodePackageStreamer{PackagePath: "demoTar.tar"}
+	_, _ = cps.MetadataBytes()
+	return 1
+}
+
+func FuzzParseChaincodePackage(data []byte) int {
+	f := fuzz.NewConsumer(data)
+	source, err := f.TarBytes()
+	if err != nil {
+		return 0
+	}
+	var b bytes.Buffer
+	w := gzip.NewWriter(&b)
+	w.Write(source)
+	w.Close()
+	_, _, _ = persistence.ParseChaincodePackage(b.Bytes())
 	return 1
 }

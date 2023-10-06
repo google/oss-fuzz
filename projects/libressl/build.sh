@@ -70,6 +70,7 @@ cp $LIBRESSL_FUZZERS/oids.txt $OUT/x509.dict
 
 # Cryptofuzz
 cd $SRC/cryptofuzz/
+sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' config.h
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
@@ -79,9 +80,9 @@ fi
 cd $SRC/botan
 if [[ $CFLAGS != *-m32* ]]
 then
-    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509 --build-targets=static --without-documentation
 else
-    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509 --build-targets=static --without-documentation
 fi
 make -j$(nproc)
 

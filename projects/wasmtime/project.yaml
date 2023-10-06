@@ -10,6 +10,7 @@ auto_ccs:
   - "peterhuene@gmail.com"
   - "jsharp@fastly.com"
   - "telliott@fastly.com"
+  - "rsinclair@fastly.com"
 sanitizers:
   - address
 fuzzing_engines:

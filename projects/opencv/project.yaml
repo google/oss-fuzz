@@ -24,3 +24,9 @@ labels:
   imread_fuzzer:
     - sundew
 main_repo: 'https://github.com/opencv/opencv.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

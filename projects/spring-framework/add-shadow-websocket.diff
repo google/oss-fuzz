@@ -1,0 +1,15 @@
+diff --git a/spring-websocket/spring-websocket.gradle b/spring-websocket/spring-websocket.gradle
+index 3c9d011b4a..7eec687c0c 100644
+--- a/spring-websocket/spring-websocket.gradle
++++ b/spring-websocket/spring-websocket.gradle
+@@ -1,6 +1,10 @@
+ description = "Spring WebSocket"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
++
+ dependencies {
++	implementation 'org.mockito:mockito-core:4.7.0'
++	implementation 'org.objenesis:objenesis:3.3'
+ 	api(project(":spring-context"))
+ 	api(project(":spring-core"))
+ 	api(project(":spring-web"))

@@ -16,3 +16,9 @@ labels:
   pix_rotate_shear_fuzzer:
     - sundew
 main_repo: 'https://github.com/DanBloomberg/leptonica.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

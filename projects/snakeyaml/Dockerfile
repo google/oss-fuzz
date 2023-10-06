@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     mv fuzzing/dictionaries/yaml.dict $SRC/YamlFuzzer.dict && \
@@ -29,5 +29,5 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 RUN git clone --depth 1 https://bitbucket.org/snakeyaml/snakeyaml.git snakeyaml
 
 COPY build.sh $SRC/
-COPY YamlFuzzer.java $SRC/
+COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/snakeyaml

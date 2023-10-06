@@ -8,3 +8,9 @@ auto_ccs:
   - "tmaesaka@gmail.com"
   - "security@fastly.com"
 main_repo: 'https://github.com/h2o/picotls'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

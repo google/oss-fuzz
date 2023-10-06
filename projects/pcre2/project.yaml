@@ -1,6 +1,7 @@
 homepage: "http://www.pcre.org/"
 language: c++
 primary_contact: "philip.hazel@gmail.com"
+main_repo: "https://github.com/PCRE2Project/pcre2"
 fuzzing_engines:
   - libfuzzer
   - afl

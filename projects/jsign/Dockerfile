@@ -16,17 +16,18 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.8.6/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
 RUN git clone --depth 1 https://github.com/ebourg/jsign.git
 
-RUN zip -j $SRC/AuthenticodeExeSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.exe && \
-    zip -j $SRC/AuthenticodeMsiSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.msi && \
-    zip -j $SRC/AuthenticodeCabSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/mscab/*.cab
+RUN zip -j $SRC/AuthenticodeExeSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/*.exe && \
+    zip -j $SRC/AuthenticodeMsiSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/*.msi && \
+    zip -j $SRC/AuthenticodeAppxSignerFuzzer_seed_corpus.zip jsign/jsign-core/src/test/resources/*.msix && \
+    zip -j $SRC/AuthenticodeCabSignerFuzzer_seed_corpus.zip  jsign/jsign-core/src/test/resources/mscab/*.cab
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/

@@ -58,7 +58,7 @@ def generate_sample_xml(fdp):
     ]
 
     for tag in replace_tag+replace_value:
-        xml_string = xml_string.replace(tag,fdp.ConsumeString(10))
+        xml_string = xml_string.replace(tag,fdp.ConsumeUnicodeNoSurrogates(10))
 
     return xml_string
 
@@ -70,6 +70,8 @@ def TestInput(data):
     except IndexError as e:
         if "Unable to parse XPath string:" not in str(e):
             raise e
+    except KeyError:
+        return
 
     try:
         dom = ET.fromstring(generate_sample_xml(fdp))

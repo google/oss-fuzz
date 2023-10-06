@@ -26,7 +26,7 @@ RUN apt-get update && \
 	libcap-dev \
 	libcap-ng-dev \
 	libglib2.0-dev \
-	libpcre3-dev
+	libpcre2-dev
 RUN git clone --depth 1 https://github.com/SELinuxProject/selinux
 WORKDIR selinux
 COPY build.sh $SRC/

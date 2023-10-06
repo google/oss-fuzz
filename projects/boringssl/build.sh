@@ -40,8 +40,9 @@ for F in $fuzzerFiles; do
   fuzzerName=$(basename $F .cc)
   echo "Building fuzzer $fuzzerName"
   $CXX $CXXFLAGS \
+      -D_BORINGSSL_LIBPKI_ -std=c++1z \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-      -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
+      -I $SRC/boringssl/include ./libpki.a ./ssl/libssl.a  ./crypto/libcrypto.a
 
   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
@@ -67,7 +68,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
         ./ssl/libssl.a ./crypto/libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \
-        $SRC/LPM/external.protobuf/lib/libprotobuf.a \
+        -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
         -o $OUT/"${fuzzerName}_lpm"
   done
 fi

@@ -1,0 +1,15 @@
+homepage: "https://www.gwtproject.org/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/gwtproject/gwt/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
+run_tests: False
