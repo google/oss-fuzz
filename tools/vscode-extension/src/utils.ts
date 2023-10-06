@@ -18,7 +18,7 @@ import * as vscode from 'vscode';
 const fs = require('fs');
 const {spawn} = require('node:child_process');
 
-import {println, debugPrintln} from './logger';
+import {println, printRaw, debugPrintln} from './logger';
 
 /**
  * Checks if the current workspace has a generated OSS-Fuzz folder. This is the
@@ -187,10 +187,10 @@ export async function systemSync(cmd: string, args: Array<string | undefined>) {
 
   // Callbacks for output events, to capture stdout and stderr live.
   command.stdout.on('data', (x: {toString: () => string}) => {
-    println(x.toString());
+    printRaw(x.toString());
   });
   command.stderr.on('data', (x: {toString: () => string}) => {
-    println(x.toString());
+    printRaw(x.toString());
   });
 
   // Monitor for child exit.

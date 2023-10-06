@@ -22,6 +22,10 @@ export function println(line: string) {
   vscodeOutputChannel.appendLine(line);
 }
 
+export function printRaw(line: string) {
+  vscodeOutputChannel.append(line);
+}
+
 export function debugPrintln(line: string) {
   console.log(line);
 }
