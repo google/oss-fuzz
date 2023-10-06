@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import * as vscode from 'vscode';
-import {extensionConfig} from './config'
+import {extensionConfig} from './config';
 import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
 
 const fs = require('fs');
@@ -23,25 +23,24 @@ const {spawn} = require('node:child_process');
 
 import {println, printRaw, debugPrintln} from './logger';
 
-export async function downloadRemoteURL(urlString: string, targetFile: string, context: vscode.ExtensionContext,) {
+export async function downloadRemoteURL(
+  urlString: string,
+  targetFile: string,
+  context: vscode.ExtensionContext
+) {
   const fileDownloader: FileDownloader = await getApi();
   //var urlString = await getOSSFuzzCloudURL(projectName) + '/linux/summary.json';
 
-  println("URL: " + urlString);
-  var codeCoverageFile: vscode.Uri;
+  println('URL: ' + urlString);
+  let codeCoverageFile: vscode.Uri;
   try {
     codeCoverageFile = await fileDownloader.downloadFile(
-      vscode.Uri.parse(
-        urlString
-      ),
+      vscode.Uri.parse(urlString),
       targetFile,
       context
     );
-
   } catch (err) {
-    println(
-      'Could not get the coverage summary file'
-    );
+    println('Could not get the coverage summary file');
     return false;
   }
   return codeCoverageFile;
@@ -49,10 +48,8 @@ export async function downloadRemoteURL(urlString: string, targetFile: string, c
 
 export async function getLocalOutBuildDir(projectName: string) {
   const summaryCovPath =
-    extensionConfig.ossFuzzPepositoryWorkPath +
-    '/build/out/' +
-    projectName;
-    return summaryCovPath;
+    extensionConfig.ossFuzzPepositoryWorkPath + '/build/out/' + projectName;
+  return summaryCovPath;
 }
 
 export async function getOSSFuzzCloudURL(projectName: string) {
@@ -64,17 +61,18 @@ export async function getOSSFuzzCloudURL(projectName: string) {
   const month = yesterday.getMonth();
   const year = yesterday.getFullYear();
 
-  var urlString = 'https://storage.googleapis.com/oss-fuzz-coverage/' +
-  projectName +
-  '/reports/' +
-  year.toString();
+  let urlString =
+    'https://storage.googleapis.com/oss-fuzz-coverage/' +
+    projectName +
+    '/reports/' +
+    year.toString();
 
   if (month < 10) {
-    urlString += "0";
+    urlString += '0';
   }
   urlString += month.toString();
   if (day < 10) {
-    urlString += "0";
+    urlString += '0';
   }
   urlString += day.toString();
 
