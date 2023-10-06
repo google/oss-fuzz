@@ -278,7 +278,7 @@ cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
 
 mv out/FuzzDebug/sksl2wgsl $OUT/sksl2wgsl
-cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
+cp ../skia_data/sksl.dict $OUT/sksl2wgsl.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2wgsl_seed_corpus.zip
 
 mv out/FuzzDebug/skruntimeblender $OUT/skruntimeblender
