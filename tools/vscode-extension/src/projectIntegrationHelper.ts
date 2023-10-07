@@ -28,7 +28,7 @@ export async function setupProjectInitialFiles() {
     placeHolder: 'Github repository for the project.',
   });
   if (!projectGithubRepository) {
-    return;
+    return false;
   }
 
   const projectNameFromRepo = path.parse(projectGithubRepository).base;
@@ -203,4 +203,5 @@ if __name__ == "__main__":
 
     vscode.window.showInformationMessage('Created a new file: hello/world.md');
   }
+  return true;
 }

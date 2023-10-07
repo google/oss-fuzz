@@ -19,10 +19,9 @@ const fs = require('fs');
 import {println} from '../logger';
 import {commandHistory} from '../commandUtils';
 import {buildFuzzersFromWorkspace, runFuzzerHandler} from '../ossfuzzWrappers';
-import {listFuzzersForProject, systemSync} from '../utils';
+import {listFuzzersForProject, systemSync, setStatusText} from '../utils';
 import {
   compareLocalToRemoteCoverage,
-  loadSummaryJsonCoverage,
   loadCoverageIntoWorkspace,
 } from '../coverageHelper';
 import {extensionConfig} from '../config';
@@ -40,6 +39,7 @@ export async function runEndToEndAndGetCoverage(
   context: vscode.ExtensionContext
 ) {
   println('Getting code coverage');
+  await setStatusText('end-to-end coverage: getting input');
   const ossFuzzProjectNameInput = await vscode.window.showInputBox({
     value: '',
     placeHolder: 'The OSS-Fuzz project name',
@@ -77,7 +77,17 @@ export async function runEndToEndAndGetCoverage(
 }
 
 async function cmdDispatchEndToEndRun(args: any) {
-  await endToEndRun(args.projectName, args.secondsToRun, args.vsContext);
+  await setStatusText('end-to-end coverage: starting');
+  const res = await endToEndRun(
+    args.projectName,
+    args.secondsToRun,
+    args.vsContext
+  );
+  if (res) {
+    await setStatusText('end-to-end coverage: finished succesfully');
+  } else {
+    await setStatusText('end-to-end coverage: failed');
+  }
   return;
 }
 
@@ -86,6 +96,7 @@ async function endToEndRun(
   secondsToRunEachFuzzer: string,
   context: vscode.ExtensionContext
 ) {
+  await setStatusText('end-to-end coverage: build with ASAN');
   vscode.window.showInformationMessage(
     'Building project: ' + ossFuzzProjectNameInput.toString()
   );
@@ -97,7 +108,7 @@ async function endToEndRun(
     )) === false
   ) {
     println('Failed to build project');
-    return;
+    return false;
   }
   println('Build projects');
 
@@ -108,10 +119,12 @@ async function endToEndRun(
   );
 
   // Run all of the fuzzers in the project
+  await setStatusText('end-to-end coverage: collecting corpus');
   println('Fuzzers found in project: ' + fuzzersInProject.toString());
   println('Running each of the fuzzers to collect a corpus');
   for (const fuzzName of fuzzersInProject) {
     println('Running fuzzer: ' + fuzzName);
+    await setStatusText('end-to-end coverage: collecting corpus: ' + fuzzName);
     // Corpus directory
     const fuzzerCorpusPath =
       extensionConfig.ossFuzzPepositoryWorkPath +
@@ -132,6 +145,7 @@ async function endToEndRun(
 
   // Build with code coverage
   println('Building project with coverage sanitizer');
+  await setStatusText('end-to-end coverage: building with coverage');
   await buildFuzzersFromWorkspace(
     ossFuzzProjectNameInput.toString(),
     'coverage',
@@ -140,6 +154,7 @@ async function endToEndRun(
 
   // Run coverage command
   println('Collecting code coverage');
+  await setStatusText('end-to-end coverage: collecting coverage');
   const args: Array<string> = [
     extensionConfig.ossFuzzPepositoryWorkPath + '/infra/helper.py',
     'coverage',
@@ -149,7 +164,7 @@ async function endToEndRun(
     ossFuzzProjectNameInput.toString(),
   ];
   await systemSync('python3', args);
-
+  await setStatusText('end-to-end coverage: finished collecting coverage');
   println('Load coverage report with the command:');
   println(
     'python3 -m http.server 8008 --directory /tmp/oss-fuzz/build/out/' +
@@ -172,4 +187,6 @@ async function endToEndRun(
     context,
     ossFuzzProjectNameInput.toString()
   );
+
+  return true;
 }

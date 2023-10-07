@@ -17,7 +17,11 @@
 import * as vscode from 'vscode';
 import {println} from '../logger';
 import {commandHistory} from '../commandUtils';
-import {hasOssFuzzInWorkspace, getOssFuzzWorkspaceProjectName} from '../utils';
+import {
+  hasOssFuzzInWorkspace,
+  getOssFuzzWorkspaceProjectName,
+  setStatusText,
+} from '../utils';
 import {buildFuzzersFromWorkspace} from '../ossfuzzWrappers';
 
 export async function cmdInputCollectorBuildFuzzersFromWorkspace() {
@@ -62,9 +66,15 @@ export async function cmdInputCollectorBuildFuzzersFromWorkspace() {
 }
 
 async function cmdDispatchBuildFuzzersFromWorkspace(args: any) {
-  await buildFuzzersFromWorkspace(
+  await setStatusText('Building fuzzers: starting');
+  const res = await buildFuzzersFromWorkspace(
     args.projectName,
     args.sanitizer,
     args.toClean
   );
+  if (res) {
+    await setStatusText('Building fuzzers: finished');
+  } else {
+    await setStatusText('Building fuzzers: failed');
+  }
 }
