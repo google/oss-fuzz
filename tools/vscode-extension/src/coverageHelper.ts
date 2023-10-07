@@ -17,6 +17,13 @@
 import * as vscode from 'vscode';
 import {Uri} from 'vscode';
 import {println} from './logger';
+import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
+import {extensionConfig} from './config';
+import {
+  getOSSFuzzCloudURL,
+  getLocalOutBuildDir,
+  downloadRemoteURL,
+} from './utils';
 
 const path = require('path');
 let isCodeCoverageEnabled = false;
@@ -50,6 +57,77 @@ const missingLineDecorationType = vscode.window.createTextEditorDecorationType({
     borderColor: 'lightblue',
   },
 });
+
+export async function loadSummaryJsonCoverage(
+  context: vscode.ExtensionContext,
+  codeCoverageFile: Uri
+) {
+  const coverageSummaryRawJson = await vscode.workspace.openTextDocument(
+    codeCoverageFile
+  );
+  const jsonCodeCoverage = JSON.parse(coverageSummaryRawJson.getText());
+  return jsonCodeCoverage;
+}
+
+export async function compareLocalToRemoteCoverage(
+  context: vscode.ExtensionContext,
+  projectName: string
+) {
+  println('Checking the file matching');
+  /* Get the coverage from the remote server */
+  const urlString =
+    (await getOSSFuzzCloudURL(projectName)) + '/linux/summary.json';
+
+  println('URL: ' + urlString);
+  const codeCoverageFile: false | vscode.Uri = await downloadRemoteURL(
+    urlString,
+    'summary.json',
+    context
+  );
+  if (!codeCoverageFile) {
+    println('Could not get the coverage summary file');
+    return;
+  }
+  const remoteCoverage = await loadSummaryJsonCoverage(
+    context,
+    codeCoverageFile
+  );
+
+  /* Get the local coverage report */
+  // Compare the local coverage to the upstream coverage
+  const localSummaryCovPath =
+    (await getLocalOutBuildDir(projectName)) + '/report/linux/summary.json';
+  const localCodeCoverage = await loadSummaryJsonCoverage(
+    context,
+    vscode.Uri.file(localSummaryCovPath)
+  );
+
+  for (let i = 0; i < localCodeCoverage.data[0].files.length; i++) {
+    for (let j = 0; j < remoteCoverage.data[0].files.length; j++) {
+      // Get the file dictionary
+      const localFileData = localCodeCoverage.data[0].files[i];
+      const remoteFileData = remoteCoverage.data[0].files[j];
+
+      // If the filepaths are the same, then we match coverage data
+      if (localFileData.filename === remoteFileData.filename) {
+        const remoteFuncCount = remoteFileData.summary.functions.count;
+        const localFuncCount = localFileData.summary.functions.count;
+
+        if (localFuncCount > remoteFuncCount) {
+          println(
+            'Coverage improved in :' +
+              localFileData.filename +
+              ' [' +
+              localFuncCount +
+              ' : ' +
+              remoteFuncCount +
+              ']'
+          );
+        }
+      }
+    }
+  }
+}
 
 /**
  *
