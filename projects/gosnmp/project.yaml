@@ -1,0 +1,10 @@
+homepage: "https://github.com/gosnmp/gosnmp"
+language: go
+primary_contact: "superq@gmail.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/gosnmp/gosnmp"
