@@ -17,8 +17,6 @@
 import * as vscode from 'vscode';
 import {Uri} from 'vscode';
 import {println} from './logger';
-import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
-import {extensionConfig} from './config';
 import {
   getOSSFuzzCloudURL,
   getLocalOutBuildDir,

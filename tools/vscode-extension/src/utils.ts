@@ -20,8 +20,18 @@ import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
 
 const fs = require('fs');
 const {spawn} = require('node:child_process');
+const statusBarComp = vscode.window.createStatusBarItem(
+  vscode.StatusBarAlignment.Right,
+  100
+);
 
 import {println, printRaw, debugPrintln} from './logger';
+
+export async function setStatusText(statusText: string) {
+  //let myStatusBarItem: vscode.StatusBarItem;
+  statusBarComp.text = '$(megaphone) OSS-Fuzz: ' + statusText;
+  statusBarComp.show();
+}
 
 export async function downloadRemoteURL(
   urlString: string,
@@ -29,8 +39,6 @@ export async function downloadRemoteURL(
   context: vscode.ExtensionContext
 ) {
   const fileDownloader: FileDownloader = await getApi();
-  //var urlString = await getOSSFuzzCloudURL(projectName) + '/linux/summary.json';
-
   println('URL: ' + urlString);
   let codeCoverageFile: vscode.Uri;
   try {
