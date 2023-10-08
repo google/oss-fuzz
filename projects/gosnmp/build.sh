@@ -17,4 +17,7 @@
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
+sed -i '5,6d' marshal_test.go
+sed -i '/func BenchmarkSendOneRequest(/,/^}/ s/^/\/\//' marshal_test.go
+
 compile_native_go_fuzzer github.com/gosnmp/gosnmp FuzzUnmarshal  fuzz_unmarshal marshal
