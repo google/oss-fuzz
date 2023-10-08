@@ -98,7 +98,7 @@
       {
         "command": "oss-fuzz.Template",
         "title": "OSS-Fuzz: Template fuzzer creation"
-      }      
+      }
     ]
   },
   "scripts": {
