@@ -15,7 +15,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import {setupProjectInitialFiles} from '../projectIntegrationHelper';
+import {setStatusText} from '../utils';
 
 export async function createOssFuzzSetup() {
-  await setupProjectInitialFiles();
+  await setStatusText('Creating OSS-Fuzz setup: starting');
+  const res = await setupProjectInitialFiles();
+  if (res) {
+    await setStatusText('Creating OSS-Fuzz setup: finished');
+  } else {
+    await setStatusText('Creating OSS-Fuzz setup: failed');
+  }
 }

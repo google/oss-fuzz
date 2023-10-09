@@ -23,7 +23,6 @@ import {buildFuzzersFromWorkspace} from '../ossfuzzWrappers';
 import {extensionConfig} from '../config';
 const readline = require('readline');
 
-
 export async function cmdInputCollectorReproduceTestcase() {
   // Runs a fuzzer from a given project.
   const crashFileInput = await vscode.window.showInputBox({
