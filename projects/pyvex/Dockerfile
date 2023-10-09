@@ -19,6 +19,7 @@ RUN apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3-pip && \
         rm -rf /var/lib/apt/lists/*
 RUN python3.9 -m pip install --upgrade pip
+RUN pip3 install -U pip
 RUN git clone https://github.com/angr/archinfo.git archinfo
 RUN git clone --recursive https://github.com/angr/pyvex.git pyvex
 RUN cp pyvex/fuzzing/build.sh $SRC/
