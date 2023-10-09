@@ -341,6 +341,25 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 	return contents, nil
 }
 
+func AppendStringToFile(filepath, new_content string) error {
+	// Appends |new_content| to the content of |filepath|.
+	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(new_content)
+	return err
+}
+
+func WriteStdErrOut(outstr string, errstr string) {
+	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
+	fmt.Print(outstr)
+	fmt.Fprint(os.Stderr, errstr)
+	AppendStringToFile("/out/err.log", errstr)
+}
+
 func main() {
 	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
@@ -367,8 +386,7 @@ func main() {
 	}
 	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
-		fmt.Print(out)
-		fmt.Fprint(os.Stderr, errstr)
+		WriteStdErrOut(out, errstr)
 		os.Exit(0)
 	}
 
@@ -389,8 +407,7 @@ func main() {
 		// Nothing else we can do. Just write the error and exit.
 		// Just print the original error for debugging purposes and
 		//  to make build systems happy.
-		fmt.Print(out)
-		fmt.Fprint(os.Stderr, errstr)
+		WriteStdErrOut(out, errstr)
 		os.Exit(retcode)
 	}
 	fixret, fixout, fixerr := TryFixCCompilation(newArgs)
@@ -398,15 +415,12 @@ func main() {
 		// We failed, write stdout and stderr from the first failure and
 		// from fix failures so we can know what the code did wrong and
 		// how to improve jcc to fix more issues.
-		fmt.Print(out)
-		fmt.Fprint(os.Stderr, errstr)
+		WriteStdErrOut(out, errstr)
 		fmt.Println("\nFix failure")
-		fmt.Print(fixout)
 		// Print error back to stderr so tooling that relies on this can proceed
-		fmt.Fprint(os.Stderr, fixerr)
+		WriteStdErrOut(fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.
-	fmt.Print(fixout)
-	fmt.Fprint(os.Stderr, fixerr)
+	WriteStdErrOut(fixout, fixerr)
 }
