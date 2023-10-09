@@ -2,7 +2,7 @@ homepage: "https://nlnetlabs.nl/projects/unbound/about/"
 language: c
 primary_contact: "wouter@nlnetlabs.nl"
 auto_ccs:
-  - "george@nlnetlabs.nl"
+  - "yorgos@nlnetlabs.nl"
   - "philip@nlnetlabs.nl"
 main_repo: 'https://github.com/NLnetLabs/unbound'
 

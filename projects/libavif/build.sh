@@ -15,22 +15,7 @@
 #
 ################################################################################
 
-# build dav1d
-cd ext && bash dav1d.cmd && cd ..
-
-# build libavif
-mkdir build
-cd build
-cmake -G Ninja -DBUILD_SHARED_LIBS=0 -DAVIF_CODEC_DAV1D=1 -DAVIF_LOCAL_DAV1D=1 ..
-ninja
-
-# build fuzzer
-$CXX $CXXFLAGS -std=c++11 -I../include \
-    ../tests/oss-fuzz/avif_decode_fuzzer.cc -o $OUT/avif_decode_fuzzer \
-    $LIB_FUZZING_ENGINE libavif.a ../ext/dav1d/build/src/libdav1d.a
-
-# copy seed corpus
-cp $SRC/avif_decode_seed_corpus.zip $OUT/
+bash tests/oss-fuzz/build.sh
 
 # show contents of $OUT/ for sanity checking
 find $OUT/
