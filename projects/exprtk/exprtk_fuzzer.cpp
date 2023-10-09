@@ -19,6 +19,11 @@
 #define exprtk_enable_range_runtime_checks
 #include "exprtk.hpp"
 
+parser_t parser;
+
+parser.set_max_stack_depth(100);
+parser.set_max_node_depth (200);
+
 struct timeout_rtc_handler : public exprtk::loop_runtime_check
 {
    timeout_rtc_handler()
@@ -33,7 +38,7 @@ struct timeout_rtc_handler : public exprtk::loop_runtime_check
        {}
    };
 
-   static constexpr std::size_t max_iterations = 5000000;
+   static constexpr std::size_t max_iterations = 1000000;
 
    using time_point_t = std::chrono::time_point<std::chrono::steady_clock>;
 
@@ -88,7 +93,11 @@ void run(const std::string& expression_string)
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
-   timeout_rtc_handler loop_runtime_check;
+   using loop_runtime_check_t = exprtk::loop_runtime_check;
+   
+   parser_t parser;
+   
+   loop_runtime_check_t loop_runtime_check;
    loop_runtime_check.loop_set = loop_runtime_check_t::e_all_loops;
    loop_runtime_check.max_loop_iterations = 100000;
 
