@@ -157,11 +157,14 @@ $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   cubic_roots \
   quad_roots \
   skmeshspecification \
+  skruntimeblender \
+  skruntimecolorfilter \
   skruntimeeffect \
   sksl2glsl \
   sksl2metal \
   sksl2pipeline \
   sksl2spirv \
+  sksl2wgsl
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -257,14 +260,10 @@ mv out/FuzzDebug/skmeshspecification $OUT/skmeshspecification
 cp ../skia_data/sksl.dict $OUT/skmeshspecification.dict
 mv ../skia_data/skmeshspecification_seed_corpus.zip $OUT/skmeshspecification_seed_corpus.zip
 
-# All five SkSL tests share the same sksl_seed_corpus and dictionary.
+# All eight SkSL tests share the same sksl_seed_corpus and dictionary.
 mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
 cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
-
-mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
-cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
 
 mv out/FuzzDebug/sksl2metal $OUT/sksl2metal
 cp ../skia_data/sksl.dict $OUT/sksl2metal.dict
@@ -274,10 +273,27 @@ mv out/FuzzDebug/sksl2pipeline $OUT/sksl2pipeline
 cp ../skia_data/sksl.dict $OUT/sksl2pipeline.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
 
+mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
+cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
+
+mv out/FuzzDebug/sksl2wgsl $OUT/sksl2wgsl
+cp ../skia_data/sksl.dict $OUT/sksl2wgsl.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2wgsl_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimeblender $OUT/skruntimeblender
+cp ../skia_data/sksl.dict $OUT/skruntimeblender.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeblender_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimecolorfilter $OUT/skruntimecolorfilter
+cp ../skia_data/sksl.dict $OUT/skruntimecolorfilter.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/skruntimecolorfilter_seed_corpus.zip
+
 mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
 mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
+#
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
