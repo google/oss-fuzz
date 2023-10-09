@@ -20,5 +20,5 @@ npm ci
 unzip node_modules/xmltest/xmltest.zip
 
 # build fuzzers
-compile_javascript_fuzzer xmldom test/dom-parser.xml.fuzz.js --sync --timeout=10 xmltest
-compile_javascript_fuzzer xmldom test/dom-parser.html.fuzz.js --sync --timeout=10 xmltest
+compile_javascript_fuzzer xmldom test/fuzz/dom-parser.xml.target.js --sync --timeout=10 xmltest
+compile_javascript_fuzzer xmldom test/fuzz/dom-parser.html.target.js --sync --timeout=10 xmltest
