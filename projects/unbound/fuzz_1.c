@@ -63,7 +63,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   struct iter_priv priv;
   memset(&priv, 0, sizeof(struct iter_priv));
   ie.priv = &priv;
-  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &ie);   
+
+  struct module_qstate qstate;
+  memset(&qstate, 0, sizeof(struct module_qstate));
+  qstate.env = &env;
+  qstate.region = reg;
+
+  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie);
 out:
   regional_destroy(reg);
   sldns_buffer_free(pkt);

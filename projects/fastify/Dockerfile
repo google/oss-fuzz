@@ -25,6 +25,11 @@ RUN git clone --depth 1 https://github.com/fastify/fastify-response-validation f
 RUN git clone --depth 1 https://github.com/fastify/fastify-auth fastify-auth
 RUN git clone --depth 1 https://github.com/fastify/fastify-basic-auth fastify-basic-auth
 RUN git clone --depth 1 https://github.com/fastify/fastify-bearer-auth fastify-bearer-auth
+RUN git clone --depth 1 http://github.com/fastify/fastify-plugin fastify-plugin
+RUN git clone --depth 1 http://github.com/fastify/fastify-cookie fastify-cookie
+RUN git clone --depth 1 http://github.com/fastify/fastify-cors fastify-cors
+RUN git clone --depth 1 http://github.com/fastify/fastify-secure-session fastify-secure-session
+
 RUN git clone --depth 1 https://github.com/AdaLogics/ada-fuzzers fuzzers
 
 WORKDIR $SRC/fastify

@@ -1,0 +1,14 @@
+homepage: "nokogiri.org"
+language: c
+primary_contact: "fuzzy.boiiii23a@gmail.com"
+auto_ccs:
+  - mike.dalessio@gmail.com
+main_repo: 'https://github.com/sparklemotion/nokogiri.git'
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - afl
+  - centipede
+  - honggfuzz
+  - libfuzzer
