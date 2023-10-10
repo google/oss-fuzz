@@ -16,11 +16,15 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && \
-        DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3-pip && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3.9-dev && \
+        ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
+        apt-get install -y python3-pip && \
+        python3 -m pip install cython "atheris>=2.1.1" "pyinstaller>=5.0.1" "coverage>=6.3.2" && \
         rm -rf /var/lib/apt/lists/*
-RUN python3.9 -m pip install --upgrade pip
-RUN pip3 install -U pip
-RUN git clone https://github.com/angr/archinfo.git archinfo
+RUN python3 -m pip install --upgrade pip
+RUN rm -rf /usr/local/bin/python3 && ln -s /usr/bin/python3.9 /usr/local/bin/python3
+RUN git clone --recursive https://github.com/angr/archinfo.git archinfo
 RUN git clone --recursive https://github.com/angr/pyvex.git pyvex
+#RUN git clone --recursive https://github.com/capuanob/pyvex.git pyvex
 RUN cp pyvex/fuzzing/build.sh $SRC/
 WORKDIR $SRC/pyvex
