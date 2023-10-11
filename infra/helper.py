@@ -77,7 +77,9 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 # Regex to match special chars in project name.
 SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
-LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+LANGUAGES_WITH_BUILDER_IMAGES = {
+    'go', 'javascript', 'jvm', 'python', 'rust', 'swift'
+}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
@@ -256,11 +258,13 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
-  generate_parser.add_argument(
-      '--language',
-      default=constants.DEFAULT_LANGUAGE,
-      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python', 'javascript'],
-      help='Project language.')
+  generate_parser.add_argument('--language',
+                               default=constants.DEFAULT_LANGUAGE,
+                               choices=[
+                                   'c', 'c++', 'rust', 'go', 'jvm', 'swift',
+                                   'python', 'javascript'
+                               ],
+                               help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
