@@ -19,11 +19,6 @@ import atheris
 
 from c7n import exceptions
 from c7n.resources import health, kafka, sagemaker, ebs, emr, awslambda, securityhub, cw, ec2
-#from c7n.resources import secretsmanager, account, ebs, emr, ecr, servicecatalog
-#from c7n.resources import eks, redshift, awslambda, glue, asg, route53
-#from c7n.resources import securityhub, cloudtrail, ssm, rds, cw, efs
-#from c7n.resources import ec2, rdscluster, workspaces, vpc, iam, ami
-#from c7n.resources import elasticsearch, apigw, appelb, s3, sagemaker
 
 def TestOneInput(data):
     """Fuzz encode and decode"""
