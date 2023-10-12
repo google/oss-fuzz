@@ -15,19 +15,13 @@
 #
 ################################################################################
 
-# Since pyvex requires a specific developer build of archinfo, install it from source
-cd "$SRC"/archinfo
-pip3 install .
+# build project
+npm ci
+unzip node_modules/xmltest/xmltest.zip
 
-cd "$SRC"/pyvex
-pip3 install .
+# Copy corpus out
+cp -rf $SRC/xmldom/xmltest $OUT/xmltest
 
-# Generate a simple binary for the corpus
-echo -ne "start:\n\txor %edi, %edi\nmov \$60, %eax\nsyscall" > /tmp/corpus.s
-clang -Os -s /tmp/corpus.s -nostdlib -nostartfiles -m32 -o corpus
-zip -r "$OUT"/irsb_fuzzer_seed_corpus.zip corpus
-
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer "$fuzzer" --add-binary="pyvex/lib/libpyvex.so:pyvex/lib"
-done
+# build fuzzers
+compile_javascript_fuzzer xmldom fuzz/dom-parser.xml.target.js --sync --timeout=10 xmltest
+compile_javascript_fuzzer xmldom fuzz/dom-parser.html.target.js --sync --timeout=10 xmltest
