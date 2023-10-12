@@ -19,6 +19,9 @@
 npm ci
 unzip node_modules/xmltest/xmltest.zip
 
+# Copy corpus out
+cp -rf $SRC/xmldom/xmltest $OUT/xmltest
+
 # build fuzzers
 compile_javascript_fuzzer xmldom fuzz/dom-parser.xml.target.js --sync --timeout=10 xmltest
 compile_javascript_fuzzer xmldom fuzz/dom-parser.html.target.js --sync --timeout=10 xmltest
