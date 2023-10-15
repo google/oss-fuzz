@@ -1,0 +1,12 @@
+homepage: "https://github.com/lipnitsk/libcue"
+main_repo: "https://github.com/lipnitsk/libcue.git"
+language: c
+primary_contact: "ilya.lipnitskiy@gmail.com"
+auto_ccs:
+  - "aleksandrosansan@gmail.com"
+fuzzing_engines:
+    - libfuzzer
+    - honggfuzz
+    - afl
+    - wycheproof
+    # - centipede disabled until https://github.com/lipnitsk/libcue/pull/31/
