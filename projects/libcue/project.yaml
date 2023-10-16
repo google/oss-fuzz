@@ -4,9 +4,13 @@ language: c
 primary_contact: "ilya.lipnitskiy@gmail.com"
 auto_ccs:
   - "aleksandrosansan@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
 fuzzing_engines:
-    - libfuzzer
-    - honggfuzz
-    - afl
-    - wycheproof
-    # - centipede disabled until https://github.com/lipnitsk/libcue/pull/31/
+  - libfuzzer
+  - honggfuzz
+  - afl
+  - wycheproof
+  # - centipede disabled until https://github.com/lipnitsk/libcue/pull/31/
