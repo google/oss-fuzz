@@ -4,6 +4,10 @@ language: c
 primary_contact: "ilya.lipnitskiy@gmail.com"
 auto_ccs:
   - "aleksandrosansan@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
 fuzzing_engines:
     - libfuzzer
     - honggfuzz
