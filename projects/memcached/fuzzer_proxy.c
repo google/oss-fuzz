@@ -41,7 +41,7 @@ extern int LLVMFuzzerInitialize(int *argc, char **argv)
     LIBEVENT_THREAD *mthread = get_worker_thread(0); 
 
     // init proxy config
-    settings.proxy_ctx = proxy_init(false);
+    settings.proxy_ctx = proxy_init(false, false);
     settings.proxy_enabled = true;
     settings.binding_protocol = proxy_prot;
 
