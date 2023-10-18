@@ -113,7 +113,7 @@ else
                --disable-shared --disable-modules=locking_allocator --disable-shared-library \
                --without-os-features=getrandom,getentropy
 fi
-make -j$(nproc)
+make -j$(nproc) libs
 make install
 )
 
