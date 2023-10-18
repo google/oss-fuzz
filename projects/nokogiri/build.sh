@@ -57,10 +57,19 @@ then
   export SANITIZER_OPTS="-g -fprofile-instr-generate -fcoverage-mapping"
   export SANITIZER_LINK=""
 fi
+if [ "$SANITIZER" = "memory" ]
+then
+  export SANITIZER_OPTS="-fsanitize=memory -fPIE -pie -Wno-unused-command-line-argument"
+  export SANITIZER_LINK="$(find $($LLVM_CONFIG --libdir) -name libclang_rt.msan_cxx-x86_64.a | head -1)"
+fi
+if [ "$SANITIZER" = "introspector" ]
+then
+  export SANITIZER_OPTS="-fno-omit-frame-pointer -gline-tables-only -fuse-ld=gold -flto -Wno-unused-command-line-argument"
+  export SANITIZER_LINK=""
+fi
 
-
-export CXXFLAGS="-O0 $CXXFLAGS $SANITIZER_OPTS"
-export CFLAGS="-O0 $CFLAGS $SANITIZER_OPTS"
+export CXXFLAGS="-O0 -fno-inline-functions $CXXFLAGS $SANITIZER_OPTS"
+export CFLAGS="-O0 -fno-inline-functions  $CFLAGS $SANITIZER_OPTS"
 cd nokogiri/gumbo-parser/src && make clean && make && cd -
 $CXX $CXXFLAGS -o parse_fuzzer parse_fuzzer.cc nokogiri/gumbo-parser/src/libgumbo.a $ENGINE_LINK $SANITIZER_LINK
 mv parse_fuzzer $OUT/parse_fuzzer
