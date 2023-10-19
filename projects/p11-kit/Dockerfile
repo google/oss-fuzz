@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint python3
-RUN git clone --depth 1 https://github.com/p11-glue/p11-kit.git p11-kit
+RUN git clone --depth 1 --recurse-submodules https://github.com/p11-glue/p11-kit.git p11-kit
 WORKDIR p11-kit
 COPY build.sh $SRC/
