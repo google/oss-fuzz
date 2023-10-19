@@ -14,25 +14,7 @@
 #
 ###############################################################################
 
-export SANITIZER_OPTS=""
 export SANITIZER_LINK=""
-
-if [ "$FUZZING_ENGINE" = "centipede" ]
-then
-  export ENGINE_LINK="$LIB_FUZZING_ENGINE -lc++"
-fi
-if [ "$FUZZING_ENGINE" = "libfuzzer" ]
-then
-  export ENGINE_LINK="$(find $(llvm-config --libdir) -name libclang_rt.fuzzer-x86_64.a | head -1)"
-fi
-if [ "$FUZZING_ENGINE" = "honggfuzz" ]
-then
-  export ENGINE_LINK="$(find . -name honggfuzz.a)"
-fi
-if [ "$FUZZING_ENGINE" = "afl" ]
-then
-  export ENGINE_LINK="$(find . -name libAFLDriver.a | head -1) $(find . -name afl-compiler-rt-64.o | head -1)"
-fi
 
 if [ "$SANITIZER" = "undefined" ]
 then
@@ -47,10 +29,8 @@ then
   export SANITIZER_LINK="$(find $($LLVM_CONFIG --libdir) -name libclang_rt.msan_cxx-x86_64.a | head -1)"
 fi
 
-export CXXFLAGS="$CXXFLAGS $SANITIZER_OPTS"
-export CFLAGS="$CFLAGS $SANITIZER_OPTS"
 cd nokogiri/gumbo-parser/src && make clean && make && cd -
-$CXX $CXXFLAGS -o parse_fuzzer parse_fuzzer.cc nokogiri/gumbo-parser/src/libgumbo.a $ENGINE_LINK $SANITIZER_LINK
+$CXX $CXXFLAGS -o parse_fuzzer parse_fuzzer.cc nokogiri/gumbo-parser/src/libgumbo.a $LIB_FUZZING_ENGINE $SANITIZER_LINK
 mv parse_fuzzer $OUT/parse_fuzzer
 mv gumbo.dict $OUT/parse_fuzzer.dict
 mv nokogiri_corpus.zip $OUT/parse_fuzzer_seed_corpus.zip
