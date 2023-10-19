@@ -20,7 +20,9 @@ RUN git clone --depth 1 https://github.com/fluent/fluent-bit/ fluent-bit
 # Update the libs in fluent-bit to use the latest patches for optimizing fuzzing workflow
 RUN cd $SRC/fluent-bit/lib && \
     rm -rf ./ctraces && \
-    git clone --depth 1 https://github.com/fluent/ctraces ctraces
+    git clone --depth 1 https://github.com/fluent/ctraces ctraces && \
+    rm -rf ./cmetrics && \
+    git clone --depth 1 https://github.com/fluent/cmetrics
 
 WORKDIR $SRC
 COPY build.sh $SRC/
