@@ -23,6 +23,7 @@ ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
 ADD http://www.digip.org/jansson/releases/jansson-2.12.tar.gz jansson-2.12.tar.gz
 RUN git clone --depth=1 https://github.com/yaml/libyaml
 ADD https://github.com/lz4/lz4/archive/v1.9.2.tar.gz lz4-1.9.2.tar.gz
+RUN git clone --depth 1 https://github.com/catenacyber/quadfuzz.git
 RUN git clone --depth 1 -b develop https://github.com/madler/zlib.git
 RUN git clone --depth=1 https://github.com/catenacyber/fuzzpcap
 

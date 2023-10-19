@@ -17,6 +17,8 @@
 
 python3 -m pip install .
 
+export PYFUZZPACKAGE=$SRC/urllib3/src/urllib3
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer

@@ -18,24 +18,25 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export CXXFLAGS="$CXXFLAGS -D_LIBCPP_DEBUG=1"
 export GO111MODULE=off
 
 # Install Go stable binaries
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
 
-tar zxf $SRC/go1.19.10.linux-amd64.tar.gz
-mv go/ go-119
-export GOROOT_119=$SRC/go-bootstrap/go-119/
-export GOPATH_119=$GOROOT_119/packages/
-mkdir $GOPATH_119
-mkdir -p $GOPATH_119/src/golang.org/x/crypto/
-cp -R $SRC/go-crypto/* $GOPATH_119/src/golang.org/x/crypto/
-mkdir -p $GOPATH_119/src/golang.org/x/sys/
-cp -R $SRC/go-sys/* $GOPATH_119/src/golang.org/x/sys/
-export PATH_GO_119=$GOROOT_119/bin:$GOROOT_119/packages/bin:$PATH
+tar zxf $SRC/go1.21.3.linux-amd64.tar.gz
+mv go/ go-121
+export GOROOT_121=$SRC/go-bootstrap/go-121/
+export GOPATH_121=$GOROOT_121/packages/
+mkdir $GOPATH_121
+mkdir -p $GOPATH_121/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_121/src/golang.org/x/crypto/
+mkdir -p $GOPATH_121/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_121/src/golang.org/x/sys/
+export PATH_GO_121=$GOROOT_121/bin:$GOROOT_121/packages/bin:$PATH
 
-tar zxf $SRC/go1.20.5.linux-amd64.tar.gz
+tar zxf $SRC/go1.20.10.linux-amd64.tar.gz
 mv go/ go-120
 export GOROOT_120=$SRC/go-bootstrap/go-120/
 export GOPATH_120=$GOROOT_120/packages/
@@ -274,8 +275,6 @@ then
     # Disable speculative load hardening because
     # this results in MSAN false positives
     sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
-    sed -i '/.*x86-speculative-load-hardening.*/d' modules_linux/common/ModuleCommon.cmake
-
 
     # Unittests don't build with clang and are not needed anyway
     sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
@@ -507,11 +506,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang (119) module
+# Compile Cryptofuzz Golang (121) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/golang
-    GOROOT="$GOROOT_119" GOPATH="$GOPATH_119" PATH="$PATH_GO_119" make -B
+    GOROOT="$GOROOT_121" GOPATH="$GOPATH_121" PATH="$PATH_GO_121" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -560,7 +559,7 @@ cd $SRC/wolfssl
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0 --enable-aeseax"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

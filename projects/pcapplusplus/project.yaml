@@ -11,3 +11,4 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/seladb/PcapPlusPlus'
+coverage_extra_args: -ignore-filename-regex=/libpcap/ -ignore-filename-regex=/PcapPlusPlus/3rdParty/

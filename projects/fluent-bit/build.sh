@@ -132,3 +132,9 @@ else
 fi
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/
+
+# Add seeds to config-yaml fuzzer
+mkdir -p $SRC/config_yaml_seeds
+cd $SRC/config_yaml_seeds
+find $SRC/fluent-bit/tests/internal/data/config_format/yaml -name "*.yaml" -exec cp {} . \;
+zip -rj $OUT/flb-it-fuzz-config_yaml_fuzzer_OSSFUZZ_seed_corpus.zip $SRC/config_yaml_seeds/*

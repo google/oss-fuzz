@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # Mesa,libz/zlib, and xcb needed to build swiftshader
-RUN apt-get update && apt-get install -y python3 wget libglu1-mesa-dev cmake lib32z1-dev zlib1g-dev libxext-dev libxcb-shm0-dev
+RUN apt-get update && apt-get install -y python3 wget libglu1-mesa-dev cmake zlib1g-dev libxext-dev libxcb-shm0-dev
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
@@ -77,6 +77,8 @@ RUN wget -O $SRC/skia_data/skp_seed_corpus.zip https://storage.googleapis.com/sk
 RUN wget -O $SRC/skia_data/skdescriptor_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skdescriptor_deserialize_seed_corpus.zip
 
 RUN wget -O $SRC/skia_data/colrv1_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/colrv1_seed_corpus.zip
+
+RUN wget -O $SRC/skia_data/skcolorspace_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skcolorspace_seed_corpus.zip
 
 COPY image_filter_deserialize_width.options $SRC/skia_data/image_filter_deserialize_width.options
 

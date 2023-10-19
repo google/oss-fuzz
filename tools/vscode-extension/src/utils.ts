@@ -15,10 +15,77 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import * as vscode from 'vscode';
+import {extensionConfig} from './config';
+import {getApi, FileDownloader} from '@microsoft/vscode-file-downloader-api';
+
 const fs = require('fs');
 const {spawn} = require('node:child_process');
+const statusBarComp = vscode.window.createStatusBarItem(
+  vscode.StatusBarAlignment.Right,
+  100
+);
 
-import {println, debugPrintln} from './logger';
+import {println, printRaw, debugPrintln} from './logger';
+
+export async function setStatusText(statusText: string) {
+  //let myStatusBarItem: vscode.StatusBarItem;
+  statusBarComp.text = '$(megaphone) OSS-Fuzz: ' + statusText;
+  statusBarComp.show();
+}
+
+export async function downloadRemoteURL(
+  urlString: string,
+  targetFile: string,
+  context: vscode.ExtensionContext
+) {
+  const fileDownloader: FileDownloader = await getApi();
+  println('URL: ' + urlString);
+  let codeCoverageFile: vscode.Uri;
+  try {
+    codeCoverageFile = await fileDownloader.downloadFile(
+      vscode.Uri.parse(urlString),
+      targetFile,
+      context
+    );
+  } catch (err) {
+    println('Could not get the coverage summary file');
+    return false;
+  }
+  return codeCoverageFile;
+}
+
+export async function getLocalOutBuildDir(projectName: string) {
+  const summaryCovPath =
+    extensionConfig.ossFuzzPepositoryWorkPath + '/build/out/' + projectName;
+  return summaryCovPath;
+}
+
+export async function getOSSFuzzCloudURL(projectName: string) {
+  const currentDate = new Date();
+  const yesterday = new Date(currentDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const day = yesterday.getDate();
+  const month = yesterday.getMonth();
+  const year = yesterday.getFullYear();
+
+  let urlString =
+    'https://storage.googleapis.com/oss-fuzz-coverage/' +
+    projectName +
+    '/reports/' +
+    year.toString();
+
+  if (month < 10) {
+    urlString += '0';
+  }
+  urlString += month.toString();
+  if (day < 10) {
+    urlString += '0';
+  }
+  urlString += day.toString();
+
+  return urlString;
+}
 
 /**
  * Checks if the current workspace has a generated OSS-Fuzz folder. This is the
@@ -187,10 +254,10 @@ export async function systemSync(cmd: string, args: Array<string | undefined>) {
 
   // Callbacks for output events, to capture stdout and stderr live.
   command.stdout.on('data', (x: {toString: () => string}) => {
-    println(x.toString());
+    printRaw(x.toString());
   });
   command.stderr.on('data', (x: {toString: () => string}) => {
-    println(x.toString());
+    printRaw(x.toString());
   });
 
   // Monitor for child exit.
