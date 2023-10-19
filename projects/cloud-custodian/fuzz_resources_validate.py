@@ -33,7 +33,7 @@ def TestOneInput(data):
 
     data = _generate_random_dict(fdp)
     manager_data = _generate_random_dict(fdp)
-    resource_manager = manager.ResourceManager(FuzzContext(), manager_data)
+    resource_manager = manager.ResourceManager(FuzzContext(FuzzPolicy), manager_data)
 
     try:
         if choice == 1:
@@ -171,10 +171,10 @@ def main():
     atheris.Fuzz()
 
 class FuzzContext:
-    def __init__(self):
+    def __init__(self, policy):
         self.session_factory = None
         self.options = None
-        self.policy = FuzzPolicy()
+        self.policy = policy
         self.tracer = FuzzTracer()
 
 

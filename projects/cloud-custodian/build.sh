@@ -16,6 +16,8 @@
 ################################################################################
 
 python3 -m pip install .
+python3 -m pip install tools/c7n_gcp
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
