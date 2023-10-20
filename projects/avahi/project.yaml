@@ -4,6 +4,7 @@ primary_contact: trent@lloyd.id.au
 auto_ccs:
   - alex.gaynor@gmail.com
   - evverx@gmail.com
+  - msekleta@redhat.com
   - pemensik@redhat.com
 sanitizers:
   - address
