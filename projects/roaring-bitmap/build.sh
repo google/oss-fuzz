@@ -19,9 +19,8 @@
 CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
 
 cp "./RoaringBitmap/build/libs/RoaringBitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
-cp "./shims/build/libs/shims-$CURRENT_VERSION.jar" $OUT/shims.jar
 
-ALL_JARS="roaring-bitmap.jar shims.jar"
+ALL_JARS="roaring-bitmap.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

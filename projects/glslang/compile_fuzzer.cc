@@ -11,27 +11,22 @@ limitations under the License.
 */
 #include "glslang/Public/ResourceLimits.h"
 #include "glslang/Public/ShaderLang.h"
-#include <string>
 
-
-void compile(glslang::TShader *shader, const std::string &code,
-             const std::string &entryPointName, EShMessages controls,
-             const std::string *shaderName = nullptr) {
-  const char *shaderStrings = code.data();
-  const int shaderLengths = static_cast<int>(code.size());
-  const char *shaderNames = nullptr;
-  shader->setStringsWithLengths(&shaderStrings, &shaderLengths, 1);
-  shader->setEntryPoint(entryPointName.c_str());
-  shader->parse(GetDefaultResources(), 100, false, controls);
-}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   glslang::InitializeProcess();
-  std::string input_code(reinterpret_cast<const char *>(data), size);
   EShMessages controls;
   glslang::TShader shader(EShLangVertex);
-  std::string shaderName = "shaderName";
-  compile(&shader, input_code, "ep", controls, &shaderName);
+
+  const char *dataPtr = (const char*)data;
+  const int dataSize = (const int)size;
+
+  shader.setStringsWithLengths(&dataPtr, &dataSize, 1);
+  shader.setEntryPoint("ep");
+
+  // Parse the shader
+  shader.parse(GetDefaultResources(), 100, false, controls);
+
   glslang::FinalizeProcess();
   return 0;
 }

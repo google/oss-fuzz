@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +14,16 @@
 #
 ################################################################################
 
-# Since pyvex requires a specific developer build of archinfo, install it from source
-cd "$SRC"/archinfo
-pip3 install .
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkgconf libevent-dev
 
-cd "$SRC"/pyvex
-pip3 install .
+RUN git clone https://github.com/libevent/libevent.git && \
+    cd libevent && \
+    mkdir build && \
+    cd build && \
+    cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../ && \
+    make && make install
 
-# Generate a simple binary for the corpus
-echo -ne "start:\n\txor %edi, %edi\nmov \$60, %eax\nsyscall" > /tmp/corpus.s
-clang -Os -s /tmp/corpus.s -nostdlib -nostartfiles -m32 -o corpus
-zip -r "$OUT"/irsb_fuzzer_seed_corpus.zip corpus
-
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer "$fuzzer" --add-binary="pyvex/lib/libpyvex.so:pyvex/lib"
-done
+RUN git clone --depth 1 https://github.com/memcached/memcached memcached
+WORKDIR memcached
+COPY build.sh generate_corpus.py *.c *.diff *.options $SRC/
