@@ -27,20 +27,22 @@ import sys
 def main():
   """ Use pw_module_tests.testinfo.json files to find and copy fuzzers. """
   parser = argparse.ArgumentParser()
-  parser.add_argument('--buildroot')
-  parser.add_argument('--out')
+  parser.add_argument('-b', '--buildroot', required=True)
+  parser.add_argument('-t', '--toolchain', default='pw_strict_host_clang_fuzz')
+  parser.add_argument('--out', required=True)
   args = parser.parse_args()
   print('  buildroot: ' + args.buildroot)
+  print('  toolchain: ' + args.toolchain)
   print('        out: ' + args.out)
 
-  testinfo = os.path.join(args.buildroot, 'host_clang_fuzz',
+  testinfo = os.path.join(args.buildroot, args.toolchain,
                           'obj',
                           'pw_module_tests.testinfo.json')
   tests = []
   with open(testinfo) as json_file:
     tests = json.load(json_file)
   for test in tests:
-    if test['type'] != 'fuzzer':
+    if test['test_type'] != 'fuzz_test':
       # Skip unit tests
       continue
     fuzzer = test['test_name']
