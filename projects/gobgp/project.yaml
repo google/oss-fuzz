@@ -1,6 +1,6 @@
 homepage: "https://osrg.github.io/gobgp"
 language: go
-primary_contact: ""
+primary_contact: "fujita.tomonori@gmail.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
