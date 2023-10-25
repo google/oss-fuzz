@@ -18,11 +18,10 @@
 echo -n "Precompiling centipede"
 
 # Build Centipede with bazel.
-cd "$SRC/fuzztest/centipede/"
+cd "$SRC/fuzztest/"
 apt-get update && apt-get install libssl-dev -y
 unset CXXFLAGS CFLAGS
-echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
-bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
+bazel build -c opt centipede:all
 
 # Prepare the weak symbols:
 # This is necessary because we compile the target binary and the intermediate
