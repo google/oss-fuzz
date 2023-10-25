@@ -1,6 +1,6 @@
 homepage: "https://github.com/gosnmp/gosnmp"
 language: go
-primary_contact: "superq@gmail.com"
+primary_contact: "tim.rots@protonmail.ch"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
