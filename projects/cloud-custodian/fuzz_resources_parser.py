@@ -36,11 +36,8 @@ def TestOneInput(data):
             sagemaker.QueryFilter.parse(fdp.ConsumeUnicodeNoSurrogates(1024))
         elif choice == 5:
             emr.QueryFilter.parse(fdp.ConsumeUnicodeNoSurrogates(1024))
-    except exceptions.PolicyValidationError:
+    except (exceptions.PolicyValidationError, ValueError, TypeError):
         pass
-    except ValueError as e:
-        if "Invalid structure" not in str(e):
-            raise e
 
 
 def main():

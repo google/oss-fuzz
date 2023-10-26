@@ -78,6 +78,8 @@ RUN wget -O $SRC/skia_data/skdescriptor_deserialize_seed_corpus.zip https://stor
 
 RUN wget -O $SRC/skia_data/colrv1_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/colrv1_seed_corpus.zip
 
+RUN wget -O $SRC/skia_data/skcolorspace_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skcolorspace_seed_corpus.zip
+
 COPY image_filter_deserialize_width.options $SRC/skia_data/image_filter_deserialize_width.options
 
 COPY json.dict $SRC/skia_data/json.dict

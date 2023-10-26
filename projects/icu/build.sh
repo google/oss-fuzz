@@ -34,6 +34,7 @@ export UBSAN_OPTIONS="detect_leaks=0"
 make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
+     -I$SRC/icu/icu4c/source/common \
      -I$SRC/icu4c/source/test/fuzzer
 
 FUZZER_PATH=$SRC/icu/icu4c/source/test/fuzzer

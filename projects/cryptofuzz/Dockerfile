@@ -23,8 +23,8 @@ RUN apt-get update && \
 # or a Rust toolchain.
 RUN pip3 install 'pip>=20'
 
-RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
-RUN wget https://go.dev/dl/go1.19.10.linux-amd64.tar.gz
+RUN wget https://go.dev/dl/go1.20.10.linux-amd64.tar.gz
+RUN wget https://go.dev/dl/go1.21.3.linux-amd64.tar.gz
 RUN git clone --depth 1 https://github.com/golang/go go-dev
 RUN git clone --depth 1 https://github.com/golang/crypto go-crypto
 RUN git clone --depth 1 https://github.com/golang/sys.git go-sys
