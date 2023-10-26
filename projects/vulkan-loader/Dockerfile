@@ -29,5 +29,6 @@ RUN apt-get update && \
 # Vulkan-Loader depends on the header file in Vulkan-Headers
 RUN git clone https://github.com/khronosgroup/Vulkan-Headers vulkan-headers
 RUN git clone https://github.com/khronosgroup/Vulkan-Loader vulkan-loader
-COPY *_fuzzer.c *.sh $SRC/
+COPY fuzzers/*_fuzzer.c *.sh $SRC/
+COPY corpus $SRC/corpus
 WORKDIR $SRC/vulkan-loader
