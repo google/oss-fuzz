@@ -24,7 +24,6 @@ RUN apt-get update && \
       rsync
 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
-RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
 
 RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
 
@@ -33,8 +32,8 @@ COPY build_depends.sh $SRC
 RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
     && ln -s /bin/true /usr/local/bin/yum_install \
     && ln -s /bin/true /usr/local/bin/yum \
-    && cd $SRC/pillow-wheels \
-    && git submodule update --init multibuild \
+    && cd $SRC/Pillow \
+    && git submodule update --init wheels/multibuild \
     && bash $SRC/build_depends.sh
 
 # install extra test images for a better starting corpus
