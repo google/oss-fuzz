@@ -39,6 +39,8 @@ RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
 # install extra test images for a better starting corpus
 RUN cd Pillow/depends && ./install_extra_test_images.sh
 
+RUN python3 -m pip install --upgrade pip
+
 COPY build.sh $SRC/
 
 # pillow optional runtime dependencies
