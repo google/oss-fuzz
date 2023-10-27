@@ -39,6 +39,7 @@ RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
+RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
