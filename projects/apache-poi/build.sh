@@ -118,7 +118,7 @@ LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --cp=${RUNTIME_CLASSPATH} \
 --instrumentation_includes=org.apache.poi.**:org.apache.xmlbeans.** \
 --target_class=${fuzzer_classname} \
---jvm_args=\"-Xmx1024m\" \
+--jvm_args=\"-Xmx1024m:-Dorg.apache.poi.ss.ignoreMissingFontSystem=true\" \
 \$@" > $OUT/${fuzzer_basename}
 	chmod u+x $OUT/${fuzzer_basename}
 done

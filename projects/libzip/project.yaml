@@ -7,7 +7,8 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  - memory
+# Disable MSAN because it does not support using other libraries (openssl, zlib) correctly
+#  - memory
 main_repo: 'https://github.com/nih-at/libzip.git'
 fuzzing_engines:
   - afl

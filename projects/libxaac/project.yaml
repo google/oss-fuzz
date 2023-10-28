@@ -6,13 +6,16 @@ sanitizers:
   - memory
   - undefined
 auto_ccs:
+  - akshay.ragir@ittiam.com
   - divya.bm@ittiam.com
   - harish.mahendrakar@ittiam.com
-  - nikhil.bhavikatti@ittiam.com
   - reshma.rai@ittiam.com
   - saketh.sathuvalli@ittiam.com
   - sandesh.venkatesh@ittiam.com
+  - shashank.pathmudi@ittiam.com
+  - shreyas.talwekar@ittiam.com
   - tripti.tiwari@ittiam.com
+  - yash.patil@ittiam.com
 architectures:
   - x86_64
   - i386
