@@ -83,6 +83,7 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
       -DICU_UC_LIB=$DEPS_PATH/lib/libicuuc.a \
       -DICU_I18N_INCLUDE_DIR=$SRC/icu/source/i18n/ \
       -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  \
+      -DREGENERATE_METADATA=OFF \
       ../
 make -j$(nproc)
 

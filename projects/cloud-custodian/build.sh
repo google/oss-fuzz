@@ -15,19 +15,9 @@
 #
 ################################################################################
 
-# Since pyvex requires a specific developer build of archinfo, install it from source
-cd "$SRC"/archinfo
-pip3 install .
+python3 -m pip install .
+python3 -m pip install tools/c7n_gcp
 
-cd "$SRC"/pyvex
-pip3 install .
-
-# Generate a simple binary for the corpus
-echo -ne "start:\n\txor %edi, %edi\nmov \$60, %eax\nsyscall" > /tmp/corpus.s
-clang -Os -s /tmp/corpus.s -nostdlib -nostartfiles -m32 -o corpus
-zip -r "$OUT"/irsb_fuzzer_seed_corpus.zip corpus
-
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer "$fuzzer" --add-binary="pyvex/lib/libpyvex.so:pyvex/lib"
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
 done

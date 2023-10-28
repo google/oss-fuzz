@@ -2,8 +2,9 @@
   "name": "OSS-Fuzz",
   "displayName": "OSS-Fuzz",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "OSS-FuzzMaintainers",
+  "icon": "images/thumbnail.png",
   "engines": {
     "vscode": "^1.76.0"
   },
@@ -98,6 +99,22 @@
       {
         "command": "oss-fuzz.Template",
         "title": "OSS-Fuzz: Template fuzzer creation"
+      }
+    ],
+    "walkthroughs":[
+      {
+        "id": "BuildAndRunExisting Project",
+        "title": "Set up OSS-Fuzz",
+        "description": "This walkthrough takes you through how to set up OSS-Fuzz in the VSCode extension and proceeding to build the fuzzers of an existing project as well as running a fuzzer from the project.",
+        "steps": [
+          {
+            "id": "s1",
+            "title": "Set up OSS-Fuzz",
+            "description": "This step sets up OSS-Fuzz in the folder /tmp/oss-fuzz",
+            "completionEvents": ["onCommand:oss-fuzz.SetUp"],
+            "media": {"altText": ".", "image": "images/workflow-1-s-1"}
+          }
+        ]
       }
     ]
   },
