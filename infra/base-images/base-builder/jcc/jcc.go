@@ -194,6 +194,31 @@ func GenerateAST(bin string, args []string, filePath string) {
 	cmd := exec.Command(bin, args...)
 	cmd.Stdout = outFile
 	cmd.Run()
+	// err = cmd.Run()
+	// if err == nil {
+	//     os.Setenv("PROCESSED_ALL_FILES", "true")
+	//     // fmt.Println("SAVED AST: " + filePath)
+	// }
+}
+
+func FindFilesWithSuffixes(suffixes []string) ([]string, error) {
+	// Returns files that end with one of the given suffixes.
+	var files []string
+
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+		if err == nil && !info.IsDir() {
+			for _, suffix := range suffixes {
+				if strings.HasSuffix(info.Name(), suffix) {
+					files = append(files, path)
+					// fmt.Println("INCLUDE FILE: " + path + ".")
+					break
+				}
+			}
+		}
+		return err
+	})
+
+	return files, err
 }
 
 func GenerateASTs(bin string, args []string, astDir string) {
@@ -207,6 +232,19 @@ func GenerateASTs(bin string, args []string, astDir string) {
 	targetFiles := []string{}
 	// Flags to generate AST.
 	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
+
+	files, err := FindFilesWithSuffixes(suffixes)
+	if err == nil {
+		flags = append(flags, files...)
+	}
+	// processed, defined := os.LookupEnv("PROCESSED_ALL_FILES")
+	// if defined && processed == "true" {
+	//     files, err := FindFilesWithSuffixes(suffixes)
+	//     if err == nil {
+	//         flags = append(flags, files...)
+	//     }
+	// }
+
 	for _, arg := range args {
 		targetFileExt := strings.ToLower(filepath.Ext(arg))
 		if slices.Contains(suffixes, targetFileExt) {
