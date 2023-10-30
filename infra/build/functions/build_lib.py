@@ -270,10 +270,10 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
   })
 
   coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
-  bucket_url = f"'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'"
+  bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
   steps.append({
       'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+      'args': ['-m', 'cp', '-r', f'"{bucket_url}"', coverage_data_path]
   })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
