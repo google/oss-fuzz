@@ -23,7 +23,9 @@ def TestOneInput(data):
     original = fdp.ConsumeUnicode(sys.maxsize)
 
     try:
-        response = urllib3.util.parse_url(original)
+        # We have to call this via .url because of limitations
+        # in PyCG analysis
+        response = urllib3.util.url.parse_url(original)
         response.hostname
         response.request_uri
         response.authority
