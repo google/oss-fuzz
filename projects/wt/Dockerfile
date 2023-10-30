@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-
-cd "$SRC"/icalendar
-pip3 install .
-
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py');do
-  compile_python_fuzzer "$fuzzer" 
-done
-zip -q $OUT/ical_fuzzer_seed_corpus.zip $SRC/corpus/*
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y libboost-all-dev cmake
+RUN git clone https://github.com/emweb/wt.git
+COPY build.sh $SRC/
+WORKDIR $SRC/wt/

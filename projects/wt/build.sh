@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,29 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-import atheris
-import sys
 
-with atheris.instrument_imports(include=['icalendar']):
-    from icalendar import Calendar
+export CXXFLAGS="$CFLAGS"
 
-from enhanced_fdp import EnhancedFuzzedDataProvider
+mkdir -p mybuild
 
+pushd mybuild/
+cmake -DSHARED_LIBS=OFF -DBUILD_FUZZ=ON -DBoost_USE_STATIC_LIBS=ON ../.
+make -j$(nproc) --ignore-errors
+cp fuzz/fuzz-* $OUT/
+popd
 
-def TestOneInput(data):
-    fdp = EnhancedFuzzedDataProvider(data)
-    try:
-        Calendar.from_ical(fdp.ConsumeRemainingString())
-    except ValueError as e:
-        if "component" in str(e) or "parse" in str(e):
-            return -1
-        raise e
-
-
-def main():
-    atheris.Setup(sys.argv, TestOneInput)
-    atheris.Fuzz()
-
-
-if __name__ == "__main__":
-    main()
+cp fuzz/*zip $OUT/
