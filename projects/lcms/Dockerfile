@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,14 @@ RUN mkdir $SRC/seeds && \
     cp $SRC/lcms/testbed/test1.icc . && \
     cp $SRC/lcms/testbed/crayons.icc . && \
     cp $SRC/lcms/testbed/ibm-t61.icc . && \
+    #add more seeds from the testbed dir
+    cp $SRC/lcms/testbed/bad_mpe.icc . && \
+    cp $SRC/lcms/testbed/new.icc . && \
+    cp $SRC/lcms/testbed/test2.icc . && \
+    cp $SRC/lcms/testbed/test3.icc . && \
+    cp $SRC/lcms/testbed/test4.icc . && \
+    cp $SRC/lcms/testbed/test5.icc . && \
+    cp $SRC/lcms/testbed/TestCLT.icc . && \
     zip -rj $SRC/seed_corpus.zip $SRC/seeds/*
 
 WORKDIR lcms

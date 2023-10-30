@@ -1,4 +1,4 @@
-/* Copyright 2022 Google LLC
+/* Copyright 2023 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -60,6 +60,18 @@ run_test(const uint8_t *data,
   }
   else if (dstVal == 7) {
     dstProfile = cmsCreateLab4Profile(NULL);
+    dstFormat = TYPE_Lab_DBL;
+  }
+  else if (dstVal == 8){
+    dstProfile = cmsCreate_OkLabProfile(NULL);
+    dstFormat = (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0));
+  }
+  else if (dstVal == 9){
+    dstProfile = cmsCreateNULLProfile();
+    dstFormat = 0;
+  }
+  else if (dstVal == 10){
+    dstProfile = cmsCreateBCHSWabstractProfile(17, 0, 1.2, 0, 3, 5000, 5000);
     dstFormat = TYPE_Lab_DBL;
   }
   else {
@@ -132,6 +144,10 @@ run_test(const uint8_t *data,
       cmsCIELab Lab1;
       cmsDoTransform(hTransform, input, &Lab1, 1);
     }
+    else if (dstFormat == (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0))){
+      cmsCIELab okLab;
+      cmsDoTransform(hTransform, input, &okLab, 1);
+    }
     else {
       uint8_t output[4];
       cmsDoTransform(hTransform, input, output, 1);
@@ -148,7 +164,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   uint32_t flags         = *((const uint32_t *)data+0);
   uint32_t intent        = *((const uint32_t *)data+1) % 16;
-  int decider = *((int*)data+2) % 10;
+  int decider = *((int*)data+2) % 11;
   data += 12;
   size -= 12;
 
