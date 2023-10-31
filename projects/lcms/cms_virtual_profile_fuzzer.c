@@ -84,18 +84,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsCloseProfile(linearizationDeviceLinkProfile);
   }
 
-  // cmsCreateInkLimitingDeviceLink
-  cmsFloat64Number limit;
-  if (*((const uint32_t *)data + 3) % 2 == 0) {
-    limit = 0;
-  } else {
-    limit = 400;
-  }
-  cmsHPROFILE limitingDeviceLinkProfile =
-      cmsCreateInkLimitingDeviceLink(cmsSigCmykData, limit);
-  if (limitingDeviceLinkProfile) {
-    cmsCloseProfile(limitingDeviceLinkProfile);
-  }
-
   return 0;
 }

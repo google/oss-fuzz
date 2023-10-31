@@ -33,7 +33,8 @@ FUZZERS="cmsIT8_load_fuzzer            \
         cms_cie_cam02_fuzzer           \
         cms_gdb_fuzzer                 \
         cms_cgats_fuzzer               \
-        cms_virtual_profile_fuzzer" 
+        cms_virtual_profile_fuzzer     \
+        cms_devicelink_fuzzer" 
 
 
 for F in $FUZZERS; do
