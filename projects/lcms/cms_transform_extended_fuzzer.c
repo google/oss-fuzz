@@ -140,13 +140,9 @@ run_test(const uint8_t *data,
       cmsCIEXYZTRIPLE out[4];
       cmsDoTransform(hTransform, input, out, 1);
     }
-    else if (dstFormat == TYPE_Lab_DBL) {
+    else if (dstFormat == TYPE_Lab_DBL || dstFormat == (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0))) {
       cmsCIELab Lab1;
       cmsDoTransform(hTransform, input, &Lab1, 1);
-    }
-    else if (dstFormat == (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0))){
-      cmsCIELab okLab;
-      cmsDoTransform(hTransform, input, &okLab, 1);
     }
     else {
       uint8_t output[4];
