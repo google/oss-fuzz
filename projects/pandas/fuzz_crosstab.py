@@ -31,7 +31,12 @@ def TestOneInput(data):
                     rownames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))],
                     colnames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))])
 
-    except (ValueError, TypeError, KeyError, IndexError):
+    except (
+        ValueError,
+        TypeError,
+        KeyError,
+        IndexError
+    ):
         pass
 
 

@@ -59,7 +59,10 @@ def TestOneInput(data):
 
         local_var_name = 'gf' if fdp.ConsumeBool() else fdp.ConsumeString(20)
         df[name] = df[local_var_name].map(groups)
-    except (ValueError, KeyError):
+    except (
+        ValueError,
+        KeyError
+    ):
         pass
 
 

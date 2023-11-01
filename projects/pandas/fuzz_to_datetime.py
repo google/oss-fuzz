@@ -18,6 +18,11 @@ import sys
 import atheris
 import pandas as pd
 
+from pandas.errors import (
+    ParserError, 
+    OutOfBoundsDatetime
+)
+
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
@@ -42,7 +47,11 @@ def TestOneInput(data):
             cache=cache
         )
 
-    except Exception as e:
+    except (
+        ParserError, 
+        OverflowError,
+        OutOfBoundsDatetime
+    ):
         pass
 
 def main():

@@ -19,13 +19,22 @@ import atheris
 import pandas as pd
 import io
 
+from pandas.errors import (
+    EmptyDataError,
+    ParserError,
+)
+
 def TestReadJson(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
         fuzzed_json = fdp.ConsumeUnicode(sys.maxsize)
         pd.read_json(io.StringIO(fuzzed_json), orient='index')
-    except Exception as e:
+    except (
+        ParserError, 
+        EmptyDataError, 
+        ValueError
+    ):
         pass
 
 def main():

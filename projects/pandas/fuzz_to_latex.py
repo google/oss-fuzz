@@ -74,7 +74,10 @@ def TestOneInput(data):
 
 
 
-    except Exception as e:
+    except (
+        ValueError,
+        KeyError
+    ):
         pass
 
 

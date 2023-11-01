@@ -57,7 +57,11 @@ def TestOneInput(data):
             method=method
         )
 
-    except Exception as e:
+    except (
+        TypeError,
+        ValueError,
+        KeyError
+    ):
         pass
 
 def main():

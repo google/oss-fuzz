@@ -69,7 +69,11 @@ def TestOneInput(data):
             robust=robust
         )
 
-    except Exception as e:
+    except (
+        ValueError, 
+        TypeError,
+        KeyError
+    ):
         pass
 
 
