@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,39 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets pandas parsers. Both native and python code."""
+"""This fuzzer script targets the pandas pickle parser, attempting to deserialize a wide range of fuzzed byte streams."""
 
-import os
 import sys
 import atheris
+import pandas as pd
 import io
 
-from pandas.errors import (
-    EmptyDataError,
-    ParserError,
-)
-
-from pandas.io.parsers import read_csv
-
-
-def TestOneInput(data):
+def TestPickleInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)), engine="python")
-    except (
-        EmptyDataError,
-        ParserError,
-        ValueError
-    ):
+        length = fdp.ConsumeIntInRange(1, len(data))
+        fuzzed_data = fdp.ConsumeBytes(length)
+        fuzzed_io = io.BytesIO(fuzzed_data)
+        pd.read_pickle(fuzzed_io)
+    except Exception as e:
         pass
-
 
 def main():
     atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestPickleInput)
     atheris.Fuzz()
-
 
 if __name__ == "__main__":
     main()

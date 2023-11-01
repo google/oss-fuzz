@@ -1,0 +1,83 @@
+#!/usr/bin/python3
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Fuzzes the pandas interpolate function, generating and manipulating DataFrames with various data types to uncover
+potential edge cases."""
+
+import sys
+import atheris
+import pandas as pd
+
+
+def TestOneInput(data):
+    fdp = atheris.FuzzedDataProvider(data)
+
+    try:
+        rows = fdp.ConsumeIntInRange(1, 100)
+        num_rows = fdp.ConsumeIntInRange(3, 100)
+        num_columns = fdp.ConsumeIntInRange(3, 100)
+        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_columns)]
+
+        data = {}
+        for col_name in col_names:
+            if fdp.ConsumeBool():
+                data[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
+            elif fdp.ConsumeBool():
+                data[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+            elif fdp.ConsumeBool():
+                data[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
+            elif fdp.ConsumeBool():
+                data[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
+            else:
+                data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
+
+        df = pd.DataFrame(data)
+
+        # Fuzz interpolate options
+        method = fdp.PickValueInList(
+            ['linear', 'time', 'index', 'values', 'nearest', 'zero', 'slinear', 'quadratic',
+             'cubic', 'barycentric','krogh', 'polynomial', 'spline', 'bessel', 'holistic', 'akima', fdp.ConsumeString(30)])
+        axis = fdp.PickValueInList([0, 1, 'index', 'columns'])
+        limit = fdp.ConsumeIntInRange(1, rows) if fdp.ConsumeBool() else None
+        inplace = fdp.ConsumeBool()
+        limit_direction = fdp.PickValueInList(['forward', 'backward', 'both']) if fdp.ConsumeBool() else None
+        limit_area = fdp.PickValueInList([None, 'inside', 'outside']) if fdp.ConsumeBool() else None
+        order = fdp.ConsumeIntInRange(1, 5) if method == 'polynomial' else None
+        s = fdp.ConsumeFloatInRange(0, 1) if method == 'spline' else None
+        robust = fdp.ConsumeBool()
+
+        df.interpolate(
+            method=method,
+            axis=axis,
+            limit=limit,
+            inplace=inplace,
+            limit_direction=limit_direction,
+            limit_area=limit_area,
+            order=order,
+            s=s,
+            robust=robust
+        )
+
+    except Exception as e:
+        pass
+
+
+def main():
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.instrument_all()
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()
