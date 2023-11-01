@@ -23,28 +23,25 @@ from pandas.errors import (
     EmptyDataError,
     ParserError,
 )
-
-from pandas.io.parsers import read_csv
+import pandas
 
 
 def TestOneInput(data):
-    fdp = atheris.FuzzedDataProvider(data)
+  fdp = atheris.FuzzedDataProvider(data)
 
-    try:
-        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)), engine="python")
-    except (
-        EmptyDataError,
-        ParserError,
-        ValueError
-    ):
-        pass
+  try:
+    pandas.io.parsers.read_csv(io.StringIO(
+        fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)),
+                               engine="python")
+  except (EmptyDataError, ParserError, ValueError):
+    pass
 
 
 def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-    atheris.Fuzz()
+  atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-    main()
+  main()

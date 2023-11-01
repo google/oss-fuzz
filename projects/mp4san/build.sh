@@ -14,16 +14,20 @@
 # limitations under the License.
 
 PROJECT_DIR=$SRC/mp4san
-FUZZ_DIR=$PROJECT_DIR/mp4san/fuzz
-cd $FUZZ_DIR && cargo fuzz build -O --debug-assertions
 
-FUZZ_INPUT_DIR=$FUZZ_DIR/input
+for crate_dir in mp4san webpsan; do
+    FUZZ_DIR=$PROJECT_DIR/$crate_dir/fuzz
+    cd $FUZZ_DIR && cargo fuzz build -O --debug-assertions
 
-FUZZ_TARGET_OUTPUT_DIR=$FUZZ_DIR/target/x86_64-unknown-linux-gnu/release/
-for fuzz_target in $FUZZ_DIR/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${fuzz_target%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-    cp $FUZZ_DIR/mp4.dict $OUT/$FUZZ_TARGET_NAME.dict
-    zip -jr $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip $FUZZ_INPUT_DIR/
+    FUZZ_INPUT_DIR=$FUZZ_DIR/input
+
+    FUZZ_TARGET_OUTPUT_DIR=$FUZZ_DIR/target/x86_64-unknown-linux-gnu/release/
+    for fuzz_target in $FUZZ_DIR/fuzz_targets/*.rs
+    do
+        FUZZ_TARGET_NAME=$(basename ${fuzz_target%.*})
+        OUT_FUZZ_TARGET_NAME=$crate_dir-$FUZZ_TARGET_NAME
+        cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/$OUT_FUZZ_TARGET_NAME
+        cat $FUZZ_DIR/*.dict > $OUT/$OUT_FUZZ_TARGET_NAME.dict
+        zip -jr $OUT/${OUT_FUZZ_TARGET_NAME}_seed_corpus.zip $FUZZ_INPUT_DIR/
+    done
 done
