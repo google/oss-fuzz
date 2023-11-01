@@ -34,6 +34,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   cJSON *json = NULL;
   loader_get_json(NULL, filename, &json);
 
+  if (json == NULL) {
+    goto out;
+  }
+
   char *json_data = loader_cJSON_Print(json);
 
   if (json_data != NULL) {
@@ -43,6 +47,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (json != NULL) {
     free(json);
   }
+
+out:
   unlink(filename);
 
   return 0;
