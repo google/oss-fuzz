@@ -41,15 +41,17 @@ elif [ $SANITIZER == "coverage" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
 elif [ $SANITIZER == "thread" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
+elif [ $SANITIZER == "none" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 else
   exit 1
 fi
 # These deprecated warnings get quite noisy and mask other issues.
 CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
-  -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
+  -DCMAKE_MAKE_PROGRAM="$SRC/skia/third_party/ninja/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
 
 # Swiftshader only supports Vulkan, so we will build our fuzzers with Vulkan too.
-$SRC/depot_tools/ninja libvk_swiftshader.so
+$SRC/skia/third_party/ninja/ninja libvk_swiftshader.so
 mv libvk_swiftshader.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -60,17 +62,15 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -DSK_GPU_TOOLS_VK_LIBRARY_NAME=libvk_swiftshader.so \
- -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
- -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER"
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
 export LDFLAGS="$LIB_FUZZING_ENGINE -l :crtfastmath.o $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
-
-$SRC/skia/bin/fetch-gn
 
 # Avoid OOMs on the CI due to lower memory constraints
 LIMITED_LINK_POOL="link_pool_depth=1"
@@ -79,8 +79,10 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_fontmgr_custom_directory=false
            skia_enable_fontmgr_custom_embedded=false
            skia_enable_fontmgr_custom_empty=true
-           skia_enable_gpu=true
+           skia_enable_ganesh=true
+           skia_enable_graphite=true
            skia_enable_skottie=true
+           skia_enable_precompile=true
            skia_use_vulkan=true
            skia_use_egl=false
            skia_use_gl=false
@@ -115,7 +117,7 @@ $SRC/skia/bin/gn gen out/FuzzDebug\
       extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
-$SRC/depot_tools/ninja -C out/Fuzz \
+$SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   android_codec \
   animated_image_decode \
   api_create_ddl \
@@ -128,6 +130,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_path_measure \
   api_pathop \
   api_polyutils \
+  api_precompile \
   api_raster_n32_canvas \
   api_regionop \
   api_skparagraph \
@@ -150,12 +153,9 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   textblob_deserialize \
   webp_encoder
 
-$SRC/depot_tools/ninja -C out/FuzzDebug \
-  skruntimeeffect \
-  sksl2glsl \
-  sksl2metal \
-  sksl2pipeline \
-  sksl2spirv \
+$SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
+  cubic_roots \
+  quad_roots
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -246,27 +246,7 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
 
-# All five SkSL tests share the same sksl_seed_corpus and dictionary.
-mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
-cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
-
-mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
-cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
-
-mv out/FuzzDebug/sksl2metal $OUT/sksl2metal
-cp ../skia_data/sksl.dict $OUT/sksl2metal.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
-
-mv out/FuzzDebug/sksl2pipeline $OUT/sksl2pipeline
-cp ../skia_data/sksl.dict $OUT/sksl2pipeline.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
-
-mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
-mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
-mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
-
+#
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
@@ -282,9 +262,15 @@ mv ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
 
 mv out/Fuzz/api_skparagraph $OUT/api_skparagraph
 
+mv out/Fuzz/api_precompile $OUT/api_precompile
+
 mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
 
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
+
+# These only take a few floats - no seed corpus necessary
+mv out/FuzzDebug/quad_roots $OUT/quad_roots
+mv out/FuzzDebug/cubic_roots $OUT/cubic_roots
