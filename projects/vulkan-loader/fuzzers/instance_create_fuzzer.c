@@ -18,54 +18,62 @@ limitations under the License.
 #include "loader.h"
 
 /*
- * Targets the instance creation.
+ * Create config files for given path and data.
  */
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int create_config_file(const char* config_path, const char* config_filename, const uint8_t* data, size_t size) {
   char filename[512];
   char path[256];
   char command[256];
 
-  sprintf(path, "%s/.local/share/vulkan/implicit_layer.d", getenv("HOME"));
+  sprintf(path, "%s/%s", getenv("HOME"), config_path);
   sprintf(command, "mkdir -p %s", path);
 
   system(command);
 
-  sprintf(filename, "%s/complex_layer.json", path);
+  sprintf(filename, "%s/%s", path, config_filename);
 
   FILE *fp = fopen(filename, "wb");
   if (!fp) {
-    return 0;
+    return 1;
   }
   fwrite(data, size, 1, fp);
   fclose(fp);
 
-  sprintf(path, "%s/.local/share/vulkan/loader_settings.d", getenv("HOME"));
-  sprintf(command, "mkdir -p %s", path);
+  return 0;
+}
+
+/*
+ * Remove config file
+ */
+void remove_config_file(const char* config_path, const char* config_filename) {
+  char filename[512];
+  sprintf(filename, "%s/%s/%s", getenv("HOME"), config_path, config_filename);
+  unlink(filename);
+}
+
+/*
+ * Targets the instance creation.
+ */
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  setenv("HOME", "/tmp", 1);
+
+  // Create implicit layer configuration file
+  int result = create_config_file(".local/share/vulkan/implicit_layer.d", "complex_layer.json", data, size);
+  if (result) {
+    return 0;
+  }
   
-  system(command);
-
-  sprintf(filename, "%s/vk_loader_settings.json", path);
-
-  fp = fopen(filename, "wb");
-  if (!fp) {
+  // Create loader configuration file
+  result = create_config_file(".local/share/vulkan/loader_settings.d", "vk_loader_settings.json", data, size);
+  if (result) {
     return 0;
   }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
 
-  sprintf(path, "%s/.local/share/vulkan/icd.d", getenv("HOME"));
-  sprintf(command, "mkdir -p %s", path);
-  
-  system(command);
-
-  sprintf(filename, "%s/icd_test.json", path);
-
-  fp = fopen(filename, "wb");
-  if (!fp) {
+  // Create icd configuration file
+  result = create_config_file(".local/share/vulkan/icd.d", "icd_test.json", data, size);
+  if (result) {
     return 0;
   }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
 
   setenv("VK_LOADER_LAYERS_ENABLE", "all", 1);
 
@@ -102,7 +110,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   vkDestroyInstance(inst, NULL);
 
 out:
-  unlink(filename);
+  // Clean up config files
+  remove_config_file(".local/share/vulkan/implicit_layer.d", "complex_layer.json");
+  remove_config_file(".local/share/vulkan/loader_settings.d", "vk_loader_settings.json");
+  remove_config_file(".local/share/vulkan/icd.d", "icd_test.json");
 
   return 0;
 }

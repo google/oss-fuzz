@@ -33,5 +33,5 @@ for fuzzers in $(find $SRC -name '*_fuzzer.c'); do
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzz_basename.o \
         -o $OUT/$fuzz_basename -lpthread $OUT/libvulkan.a
 
-    zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/corpus/*
+    zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
 done

@@ -30,5 +30,4 @@ RUN apt-get update && \
 RUN git clone https://github.com/khronosgroup/Vulkan-Headers vulkan-headers
 RUN git clone https://github.com/khronosgroup/Vulkan-Loader vulkan-loader
 COPY fuzzers/*_fuzzer.c *.sh $SRC/
-COPY corpus $SRC/corpus
 WORKDIR $SRC/vulkan-loader
