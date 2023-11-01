@@ -66,7 +66,9 @@ function build_fuzzers() {
 
 cd $SRC/openssl/
 build_fuzzers ""
-cd $SRC/openssl111/
-build_fuzzers "_111"
 cd $SRC/openssl30/
 build_fuzzers "_30"
+cd $SRC/openssl31/
+build_fuzzers "_31"
+cd $SRC/openssl32/
+build_fuzzers "_32"
