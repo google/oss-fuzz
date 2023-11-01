@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
+
 CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
