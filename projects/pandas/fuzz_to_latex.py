@@ -41,20 +41,18 @@ def TestOneInput(data):
                 data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
 
         df = pd.DataFrame(data)
-
         buf = fdp.ConsumeUnicodeNoSurrogates(20)
         columns = None if fdp.ConsumeBool() else list(df.columns)
         col_space = None if fdp.ConsumeBool() else fdp.ConsumeIntInRange(0, 10)
-        header = True if fdp.ConsumeBool() else False
-        index = True if fdp.ConsumeBool() else False
+        header = fdp.ConsumeBool() 
+        index = fdp.ConsumeBool() 
         na_rep = fdp.ConsumeUnicodeNoSurrogates(5)
-        formatters = None  # Custom formatters can be added if needed
         float_format = "fixed" if fdp.ConsumeBool() else None
-        sparsify = True if fdp.ConsumeBool() else False
-        index_names = True if fdp.ConsumeBool() else False
-        bold_rows = True if fdp.ConsumeBool() else False
+        sparsify = fdp.ConsumeBool()
+        index_names = fdp.ConsumeBool()
+        bold_rows = fdp.ConsumeBool()
         columns_format = None if fdp.ConsumeBool() else fdp.ConsumeUnicodeNoSurrogates(5)
-        longtable = True if fdp.ConsumeBool() else False
+        longtable = fdp.ConsumeBool()
 
         df.to_latex(
             buf=buf,
@@ -63,7 +61,7 @@ def TestOneInput(data):
             header=header,
             index=index,
             na_rep=na_rep,
-            formatters=formatters,
+            formatters=None,
             float_format=float_format,
             sparsify=sparsify,
             index_names=index_names,
@@ -82,7 +80,7 @@ def TestOneInput(data):
 
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.instrument_all()
     atheris.Fuzz()
 

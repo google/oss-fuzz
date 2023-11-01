@@ -51,8 +51,8 @@ def TestOneInput(data):
         axis = fdp.PickValueInList([0, 1, 'index', 'columns'])
         limit = fdp.ConsumeIntInRange(1, rows) if fdp.ConsumeBool() else None
         inplace = fdp.ConsumeBool()
-        limit_direction = fdp.PickValueInList(['forward', 'backward', 'both']) if fdp.ConsumeBool() else None
-        limit_area = fdp.PickValueInList([None, 'inside', 'outside']) if fdp.ConsumeBool() else None
+        limit_direction = fdp.PickValueInList(['forward', 'backward', 'both', None])
+        limit_area = fdp.PickValueInList([None, 'inside', 'outside'])
         order = fdp.ConsumeIntInRange(1, 5) if method == 'polynomial' else None
         s = fdp.ConsumeFloatInRange(0, 1) if method == 'spline' else None
         robust = fdp.ConsumeBool()
@@ -78,7 +78,7 @@ def TestOneInput(data):
 
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.instrument_all()
     atheris.Fuzz()
 
