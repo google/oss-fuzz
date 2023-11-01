@@ -29,8 +29,8 @@ def TestOneInput(data):
     try:
         input_str = fdp.ConsumeUnicodeNoSurrogates(100)
         errors = fdp.PickValueInList(['raise', 'coerce', 'ignore', fdp.ConsumeUnicodeNoSurrogates(20)])
-        unit = fdp.PickValueInList([None, 'ns', 'us', 'ms', 's', 'D', 'M', 'Y', fdp.ConsumeUnicodeNoSurrogates(20)]) if fdp.ConsumeBool() else None
-        origin = fdp.PickValueInList(['unix', 'julian', 'epoch', fdp.ConsumeUnicodeNoSurrogates(20)]) if fdp.ConsumeBool() else 'unix'
+        unit = fdp.PickValueInList([None, 'ns', 'us', 'ms', 's', 'D', 'M', 'Y', fdp.ConsumeUnicodeNoSurrogates(20)])
+        origin = fdp.PickValueInList(['unix', 'julian', 'epoch', fdp.ConsumeUnicodeNoSurrogates(20)])
         dayfirst = fdp.ConsumeBool()
         yearfirst = fdp.ConsumeBool()
         exact = fdp.ConsumeBool()

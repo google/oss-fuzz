@@ -46,7 +46,7 @@ def TestOneInput(data):
         inplace = fdp.ConsumeBool()
         limit = fdp.ConsumeIntInRange(1, num_rows - 1) if fdp.ConsumeBool() else None
         regex = fdp.ConsumeBool()
-        method = fdp.PickValueInList(['pad', 'ffill', 'bfill', 'backfill', fdp.ConsumeString(20), None]) if fdp.ConsumeBool() else None
+        method = fdp.PickValueInList(['pad', 'ffill', 'bfill', 'backfill', fdp.ConsumeString(20), None])
 
         df.replace(
             to_replace=to_replace,
