@@ -9,3 +9,7 @@ main_repo: 'https://github.com/lua/lua'
 architectures:
   - i386
   - x86_64
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
