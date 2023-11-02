@@ -36,8 +36,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsIT8SetPropertyStr(it8, "ORIGINATOR",   "1 2 3 4");
     cmsIT8SetPropertyUncooked(it8, "DESCRIPTOR",   "1234");
     cmsIT8SetPropertyStr(it8, "MANUFACTURER", "3");
-    cmsIT8SetPropertyDbl(it8, "CREATED",     (data[0] % 256) / 255.0);
-    cmsIT8SetPropertyDbl(it8, "SERIAL",      (data[1] % 256) / 255.0);
+    cmsIT8SetPropertyDbl(it8, "CREATED",     data[0] / 255.0);
+    cmsIT8SetPropertyDbl(it8, "SERIAL",      data[1] / 255.0);
     cmsIT8SetPropertyHex(it8, "MATERIAL",     0x123);
 
     cmsIT8SetPropertyDbl(it8, "NUMBER_OF_SETS", 10);
