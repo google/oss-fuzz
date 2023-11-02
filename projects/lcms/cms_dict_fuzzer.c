@@ -14,11 +14,11 @@ limitations under the License.
 #include <stdlib.h>
 #include "lcms2.h"
 
-wchar_t* generateWideString(){
+wchar_t* generateWideString(const uint8_t *data){
     char* characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
     char stringToWide[10];
     for (int i=0; i < 9; i++){
-        stringToWide[i] = characters[rand() % 96];
+        stringToWide[i] = characters[*(data+i) % 96];
     }
     stringToWide[9] = '\0';
     int requiredSize = mbstowcs(NULL, &stringToWide, 0);
@@ -28,7 +28,7 @@ wchar_t* generateWideString(){
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    if (size < 12){
+    if (size < 27){
         return 0;
     }
 
@@ -50,16 +50,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     
     char* characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    srand(*data);
-    wchar_t* wideString = generateWideString();
+    //srand(*data);
+    wchar_t* wideString = generateWideString(data);
     cmsMLUsetWide(mlu, "en", "US", wideString);
     free(wideString);
     
     
     char ObtainedLanguage[3], ObtainedCountry[3];
-    ObtainedLanguage[0] = characters[*data % 96];
-    ObtainedLanguage[1] = characters[*(data+1) % 96];
-    ObtainedLanguage[2] = characters[*(data+2) % 96];
+    ObtainedLanguage[0] = characters[*(data+1) % 96];
+    ObtainedLanguage[1] = characters[*(data+2) % 96];
+    ObtainedLanguage[2] = characters[*(data) % 96];
 
     ObtainedCountry[0] = characters[*(data+2) % 96];
     ObtainedCountry[1] = characters[*data % 96];
@@ -72,8 +72,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsMLU* displayValue = mlu;
 
     //cmsDictAddEntry
-    wchar_t* name = generateWideString();
-    wchar_t* value = generateWideString();
+    wchar_t* name = generateWideString(data+9);
+    wchar_t* value = generateWideString(data+18);
     cmsDictAddEntry(hDict, name, value, displayName, displayValue);
     free(name);
     free(value);
