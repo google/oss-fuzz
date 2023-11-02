@@ -20,7 +20,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   // cmsCreateInkLimitingDeviceLink
-  cmsFloat64Number limit = *(data) % 401;
+  cmsFloat64Number limit = *((const uint32_t *)data) % 401;
 
   cmsHPROFILE limitingDeviceLinkProfile =
       cmsCreateInkLimitingDeviceLink(cmsSigCmykData, limit);

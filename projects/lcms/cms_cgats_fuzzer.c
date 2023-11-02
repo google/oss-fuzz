@@ -13,7 +13,6 @@ limitations under the License.
 #include <stdint.h>
 #include "lcms2.h"
 
-#define NPOINTS_IT8 10  // (17*17*17*17)
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
@@ -41,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsIT8SetPropertyDbl(it8, "SERIAL",      (data[1] % 256) / 255.0);
     cmsIT8SetPropertyHex(it8, "MATERIAL",     0x123);
 
-    cmsIT8SetPropertyDbl(it8, "NUMBER_OF_SETS", NPOINTS_IT8); // ?
+    cmsIT8SetPropertyDbl(it8, "NUMBER_OF_SETS", 10);
     cmsIT8SetPropertyDbl(it8, "NUMBER_OF_FIELDS", Row);
 
     cmsIT8SetDataFormat(it8, 0, "SAMPLE_ID");
@@ -49,7 +48,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsIT8SetDataFormat(it8, 2, "RGB_G");
     cmsIT8SetDataFormat(it8, 3, "RGB_B");
 
-    for (i=0; i < NPOINTS_IT8; i++) {
+    for (i=0; i < 10; i++) {
 
           char Patch[20];
 
