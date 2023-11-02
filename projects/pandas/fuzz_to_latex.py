@@ -44,8 +44,8 @@ def TestOneInput(data):
         buf = fdp.ConsumeUnicodeNoSurrogates(20)
         columns = None if fdp.ConsumeBool() else list(df.columns)
         col_space = None if fdp.ConsumeBool() else fdp.ConsumeIntInRange(0, 10)
-        header = fdp.ConsumeBool() 
-        index = fdp.ConsumeBool() 
+        header = fdp.ConsumeBool()
+        index = fdp.ConsumeBool()
         na_rep = fdp.ConsumeUnicodeNoSurrogates(5)
         float_format = "fixed" if fdp.ConsumeBool() else None
         sparsify = fdp.ConsumeBool()
@@ -72,9 +72,8 @@ def TestOneInput(data):
 
 
 
-    except (
-        ValueError,
-        KeyError
+    except(
+            ValueError,  # If column_format is not a valid string
     ):
         pass
 

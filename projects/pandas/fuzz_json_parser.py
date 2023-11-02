@@ -24,6 +24,7 @@ from pandas.errors import (
     ParserError,
 )
 
+
 def TestReadJson(data):
     fdp = atheris.FuzzedDataProvider(data)
 
@@ -31,11 +32,12 @@ def TestReadJson(data):
         fuzzed_json = fdp.ConsumeUnicode(sys.maxsize)
         pd.read_json(io.StringIO(fuzzed_json), orient='index')
     except (
-        ParserError, 
-        EmptyDataError, 
-        ValueError
+            ParserError,  # If the data is not valid JSON
+            EmptyDataError,  # If the data is emtpy or contains only whitespaces
+            ValueError  # If the data is not line-delimited JSON format
     ):
         pass
+
 
 def main():
     atheris.instrument_all()

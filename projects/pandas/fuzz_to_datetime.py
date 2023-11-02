@@ -19,9 +19,10 @@ import atheris
 import pandas as pd
 
 from pandas.errors import (
-    ParserError, 
+    ParserError,
     OutOfBoundsDatetime
 )
+
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
@@ -48,16 +49,18 @@ def TestOneInput(data):
         )
 
     except (
-        ParserError, 
-        OverflowError,
-        OutOfBoundsDatetime
+            ParserError,  # When parsing a date from string fails.
+            ValueError,  # When another datetime conversion error happens.
+            OutOfBoundsDatetime  # catching attempts to create a DatetimeIndex, which may raise from cast()
     ):
         pass
+
 
 def main():
     atheris.Setup(sys.argv, TestOneInput)
     atheris.instrument_all()
     atheris.Fuzz()
+
 
 if __name__ == "__main__":
     main()

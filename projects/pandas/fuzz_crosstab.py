@@ -19,23 +19,31 @@ import sys
 import pandas as pd
 import numpy as np
 
+
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
         num_elements = fdp.ConsumeIntInRange(1, 100)
-        a = np.array([fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)], dtype=object)
-        b = np.array([fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)], dtype=object)
+        a = np.array(
+            [fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)],
+            dtype=object
+        )
 
-        pd.crosstab(a, b,
-                    rownames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))],
-                    colnames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))])
+        b = np.array(
+            [fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)],
+            dtype=object
+        )
+
+        pd.crosstab(
+            a,
+            b,
+            rownames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))],
+            colnames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))]
+        )
 
     except (
-        ValueError,
-        TypeError,
-        KeyError,
-        IndexError
+            ValueError  # If there is a mismatch in dimensions or inappropriate values are provided.
     ):
         pass
 

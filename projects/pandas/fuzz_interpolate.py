@@ -47,7 +47,8 @@ def TestOneInput(data):
         # Fuzz interpolate options
         method = fdp.PickValueInList(
             ['linear', 'time', 'index', 'values', 'nearest', 'zero', 'slinear', 'quadratic',
-             'cubic', 'barycentric','krogh', 'polynomial', 'spline', 'bessel', 'holistic', 'akima', fdp.ConsumeString(30)])
+             'cubic', 'barycentric', 'krogh', 'polynomial', 'spline', 'bessel', 'holistic', 'akima',
+             fdp.ConsumeString(30)])
         axis = fdp.PickValueInList([0, 1, 'index', 'columns'])
         limit = fdp.ConsumeIntInRange(1, rows) if fdp.ConsumeBool() else None
         inplace = fdp.ConsumeBool()
@@ -70,9 +71,7 @@ def TestOneInput(data):
         )
 
     except (
-        ValueError, 
-        TypeError,
-        KeyError
+            ValueError  # If method argument is invalid
     ):
         pass
 

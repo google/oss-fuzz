@@ -18,6 +18,7 @@ import sys
 import atheris
 import pandas as pd
 
+
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
@@ -41,7 +42,8 @@ def TestOneInput(data):
 
         df = pd.DataFrame(data)
 
-        to_replace = fdp.ConsumeIntInRange(1, 100)
+        to_replace = fdp.ConsumeIntInRange(1, 100) if fdp.ConsumeBool else [fdp.ConsumeIntInRange(1, 100),
+                                                                            fdp.ConsumeIntInRange(1, 100)]
         value = fdp.ConsumeIntInRange(101, 200)
         inplace = fdp.ConsumeBool()
         limit = fdp.ConsumeIntInRange(1, num_rows - 1) if fdp.ConsumeBool() else None
@@ -58,16 +60,17 @@ def TestOneInput(data):
         )
 
     except (
-        TypeError,
-        ValueError,
-        KeyError
+            TypeError,  # If to_replace and value have different length
+            ValueError  # If method is not in ['pad', 'ffill', 'bfill', 'backfill']
     ):
         pass
+
 
 def main():
     atheris.Setup(sys.argv, TestOneInput)
     atheris.instrument_all()
     atheris.Fuzz()
+
 
 if __name__ == "__main__":
     main()

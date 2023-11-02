@@ -47,21 +47,30 @@ def TestOneInput(data):
             else:
                 data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
 
+        id_vars_data = [
+            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
+            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
+            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]
+        ]
+        if fdp.ConsumeBool():
+            id_vars_data.push(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)))
+
         df = pd.DataFrame(data)
         name = fdp.ConsumeString(20)
-        df = pd.melt(df,
-                     id_vars=[col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-                              col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-                              col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]],
-                     value_vars=[col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-                                 col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]],
-                     var_name='gf', value_name=fdp.ConsumeString(50))
+        df = pd.melt(
+            df,
+            id_vars=id_vars_data,
+            value_vars=[
+                col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
+                col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]
+            ],
+            var_name='gf', value_name=fdp.ConsumeString(50)
+        )
 
         local_var_name = 'gf' if fdp.ConsumeBool() else fdp.ConsumeString(20)
         df[name] = df[local_var_name].map(groups)
     except (
-        ValueError,
-        KeyError
+            KeyError  # if `id_vars` are not in the frame
     ):
         pass
 
