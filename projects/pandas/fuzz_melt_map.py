@@ -53,7 +53,7 @@ def TestOneInput(data):
             col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]
         ]
         if fdp.ConsumeBool():
-            id_vars_data.push(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)))
+            id_vars_data.append(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)))
 
         df = pd.DataFrame(data)
         name = fdp.ConsumeString(20)
