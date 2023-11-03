@@ -70,7 +70,8 @@ def TestOneInput(data):
         local_var_name = 'gf' if fdp.ConsumeBool() else fdp.ConsumeString(20)
         df[name] = df[local_var_name].map(groups)
     except (
-            KeyError  # if `id_vars` are not in the frame
+            KeyError,  # if `id_vars` are not in the frame.
+            ValueError # if initial data from seed is empty and fdp produces empty data.
     ):
         pass
 

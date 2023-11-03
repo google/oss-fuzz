@@ -43,7 +43,6 @@ def TestOneInput(data):
         df = pd.DataFrame(data)
         buf = fdp.ConsumeUnicodeNoSurrogates(20)
         columns = None if fdp.ConsumeBool() else list(df.columns)
-        col_space = None if fdp.ConsumeBool() else fdp.ConsumeIntInRange(0, 10)
         header = fdp.ConsumeBool()
         index = fdp.ConsumeBool()
         na_rep = fdp.ConsumeUnicodeNoSurrogates(5)
@@ -57,7 +56,6 @@ def TestOneInput(data):
         df.to_latex(
             buf=buf,
             columns=columns,
-            col_space=col_space,
             header=header,
             index=index,
             na_rep=na_rep,
@@ -74,6 +72,7 @@ def TestOneInput(data):
 
     except(
             ValueError,  # If column_format is not a valid string
+            ImportError # If Jinja2 is imported for latex
     ):
         pass
 
