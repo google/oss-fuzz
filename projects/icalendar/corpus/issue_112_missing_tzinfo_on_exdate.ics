@@ -1,0 +1,20 @@
+BEGIN:VEVENT
+DTSTART;TZID=America/New_York:20130907T120000
+DTEND;TZID=America/New_York:20130907T170000
+RRULE:FREQ=WEEKLY;BYDAY=FR,SA;UNTIL=20131025T035959Z
+EXDATE;TZID=America/New_York:20131012T120000
+EXDATE;TZID=America/New_York:20131011T120000
+DTSTAMP:20131021T025552Z
+UID:ak30b02u7858q1oo6ji9dm4mgg@google.com
+CREATED:20130903T181453Z
+DESCRIPTION:The Fieldhouse and Hard Rock Cafe are working with PhillyRising
+  to provide live entertainment on Friday and Saturday afternoons throughout
+  the Summer.
+LAST-MODIFIED:20131015T210927Z
+LOCATION:12th and Market Streets (weather permitting)
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Market East Live!
+TRANSP:OPAQUE
+END:VEVENT
+

@@ -1,0 +1,3 @@
+BEGIN:VEVENT
+ATTENDEE;RSVP=TRUE:mailto:someone@example.com
+END:VEVENT

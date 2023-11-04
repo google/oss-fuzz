@@ -1,0 +1,3 @@
+BEGIN:VEVENT
+ORGANIZER;CN="Джон Доу":mailto:john.doe@example.org
+END:VEVENT
