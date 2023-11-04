@@ -4,6 +4,7 @@ primary_contact: "johannes@raggam.co.at"
 auto_ccs: 
   - "ennamarie19@gmail.com"
   - "maxm@mxm.dk"
+  - "niccokunzmann@gmail.com"
 fuzzing_engines: 
   - libfuzzer
 sanitizers: 
