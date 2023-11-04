@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake autopoint bison flex libtool pkg-config
-RUN git clone --depth 1 https://github.com/util-linux/util-linux
-WORKDIR util-linux
-COPY build.sh $SRC/
+export CXXFLAGS="$CFLAGS"
+
+mkdir -p mybuild
+
+pushd mybuild/
+cmake -DSHARED_LIBS=OFF -DBUILD_FUZZ=ON -DBoost_USE_STATIC_LIBS=ON ../.
+make -j$(nproc) --ignore-errors
+cp fuzz/fuzz-* $OUT/
+popd
+
+cp fuzz/*zip $OUT/
