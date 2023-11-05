@@ -1,7 +1,0 @@
-BEGIN:VCALENDAR
-PRODID:-//Plönë.org//NONSGML plone.app.event//EN
-VERSION:2.0
-X-WR-CALNAME:äöü ÄÖÜ €
-X-WR-CALDESC:test non ascii: äöü ÄÖÜ €
-X-WR-RELCALID:12345
-END:VCALENDAR
