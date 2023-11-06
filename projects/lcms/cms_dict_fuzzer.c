@@ -14,16 +14,20 @@ limitations under the License.
 #include <stdlib.h>
 #include "lcms2.h"
 
-wchar_t* generateWideString(const uint8_t *data){
-    char* characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+wchar_t* generateWideString(const char* characters, const uint8_t *data){
+    if (!characters){
+        return NULL;
+    }
+    
     char stringToWide[10];
-    for (int i=0; i < 9; i++){
-        stringToWide[i] = characters[*(data+i) % 96];
+    for (int i = 0; i < 9; i++){
+        stringToWide[i] = characters[data[i] % 95];
     }
     stringToWide[9] = '\0';
-    int requiredSize = mbstowcs(NULL, &stringToWide, 0);
-    wchar_t* wideString = (wchar_t *)malloc( (requiredSize + 1) * sizeof( wchar_t ));
-    mbstowcs(wideString, &stringToWide, requiredSize+1);
+    
+    int requiredSize = mbstowcs(NULL, stringToWide, 0);
+    wchar_t* wideString = (wchar_t *)malloc((requiredSize + 1) * sizeof(wchar_t));
+    mbstowcs(wideString, stringToWide, requiredSize + 1);
     return wideString;
 }
 
@@ -50,20 +54,19 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     
     char* characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    //srand(*data);
-    wchar_t* wideString = generateWideString(data);
+    wchar_t* wideString = generateWideString(characters, data);
     cmsMLUsetWide(mlu, "en", "US", wideString);
     free(wideString);
     
     
     char ObtainedLanguage[3], ObtainedCountry[3];
-    ObtainedLanguage[0] = characters[*(data+1) % 96];
-    ObtainedLanguage[1] = characters[*(data+2) % 96];
-    ObtainedLanguage[2] = characters[*(data) % 96];
+    ObtainedLanguage[0] = characters[*(data+1) % 95];
+    ObtainedLanguage[1] = characters[*(data+2) % 95];
+    ObtainedLanguage[2] = characters[*(data) % 95];
 
-    ObtainedCountry[0] = characters[*(data+2) % 96];
-    ObtainedCountry[1] = characters[*data % 96];
-    ObtainedCountry[2] = characters[*(data+1) % 96];
+    ObtainedCountry[0] = characters[*(data+2) % 95];
+    ObtainedCountry[1] = characters[*data % 95];
+    ObtainedCountry[2] = characters[*(data+1) % 95];
     cmsMLUgetTranslation(mlu, "en", "US",ObtainedLanguage,ObtainedCountry);
     cmsMLUtranslationsCount(mlu);
     cmsMLUtranslationsCodes(mlu, *((uint32_t *)data), ObtainedLanguage, ObtainedCountry);
@@ -72,8 +75,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsMLU* displayValue = mlu;
 
     //cmsDictAddEntry
-    wchar_t* name = generateWideString(data+9);
-    wchar_t* value = generateWideString(data+18);
+    wchar_t* name = generateWideString(characters, data + 9);
+    wchar_t* value = generateWideString(characters, data + 18);
     cmsDictAddEntry(hDict, name, value, displayName, displayValue);
     free(name);
     free(value);
