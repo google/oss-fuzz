@@ -41,7 +41,6 @@ def TestOneInput(data):
                 data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
 
         df = pd.DataFrame(data)
-        buf = fdp.ConsumeUnicodeNoSurrogates(20)
         columns = None if fdp.ConsumeBool() else list(df.columns)
         header = fdp.ConsumeBool()
         index = fdp.ConsumeBool()
@@ -54,7 +53,6 @@ def TestOneInput(data):
         longtable = fdp.ConsumeBool()
 
         df.to_latex(
-            buf=buf,
             columns=columns,
             header=header,
             index=index,
