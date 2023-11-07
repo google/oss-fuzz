@@ -33,7 +33,7 @@ cat $SRC/multiple.txt | while read i; do
 done
 # build in release mode to avoid timeouts
 cargo build -r
-cp ./target/x86_64-unknown-linux-gnu/debug/libhtp.a ../libhtp-rs.a
+cp ./target/x86_64-unknown-linux-gnu/release/libhtp.a ../libhtp-rs.a
 )
 
 cd libhtp
