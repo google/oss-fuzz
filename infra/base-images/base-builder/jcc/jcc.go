@@ -25,7 +25,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 )
 
@@ -193,12 +192,18 @@ func GenerateAST(bin string, args []string, filePath string) {
 
 	cmd := exec.Command(bin, args...)
 	cmd.Stdout = outFile
-	cmd.Run()
-	// err = cmd.Run()
-	// if err == nil {
-	//     os.Setenv("PROCESSED_ALL_FILES", "true")
-	//     // fmt.Println("SAVED AST: " + filePath)
-	// }
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("\n\nError generating: " + filePath)
+		fmt.Println("\n\nCommand: ", cmd.String())
+		fmt.Println("\n\nError: ", err)
+		fmt.Printf("Error Output:\n%s\n", stderr.String())
+		//os.Remove(filePath)
+	}
 }
 
 func FindFilesWithSuffixes(suffixes []string) ([]string, error) {
@@ -210,7 +215,8 @@ func FindFilesWithSuffixes(suffixes []string) ([]string, error) {
 			for _, suffix := range suffixes {
 				if strings.HasSuffix(info.Name(), suffix) {
 					files = append(files, path)
-					// fmt.Println("INCLUDE FILE: " + path + ".")
+					allFilesPath := filepath.Join(os.Getenv("JCC_GENERATE_AST_DIR"), "all_files.log")
+					AppendStringToFile(allFilesPath, path+"\n")
 					break
 				}
 			}
@@ -221,6 +227,16 @@ func FindFilesWithSuffixes(suffixes []string) ([]string, error) {
 	return files, err
 }
 
+func CountExistingASTs(astDir string) (int, error) {
+	// Counts the number of existing AST files |astDir|.
+	matches, err := filepath.Glob(filepath.Join(astDir, "*.ast"))
+	if err != nil {
+		return 0, err
+	}
+	fmt.Print(fmt.Sprintf("#Existing ASTs: %d", len(matches)))
+	return len(matches), nil
+}
+
 func GenerateASTs(bin string, args []string, astDir string) {
 	// Generates an AST for each C/CPP file in the command.
 	// Cannot save AST when astDir is not available.
@@ -228,38 +244,21 @@ func GenerateASTs(bin string, args []string, astDir string) {
 
 	// Target file suffixes.
 	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
-	// C/CPP targets in the command.
-	targetFiles := []string{}
 	// Flags to generate AST.
 	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
 
-	files, err := FindFilesWithSuffixes(suffixes)
-	if err == nil {
-		flags = append(flags, files...)
-	}
-	// processed, defined := os.LookupEnv("PROCESSED_ALL_FILES")
-	// if defined && processed == "true" {
-	//     files, err := FindFilesWithSuffixes(suffixes)
-	//     if err == nil {
-	//         flags = append(flags, files...)
-	//     }
-	// }
-
-	for _, arg := range args {
-		targetFileExt := strings.ToLower(filepath.Ext(arg))
-		if slices.Contains(suffixes, targetFileExt) {
-			targetFiles = append(targetFiles, arg)
-			continue
-		}
-		flags = append(flags, arg)
+	allFiles, err := FindFilesWithSuffixes(suffixes)
+	if err != nil {
+		return
 	}
 
-	// Generate an AST for each target file. Skips AST generation when a
-	// command has no target file (e.g., during linking).
-	for _, targetFile := range targetFiles {
-		filePath := filepath.Join(astDir, fmt.Sprintf("%s.ast", filepath.Base(targetFile)))
-		GenerateAST(bin, append(flags, targetFile), filePath)
+	num_ast_generated, err := CountExistingASTs(astDir)
+	if err != nil {
+		return
 	}
+
+	filePath := filepath.Join(astDir, fmt.Sprintf("%03d.ast", num_ast_generated))
+	GenerateAST(bin, append(flags, allFiles...), filePath)
 }
 
 func ExecBuildCommand(bin string, args []string) (int, string, string) {
