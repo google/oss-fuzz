@@ -11,32 +11,16 @@ limitations under the License.
 */
 
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "lcms2.h"
 
-#include "cJSON.h"
-#include "loader.h"
-
-/*
- * Targets the custom version of cJson.
- */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
+    cmsHPROFILE hProfile = cmsOpenProfileFromMem(data, size);
+    if (!hProfile){
+        return 0;
+    }
+    //cmsMD5computeID
+    cmsMD5computeID(hProfile);
+    cmsCloseProfile(hProfile);
     return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
-
-  cJSON *json = NULL;
-  loader_get_json(NULL, filename, &json);
-  if (json != NULL) {
-    free(json);
-  }
-  unlink(filename);
-
-  return 0;
 }
