@@ -17,9 +17,9 @@
 
 # build project
 ./autogen.sh
-./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000
+./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 --enable-jit
 make -j$(nproc) clean
-make -j$(nproc) all
+make -j$(nproc) .libs/libpcre2-fuzzsupport.a libpcre2-8.la
 
 # build fuzzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
