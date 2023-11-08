@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip
 RUN git clone --depth 1 https://github.com/jmcnamara/XlsxWriter.git XlsxWriter \
         && cp XlsxWriter/dev/fuzzing/build.sh $SRC/
-RUN cp -r XlsxWriter/xlsxwriter/fuzzing/corpus $SRC/corpus
+RUN cp -r XlsxWriter/dev/fuzzing/corpus $SRC/corpus
 WORKDIR $SRC/XlsxWriter
 
