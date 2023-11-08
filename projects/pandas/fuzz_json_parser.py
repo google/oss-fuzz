@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets pandas parsers. Both native and python code."""
+"""This fuzzer script specifically targets the pandas json parser."""
 
-import os
 import sys
 import atheris
+import pandas as pd
 import io
 
 from pandas.errors import (
@@ -24,25 +24,24 @@ from pandas.errors import (
     ParserError,
 )
 
-from pandas.io.parsers import read_csv
 
-
-def TestOneInput(data):
+def TestReadJson(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
+        fuzzed_json = fdp.ConsumeUnicode(sys.maxsize)
+        pd.read_json(io.StringIO(fuzzed_json), orient='index')
     except (
-        EmptyDataError,
-        ParserError,
-        ValueError
+            ParserError,  # If the data is not valid JSON
+            EmptyDataError,  # If the data is emtpy or contains only whitespaces
+            ValueError  # If the data is not line-delimited JSON format
     ):
         pass
 
 
 def main():
     atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Setup(sys.argv, TestReadJson)
     atheris.Fuzz()
 
 

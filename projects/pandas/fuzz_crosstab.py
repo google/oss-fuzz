@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,30 +12,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets pandas parsers. Both native and python code."""
+"""Targets pandas crosstab function with fuzzing data to explore edge cases."""
 
-import os
-import sys
 import atheris
-import io
-
-from pandas.errors import (
-    EmptyDataError,
-    ParserError,
-)
-
-from pandas.io.parsers import read_csv
+import sys
+import pandas as pd
+import numpy as np
 
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        read_csv(io.StringIO(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)))
+        num_elements = fdp.ConsumeIntInRange(1, 100)
+        a = np.array(
+            [fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)],
+            dtype=object
+        )
+
+        b = np.array(
+            [fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_elements)],
+            dtype=object
+        )
+
+        pd.crosstab(
+            a,
+            b,
+            rownames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))],
+            colnames=[fdp.ConsumeUnicode(fdp.ConsumeIntInRange(1, 100))]
+        )
+
     except (
-        EmptyDataError,
-        ParserError,
-        ValueError
+            ValueError  # If there is a mismatch in dimensions or inappropriate values are provided.
     ):
         pass
 
