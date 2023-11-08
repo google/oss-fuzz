@@ -29,20 +29,20 @@ def TestOneInput(data):
         num_columns = fdp.ConsumeIntInRange(3, 100)
         col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_columns)]
 
-        data = {}
+        df_content = {}
         for col_name in col_names:
             if fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
             else:
-                data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
 
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(df_content)
 
         # Fuzz interpolate options
         method = fdp.PickValueInList(

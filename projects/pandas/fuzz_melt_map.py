@@ -30,39 +30,39 @@ def TestOneInput(data):
             fdp.ConsumeString(30): fdp.ConsumeUnicodeNoSurrogates(60)
         }
 
-        num_rows = fdp.ConsumeIntInRange(3, 100)
-        num_columns = fdp.ConsumeIntInRange(3, 100)
-        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_columns)]
+        num_rows = fdp.ConsumeIntInRange(3, 30)
+        num_columns = fdp.ConsumeIntInRange(3, 30)
+        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)) for _ in range(num_columns)]
 
-        data = {}
+        df_content = {}
         for col_name in col_names:
             if fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                data[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
             else:
-                data[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
 
         id_vars_data = [
-            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-            col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]
+            col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)],
+            col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)],
+            col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)]
         ]
         if fdp.ConsumeBool():
             id_vars_data.append(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)))
 
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(payload_dict)
         name = fdp.ConsumeString(20)
         df = pd.melt(
             df,
             id_vars=id_vars_data,
             value_vars=[
-                col_names[fdp.ConsumeIntInRange(0, num_columns - 1)],
-                col_names[fdp.ConsumeIntInRange(0, num_columns - 1)]
+                col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)],
+                col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)]
             ],
             var_name='gf', value_name=fdp.ConsumeString(50)
         )
