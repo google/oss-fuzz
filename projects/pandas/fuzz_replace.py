@@ -23,23 +23,22 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        num_rows = fdp.ConsumeIntInRange(3, 100)
-        num_columns = fdp.ConsumeIntInRange(3, 100)
-        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_columns)]
+        num_rows = fdp.ConsumeIntInRange(3, 30)
+        num_columns = fdp.ConsumeIntInRange(3, 30)
+        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 20)) for _ in range(num_columns)]
 
         df_content = {}
         for col_name in col_names:
             if fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                df_content[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeString(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeFloat() for _ in range(num_rows)]
             else:
                 df_content[col_name] = [fdp.ConsumeBool() for _ in range(num_rows)]
-
         df = pd.DataFrame(df_content)
 
         to_replace = fdp.ConsumeIntInRange(1, 100) if fdp.ConsumeBool else [fdp.ConsumeIntInRange(1, 100),

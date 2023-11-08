@@ -24,17 +24,17 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     try:
-        rows = fdp.ConsumeIntInRange(1, 100)
-        num_rows = fdp.ConsumeIntInRange(3, 100)
-        num_columns = fdp.ConsumeIntInRange(3, 100)
-        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 100)) for _ in range(num_columns)]
+        rows = fdp.ConsumeIntInRange(1, 15)
+        num_rows = fdp.ConsumeIntInRange(3, 20)
+        num_columns = fdp.ConsumeIntInRange(3, 20)
+        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 15)) for _ in range(num_columns)]
 
         df_content = {}
         for col_name in col_names:
             if fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                df_content[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeString(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
@@ -48,7 +48,7 @@ def TestOneInput(data):
         method = fdp.PickValueInList(
             ['linear', 'time', 'index', 'values', 'nearest', 'zero', 'slinear', 'quadratic',
              'cubic', 'barycentric', 'krogh', 'polynomial', 'spline', 'bessel', 'holistic', 'akima',
-             fdp.ConsumeString(30)])
+             fdp.ConsumeString(15)])
         axis = fdp.PickValueInList([0, 1, 'index', 'columns'])
         limit = fdp.ConsumeIntInRange(1, rows) if fdp.ConsumeBool() else None
         inplace = fdp.ConsumeBool()

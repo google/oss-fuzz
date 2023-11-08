@@ -26,20 +26,20 @@ def TestOneInput(data):
 
     try:
         groups = {
-            fdp.ConsumeString(30): fdp.ConsumeUnicodeNoSurrogates(60),
-            fdp.ConsumeString(30): fdp.ConsumeUnicodeNoSurrogates(60)
+            fdp.ConsumeString(10): fdp.ConsumeUnicodeNoSurrogates(10),
+            fdp.ConsumeString(10): fdp.ConsumeUnicodeNoSurrogates(10)
         }
 
         num_rows = fdp.ConsumeIntInRange(3, 30)
         num_columns = fdp.ConsumeIntInRange(3, 30)
-        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)) for _ in range(num_columns)]
+        col_names = [fdp.ConsumeString(fdp.ConsumeIntInRange(1, 15)) for _ in range(num_columns)]
 
         df_content = {}
         for col_name in col_names:
             if fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeInt(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
-                df_content[col_name] = [fdp.ConsumeString(100) for _ in range(num_rows)]
+                df_content[col_name] = [fdp.ConsumeString(10) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
                 df_content[col_name] = [fdp.ConsumeIntInRange(0, 2100) for _ in range(num_rows)]
             elif fdp.ConsumeBool():
@@ -53,9 +53,9 @@ def TestOneInput(data):
             col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)]
         ]
         if fdp.ConsumeBool():
-            id_vars_data.append(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 30)))
+            id_vars_data.append(fdp.ConsumeString(fdp.ConsumeIntInRange(1, 15)))
 
-        df = pd.DataFrame(payload_dict)
+        df = pd.DataFrame(df_content)
         name = fdp.ConsumeString(20)
         df = pd.melt(
             df,
@@ -64,10 +64,10 @@ def TestOneInput(data):
                 col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)],
                 col_names[fdp.ConsumeIntInRange(0, len(col_names) - 1)]
             ],
-            var_name='gf', value_name=fdp.ConsumeString(50)
+            var_name='gf', value_name=fdp.ConsumeString(10)
         )
 
-        local_var_name = 'gf' if fdp.ConsumeBool() else fdp.ConsumeString(20)
+        local_var_name = 'gf' if fdp.ConsumeBool() else fdp.ConsumeString(10)
         df[name] = df[local_var_name].map(groups)
     except (
             KeyError,  # if `id_vars` are not in the frame.
