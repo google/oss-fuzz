@@ -83,7 +83,7 @@ def TestOneInput(data):
         FilterValidationError):
         pass
     except ValueError as e:
-        if "Filter requires resource expression" not in str(e):
+        if "Filter requires resource expression" not in str(e) and "No GCP Project ID" not in str(e):
             raise e
     except (KeyError, TypeError):
         pass

@@ -58,7 +58,7 @@ def TestOneInput(data):
     action_registry = ActionRegistry("%s.actions" % type)
     filter_registry = FilterRegistry("%s.filters" % type)
 
-    resource_manager = manager.ResourceManager(FuzzContext("gcp", option), manager_data)
+    resource_manager = resourcemanager.Organization(FuzzContext("gcp", option), manager_data)
     resource_manager.action_registry = action_registry
     resource_manager.filter_registry = filter_registry
     resource_manager.type = type
@@ -93,6 +93,9 @@ def TestOneInput(data):
         pass
     except ValueError as e:
         if "Filter requires resource expression" not in str(e) and "not enough values to unpack" not in str(e):
+            raise e
+    except OSError as e:
+        if "Network is unreachable" not in str(e):
             raise e
     except (KeyError, TypeError):
         pass
