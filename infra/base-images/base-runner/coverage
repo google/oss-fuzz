@@ -459,17 +459,28 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     fi
   done
 
+
   # Check if TARGET_PACKAGE_PREFIX has been set and remove classes not
   # in the target package prefix to exclude them in the resulting HTML
   # report. By default, Jacoco includes all classes in the classes dump
   # directory to the resulting HTML report. Removing classes not in target
   # package could concentrate the result on small subset of class and
   # decrease the noise from project dependencies.
+  for arg in $COVERAGE_EXTRA_ARGS
+  do
+    if [[ $arg == "TARGET_PACKAGE_PREFIX="* ]]
+    then
+      TARGET_PACKAGE_PREFIX=`echo $arg | cut -d= -f2`
+    fi
+  done
+
   dir_to_remove=
   have_target_package="NO"
   # Duplicate classes_dir for dependency classes removal
   reduced_classes_dir=$DUMPS_DIR/classes_reduced
+  rm -rf $reduced_classes_dir
   cp -r $classes_dir $reduced_classes_dir
+
   if [[ -n ${TARGET_PACKAGE_PREFIX:-} ]]
   then
     # Translate the colon separated target package prefix environment
@@ -486,10 +497,22 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
       need_remove="YES"
       for prefix in $package_prefix
       do
-        if [[ "./$prefix" == "$dir"* ]]
+	prefix=$reduced_classes_dir/$prefix
+        if [[ "$dir" == "$prefix"* ]]
         then
           have_target_package="YES"
           need_remove="NO"
+        else
+          while [[ "$prefix" != "$reduced_classes_dir" ]]
+          do
+            if [[ "$dir" == "$prefix" ]]
+            then
+              have_target_package="YES"
+              need_remove="NO"
+              break
+            fi
+            prefix=$(dirname $prefix)
+          done
         fi
       done
       if [[ "$need_remove" == "YES" ]]
