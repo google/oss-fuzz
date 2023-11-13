@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-NIGHTLY_VERSION="nightly-2023-06-01"
+NIGHTLY_VERSION="nightly"
 
 rustup install $NIGHTLY_VERSION
 cd testsuite/fuzzer
