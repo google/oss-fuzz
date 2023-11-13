@@ -3,6 +3,7 @@ language: rust
 primary_contact: "tobie@surrealdb.com"
 main_repo: "https://github.com/surrealdb/surrealdb"
 auto_ccs:
+  - security@surrealdb.com
   - finn.bear@surrealdb.com
   - nathaniel.brough@gmail.com
 
