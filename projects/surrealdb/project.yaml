@@ -5,6 +5,8 @@ main_repo: "https://github.com/surrealdb/surrealdb"
 auto_ccs:
   - security@surrealdb.com
   - finn.bear@surrealdb.com
+  - salvador.girones@surrealdb.com
+  - gerard.guillemas@surrealdb.com
   - nathaniel.brough@gmail.com
 
 sanitizers:
