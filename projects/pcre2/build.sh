@@ -17,13 +17,20 @@
 
 # build project
 ./autogen.sh
-./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 --enable-jit
+./configure --enable-fuzz-support \
+    --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 \
+    --enable-jit \
+    --enable-pcre2-16 --enable-pcre2-32
 make -j$(nproc) clean
-make -j$(nproc) .libs/libpcre2-fuzzsupport.a libpcre2-8.la
+make -j$(nproc) all
 
-# build fuzzer
+# build fuzzers
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
+$CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_16 \
+    $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-16.a .libs/libpcre2-16.a
+$CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32 \
+    $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-32.a .libs/libpcre2-32.a
 
 # set up dictionary and options to use it
 cp pcre2_fuzzer.options pcre2_fuzzer.dict $OUT/
