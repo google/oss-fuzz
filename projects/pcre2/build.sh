@@ -34,3 +34,25 @@ $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32 \
 
 # set up dictionary and options to use it
 cp pcre2_fuzzer.options pcre2_fuzzer.dict $OUT/
+
+# test different link sizes
+for i in $(seq 3 4); do
+    ./configure --enable-fuzz-support \
+        --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 \
+        --enable-jit \
+        --enable-pcre2-16 --enable-pcre2-32 --with-link-size=${i}
+    make -j$(nproc) clean
+    make -j$(nproc) all
+
+    # build fuzzers
+    $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_${i}l \
+        $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
+    $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_16_${i}l \
+        $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-16.a .libs/libpcre2-16.a
+    $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32_${i}l \
+        $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-32.a .libs/libpcre2-32.a
+
+    # set up dictionary and options to use it
+    cp pcre2_fuzzer.options $OUT/pcre2_fuzzer_${i}l.options
+    cp pcre2_fuzzer.dict $OUT/pcre2_fuzzer_${i}l.dict
+done
