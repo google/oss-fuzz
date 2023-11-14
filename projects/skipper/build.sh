@@ -15,9 +15,4 @@
 #
 ################################################################################
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
-GOPATH="${GOPATH:-/root/go}"
-
 compile_go_fuzzer github.com/zalando/skipper/eskip FuzzParse FuzzParse
