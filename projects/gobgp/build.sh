@@ -25,4 +25,4 @@ compile_native_go_fuzzer $PWD/pkg/packet/bgp           FuzzParseBGPMessage      
 compile_native_go_fuzzer $PWD/pkg/packet/bgp           FuzzParseLargeCommunity     fuzz_parse_large_community
 compile_native_go_fuzzer $PWD/pkg/packet/bgp           FuzzParseFlowSpecComponents fuzz_parse_flow_spec_components
 compile_native_go_fuzzer $PWD/pkg/packet/mrt           FuzzMRT                     fuzz_mrt
-compile_native_go_fuzzer $PWD/internal/pkg/zebra       FuzzZapi                    fuzz_zapi
+compile_native_go_fuzzer $PWD/pkg/zebra                FuzzZapi                    fuzz_zapi
