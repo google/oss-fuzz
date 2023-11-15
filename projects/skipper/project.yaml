@@ -1,7 +1,9 @@
 homepage: "https://opensource.zalando.com/skipper/"
 primary_contact: "sandor.szuecs@zalando.de"
 auto_ccs:
-  - "oss-fuzz+team-gwproxy@zalando.de"
+  - "team-gwproxy+oss-fuzz@zalando.de"
+  - "alexander.yastrebov@zalando.de"
+  - "sepehrdad.shanbedi@zalando.de"
 language: go
 fuzzing_engines:
   - libfuzzer
