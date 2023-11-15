@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,29 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-import atheris
-import sys
 
-with atheris.instrument_imports(include=['icalendar']):
-    from icalendar import Calendar
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone --depth 1 https://github.com/jmcnamara/XlsxWriter.git XlsxWriter \
+        && cp XlsxWriter/dev/fuzzing/build.sh $SRC/
+RUN cp -r XlsxWriter/dev/fuzzing/corpus $SRC/corpus
+WORKDIR $SRC/XlsxWriter
 
-from enhanced_fdp import EnhancedFuzzedDataProvider
-
-
-def TestOneInput(data):
-    fdp = EnhancedFuzzedDataProvider(data)
-    try:
-        Calendar.from_ical(fdp.ConsumeRemainingString())
-    except ValueError as e:
-        if "component" in str(e) or "parse" in str(e):
-            return -1
-        raise e
-
-
-def main():
-    atheris.Setup(sys.argv, TestOneInput)
-    atheris.Fuzz()
-
-
-if __name__ == "__main__":
-    main()

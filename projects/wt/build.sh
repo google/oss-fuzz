@@ -15,11 +15,14 @@
 #
 ################################################################################
 
-cd "$SRC"/icalendar
-pip3 install .
+export CXXFLAGS="$CFLAGS"
 
-# Build fuzzers in $OUT
-for fuzzer in $(find $SRC -name '*_fuzzer.py');do
-  compile_python_fuzzer "$fuzzer" 
-done
-zip -q $OUT/ical_fuzzer_seed_corpus.zip $SRC/corpus/*
+mkdir -p mybuild
+
+pushd mybuild/
+cmake -DSHARED_LIBS=OFF -DBUILD_FUZZ=ON -DBoost_USE_STATIC_LIBS=ON ../.
+make -j$(nproc) --ignore-errors
+cp fuzz/fuzz-* $OUT/
+popd
+
+cp fuzz/*zip $OUT/
