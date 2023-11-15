@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pigweed
-
-echo "Building project using Bazel wrapper."
-
-export BAZEL_FUZZ_TEST_QUERY="
-let all_fuzz_tests = attr(tags, \"fuzz-test\", \"//...\") in
-let lang_fuzz_tests = attr(generator_function, \"pw_cc_fuzz_test\", \$all_fuzz_tests) in
-\$lang_fuzz_tests - attr(tags, \"no-oss-fuzz\", \$lang_fuzz_tests)
-"
-
-bazel_build_fuzz_tests
+mkdir build
+cd build
+export LDFLAGS="-Wl,-rpath,'\$ORIGIN/lib'"
+cmake .. -GNinja\
+ -DBOOST_ROOT=/usr\
+ -DCMAKE_BUILD_TYPE=Release\
+ -DQL_COMPILE_WARNING_AS_ERROR=ON\
+ -DQL_BUILD_FUZZ_TEST_SUITE=ON\
+ -L
+cmake --build . --verbose -j$(nproc)
+mkdir $OUT/lib -p
+cp ql/libQuantLib.so* $OUT/lib/
+cp fuzz-test-suite/DateParserFuzzer $OUT/

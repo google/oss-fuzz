@@ -2,6 +2,8 @@ homepage: "https://www.webtoolkit.eu/wt"
 language: c++
 primary_contact: "wt-security@emweb.be"
 auto_ccs:
+  - "matthias@emweb.be"
+  - "wim@emweb.be"
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
   - libfuzzer

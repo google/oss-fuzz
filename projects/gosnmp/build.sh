@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pigweed
 
-echo "Building project using Bazel wrapper."
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-export BAZEL_FUZZ_TEST_QUERY="
-let all_fuzz_tests = attr(tags, \"fuzz-test\", \"//...\") in
-let lang_fuzz_tests = attr(generator_function, \"pw_cc_fuzz_test\", \$all_fuzz_tests) in
-\$lang_fuzz_tests - attr(tags, \"no-oss-fuzz\", \$lang_fuzz_tests)
-"
+sed -i '5,6d' marshal_test.go
+sed -i '/func BenchmarkSendOneRequest(/,/^}/ s/^/\/\//' marshal_test.go
 
-bazel_build_fuzz_tests
+compile_native_go_fuzzer github.com/gosnmp/gosnmp FuzzUnmarshal  fuzz_unmarshal marshal

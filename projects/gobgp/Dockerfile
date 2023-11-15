@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# Copyright 2020 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/pigweed
 
-echo "Building project using Bazel wrapper."
-
-export BAZEL_FUZZ_TEST_QUERY="
-let all_fuzz_tests = attr(tags, \"fuzz-test\", \"//...\") in
-let lang_fuzz_tests = attr(generator_function, \"pw_cc_fuzz_test\", \$all_fuzz_tests) in
-\$lang_fuzz_tests - attr(tags, \"no-oss-fuzz\", \$lang_fuzz_tests)
-"
-
-bazel_build_fuzz_tests
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/osrg/gobgp.git
+COPY build.sh $SRC/
+WORKDIR $SRC/gobgp

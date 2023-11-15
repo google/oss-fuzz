@@ -1,0 +1,14 @@
+homepage: "https://www.quantlib.org/"
+language: c++
+primary_contact: "luigi.ballabio@gmail.com"
+main_repo: "https://github.com/lballabio/QuantLib.git"
+auto_ccs:
+  - nathaniel.brough@gmail.com
+sanitizers:
+ - address
+ - memory:
+fuzzing_engines:
+ - libfuzzer
+ - afl
+ - honggfuzz
+ - libfuzzer
