@@ -22,8 +22,11 @@ cmake .. -GNinja\
  -DCMAKE_BUILD_TYPE=Release\
  -DQL_COMPILE_WARNING_AS_ERROR=ON\
  -DQL_BUILD_FUZZ_TEST_SUITE=ON\
+ -DQL_BUILD_TEST_SUITE=OFF\
+ -DQL_BUILD_BENCHMARK=OFF\
+ -DQL_BUILD_EXAMPLES=OFF\
  -L
 cmake --build . --verbose -j$(nproc)
 mkdir $OUT/lib -p
 cp ql/libQuantLib.so* $OUT/lib/
-cp fuzz-test-suite/DateParserFuzzer $OUT/
+find fuzz-test-suite -executable -type f -exec cp {} $OUT \;
