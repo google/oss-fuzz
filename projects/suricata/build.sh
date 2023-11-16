@@ -89,6 +89,7 @@ fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]]
 then
     fuzz_branches+=("6")
+    fuzz_branches+=("7")
 fi
 
 if [[ `shuf -i 0-9 -n 1` -eq 0 ]]
