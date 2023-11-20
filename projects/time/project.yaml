@@ -3,6 +3,7 @@ language: go
 primary_contact: "leoleovich@meta.com"
 auto_ccs:
   - "ajsinghyadav00@gmail.com"
+  - "pcullen@meta.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
