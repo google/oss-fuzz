@@ -37,6 +37,7 @@ RUN cargo install --force cbindgen
 
 RUN git clone --depth 1 https://github.com/OISF/suricata.git suricata
 RUN git clone --depth 1 --branch master-6.0.x https://github.com/OISF/suricata.git suricata6
+RUN git clone --depth 1 --branch main-7.0.x https://github.com/OISF/suricata.git suricata7
 RUN git clone --depth 1 https://github.com/OISF/libhtp.git libhtp
 RUN git clone --depth 1 https://github.com/OISF/suricata-verify suricata-verify
 WORKDIR $SRC

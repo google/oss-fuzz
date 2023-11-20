@@ -27,7 +27,10 @@ RUN git clone https://skia.googlesource.com/skia.git --depth 1
 # current directory for build script
 WORKDIR skia
 
-RUN python3 bin/sync
+ENV GIT_SYNC_DEPS_SKIP_EMSDK=1
+ENV GIT_SYNC_DEPS_SHALLOW_CLONE=1
+ENV GIT_SYNC_DEPS_QUIET=0
+RUN python3 tools/git-sync-deps
 RUN python3 bin/fetch-gn
 RUN python3 bin/fetch-ninja
 

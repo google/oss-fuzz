@@ -15,13 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y git build-essential python
-
-RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
-ENV PATH="${SRC}/depot_tools:${PATH}"
-
+RUN apt-get update && apt-get install -y git build-essential python python3
 RUN git clone 'https://pigweed.googlesource.com/pigweed/pigweed'  --depth 1
 
 COPY build.sh $SRC/
-COPY filter_cipd.py $SRC/
-COPY extract_pw_fuzzers.py $SRC/
