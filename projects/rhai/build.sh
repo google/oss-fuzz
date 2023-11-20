@@ -22,3 +22,5 @@ do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
 done
+
+find . -name '*.rhai' -exec zip $OUT/scripting_seed_corpus.zip {} \;
