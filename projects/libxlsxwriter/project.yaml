@@ -1,0 +1,6 @@
+homepage: "http://libxlsxwriter.github.io"
+language: c
+primary_contact: "jmcnamara@cpan.org"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/jmcnamara/libxlsxwriter.git"
