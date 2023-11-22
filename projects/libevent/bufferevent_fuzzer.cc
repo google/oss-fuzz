@@ -70,7 +70,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /*set rate limits*/
   bufferevent_set_rate_limit(bev1, NULL);
-  static struct timeval cfg_tick = {*(uint32_t *)data, *(uint32_t *)(data + 1)};
+  static struct timeval cfg_tick = { static_cast<__time_t>(*(uint32_t*)data), static_cast<__suseconds_t>(*(uint32_t*)(data+1))};
   conn_bucket_cfg = ev_token_bucket_cfg_new(
       *(uint32_t *)data, *(uint32_t *)(data + 1), *(uint32_t *)(data + 2),
       *(uint32_t *)(data + 3), &cfg_tick);
