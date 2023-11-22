@@ -19,6 +19,9 @@ cd lib
 # Copy dictionaries, but don't fail if there aren't any.
 cp fuzz/fuzz_targets/*.dict $OUT/ || true
 
+# Add additional compiler flags required for a successful build.
+export RUSTFLAGS="$RUSTFLAGS --cfg uuid_unstable"
+
 cargo fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
