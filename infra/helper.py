@@ -81,7 +81,7 @@ LANGUAGE_TO_BASE_BUILDER_IMAGE = {
     'c': 'base-builder',
     'c++': 'base-builder',
     'go': 'base-builder-go',
-    'javascript': 'javascript',
+    'javascript': 'base-builder-javascript',
     'jvm': 'base-builder-jvm',
     'python': 'base-builder-python',
     'rust': 'base-builder-rust',
