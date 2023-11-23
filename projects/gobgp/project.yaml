@@ -1,0 +1,10 @@
+homepage: "https://osrg.github.io/gobgp"
+language: go
+primary_contact: "fujita.tomonori@gmail.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/osrg/gobgp"

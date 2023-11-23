@@ -39,6 +39,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE -Ivendor/liburing/src/include \
     memcached-proxy_network.o memcached-proxy_lua.o memcached-proxy_config.o \
     memcached-proxy_ring_hash.o memcached-proxy_internal.o memcached-md5.o \
     memcached-extstore.o memcached-crc32c.o memcached-storage.o memcached-slab_automove_extstore.o \
+    memcached-proxy_ratelim.o \
     vendor/lua/src/liblua.a /usr/local/lib/libevent.a vendor/mcmc/mcmc.o -o fuzzer_proxy
 
 python3 $SRC/generate_corpus.py
