@@ -9,6 +9,8 @@ auto_ccs:
   - "bugaevc@serenityos.org"
   - "b.gianfo@gmail.com"
   - "idan.horowitz@gmail.com"
+  - "timledbetter@gmail.com"
+  - "atkinssj@serenityos.org"
   - "~awesomekling/serenityos-dev@lists.sr.ht"
 
 # Bug reports are public by default:

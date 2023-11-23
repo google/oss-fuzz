@@ -1,0 +1,6 @@
+homepage: "https://marzer.github.io/tomlplusplus/"
+language: c++
+primary_contact: "mark.gillard@outlook.com.au"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/marzer/tomlplusplus.git"

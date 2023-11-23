@@ -15,8 +15,7 @@ auto_ccs:
   - "tpudlik@google.com"
 sanitizers:
   - address
+  - memory
 main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'
 fuzzing_engines:
-  - afl
-  - honggfuzz
   - libfuzzer

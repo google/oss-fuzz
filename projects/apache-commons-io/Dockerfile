@@ -33,5 +33,5 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 RUN git clone --depth 1 https://github.com/apache/commons-io.git commons-io
 
 COPY build.sh $SRC/
-COPY InputXmlFuzzer.java $SRC/
+COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/commons-io

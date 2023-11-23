@@ -65,6 +65,8 @@ class GitlabFilestore(filestore.BaseFilestore):
     dest_dir_cache = os.path.join(self.config.project_src_path, self.cache_dir,
                                   self.CORPUS_PREFIX + name)
     logging.info('Copying from %s to cache %s.', directory, dest_dir_cache)
+    # Remove previous corpus from cache if any.
+    shutil.rmtree(dest_dir_cache, ignore_errors=True)
     shutil.copytree(directory, dest_dir_cache, dirs_exist_ok=True)
 
   def upload_build(self, name, directory):
