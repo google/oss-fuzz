@@ -17,21 +17,18 @@
 
 # Temporary fix for clang bug of upx
 sed -i 's/ \&\& __clang_major__ < 15//m' /src/upx/src/util/util.cpp
+git apply $SRC/upx/fuzzers/build.patch
 
 # build project
 # e.g.
-cp /src/upx/fuzzers/CMakeLists.txt /src/upx/
-
 mkdir -p build/debug
+cd build/debug
+cmake ../..
 
-if [ $SANITIZER == "introspector" ]; then
-    SANITIZER=address compile
-else
-    cd build/debug
-    cmake ../..
-fi
-
-cmake --build . -v
+for fuzzer in $(find $SRC -name '*_fuzzer.cpp'); do
+    fuzz_basename=$(basename -s .cpp $fuzzer)
+    cmake --build . --target $fuzz_basename -v
+done
 # make -j4
 
 cp ./*_fuzzer /out
