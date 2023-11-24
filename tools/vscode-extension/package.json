@@ -53,7 +53,7 @@
       },
       {
         "command": "oss-fuzz.GetCodeCoverage",
-        "title": "OSS-Fuzz: Display Code Coverage (python only).",
+        "title": "OSS-Fuzz: Display Code Coverage (Python only)",
         "description": "Downloads the latest code coverage from OSS-Fuzz's cloud data (can find at https://introspector.oss-fuzz.com)."
       },
       {
@@ -63,7 +63,7 @@
       },
       {
         "command": "oss-fuzz.CreateOSSFuzzSetup",
-        "title": "OSS-Fuzz: Initialize OSS-Fuzz Set Up.",
+        "title": "OSS-Fuzz: Initialize OSS-Fuzz Set Up",
         "description": "Creates the relevant files using templates to set up an OSS-Fuzz project. Uses minor heuristics e.g. detection of language."
       },
       {
