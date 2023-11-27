@@ -26,17 +26,18 @@ extern "C" {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  if (size < 16) {
-    return 0;
-  }
   FuzzedDataProvider data_provider(data, size);
 
   std::string s1 = data_provider.ConsumeRandomLengthString();
   std::string s2 = data_provider.ConsumeRandomLengthString();
+  size_t int1 = data_provider.ConsumeIntegral<size_t>();
+  size_t int2 = data_provider.ConsumeIntegral<size_t>();
+  size_t int3 = data_provider.ConsumeIntegral<size_t>();
+  size_t int4 = data_provider.ConsumeIntegral<size_t>();
 
-  int use_pair = data[0] % 2;
-  int options1 = data[1] % 16;
-  int options2 = data[2] % 16;
+  int use_pair = int1 % 2;
+  int options1 = int2 % 16;
+  int options2 = int3 % 16;
 
   struct bufferevent *bev1 = NULL, *bev2 = NULL, *pair[2];
   struct event_base *base = NULL;
@@ -70,10 +71,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /*set rate limits*/
   bufferevent_set_rate_limit(bev1, NULL);
-  static struct timeval cfg_tick = { static_cast<__time_t>(*(uint32_t*)data), static_cast<__suseconds_t>(*(uint32_t*)(data+1))};
-  conn_bucket_cfg = ev_token_bucket_cfg_new(
-      *(uint32_t *)data, *(uint32_t *)(data + 1), *(uint32_t *)(data + 2),
-      *(uint32_t *)(data + 3), &cfg_tick);
+  static struct timeval cfg_tick = {static_cast<__time_t>(int1),
+                                    static_cast<__suseconds_t>(int2)};
+  conn_bucket_cfg = ev_token_bucket_cfg_new(int1, int2, int3, int4, &cfg_tick);
   if (!conn_bucket_cfg) {
     goto cleanup;
   }
@@ -93,10 +93,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   bufferevent_remove_from_rate_limit_group(bev2);
 
   /*watermarks*/
-  bufferevent_setwatermark(bev2, EV_WRITE | EV_READ, *(size_t *)data,
-                           *(size_t *)(data + 1));
-  bufferevent_getwatermark(bev2, EV_WRITE | EV_READ, (size_t *)(data + 1),
-                           (size_t *)data);
+  bufferevent_setwatermark(bev2, EV_WRITE | EV_READ, int1, int2);
+  bufferevent_getwatermark(bev2, EV_WRITE | EV_READ, &int2, &int1);
 
   /*clean up*/
 cleanup:
