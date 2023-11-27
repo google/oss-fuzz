@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-npm install --ignore-scripts
+npm install --save-dev @jazzer.js/core 
 npm install -g gulp-cli
 
 gulp image_decoders
