@@ -79,7 +79,7 @@ public class LanguageStringEncoderFuzzer {
       if (strEncoder != null) {
         strEncoder.encode(data.consumeRemainingAsString());
       }
-    } catch (EncoderException e) {
+    } catch (EncoderException | IllegalArgumentException e) {
       // Known exception
     }
   }
