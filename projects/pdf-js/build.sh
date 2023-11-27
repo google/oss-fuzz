@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+npm install --ignore-scripts
 npm install -g gulp-cli
 
 gulp image_decoders
