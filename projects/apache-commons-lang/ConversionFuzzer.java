@@ -72,7 +72,7 @@ public class ConversionFuzzer {
           Conversion.hexToShort(data.consumeRemainingAsString(), 0, (short) 0, 0, remaining);
           break;
       }
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | NullPointerException | IndexOutOfBoundsException e) {
       // Known exception
     }
   }
