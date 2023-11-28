@@ -15,4 +15,12 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/zalando/skipper/eskip FuzzParse FuzzParse
+fuzz_targets=(FuzzParseEskip FuzzParseFilters FuzzParseIngressV1JSON
+        FuzzParseIPCIDRs FuzzParseJwt FuzzParsePredicates
+        FuzzParseRouteGroupsJSON FuzzServer)
+
+for target in "${fuzz_targets[@]}"; do
+        compile_go_fuzzer ./fuzz/fuzz_targets $target $target gofuzz
+done
+
+cp ./fuzz/dictionaries/* $OUT/
