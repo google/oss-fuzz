@@ -26,16 +26,16 @@ public class SerializationUtilsFuzzer {
 
       switch (choice) {
         case 1:
-          byteArray = SerializationUtils.clone(byteArray);
+          SerializationUtils.clone(byteArray);
           break;
         case 2:
-          byteArray = SerializationUtils.roundtrip(byteArray);
+          SerializationUtils.roundtrip(byteArray);
           break;
         case 3:
-          byteArray = SerializationUtils.serialize(byteArray);
+          SerializationUtils.serialize(byteArray);
           break;
         case 4:
-          byteArray = SerializationUtils.deserialize(byteArray);
+          SerializationUtils.deserialize(byteArray);
           break;
       }
     } catch (SerializationException e) {
