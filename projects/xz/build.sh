@@ -43,7 +43,7 @@ find $SRC/xz/tests/files -name "*.lz" \
 -exec zip -ujq $OUT/fuzz_decode_lzip_seed_corpus.zip "{}" \;
 find $SRC/xz/tests/files -name "*.lzma_raw" \
 -exec zip -ujq $OUT/fuzz_decode_raw_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files ! -name "*.lzma2*" \
+find $SRC/xz/tests/files -name "*.lzma2*" \
 -exec zip -ujq $OUT/fuzz_decode_raw_lzma2_seed_corpus.zip "{}" \;
 find $SRC/xz/tests/files -name "*.xz" \
 -exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
