@@ -23,7 +23,4 @@ export CPPFLAGS="-I$BUILD_PREFIX/include $CPPFLAGS"
 export LIBRARY_PATH="$BUILD_PREFIX/lib:$LIBRARY_PATH"
 export PKG_CONFIG_PATH="$BUILD_PREFIX/lib/pkgconfig/:$PKG_CONFIG_PATH"
 
-. wheels/multibuild/library_builders.sh
-. wheels/config.sh
-
-pre_build
+. .github/workflows/wheels-dependencies.sh

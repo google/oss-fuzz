@@ -17,6 +17,7 @@
 import * as vscode from 'vscode';
 import {println} from '../logger';
 import {runFuzzerHandler, buildFuzzersFromWorkspace} from '../ossfuzzWrappers';
+import {setStatusText} from '../utils';
 import {commandHistory} from '../commandUtils';
 import {extensionConfig} from '../config';
 
@@ -28,6 +29,7 @@ import {extensionConfig} from '../config';
  */
 
 export async function cmdInputCollectorTestFuzzer() {
+  setStatusText('Testing specific fuzzer: getting input');
   // Get the project name and fuzzer name to test.
   const ossFuzzProjectNameInput = await vscode.window.showInputBox({
     value: '',
@@ -68,6 +70,7 @@ export async function cmdInputCollectorTestFuzzer() {
 
 async function cmdDispatchTestFuzzerHandler(args: any) {
   // Build the project
+  setStatusText('Test specific fuzzer: building fuzzers in workspace');
   if (!(await buildFuzzersFromWorkspace(args.projectName, '', false))) {
     println('Build projects');
     return;
@@ -75,11 +78,13 @@ async function cmdDispatchTestFuzzerHandler(args: any) {
 
   // Run the fuzzer for 10 seconds
   println('Running fuzzer');
+  setStatusText('Test specific fuzzer: running fuzzer ' + args.fuzzerName);
   await runFuzzerHandler(
     args.projectName,
     args.fuzzerName,
     extensionConfig.numberOfSecondsForTestRuns.toString(),
     ''
   );
+  setStatusText('Test specific fuzzer: test completed of ' + args.fuzzerName);
   return;
 }

@@ -2,6 +2,7 @@ homepage: "https://pigweed.dev/"
 language: c++
 primary_contact: "keir@google.com"
 auto_ccs:
+  - "aarongreen@google.com"
   - "alizhang@google.com"
   - "amontanez@google.com"
   - "dmitryya@google.com"

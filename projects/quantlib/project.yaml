@@ -6,7 +6,7 @@ auto_ccs:
   - nathaniel.brough@gmail.com
 sanitizers:
  - address
- - memory:
+ - memory
 fuzzing_engines:
  - libfuzzer
  - afl

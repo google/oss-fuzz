@@ -14,19 +14,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarFile;
 
+import java.io.InputStream;
 import java.io.IOException;
-import java.util.logging.LogManager;
 
-public class CompressTarFuzzer {
-    public static void fuzzerInitialize() {
-        LogManager.getLogManager().reset();
-    }
-
+// Keeping class name the same so corpus doesn't change
+// See: https://google.github.io/oss-fuzz/faq/#what-happens-when-i-rename-a-fuzz-target-
+public class CompressTarFuzzer extends BaseTests {
     public static void fuzzerTestOneInput(byte[] data) {
         try {
-            new TarFile(data).close();
+            TarFile tf = new TarFile(data);
+            for (TarArchiveEntry entry : tf.getEntries()) {
+                InputStream is = tf.getInputStream(entry);
+                is.read(new byte[1024]);
+            }
+            tf.close();
         } catch (IOException ignored) {
         }
     }
