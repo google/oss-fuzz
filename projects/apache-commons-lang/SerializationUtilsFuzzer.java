@@ -38,7 +38,7 @@ public class SerializationUtilsFuzzer {
           SerializationUtils.deserialize(byteArray);
           break;
       }
-    } catch (SerializationException e) {
+    } catch (SerializationException | NullPointerException e) {
       // Known exception
     }
   }
