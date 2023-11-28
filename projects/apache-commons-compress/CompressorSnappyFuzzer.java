@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,23 +14,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarFile;
+import org.apache.commons.compress.compressors.snappy.FramedSnappyCompressorInputStream;
+import org.apache.commons.compress.compressors.snappy.SnappyCompressorInputStream;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-// Keeping class name the same so corpus doesn't change
-// See: https://google.github.io/oss-fuzz/faq/#what-happens-when-i-rename-a-fuzz-target-
-public class CompressTarFuzzer extends BaseTests {
+public class CompressorSnappyFuzzer extends BaseTests {
+    // Test both Snappy classes
     public static void fuzzerTestOneInput(byte[] data) {
         try {
-            TarFile tf = new TarFile(data);
-            for (TarArchiveEntry entry : tf.getEntries()) {
-                InputStream is = tf.getInputStream(entry);
-                is.read(new byte[1024]);
-            }
-            tf.close();
+            fuzzCompressorInputStream(new FramedSnappyCompressorInputStream(new ByteArrayInputStream(data)));
+        } catch (IOException ignored) {
+        }
+
+        try {
+            fuzzCompressorInputStream(new SnappyCompressorInputStream(new ByteArrayInputStream(data)));
         } catch (IOException ignored) {
         }
     }

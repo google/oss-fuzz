@@ -121,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('oss-fuzz.testFuzzer', async () => {
       println('CMD start: testFuzzer');
       await cmdInputCollectorTestFuzzer();
-      println('CMD end: testFizzer');
+      println('CMD end: testFuzzer');
     })
   );
 
