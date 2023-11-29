@@ -37,7 +37,6 @@ else
     llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
-    llvm-special-case-list-fuzzer \
   )
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
