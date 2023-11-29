@@ -15,4 +15,10 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/zalando/skipper/eskip FuzzParse FuzzParse
+for target in $(find $SRC/skipper/fuzz/fuzz_targets -name 'Fuzz*.go'); do
+        target_basename=$(basename -s .go $target)
+
+        compile_go_fuzzer github.com/zalando/skipper/fuzz/fuzz_targets $target_basename $target_basename gofuzz
+done
+
+mv $SRC/skipper/fuzz/dictionaries/*.dict $OUT/
