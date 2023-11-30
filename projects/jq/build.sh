@@ -56,3 +56,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./tests/jq_fuzz_execute.cpp \
     -I./src \
     ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
     -o $OUT/jq_fuzz_execute -I./src
+
+# Build corpus
+mkdir $SRC/seeds
+find . -name "*.jq" -exec cp {} $SRC/seeds/ \;
+zip -rj $OUT/jq_fuzz_execute_seed_corpus.zip $SRC/seeds/
+
+# Copy dictionary
+cp $SRC/jq.dict $OUT/jq_fuzz_execute.dict
