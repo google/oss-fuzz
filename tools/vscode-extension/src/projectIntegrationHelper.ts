@@ -424,7 +424,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
 WORKDIR ${projectNameFromRepo}
-COPY build.sh *.c++ $SRC/`;
+COPY build.sh *.cpp $SRC/`;
   wsedit.insert(
     ossfuzzDockerFilepath,
     new vscode.Position(0, 0),
@@ -464,7 +464,7 @@ COPY build.sh *.c++ $SRC/`;
 # Copy all fuzzer executables to $OUT/
 
 # Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.c++ -o $OUT/fuzzer_example
+$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 `;
   wsedit.insert(ossfuzzBuildFilepath, new vscode.Position(0, 0), buildTemplate);
 
@@ -488,7 +488,7 @@ file_github_issue: true
 
   /* Sample template fuzzer */
   const sampleFuzzFile = vscode.Uri.file(
-    wsPath + '/OSS-Fuzz/' + projectNameFromRepo + '/fuzzer_example.c++'
+    wsPath + '/OSS-Fuzz/' + projectNameFromRepo + '/fuzzer_example.cpp'
   );
   vscode.window.showInformationMessage(projectYamlFilepath.toString());
   wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});

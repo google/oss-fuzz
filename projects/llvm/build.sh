@@ -24,8 +24,7 @@ fi
 
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   readonly FUZZERS=(\
-    clang-fuzzer\
-    llvm-itanium-demangle-fuzzer\
+    llvm-dwarfdump-fuzzer \
   )
 else
   readonly FUZZERS=( \
@@ -37,7 +36,6 @@ else
     llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
-    llvm-special-case-list-fuzzer \
   )
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
@@ -79,7 +77,12 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
 for fuzzer in "${FUZZERS[@]}"; do
-  ninja $fuzzer
+  # Limit workload in CI
+  if [ -n "${OSS_FUZZ_CI-}" ]; then
+    ninja $fuzzer -j 3
+  else
+    ninja $fuzzer
+  fi
   cp bin/$fuzzer $OUT
 done
 
