@@ -24,8 +24,7 @@ fi
 
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   readonly FUZZERS=(\
-    clang-fuzzer\
-    llvm-itanium-demangle-fuzzer\
+    llvm-dwarfdump-fuzzer \
   )
 else
   readonly FUZZERS=( \
@@ -75,11 +74,15 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
-    -DCOMPILER_RT_INCLUDE_TESTS=OFF \
-    -DLLVM_PARALLEL_LINK_JOBS=1
+    -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
 for fuzzer in "${FUZZERS[@]}"; do
-  ninja $fuzzer
+  # Limit workload in CI
+  if [ -n "${OSS_FUZZ_CI-}" ]; then
+    ninja $fuzzer -j 3
+  else
+    ninja $fuzzer
+  fi
   cp bin/$fuzzer $OUT
 done
 
