@@ -61,3 +61,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./tests/jq_fuzz_execute.cpp \
 mkdir $SRC/seeds
 find . -name "*.jq" -exec cp {} $SRC/seeds/ \;
 zip -rj $OUT/jq_fuzz_execute_seed_corpus.zip $SRC/seeds/
+
+# Copy dictionary
+cp $SRC/jq.dict $OUT/jq_fuzz_execute.dict
