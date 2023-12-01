@@ -14,10 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-  make flex bison libtool automake autoconf
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN git clone --depth 1 https://github.com/jqlang/jq
-WORKDIR $SRC/jq
-COPY build.sh *.dict $SRC/
+RUN git clone --depth 1 https://github.com/FasterXML/jackson-datatypes-collections $SRC/jackson-datatypes-collections
+
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/jackson-datatypes-collections
