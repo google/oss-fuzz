@@ -81,7 +81,8 @@ for fuzzer in "${FUZZERS[@]}"; do
   if [ -n "${OSS_FUZZ_CI-}" ]; then
     ninja $fuzzer -j 3
   else
-    ninja $fuzzer
+    # Do not exhaust memory limitations on the cloud machine
+    ninja $fuzzer -j $(( $(nproc) / 4))
   fi
   cp bin/$fuzzer $OUT
 done
