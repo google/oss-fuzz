@@ -16,12 +16,6 @@
 #
 ################################################################################
 
-# Dont check Coverage in CI as it gets killed
-if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
-  touch $OUT/exit
-  exit 0
-fi
-
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   readonly FUZZERS=(\
     llvm-dwarfdump-fuzzer \
@@ -81,8 +75,13 @@ for fuzzer in "${FUZZERS[@]}"; do
   if [ -n "${OSS_FUZZ_CI-}" ]; then
     ninja $fuzzer -j 3
   else
-    # Do not exhaust memory limitations on the cloud machine
-    ninja $fuzzer -j $(( $(nproc) / 4))
+    # Do not exhaust memory limitations on the cloud machine, coverage
+    # takes more resources which causes processes to crash.
+    if [[ "$SANITIZER" = coverage ]]; then
+      ninja $fuzzer -j $(( $(nproc) / 8))
+    else
+      ninja $fuzzer -j $(( $(nproc) / 4))
+    fi
   fi
   cp bin/$fuzzer $OUT
 done
