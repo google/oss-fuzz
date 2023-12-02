@@ -15,8 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
 RUN apt-get update && apt-get install -y make
 RUN apt-get install -y flex bison build-essential
+RUN echo hi
 RUN git clone --recursive --depth 1 https://github.com/nodejs/node
 WORKDIR $SRC
-COPY build.sh $SRC/
+COPY build.sh fuzz_crypto_verify.js $SRC/

@@ -14,13 +14,26 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/node
 
+# Build js fuzzers
+cd $SRC
+mkdir fuzzing
+cd fuzzing
+cp $SRC/fuzz_crypto_verify.js ./
+npm init --yes
+npm install
+npm install --save-dev @jazzer.js/core
+# Build Fuzzers.
+compile_javascript_fuzzer fuzzing fuzz_crypto_verify.js -i fuzzing 
+
+# Build C++ fuzzers
+cd $SRC/node
 # Build node
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
 make -j$(nproc)
+make install
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
