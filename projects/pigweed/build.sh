@@ -25,4 +25,6 @@ let lang_fuzz_tests = attr(generator_function, \"pw_cc_fuzz_test\", \$all_fuzz_t
 \$lang_fuzz_tests - attr(tags, \"no-oss-fuzz\", \$lang_fuzz_tests)
 "
 
+export BAZEL_EXTRA_BUILD_FLAGS="--config non_hermetic --cxxopt=-std=c++17"
+
 bazel_build_fuzz_tests

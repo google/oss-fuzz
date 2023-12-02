@@ -18,19 +18,24 @@
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
 -Dexpression=project.version -q -DforceStdout)
 
-./mvnw package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+./mvnw package dependency:copy-dependencies -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
 
-cp "$SRC/jackson-datatype-joda/target/jackson-datatype-joda-$CURRENT_VERSION.jar" $OUT/
-cp "$SRC/jackson-datatype-joda/target/modules/jackson-datatype-joda-$CURRENT_VERSION.jar" $OUT/module.jar
+mkdir -p $OUT/dependency
+cp "$SRC/jackson-datatype-joda/target/jackson-datatype-joda-$CURRENT_VERSION.jar" $OUT/joda.jar
+for jarfile in $(find $SRC/jackson-datatype-joda/target/dependency/ -name *.jar ! -name junit*.jar ! -name hamcrest*.jar)
+do
+  cp $jarfile $OUT/dependency
+done
 
-ALL_JARS=$(find $OUT/ -name *.jar ! -name jazzer*.jar -printf "%f ")
+ALL_JARS="joda.jar"
+ALL_DEPENDENCY=$(find $OUT/dependency -name *.jar -printf "%f ")
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$(echo $ALL_DEPENDENCY | xargs printf -- "$OUT/dependency/%s:"):$JAZZER_API_PATH
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):$(echo $ALL_DEPENDENCY | xargs printf -- "\$this_dir/dependency/%s:"):\$this_dir
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
