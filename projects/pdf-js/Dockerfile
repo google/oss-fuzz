@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --single-branch --branch initial-fuzzing-support https://github.com/manunio/pdf.js pdf-js
+RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf-js
 WORKDIR pdf-js
 COPY build.sh $SRC/
