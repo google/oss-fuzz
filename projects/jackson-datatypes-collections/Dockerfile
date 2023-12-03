@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +14,15 @@
 #
 ################################################################################
 
-for target in $(find $SRC/skipper/fuzz/fuzz_targets -name 'Fuzz*.go'); do
-        target_basename=$(basename -s .go $target)
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-        compile_go_fuzzer github.com/zalando/skipper/fuzz/fuzz_targets $target_basename $target_basename gofuzz
-done
+RUN git clone --depth 1 https://github.com/FasterXML/jackson-datatypes-collections $SRC/jackson-datatypes-collections
 
-mv $SRC/skipper/fuzz/dictionaries/*.dict $OUT/
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/jackson-datatypes-collections
