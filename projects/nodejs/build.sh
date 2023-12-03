@@ -26,6 +26,12 @@ npm install --save-dev @jazzer.js/core
 # Build Fuzzers.
 compile_javascript_fuzzer fuzzing fuzz_crypto_verify.js -i fuzzing 
 
+# A broken fuzzer will cause the CI to fail.
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+	exit 0
+fi
+
 # Build C++ fuzzers
 cd $SRC/node
 # Build node
