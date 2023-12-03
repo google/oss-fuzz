@@ -78,7 +78,7 @@ for fuzzer in "${FUZZERS[@]}"; do
     # Do not exhaust memory limitations on the cloud machine, coverage
     # takes more resources which causes processes to crash.
     if [[ "$SANITIZER" = coverage ]]; then
-      ninja $fuzzer -j $(( $(nproc) / 8))
+      ninja $fuzzer -j 2 || ninja $fuzzer -j 1
     else
       ninja $fuzzer -j $(( $(nproc) / 4))
     fi
