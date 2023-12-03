@@ -20,6 +20,6 @@ npm install -g gulp-cli
 
 gulp image_decoders
 
-compile_javascript_fuzzer pdf-js test/fuzz/jpg.fuzz --sync
-compile_javascript_fuzzer pdf-js test/fuzz/jbig2.fuzz --sync
-compile_javascript_fuzzer pdf-js test/fuzz/jpx.fuzz --sync
+compile_javascript_fuzzer pdf-js test/fuzz/jpeg_image.fuzz --sync
+compile_javascript_fuzzer pdf-js test/fuzz/jbig2_image.fuzz --sync
+compile_javascript_fuzzer pdf-js test/fuzz/jpx_image.fuzz --sync
