@@ -22,14 +22,14 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
   )
 else
   readonly FUZZERS=( \
-    clang-fuzzer \
-    clang-format-fuzzer \
-    clang-objc-fuzzer \
-    clangd-fuzzer \
-    clang-pseudo-fuzzer \
-    llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
+    llvm-itanium-demangle-fuzzer \
+    clang-objc-fuzzer \
+    clang-format-fuzzer \
+    clang-pseudo-fuzzer \
+    clang-fuzzer \
+    clangd-fuzzer \
   )
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
