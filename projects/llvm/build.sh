@@ -95,6 +95,11 @@ for fuzzer in "${FUZZERS[@]}"; do
 done
 
 
+# Exit early in the CI as the llvm-isel-fuzzer and opt fuzzer won't be there.
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  exit 0
+fi
+
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
