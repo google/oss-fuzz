@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CXXFLAGS -std=c++14"
+export CXXFLAGS="$CXXFLAGS -std=c++14 -O0"
 
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
@@ -24,15 +24,42 @@ for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
 
+if [ "$FUZZING_ENGINE" = "libfuzzer" ]
+then
+  echo "--cxxopt=-fsanitize=fuzzer-no-link"
+  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.fuzzer-x86_64.a| head -1)\""
+fi
+if [ "$FUZZING_ENGINE" = "honggfuzz" ]
+then
+  echo "--cxxopt=-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"
+  echo "--linkopt=\"$(find . -name honggfuzz.a)\""
+fi
+if [ "$FUZZING_ENGINE" = "afl" ]
+then
+  echo "--cxxopt=-fsanitize=fuzzer-no-link"
+  echo "--cxxopt=-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"
+  echo "--linkopt=\"$(find . -name libAFLDriver.a | head -1)\""
+  echo "--linkopt=\"$(find . -name afl-compiler-rt-64.o | head -1)\""
+fi
+
 if [ "$SANITIZER" = "undefined" ]
 then
-  # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
-  # See issue: https://github.com/bazelbuild/bazel/issues/8777
+  echo "--cxxopt=-fsanitize=undefined --linkopt=-fsanitize=undefined"
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
 fi
+if [ "$SANITIZER" = "address" ]
+then
+  echo "--cxxopt=-fsanitize=address --linkopt=-fsanitize=address"
+  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.asan_cxx-x86_64.a | head -1)\""
+fi
+if [ "$SANITIZER" = "coverage" ]
+then
+  echo "--cxxopt=-g --linkopt=-g --cxxopt=-fprofile-instr-generate --cxxopt=-fcoverage-mapping --linkopt=-fprofile-instr-generate --linkopt=-fcoverage-mapping"
+fi
+
 )"
 
-declare FUZZ_TARGETS=("string_escape_fuzzer" "string_utilities_fuzzer")
+declare FUZZ_TARGETS=("string_escape_fuzzer" "string_utilities_fuzzer" "ascii_fuzzer" "algorithm_fuzzer" "algorithm_container_fuzzer" "crc_fuzzer" "flags_fuzzer")
 
 bazel build \
 	--verbose_failures \
@@ -41,9 +68,8 @@ bazel build \
 	--genrule_strategy=standalone \
 	--strip=never \
 	--linkopt=-pthread \
-	--copt=${LIB_FUZZING_ENGINE} \
-	--linkopt=${LIB_FUZZING_ENGINE} \
-	--linkopt=-lc++ \
+  --linkopt=-lc++ \
+  --linkopt=-ldl \
 	${EXTRA_BAZEL_FLAGS} \
 	${FUZZ_TARGETS[*]}
 

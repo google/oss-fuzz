@@ -27,4 +27,4 @@ RUN curl -Lo /usr/bin/bazel \
 
 RUN git clone --depth 1 https://github.com/abseil/abseil-cpp.git
 
-COPY BUILD WORKSPACE build.sh string_escape_fuzzer.cc string_utilities_fuzzer.cc $SRC/
+COPY BUILD WORKSPACE build.sh algorithm_container_fuzzer.cc ascii_fuzzer.cc string_escape_fuzzer.cc string_utilities_fuzzer.cc algorithm_fuzzer.cc crc_fuzzer.cc flags_fuzzer.cc $SRC/
