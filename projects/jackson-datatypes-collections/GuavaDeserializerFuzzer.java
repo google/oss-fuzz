@@ -65,7 +65,7 @@ public class GuavaDeserializerFuzzer {
       TypeReference type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
       // Known exception
     }
   }

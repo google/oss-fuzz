@@ -22,14 +22,14 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
   )
 else
   readonly FUZZERS=( \
-    clang-fuzzer \
-    clang-format-fuzzer \
-    clang-objc-fuzzer \
-    clangd-fuzzer \
-    clang-pseudo-fuzzer \
-    llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
+    llvm-itanium-demangle-fuzzer \
+    clang-objc-fuzzer \
+    clang-format-fuzzer \
+    clang-pseudo-fuzzer \
+    clang-fuzzer \
+    clangd-fuzzer \
   )
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
@@ -78,7 +78,7 @@ for fuzzer in "${FUZZERS[@]}"; do
     # Do not exhaust memory limitations on the cloud machine, coverage
     # takes more resources which causes processes to crash.
     if [[ "$SANITIZER" = coverage ]]; then
-      ninja $fuzzer -j $(( $(nproc) / 8))
+      ninja $fuzzer -j 2 || ninja $fuzzer -j 1
     else
       ninja $fuzzer -j $(( $(nproc) / 4))
     fi
