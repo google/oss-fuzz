@@ -36,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -103,7 +104,7 @@ public class DeserializerFuzzer {
         String value = data.consumeRemainingAsString();
         mapper.readValue(value, type);
       }
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (IOException | IllegalArgumentException | DateTimeException e) {
       // Known exception
     } finally {
       try {
