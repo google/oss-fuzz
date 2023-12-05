@@ -14,6 +14,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.amazon.ion.IonException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -138,7 +139,7 @@ public class DeserializerFuzzer {
           mapper.readerFor(type).with(((AvroMapper) mapper).schemaFrom(value)).readValue(value);
         }
       }
-    } catch (IOException | IllegalArgumentException | UnsupportedOperationException e) {
+    } catch (IOException | IllegalArgumentException | UnsupportedOperationException | IonException e) {
       // Known exception
     } finally {
       try {
