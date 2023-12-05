@@ -25,6 +25,14 @@ else
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
     llvm-itanium-demangle-fuzzer \
+    llvm-yaml-numeric-parser-fuzzer \
+    llvm-yaml-parser-fuzzer \
+    llvm-dlang-demangle-fuzzer \
+    vfabi-demangler-fuzzer \
+    llvm-rust-demangle-fuzzer \
+    llvm-dis-fuzzer \
+    llvm-opt-fuzzer \
+    llvm-isel-fuzzer \
     clang-objc-fuzzer \
     clang-format-fuzzer \
     clang-pseudo-fuzzer \
@@ -85,6 +93,38 @@ for fuzzer in "${FUZZERS[@]}"; do
   fi
   cp bin/$fuzzer $OUT
 done
+
+
+# Exit early in the CI as the llvm-isel-fuzzer and opt fuzzer won't be there.
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  exit 0
+fi
+
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
+mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+
+# Same for llvm-opt-fuzzer
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
+
+mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
+
+
 
 # 10th August 2022: The lines for building the dictionaries
 # broke the whole build. They are left as a reminder to re-enable
