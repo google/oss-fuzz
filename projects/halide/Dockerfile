@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN apt-get update && apt-get install -y maven
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 https://github.com/FasterXML/jackson-dataformats-binary
+RUN apt-get update && apt-get install -y ninja-build lsb-core software-properties-common zlib1g-dev
+RUN pip3 install -U cmake
 
+RUN git clone --depth 1 --branch llvmorg-15.0.0 https://github.com/llvm/llvm-project.git $SRC/llvm-project
+RUN git clone --depth 1 https://github.com/halide/Halide.git halide
+
+WORKDIR halide
 COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
-WORKDIR $SRC/jackson-dataformats-binary
