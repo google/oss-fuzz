@@ -14,18 +14,20 @@
 #
 ################################################################################
 
-cc_binary(
-	name = "string_escape_fuzzer",
-	deps = ["@com_google_absl//absl/strings"],
-	srcs = ["string_escape_fuzzer.cc"],
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+cc_fuzz_test(
+    name = "string_escape_fuzzer",
+    srcs = ["string_escape_fuzzer.cc"],
+    deps = ["@com_google_absl//absl/strings"],
 )
 
-cc_binary(
-	name = "string_utilities_fuzzer",
-	deps = [
-		"@com_google_absl//absl/strings",
-		"@com_google_absl//absl/strings:cord",
-                "@com_google_absl//absl/strings:str_format"
-		],
-	srcs = ["string_utilities_fuzzer.cc"],
+cc_fuzz_test(
+    name = "string_utilities_fuzzer",
+    srcs = ["string_utilities_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:str_format",
+    ],
 )
