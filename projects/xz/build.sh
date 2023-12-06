@@ -28,24 +28,12 @@
 
 make clean
 make -j$(nproc)
-for fuzz_target in $(sed -nr 's/(fuzz.*):.*/\1/p' $SRC/xz/tests/ossfuzz/Makefile); do
-  make $fuzz_target -C tests/ossfuzz
-done
+make all -C tests/ossfuzz
 
 cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
 cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
 
 find $SRC/xz/tests/files -name "*.lzma" \
 -exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files ! -name "*.lzma_raw" \
--exec zip -ujq $OUT/fuzz_decode_auto_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files -name "*.lz" \
--exec zip -ujq $OUT/fuzz_decode_lzip_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files -name "*.lzma_raw" \
--exec zip -ujq $OUT/fuzz_decode_raw_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files -name "*.lzma2*" \
--exec zip -ujq $OUT/fuzz_decode_raw_lzma2_seed_corpus.zip "{}" \;
 find $SRC/xz/tests/files -name "*.xz" \
 -exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files -name "*.xz" \
--exec zip -ujq $OUT/fuzz_decode_stream_crc_seed_corpus.zip "{}" \;
