@@ -8,10 +8,8 @@ auto_ccs:
   - nathaniel.brough@gmail.com
 
 fuzzing_engines:
- - afl
  - honggfuzz
  - libfuzzer
- - centipede
 
 sanitizers:
  - address
