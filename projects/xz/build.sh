@@ -28,7 +28,7 @@
 
 make clean
 make -j$(nproc)
-make all -C tests/ossfuzz
+make -C tests/ossfuzz
 
 cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
 cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
