@@ -23,8 +23,13 @@ $MVN package $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "target/commons-lang3-$CURRENT_VERSION.jar" "$OUT/commons-lang.jar"
+wget -O $OUT/guava.jar https://repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar
 
-ALL_JARS="commons-lang.jar"
+# Compile ClassFuzzerBase
+javac -cp $OUT/guava.jar $SRC/ClassFuzzerBase.java
+jar cvf $OUT/class-fuzzer-base.jar -C $SRC ClassFuzzerBase.class
+
+ALL_JARS="commons-lang.jar guava.jar class-fuzzer-base.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
