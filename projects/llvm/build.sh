@@ -16,28 +16,28 @@
 #
 ################################################################################
 
-# Dont check Coverage in CI as it gets killed
-if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
-  touch $OUT/exit
-  exit 0
-fi
-
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   readonly FUZZERS=(\
-    clang-fuzzer\
-    llvm-itanium-demangle-fuzzer\
+    llvm-dwarfdump-fuzzer \
   )
 else
   readonly FUZZERS=( \
-    clang-fuzzer \
-    clang-format-fuzzer \
-    clang-objc-fuzzer \
-    clangd-fuzzer \
-    clang-pseudo-fuzzer \
-    llvm-itanium-demangle-fuzzer \
     llvm-microsoft-demangle-fuzzer \
     llvm-dwarfdump-fuzzer \
-    llvm-special-case-list-fuzzer \
+    llvm-itanium-demangle-fuzzer \
+    llvm-yaml-numeric-parser-fuzzer \
+    llvm-yaml-parser-fuzzer \
+    llvm-dlang-demangle-fuzzer \
+    vfabi-demangler-fuzzer \
+    llvm-rust-demangle-fuzzer \
+    llvm-dis-fuzzer \
+    llvm-opt-fuzzer \
+    llvm-isel-fuzzer \
+    clang-objc-fuzzer \
+    clang-format-fuzzer \
+    clang-pseudo-fuzzer \
+    clang-fuzzer \
+    clangd-fuzzer \
   )
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
@@ -79,9 +79,52 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
 for fuzzer in "${FUZZERS[@]}"; do
-  ninja $fuzzer
+  # Limit workload in CI
+  if [ -n "${OSS_FUZZ_CI-}" ]; then
+    ninja $fuzzer -j 3
+  else
+    # Do not exhaust memory limitations on the cloud machine, coverage
+    # takes more resources which causes processes to crash.
+    if [[ "$SANITIZER" = coverage ]]; then
+      ninja $fuzzer -j 2 || ninja $fuzzer -j 1
+    else
+      ninja $fuzzer -j $(( $(nproc) / 4))
+    fi
+  fi
   cp bin/$fuzzer $OUT
 done
+
+
+# Exit early in the CI as the llvm-isel-fuzzer and opt fuzzer won't be there.
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  exit 0
+fi
+
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
+mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+
+# Same for llvm-opt-fuzzer
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
+
+mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
+
+
 
 # 10th August 2022: The lines for building the dictionaries
 # broke the whole build. They are left as a reminder to re-enable

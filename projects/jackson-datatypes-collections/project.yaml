@@ -1,13 +1,12 @@
-homepage: "https://github.com/FasterXML/jackson-datatype-joda"
+homepage: "https://github.com/FasterXML/jackson-datatypes-collections"
 language: jvm
 fuzzing_engines:
   - libfuzzer
-main_repo: "https://github.com/FasterXML/jackson-datatype-joda"
+main_repo: "https://github.com/FasterXML/jackson-datatypes-collections"
 sanitizers:
   - address
 primary_contact: "tatu@fasterxml.com"
 vendor_ccs:
-  - "bug-disclosure@code-intelligence.com"
   - "adam@adalogics.com"
   - "david@adalogics.com"
   - "arthur.chan@adalogics.com"
