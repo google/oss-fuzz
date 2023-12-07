@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
+cargo +nightly fuzz build -O
+fuzz_release=$SRC/wgpu/target/x86_64-unknown-linux-gnu/release
 cp $fuzz_release/spv_parser $OUT/
 cp $fuzz_release/wgsl_parser $OUT/
