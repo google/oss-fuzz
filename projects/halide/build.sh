@@ -43,6 +43,9 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 cmake --build $WORK/llvm-build -j$(nproc)
 cmake --install $WORK/llvm-build --prefix $WORK/llvm-install
 
+# Cleanup space so github runners don't run out of disk space.
+rm -rf $WORK/llvm-build $SRC/llvm-project
+
 export LLVM_DIR=$WORK/llvm-install
 
 cmake -G Ninja  -S . -B build -DCMAKE_BUILD_TYPE=Release \
