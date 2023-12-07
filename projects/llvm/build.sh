@@ -78,6 +78,12 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
+# Build some initial targest using only a single core, this is because otherwse
+# they get killed.
+if [[ "$SANITIZER" = coverage ]]; then
+  ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j 1
+fi
+
 for fuzzer in "${FUZZERS[@]}"; do
   # Limit workload in CI
   if [ -n "${OSS_FUZZ_CI-}" ]; then
