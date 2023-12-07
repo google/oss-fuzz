@@ -1,0 +1,17 @@
+homepage: "https://halide-lang.org/"
+language: c++
+primary_contact: "srj@google.com"
+main_repo: "https://github.com/halide/Halide"
+file_github_issue: false
+auto_ccs:
+  - alex.reinking@gmail.com
+  - nathaniel.brough@gmail.com
+
+fuzzing_engines:
+ - honggfuzz
+ - libfuzzer
+
+sanitizers:
+ - address
+ # LLVM isn't building with Undefined sanitizer
+ # - undefined

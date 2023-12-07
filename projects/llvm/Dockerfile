@@ -23,4 +23,4 @@ RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
 # Get LLVM
 RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 
-COPY build.sh $SRC/
+COPY build.sh *.py $SRC/

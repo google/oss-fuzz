@@ -29,4 +29,8 @@ for f in fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+    # Create fuzz corpus, but don't fail if there aren't any.
+    zip $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip fuzz/fuzz_targets/${FUZZ_TARGET_NAME}_seed_corpus/* || true
 done
+
+find $SRC/surrealdb_website -name '*.surql' -exec zip -r $OUT/fuzz_executor_seed_corpus.zip {} \;

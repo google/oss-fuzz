@@ -38,7 +38,7 @@ public class EclipseCollectionsDeserializerFuzzer {
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
       mapper.readTree(value);
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
       // Known exception
     }
   }
