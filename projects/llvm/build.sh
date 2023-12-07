@@ -81,7 +81,9 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
 # Build some initial targest using only a single core, this is because otherwse
 # they get killed.
 if [[ "$SANITIZER" = coverage ]]; then
-  ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j 1
+  mv build.ninja ../
+  python3 $SRC/coverage_patcher.py ../build.ninja build.ninja
+  ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j 3
 fi
 
 for fuzzer in "${FUZZERS[@]}"; do
