@@ -39,7 +39,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int options1 = int2 % 16;
   int options2 = int3 % 16;
 
-  struct bufferevent *bev1 = NULL, *bev2 = NULL, *pair[2];
+  struct bufferevent *bev1 = NULL, *bev2 = NULL, *bev3 = NULL, *bev4 = NULL,
+                     *pair[2];
   struct event_base *base = NULL;
   struct evbuffer *evbuf = NULL;
   static struct ev_token_bucket_cfg *conn_bucket_cfg = NULL;
@@ -62,15 +63,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   /*bufferevent_filter_new*/
-  bev1 = bufferevent_filter_new(bev1, NULL, NULL, options1, NULL, NULL);
-  bev2 = bufferevent_filter_new(bev2, NULL, NULL, options2, NULL, NULL);
-  if (!bev1 || !bev2) {
+  bev3 = bufferevent_filter_new(bev1, NULL, NULL, options1, NULL, NULL);
+  bev4 = bufferevent_filter_new(bev2, NULL, NULL, options2, NULL, NULL);
+
+  if (bev1) {
+    bufferevent_free(bev1);
+  }
+  if (bev2) {
+    bufferevent_free(bev2);
+  }
+  if (!bev3 || !bev4) {
     goto cleanup;
   }
-  bufferevent_priority_set(bev1, options2);
+
+  bufferevent_priority_set(bev3, options2);
 
   /*set rate limits*/
-  bufferevent_set_rate_limit(bev1, NULL);
+  bufferevent_set_rate_limit(bev3, NULL);
   static struct timeval cfg_tick = {static_cast<__time_t>(int1),
                                     static_cast<__suseconds_t>(int2)};
   conn_bucket_cfg = ev_token_bucket_cfg_new(int1, int2, int3, int4, &cfg_tick);
@@ -79,37 +88,40 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   bev_rate_group = bufferevent_rate_limit_group_new(base, conn_bucket_cfg);
-  bufferevent_add_to_rate_limit_group(bev2, bev_rate_group);
+  bufferevent_add_to_rate_limit_group(bev4, bev_rate_group);
 
   /*write and read from buffer events*/
-  bufferevent_write(bev1, s1.c_str(), s1.size());
-  bufferevent_write(bev2, s2.c_str(), s2.size());
-  bufferevent_write_buffer(bev1, bufferevent_get_input(bev2));
+  bufferevent_write(bev3, s1.c_str(), s1.size());
+  bufferevent_write(bev4, s2.c_str(), s2.size());
+  bufferevent_write_buffer(bev3, bufferevent_get_input(bev4));
 
   evbuf = evbuffer_new();
-  bufferevent_read_buffer(bev1, evbuf);
+  bufferevent_read_buffer(bev3, evbuf);
   evbuffer_free(evbuf);
-  bufferevent_read(bev1, buf, sizeof(buf) - 1);
-  bufferevent_remove_from_rate_limit_group(bev2);
+  bufferevent_read(bev3, buf, sizeof(buf) - 1);
+  bufferevent_remove_from_rate_limit_group(bev4);
 
   /*watermarks*/
-  bufferevent_setwatermark(bev2, EV_WRITE | EV_READ, int1, int2);
-  bufferevent_getwatermark(bev2, EV_WRITE | EV_READ, &int2, &int1);
+  bufferevent_setwatermark(bev4, EV_WRITE | EV_READ, int1, int2);
+  bufferevent_getwatermark(bev4, EV_WRITE | EV_READ, &int2, &int1);
 
   /*clean up*/
 cleanup:
-  if (bev1) {
-    bufferevent_free(bev1);
+  if (bev3) {
+    bufferevent_free(bev3);
   }
-  if (bev2) {
-    bufferevent_free(bev2);
+  if (bev4) {
+    bufferevent_free(bev4);
+  }
+  if (conn_bucket_cfg) {
+    ev_token_bucket_cfg_free(conn_bucket_cfg);
+    conn_bucket_cfg = NULL;
   }
 
   if (bev_rate_group) {
     bufferevent_rate_limit_group_free(bev_rate_group);
   }
-  /*ev_token_bucket_cfg_free is not used to free ev_token_bucket_cfg, because it
-   * causes a double-free crash*/
+
   event_base_free(base);
 
   return 0;
