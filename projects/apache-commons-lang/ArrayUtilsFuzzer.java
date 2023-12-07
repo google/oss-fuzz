@@ -47,7 +47,7 @@ public class ArrayUtilsFuzzer {
       cleanLargeArray();
 
       for (Integer count = 0; count < data.consumeInt(1, 10); count++) {
-        switch (data.consumeInt(1, 89)) {
+        switch (data.consumeInt(1, 143)) {
           case 1:
             ArrayUtils.add(boolArray, data.consumeBoolean());
             break;
@@ -314,6 +314,168 @@ public class ArrayUtilsFuzzer {
             break;
           case 89:
             ArrayUtils.subarray(strArray, 0, 1);
+            break;
+          case 90:
+            ArrayUtils.contains(boolArray, data.consumeBoolean());
+            break;
+          case 91:
+            ArrayUtils.contains(byteArray, data.consumeByte());
+            break;
+          case 92:
+            ArrayUtils.contains(charArray, data.consumeChar());
+            break;
+          case 93:
+            ArrayUtils.contains(doubleArray, data.consumeDouble());
+            break;
+          case 94:
+            ArrayUtils.contains(floatArray, data.consumeFloat());
+            break;
+          case 95:
+            ArrayUtils.contains(intArray, data.consumeInt());
+            break;
+          case 96:
+            ArrayUtils.contains(longArray, data.consumeLong());
+            break;
+          case 97:
+            ArrayUtils.contains(shortArray, data.consumeShort());
+            break;
+          case 98:
+            ArrayUtils.contains(strArray, data.consumeString(10));
+            break;
+          case 99:
+            ArrayUtils.indexesOf(boolArray, data.consumeBoolean());
+            break;
+          case 100:
+            ArrayUtils.indexesOf(byteArray, data.consumeByte());
+            break;
+          case 101:
+            ArrayUtils.indexesOf(charArray, data.consumeChar());
+            break;
+          case 102:
+            ArrayUtils.indexesOf(doubleArray, data.consumeDouble());
+            break;
+          case 103:
+            ArrayUtils.indexesOf(floatArray, data.consumeFloat());
+            break;
+          case 104:
+            ArrayUtils.indexesOf(intArray, data.consumeInt());
+            break;
+          case 105:
+            ArrayUtils.indexesOf(longArray, data.consumeLong());
+            break;
+          case 106:
+            ArrayUtils.indexesOf(shortArray, data.consumeShort());
+            break;
+          case 107:
+            ArrayUtils.indexesOf(strArray, data.consumeString(10));
+            break;
+          case 108:
+            ArrayUtils.isSorted(boolArray);
+            break;
+          case 109:
+            ArrayUtils.isSorted(byteArray);
+            break;
+          case 110:
+            ArrayUtils.isSorted(charArray);
+            break;
+          case 111:
+            ArrayUtils.isSorted(doubleArray);
+            break;
+          case 112:
+            ArrayUtils.isSorted(floatArray);
+            break;
+          case 113:
+            ArrayUtils.isSorted(intArray);
+            break;
+          case 114:
+            ArrayUtils.isSorted(longArray);
+            break;
+          case 115:
+            ArrayUtils.isSorted(shortArray);
+            break;
+          case 116:
+            ArrayUtils.isSorted(strArray);
+            break;
+          case 117:
+            ArrayUtils.lastIndexOf(boolArray, data.consumeBoolean());
+            break;
+          case 118:
+            ArrayUtils.lastIndexOf(byteArray, data.consumeByte());
+            break;
+          case 119:
+            ArrayUtils.lastIndexOf(charArray, data.consumeChar());
+            break;
+          case 120:
+            ArrayUtils.lastIndexOf(doubleArray, data.consumeDouble());
+            break;
+          case 121:
+            ArrayUtils.lastIndexOf(floatArray, data.consumeFloat());
+            break;
+          case 122:
+            ArrayUtils.lastIndexOf(intArray, data.consumeInt());
+            break;
+          case 123:
+            ArrayUtils.lastIndexOf(longArray, data.consumeLong());
+            break;
+          case 124:
+            ArrayUtils.lastIndexOf(shortArray, data.consumeShort());
+            break;
+          case 125:
+            ArrayUtils.lastIndexOf(strArray, data.consumeString(10));
+            break;
+          case 126:
+            ArrayUtils.removeAllOccurrences(boolArray, data.consumeBoolean());
+            break;
+          case 127:
+            ArrayUtils.removeAllOccurrences(byteArray, data.consumeByte());
+            break;
+          case 128:
+            ArrayUtils.removeAllOccurrences(charArray, data.consumeChar());
+            break;
+          case 129:
+            ArrayUtils.removeAllOccurrences(doubleArray, data.consumeDouble());
+            break;
+          case 130:
+            ArrayUtils.removeAllOccurrences(floatArray, data.consumeFloat());
+            break;
+          case 131:
+            ArrayUtils.removeAllOccurrences(intArray, data.consumeInt());
+            break;
+          case 132:
+            ArrayUtils.removeAllOccurrences(longArray, data.consumeLong());
+            break;
+          case 133:
+            ArrayUtils.removeAllOccurrences(shortArray, data.consumeShort());
+            break;
+          case 134:
+            ArrayUtils.removeAllOccurrences(strArray, data.consumeString(10));
+            break;
+          case 135:
+            ArrayUtils.removeElements(boolArray, boolArray);
+            break;
+          case 136:
+            ArrayUtils.removeElements(byteArray, byteArray);
+            break;
+          case 137:
+            ArrayUtils.removeElements(charArray, charArray);
+            break;
+          case 138:
+            ArrayUtils.removeElements(doubleArray, doubleArray);
+            break;
+          case 139:
+            ArrayUtils.removeElements(floatArray, floatArray);
+            break;
+          case 140:
+            ArrayUtils.removeElements(intArray, intArray);
+            break;
+          case 141:
+            ArrayUtils.removeElements(longArray, longArray);
+            break;
+          case 142:
+            ArrayUtils.removeElements(shortArray, shortArray);
+            break;
+          case 143:
+            ArrayUtils.removeElements(strArray, strArray);
             break;
         }
       }

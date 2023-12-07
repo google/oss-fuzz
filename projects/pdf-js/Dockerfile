@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential cmake pkg-config
-RUN git clone --depth 1 https://github.com/opencv/opencv.git opencv
-WORKDIR opencv/
-
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf-js
+WORKDIR pdf-js
 COPY build.sh $SRC/
-COPY *.cc *.h $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
-# Runner have memory limit 2048Mb, set imread pixel limit 712Mpix ~ 2037Mb (BGR)
-ENV OPENCV_IO_MAX_IMAGE_PIXELS=712000000
