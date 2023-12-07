@@ -140,20 +140,12 @@ public class SerializerFuzzer {
       // Initialize ObjectNode object
       ObjectNode node = mapper.createObjectNode();
 
-      // Initialize JsonGenerator object
-      generator = factory.createGenerator(new StringWriter());
-
       // Randomize writer options
       if (data.consumeBoolean()) {
         writer = writer.withDefaultPrettyPrinter();
       }
       if (feature != null) {
         writer = writer.with(feature);
-      }
-
-      // Failsafe logic
-      if (generator == null) {
-        return;
       }
 
       // Object to write
@@ -166,11 +158,13 @@ public class SerializerFuzzer {
           object = node;
           break;
         case 2:
+          generator = factory.createGenerator(new StringWriter());
           generator.writeStartObject();
           generator.writeBinaryField("data", data.consumeRemainingAsBytes());
           generator.writeEndObject();
           break;
         case 3:
+          generator = factory.createGenerator(new StringWriter());
           generator.writeStartObject();
           generator.writeString(data.consumeRemainingAsString());
           generator.writeEndObject();
