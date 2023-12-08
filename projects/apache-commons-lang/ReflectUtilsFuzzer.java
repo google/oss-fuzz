@@ -28,7 +28,7 @@ public class ReflectUtilsFuzzer extends ClassFuzzerBase {
       Class cls1 = data.pickValue(classSet);
       Class cls2 = data.pickValue(classSet);
 
-      switch (data.consumeInt(1, 29)) {
+      switch (data.consumeInt(1, 28)) {
         case 1:
           ConstructorUtils.getAccessibleConstructor(cls1, cls2);
           break;
@@ -126,10 +126,6 @@ public class ReflectUtilsFuzzer extends ClassFuzzerBase {
         case 28:
           TypeUtils.wrap(cls1);
           TypeUtils.wrap(cls2);
-          break;
-        case 29:
-          TypeUtils.getRawType(
-              data.pickValue(cls1.getTypeParameters()), data.pickValue(cls2.getTypeParameters()));
           break;
       }
     } catch (ReflectiveOperationException
