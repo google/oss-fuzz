@@ -25,7 +25,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
@@ -35,6 +34,7 @@ import com.google.common.collect.TreeRangeSet;
 import com.google.common.hash.HashCode;
 import com.google.common.net.HostAndPort;
 import com.google.common.net.InternetDomainName;
+import com.google.common.primitives.Bytes;
 import java.io.IOException;
 
 /** This fuzzer targets the serialization methods of Guava objects */
@@ -122,9 +122,7 @@ public class GuavaSerializerFuzzer {
                   .build();
           mapper.writeValueAsString(immutableRangeSet);
         case 11:
-          Integer remainingBytes = data.remainingBytes();
-          mapper.writeValueAsString(
-              Iterables.limit(Iterables.cycle(data.consumeRemainingAsBytes()), remainingBytes));
+          mapper.writeValueAsString(Bytes.asList(data.consumeRemainingAsBytes()).iterator());
         case 12:
           ArrayListMultimap<String, Object> arrayListMultimap = ArrayListMultimap.create();
           arrayListMultimap.put(
