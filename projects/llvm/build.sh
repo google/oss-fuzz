@@ -78,6 +78,14 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF
 
+# Patch certain build rules in code coverage mode, as otherwise the process is killed.
+# Verify we can build some of the troublesome rules by building them.
+if [[ "$SANITIZER" = coverage ]]; then
+  mv build.ninja ../
+  python3 $SRC/coverage_patcher.py ../build.ninja build.ninja
+  ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j $(( $(nproc) / 2))
+fi
+
 for fuzzer in "${FUZZERS[@]}"; do
   # Limit workload in CI
   if [ -n "${OSS_FUZZ_CI-}" ]; then
