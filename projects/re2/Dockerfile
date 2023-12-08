@@ -15,14 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update -y && apt-get install -y make autoconf automake libtool \
-	cmake pkg-config
+RUN apt-get update -y && apt-get install -y cmake make pkg-config
 
-# At the time of writing, OSS-Fuzz uses Ubuntu focal (20.04 LTS), but
-# libabsl-dev isn't available until Ubuntu jammy (22.04 LTS), so build
-# and install Abseil from source.
+# https://github.com/abseil/abseil-cpp/issues/1524#issuecomment-1739364093
+# explains why Abseil must be built for fuzzing, not depended on normally.
 RUN git clone --depth=1 https://github.com/abseil/abseil-cpp
-
 RUN git clone --depth 1 https://github.com/google/re2
 
 COPY build.sh $SRC/
