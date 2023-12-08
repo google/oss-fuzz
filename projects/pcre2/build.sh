@@ -32,9 +32,6 @@ $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_16 \
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32 \
     $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-32.a .libs/libpcre2-32.a
 
-# set up dictionary and options to use it
-cp pcre2_fuzzer*.options pcre2_fuzzer*.dict $OUT/
-
 # test different link sizes
 for i in $(seq 3 4); do
     ./configure --enable-fuzz-support \
@@ -51,8 +48,12 @@ for i in $(seq 3 4); do
         $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-16.a .libs/libpcre2-16.a
     $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32_${i}l \
         $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-32.a .libs/libpcre2-32.a
+done
 
-    # set up dictionary and options to use it
-    cp pcre2_fuzzer.options $OUT/pcre2_fuzzer_${i}l.options
-    cp pcre2_fuzzer.dict $OUT/pcre2_fuzzer_${i}l.dict
+# set up dictionary and options to use it
+for bits in {,_16,_32}; do
+  for linksize in {,_3l,_4l}; do
+    cp "pcre2_fuzzer${bits}.options" "${OUT}/pcre2_fuzzer${bits}${linksize}.options"
+    cp "pcre2_fuzzer${bits}.dict" "${OUT}/pcre2_fuzzer${bits}${linksize}.dict"
+  done
 done
