@@ -33,7 +33,7 @@ $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32 \
     $LIB_FUZZING_ENGINE .libs/libpcre2-fuzzsupport-32.a .libs/libpcre2-32.a
 
 # set up dictionary and options to use it
-cp pcre2_fuzzer.options pcre2_fuzzer.dict $OUT/
+cp pcre2_fuzzer*.options pcre2_fuzzer*.dict $OUT/
 
 # test different link sizes
 for i in $(seq 3 4); do
