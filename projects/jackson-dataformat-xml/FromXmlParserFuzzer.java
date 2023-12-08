@@ -33,7 +33,12 @@ public class FromXmlParserFuzzer {
       // Create and configure XmlMapper
       XmlMapper mapper = null;
       if (data.consumeBoolean()) {
-        mapper = new XmlMapper(XmlFactory.builder().enable(data.pickValue(featureSet)).disable(data.pickValue(featureSet)).build());
+        mapper =
+            new XmlMapper(
+                XmlFactory.builder()
+                    .enable(data.pickValue(featureSet))
+                    .disable(data.pickValue(featureSet))
+                    .build());
       } else {
         mapper = new XmlMapper(new JacksonXmlModule());
       }

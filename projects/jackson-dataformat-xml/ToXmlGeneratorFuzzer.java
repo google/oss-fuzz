@@ -36,7 +36,12 @@ public class ToXmlGeneratorFuzzer {
       // Create and configure XmlMapper
       XmlMapper mapper = null;
       if (data.consumeBoolean()) {
-        mapper = new XmlMapper(XmlFactory.builder().enable(data.pickValue(featureSet)).disable(data.pickValue(featureSet)).build());
+        mapper =
+            new XmlMapper(
+                XmlFactory.builder()
+                    .enable(data.pickValue(featureSet))
+                    .disable(data.pickValue(featureSet))
+                    .build());
       } else {
         mapper = new XmlMapper(new JacksonXmlModule());
       }
@@ -47,7 +52,8 @@ public class ToXmlGeneratorFuzzer {
       }
 
       // Create and configure ToXmlGenerator
-      ToXmlGenerator generator = ((XmlMapper)mapper).getFactory().createGenerator(new ByteArrayOutputStream());
+      ToXmlGenerator generator =
+          ((XmlMapper) mapper).getFactory().createGenerator(new ByteArrayOutputStream());
       for (ToXmlGenerator.Feature feature : EnumSet.allOf(ToXmlGenerator.Feature.class)) {
         generator.configure(feature, data.consumeBoolean());
       }
