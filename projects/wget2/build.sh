@@ -50,7 +50,7 @@ fi
 # instead.
 cd $SRC/nettle
 bash .bootstrap
-./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET2_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
+./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --disable-openssl --prefix=$WGET2_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
 ( make -j$(nproc) || make -j$(nproc) ) && make install
 if test $? != 0;then
         echo "Failed to compile nettle"
