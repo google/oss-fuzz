@@ -139,6 +139,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
         init_route_ipv6_list(&rl6, opt6, remote_endpoint, 0, &remote_host, c.es,
                              &c);
+        gc_free(&rl6.gc);
         route_list_ipv6_inited = 1;
       }
       break;
