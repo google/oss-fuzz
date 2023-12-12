@@ -16,6 +16,11 @@
 ################################################################################
 cd $SRC/node
 
+# Coverage build takes very long and time outs in the CI which blocks changes. Ignore Coverage build in OSS-Fuzz CI for now:
+if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
+	exit 0
+fi
+
 # Build node
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
