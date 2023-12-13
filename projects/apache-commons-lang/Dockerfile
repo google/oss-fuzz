@@ -36,5 +36,5 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 RUN git clone --depth 1 https://github.com/apache/commons-lang commons-lang
 
 COPY build.sh $SRC/
-COPY *Fuzzer.java $SRC/
+COPY *.java $SRC/
 WORKDIR $SRC/commons-lang
