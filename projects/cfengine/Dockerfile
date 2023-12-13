@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
     build-essential autoconf automake libssl-dev \
-    libpcre3 libpcre3-dev bison libbison-dev \
+    libpcre3 libpcre3-dev libpcre2 libpcre2-dev \
+    bison libbison-dev \
     libacl1 libacl1-dev libpq-dev lmdb-utils \
     liblmdb-dev libpam0g-dev flex libtool
 
