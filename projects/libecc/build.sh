@@ -70,7 +70,7 @@ export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
 
 cd $SRC/wolfssl/
 # Checkout at commit that's known to be bug-free
-git checkout a96983e6d38e8d093892dd9e5d58b72753bac3ac
+git checkout b7b20ededda4cea208fb7745629904fda64c7524
 
 # Install support for wolfCrypt SM algorithms
 cd $SRC/wolfsm/
