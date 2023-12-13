@@ -29,9 +29,8 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cpp'); do
     fuzz_basename=$(basename -s .cpp $fuzzer)
     cmake --build . --target $fuzz_basename -v
 done
-# make -j4
 
-cp ./*_fuzzer /out
+cp ./*_fuzzer /$OUT
 
 mkdir -p $SRC/corpus/
 
