@@ -30,7 +30,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cpp'); do
     cmake --build . --target $fuzz_basename -v
 done
 
-cp ./*_fuzzer /$OUT
+cp ./*_fuzzer $OUT/
 
 mkdir -p $SRC/corpus/
 
