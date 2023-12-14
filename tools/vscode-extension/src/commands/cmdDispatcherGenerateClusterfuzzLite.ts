@@ -14,15 +14,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import {setupProjectInitialFiles} from '../projectIntegrationHelper';
+/**
+ * Command for generating template fuzzers. This is a short-cut for rapid
+ * prototyping as well as an archive for inspiration.
+ */
+import * as vscode from 'vscode';
 import {setStatusText} from '../utils';
 
-export async function createOssFuzzSetup() {
+import {setupProjectInitialFiles} from '../projectIntegrationHelper';
+
+export async function cmdDispatcherGenerateClusterfuzzLite(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _context: vscode.ExtensionContext
+) {
   await setStatusText('Creating OSS-Fuzz setup: starting');
-  const res = await setupProjectInitialFiles(false);
+  const res = await setupProjectInitialFiles(true);
   if (res) {
     await setStatusText('Creating OSS-Fuzz setup: finished');
   } else {
     await setStatusText('Creating OSS-Fuzz setup: failed');
   }
+  return;
 }
