@@ -26,8 +26,7 @@ import java.util.EnumSet;
 public class IonParserFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      Integer choice = data.consumeInt(1, 19);
-      Integer iteration = data.consumeInt(1, 100);
+      int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
       // Retrieve set of IonParser.Feature
       EnumSet<IonParser.Feature> featureSet = EnumSet.allOf(IonParser.Feature.class);
@@ -59,8 +58,8 @@ public class IonParserFuzzer {
       JsonParser parser = ((IonObjectMapper) mapper).getFactory().createParser(byteArray);
 
       // Fuzz methods of IonParser
-      while (iteration-- > 0) {
-        switch (choice) {
+      for (Integer choice : choices) {
+        switch (choice % 19) {
           case 1:
             parser.currentName();
             break;
@@ -115,7 +114,7 @@ public class IonParserFuzzer {
           case 18:
             parser.getDoubleValue();
             break;
-          case 19:
+          default:
             parser.getDecimalValue();
             break;
         }

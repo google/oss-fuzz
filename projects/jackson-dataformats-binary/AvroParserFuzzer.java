@@ -25,8 +25,7 @@ import java.util.EnumSet;
 public class AvroParserFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      Integer choice = data.consumeInt(1, 19);
-      Integer iteration = data.consumeInt(1, 100);
+      int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
       // Retrieve set of AvroMapper.Feature
       EnumSet<AvroParser.Feature> featureSet = EnumSet.allOf(AvroParser.Feature.class);
@@ -55,8 +54,8 @@ public class AvroParserFuzzer {
           ((AvroMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
 
       // Fuzz methods of AvroParser
-      while (iteration-- > 0) {
-        switch (choice) {
+      for (Integer choice : choices) {
+        switch (choice % 19) {
           case 1:
             parser.currentName();
             break;
@@ -111,7 +110,7 @@ public class AvroParserFuzzer {
           case 18:
             parser.getDoubleValue();
             break;
-          case 19:
+          default:
             parser.getDecimalValue();
             break;
         }

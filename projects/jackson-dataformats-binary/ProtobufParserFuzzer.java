@@ -23,8 +23,7 @@ import java.io.IOException;
 public class ProtobufParserFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      Integer choice = data.consumeInt(1, 19);
-      Integer iteration = data.consumeInt(1, 100);
+      int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
       ProtobufMapper mapper = ProtobufMapper.builder(ProtobufFactory.builder().build()).build();
 
@@ -38,8 +37,8 @@ public class ProtobufParserFuzzer {
           ((ProtobufMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
 
       // Fuzz methods of ProtobufParser
-      while (iteration-- > 0) {
-        switch (choice) {
+      for (Integer choice : choices) {
+        switch (choice % 19) {
           case 1:
             parser.currentName();
             break;
@@ -94,7 +93,7 @@ public class ProtobufParserFuzzer {
           case 18:
             parser.getDoubleValue();
             break;
-          case 19:
+          default:
             parser.getDecimalValue();
             break;
         }
