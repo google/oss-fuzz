@@ -19,8 +19,21 @@ cd gpac
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
 make
 
-cp $SRC/testsuite/oss-fuzzers/fuzz_parse.c .
-$CC $CFLAGS -I./include -I./ -DGPAC_HAVE_CONFIG_H -c fuzz_parse.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse.o -o $OUT/fuzz_parse \
-  ./bin/gcc/libgpac_static.a \
-  -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
+
+fuzzers=$(find $SRC/testsuite/oss-fuzzers -name "fuzz_*.c")
+for f in $fuzzers; do
+
+    fuzzerName=$(basename $f .c)
+    echo "Building fuzzer $fuzzerName"
+
+    $CC $CFLAGS -I./include -I./ -DGPAC_HAVE_CONFIG_H -c $f
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzerName.o -o $OUT/$fuzzerName \
+      ./bin/gcc/libgpac_static.a \
+      -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
+
+
+    if [ -d "$SRC/testsuite/oss-fuzzers/${fuzzerName}_corpus" ]; then
+        zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/testsuite/oss-fuzzers/${fuzzerName}_corpus/*
+    fi
+
+done
