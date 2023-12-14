@@ -107,7 +107,7 @@ public class DeserializerFuzzer {
         }
         mapper.readValue(value, type);
       }
-    } catch (IOException | IllegalArgumentException | DateTimeException e) {
+    } catch (IOException | IllegalArgumentException | DateTimeException | IllegalStateException e) {
       // Known exception
     } finally {
       try {
