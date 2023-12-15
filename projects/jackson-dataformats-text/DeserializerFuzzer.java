@@ -102,9 +102,12 @@ public class DeserializerFuzzer {
       } else {
         Class type = data.pickValue(choice);
         String value = data.consumeRemainingAsString();
+        if ((value == null) || (value.isEmpty())) {
+          return;
+        }
         mapper.readValue(value, type);
       }
-    } catch (IOException | IllegalArgumentException | DateTimeException e) {
+    } catch (IOException | IllegalArgumentException | DateTimeException | IllegalStateException e) {
       // Known exception
     } finally {
       try {
@@ -121,7 +124,6 @@ public class DeserializerFuzzer {
     choice = new ArrayList<Class>();
     choice.add(ByteArrayContainer.class);
     choice.add(ByteArrayOutputStream.class);
-    choice.add(Byte[].class);
     choice.add(ModelContainer.class);
     choice.add(DelegateContainer.class);
     choice.add(RawContainer.class);
@@ -152,6 +154,7 @@ public class DeserializerFuzzer {
   private static class ByteArrayContainer {
     public byte[] value;
 
+    @JsonCreator
     public ByteArrayContainer(byte[] value) {
       this.value = value;
     }

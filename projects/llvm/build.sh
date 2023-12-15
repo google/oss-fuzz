@@ -21,24 +21,46 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
     llvm-dwarfdump-fuzzer \
   )
 else
-  readonly FUZZERS=( \
-    llvm-microsoft-demangle-fuzzer \
-    llvm-dwarfdump-fuzzer \
-    llvm-itanium-demangle-fuzzer \
-    llvm-yaml-numeric-parser-fuzzer \
-    llvm-yaml-parser-fuzzer \
-    llvm-dlang-demangle-fuzzer \
-    vfabi-demangler-fuzzer \
-    llvm-rust-demangle-fuzzer \
-    llvm-dis-fuzzer \
-    llvm-opt-fuzzer \
-    llvm-isel-fuzzer \
-    clang-objc-fuzzer \
-    clang-format-fuzzer \
-    clang-pseudo-fuzzer \
-    clang-fuzzer \
-    clangd-fuzzer \
-  )
+  # For coverage we skip "clangd-fuzzer" because it eats too much memory
+  # and the process gets killed.
+  if [[ "$SANITIZER" = coverage ]]; then
+    readonly FUZZERS=( \
+      llvm-microsoft-demangle-fuzzer \
+      llvm-dwarfdump-fuzzer \
+      llvm-itanium-demangle-fuzzer \
+      llvm-yaml-numeric-parser-fuzzer \
+      llvm-yaml-parser-fuzzer \
+      llvm-dlang-demangle-fuzzer \
+      vfabi-demangler-fuzzer \
+      llvm-rust-demangle-fuzzer \
+      llvm-dis-fuzzer \
+      llvm-opt-fuzzer \
+      llvm-isel-fuzzer \
+      clang-objc-fuzzer \
+      clang-format-fuzzer \
+      clang-pseudo-fuzzer \
+      clang-fuzzer \
+    )
+  else
+    readonly FUZZERS=( \
+      llvm-microsoft-demangle-fuzzer \
+      llvm-dwarfdump-fuzzer \
+      llvm-itanium-demangle-fuzzer \
+      llvm-yaml-numeric-parser-fuzzer \
+      llvm-yaml-parser-fuzzer \
+      llvm-dlang-demangle-fuzzer \
+      vfabi-demangler-fuzzer \
+      llvm-rust-demangle-fuzzer \
+      llvm-dis-fuzzer \
+      llvm-opt-fuzzer \
+      llvm-isel-fuzzer \
+      clang-objc-fuzzer \
+      clang-format-fuzzer \
+      clang-pseudo-fuzzer \
+      clang-fuzzer \
+      clangd-fuzzer \
+    )
+  fi
 fi
 # Fuzzers whose inputs are C-family source can use clang-fuzzer-dictionary.
 readonly CLANG_DICT_FUZZERS=( \
