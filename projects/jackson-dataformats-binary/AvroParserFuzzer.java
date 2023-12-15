@@ -25,7 +25,7 @@ import java.util.EnumSet;
 public class AvroParserFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      Integer choice = data.consumeInt(1, 19);
+      int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
       // Retrieve set of AvroMapper.Feature
       EnumSet<AvroParser.Feature> featureSet = EnumSet.allOf(AvroParser.Feature.class);
@@ -54,64 +54,66 @@ public class AvroParserFuzzer {
           ((AvroMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
 
       // Fuzz methods of AvroParser
-      switch (choice) {
-        case 1:
-          parser.currentName();
-          break;
-        case 2:
-          parser.currentTokenLocation();
-          break;
-        case 3:
-          parser.currentLocation();
-          break;
-        case 4:
-          parser.isExpectedStartArrayToken();
-          break;
-        case 5:
-          parser.isExpectedNumberIntToken();
-          break;
-        case 6:
-          parser.nextToken();
-          break;
-        case 7:
-          parser.nextTextValue();
-          break;
-        case 8:
-          parser.getText();
-          break;
-        case 9:
-          parser.getTextCharacters();
-          break;
-        case 10:
-          parser.getTextLength();
-          break;
-        case 11:
-          parser.getTextOffset();
-          break;
-        case 12:
-          parser.getNumberType();
-          break;
-        case 13:
-          parser.getNumberValue();
-          break;
-        case 14:
-          parser.getIntValue();
-          break;
-        case 15:
-          parser.getLongValue();
-          break;
-        case 16:
-          parser.getBigIntegerValue();
-          break;
-        case 17:
-          parser.getFloatValue();
-          break;
-        case 18:
-          parser.getDoubleValue();
-          break;
-        case 19:
-          parser.getDecimalValue();
-          break;
+      for (Integer choice : choices) {
+        switch (choice % 19) {
+          case 1:
+            parser.currentName();
+            break;
+          case 2:
+            parser.currentTokenLocation();
+            break;
+          case 3:
+            parser.currentLocation();
+            break;
+          case 4:
+            parser.isExpectedStartArrayToken();
+            break;
+          case 5:
+            parser.isExpectedNumberIntToken();
+            break;
+          case 6:
+            parser.nextToken();
+            break;
+          case 7:
+            parser.nextTextValue();
+            break;
+          case 8:
+            parser.getText();
+            break;
+          case 9:
+            parser.getTextCharacters();
+            break;
+          case 10:
+            parser.getTextLength();
+            break;
+          case 11:
+            parser.getTextOffset();
+            break;
+          case 12:
+            parser.getNumberType();
+            break;
+          case 13:
+            parser.getNumberValue();
+            break;
+          case 14:
+            parser.getIntValue();
+            break;
+          case 15:
+            parser.getLongValue();
+            break;
+          case 16:
+            parser.getBigIntegerValue();
+            break;
+          case 17:
+            parser.getFloatValue();
+            break;
+          case 18:
+            parser.getDoubleValue();
+            break;
+          default:
+            parser.getDecimalValue();
+            break;
+        }
       }
 
       parser.close();
