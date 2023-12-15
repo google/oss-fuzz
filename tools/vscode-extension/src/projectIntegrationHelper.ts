@@ -113,7 +113,9 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
         ossfuzzDockerFilepath,
         wsedit,
         wsPath,
-        baseFolder
+        baseFolder,
+        pathOfLocal,
+        isOssFuzz
       );
     }
     if (target === 'cpp') {
@@ -645,7 +647,9 @@ async function setupPythonProjectInitialFiles(
   ossfuzzDockerFilepath: vscode.Uri,
   wsedit: vscode.WorkspaceEdit,
   wsPath: string,
-  baseFolder: string
+  baseFolder: string,
+  baseName: string,
+  isOssFuzz: boolean
 ) {
   const todaysDate = new Date();
   const currentYear = todaysDate.getFullYear();
@@ -671,10 +675,38 @@ RUN python3 -m pip install --upgrade pip
 RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
 WORKDIR ${projectNameFromRepo}
 COPY build.sh *.py $SRC/`;
+
+  const dockerfileTemplateClusterfuzzLite = `# Copyright ${currentYear} Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+
+COPY . $SRC/${baseName}
+COPY .clusterfuzzlite/build.sh $SRC/build.sh
+WORKDIR $SRC/${baseName}`;
+
+  const contentToWrite = isOssFuzz
+    ? dockerfileTemplate
+    : dockerfileTemplateClusterfuzzLite;
+
   wsedit.insert(
     ossfuzzDockerFilepath,
     new vscode.Position(0, 0),
-    dockerfileTemplate
+    contentToWrite
   );
 
   const ossfuzzBuildFilepath = vscode.Uri.file(
@@ -703,7 +735,7 @@ python3 -m pip install .
 
 # Build fuzzers (files prefixed with fuzz_) to $OUT
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer
 done`;
   wsedit.insert(ossfuzzBuildFilepath, new vscode.Position(0, 0), buildTemplate);
 
@@ -735,24 +767,24 @@ file_github_issue: true
 import atheris
 
 with atheris.instrument_imports():
-# Import your target modules here to have them
-# instrumented by the fuzzer, e.g:
-# import MODULE_NAME
-pass
+  # Import your target modules here to have them
+  # instrumented by the fuzzer, e.g:
+  # import MODULE_NAME
+  pass
 
 @atheris.instrument_func
 def TestOneInput(data):
-fdp = atheris.FuzzedDataProvider(data)
+  fdp = atheris.FuzzedDataProvider(data)
 
 
 def main():
-# atheris.instrument_all()
-atheris.Setup(sys.argv, TestOneInput)
-atheris.Fuzz()
+  # atheris.instrument_all()
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
 
 
 if __name__ == "__main__":
-main()`;
+  main()`;
 
   wsedit.insert(
     sampleFuzzFile,
