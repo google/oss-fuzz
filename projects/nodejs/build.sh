@@ -25,7 +25,11 @@ fi
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
-make -j$(nproc)
+if [[ "$SANITIZER" = coverage ]]; then
+	make
+else
+	make -j$(nproc)
+fi
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
