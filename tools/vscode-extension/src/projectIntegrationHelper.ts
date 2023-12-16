@@ -470,23 +470,7 @@ RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
 WORKDIR ${projectNameFromRepo}
 COPY build.sh *.cpp $SRC/`;
 
-  const dockerfileTemplateClusterfuzzLite = `# Copyright ${currentYear} Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
+  const dockerfileTemplateClusterfuzzLite = `FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
 COPY . $SRC/${baseName}
@@ -539,22 +523,6 @@ WORKDIR $SRC/${baseName}`;
 $CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 `;
   const buildTemplateClusterfuzzLite = `#!/bin/bash -eu
-# Copyright ${currentYear} Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-################################################################################
-
 # Supply build instructions
 # Use the following environment variables to build the code
 # $CXX:               c++ compiler
@@ -566,7 +534,9 @@ $CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 # Copy all fuzzer executables to $OUT/
 
 # Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/${baseName}/.clusterfuzzlite/fuzzer_example.cpp -o $OUT/fuzzer_example
+$CXX $CFLAGS $LIB_FUZZING_ENGINE \\
+  $SRC/${baseName}/.clusterfuzzlite/fuzzer_example.cpp \\
+  -o $OUT/fuzzer_example
 `;
 
   const buildContent = isOssFuzz ? buildTemplate : buildTemplateClusterfuzzLite;
@@ -584,10 +554,22 @@ primary_contact: "<primary_contact_email>"
 main_repo: "${projectGithubRepository}"
 file_github_issue: true
     `;
+
+  const projectYamlTemplateCFLite = `homepage: "${projectGithubRepository}"
+    language: c++
+    primary_contact: "<primary_contact_email>"
+    main_repo: "${projectGithubRepository}"
+    file_github_issue: true
+        `;
+
+  const yamlContentToWrite = isOssFuzz
+    ? projectYamlTemplate
+    : projectYamlTemplateCFLite;
+
   wsedit.insert(
     projectYamlFilepath,
     new vscode.Position(0, 0),
-    projectYamlTemplate
+    yamlContentToWrite
   );
 
   /* Sample template fuzzer */
@@ -631,13 +613,23 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   const readmeFile = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + '/README.md'
   );
-  vscode.window.showInformationMessage(readmeFile.toString());
-  wsedit.createFile(readmeFile, {ignoreIfExists: true});
+  //vscode.window.showInformationMessage(readmeFile.toString());
+
   const readmeContents = `# OSS-Fuzz set up
 This folder is the OSS-Fuzz set up.
     `;
 
-  wsedit.insert(readmeFile, new vscode.Position(0, 0), readmeContents);
+  const readmeContentsCFLite = `# ClusterFuzzLite set up
+This folder contains a fuzzing set for [ClusterFuzzLite](https://google.github.io/clusterfuzzlite).
+        `;
+
+  const readmeContentsToWrite = isOssFuzz
+    ? readmeContents
+    : readmeContentsCFLite;
+
+  wsedit.createFile(readmeFile, {ignoreIfExists: true});
+
+  wsedit.insert(readmeFile, new vscode.Position(0, 0), readmeContentsToWrite);
   vscode.workspace.applyEdit(wsedit);
 }
 
