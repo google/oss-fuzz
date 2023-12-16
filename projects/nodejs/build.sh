@@ -33,3 +33,5 @@ fi
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
+
+zip $OUT/fuzz_env_seed_corpus.zip $SRC/node/test/fuzzers/corpus/fuzz_env_seed*
