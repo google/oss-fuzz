@@ -98,7 +98,7 @@
       },
       {
         "command": "oss-fuzz.GenerateClusterfuzzLite",
-        "title": "OSS-Fuzz: Generate ClusterfuzzLite setup",
+        "title": "OSS-Fuzz: [CFLite] Generate ClusterfuzzLite setup",
         "description": "Creates the files needed for ClusterfuzzLite integration."
       },
       {
