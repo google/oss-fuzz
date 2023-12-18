@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make cmake wget autoconf automake libtool bison flex texinfo lzip
-RUN git clone --depth 1 https://github.com/libressl-portable/portable.git libressl
-RUN git clone --depth 1 https://github.com/libressl-portable/fuzz.git libressl.fuzzers
+RUN git clone --depth 1 https://github.com/libressl/portable.git libressl
+RUN git clone --depth 1 https://github.com/libressl/fuzz.git libressl.fuzzers
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
