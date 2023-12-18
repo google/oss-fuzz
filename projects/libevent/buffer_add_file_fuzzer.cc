@@ -32,6 +32,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider data_provider(data, size);
 
   std::string s1 = data_provider.ConsumeRandomLengthString();
+  uint32_t int1 = data_provider.ConsumeIntegral<uint32_t>();
 
   char bufferFile[50];
   struct stat st;
@@ -53,6 +54,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fstat(fd, &st);
 
   struct evbuffer *buf = evbuffer_new();
+  evbuffer_set_flags(buf, int1);
   evbuffer_add_file(buf, fd, 0, st.st_size);
 
   fclose(fp);

@@ -36,6 +36,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t int4 = data_provider.ConsumeIntegral<size_t>();
 
   int use_pair = int1 % 2;
+  int read_write = int2 % 2;
+  int use_filter = int4 % 2;
+
   int options1 = int2 % 16;
   int options2 = int3 % 16;
 
@@ -56,30 +59,48 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     bev1 = pair[0];
     bev2 = pair[1];
-    bufferevent_pair_get_partner(bev1);
+    if (!bufferevent_pair_get_partner(bev1)) {
+      printf("Bufferevent partner is not found\n");
+    }
   } else {
     bev1 = bufferevent_socket_new(base, -1, options1);
     bev2 = bufferevent_socket_new(base, -1, options2);
   }
 
   /*bufferevent_filter_new*/
-  bev3 = bufferevent_filter_new(bev1, NULL, NULL, options1, NULL, NULL);
-  bev4 = bufferevent_filter_new(bev2, NULL, NULL, options2, NULL, NULL);
+  if (use_filter == 0) {
 
-  if (bev1) {
-    bufferevent_free(bev1);
+    /*we cannot use BEV_OPT_CLOSE_ON_FREE when freeing bufferevents*/
+    bev3 = bufferevent_filter_new(
+        bev1, NULL, NULL, options1 & (~BEV_OPT_CLOSE_ON_FREE), NULL, NULL);
+    bev4 = bufferevent_filter_new(
+        bev2, NULL, NULL, options2 & (~BEV_OPT_CLOSE_ON_FREE), NULL, NULL);
+
+    if (bev1) {
+      bufferevent_free(bev1);
+    }
+    if (bev2) {
+      bufferevent_free(bev2);
+    }
+  } else {
+    bev3 = bev1;
+    bev4 = bev2;
   }
-  if (bev2) {
-    bufferevent_free(bev2);
-  }
+
   if (!bev3 || !bev4) {
     goto cleanup;
   }
 
-  bufferevent_priority_set(bev3, options2);
+  if (bufferevent_priority_set(bev3, options2) == 0) {
+    if (bufferevent_get_priority(bev3) != options2) {
+      printf("Priority level %d is not applied\n", options2);
+    }
+  }
 
   /*set rate limits*/
-  bufferevent_set_rate_limit(bev3, NULL);
+  if (bufferevent_set_rate_limit(bev3, NULL) == -1) {
+    printf("NULL rate-limit is not set\n");
+  }
   static struct timeval cfg_tick = {static_cast<__time_t>(int1),
                                     static_cast<__suseconds_t>(int2)};
   conn_bucket_cfg = ev_token_bucket_cfg_new(int1, int2, int3, int4, &cfg_tick);
@@ -88,7 +109,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   bev_rate_group = bufferevent_rate_limit_group_new(base, conn_bucket_cfg);
-  bufferevent_add_to_rate_limit_group(bev4, bev_rate_group);
+  if (bufferevent_add_to_rate_limit_group(bev4, bev_rate_group) == -1) {
+    printf("Bufferevent is not added to a rate-limit group\n");
+  }
 
   /*write and read from buffer events*/
   bufferevent_write(bev3, s1.c_str(), s1.size());
@@ -102,8 +125,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   bufferevent_remove_from_rate_limit_group(bev4);
 
   /*watermarks*/
-  bufferevent_setwatermark(bev4, EV_WRITE | EV_READ, int1, int2);
-  bufferevent_getwatermark(bev4, EV_WRITE | EV_READ, &int2, &int1);
+  if (read_write == 0) {
+    bufferevent_setwatermark(bev4, EV_READ, int1, int2);
+    bufferevent_getwatermark(bev4, EV_READ, &int3, NULL);
+    bufferevent_getwatermark(bev4, EV_READ, NULL, &int4);
+  } else {
+    bufferevent_setwatermark(bev4, EV_WRITE, int1, int2);
+    bufferevent_getwatermark(bev4, EV_WRITE, &int3, NULL);
+    bufferevent_getwatermark(bev4, EV_WRITE, NULL, &int4);
+  }
+
+  if (int1 != int3) {
+    printf("Low-watermark %zu is not applied\n", int1);
+  }
+  if (int2 != int4) {
+    printf("High-watermark %zu is not applied\n", int2);
+  }
 
   /*clean up*/
 cleanup:
