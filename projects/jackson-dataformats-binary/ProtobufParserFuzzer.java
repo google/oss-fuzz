@@ -38,7 +38,7 @@ public class ProtobufParserFuzzer {
 
       // Fuzz methods of ProtobufParser
       for (Integer choice : choices) {
-        switch (choice % 19) {
+        switch (Math.abs(choice) % 19) {
           case 1:
             parser.currentName();
             break;

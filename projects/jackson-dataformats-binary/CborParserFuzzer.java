@@ -48,7 +48,7 @@ public class CborParserFuzzer {
 
       // Fuzz methods of CBORParser
       for (Integer choice : choices) {
-        switch (choice % 19) {
+        switch (Math.abs(choice) % 19) {
           case 1:
             parser.currentName();
             break;
