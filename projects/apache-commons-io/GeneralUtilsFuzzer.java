@@ -17,6 +17,8 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import org.apache.commons.io.ByteOrderParser;
@@ -31,12 +33,13 @@ public class GeneralUtilsFuzzer {
     try {
       byte[] outArray = new byte[data.remainingBytes()];
       ByteArrayOutputStream baos = new ByteArrayOutputStream(data.remainingBytes());
-      switch (data.consumeInt(1, 15)) {
+      switch (data.consumeInt(1, 24)) {
         case 1:
           ByteOrderParser.parseByteOrder(data.consumeRemainingAsString());
           break;
         case 2:
-          CopyUtils.copy(data.consumeRemainingAsString(), baos, Charset.defaultCharset().displayName());
+          CopyUtils.copy(
+              data.consumeRemainingAsString(), baos, Charset.defaultCharset().displayName());
           break;
         case 3:
           EndianUtils.readSwappedDouble(data.consumeRemainingAsBytes(), 0);
@@ -58,7 +61,11 @@ public class GeneralUtilsFuzzer {
           IOUtils.copy(new ByteArrayInputStream(data.consumeRemainingAsBytes()), baos);
           break;
         case 9:
-          IOUtils.read(new ByteArrayInputStream(data.consumeRemainingAsBytes()), outArray, 0, outArray.length);
+          IOUtils.read(
+              new ByteArrayInputStream(data.consumeRemainingAsBytes()),
+              outArray,
+              0,
+              outArray.length);
           break;
         case 10:
           IOUtils.readFully(new ByteArrayInputStream(data.consumeRemainingAsBytes()), outArray);
@@ -77,6 +84,54 @@ public class GeneralUtilsFuzzer {
           IOUtils.toByteArray(new ByteArrayInputStream(data.consumeRemainingAsBytes()));
           break;
         case 15:
+          byte[] case15 = data.consumeRemainingAsBytes();
+          IOUtils.contentEquals(
+              new InputStreamReader(new ByteArrayInputStream(case15)),
+              new InputStreamReader(new ByteArrayInputStream(case15)));
+          break;
+        case 16:
+          byte[] case16 = data.consumeRemainingAsBytes();
+          IOUtils.contentEqualsIgnoreEOL(
+              new InputStreamReader(new ByteArrayInputStream(case16)),
+              new InputStreamReader(new ByteArrayInputStream(case16)));
+          break;
+        case 17:
+          IOUtils.copy(
+              new ByteArrayInputStream(data.consumeRemainingAsBytes()),
+              new OutputStreamWriter(baos),
+              Charset.defaultCharset().name());
+          break;
+        case 18:
+          IOUtils.copy(
+              new InputStreamReader(new ByteArrayInputStream(data.consumeRemainingAsBytes())),
+              new OutputStreamWriter(baos));
+          break;
+        case 19:
+          IOUtils.copyLarge(
+              new ByteArrayInputStream(data.consumeRemainingAsBytes()), baos, 0, outArray.length);
+          break;
+        case 20:
+          IOUtils.copyLarge(
+              new InputStreamReader(new ByteArrayInputStream(data.consumeRemainingAsBytes())),
+              new OutputStreamWriter(baos),
+              0,
+              outArray.length);
+          break;
+        case 21:
+          IOUtils.readFully(
+              new ByteArrayInputStream(data.consumeRemainingAsBytes()), outArray.length);
+          break;
+        case 22:
+          IOUtils.readLines(
+              new ByteArrayInputStream(data.consumeRemainingAsBytes()), Charset.defaultCharset());
+          break;
+        case 23:
+          Long skip23 = data.consumeLong();
+          IOUtils.skip(
+              new InputStreamReader(new ByteArrayInputStream(data.consumeRemainingAsBytes())),
+              skip23);
+          break;
+        case 24:
           ThreadUtils.sleep(Duration.ofSeconds(data.consumeInt(-5, 5)));
           break;
       }
