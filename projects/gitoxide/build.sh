@@ -17,6 +17,8 @@
 
 set -eox pipefail
 
+export CARGO_BUILD_TARGET_DIR=$WORK/shared_cache
+
 FUZZ_CRATE_DIRS=$(find . -type d -name fuzz -exec dirname $(readlink -f {}) \;)
 
 for CRATE_DIR in ${FUZZ_CRATE_DIRS[@]};
@@ -24,7 +26,7 @@ do
   echo "Building crate: $CRATE_DIR"
   cd $CRATE_DIR
   cargo +nightly fuzz build -O --debug-assertions
-  FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+  FUZZ_TARGET_OUTPUT_DIR=$CARGO_BUILD_TARGET_DIR/x86_64-unknown-linux-gnu/release
   for f in fuzz/fuzz_targets/*.rs
   do
       FUZZ_TARGET_NAME=$(basename ${f%.*})
