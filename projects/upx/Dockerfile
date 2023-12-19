@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +13,16 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/node
 
-# Coverage build takes very long and time outs in the CI which blocks changes. Ignore Coverage build in OSS-Fuzz CI for now:
-if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
-	exit 0
-fi
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
+RUN git clone https://github.com/upx/upx-testsuite.git testsuite
+RUN git clone https://github.com/upx/upx-testsuite-v2.git testsuite2
+RUN git clone https://github.com/MykolaMykhno/upx-testsuite-v3.git testsuite3
+RUN git clone --depth 1 https://github.com/upx/upx.git upx
 
-# Build node
-export LDFLAGS="$CXXFLAGS"
-export LD="$CXX"
-./configure --with-ossfuzz
-if [[ "$SANITIZER" = coverage ]]; then
-	make
-else
-	make -j$(nproc)
-fi
+WORKDIR /src/upx
+RUN git submodule update --init
 
-# Copy all fuzzers to OUT folder 
-cp out/Release/fuzz_* ${OUT}/
-
-zip $OUT/fuzz_env_seed_corpus.zip $SRC/node/test/fuzzers/corpus/fuzz_env_seed*
+COPY build.sh $SRC/
+COPY fuzzers/ $SRC/upx/fuzzers/
