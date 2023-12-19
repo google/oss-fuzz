@@ -33,7 +33,7 @@ public class GeneralUtilsFuzzer {
     try {
       byte[] outArray = new byte[data.remainingBytes()];
       ByteArrayOutputStream baos = new ByteArrayOutputStream(data.remainingBytes());
-      switch (data.consumeInt(1, 30)) {
+      switch (data.consumeInt(1, 24)) {
         case 1:
           ByteOrderParser.parseByteOrder(data.consumeRemainingAsString());
           break;
