@@ -14,7 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import java.util.Locale;
 import org.apache.commons.lang3.LocaleUtils;
 
 /** This fuzzer targets the methods of the LocaleUtils class in the base package. */
@@ -22,24 +21,22 @@ public class LocaleUtilsFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       Integer choice = data.consumeInt(1, 5);
-      String string = data.consumeString(data.remainingBytes());
-      Locale locale = LocaleUtils.toLocale(LocaleUtils.toLocale(data.consumeRemainingAsString()));
 
       switch (choice) {
         case 1:
-          LocaleUtils.countriesByLanguage(string);
+          LocaleUtils.countriesByLanguage(data.consumeRemainingAsString());
           break;
         case 2:
-          LocaleUtils.isAvailableLocale(locale);
+          LocaleUtils.isAvailableLocale(LocaleUtils.toLocale(data.consumeRemainingAsString()));
           break;
         case 3:
-          LocaleUtils.isLanguageUndetermined(locale);
+          LocaleUtils.isLanguageUndetermined(LocaleUtils.toLocale(data.consumeRemainingAsString()));
           break;
         case 4:
-          LocaleUtils.languagesByCountry(string);
+          LocaleUtils.languagesByCountry(data.consumeRemainingAsString());
           break;
         case 5:
-          LocaleUtils.localeLookupList(locale);
+          LocaleUtils.localeLookupList(LocaleUtils.toLocale(data.consumeRemainingAsString()));
           break;
       }
     } catch (IllegalArgumentException e) {
