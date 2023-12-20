@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
+import com.amazon.ion.IonException;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -253,7 +254,10 @@ public class SerializerFuzzer {
 
       writer.writeValueAsString(object);
       writer.writeValueAsBytes(object);
-    } catch (IOException | IllegalArgumentException | UnsupportedOperationException e) {
+    } catch (IOException
+        | IllegalArgumentException
+        | UnsupportedOperationException
+        | IonException e) {
       // Known exception
     } finally {
       try {

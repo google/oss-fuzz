@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
+import com.amazon.ion.IonException;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -138,6 +139,7 @@ public class IonGeneratorFuzzer {
     } catch (IOException
         | IllegalArgumentException
         | IllegalStateException
+        | IonException
         | UnsupportedOperationException e) {
       // Known exception
     }
