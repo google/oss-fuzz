@@ -18,6 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
 COPY build.sh $SRC/
 
+RUN npm install -g n && n 19.2
+
 RUN git clone --depth 1 https://github.com/fastify/fastify fastify
 RUN git clone --depth 1 https://github.com/fastify/fast-json-stringify fast-json-stringify
 RUN git clone --depth 1 https://github.com/fastify/fastify-jwt fastify-jwt
