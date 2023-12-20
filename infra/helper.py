@@ -77,7 +77,16 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 # Regex to match special chars in project name.
 SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
-LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+LANGUAGE_TO_BASE_BUILDER_IMAGE = {
+    'c': 'base-builder',
+    'c++': 'base-builder',
+    'go': 'base-builder-go',
+    'javascript': 'base-builder-javascript',
+    'jvm': 'base-builder-jvm',
+    'python': 'base-builder-python',
+    'rust': 'base-builder-rust',
+    'swift': 'base-builder-swift'
+}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
@@ -256,11 +265,10 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
-  generate_parser.add_argument(
-      '--language',
-      default=constants.DEFAULT_LANGUAGE,
-      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python', 'javascript'],
-      help='Project language.')
+  generate_parser.add_argument('--language',
+                               default=constants.DEFAULT_LANGUAGE,
+                               choices=LANGUAGE_TO_BASE_BUILDER_IMAGE.keys(),
+                               help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
@@ -1594,9 +1602,7 @@ def _get_current_datetime():
 
 def _base_builder_from_language(language):
   """Returns the base builder for the specified language."""
-  if language not in LANGUAGES_WITH_BUILDER_IMAGES:
-    return 'base-builder'
-  return 'base-builder-{language}'.format(language=language)
+  return LANGUAGE_TO_BASE_BUILDER_IMAGE[language]
 
 
 def _generate_impl(project, language):

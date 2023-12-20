@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Targets pandas parsers. Both native and python code"""
+"""Targets pandas parsers. Both native and python code."""
 
 import os
 import sys
@@ -27,21 +27,21 @@ import pandas
 
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
+    fdp = atheris.FuzzedDataProvider(data)
 
-  try:
-    pandas.io.parsers.read_csv(io.StringIO(
-        fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)),
-                               engine="python")
-  except (EmptyDataError, ParserError, ValueError):
-    pass
+    try:
+        pandas.io.parsers.read_csv(io.StringIO(
+            fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)),
+            engine="python")
+    except (EmptyDataError, ParserError, ValueError):
+        pass
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
-  atheris.Fuzz()
+    atheris.instrument_all()
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
 
 
 if __name__ == "__main__":
-  main()
+    main()

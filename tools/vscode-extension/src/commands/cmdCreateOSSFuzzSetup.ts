@@ -19,7 +19,7 @@ import {setStatusText} from '../utils';
 
 export async function createOssFuzzSetup() {
   await setStatusText('Creating OSS-Fuzz setup: starting');
-  const res = await setupProjectInitialFiles();
+  const res = await setupProjectInitialFiles(false);
   if (res) {
     await setStatusText('Creating OSS-Fuzz setup: finished');
   } else {

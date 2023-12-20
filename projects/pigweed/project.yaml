@@ -2,6 +2,7 @@ homepage: "https://pigweed.dev/"
 language: c++
 primary_contact: "keir@google.com"
 auto_ccs:
+  - "aarongreen@google.com"
   - "alizhang@google.com"
   - "amontanez@google.com"
   - "dmitryya@google.com"
@@ -15,8 +16,11 @@ auto_ccs:
   - "tpudlik@google.com"
 sanitizers:
   - address
+  - memory
+  - undefined
 main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'
 fuzzing_engines:
   - afl
+  - centipede
   - honggfuzz
   - libfuzzer
