@@ -46,7 +46,8 @@ public class SmileGeneratorFuzzer {
       }
 
       // Create and configure SmileGenerator
-      SmileGenerator generator = ((SmileMapper)mapper).getFactory().createGenerator(new ByteArrayOutputStream());
+      SmileGenerator generator =
+          ((SmileMapper) mapper).getFactory().createGenerator(new ByteArrayOutputStream());
       for (SmileGenerator.Feature feature : featureSet) {
         generator.configure(feature, data.consumeBoolean());
       }
