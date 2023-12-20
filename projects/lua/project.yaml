@@ -7,5 +7,6 @@ auto_ccs:
   - "estetus@gmail.com"
 main_repo: 'https://github.com/lua/lua'
 architectures:
+  - aarch64
   - i386
   - x86_64
