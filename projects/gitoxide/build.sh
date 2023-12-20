@@ -33,9 +33,9 @@ do
       CRATE_NAME=$(basename $CRATE_DIR)
       OUT_FUZZER_NAME=$OUT/$CRATE_NAME-$FUZZ_TARGET_NAME
       cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT_FUZZER_NAME 
-      FUZZ_CORPUS_BUILDER=${FUZZ_TARGET_NAME}_corpus_builder.sh      
+      FUZZ_CORPUS_BUILDER=./fuzz/fuzz_targets/${FUZZ_TARGET_NAME}_corpus_builder.sh      
       if test -f "$FUZZ_CORPUS_BUILDER"; then
-          $FUZZ_CORPUS_BUILDER $SRC/gitoxide $OUT/${OUT_FUZZER_NAME}_seed_corpus.zip
+          $FUZZ_CORPUS_BUILDER $SRC/gitoxide ${OUT_FUZZER_NAME}_seed_corpus.zip
       fi
   done
 done
