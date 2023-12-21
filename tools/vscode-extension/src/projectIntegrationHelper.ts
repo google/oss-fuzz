@@ -199,6 +199,7 @@ jobs:
         wsedit,
         wsPath,
         baseFolder,
+        pathOfLocal,
         isOssFuzz
       );
     }
@@ -217,6 +218,42 @@ jobs:
     vscode.window.showInformationMessage('Created a new file: hello/world.md');
   }
   return true;
+}
+
+function createProjectYamlContent(
+  wsedit: vscode.WorkspaceEdit,
+  wsPath: string,
+  baseFolder: string,
+  isOssFuzz: boolean,
+  projectGithubRepository: string,
+  projectNameFromRepo: string,
+  language: string
+) {
+  const projectYamlFilepath = vscode.Uri.file(
+    wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/project.yaml'
+  );
+  if (fs.existsSync(projectYamlFilepath.path) === false) {
+    vscode.window.showInformationMessage(projectYamlFilepath.toString());
+    wsedit.createFile(projectYamlFilepath, {ignoreIfExists: true});
+    const projectYamlTemplate = `homepage: "${projectGithubRepository}"
+language: ${language}
+primary_contact: "<primary_contact_email>"
+main_repo: "${projectGithubRepository}"
+file_github_issue: true
+    `;
+
+    const projectYamlTemplateCFLite = `language: ${language}`;
+
+    const yamlContentToWrite = isOssFuzz
+      ? projectYamlTemplate
+      : projectYamlTemplateCFLite;
+
+    wsedit.insert(
+      projectYamlFilepath,
+      new vscode.Position(0, 0),
+      yamlContentToWrite
+    );
+  }
 }
 
 function getLicenseHeader() {
@@ -294,6 +331,7 @@ async function setupJavaProjectInitialFiles(
   baseFolder: string,
   isOssFuzz: boolean
 ) {
+  // Dockerfile
   const dockerfileTemplate =
     getBaseDockerFile('java') +
     ` 
@@ -311,6 +349,7 @@ COPY build.sh *.java $SRC/`;
     dockerfileTemplate
   );
 
+  // build.sh
   const ossfuzzBuildFilepath = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/build.sh'
   );
@@ -321,28 +360,20 @@ COPY build.sh *.java $SRC/`;
   ` +
     getLicenseHeader() +
     `
-
 # Supply build instructions
 # Copy all fuzzer executables to $OUT/
 `;
   wsedit.insert(ossfuzzBuildFilepath, new vscode.Position(0, 0), buildTemplate);
 
   // project.yaml
-  const projectYamlFilepath = vscode.Uri.file(
-    wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/project.yaml'
-  );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
-  wsedit.createFile(projectYamlFilepath, {ignoreIfExists: true});
-  const projectYamlTemplate = `homepage: "${projectGithubRepository}"
-language: c++
-primary_contact: "<primary_contact_email>"
-main_repo: "${projectGithubRepository}"
-file_github_issue: true
-    `;
-  wsedit.insert(
-    projectYamlFilepath,
-    new vscode.Position(0, 0),
-    projectYamlTemplate
+  createProjectYamlContent(
+    wsedit,
+    wsPath,
+    baseFolder,
+    isOssFuzz,
+    projectGithubRepository,
+    projectNameFromRepo,
+    'jvm'
   );
 
   /* Sample template fuzzer */
@@ -354,7 +385,7 @@ file_github_issue: true
       projectNameFromRepo +
       '/fuzzer_example.java'
   );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
+
   wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
   const sampleFuzzFileContents = fuzzTemplate.javaLangBareTemplate;
 
@@ -374,31 +405,52 @@ async function setupCProjectInitialFiles(
   wsedit: vscode.WorkspaceEdit,
   wsPath: string,
   baseFolder: string,
+  baseName: string,
   isOssFuzz: boolean
 ) {
-  const dockerfileTemplate =
-    getBaseDockerFile('c') +
-    `
+  // Dockerfile
+  if (fs.existsSync(ossfuzzDockerFilepath.path) === false) {
+    const dockerfileTemplate =
+      getBaseDockerFile('cpp') +
+      `
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
 WORKDIR ${projectNameFromRepo}
-COPY build.sh *.c $SRC/`;
-  wsedit.insert(
-    ossfuzzDockerFilepath,
-    new vscode.Position(0, 0),
-    dockerfileTemplate
-  );
+COPY build.sh *.cpp $SRC/`;
 
+    const dockerfileTemplateClusterfuzzLite = `FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+
+COPY . $SRC/${baseName}
+COPY .clusterfuzzlite/build.sh $SRC/build.sh
+WORKDIR $SRC/${baseName}`;
+
+    const contentToWrite = isOssFuzz
+      ? dockerfileTemplate
+      : dockerfileTemplateClusterfuzzLite;
+
+    // Create the file and add the contents
+    wsedit.createFile(ossfuzzDockerFilepath, {ignoreIfExists: true});
+    wsedit.insert(
+      ossfuzzDockerFilepath,
+      new vscode.Position(0, 0),
+      contentToWrite
+    );
+  }
+
+  // build.sh
   const ossfuzzBuildFilepath = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/build.sh'
   );
-  vscode.window.showInformationMessage(ossfuzzBuildFilepath.toString());
-  wsedit.createFile(ossfuzzBuildFilepath, {ignoreIfExists: true});
-  const buildTemplate =
-    `#!/bin/bash -eu
+  // Only create the build file if it doesn't exist
+  if (fs.existsSync(ossfuzzBuildFilepath.path) === false) {
+    vscode.window.showInformationMessage(ossfuzzBuildFilepath.toString());
+    wsedit.createFile(ossfuzzBuildFilepath, {ignoreIfExists: true});
+    const buildTemplate =
+      `#!/bin/bash -eu
   ` +
-    getLicenseHeader() +
-    `
+      getLicenseHeader() +
+      `
 # Supply build instructions
 # Use the following environment variables to build the code
 # $CXX:               c++ compiler
@@ -408,40 +460,59 @@ COPY build.sh *.c $SRC/`;
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
+$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.c -o $OUT/fuzzer_example
 `;
-  wsedit.insert(ossfuzzBuildFilepath, new vscode.Position(0, 0), buildTemplate);
+
+    const buildTemplateClusterfuzzLite = `#!/bin/bash -eu
+# Supply build instructions
+# Use the following environment variables to build the code
+# $CXX:               c++ compiler
+# $CC:                c compiler
+# CFLAGS:             compiler flags for C files
+# CXXFLAGS:           compiler flags for CPP files
+# LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
+
+# Copy all fuzzer executables to $OUT/
+$CC $CFLAGS $LIB_FUZZING_ENGINE \\
+  $SRC/${baseName}/.clusterfuzzlite/fuzzer_example.c \\
+  -o $OUT/fuzzer_example
+`;
+
+    const buildContent = isOssFuzz
+      ? buildTemplate
+      : buildTemplateClusterfuzzLite;
+    wsedit.insert(
+      ossfuzzBuildFilepath,
+      new vscode.Position(0, 0),
+      buildContent
+    );
+  }
 
   // project.yaml
-  const projectYamlFilepath = vscode.Uri.file(
-    wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/project.yaml'
-  );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
-  wsedit.createFile(projectYamlFilepath, {ignoreIfExists: true});
-  const projectYamlTemplate = `homepage: "${projectGithubRepository}"
-language: c++
-primary_contact: "<primary_contact_email>"
-main_repo: "${projectGithubRepository}"
-file_github_issue: true
-    `;
-  wsedit.insert(
-    projectYamlFilepath,
-    new vscode.Position(0, 0),
-    projectYamlTemplate
+  createProjectYamlContent(
+    wsedit,
+    wsPath,
+    baseFolder,
+    isOssFuzz,
+    projectGithubRepository,
+    projectNameFromRepo,
+    'c'
   );
 
   /* Sample template fuzzer */
   const sampleFuzzFile = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/fuzzer_example.c'
   );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
-  wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
-  const sampleFuzzFileContents = fuzzTemplate.cLangSimpleStringFuzzer;
+  if (fs.existsSync(sampleFuzzFile.path) === false) {
+    wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
+    const sampleFuzzFileContents = fuzzTemplate.cLangSimpleStringFuzzer;
 
-  wsedit.insert(
-    sampleFuzzFile,
-    new vscode.Position(0, 0),
-    sampleFuzzFileContents
-  );
+    wsedit.insert(
+      sampleFuzzFile,
+      new vscode.Position(0, 0),
+      sampleFuzzFileContents
+    );
+  }
 
   createReadmeFile(wsedit, wsPath, baseFolder, isOssFuzz);
 }
@@ -541,32 +612,15 @@ $CXX $CFLAGS $LIB_FUZZING_ENGINE \\
   }
 
   // project.yaml
-  const projectYamlFilepath = vscode.Uri.file(
-    wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/project.yaml'
+  createProjectYamlContent(
+    wsedit,
+    wsPath,
+    baseFolder,
+    isOssFuzz,
+    projectGithubRepository,
+    projectNameFromRepo,
+    'c++'
   );
-  if (fs.existsSync(projectYamlFilepath.path) === false) {
-    vscode.window.showInformationMessage(projectYamlFilepath.toString());
-    wsedit.createFile(projectYamlFilepath, {ignoreIfExists: true});
-    const projectYamlTemplate = `homepage: "${projectGithubRepository}"
-language: c++
-primary_contact: "<primary_contact_email>"
-main_repo: "${projectGithubRepository}"
-file_github_issue: true
-    `;
-
-    const projectYamlTemplateCFLite = `language: c++
-        `;
-
-    const yamlContentToWrite = isOssFuzz
-      ? projectYamlTemplate
-      : projectYamlTemplateCFLite;
-
-    wsedit.insert(
-      projectYamlFilepath,
-      new vscode.Position(0, 0),
-      yamlContentToWrite
-    );
-  }
 
   /* Sample template fuzzer */
   const sampleFuzzFile = vscode.Uri.file(
@@ -578,7 +632,6 @@ file_github_issue: true
       '/fuzzer_example.cpp'
   );
   if (fs.existsSync(sampleFuzzFile.path) === false) {
-    vscode.window.showInformationMessage(projectYamlFilepath.toString());
     wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
     const sampleFuzzFileContents = fuzzTemplate.cppLangFDPTemplateFuzzer;
 
@@ -603,83 +656,100 @@ async function setupPythonProjectInitialFiles(
   isOssFuzz: boolean
 ) {
   // Only write to Dockerfile if it doesn't already exist
+  // Dockerfile
+  if (fs.existsSync(ossfuzzDockerFilepath.path) === false) {
+    const dockerfileTemplate =
+      getBaseDockerFile('python') +
+      ` 
+  RUN python3 -m pip install --upgrade pip
+  RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
+  WORKDIR ${projectNameFromRepo}
+  COPY build.sh *.py $SRC/`;
 
-  const dockerfileTemplate =
-    getBaseDockerFile('python') +
-    ` 
-RUN python3 -m pip install --upgrade pip
-RUN git clone --depth 1 ${projectGithubRepository} ${projectNameFromRepo}
-WORKDIR ${projectNameFromRepo}
-COPY build.sh *.py $SRC/`;
+    const dockerfileTemplateClusterfuzzLite =
+      getBaseDockerFile('python') +
+      ` 
+  RUN apt-get update && apt-get install -y make autoconf automake libtool
 
-  const dockerfileTemplateClusterfuzzLite =
-    getBaseDockerFile('python') +
-    ` 
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+  COPY . $SRC/${baseName}
+  COPY .clusterfuzzlite/build.sh $SRC/build.sh
+  WORKDIR $SRC/${baseName}`;
 
-COPY . $SRC/${baseName}
-COPY .clusterfuzzlite/build.sh $SRC/build.sh
-WORKDIR $SRC/${baseName}`;
+    const contentToWrite = isOssFuzz
+      ? dockerfileTemplate
+      : dockerfileTemplateClusterfuzzLite;
 
-  const contentToWrite = isOssFuzz
-    ? dockerfileTemplate
-    : dockerfileTemplateClusterfuzzLite;
+    wsedit.insert(
+      ossfuzzDockerFilepath,
+      new vscode.Position(0, 0),
+      contentToWrite
+    );
+  }
 
-  wsedit.insert(
-    ossfuzzDockerFilepath,
-    new vscode.Position(0, 0),
-    contentToWrite
-  );
-
+  // build.sh
   const ossfuzzBuildFilepath = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/build.sh'
   );
-  vscode.window.showInformationMessage(ossfuzzBuildFilepath.toString());
-  wsedit.createFile(ossfuzzBuildFilepath, {ignoreIfExists: true});
-  const buildTemplate =
-    `#!/bin/bash -eu
+  // Only create the build file if it doesn't exist
+  if (fs.existsSync(ossfuzzBuildFilepath.path) === false) {
+    vscode.window.showInformationMessage(ossfuzzBuildFilepath.toString());
+    wsedit.createFile(ossfuzzBuildFilepath, {ignoreIfExists: true});
+    const buildTemplate =
+      `#!/bin/bash -eu
   ` +
-    getLicenseHeader() +
-    `
+      getLicenseHeader() +
+      `
 python3 -m pip install .
 
 # Build fuzzers (files prefixed with fuzz_) to $OUT
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done`;
-  wsedit.insert(ossfuzzBuildFilepath, new vscode.Position(0, 0), buildTemplate);
+
+    const buildTemplateClusterfuzzLite = `#!/bin/bash -eu
+python3 -m pip install .
+
+# Build fuzzers (files prefixed with fuzz_) to $OUT
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done`;
+
+    const buildContent = isOssFuzz
+      ? buildTemplate
+      : buildTemplateClusterfuzzLite;
+    wsedit.insert(
+      ossfuzzBuildFilepath,
+      new vscode.Position(0, 0),
+      buildContent
+    );
+  }
 
   // project.yaml
-  const projectYamlFilepath = vscode.Uri.file(
-    wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/project.yaml'
-  );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
-  wsedit.createFile(projectYamlFilepath, {ignoreIfExists: true});
-  const projectYamlTemplate = `homepage: "${projectGithubRepository}"
-language: python
-primary_contact: "<primary_contact_email>"
-main_repo: "${projectGithubRepository}"
-file_github_issue: true
-    `;
-  wsedit.insert(
-    projectYamlFilepath,
-    new vscode.Position(0, 0),
-    projectYamlTemplate
+  createProjectYamlContent(
+    wsedit,
+    wsPath,
+    baseFolder,
+    isOssFuzz,
+    projectGithubRepository,
+    projectNameFromRepo,
+    'python'
   );
 
-  /* Sample template fuzzer */
+  // Sample template fuzzer
   const sampleFuzzFile = vscode.Uri.file(
     wsPath + '/' + baseFolder + '/' + projectNameFromRepo + '/fuzz_ex1.py'
   );
-  vscode.window.showInformationMessage(projectYamlFilepath.toString());
-  wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
-  const sampleFuzzFileContents = fuzzTemplate.pythonLangFileInputFuzzer;
+  if (fs.existsSync(sampleFuzzFile.path) === false) {
+    wsedit.createFile(sampleFuzzFile, {ignoreIfExists: true});
+    const sampleFuzzFileContents = fuzzTemplate.pythonLangFileInputFuzzer;
 
-  wsedit.insert(
-    sampleFuzzFile,
-    new vscode.Position(0, 0),
-    sampleFuzzFileContents
-  );
+    wsedit.insert(
+      sampleFuzzFile,
+      new vscode.Position(0, 0),
+      sampleFuzzFileContents
+    );
+  }
 
+  // README.md
   createReadmeFile(wsedit, wsPath, baseFolder, isOssFuzz);
 }
