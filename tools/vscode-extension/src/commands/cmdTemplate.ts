@@ -21,7 +21,7 @@
 import * as vscode from 'vscode';
 import {println} from '../logger';
 
-const cLangSimpleStringFuzzer = `#include <stdint.h>
+export const cLangSimpleStringFuzzer = `#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -88,7 +88,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   return 0;
 }`;
 
-const cppLangFDPTemplateFuzzer = `#include <fuzzer/FuzzedDataProvider.h>
+export const cppLangFDPTemplateFuzzer = `#include <fuzzer/FuzzedDataProvider.h>
 
 #include <string>
 
@@ -140,7 +140,7 @@ def main():
 if __name__ == "__main__":
     main()`;
 
-const pythonLangFileInputFuzzer = `import sys
+export const pythonLangFileInputFuzzer = `import sys
 import atheris
 
 @atheris.instrument_func
@@ -175,7 +175,7 @@ def main():
 if __name__ == "__main__":
     main()`;
 
-const javaLangBareTemplate = `import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+export const javaLangBareTemplate = `import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 public class SampleFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider fdp) {
     // Use fdp to create arbitrary types seeded with fuzz data
