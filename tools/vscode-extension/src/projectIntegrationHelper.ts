@@ -56,6 +56,7 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
   const pythonFiles = await vscode.workspace.findFiles('**/*.py');
   const cppFiles = await vscode.workspace.findFiles('**/*.c++');
   const cppFiles2 = await vscode.workspace.findFiles('**/*.cpp');
+  const cppFiles3 = await vscode.workspace.findFiles('**/*.cc');
   const cfiles = await vscode.workspace.findFiles('**/*.c');
   const rustFiles = await vscode.workspace.findFiles('**/*.rust');
   const golangFiles = await vscode.workspace.findFiles('**/*.go');
@@ -67,7 +68,7 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
   println('Number of rustFiles files: ' + rustFiles.length);
   println('Number of golangFiles files: ' + golangFiles.length);
 
-  const cppFilesCount = cppFiles.length + cppFiles2.length;
+  const cppFilesCount = cppFiles.length + cppFiles2.length + cppFiles3.length;
 
   const maxCount = Math.max(
     pythonFiles.length,
@@ -115,7 +116,7 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
 
       //println('Workflow pth: ' + clusterfuzzWorkflowFile);
 
-      const cflite_workflow_yaml = `#name: ClusterFuzzLite PR fuzzing
+      const cflite_workflow_yaml = `name: ClusterFuzzLite PR fuzzing
 on:
   workflow_dispatch:
   pull_request:
