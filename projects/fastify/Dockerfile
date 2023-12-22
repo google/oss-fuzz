@@ -22,6 +22,7 @@ RUN npm install -g n && n 19.2
 
 RUN git clone --depth 1 https://github.com/fastify/fastify fastify
 RUN git clone --depth 1 https://github.com/fastify/fast-json-stringify fast-json-stringify
+RUN git clone --depth 1 https://github.com/fastify/secure-json-parse secure-json-parse 
 RUN git clone --depth 1 https://github.com/fastify/fastify-jwt fastify-jwt
 RUN git clone --depth 1 https://github.com/fastify/fastify-response-validation fastify-response-validation
 RUN git clone --depth 1 https://github.com/fastify/fastify-auth fastify-auth
