@@ -1,0 +1,11 @@
+homepage: "https://librosa.org/doc/latest/index.html"
+language: python
+primary_contact: "brian.mcfee@nyu.edu"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/librosa/librosa.git"
