@@ -106,6 +106,7 @@ if [[ "$SANITIZER" = coverage ]]; then
   mv build.ninja ../
   python3 $SRC/coverage_patcher.py ../build.ninja build.ninja
   ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j $(( $(nproc) / 2))
+  ninja lib/Target/AMDGPU/MCTargetDesc/CMakeFiles/LLVMAMDGPUDesc.dir/AMDGPUMCCodeEmitter.cpp.o -j $(( $(nproc) / 2))
 fi
 
 for fuzzer in "${FUZZERS[@]}"; do
