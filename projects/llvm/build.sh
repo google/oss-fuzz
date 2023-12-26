@@ -137,7 +137,7 @@ cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--hexagon-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--riscv64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--mips64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--arm-O2
-mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--ppc64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--ppc64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
