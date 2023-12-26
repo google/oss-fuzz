@@ -48,9 +48,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   sprintf(resolvFilename, "/tmp/resolv.%d", getpid());
   FILE *fp = fopen(resolvFilename, "wb");
   if (!fp) {
-    evdns_base_free(dns, 0);
-    event_base_free(base);
-    return 0;
+    goto cleanup;
   }
   fwrite(s1.c_str(), s1.size(), 1, fp);
   fclose(fp);
@@ -62,9 +60,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   sprintf(hostsFilename, "/tmp/hosts.%d", getpid());
   fp = fopen(hostsFilename, "wb");
   if (!fp) {
-    evdns_base_free(dns, 0);
-    event_base_free(base);
-    return 0;
+    unlink(resolvFilename);
+    goto cleanup;
   }
   fwrite(s2.c_str(), s2.size(), 1, fp);
   fclose(fp);
@@ -76,6 +73,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   unlink(hostsFilename);
   evdns_base_search_clear(dns);
   evdns_base_clear_host_addresses(dns);
+
+  /*clean up*/
+cleanup:
   evdns_base_free(dns, 0);
   event_base_free(base);
   return 0;
