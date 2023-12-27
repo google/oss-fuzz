@@ -590,9 +590,7 @@ WORKDIR $SRC/${baseName}`;
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
-
-# Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 `;
     const buildTemplateClusterfuzzLite = `#!/bin/bash -eu
 # Supply build instructions
@@ -604,9 +602,7 @@ $CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
-
-# Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE \\
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \\
   $SRC/${baseName}/.clusterfuzzlite/fuzzer_example.cpp \\
   -o $OUT/fuzzer_example
 `;
