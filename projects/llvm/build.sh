@@ -40,6 +40,7 @@ else
       clang-format-fuzzer \
       clang-pseudo-fuzzer \
       clang-fuzzer \
+      llvm-parse-assembly-fuzzer \
     )
   else
     readonly FUZZERS=( \
@@ -59,6 +60,7 @@ else
       clang-pseudo-fuzzer \
       clang-fuzzer \
       clangd-fuzzer \
+      llvm-parse-assembly-fuzzer \
     )
   fi
 fi
@@ -106,6 +108,7 @@ if [[ "$SANITIZER" = coverage ]]; then
   mv build.ninja ../
   python3 $SRC/coverage_patcher.py ../build.ninja build.ninja
   ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j $(( $(nproc) / 2))
+  ninja lib/Target/AMDGPU/MCTargetDesc/CMakeFiles/LLVMAMDGPUDesc.dir/AMDGPUMCCodeEmitter.cpp.o -j $(( $(nproc) / 2))
 fi
 
 for fuzzer in "${FUZZERS[@]}"; do
@@ -130,6 +133,11 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
   exit 0
 fi
 
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--hexagon-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--riscv64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--mips64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--arm-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--ppc64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2

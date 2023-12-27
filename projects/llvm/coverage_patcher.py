@@ -30,7 +30,7 @@ for line in content.split("\n"):
       patch_flag = False
 
   # Find the AMDGPUBaseInfo.cpp.o build
-  if "build" in line and "AMDGPUBaseInfo.cpp.o" in line:
+  if "build" in line and ("AMDGPUBaseInfo.cpp.o" in line or "AMDGPUMCCodeEmitter.cpp.o" in line):
     # Find the next flag
     patch_flag = True
   new_content += line + "\n"
