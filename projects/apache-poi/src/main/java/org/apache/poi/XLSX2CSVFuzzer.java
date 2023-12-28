@@ -30,6 +30,10 @@ import org.apache.poi.util.RecordFormatException;
 import org.xml.sax.SAXException;
 
 public class XLSX2CSVFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (InputStream in = new ByteArrayInputStream(input)) {
 			OPCPackage p = OPCPackage.open(in);

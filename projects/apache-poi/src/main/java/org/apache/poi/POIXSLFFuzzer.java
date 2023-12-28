@@ -32,6 +32,10 @@ import org.apache.poi.xslf.usermodel.XSLFSlideShow;
 import org.apache.xmlbeans.XmlException;
 
 public class POIXSLFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (XMLSlideShow slides = new XMLSlideShow(new ByteArrayInputStream(input))) {
 			slides.write(NullOutputStream.INSTANCE);
