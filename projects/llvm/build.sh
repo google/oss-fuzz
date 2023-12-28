@@ -36,6 +36,7 @@ else
       llvm-dis-fuzzer \
       llvm-opt-fuzzer \
       llvm-isel-fuzzer \
+      llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
       clang-pseudo-fuzzer \
@@ -55,6 +56,7 @@ else
       llvm-dis-fuzzer \
       llvm-opt-fuzzer \
       llvm-isel-fuzzer \
+      llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
       clang-pseudo-fuzzer \
