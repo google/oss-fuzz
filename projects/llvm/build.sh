@@ -160,6 +160,13 @@ cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
 
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
 
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-dse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_idiom
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-reassociate
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-lower_matrix_intrinsics
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-memcpyopt
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sroa
+
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 
