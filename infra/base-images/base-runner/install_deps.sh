@@ -16,6 +16,7 @@
 ################################################################################
 
 # Install dependencies in a platform-aware way.
+
 apt-get update && apt-get install -y \
     binutils \
     curl \
