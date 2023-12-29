@@ -30,6 +30,10 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHSSFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(input))) {
 			wb.write(NullOutputStream.INSTANCE);
