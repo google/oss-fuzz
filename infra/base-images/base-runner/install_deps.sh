@@ -16,20 +16,26 @@
 ################################################################################
 
 # Install dependencies in a platform-aware way.
-
 apt-get update && apt-get install -y \
     binutils \
+    curl \
     file \
     fonts-dejavu \
     git \
     libcap2 \
-    python3 \
-    python3-pip \
-    python3-setuptools \
     rsync \
     unzip \
     wget \
     zip --no-install-recommends
+
+# Install Python3.10 as this is needed to extract code coverage for Python
+# projects that require 3.10+ syntax.
+apt-get update -y \
+    && apt-get install -y libgdal26 software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get install -y python3.10 python3.10-dev \
+    && ln --force -s /usr/bin/python3.10 /usr/local/bin/python3 \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3
 
 case $(uname -m) in
   x86_64)
