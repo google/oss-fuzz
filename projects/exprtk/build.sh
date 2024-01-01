@@ -22,6 +22,3 @@ CXXFLAGS="${CXXFLAGS} -O2 -fno-sanitize=integer-divide-by-zero,float-divide-by-z
 $CXX -std=c++11 $CXXFLAGS -I. -I$SRC/exprtk \
      $SRC/exprtk_fuzzer.cpp -o $OUT/exprtk_fuzzer \
      $LIB_FUZZING_ENGINE
-
-# Build all tests
-make
