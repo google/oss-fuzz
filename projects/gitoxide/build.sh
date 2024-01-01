@@ -37,5 +37,9 @@ do
       if test -f "$FUZZ_CORPUS_BUILDER"; then
           $FUZZ_CORPUS_BUILDER $SRC/gitoxide ${OUT_FUZZER_NAME}_seed_corpus.zip
       fi
+      FUZZ_DICT=./fuzz/fuzz_targets/${FUZZ_TARGET_NAME}.dict      
+      if test -f "$FUZZ_DICT"; then
+            cp $FUZZ_DICT ${OUT_FUZZER_NAME}.dict
+      fi
   done
 done
