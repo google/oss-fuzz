@@ -42,6 +42,7 @@ else
       clang-pseudo-fuzzer \
       clang-fuzzer \
       llvm-parse-assembly-fuzzer \
+      llvm-symbol-reader-fuzzer \
     )
   else
     readonly FUZZERS=( \
@@ -63,6 +64,7 @@ else
       clang-fuzzer \
       clangd-fuzzer \
       llvm-parse-assembly-fuzzer \
+      llvm-symbol-reader-fuzzer \
     )
   fi
 fi
