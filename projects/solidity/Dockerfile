@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --recursive -b develop https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.9.1" --recurse-submodules \
+RUN git clone --branch="v0.11.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory
