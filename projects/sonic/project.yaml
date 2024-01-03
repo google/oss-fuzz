@@ -1,4 +1,5 @@
 homepage: "https://github.com/bytedance/sonic"
+language: go
 primary_contact: "dysghappy@163.com"
 auto_ccs:
   - "byone.heng@google.com"
