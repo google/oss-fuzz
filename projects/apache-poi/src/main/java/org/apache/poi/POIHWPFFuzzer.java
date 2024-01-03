@@ -30,6 +30,10 @@ import org.apache.poi.util.DocumentFormatException;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHWPFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (HWPFDocument doc = new HWPFDocument(new ByteArrayInputStream(input))) {
 			doc.write(NullOutputStream.INSTANCE);

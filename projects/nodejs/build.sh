@@ -34,4 +34,12 @@ fi
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
 
-zip $OUT/fuzz_env_seed_corpus.zip $SRC/node/test/fuzzers/corpus/fuzz_env_seed*
+# Create seed for fuzz_env
+mkdir fuzz_env_seed
+find ./test -name '*.js' -exec cp {} ./fuzz_env_seed/ \;
+cd fuzz_env_seed
+# Remove small files:
+find -size -5k -delete
+# Remove large files:
+find -size +30k -delete
+zip $OUT/fuzz_env_seed_corpus.zip ./*

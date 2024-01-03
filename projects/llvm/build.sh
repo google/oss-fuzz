@@ -36,10 +36,14 @@ else
       llvm-dis-fuzzer \
       llvm-opt-fuzzer \
       llvm-isel-fuzzer \
+      llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
       clang-pseudo-fuzzer \
       clang-fuzzer \
+      llvm-parse-assembly-fuzzer \
+      llvm-symbol-reader-fuzzer \
+      llvm-object-yaml-fuzzer \
     )
   else
     readonly FUZZERS=( \
@@ -54,11 +58,15 @@ else
       llvm-dis-fuzzer \
       llvm-opt-fuzzer \
       llvm-isel-fuzzer \
+      llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
       clang-pseudo-fuzzer \
       clang-fuzzer \
       clangd-fuzzer \
+      llvm-parse-assembly-fuzzer \
+      llvm-symbol-reader-fuzzer \
+      llvm-object-yaml-fuzzer \
     )
   fi
 fi
@@ -106,6 +114,7 @@ if [[ "$SANITIZER" = coverage ]]; then
   mv build.ninja ../
   python3 $SRC/coverage_patcher.py ../build.ninja build.ninja
   ninja lib/Target/AMDGPU/Utils/CMakeFiles/LLVMAMDGPUUtils.dir/AMDGPUBaseInfo.cpp.o -j $(( $(nproc) / 2))
+  ninja lib/Target/AMDGPU/MCTargetDesc/CMakeFiles/LLVMAMDGPUDesc.dir/AMDGPUMCCodeEmitter.cpp.o -j $(( $(nproc) / 2))
 fi
 
 for fuzzer in "${FUZZERS[@]}"; do
@@ -130,9 +139,17 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
   exit 0
 fi
 
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--hexagon-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--riscv64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--mips64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--arm-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--ppc64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--nvptx-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--ve-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--bpf-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
 
 # Same for llvm-opt-fuzzer
@@ -151,6 +168,13 @@ cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
 
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-dse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_idiom
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-reassociate
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-lower_matrix_intrinsics
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-memcpyopt
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sroa
 
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
