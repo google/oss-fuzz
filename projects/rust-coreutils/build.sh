@@ -17,8 +17,7 @@
 
 cd $SRC/rust-coreutils
 cargo fuzz build -O
-PROG=( fuzz_date fuzz_expr fuzz_parse_glob fuzz_parse_size fuzz_parse_time fuzz_test)
-ls -al fuzz/target/x86_64-unknown-linux-gnu/release/
-for p in "${PROG[@]}"; do
+PROG=$( grep "name =" fuzz/Cargo.toml | cut -d\" -f2 | grep -v uucore-fuzz )
+for p in $PROG; do
 	cp fuzz/target/x86_64-unknown-linux-gnu/release/$p $OUT/$p
 done

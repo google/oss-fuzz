@@ -23,6 +23,10 @@ import org.apache.poi.hmef.HMEFMessage;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHMEFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try {
 			HMEFMessage msg = new HMEFMessage(new ByteArrayInputStream(input));
