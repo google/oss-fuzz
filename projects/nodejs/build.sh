@@ -43,3 +43,6 @@ find -size -5k -delete
 # Remove large files:
 find -size +30k -delete
 zip $OUT/fuzz_env_seed_corpus.zip ./*
+# Add more seeds
+cd $SRC/node/test/fuzzers/seed/fuzz_env
+zip $OUT/fuzz_env_seed_corpus.zip ./*
