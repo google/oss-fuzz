@@ -19,15 +19,22 @@ import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 import com.fasterxml.jackson.dataformat.avro.AvroGenerator;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumSet;
+import java.util.List;
 
 /** This fuzzer targets the methods of AvroGenerator */
 public class AvroGeneratorFuzzer {
+  private static final String[] fieldNameChoice = {
+    "string", "i", "bo", "b", "c", "d", "f", "s", "l",
+    "bd", "ba", "da", "la", "ia", "obj"
+  };
+
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       // Retrieve set of AvroGenerator.Feature
@@ -58,11 +65,17 @@ public class AvroGeneratorFuzzer {
       for (AvroGenerator.Feature feature : featureSet) {
         generator.configure(feature, data.consumeBoolean());
       }
+
+      AvroSchemaGenerator schemaGenerator = new AvroSchemaGenerator();
+      mapper.acceptJsonFormatVisitor(RootType.class, schemaGenerator);
+
+      generator.setSchema(schemaGenerator.getGeneratedSchema());
       generator.writeStartObject();
 
       // Fuzz methods of CBORGenerator
       String value = null;
       byte[] byteArray = null;
+      generator.writeFieldName(data.pickValue(fieldNameChoice));
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());
@@ -130,11 +143,28 @@ public class AvroGeneratorFuzzer {
           break;
       }
 
-      generator.writeEndObject();
       generator.flush();
       generator.close();
     } catch (IOException | IllegalArgumentException | IllegalStateException e) {
       // Known exception
     }
+  }
+
+  private static class RootType {
+    public String string;
+    public int i;
+    public boolean bo;
+    public byte b;
+    public char c;
+    public double d;
+    public float f;
+    public short s;
+    public long l;
+    public BigDecimal bd;
+    public byte[] ba;
+    public double[] da;
+    public long[] la;
+    public int[] ia;
+    public Object obj;
   }
 }
