@@ -26,7 +26,7 @@ export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
 if [[ "$SANITIZER" = coverage ]]; then
-	make
+	make -j$(nproc) || make -j 1
 else
 	make -j$(nproc)
 fi
