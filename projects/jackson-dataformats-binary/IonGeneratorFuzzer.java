@@ -66,6 +66,7 @@ public class IonGeneratorFuzzer {
       // Fuzz methods of ProtobufGenerator
       String value = null;
       byte[] byteArray = null;
+      generator.writeFieldName("OSS-Fuzz");
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());
