@@ -125,7 +125,7 @@ for fuzzer in "${FUZZERS[@]}"; do
     # Do not exhaust memory limitations on the cloud machine, coverage
     # takes more resources which causes processes to crash.
     if [[ "$SANITIZER" = coverage ]]; then
-      ninja $fuzzer -j 2 || ninja $fuzzer -j 1
+      ninja $fuzzer -j $(( $(nproc) / 4)) || ninja $fuzzer -j 2 || ninja $fuzzer -j 1
     else
       ninja $fuzzer -j $(( $(nproc) / 4))
     fi
@@ -190,3 +190,4 @@ mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang/tools/clang-fuzzer/corpus_examples/objc/*
 zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang-tools-extra/clangd/test/*
+zip -j "${OUT}/clang-fuzzer_seed_corpus.zip" $SRC/llvm-project/clang/test/Parser/*.cpp
