@@ -44,3 +44,7 @@ zip $OUT/fuzz_env_seed_corpus.zip ./*
 # Add more seeds
 cd $SRC/node/test/fuzzers/seed/fuzz_env
 zip $OUT/fuzz_env_seed_corpus.zip ./*
+
+cd $SRC/node/test/fuzzers/seed/fuzz_x509
+zip $OUT/fuzz_x509_seed_corpus.zip ./*
+
