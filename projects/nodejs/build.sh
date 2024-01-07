@@ -25,11 +25,9 @@ fi
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
-if [[ "$SANITIZER" = coverage ]]; then
-	make -j$(nproc) || make -j 1
-else
-	make -j$(nproc)
-fi
+
+# Ensure we build with few processors if memory gets exhausted
+make -j$(nproc) || make -j 1
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
