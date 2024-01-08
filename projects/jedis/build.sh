@@ -16,8 +16,6 @@
 ################################################################################
 
 export JAVA_HOME="$OUT/open-jdk-11"
-# mkdir -p $JAVA_HOME
-# rsync -aL --exclude=*.zip "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
 
 MAVEN_ARGS="-Dpropguard.skip -DskipTests -Dmaven.javadoc.skip=true -Dpmd.skip=true \
   -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
