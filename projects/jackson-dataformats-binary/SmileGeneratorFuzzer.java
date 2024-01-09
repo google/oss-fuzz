@@ -37,7 +37,6 @@ public class SmileGeneratorFuzzer {
           new SmileMapper(
               SmileFactory.builder()
                   .enable(data.pickValue(featureSet))
-                  .disable(data.pickValue(featureSet))
                   .build());
 
       // Failsafe logic
@@ -56,6 +55,7 @@ public class SmileGeneratorFuzzer {
       // Fuzz methods of SmileGenerator
       String value = null;
       byte[] byteArray = null;
+      generator.writeFieldName("OSS-Fuzz");
       switch (data.consumeInt(1, 20)) {
         case 1:
           generator.writeRaw(data.consumeByte());
@@ -133,7 +133,7 @@ public class SmileGeneratorFuzzer {
       generator.writeEndObject();
       generator.flush();
       generator.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (IOException | IllegalArgumentException | IllegalStateException | UnsupportedOperationException e) {
       // Known exception
     }
   }

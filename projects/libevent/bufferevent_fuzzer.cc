@@ -10,6 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -59,9 +60,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
     bev1 = pair[0];
     bev2 = pair[1];
-    if (!bufferevent_pair_get_partner(bev1)) {
-      printf("Bufferevent partner is not found\n");
-    }
+    assert(bufferevent_pair_get_partner(bev1) != NULL);
   } else {
     bev1 = bufferevent_socket_new(base, -1, options1);
     bev2 = bufferevent_socket_new(base, -1, options2);
@@ -92,15 +91,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   if (bufferevent_priority_set(bev3, options2) == 0) {
-    if (bufferevent_get_priority(bev3) != options2) {
-      printf("Priority level %d is not applied\n", options2);
-    }
+    assert(bufferevent_get_priority(bev3) == options2);
   }
 
   /*set rate limits*/
-  if (bufferevent_set_rate_limit(bev3, NULL) == -1) {
-    printf("NULL rate-limit is not set\n");
-  }
+  assert(bufferevent_set_rate_limit(bev3, NULL) != -1);
   static struct timeval cfg_tick = {static_cast<__time_t>(int1),
                                     static_cast<__suseconds_t>(int2)};
   conn_bucket_cfg = ev_token_bucket_cfg_new(int1, int2, int3, int4, &cfg_tick);
@@ -109,9 +104,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   bev_rate_group = bufferevent_rate_limit_group_new(base, conn_bucket_cfg);
-  if (bufferevent_add_to_rate_limit_group(bev4, bev_rate_group) == -1) {
-    printf("Bufferevent is not added to a rate-limit group\n");
-  }
+  assert(bufferevent_add_to_rate_limit_group(bev4, bev_rate_group) != -1);
 
   /*write and read from buffer events*/
   bufferevent_write(bev3, s1.c_str(), s1.size());
@@ -135,12 +128,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     bufferevent_getwatermark(bev4, EV_WRITE, NULL, &int4);
   }
 
-  if (int1 != int3) {
-    printf("Low-watermark %zu is not applied\n", int1);
-  }
-  if (int2 != int4) {
-    printf("High-watermark %zu is not applied\n", int2);
-  }
+  assert(int1 == int3);
+  assert(int2 == int4);
 
   /*clean up*/
 cleanup:

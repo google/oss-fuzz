@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/randombit/botan.git
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2
 COPY build.sh $SRC/
