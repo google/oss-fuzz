@@ -9,6 +9,7 @@ auto_ccs:
  - shane@unicode.org
  - srl295@gmail.com
  - ftang@google.com
+ - roubert@google.com
  - elango@unicode.org
 sanitizers:
  - address
