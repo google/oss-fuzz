@@ -26,16 +26,9 @@ public class CborParserFuzzer {
     try {
       int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
-      // Retrieve set of CBORParser.Feature
-      EnumSet<CBORParser.Feature> featureSet = EnumSet.allOf(CBORParser.Feature.class);
-
       // Create and configure CBORParser
       CBORMapper mapper =
-          new CBORMapper(
-              CBORFactory.builder()
-                  .enable(data.pickValue(featureSet))
-                  .disable(data.pickValue(featureSet))
-                  .build());
+          new CBORMapper(CBORFactory.builder().build());
 
       // Failsafe logic
       if (mapper == null) {

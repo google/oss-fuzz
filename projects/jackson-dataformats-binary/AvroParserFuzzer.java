@@ -14,12 +14,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.dataformat.avro.AvroFactory;
 import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroParser;
+import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 
 /** This fuzzer targets the methods of AvroParser */
 public class AvroParserFuzzer {
@@ -52,6 +55,11 @@ public class AvroParserFuzzer {
       // Create and configure AvroParser
       AvroParser parser =
           ((AvroMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
+
+      AvroSchemaGenerator schemaGenerator = new AvroSchemaGenerator();
+      mapper.acceptJsonFormatVisitor(RootType.class, schemaGenerator);
+
+      parser.setSchema(schemaGenerator.getGeneratedSchema());
 
       // Fuzz methods of AvroParser
       for (Integer choice : choices) {
@@ -120,5 +128,14 @@ public class AvroParserFuzzer {
     } catch (IOException | IllegalArgumentException | IllegalStateException e) {
       // Known exception
     }
+  }
+
+  private static class RootType {
+    @JsonAlias({"nm", "Name"})
+    public String name;
+
+    public int value;
+
+    List<String> other;
   }
 }

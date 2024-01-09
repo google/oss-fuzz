@@ -59,6 +59,7 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
   const cppFiles2 = await vscode.workspace.findFiles('**/*.cpp');
   const cppFiles3 = await vscode.workspace.findFiles('**/*.cc');
   const cfiles = await vscode.workspace.findFiles('**/*.c');
+  const hfiles = await vscode.workspace.findFiles('**/*.h');
   const rustFiles = await vscode.workspace.findFiles('**/*.rust');
   const golangFiles = await vscode.workspace.findFiles('**/*.go');
   const javaFiles = await vscode.workspace.findFiles('**/*.java');
@@ -68,6 +69,7 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
   println('Number of C files: ' + cfiles.length);
   println('Number of rustFiles files: ' + rustFiles.length);
   println('Number of golangFiles files: ' + golangFiles.length);
+  println('Number of H files: ' + hfiles.length);
 
   const cppFilesCount = cppFiles.length + cppFiles2.length + cppFiles3.length;
 
@@ -80,17 +82,25 @@ export async function setupProjectInitialFiles(isClusterfuzzLite: boolean) {
     javaFiles.length
   );
   let target = '';
-  if (maxCount === pythonFiles.length) {
-    target = 'python';
-  } else if (maxCount === cppFilesCount) {
-    target = 'cpp';
-  } else if (maxCount === cfiles.length) {
-    target = 'c';
-  } else if (maxCount === javaFiles.length) {
-    target = 'java';
+  if (maxCount > 0) {
+    if (maxCount === pythonFiles.length) {
+      target = 'python';
+    } else if (maxCount === cppFilesCount) {
+      target = 'cpp';
+    } else if (maxCount === cfiles.length) {
+      target = 'c';
+    } else if (maxCount === javaFiles.length) {
+      target = 'java';
+    } else {
+      println('Target is not implemented');
+      return true;
+    }
   } else {
-    println('Target is not implemented');
-    return true;
+    if (hfiles.length > 0) {
+      target = 'cpp';
+    } else {
+      return true;
+    }
   }
 
   println('Target language: ' + target);
@@ -580,9 +590,7 @@ WORKDIR $SRC/${baseName}`;
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
-
-# Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 `;
     const buildTemplateClusterfuzzLite = `#!/bin/bash -eu
 # Supply build instructions
@@ -594,9 +602,7 @@ $CXX $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzzer_example.cpp -o $OUT/fuzzer_example
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
-
-# Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE \\
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \\
   $SRC/${baseName}/.clusterfuzzlite/fuzzer_example.cpp \\
   -o $OUT/fuzzer_example
 `;

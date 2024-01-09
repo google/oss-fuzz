@@ -56,6 +56,7 @@ public class CborGeneratorFuzzer {
       // Fuzz methods of CBORGenerator
       String value = null;
       byte[] byteArray = null;
+      generator.writeFieldName("OSS-Fuzz");
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());

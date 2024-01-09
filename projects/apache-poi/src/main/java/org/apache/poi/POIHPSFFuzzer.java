@@ -29,6 +29,10 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHPSFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (POIFSFileSystem fs = new POIFSFileSystem(new ByteArrayInputStream(input))) {
 			String workbookName = HSSFWorkbook.getWorkbookDirEntryName(fs.getRoot());

@@ -34,6 +34,10 @@ import org.apache.poi.sl.usermodel.SlideShowFactory;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHSLFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (HSLFSlideShow slides = new HSLFSlideShow(new ByteArrayInputStream(input))) {
 			slides.write(NullOutputStream.INSTANCE);
