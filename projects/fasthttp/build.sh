@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/valyala/fasthttp FuzzCookieParse fuzzCookieParse
-compile_go_fuzzer github.com/valyala/fasthttp FuzzVisitHeaderParams fuzzVisitHeaderParams
-compile_go_fuzzer github.com/valyala/fasthttp FuzzResponseReadLimitBody fuzzResponseReadLimitBody
-compile_go_fuzzer github.com/valyala/fasthttp FuzzRequestReadLimitBody fuzzRequestReadLimitBody
-compile_go_fuzzer github.com/valyala/fasthttp FuzzURIUpdateBytes fuzzURIUpdateBytes
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzCookieParse fuzzCookieParse
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzVisitHeaderParams fuzzVisitHeaderParams
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzResponseReadLimitBody fuzzResponseReadLimitBody
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzRequestReadLimitBody fuzzRequestReadLimitBody
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzURIUpdateBytes fuzzURIUpdateBytes
