@@ -16,7 +16,8 @@
 #
 ################################################################################
 
-mkdir $WORK/icu
+# need "-p" as otherwise centipede fails
+mkdir -p $WORK/icu
 cd $WORK/icu
 
 # TODO: icu build failes without -DU_USE_STRTOD_L=0
