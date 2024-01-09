@@ -1,0 +1,12 @@
+homepage: "https://github.com/astral-sh/ruff"
+language: rust
+primary_contact: ""
+main_repo: "https://github.com/astral-sh/ruff"
+vendor_ccs:
+  - maxnair.dev@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*
