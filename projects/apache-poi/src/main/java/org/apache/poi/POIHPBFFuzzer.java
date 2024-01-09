@@ -28,6 +28,10 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHPBFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (HPBFDocument wb = new HPBFDocument(new ByteArrayInputStream(input))) {
 			wb.write(NullOutputStream.INSTANCE);

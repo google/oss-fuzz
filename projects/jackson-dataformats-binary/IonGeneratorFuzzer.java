@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
+import com.amazon.ion.IonException;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -65,6 +66,7 @@ public class IonGeneratorFuzzer {
       // Fuzz methods of ProtobufGenerator
       String value = null;
       byte[] byteArray = null;
+      generator.writeFieldName("OSS-Fuzz");
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());
@@ -138,6 +140,7 @@ public class IonGeneratorFuzzer {
     } catch (IOException
         | IllegalArgumentException
         | IllegalStateException
+        | IonException
         | UnsupportedOperationException e) {
       // Known exception
     }

@@ -7,6 +7,9 @@ auto_ccs:
   - finn.bear@surrealdb.com
   - salvador.girones@surrealdb.com
   - gerard.guillemas@surrealdb.com
+  - mees.delzenne@surrealdb.com
+  - emmanuel.keller@surrealdb.com
+  - micha.de.vries@surrealdb.com
   - nathaniel.brough@gmail.com
 
 sanitizers:

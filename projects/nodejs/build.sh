@@ -25,13 +25,30 @@ fi
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
+
+# Ensure we build with few processors if memory gets exhausted
 if [[ "$SANITIZER" = coverage ]]; then
-	make
+	make -j 1
 else
-	make -j$(nproc)
+	make -j$(nproc) || make -j1
 fi
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
 
-zip $OUT/fuzz_env_seed_corpus.zip $SRC/node/test/fuzzers/corpus/fuzz_env_seed*
+# Create seed for fuzz_env
+mkdir fuzz_env_seed
+find ./test -name '*.js' -exec cp {} ./fuzz_env_seed/ \;
+cd fuzz_env_seed
+# Remove small files:
+find -size -5k -delete
+# Remove large files:
+find -size +30k -delete
+zip $OUT/fuzz_env_seed_corpus.zip ./*
+# Add more seeds
+cd $SRC/node/test/fuzzers/seed/fuzz_env
+zip $OUT/fuzz_env_seed_corpus.zip ./*
+
+cd $SRC/node/test/fuzzers/seed/fuzz_x509
+zip $OUT/fuzz_x509_seed_corpus.zip ./*
+
