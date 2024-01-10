@@ -19,24 +19,31 @@
 mv $SRC/{*.zip,*.dict} $OUT
 
 MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
-$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+$MVN package dependency:copy-dependencies $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
+
+mkdir -p $OUT/dependency
 cp "target/jackson-dataformat-xml-$CURRENT_VERSION.jar" $OUT/jackson-dataformat-xml.jar
+for jarfile in $(find $SRC/jackson-dataformat-xml/target/dependency/ -name *.jar ! -name junit*.jar ! -name hamcrest*.jar)
+do
+  cp $jarfile $OUT/dependency
+done
 
 ALL_JARS="jackson-dataformat-xml.jar"
+ALL_DEPENDENCY=$(find $OUT/dependency -name *.jar -printf "%f ")
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$(echo $ALL_DEPENDENCY | xargs printf -- "$OUT/dependency/%s:"):$JAZZER_API_PATH
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):$(echo $ALL_DEPENDENCY | xargs printf -- "\$this_dir/dependency/%s:"):\$this_dir
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename.class $OUT/
+  cp $SRC/$fuzzer_basename*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash

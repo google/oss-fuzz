@@ -16,11 +16,39 @@
 ################################################################################
 cd $SRC/node
 
+# Coverage build takes very long and time outs in the CI which blocks changes. Ignore Coverage build in OSS-Fuzz CI for now:
+if [[ -n "${OSS_FUZZ_CI-}" && "$SANITIZER" = coverage ]]; then
+	exit 0
+fi
+
 # Build node
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
 ./configure --with-ossfuzz
-make -j$(nproc)
+
+# Ensure we build with few processors if memory gets exhausted
+if [[ "$SANITIZER" = coverage ]]; then
+	make -j 1
+else
+	make -j$(nproc) || make -j1
+fi
 
 # Copy all fuzzers to OUT folder 
 cp out/Release/fuzz_* ${OUT}/
+
+# Create seed for fuzz_env
+mkdir fuzz_env_seed
+find ./test -name '*.js' -exec cp {} ./fuzz_env_seed/ \;
+cd fuzz_env_seed
+# Remove small files:
+find -size -5k -delete
+# Remove large files:
+find -size +30k -delete
+zip $OUT/fuzz_env_seed_corpus.zip ./*
+# Add more seeds
+cd $SRC/node/test/fuzzers/seed/fuzz_env
+zip $OUT/fuzz_env_seed_corpus.zip ./*
+
+cd $SRC/node/test/fuzzers/seed/fuzz_x509
+zip $OUT/fuzz_x509_seed_corpus.zip ./*
+

@@ -1,0 +1,9 @@
+homepage: "https://crates.io/crates/coreutils"
+main_repo: "https://github.com/uutils/coreutils"
+primary_contact: "sylvestre@debian.org"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+file_github_issue: True

@@ -3,7 +3,7 @@ language: python
 primary_contact: "johannes@raggam.co.at"
 auto_ccs: 
   - "ennamarie19@gmail.com"
-  - "niccokunzmann@gmail.com"
+  - "niccokunzmann@googlemail.com"
 fuzzing_engines: 
   - libfuzzer
 sanitizers: 

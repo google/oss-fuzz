@@ -15,24 +15,89 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y mercurial automake autopoint cmake libtool nasm pkg-config po4a
-RUN hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
-    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
-    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick
 
+# Needed tools
+RUN apt-get update && \
+    apt-get install -y \
+    mercurial \
+    automake \
+    autopoint \
+    cmake \
+    libtool \
+    nasm \
+    pkg-config \
+    po4a \
+    ninja-build \
+    libgflags-dev \
+    yasm
+
+# GraphicsMagick
+RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
+    hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
+    hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick
+
+# Libtiff
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
+
+# h.265 codec implementation needed by libheif
+RUN git clone --depth 1 https://github.com/strukturag/libde265
+
+# x265 HEVC Encoder needed by libheif
+RUN hg clone --branch stable http://hg.videolan.org/x265 x265
+
+# AV1 Codec Library needed by libheif
+RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom
+
+# Libheif
+RUN git clone --depth 1 https://github.com/strukturag/libheif
+
+# WebP
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
+
+# Zlib
 RUN git clone --depth 1 https://github.com/madler/zlib
+
+# XZ
 RUN git clone --depth 1 https://github.com/xz-mirror/xz
+
+# Zstd
 RUN git clone --depth 1 https://github.com/facebook/zstd
+
+# libjpeg-turbo
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone https://git.savannah.nongnu.org/r/freetype/freetype2.git/
+
+# Freetype
+RUN git clone --depth 1 https://github.com/freetype/freetype
+
+# Libpng
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
+
+# Little-CMS
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
-RUN git clone http://git.ghostscript.com/ghostpdl.git
+
+# Bzip2
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
+
+# Jasper
 RUN git clone --depth 1 https://github.com/jasper-software/jasper
+
+# Libxml2
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 
+# Libjxl
+RUN git clone --depth 1 https://github.com/libjxl/libjxl.git
+
+# Libjxl sub-repositories
+# Borrowed from projects/libjxl/Dockerfile
+RUN git -C libjxl submodule update --init --recommend-shallow \
+  third_party/brotli \
+  third_party/highway \
+  third_party/libjpeg-turbo \
+  third_party/skcms
+
+# JBIG-kit
+RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
+
+# Build!
 WORKDIR graphicsmagick
 COPY build.sh $SRC/

@@ -16,26 +16,4 @@
 #
 ################################################################################
 
-TARGETS_DIR=build/
-
-# Build libpcap
-cd $SRC/libpcap/
-./autogen.sh
-./configure --enable-shared=no
-make -j$(nproc)
-
-# Build PcapPlusPlus linking statically against the built libpcap
-cd $SRC/PcapPlusPlus
-LIBPCAP_PATH=$SRC/libpcap/
-cmake -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_TESTS=OFF -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_INCLUDE_DIR="${LIBPCAP_PATH}/" -DPCAP_LIBRARY="${LIBPCAP_PATH}/libpcap.a" -S . -B $TARGETS_DIR
-cmake --build $TARGETS_DIR -j
-
-# Copy target and options
-cp $TARGETS_DIR/Tests/Fuzzers/FuzzTarget $OUT
-cp $(ldd $OUT/FuzzTarget | cut -d" " -f3) $OUT
-cp $SRC/default.options $OUT/FuzzTarget.options
-
-# Copy corpora
-cd $SRC/tcpdump
-zip -jr FuzzTarget_seed_corpus.zip tests/*.pcap
-cp FuzzTarget_seed_corpus.zip $OUT/
+$SRC/PcapPlusPlus/Tests/Fuzzers/ossfuzz.sh

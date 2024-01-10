@@ -3,6 +3,8 @@ language: c++
 primary_contact: "pcapplusplus@gmail.com"
 auto_ccs:
   - "zlowram@gmail.com"
+  - "aleksandrosansan@gmail.com"
+  - "peron.clem@gmail.com"
 fuzzing_engines:
   - afl
   - libfuzzer

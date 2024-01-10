@@ -2,7 +2,7 @@
   "name": "OSS-Fuzz",
   "displayName": "OSS-Fuzz",
   "description": "",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "OSS-FuzzMaintainers",
   "icon": "images/thumbnail.png",
   "engines": {
@@ -38,67 +38,78 @@
     "commands": [
       {
         "command": "oss-fuzz.SetUp",
-        "title": "OSS-Fuzz: Set up OSS-Fuzz"
+        "title": "OSS-Fuzz: Set Up OSS-Fuzz",
+        "description": "Downloads the OSS-Fuzz repository and places it under /tmp/oss-fuzz. This will then be the OSS-Fuzz repository used by vscode."
       },
       {
         "command": "oss-fuzz.RunFuzzer",
-        "title": "OSS-Fuzz: Run fuzzer from OSS-Fuzz project"
+        "title": "OSS-Fuzz: Run Fuzzer",
+        "description": "Runs a single fuzzer from a given project. The fuzzer must already be build, meaning the project should be build first."
       },
       {
         "command": "oss-fuzz.ListFuzzers",
-        "title": "OSS-Fuzz: List all fuzzers in a given project"
-      },
-      {
-        "command": "oss-fuzz.SetOSSFuzzPath",
-        "title": "OSS-Fuzz: Set OSS-Fuzz path"
-      },
-      {
-        "command": "oss-fuzz.RunIntrospector",
-        "title": "OSS-Fuzz: Run Fuzz Introspector on a project"
+        "title": "OSS-Fuzz: List Fuzzers",
+        "description": "Lists the fuzzers built for a given project. The project must be build first."
       },
       {
         "command": "oss-fuzz.GetCodeCoverage",
-        "title": "OSS-Fuzz: get code coverage from OSS-Fuzz storage."
+        "title": "OSS-Fuzz: Display Code Coverage (Python only)",
+        "description": "Downloads the latest code coverage from OSS-Fuzz's cloud data (can find at https://introspector.oss-fuzz.com)."
       },
       {
         "command": "oss-fuzz.ClearCodeCoverage",
-        "title": "OSS-Fuzz: clear code coverage"
+        "title": "OSS-Fuzz: Clear Code Coverage",
+        "description": "Clears code coverage visualization in the editor."
       },
       {
         "command": "oss-fuzz.CreateOSSFuzzSetup",
-        "title": "OSS-Fuzz: Create template files for OSS-Fuzz"
+        "title": "OSS-Fuzz: Initialize OSS-Fuzz Set Up",
+        "description": "Creates the relevant files using templates to set up an OSS-Fuzz project. Uses minor heuristics e.g. detection of language."
       },
       {
         "command": "oss-fuzz.WSBuildFuzzers",
-        "title": "OSS-Fuzz: Build fuzzers from workspace"
+        "title": "OSS-Fuzz: Build Fuzzers In Workspace",
+        "description": "Builds the fuzzers from the project in the current VSCode workspace."
       },
       {
         "command": "oss-fuzz.SetupCIFuzz",
-        "title": "OSS-Fuzz: Set up CIFuzz"
+        "title": "OSS-Fuzz: Set up CIFuzz",
+        "description": "Creates the files necessary for a CIFuzz set up."
       },
       {
         "command": "oss-fuzz.testFuzzer",
-        "title": "OSS-Fuzz: test specific fuzzer"
+        "title": "OSS-Fuzz: Test Specific Fuzzer",
+        "description": "Tests if a given fuzzer works by running it for 10 seconds."
       },
       {
         "command": "oss-fuzz.testCodeCoverage",
-        "title": "OSS-Fuzz: run end-to-end test of project and collect code coverage"
-      },
-      {
-        "command": "oss-fuzz.Reproduce",
-        "title": "OSS-Fuzz: reproduce a testcase"
-      },
-      {
-        "command": "oss-fuzz.SetGlobalProjectName",
-        "title": "OSS-Fuzz: sets the default project name in the session"
+        "title": "OSS-Fuzz: End-To-End Code Coverage Generation",
+        "description": "Builds the fuzzers in a ASAN mode for a project, collects corpus using the ASAN fuzzers and then generates an HTLM code coverage report using the generated corpus."
       },
       {
         "command": "oss-fuzz.Redo",
-        "title": "OSS-Fuzz: Redo the exact same command as previously, with same input"
+        "title": "OSS-Fuzz: Redo Previous Command",
+        "description": "Performs the exact same command as the most recent one. Will provide the same input to the command as the previous one. This is efficient when e.g. continuously generating code coverage reports while working on improving a fuzzing set up."
       },
       {
         "command": "oss-fuzz.Template",
-        "title": "OSS-Fuzz: Template fuzzer creation"
+        "title": "OSS-Fuzz: Fuzzer Creation Using Templates",
+        "description": "Creates a template fuzzer file using a catalogue of templates available."
+      },
+      {
+        "command": "oss-fuzz.GenerateClusterfuzzLite",
+        "title": "OSS-Fuzz: [CFLite] Generate ClusterfuzzLite setup",
+        "description": "Creates the files needed for ClusterfuzzLite integration."
+      },
+      {
+        "command": "oss-fuzz.WSBuildFuzzersCFLite",
+        "title": "OSS-Fuzz: [CFLite] Build Fuzzers In Workspace",
+        "description": "Builds the ClusterfuzzLite fuzzers from the project in the current VSCode workspace."
+      },
+      {
+        "command": "oss-fuzz.testFuzzerCFLite",
+        "title": "OSS-Fuzz: [CFLite] Test running a specific fuzzer.",
+        "description": "Builds the CFLite setup and runs a fuzzer for a short period of time."
       }
     ],
     "walkthroughs":[

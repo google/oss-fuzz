@@ -18,5 +18,10 @@
 cd $SRC
 cd image-png
 cargo fuzz build -O
+
 cp fuzz/target/x86_64-unknown-linux-gnu/release/decode $OUT/
+find . -type f -name "*.png" -exec zip -r -j "$OUT/decode_seed_corpus.zip" {} +
+
 cp fuzz/target/x86_64-unknown-linux-gnu/release/buf_independent $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/
+

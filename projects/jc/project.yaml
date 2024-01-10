@@ -1,0 +1,10 @@
+homepage: "https://kellyjonbrazil.github.io/jc/docs/"
+language: python
+primary_contact: "kellyjonbrazil@gmail.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+main_repo: "https://github.com/kellyjonbrazil/jc.git"

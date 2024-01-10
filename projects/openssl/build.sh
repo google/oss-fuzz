@@ -66,6 +66,12 @@ function build_fuzzers() {
 
 cd $SRC/openssl/
 build_fuzzers ""
+
+# In introspector only build the master branch
+if [[ "$SANITIZER" == introspector ]]; then
+  exit 0
+fi
+
 cd $SRC/openssl30/
 build_fuzzers "_30"
 cd $SRC/openssl31/
