@@ -17,6 +17,7 @@ jobs:
       with:
         oss-fuzz-project-name: 'example'
         fuzz-seconds: 600
+        output-sarif: true
     - name: Upload Crash
       uses: actions/upload-artifact@v3
       if: failure() && steps.build.outcome == 'success'
