@@ -27,7 +27,7 @@ RUN tar xf hdf5-1_14_3.tar.gz
 RUN mkdir -p hdfsrc/build
 RUN cd hdfsrc/build
 RUN cmake -G "Unix Makefiles" \
-    -DBUILD_SHARED_LIBS:BOOL=ON \
+    -DBUILD_SHARED_LIBS:BOOL=OFF \
     -DBUILD_TESTING:BOOL=OFF \
     -DCMAKE_VERBOSE_MAKEFILES:BOOL=ON \
     -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
