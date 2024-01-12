@@ -9,42 +9,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "builtin.h"
-
-int cmd_version(int argc, const char **argv, const char *prefix);
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include "git-compat-util.h"
+#include "credential.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	int path;
-	int argc;
-	char *argv[2];
+	char *buf;
 
-	if (size <= 10)
-	{
+	buf = malloc(size + 1);
+	if (!buf)
 		return 0;
-	}
 
-	path = (*((int *)data)) % 2;
-	data += 4;
-	size -= 4;
+	memcpy(buf, data, size);
+	buf[size] = 0;
 
-	switch(path)
-	{
-		// Without option
-		default: case 0:
-			argv[0] = (char *) data;
-			argc = 1;
-			break;
+	// start fuzzing
+	struct credential c;
+	credential_init(&c);
+	credential_from_url_gently(&c, buf, 1);
 
-		// With option
-		case 1:
-			argv[0] = (char *) data;
-			argv[1] = "--build-options";
-			argc = 2;
-			break;
-	}
-
-	cmd_version(argc, (const char **)argv, (const char *)"");
+	// cleanup
+	credential_clear(&c);
+	free(buf);
 
 	return 0;
 }
