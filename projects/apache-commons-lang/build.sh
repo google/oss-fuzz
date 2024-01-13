@@ -1,4 +1,3 @@
-
 #!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
@@ -24,14 +23,21 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout)
 cp "target/commons-lang3-$CURRENT_VERSION.jar" "$OUT/commons-lang.jar"
 
-ALL_JARS="commons-lang.jar"
+mkdir -p $OUT/dependency
+wget -O $OUT/dependency/guava.jar https://repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar
+
+# Compile ClassFuzzerBase
+javac -cp $OUT/dependency/guava.jar $SRC/ClassFuzzerBase.java
+jar cvf $OUT/class-fuzzer-base.jar -C $SRC ClassFuzzerBase.class
+
+ALL_JARS="commons-lang.jar class-fuzzer-base.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$OUT/dependency/guava.jar:$JAZZER_API_PATH
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir/dependency/guava.jar:\$this_dir
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)

@@ -8,6 +8,7 @@ auto_ccs:
   - "yguyon@google.com"
   - "maryla@google.com"
   - "vrabaud@google.com"
+  - "david@adalogics.com"
 main_repo: 'https://github.com/AOMediaCodec/libavif.git'
 
 fuzzing_engines:

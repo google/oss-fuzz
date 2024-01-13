@@ -21,7 +21,7 @@ ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/openyurtio"
 RUN mkdir -p "${PROJECT_ROOT}"
 
 ARG REPOSITORY_OWNER="openyurtio"
-ARG REPOSITORIES="yurt-app-manager"
+ARG REPOSITORIES="openyurt"
 
 RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/${REPOSITORY_OWNER}/${repo}" "${PROJECT_ROOT}/${repo}"; done
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing

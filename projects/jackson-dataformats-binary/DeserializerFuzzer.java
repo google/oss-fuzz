@@ -38,6 +38,7 @@ import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -125,13 +126,13 @@ public class DeserializerFuzzer {
 
       // Fuzz the deserialize methods for different Avro/Cbor/Ion/Protobuf/Smile objects
       if (data.consumeBoolean()) {
-        byte[] output = new byte[data.remainingBytes()];
-        parser = mapper.getFactory().createParser(output);
+        byte[] output = data.consumeRemainingAsBytes();
+        parser = mapper.getFactory().createParser(new ByteArrayInputStream(output));
         mapper.readTree(parser);
       } else {
         Class type = data.pickValue(choice);
         String value = data.consumeRemainingAsString();
-        if (value == null) {
+        if ((value == null) || (value.isEmpty())) {
           return;
         }
         mapper.readValue(value, type);
@@ -159,7 +160,6 @@ public class DeserializerFuzzer {
     choice = new ArrayList<Class>();
     choice.add(ByteArrayContainer.class);
     choice.add(ByteArrayOutputStream.class);
-    choice.add(Byte[].class);
     choice.add(ModelContainer.class);
     choice.add(DelegateContainer.class);
     choice.add(RawContainer.class);

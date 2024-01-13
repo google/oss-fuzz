@@ -95,6 +95,21 @@
         "command": "oss-fuzz.Template",
         "title": "OSS-Fuzz: Fuzzer Creation Using Templates",
         "description": "Creates a template fuzzer file using a catalogue of templates available."
+      },
+      {
+        "command": "oss-fuzz.GenerateClusterfuzzLite",
+        "title": "OSS-Fuzz: [CFLite] Generate ClusterfuzzLite setup",
+        "description": "Creates the files needed for ClusterfuzzLite integration."
+      },
+      {
+        "command": "oss-fuzz.WSBuildFuzzersCFLite",
+        "title": "OSS-Fuzz: [CFLite] Build Fuzzers In Workspace",
+        "description": "Builds the ClusterfuzzLite fuzzers from the project in the current VSCode workspace."
+      },
+      {
+        "command": "oss-fuzz.testFuzzerCFLite",
+        "title": "OSS-Fuzz: [CFLite] Test running a specific fuzzer.",
+        "description": "Builds the CFLite setup and runs a fuzzer for a short period of time."
       }
     ],
     "walkthroughs":[

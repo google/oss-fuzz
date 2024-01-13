@@ -25,6 +25,8 @@ fi
 PACKAGES="build-essential ninja-build cmake make"
 if [ "$ARCHITECTURE" = "i386" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
+elif [ "$ARCHITECTURE" = "aarch64" ]; then
+    PACKAGES="$PACKAGES zlib1g-dev:arm64 libreadline-dev:arm64 libunwind-dev:arm64"
 else
     PACKAGES="$PACKAGES zlib1g-dev libreadline-dev libunwind-dev"
 fi

@@ -23,11 +23,12 @@ RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/extra-cmake-mod
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v3.7.1 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v1.0.2 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 -b v3.8.0 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v1.0.3 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
+RUN git clone --depth 1 -b v2.5.0 https://github.com/uclouvain/openjpeg.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth=1 --branch v0.8.x --recursive https://github.com/libjxl/libjxl.git
+RUN git clone --depth=1 --branch v0.9.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC

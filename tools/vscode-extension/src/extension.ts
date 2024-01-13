@@ -22,6 +22,8 @@ import {println} from './logger';
 // Import the command dispatcher functions
 import {cmdInputCollectorRunSpecificFuzzer} from './commands/cmdRunFuzzer';
 import {cmdInputCollectorBuildFuzzersFromWorkspace} from './commands/cmdBuildFuzzerFromWorkspace';
+import {cmdInputCollectorBuildFuzzersFromWorkspaceCFLite} from './commands/cmdBuildFuzzerFromWorkspaceCFLite';
+import {cmdInputCollectorTestFuzzerCFLite} from './commands/cmdTestFuzzerCFLite';
 import {cmdDispatcherRe} from './commands/cmdRedo';
 import {setupCIFuzzHandler} from './commands/cmdSetupCIFuzz';
 import {cmdInputCollectorTestFuzzer} from './commands/cmdTestFuzzer';
@@ -31,6 +33,7 @@ import {runEndToEndAndGetCoverage} from './commands/cmdEndToEndCoverage';
 import {listFuzzersHandler} from './commands/cmdListFuzzers';
 import {cmdInputCollectorReproduceTestcase} from './commands/cmdReproduceTestcase';
 import {cmdDispatcherTemplate} from './commands/cmdTemplate';
+import {cmdDispatcherGenerateClusterfuzzLite} from './commands/cmdDispatcherGenerateClusterfuzzLite';
 import {setUpOssFuzzHandler} from './commands/cmdSetupOSSFuzz';
 import {setOssFuzzPath} from './commands/cmdSetOSSFuzzPath';
 import {extensionConfig} from './config';
@@ -154,6 +157,36 @@ export function activate(context: vscode.ExtensionContext) {
       println('CMD start: remplate');
       await cmdDispatcherTemplate(context);
       println('CMD end: template');
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'oss-fuzz.GenerateClusterfuzzLite',
+      async () => {
+        println('CMD start: GenerateClusterfuzzLite');
+        await cmdDispatcherGenerateClusterfuzzLite(context);
+        println('CMD end: GenerateClusterfuzzLite');
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'oss-fuzz.WSBuildFuzzersCFLite',
+      async () => {
+        println('CMD start: WSBuildFuzzersCFLite');
+        await cmdInputCollectorBuildFuzzersFromWorkspaceCFLite();
+        println('CMD end: WSBuildFuzzersCFLite');
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('oss-fuzz.testFuzzerCFLite', async () => {
+      println('CMD start: testFuzzerCFLite');
+      await cmdInputCollectorTestFuzzerCFLite();
+      println('CMD end: testFuzzerCFLite');
     })
   );
 }

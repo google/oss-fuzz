@@ -16,7 +16,8 @@
 #
 ################################################################################
 
-mkdir $WORK/icu
+# need "-p" as otherwise centipede fails
+mkdir -p $WORK/icu
 cd $WORK/icu
 
 # TODO: icu build failes without -DU_USE_STRTOD_L=0
@@ -33,7 +34,10 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
+# Pick up additional flags (-std=...) added by runConfigureICU.
+CXXFLAGS="$CXXFLAGS $(config/icu-config --noverify --cxxflags)"
+
+$CXX $CXXFLAGS -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
      -I$SRC/icu/icu4c/source/common \
      -I$SRC/icu4c/source/test/fuzzer
 
@@ -43,7 +47,7 @@ FUZZERS=$FUZZER_PATH/*_fuzzer.cpp
 
 for fuzzer in $FUZZERS; do
   file=${fuzzer:${#FUZZER_PATH}+1}
-  $CXX $CXXFLAGS -std=c++11 \
+  $CXX $CXXFLAGS \
     $fuzzer -o $OUT/${file/.cpp/} locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
     $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata

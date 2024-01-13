@@ -86,7 +86,7 @@ public class NetCodecFuzzer {
       if (strDecoder != null) {
         strDecoder.decode(data.consumeRemainingAsString());
       }
-    } catch (EncoderException | DecoderException e) {
+    } catch (EncoderException | DecoderException | IllegalArgumentException e) {
       // Known exception
     }
   }

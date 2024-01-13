@@ -81,10 +81,38 @@
 				</configuration>
 				<executions>
 					<execution>
+						<id>shade-poi</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<outputFile>target/assembly/${project.artifactId}-${fuzzedLibaryVersion}.jar</outputFile>
+							<artifactSet>
+								<includes>
+									<includes>org.apache.poi:poi</includes>
+									<includes>org.apache.poi:poi-ooxml</includes>
+									<includes>org.apache.poi:poi-scratchpad</includes>
+								</includes>
+							</artifactSet>
+						</configuration>
+					</execution>
+					<execution>
+						<id>shade-non-poi</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<outputFile>target/assembly/${project.artifactId}-libs-${fuzzedLibaryVersion}.jar</outputFile>
+							<artifactSet>
+								<excludes>
+									<excludes>org.apache.poi:poi</excludes>
+									<excludes>org.apache.poi:poi-ooxml</excludes>
+									<excludes>org.apache.poi:poi-scratchpad</excludes>
+								</excludes>
+							</artifactSet>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

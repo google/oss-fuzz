@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
+import com.amazon.ion.IonException;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -140,20 +141,12 @@ public class SerializerFuzzer {
       // Initialize ObjectNode object
       ObjectNode node = mapper.createObjectNode();
 
-      // Initialize JsonGenerator object
-      generator = factory.createGenerator(new StringWriter());
-
       // Randomize writer options
       if (data.consumeBoolean()) {
         writer = writer.withDefaultPrettyPrinter();
       }
       if (feature != null) {
         writer = writer.with(feature);
-      }
-
-      // Failsafe logic
-      if (generator == null) {
-        return;
       }
 
       // Object to write
@@ -166,11 +159,13 @@ public class SerializerFuzzer {
           object = node;
           break;
         case 2:
+          generator = factory.createGenerator(new StringWriter());
           generator.writeStartObject();
           generator.writeBinaryField("data", data.consumeRemainingAsBytes());
           generator.writeEndObject();
           break;
         case 3:
+          generator = factory.createGenerator(new StringWriter());
           generator.writeStartObject();
           generator.writeString(data.consumeRemainingAsString());
           generator.writeEndObject();
@@ -259,7 +254,10 @@ public class SerializerFuzzer {
 
       writer.writeValueAsString(object);
       writer.writeValueAsBytes(object);
-    } catch (IOException | IllegalArgumentException | UnsupportedOperationException e) {
+    } catch (IOException
+        | IllegalArgumentException
+        | UnsupportedOperationException
+        | IonException e) {
       // Known exception
     } finally {
       try {
