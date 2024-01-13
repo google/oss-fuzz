@@ -44,8 +44,8 @@ RUN git clone --depth 1 https://github.com/strukturag/libde265 || \
     printf "https://github.com/strukturag/libde265 is not available!\n"
 
 # x265 HEVC Encoder needed by libheif
-RUN hg clone --branch stable http://hg.videolan.org/x265 x265 || \
-    printf "http://hg.videolan.org/x265 is not available!\n"
+RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git.git x265 || \
+    printf "https://bitbucket.org/multicoreware/x265_git.git is not available!\n"
 
 # AV1 Codec Library needed by libheif
 RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
