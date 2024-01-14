@@ -6,5 +6,7 @@ auto_ccs:
   - "himkhurana@google.com"
   - "atulag@google.com"
   - "rashmivirdy@google.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
