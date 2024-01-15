@@ -16,6 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 #RUN apt-get update && apt-get install -y g++
+RUN apt-get update -y && apt-get install -y curl wget \
+    binutils cmake ninja-build liblzma-dev libz-dev pkg-config autoconf libtool
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
@@ -45,5 +47,10 @@ tools/boost_install \
 tools/build
 
 WORKDIR boost
+
+RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+COPY *.dict *.proto *.h *.cc $SRC/
+
 COPY build.sh $SRC/
 
