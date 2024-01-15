@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/openyurtio"
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget openjdk-17-jdk
 
-RUN mkdir -p "${PROJECT_ROOT}"
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
 
-ARG REPOSITORY_OWNER="openyurtio"
-ARG REPOSITORIES="openyurt"
+ENV MVN $SRC/maven/apache-maven-3.9.5/bin/mvn
 
-RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/${REPOSITORY_OWNER}/${repo}" "${PROJECT_ROOT}/${repo}"; done
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-
+RUN git clone --depth 1 https://github.com/apache/zookeeper.git zookeeper
 COPY build.sh $SRC/
-RUN chmod +x $SRC/build.sh
-
-RUN echo "PROJECT_ROOT: $PROJECT_ROOT"
-RUN echo "WORKDIR: $SRC"
-
-WORKDIR $SRC
+COPY *.java $SRC/
+WORKDIR $SRC/zookeeper

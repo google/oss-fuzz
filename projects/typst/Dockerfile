@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/openyurtio"
-
-RUN mkdir -p "${PROJECT_ROOT}"
-
-ARG REPOSITORY_OWNER="openyurtio"
-ARG REPOSITORIES="openyurt"
-
-RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/${REPOSITORY_OWNER}/${repo}" "${PROJECT_ROOT}/${repo}"; done
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-
+RUN rustup toolchain install nightly-2023-09-13
+RUN git clone --depth 1 https://github.com/typst/typst.git typst
+WORKDIR typst
 COPY build.sh $SRC/
-RUN chmod +x $SRC/build.sh
-
-RUN echo "PROJECT_ROOT: $PROJECT_ROOT"
-RUN echo "WORKDIR: $SRC"
-
-WORKDIR $SRC

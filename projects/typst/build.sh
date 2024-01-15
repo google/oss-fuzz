@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +15,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+cd tests/fuzz
+# Pin the nightly version to match upstream nightly compilation.
+# Typst has a large API and as a result, will often fail to build on nightly,
+# due to bugs in rustc. Because of this we are pinning the nightly version
+# to a specific version.
+cargo +nightly-2023-09-13 fuzz build -O --debug-assertions
 
-ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/openyurtio"
-
-RUN mkdir -p "${PROJECT_ROOT}"
-
-ARG REPOSITORY_OWNER="openyurtio"
-ARG REPOSITORIES="openyurt"
-
-RUN for repo in ${REPOSITORIES}; do git clone --depth 1 "https://github.com/${REPOSITORY_OWNER}/${repo}" "${PROJECT_ROOT}/${repo}"; done
-RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-
-COPY build.sh $SRC/
-RUN chmod +x $SRC/build.sh
-
-RUN echo "PROJECT_ROOT: $PROJECT_ROOT"
-RUN echo "WORKDIR: $SRC"
-
-WORKDIR $SRC
+FUZZ_TARGET_OUTPUT_DIR=$SRC/typst/target/x86_64-unknown-linux-gnu/release 
+for f in src/*.rs
+do
+    FUZZ_TARGET_NAME=$(basename ${f%.*})
+    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+done
