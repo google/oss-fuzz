@@ -16,6 +16,8 @@
 ################################################################################
 
 export JAVA_HOME="$OUT/open-jdk-11"
+mkdir -p $JAVA_HOME
+rsync -aL --exclude=*.zip --exclude 'lib/security/blacklisted.certs' "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
 
 MAVEN_ARGS="-Dpropguard.skip -DskipTests -Dmaven.javadoc.skip=true -Dpmd.skip=true \
   -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
@@ -42,7 +44,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java' -maxdepth 1); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
 # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/bash
+echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
 if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
