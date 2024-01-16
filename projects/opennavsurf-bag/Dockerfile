@@ -25,7 +25,7 @@ RUN echo "126b800e9b87f65e7e7ffa58ee006607bab03a8e11e5209ea3d5c0c331321d43  hdf5
 RUN shasum -a 256 -c hdf5.sum
 RUN tar xf hdf5-1_14_3.tar.gz
 RUN mkdir -p hdfsrc/build
-RUN cd hdfsrc/build
+WORKDIR hdfsrc/build
 RUN cmake -G "Unix Makefiles" \
     -DBUILD_SHARED_LIBS:BOOL=OFF \
     -DBUILD_TESTING:BOOL=OFF \
@@ -40,12 +40,12 @@ RUN cmake -G "Unix Makefiles" \
     ..
 RUN cmake --build . --verbose --config Release -j$(nproc)
 RUN make install
-RUN cd $SRC
+WORKDIR $SRC
 
 # For now use the fuzzer branch
 RUN git clone -b fuzzer --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 #RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 
-RUN cp bag/fuzzers/build.sh $SRC/
+RUN cp $SRC/bag/fuzzers/build.sh $SRC/
 
-WORKDIR bag
+WORKDIR $SRC/bag
