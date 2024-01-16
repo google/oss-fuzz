@@ -19,6 +19,4 @@ RUN apt-get update && apt-get --no-install-recommends install -y build-essential
 
 RUN git clone https://github.com/sparklemotion/nokogiri.git
 
-RUN wget https://github.com/fuzzy-boiii23a/oss-fuzz-corpus/raw/main/nokogiri_corpus.zip
-
-COPY build.sh parse_fuzzer.cc gumbo.dict $SRC/
+COPY build.sh $SRC
