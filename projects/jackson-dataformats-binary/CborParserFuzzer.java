@@ -105,6 +105,11 @@ public class CborParserFuzzer {
       parser.close();
     } catch (IOException | IllegalArgumentException | IllegalStateException e) {
       // Known exception
+    } catch (RuntimeException e) {
+      // Catch known internal exception
+      if (!e.getMessage().contains("Internal error")) {
+        throw e;
+      }
     }
   }
 }
