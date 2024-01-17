@@ -10,7 +10,6 @@ auto_ccs:
   - "vrabaud@google.com"
   - "david@adalogics.com"
   - "vigneshv@google.com"
-  - "vrabaud@google.com"
 main_repo: 'https://github.com/AOMediaCodec/libavif.git'
 
 fuzzing_engines:
