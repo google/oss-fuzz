@@ -11,6 +11,7 @@ auto_ccs:
  - ftang@google.com
  - roubert@google.com
  - elango@unicode.org
+ - richard_gillam@apple.com
 sanitizers:
  - address
  - undefined 
