@@ -7,7 +7,6 @@ auto_ccs:
   - "glen.rice@noaa.gov"
 architectures:
   - x86_64
-  - i386
 main_repo: 'https://github.com/OpenNavigationSurface/BAG'
 sanitizers:
   - address
