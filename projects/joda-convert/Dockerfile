@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget openjdk-17-jdk
 
-RUN apt-get install -y bzr python-lxml python-html5lib libxslt-dev libxml2-dev zlib1g-dev
-RUN pip3 install soupsieve html5lib lxml
-RUN pip3 install bzr+lp:beautifulsoup
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
-COPY build.sh bs4_fuzzer.py $SRC/
+RUN git clone --depth 1 https://github.com/JodaOrg/joda-convert.git joda-convert
+
+COPY build.sh $SRC/
+COPY *.java $SRC/
+WORKDIR $SRC/joda-convert
