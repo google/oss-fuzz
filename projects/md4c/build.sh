@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Move seed corpus and dictionary.
+mv $SRC/{*.zip,*.dict} $OUT
+
 mkdir build && cd build
 cmake ../ -DBUILD_SHARED_LIBS=OFF
 make

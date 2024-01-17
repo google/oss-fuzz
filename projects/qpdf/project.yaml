@@ -1,6 +1,8 @@
 homepage: "http://qpdf.sourceforge.net/"
 language: c++
 primary_contact: "qberkenbilt@gmail.com"
+auto_ccs :
+  - "mholger119@gmail.com"
 sanitizers:
   - address
   - undefined
