@@ -38,11 +38,11 @@ RUN cmake -G "Unix Makefiles" \
     -DHDF5_BUILD_CPP_LIB=ON \
     -DHDF5_BUILD_HL_LIB:BOOL=ON \
     -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF \
-    ..
-RUN cmake --build . --verbose --config Release -j$(nproc)
-RUN make install
+    .. && \
+    cmake --build . --verbose --config Release -j$(nproc) && \
+    make install
 
-# Build libxml2 (use version 2.10.1 as newer versions require Automake 1.16.3, but Ubuntu 20.04 only supplies 1.16.1)
+# Build libxml2 statically (use version 2.10.1 as newer versions require Automake 1.16.3, but Ubuntu 20.04 only supplies 1.16.1)
 WORKDIR /tmp
 RUN wget https://gitlab.gnome.org/GNOME/libxml2/-/archive/v2.10.1/libxml2-v2.10.1.tar.gz
 RUN echo "c89e5d4eb873f209bace159fc1c76e40ce89f4dc94ac382a6c17032624e2840c  libxml2-v2.10.1.tar.gz" > libxml2.sum
@@ -62,8 +62,6 @@ RUN ./autogen.sh \
 
 WORKDIR $SRC
 
-# For now use the fuzzer branch
-RUN git clone -b fuzzer --depth 1 https://github.com/OpenNavigationSurface/BAG bag
-#RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
+RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 
 RUN cp $SRC/bag/fuzzers/build.sh $SRC/
