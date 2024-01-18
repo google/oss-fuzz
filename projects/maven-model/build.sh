@@ -22,7 +22,6 @@ $MVN clean package $MAVEN_ARGS org.apache.maven.plugins:maven-shade-plugin:3.2.4
 
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
-
 find ./maven-model -name "maven-model-$CURRENT_VERSION.jar" -exec mv {} $OUT/maven-model.jar \;
 
 ALL_JARS="maven-model.jar"
