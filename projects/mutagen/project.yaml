@@ -3,7 +3,7 @@ main_repo: "https://github.com/quodlibet/mutagen"
 language: python
 primary_contact: "reiter.christoph@gmail.com"
 auto_ccs:
-  - "jvoisin@google.com"
+  - "julien.voisin@dustri.org"
   - "phw@uploadedlobster.com"
   - "ph.wolfer@gmail.com"
 fuzzing_engines:

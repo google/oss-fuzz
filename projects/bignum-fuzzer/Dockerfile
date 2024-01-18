@@ -31,7 +31,7 @@ RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls
 # Install Python packages from PyPI
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
-RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone https://boringssl.googlesource.com/boringssl

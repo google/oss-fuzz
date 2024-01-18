@@ -2,8 +2,8 @@ diff --git a/Makefile b/Makefile
 index 6bfb62cbe9..2230b40a9f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -691,6 +691,11 @@ ETAGS_TARGET = TAGS
- FUZZ_OBJS += oss-fuzz/fuzz-commit-graph.o
+@@ -756,6 +756,11 @@ FUZZ_OBJS += oss-fuzz/fuzz-commit-graph.o
+ FUZZ_OBJS += oss-fuzz/fuzz-date.o
  FUZZ_OBJS += oss-fuzz/fuzz-pack-headers.o
  FUZZ_OBJS += oss-fuzz/fuzz-pack-idx.o
 +FUZZ_OBJS += oss-fuzz/fuzz-command.o
@@ -14,7 +14,7 @@ index 6bfb62cbe9..2230b40a9f 100644
  .PHONY: fuzz-objs
  fuzz-objs: $(FUZZ_OBJS)
  
-@@ -1015,6 +1020,7 @@ LIB_OBJS += oid-array.o
+@@ -1085,6 +1089,7 @@ LIB_OBJS += oid-array.o
  LIB_OBJS += oidmap.o
  LIB_OBJS += oidset.o
  LIB_OBJS += oidtree.o
