@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-MAVEN_ARGS="-Dpropguard.skip -DskipTests -Dmaven.javadoc.skip=true -Dpmd.skip=true \
+
+MAVEN_ARGS="-Denforcer.skip=true -Dpropguard.skip -DskipTests -Dmaven.javadoc.skip=true -Dpmd.skip=true \
   -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
   -DperformRelease=True -DbannedDependencies.includes.include=org.apache.maven:maven-embedder:jar:4.0.0-alpha-13-SNAPSHOT"
 $MVN clean package $MAVEN_ARGS org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
