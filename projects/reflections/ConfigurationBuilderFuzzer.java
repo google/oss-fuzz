@@ -23,8 +23,8 @@ import org.reflections.util.FilterBuilder;
 public class ConfigurationBuilderFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try{
-        ConfigurationBuilder config = ConfigurationBuilder.build(data.consumeRemainingAsString());
-        ClasspathHelper.forPackage(data.consumeRemainingAsString());
+        ConfigurationBuilder config = ConfigurationBuilder.build(data.consumeString(20));
+        ClasspathHelper.forPackage(data.consumeString(20));
         new FilterBuilder().includePackage(data.consumeRemainingAsString());
         config.getUrls();
         config.getInputsFilter();
