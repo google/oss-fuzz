@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
   automake autotools-dev bsdmainutils build-essential cmake curl g++-multilib libtool make \
   patch pkg-config python3 wget zip
 
-RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
+RUN git clone --depth=1 --branch 231104-cmake-T https://github.com/hebasto/bitcoin.git bitcoin-core
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets && \
   rm -rf bitcoin-core/assets/.git  # Remove git history to save storage
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
