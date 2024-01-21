@@ -3,7 +3,6 @@ main_repo: "https://github.com/mozilla/bleach"
 language: python
 primary_contact: "wkahngreene@mozilla.com"
 auto_ccs:
-  - "jvoisin@google.com"
   - "ipudney@google.com"
   - "gguthe@gmail.com"
 fuzzing_engines:

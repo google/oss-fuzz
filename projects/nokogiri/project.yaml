@@ -7,9 +7,7 @@ auto_ccs:
   - "nokogiri-oss-fuzz@googlegroups.com"
 main_repo: "https://github.com/sparklemotion/nokogiri.git"
 sanitizers:
-  - address
   - undefined
-  - memory
 fuzzing_engines:
   - afl
   - centipede
