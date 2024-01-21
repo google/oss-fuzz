@@ -1,4 +1,6 @@
-# Copyright 2022 Google LLC
+#!/usr/bin/python3
+
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN curl -L -O https://raw.githubusercontent.com/protobuf-c/protobuf-c/39cd58f5ff06048574ed5ce17ee602dc84006162/t/test-full.proto
-RUN git clone https://github.com/protocolbuffers/protobuf.git
-RUN cd protobuf && bazel build --nobuild //:protoc //python/dist:binary_wheel
-COPY build.sh fuzz_* $SRC/
+import atheris
+
+with atheris.instrument_imports():
+  import dateutil.tz
+
+@atheris.instrument_func
+def TestOneInput(input_bytes):
+  fdp = atheris.FuzzedDataProvider(input_bytes)
+  data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
+  try:
+    dateutil.tz.tzstr(data)
+  except (dateutil.tz.DeprecatedTZFormatWarning, ValueError):
+    pass
+
+def main():
+  atheris.Setup(sys.argv, TestOneInput)
+  atheris.Fuzz()
+
+
+if __name__ == "__main__":
+  main()
