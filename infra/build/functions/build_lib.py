@@ -629,6 +629,5 @@ def cancel_build(build_id, credentials, cloud_project):
                            credentials=credentials,
                            cache_discovery=False,
                            client_options=US_CENTRAL_CLIENT_OPTIONS)
-  # TODO(ochang): Avoid hardcoding us-central1.
   cloudbuild.projects().builds().cancel(projectId=cloud_project,
                                         id=build_id).execute()
