@@ -22,4 +22,6 @@ WORKDIR surrealdb
 # rust-lang/rust#110475 is fixed.
 RUN rustup install nightly-2023-04-21
 RUN rustup default nightly-2023-04-21
+# needed for MSAN and coverage build
+RUN rustup component add rust-src
 COPY build.sh $SRC/
