@@ -15,10 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake libgflags-dev libprotobuf-dev libprotoc-dev protobuf-compiler libleveldb-dev libgtest-dev libgoogle-perftools-dev libsnappy-dev
-RUN git clone --depth 1 https://github.com/apache/incubator-brpc brpc
-RUN git clone https://github.com/0x34d/oss-fuzz-bloat
-COPY build.sh $SRC/
-COPY Fuzz_http.cpp $SRC/brpc/test/Fuzz_http.cpp
-COPY Fuzz_json.cpp $SRC/brpc/test/Fuzz_json.cpp
-COPY CMakeLists.txt.patch $SRC/brpc/test/CMakeLists.txt.patch
+RUN git clone --depth 1 https://github.com/apache/brpc.git
+RUN cp $SRC/brpc/test/fuzzing/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/brpc/
