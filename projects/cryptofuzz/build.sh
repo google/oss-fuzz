@@ -367,7 +367,7 @@ cd $SRC/cryptofuzz/modules/cryptopp
 make -B
 
 ##############################################################################
-# Compile mbed TLS
+# Compile Mbed TLS
 cd $SRC/mbedtls/
 scripts/config.py set MBEDTLS_PLATFORM_MEMORY
 scripts/config.py set MBEDTLS_CMAC_C
@@ -387,8 +387,13 @@ make -j$(nproc)
 export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
 export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
-# Compile Cryptofuzz mbed crypto module
+
+# Compile Cryptofuzz module for Mbed TLS with the legacy crypto API
 cd $SRC/cryptofuzz/modules/mbedtls
+make -B
+
+# Compile Cryptofuzz module for Mbed TLS with the PSA crypto API
+cd $SRC/cryptofuzz/modules/tf-psa-crypto
 make -B
 
 ##############################################################################
