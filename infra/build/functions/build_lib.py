@@ -619,7 +619,7 @@ def wait_for_build(build_id, credentials, cloud_project):
     except googleapiclient.errors.HttpError:
       pass
 
-    time.sleep(10)  # Avoid rate limiting.
+    time.sleep(15)  # Avoid rate limiting.
 
 
 def cancel_build(build_id, credentials, cloud_project):
