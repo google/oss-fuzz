@@ -386,7 +386,7 @@ cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc)
 export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
 export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS -DCRYPTOFUZZ_TF_PSA_CRYPTO"
 
 # Compile Cryptofuzz module for Mbed TLS with the legacy crypto API
 cd $SRC/cryptofuzz/modules/mbedtls
