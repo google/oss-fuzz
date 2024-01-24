@@ -28,6 +28,10 @@ import org.apache.poi.hsmf.exceptions.ChunkNotFoundException;
 import org.apache.poi.util.RecordFormatException;
 
 public class POIHSMFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (MAPIMessage mapi = new MAPIMessage(new ByteArrayInputStream(input))) {
 			mapi.getAttachmentFiles();

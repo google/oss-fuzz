@@ -2,7 +2,7 @@ homepage: "https://github.com/go-git/go-git"
 language: go
 primary_contact: "go-git-security@googlegroups.com"
 auto_ccs:
-  - "pjbgf@linux.com"
+  - "paulo.gomes.uk@gmail.com"
   - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
   - libfuzzer

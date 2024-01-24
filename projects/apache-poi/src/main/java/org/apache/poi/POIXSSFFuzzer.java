@@ -31,6 +31,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.XmlException;
 
 public class POIXSSFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(input))) {
 			try (SXSSFWorkbook swb = new SXSSFWorkbook(wb)) {

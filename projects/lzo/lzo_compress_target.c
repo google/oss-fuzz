@@ -16,78 +16,93 @@
 ################################################################################
 */
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
+
 #include "lzo1x.h"
+#include "lzoconf.h"
 
 /* Work-memory needed for compression. Allocate memory in units
  * of 'lzo_align_t' (instead of 'char') to make sure it is properly aligned.
  */
-#define HEAP_ALLOC(var,size) \
-    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
+#define HEAP_ALLOC(var, size) \
+  lzo_align_t __LZO_MMODEL    \
+      var[((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)]
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
-extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-    int r;
-    lzo_uint out_len;
-    lzo_uint new_len;
+extern int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  int r;
+  lzo_uint compressed_len;
+  lzo_uint decompressed_len;
 
-    /* Since we allocate in/out on the stack,
-     * we can't handle too large size.
-     */
-    if (size > (1 << 20))
-        size = 1 << 20;
+  /* Since we allocate in/out on the stack,
+   * we can't handle too large size.
+   */
+  if (size > (1 << 20)) {
+    size = 1 << 20;
+  }
 
-    /* We want to compress the data block at 'in' with length 'IN_LEN' to
-     * the block at 'out'. Because the input block may be incompressible,
-     * we must provide a little more output space in case that compression
-     * is not possible.
-    */
-    unsigned char __LZO_MMODEL in[size > 0 ? size : 1];
-    unsigned char __LZO_MMODEL out[size + size/16 + 64 + 3];
-
-    static bool isInit = false;
-    if (!isInit)
-    {
-        if (lzo_init() != LZO_E_OK)
-        {
-#ifdef __DEBUG__
-            printf("internal error - lzo_init() failed !!!\n");
-#endif
-            return 0;
-        }
-        isInit = true;
-    }
-
-    /* Compress with LZO1X-1. */
-    r = lzo1x_1_compress(data, size, out, &out_len, wrkmem);
-    assert(r == LZO_E_OK);
-#ifdef __DEBUG__
-    printf("compressed %lu bytes into %lu bytes\n",
-            (unsigned long) size, (unsigned long) out_len);
-#endif
-    
-    /* check for an incompressible block */
-    if (out_len >= size)
-    {
-#ifdef __DEBUG__
-        printf("This block contains incompressible data.\n");
-#endif
-        return 0;
-    }
-
-    // Decompress
-    new_len = size;
-    r = lzo1x_decompress(out, out_len, in, &new_len,/*wrkmem=*/NULL);
-    assert(r == LZO_E_OK && new_len == size);
-#ifdef __DEBUG__
-    printf("decompressed %lu bytes back into %lu bytes\n",
-            (unsigned long) out_len, (unsigned long) size);
-#endif
+  /* We want to compress the data block at 'in' with length 'IN_LEN' to
+   * the block at 'out'. Because the input block may be incompressible,
+   * we must provide a little more output space in case that compression
+   * is not possible.
+   */
+  unsigned char* __LZO_MMODEL decompressed = malloc(size + 1);
+  if (!decompressed) {
     return 0;
+  }
+  unsigned char* __LZO_MMODEL compressed = malloc(size + size / 16 + 64 + 3);
+  if (!compressed) {
+    free(decompressed);
+    return 0;
+  }
+
+  static bool isInit = false;
+  if (!isInit) {
+    if (lzo_init() != LZO_E_OK) {
+#ifdef __DEBUG__
+      printf("internal error - lzo_init() failed !!!\n");
+#endif
+      free(compressed);
+      free(decompressed);
+      return 0;
+    }
+    isInit = true;
+  }
+
+  /* Compress with LZO1X-1. */
+  r = lzo1x_1_compress(data, size, compressed, &compressed_len, wrkmem);
+  assert(r == LZO_E_OK);
+#ifdef __DEBUG__
+  printf("compressed %lu bytes into %lu bytes\n", (unsigned long)size,
+         (unsigned long)out_len);
+#endif
+
+  /* check for an incompressible block */
+  if (compressed_len >= size) {
+#ifdef __DEBUG__
+    printf("This block contains incompressible data.\n");
+#endif
+    free(compressed);
+    free(decompressed);
+    return 0;
+  }
+
+  // Decompress; allow 1 extra byte of output to make sure decoder does not
+  // produce unexpected output.
+  decompressed_len = size + 1;
+  r = lzo1x_decompress(compressed, compressed_len, decompressed,
+                       &decompressed_len, /*wrkmem=*/NULL);
+  assert(r == LZO_E_OK && decompressed_len == size);
+#ifdef __DEBUG__
+  printf("decompressed %lu bytes back into %lu bytes\n", (unsigned long)out_len,
+         (unsigned long)size);
+#endif
+  free(compressed);
+  free(decompressed);
+  return 0;
 }

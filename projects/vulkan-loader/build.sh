@@ -23,11 +23,15 @@ make -j4
 
 ar rcs $OUT/libvulkan.a $SRC/vulkan-loader/build/loader/CMakeFiles/vulkan.dir/*.o
 
-$CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
-    -I$SRC/vulkan-loader/loader/generated \
-    -I$SRC/vulkan-headers/include \
-    -c $SRC/json_load_fuzzer.c -o json_load_fuzzer.o
+for fuzzers in $(find $SRC -name '*_fuzzer.c'); do
+    fuzz_basename=$(basename -s .c $fuzzers)
+    $CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
+        -I$SRC/vulkan-loader/loader/generated \
+        -I$SRC/vulkan-headers/include \
+        -c $fuzzers -o $fuzz_basename.o
    
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE json_load_fuzzer.o \
-    -o $OUT/json_load_fuzzer -lpthread $OUT/libvulkan.a
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzz_basename.o \
+        -o $OUT/$fuzz_basename -lpthread $OUT/libvulkan.a
 
+    zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
+done

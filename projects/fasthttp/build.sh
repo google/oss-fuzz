@@ -15,10 +15,10 @@
 #
 ################################################################################
 
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-
-
-ls fuzzit/ | while read target
-do
-    compile_go_fuzzer github.com/valyala/fasthttp/fuzzit/$target Fuzz fuzz_$target gofuzz
-done
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzCookieParse fuzzCookieParse
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzVisitHeaderParams fuzzVisitHeaderParams
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzResponseReadLimitBody fuzzResponseReadLimitBody
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzRequestReadLimitBody fuzzRequestReadLimitBody
+compile_native_go_fuzzer github.com/valyala/fasthttp FuzzURIUpdateBytes fuzzURIUpdateBytes

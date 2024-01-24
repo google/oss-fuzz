@@ -16,11 +16,6 @@
 ################################################################################
 
 
-pushd $SRC/dropbear
-autoconf
-autoheader
-popd
-
 $SRC/dropbear/configure --enable-fuzz --disable-harden --disable-zlib
 
 make -j$(nproc) fuzz-targets FUZZLIB=$LIB_FUZZING_ENGINE

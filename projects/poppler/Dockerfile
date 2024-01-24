@@ -29,7 +29,7 @@ RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/pango.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.70/glib-2.70.0.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.70.0.tar.xz
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.bz2
 RUN wget https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_75_RTM/src/nss-3.75-with-nspr-4.32.tar.gz
 RUN git clone --depth 1 --single-branch https://gitlab.freedesktop.org/poppler/poppler.git
 

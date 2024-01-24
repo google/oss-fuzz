@@ -20,7 +20,10 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN python3 -m pip install --upgrade pip
 
 RUN rm -rf /usr/local/bin/cargo
-RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly-2022-07-26 --profile minimal -y
+
+ARG rust_version=nightly
+RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain ${rust_version} --profile minimal -y
+
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN git clone --depth 1 https://github.com/ijl/orjson orjson

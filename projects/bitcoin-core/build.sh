@@ -29,18 +29,25 @@ fi
 
 # Build using ThinLTO, to avoid OOM, and other LLVM issues.
 # See https://github.com/google/oss-fuzz/pull/10123.
-sed -i 's/flto/flto=thin/g' ./depends/hosts/linux.mk
-sed -i 's/flto/flto=thin/g' ./configure.ac
+# Skip CFLAGS for now, to avoid:
+# "/usr/bin/ld: error: Failed to link module lib/libevent.a.llvm.17822.buffer.c: Expected at most one ThinLTO module per bitcode file".
+# export CFLAGS="$CFLAGS -flto=thin"
+export CXXFLAGS="$CXXFLAGS -flto=thin"
+export LDFLAGS="-flto=thin"
 
 if [ "$ARCHITECTURE" = "i386" ]; then
 # Temporary workaround for building sqlite for 32-bit. Due to https://github.com/google/oss-fuzz/pull/10466#issuecomment-1576658462
 export FIX_32BIT=" -m32"
 fi
 
+export CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE ${FIX_32BIT:-}"
+
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET DEBUG=1 LTO=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 AR=llvm-ar RANLIB=llvm-ranlib CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE ${FIX_32BIT:-}" -j$(nproc)
+  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 \
+       AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
+       CPPFLAGS="$CPPFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" -j$(nproc)
 )
 
 # Build the fuzz targets
@@ -52,9 +59,9 @@ sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./confi
 # * --enable-fuzz, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
 # * CONFIG_SITE, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
 if [ "$SANITIZER" = "memory" ]; then
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --with-seccomp=no --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" --disable-hardening --with-asm=no
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" --disable-hardening --with-asm=no
 else
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --with-seccomp=no --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 fi
 
 make -j$(nproc)

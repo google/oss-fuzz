@@ -30,5 +30,5 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 RUN git clone --depth 1 https://github.com/FasterXML/jackson-dataformats-text.git
 
 COPY build.sh $SRC/
-COPY CSVFuzzer.java PropertiesFuzzer.java TOMLFuzzer.java YAMLFuzzer.java $SRC/
+COPY *Fuzzer.java  $SRC/
 WORKDIR $SRC/jackson-dataformats-text

@@ -39,3 +39,34 @@ $CC $CFLAGS -c tests/jq_fuzz_load_file.c \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_load_file.o \
     ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
     -o $OUT/jq_fuzz_load_file -I./src
+
+$CC $CFLAGS -c tests/jq_fuzz_parse_extended.c \
+    -I./src -o ./jq_fuzz_parse_extended.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_parse_extended.o \
+    ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
+    -o $OUT/jq_fuzz_parse_extended -I./src
+
+$CC $CFLAGS -c tests/jq_fuzz_parse_stream.c \
+    -I./src -o ./jq_fuzz_parse_stream.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_parse_stream.o \
+    ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
+    -o $OUT/jq_fuzz_parse_stream -I./src
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./tests/jq_fuzz_execute.cpp \
+    -I./src \
+    ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
+    -o $OUT/jq_fuzz_execute -I./src
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./tests/jq_fuzz_fixed.cpp \
+    -I./src \
+    ./.libs/libjq.a ./modules/oniguruma/src/.libs/libonig.a \
+    -o $OUT/jq_fuzz_fixed -I./src
+
+
+# Build corpus
+mkdir $SRC/seeds
+find . -name "*.jq" -exec cp {} $SRC/seeds/ \;
+zip -rj $OUT/jq_fuzz_execute_seed_corpus.zip $SRC/seeds/
+
+# Copy dictionary
+cp $SRC/jq.dict $OUT/jq_fuzz_execute.dict

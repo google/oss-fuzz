@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/gfx-rs/naga naga
-WORKDIR naga
+RUN git clone --depth 1 https://github.com/gfx-rs/wgpu wgpu
+WORKDIR wgpu/naga
 COPY build.sh $SRC/

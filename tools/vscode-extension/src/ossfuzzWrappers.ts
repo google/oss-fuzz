@@ -25,6 +25,30 @@ import {
 import {println} from './logger';
 import {extensionConfig} from './config';
 
+export async function buildFuzzersFromWorkspaceClusterfuzzLite() {
+  const workspaceFolder = vscode.workspace.workspaceFolders;
+  if (!workspaceFolder) {
+    println('No workspace folder, exiting');
+    return false;
+  }
+
+  // Build the fuzzers using OSS-Fuzz infrastructure.
+  const cmdToExec = 'python3';
+  const args = [
+    extensionConfig.ossFuzzPepositoryWorkPath + '/infra/helper.py',
+    'build_fuzzers',
+  ];
+
+  args.push('--external');
+  args.push(workspaceFolder[0].uri.path);
+  println('Building fuzzers');
+  if (!(await systemSyncLogIfFailure(cmdToExec, args))) {
+    println('Failed to build fuzzers');
+    return false;
+  }
+  return true;
+}
+
 /**
  * Builds the fuzzers for a given workspace.
  *
@@ -37,7 +61,7 @@ export async function buildFuzzersFromWorkspace(
   sanitizer: string,
   toClean: boolean
 ) {
-  // println('Building fuzzers locally2');
+  // println('Building fuzzers locally');
 
   // Check if there is an OSS-Fuzz set up, and exit if not.
   if (
@@ -241,6 +265,49 @@ export async function buildFuzzersFromWorkspace(
     ossFuzzProjectName,
     extensionConfig.ossFuzzPepositoryWorkPath
   );
+  return true;
+}
+
+/**
+ * Runs the fuzzer for a given CFLite project
+ */
+export async function runFuzzerHandlerCFLite(
+  projectNameArg: string,
+  fuzzerNameArg: string,
+  secondsToRunArg: string
+) {
+  // The fuzzer is run by way of OSS-Fuzz's helper.py so we use python3 to launch
+  // this script.
+  const cmdToExec = 'python3';
+
+  // Set the arguments correctly. The ordering here is important for compatibility
+  // with the underlying argparse used by OSS-Fuzz helper.py.
+  const args: Array<string> = [
+    extensionConfig.ossFuzzPepositoryWorkPath + '/infra/helper.py',
+    'run_fuzzer',
+  ];
+
+  args.push('--external');
+  args.push(projectNameArg);
+  args.push(fuzzerNameArg);
+  args.push('--');
+  args.push('-max_total_time=' + secondsToRunArg);
+
+  println(
+    'Running fuzzer' +
+      fuzzerNameArg +
+      ' from project ' +
+      projectNameArg +
+      ' for ' +
+      secondsToRunArg +
+      ' seconds.'
+  );
+
+  // Run the actual command
+  if (!(await systemSyncLogIfFailure(cmdToExec, args))) {
+    println('Failed to run fuzzer');
+    return false;
+  }
   return true;
 }
 

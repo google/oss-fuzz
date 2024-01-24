@@ -26,6 +26,7 @@ import org.apache.poi.extractor.ExtractorFactory;
 import org.apache.poi.extractor.POIOLE2TextExtractor;
 import org.apache.poi.extractor.POITextExtractor;
 import org.apache.poi.hslf.exceptions.HSLFException;
+import org.apache.poi.hssf.record.RecordFactory;
 import org.apache.poi.hssf.record.RecordInputStream;
 import org.apache.poi.ooxml.POIXMLException;
 import org.apache.poi.ooxml.extractor.POIXMLPropertiesTextExtractor;
@@ -152,5 +153,11 @@ public class POIFuzzer {
 
 			xmlExtractor.getPackage();
 		}
+	}
+
+	static void adjustLimits() {
+		// reduce limits so we do not get OOMs with the Xmx settings
+		// that are used for the fuzzing runs
+		RecordFactory.setMaxNumberOfRecords(100_000);
 	}
 }

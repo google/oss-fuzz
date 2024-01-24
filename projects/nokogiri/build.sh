@@ -14,8 +14,5 @@
 #
 ###############################################################################
 
-cd nokogiri/gumbo-parser/src && make clean && make && cd -
-$CXX $CXXFLAGS -o parse_fuzzer parse_fuzzer.cc nokogiri/gumbo-parser/src/libgumbo.a $LIB_FUZZING_ENGINE
-mv parse_fuzzer $OUT/parse_fuzzer
-mv gumbo.dict $OUT/parse_fuzzer.dict
-mv nokogiri_corpus.zip $OUT/parse_fuzzer_seed_corpus.zip
+cd nokogiri/gumbo-parser
+make oss-fuzz CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"

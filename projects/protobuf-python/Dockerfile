@@ -17,5 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN curl -L -O https://raw.githubusercontent.com/protobuf-c/protobuf-c/39cd58f5ff06048574ed5ce17ee602dc84006162/t/test-full.proto
 RUN git clone https://github.com/protocolbuffers/protobuf.git
-RUN cd protobuf && bazel build --nobuild //:protoc @upb//python/dist:binary_wheel
+RUN cd protobuf && bazel build --nobuild //:protoc //python/dist:binary_wheel
 COPY build.sh fuzz_* $SRC/

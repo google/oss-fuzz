@@ -14,21 +14,30 @@
 
 package toml
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 func FuzzToml(data []byte) int {
 
 	buf := make([]byte, 0, 2048)
 
-	var m interface{}
-	_, err := Decode(string(data), &m)
+	var v any
+	_, err := Decode(string(data), &v)
 	if err != nil {
 		return 0
 	}
 
-	err = NewEncoder(bytes.NewBuffer(buf)).Encode(m)
+	err = NewEncoder(bytes.NewBuffer(buf)).Encode(v)
 	if err != nil {
-		return 0
+		panic(fmt.Sprintf("failed to encode decoded document: %s", err))
+	}
+
+	var v2 any
+	_, err = Decode(string(buf), &v2)
+	if err != nil {
+		panic(fmt.Sprintf("failed round trip: %s", err))
 	}
 
 	return 1

@@ -28,6 +28,10 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 public class POIXWPFFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(input))) {

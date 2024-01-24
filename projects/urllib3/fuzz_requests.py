@@ -61,7 +61,10 @@ def TestOneInput(data):
         formData[fdp.ConsumeString(sys.maxsize)] = fdp.ConsumeString(sys.maxsize)
     formData = None if fdp.ConsumeBool() else formData
 
-    response = urllib3.request(
+    timeout = urllib3.util.Timeout(connect=0.1, read=0.1)
+    urllib_pool = urllib3.poolmanager.PoolManager(timeout=timeout)
+
+    response = urllib_pool.request(
         requestType,
         "http://www.test.com",
         headers=requestHeaders,
