@@ -30,7 +30,7 @@ CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS CC=$CC CXX=$CXX \
    --with-library-bits=64 --with-data-packaging=static --enable-static --disable-shared
 
 export ASAN_OPTIONS="detect_leaks=0"
-export UBSAN_OPTIONS="detect_leaks=0"
+export UBSAN_OPTIONS="detect_leaks=0,enum=0"
 
 make -j$(nproc)
 
