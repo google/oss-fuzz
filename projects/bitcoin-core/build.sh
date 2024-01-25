@@ -35,12 +35,7 @@ fi
 export CXXFLAGS="$CXXFLAGS -flto=thin"
 export LDFLAGS="-flto=thin"
 
-if [ "$ARCHITECTURE" = "i386" ]; then
-# Temporary workaround for building sqlite for 32-bit. Due to https://github.com/google/oss-fuzz/pull/10466#issuecomment-1576658462
-export FIX_32BIT=" -m32"
-fi
-
-export CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE ${FIX_32BIT:-}"
+export CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
   cd depends
