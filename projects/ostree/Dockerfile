@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+ARG glib_tag=2.78.4
 RUN apt-get update && apt-get install -y \
     make \
     autoconf \
@@ -30,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     libtool \
     bison
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
+RUN git clone --depth 1 --branch $glib_tag https://gitlab.gnome.org/GNOME/glib
 RUN git clone https://github.com/ostreedev/ostree && \
     cd ostree && \
     git submodule update --init
