@@ -35,8 +35,8 @@ for fuzzsrcfile in /src/*.cpp; do
 	$CXXFLAGS \
 	-std=c++20 \
 	-nostdinc++ \
-	-cxx-isystem $INSTALLDIR/include/c++/14.0.0/ \
-	-cxx-isystem $INSTALLDIR/include/c++/14.0.0/x86_64-pc-linux-gnu \
+	-cxx-isystem $INSTALLDIR/include/c++/14.0.1/ \
+	-cxx-isystem $INSTALLDIR/include/c++/14.0.1/x86_64-pc-linux-gnu \
 	$fuzzsrcfile \
 	-o $OUT/$targetfile \
 	$LIB_FUZZING_ENGINE \
