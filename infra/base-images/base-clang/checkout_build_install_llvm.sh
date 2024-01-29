@@ -91,13 +91,15 @@ function clone_with_retries {
 }
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
-PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
+PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;openmp;clang;lld"
 function cmake_llvm {
   extra_args="$@"
   cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DLIBOMP_ENABLE_SHARED=OFF \
+      -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \

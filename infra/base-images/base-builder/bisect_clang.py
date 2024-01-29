@@ -166,7 +166,7 @@ def prepare_build(llvm_project_path):
       'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
       '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON', '-DLIBCXXABI_ENABLE_SHARED=OFF',
       '-DCMAKE_BUILD_TYPE=Release',
-      '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
+      '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;openmp;clang',
       '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
       os.path.join(llvm_project_path, 'llvm')
   ],
