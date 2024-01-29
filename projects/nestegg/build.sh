@@ -5,6 +5,8 @@ $CXX $CXXFLAGS -o $OUT/fuzz -I./include nestegg.o test/fuzz.cc $LIB_FUZZING_ENGI
 
 
 mkdir corpus/
-cp -R ../testdata/*.webm corpus/
+# copy libwebm test data
+cp -R ../libwebm/testing/testdata/*.webm corpus/
+# copy nestegg test data
 cp test/media/*.webm corpus/
 zip -rj0 $OUT/fuzz_seed_corpus.zip corpus/*.webm
