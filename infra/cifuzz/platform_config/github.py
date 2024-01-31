@@ -111,7 +111,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     repository = os.getenv('GITHUB_REPOSITORY')
     github_sever_url = self._event['GITHUB_SERVER_URL']
     # TODO(metzman): Probably need to change this to github.server_url.
-    return f'{githb_server_url}{repository}.git'
+    return os.path.join(githb_server_url, f'{repository}.git')
 
   @property
   def base_commit(self):
