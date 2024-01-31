@@ -109,7 +109,7 @@ class PlatformConfig(platform_config.BasePlatformConfig):
     TODO(metzman): As an easier goal, maybe make OSS-Fuzz GitHub use this too
     for: 1. Consistency 2. Maybe it will allow use on forks."""
     repository = os.getenv('GITHUB_REPOSITORY')
-    github_server_url = os.getenv('GITHUB_SERVER_URL')
+    github_server_url = os.getenv('GITHUB_SERVER_URL', 'https://github.com')
     # TODO(metzman): Probably need to change this to github.server_url.
     return os.path.join(github_server_url, repository)
 
