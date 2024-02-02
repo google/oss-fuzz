@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.9.5/bin/mvn
 
-WORKDIR nestegg
+RUN git clone --depth 1 https://github.com/apache/maven maven-model
+WORKDIR maven-model
 COPY build.sh $SRC/
+COPY *.java $SRC/

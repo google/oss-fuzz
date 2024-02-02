@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
+# Ensure C extension gets built
+export CBOR2_BUILD_C_EXTENSION=1
 
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
+# Build and install project (using current CFLAGS, CXXFLAGS). This is required
+# for projects with C extensions so that they're built with the proper flags.
+pip3 install .
 
-WORKDIR nestegg
-COPY build.sh $SRC/
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+    compile_python_fuzzer $fuzzer
+done

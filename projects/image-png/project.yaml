@@ -1,4 +1,4 @@
-homepage: "https://docs.rs/image/0.23.14/image"
+homepage: "https://github.com/image-rs/image-png"
 main_repo: "https://github.com/image-rs/image-png"
 primary_contact: "andreas.molzer@gmx.de"
 sanitizers:
@@ -9,3 +9,4 @@ language: rust
 auto_ccs:
   - "fintelia@gmail.com"
   - "david@adalogics.com"
+file_github_issue: True

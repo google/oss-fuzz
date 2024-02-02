@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/usr/bin/python3
+
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +16,25 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
+import sys
+import atheris
 
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
+# _cbor2 ensures the C library is imported
+from _cbor2 import loads
 
-WORKDIR nestegg
-COPY build.sh $SRC/
+
+def test_one_input(data: bytes):
+    try:
+        loads(data)
+    except Exception:
+        # We're searching for memory corruption, not Python exceptions
+        pass
+
+
+def main():
+    atheris.Setup(sys.argv, test_one_input)
+    atheris.Fuzz()
+
+
+if __name__ == "__main__":
+    main()

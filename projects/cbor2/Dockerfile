@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
-
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
-
-WORKDIR nestegg
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN git clone --depth 1 https://github.com/agronholm/cbor2.git
+WORKDIR cbor2
+COPY build.sh *.py $SRC/
