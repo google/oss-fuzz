@@ -23,7 +23,7 @@ import subprocess
 import requests
 import yaml
 
-OWNER = 'google'
+OWNER = 'VinhPham2106'
 REPO = 'oss-fuzz'
 GITHUB_URL = 'https://github.com/'
 GITHUB_NONREF_URL = f'https://www.github.com/{OWNER}/{REPO}'  # Github URL that doesn't send emails on linked issues.
