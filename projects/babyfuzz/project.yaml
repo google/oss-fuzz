@@ -1,0 +1,6 @@
+homepage: "https://github.com/VinhPham2106/babyfuzz.git"
+main_repo: "https://github.com/VinhPham2106/babyfuzz.git"
+primary_contact: "vphamngo@purdue.edu"
+auto_ccs:
+  - "pnthanhvinh@outlook.com"
+language: c
