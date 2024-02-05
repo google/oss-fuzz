@@ -23,13 +23,12 @@ cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_ACTIVERECORD=OFF \
       ..
 make -j$(nproc)
 
-$CXX $CXXFLAGS -DPOCO_ENABLE_CPP11 -DPOCO_ENABLE_CPP14 \
-    -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
     -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
     -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
     -I/src/poco/JSON/include \
     -I/src/poco/Foundation/include \
-    -O2 -g -DNDEBUG -std=gnu++14 \
+    -O2 -g -DNDEBUG -std=c++17 \
     -o json_fuzzer.o -c $SRC/json_parse_fuzzer.cc
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE json_fuzzer.o \

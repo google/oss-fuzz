@@ -36,6 +36,8 @@ public class ProtobufParserFuzzer {
       ProtobufParser parser =
           ((ProtobufMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
 
+      parser.setSchema(mapper.generateSchemaFor(ProtobufParserFuzzer.class));
+
       // Fuzz methods of ProtobufParser
       for (Integer choice : choices) {
         switch (Math.abs(choice) % 19) {

@@ -17,18 +17,18 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
     build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev \
-    liblzma-dev uuid-dev pkg-config openjdk-8-jdk unzip mlton
+    liblzma-dev uuid-dev pkg-config openjdk-8-jdk unzip mlton bison texinfo
 
 RUN git clone --recursive -b develop https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.9.1" --recurse-submodules \
+RUN git clone --branch="v0.11.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory
 # Install boost
 RUN cd $SRC; \
-    wget -q 'https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.bz2' -O boost.tar.bz2; \
+    wget -q 'https://archives.boost.io/release/1.73.0/source/boost_1_73_0.tar.bz2' -O boost.tar.bz2; \
     test "$(sha256sum boost.tar.bz2)" = "4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402  boost.tar.bz2"; \
     tar -xf boost.tar.bz2; \
     rm boost.tar.bz2; \
@@ -62,22 +62,27 @@ RUN cd $SRC/evmone; \
     cd build; \
     cmake .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="/usr"; \
     ninja; \
-    ninja install;
+    ninja install/strip;
 
 # gmp
 RUN cd $SRC; \
     # Replace system installed libgmp static library
     # with sanitized version
-    rm -f /usr/lib/x86_64-linux-gnu/libgmp.a; \
-    wget -q 'https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz' -O gmp.tar.xz; \
-    test "$(sha256sum gmp.tar.xz)" = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2  gmp.tar.xz"; \
-    tar -xf gmp.tar.xz; \
-    cd gmp-6.2.1; \
-    ./configure --prefix=/usr --enable-shared=no --enable-static=yes; \
+    git clone --depth 1 --branch gmp-6.2.1 https://github.com/gmp-mirror/gmp-6.2 gmp/; \
+    rm -r gmp/.git/; \
+    test \
+        "$(tar --create gmp/ --sort=name --mtime=1970-01-01Z --owner=0 --group=0 --numeric-owner | sha256sum)" = \
+        "d606ff6a4ce98692f9920031e85ea8fcf4a65ce1426f6f0048b8794aefed174b  -"; \
+    # NOTE: This removes also libgmp.so, which git depends on
+    rm -f /usr/lib/x86_64-linux-gnu/libgmp.*; \
+    rm -f /usr/include/x86_64-linux-gnu/gmp.h; \
+    cd gmp; \
+    autoreconf -i; \
+    ./configure --prefix=/usr --enable-static=yes --enable-maintainer-mode; \
     make -j; \
+    make check; \
     make install; \
-    rm -rf $SRC/gmp-6.2.1; \
-    rm -f $SRC/gmp.tar.xz
+    rm -rf $SRC/gmp;
 
 # libabicoder
 RUN set -ex; \

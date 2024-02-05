@@ -48,7 +48,7 @@ RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
     (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
-RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
 RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
@@ -62,7 +62,7 @@ RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 RUN bash -c "wget $(curl https://ziglang.org/download/index.json | jq -r '.master."x86_64-linux".tarball') -O zig-latest.tar.xz"

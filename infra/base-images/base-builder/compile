@@ -189,6 +189,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   export CXXFLAGS="$CXXFLAGS -g"
   export FI_BRANCH_PROFILE=1
   export FUZZ_INTROSPECTOR=1
+  export FUZZ_INTROSPECTOR_AUTO_FUZZ=1
 
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
@@ -251,7 +252,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
   apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
-  python3 -m pip install --upgrade setuptools
+  python3 -m pip install --upgrade pip setuptools
   python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
   python3 -m pip install --prefer-binary matplotlib
 
@@ -270,6 +271,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   mkdir -p $SRC/inspector
   find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "fuzzerLogFile-*.data.yaml" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "fuzzerLogFile-*.data.debug_info" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "allFunctionsWithMain-*.yaml" -exec cp {} $SRC/inspector/ \;
 
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]

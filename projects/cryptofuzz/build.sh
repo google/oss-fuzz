@@ -322,8 +322,8 @@ make -B
 
 # Compile mpdecimal
 cd $SRC/
-tar zxf mpdecimal-2.5.1.tar.gz
-cd mpdecimal-2.5.1/
+tar zxf mpdecimal-4.0.0.tar.gz
+cd mpdecimal-4.0.0/
 ./configure
 cd libmpdec/
 make libmpdec.a -j$(nproc)
@@ -368,7 +368,7 @@ cd $SRC/cryptofuzz/modules/cryptopp
 make -B
 
 ##############################################################################
-# Compile mbed TLS
+# Compile Mbed TLS
 cd $SRC/mbedtls/
 scripts/config.py set MBEDTLS_PLATFORM_MEMORY
 scripts/config.py set MBEDTLS_CMAC_C
@@ -387,9 +387,14 @@ cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc)
 export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
 export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
-# Compile Cryptofuzz mbed crypto module
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS -DCRYPTOFUZZ_TF_PSA_CRYPTO"
+
+# Compile Cryptofuzz module for Mbed TLS with the legacy crypto API
 cd $SRC/cryptofuzz/modules/mbedtls
+make -B
+
+# Compile Cryptofuzz module for Mbed TLS with the PSA crypto API
+cd $SRC/cryptofuzz/modules/tf-psa-crypto
 make -B
 
 ##############################################################################

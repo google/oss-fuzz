@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get install -y bzr python-lxml python-html5lib
+RUN apt-get install -y bzr python-lxml python-html5lib libxslt-dev libxml2-dev zlib1g-dev
 RUN pip3 install soupsieve html5lib lxml
 RUN pip3 install bzr+lp:beautifulsoup
 

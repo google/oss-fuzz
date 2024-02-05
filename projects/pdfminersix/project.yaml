@@ -1,0 +1,6 @@
+homepage: "https://pdfminersix.readthedocs.io/en/latest/"
+language: python
+primary_contact: "pietermarsman@gmail.com"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/pdfminer/pdfminer.six"

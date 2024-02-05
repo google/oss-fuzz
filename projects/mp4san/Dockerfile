@@ -14,7 +14,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN git clone --depth 1 https://github.com/privacyresearchgroup/mp4san mp4san
+RUN git clone --depth 1 https://github.com/signalapp/mp4san mp4san
 WORKDIR mp4san
 
 COPY build.sh $SRC/

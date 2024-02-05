@@ -29,6 +29,10 @@ import org.apache.poi.util.RecordFormatException;
 import org.apache.poi.xdgf.usermodel.XmlVisioDocument;
 
 public class POIVisioFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		try (XmlVisioDocument visio = new XmlVisioDocument(new ByteArrayInputStream(input))) {
 			visio.write(NullOutputStream.INSTANCE);
