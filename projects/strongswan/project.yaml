@@ -1,7 +1,0 @@
-homepage: "https://www.strongswan.org"
-language: c++
-primary_contact: "security@strongswan.org"
-auto_ccs:
-  - "tobias@strongswan.org"
-  - "andreas.steffen@strongswan.org"
-main_repo: 'https://github.com/strongswan/strongswan.git'

@@ -1,9 +1,0 @@
-homepage: "https://www.powerdns.com/"
-language: c++
-primary_contact: "remi.gacogne@powerdns.com"
-auto_ccs:
-  - "powerdnsossfuzz@gmail.com"
-sanitizers:
-  - address
-  - undefined
-main_repo: 'https://github.com/PowerDNS/pdns.git'

@@ -1,5 +1,0 @@
-homepage: "https://github.com/libfuse/libfuse"
-main_repo: "https://github.com/libfuse/libfuse"
-language: c
-vendor_ccs:
-- david@adalogics.com

@@ -1,9 +1,0 @@
-homepage: "https://github.com/tensorflow/serving"
-primary_contact: "david@adalogics.com"
-main_repo: "https://github.com/tensorflow/serving"
-language: c++
-sanitizers:
-  - address
-  - undefined
-fuzzing_engines:
-  - libfuzzer

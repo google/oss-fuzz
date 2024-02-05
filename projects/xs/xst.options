@@ -1,3 +1,0 @@
-[asan]
-detect_stack_use_after_return=0
-leak_check_at_exit=0

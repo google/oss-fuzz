@@ -1,9 +1,0 @@
---- a/spring-webmvc/spring-webmvc.gradle
-+++ b/spring-webmvc/spring-webmvc.gradle
-@@ -1,5 +1,6 @@
- description = "Spring Web MVC"
- 
-+apply plugin: "com.github.johnrengelman.shadow"
- apply plugin: "kotlin"
- 
- dependencies {

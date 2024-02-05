@@ -1,9 +1,0 @@
-homepage: "https://github.com/kohsuke/args4j"
-language: jvm
-fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/kohsuke/args4j"
-sanitizers:
-  - address
-vendor_ccs:
-  - "bug-disclosure@code-intelligence.com"

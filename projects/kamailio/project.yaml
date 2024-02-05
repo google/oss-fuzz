@@ -1,9 +1,0 @@
-homepage: "www.kamailio.org"
-main_repo: "https://github.com/kamailio/kamailio"
-primary_contact: "ossfuzz@kamailio.org"
-language: c
-auto_ccs:
-  - "miconda@gmail.com"
-  - "david@adalogics.com"
-  - "mail@gilawa.com"
-  - "qxork.droid@gmail.com"

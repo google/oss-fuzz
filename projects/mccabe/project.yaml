@@ -1,9 +1,0 @@
-homepage: https://github.com/pycqa/mccabe
-main_repo: https://github.com/pycqa/mccabe
-language: python
-fuzzing_engines:
-- libfuzzer
-sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com

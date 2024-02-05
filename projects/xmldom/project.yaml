@@ -1,9 +1,0 @@
-homepage: "https://github.com/xmldom/xmldom"
-language: javascript
-primary_contact: "coder@karfau.de"
-main_repo: 'https://github.com/xmldom/xmldom.git'
-file_github_issue: true
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - none

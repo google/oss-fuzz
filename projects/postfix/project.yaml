@@ -1,8 +1,0 @@
-homepage: "http://www.postfix.org/"
-language: c
-primary_contact: "wietse@gmail.com"
-main_repo: "https://github.com/vdukhovni/postfix"
-auto_ccs:
-  - "david@adalogics.com"
-sanitizers:
-  - address

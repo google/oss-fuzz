@@ -1,6 +1,0 @@
-homepage: "https://www.gnu.org.ua/software/gdbm"
-language: c
-primary_contact: "sergey.poznyakoff@gmail.com"
-auto_ccs:
-  - "gray@gnu.org"
-main_repo: "https://git.gnu.org.ua/gdbm.git"

@@ -1,6 +1,0 @@
-homepage: "https://github.com/redis/hiredis"
-primary_contact: "michael.grunder@gmail.com"
-language: c
-auto_ccs:
-  - "Adam@adalogics.com"
-main_repo: "https://github.com/redis/hiredis"

@@ -1,5 +1,0 @@
-homepage: "https://github.com/google/highwayhash"
-language: c++
-main_repo: "https://github.com/google/highwayhash"
-vendor_ccs:
-- david@adalogics.com
