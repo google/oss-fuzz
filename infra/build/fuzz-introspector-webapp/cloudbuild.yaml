@@ -28,6 +28,6 @@ steps:
     - '--max-instances'
     - '10'
     - '--memory'
-    - '8Gi'
+    - '10Gi'
 options:
   machineType: 'E2_HIGHCPU_32'
