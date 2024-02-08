@@ -18,11 +18,13 @@
 # Build boost
 CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" \
     ./bootstrap.sh --with-toolset=clang --prefix=/usr;
-./b2 toolset=clang cxxflags="$CXXFLAGS -stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers;
+./b2 toolset=clang cxxflags="$CXXFLAGS -stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" --with-graph --with-filesystem --with-program_options headers stage;
 
 # Very simple build rule, but sufficient here.
 #boost regexp
 $CXX $CXXFLAGS -I . ../boost_regex_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_fuzzer
+$CXX $CXXFLAGS -I . ../boost_regex_pattern_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_pattern_fuzzer
+$CXX $CXXFLAGS -I . ../boost_regex_replace_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_replace_fuzzer
 
 #boost property tree parsers
 $CXX $CXXFLAGS -I . ../boost_ptree_xmlread_fuzzer.cc  $LIB_FUZZING_ENGINE -o boost_ptree_xmlread_fuzzer
@@ -30,8 +32,27 @@ $CXX $CXXFLAGS -I . ../boost_ptree_jsonread_fuzzer.cc $LIB_FUZZING_ENGINE -o boo
 $CXX $CXXFLAGS -I . ../boost_ptree_iniread_fuzzer.cc  $LIB_FUZZING_ENGINE -o boost_ptree_iniread_fuzzer
 $CXX $CXXFLAGS -I . ../boost_ptree_inforead_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_ptree_inforead_fuzzer
 
+#boost graph graphviz
+$CXX $CXXFLAGS -I . ../boost_graph_graphviz_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_graph_graphviz_fuzzer stage/lib/libboost_graph.a
+$CXX $CXXFLAGS -I . ../boost_graph_graphml_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_graph_graphml_fuzzer stage/lib/libboost_graph.a
+
+#boost datetime
+$CXX $CXXFLAGS -I . ../boost_datetime_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_datetime_fuzzer
+
+#boost filesystem
+$CXX $CXXFLAGS -I . ../boost_filesystem_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_filesystem_fuzzer stage/lib/libboost_filesystem.a
+
+#boost algorithm/strings
+$CXX $CXXFLAGS -I . ../boost_stralg_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_stralg_fuzzer
+
+#boost uuid
+$CXX $CXXFLAGS -I . ../boost_uuid_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_uuid_fuzzer
+
+#boost programoptions
+$CXX $CXXFLAGS -I . ../boost_programoptions_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_programoptions_fuzzer stage/lib/libboost_program_options.a
+
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 # find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # If you have dictionaries.
 # find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'  # If you have custom options.
-# find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # If you have seed corpora (you better have them!)
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # If you have seed corpora (you better have them!)
