@@ -18,8 +18,9 @@
 cd ntp-dev
 git apply ../patch.diff
 #avoids https://bugs.llvm.org/show_bug.cgi?id=34636
-cp /usr/bin/ld.gold /usr/bin/ld
+#not a problem with binutils 2.36+
+#cp /usr/bin/ld.gold /usr/bin/ld
 ./bootstrap
-./configure --enable-fuzztargets
+./configure -C --enable-fuzztargets --disable-dependency-tracking
 make
 cp tests/fuzz/fuzz_ntpd_receive $OUT/
