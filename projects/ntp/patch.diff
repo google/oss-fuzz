@@ -39,7 +39,7 @@ index 7975d31..528861c 100644
 +
  NTP_UNITYBUILD
  
- dnl  gtest is needed for our tests subdirs. It would be nice if we could
+ NTP_PROBLEM_TESTS
 @@ -4459,6 +4490,7 @@ AC_CONFIG_FILES([tests/ntpd/Makefile])
  AC_CONFIG_FILES([tests/ntpq/Makefile])
  AC_CONFIG_FILES([tests/sandbox/Makefile])
@@ -99,7 +99,7 @@ new file mode 100644
 index 0000000..7cb8d99
 --- /dev/null
 +++ b/tests/fuzz/fuzz_ntpd_receive.c
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,93 @@
 +#include <stddef.h>
 +#include <stdint.h>
 +#include <sys/types.h>
@@ -110,14 +110,13 @@ index 0000000..7cb8d99
 +#include "recvbuff.h"
 +#include "ntpd.h"
 +
-+const char *Version = "libntpq 0.3beta";
++const char *Version = "fuzz_ntpd_receive 0.2";
 +int listen_to_virtual_ips = TRUE;
 +int mdnstries = 5;
 +char const *progname = "fuzz_ntpd_receive";
 +#ifdef HAVE_WORKING_FORK
-+int    waitsync_fd_to_close = -1;    /* -w/--wait-sync */
++int    daemon_pipe[2] = {-1, -1};    /* -w/--wait-sync */
 +#endif
-+int yydebug=0;
 +
 +static int initialized = 0;
 +int sockfd;
