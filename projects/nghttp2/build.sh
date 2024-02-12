@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+git submodule update --init --depth 1
 mkdir build
 cd build
 cmake -DENABLE_LIB_ONLY=ON -DENABLE_STATIC_LIB=ON -DHAVE_CUNIT=ON ../
