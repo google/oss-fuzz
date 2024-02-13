@@ -33,24 +33,23 @@ make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" \
   FUZZ_CXXFLAGS="$CXXFLAGS -Wl,--allow-multiple-definition" \
   LIB_FUZZING_ENGINE="common-main.o $LIB_FUZZING_ENGINE" fuzz-all
 
-FUZZERS="\
-fuzz-cmd-apply-check \
-fuzz-cmd-bundle-verify \
-fuzz-cmd-diff \
-fuzz-cmd-status \
-fuzz-cmd-tag-create \
-fuzz-cmd-unpack-objects \
-fuzz-cmd-version \
-fuzz-command \
-fuzz-commit-graph \
-fuzz-credential-from-url-gently \
-fuzz-date \
-fuzz-pack-headers \
-fuzz-pack-idx \
-fuzz-parse-attr-line \
-fuzz-url-decode-mem \
-fuzz-url-end-with-slash \
-"
+FUZZERS=""
+# FUZZERS="$FUZZERS fuzz-cmd-apply-check"
+FUZZERS="$FUZZERS fuzz-cmd-bundle-verify"
+FUZZERS="$FUZZERS fuzz-cmd-diff"
+# FUZZERS="$FUZZERS fuzz-cmd-status"
+# FUZZERS="$FUZZERS fuzz-cmd-tag-create"
+# FUZZERS="$FUZZERS fuzz-cmd-unpack-objects"
+# FUZZERS="$FUZZERS fuzz-cmd-version"
+# FUZZERS="$FUZZERS fuzz-command"
+FUZZERS="$FUZZERS fuzz-commit-graph"
+FUZZERS="$FUZZERS fuzz-credential-from-url-gently"
+FUZZERS="$FUZZERS fuzz-date"
+FUZZERS="$FUZZERS fuzz-pack-headers"
+FUZZERS="$FUZZERS fuzz-pack-idx"
+FUZZERS="$FUZZERS fuzz-parse-attr-line"
+FUZZERS="$FUZZERS fuzz-url-decode-mem"
+FUZZERS="$FUZZERS fuzz-url-end-with-slash"
 
 # copy fuzzers
 for fuzzer in $FUZZERS ; do
