@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y g++ python
 RUN git clone --recursive https://github.com/boostorg/boost.git
 WORKDIR boost
 # Preferably, move boost_regex_fuzzer.cc to the boost repository.
-COPY build.sh *.cc $SRC/
+COPY build.sh *.zip *.cc $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
 ENV OLD_LLVMPASS 1

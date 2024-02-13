@@ -9,6 +9,8 @@ auto_ccs:
  - "hlandau@openssl.org"
  - "paulidale@openssl.org"
  - "nhorman@openssl.org"
+ - "tjh@openssl.org"
+ - "tjh@cryptsoft.com"
 sanitizers:
  - address
  - memory:

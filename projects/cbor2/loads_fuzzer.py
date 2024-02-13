@@ -1,4 +1,6 @@
-# Copyright 2021 Google LLC
+#!/usr/bin/python3
+
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,34 +18,23 @@
 
 import sys
 import atheris
-import scrapy
-from scrapy.crawler import CrawlerProcess
 
-class test_spider(scrapy.Spider):
-    start_urls = ['http://google.com', 'http://youtube.com/']
+# _cbor2 ensures the C library is imported
+from _cbor2 import loads
 
-    def parse(self, response):
+
+def test_one_input(data: bytes):
+    try:
+        loads(data)
+    except Exception:
+        # We're searching for memory corruption, not Python exceptions
         pass
-
-def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  test = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 4096))
-
-  try:
-    process = CrawlerProcess(settings={
-        test
-    })
-    process.crawl(test_spider)
-    process.start()
-  except:
-    pass
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
+    atheris.Setup(sys.argv, test_one_input)
+    atheris.Fuzz()
 
 
 if __name__ == "__main__":
-  main()
+    main()

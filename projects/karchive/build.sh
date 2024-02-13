@@ -44,11 +44,17 @@ cp -f bzlib.h /usr/local/include
 cp -f libbz2.a /usr/local/lib
 
 # Build xz
+export ORIG_CFLAGS="${CFLAGS}"
+export ORIG_CXXFLAGS="${CXXFLAGS}"
+unset CFLAGS
+unset CXXFLAGS
 cd $SRC
 cd xz
 ./autogen.sh --no-po4a --no-doxygen
 ./configure --enable-static --disable-debug --disable-shared --disable-xz --disable-xzdec --disable-lzmainfo
 make install -j$(nproc)
+export CFLAGS="${ORIG_CFLAGS}"
+export CXXFLAGS="${ORIG_CXXFLAGS}"
 
 # Build extra-cmake-modules
 cd $SRC

@@ -15,4 +15,4 @@
 ###############################################################################
 
 cd nokogiri/gumbo-parser
-make oss-fuzz
+make oss-fuzz CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"

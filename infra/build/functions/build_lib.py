@@ -569,16 +569,20 @@ def run_build(  # pylint: disable=too-many-arguments
     with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
       config_file.write(bytes(json.dumps(build_body), 'utf-8'))
       config_file.seek(0)
-      subprocess.run([
+      result = subprocess.run([
           'gcloud',
           'builds',
           'submit',
           '--project=oss-fuzz',
           f'--config={config_file.name}',
+          '--async',
+          '--format=get(id)',
       ],
-                     cwd=OSS_FUZZ_ROOT)
-
-      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
+                              stdout=subprocess.PIPE,
+                              cwd=OSS_FUZZ_ROOT,
+                              encoding='utf-8',
+                              check=True)
+      return result.stdout.strip()
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -594,3 +598,36 @@ def run_build(  # pylint: disable=too-many-arguments
   logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
                f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id
+
+
+def wait_for_build(build_id, credentials, cloud_project):
+  """Wait for a GCB build."""
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False,
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+
+  while True:
+    try:
+      status = cloudbuild.projects().builds().get(projectId=cloud_project,
+                                                  id=build_id).execute()
+      if status.get('status') in ('SUCCESS', 'FAILURE', 'TIMEOUT',
+                                  'INTERNAL_ERROR', 'EXPIRED', 'CANCELLED'):
+        # Build done.
+        return
+    except googleapiclient.errors.HttpError:
+      pass
+
+    time.sleep(15)  # Avoid rate limiting.
+
+
+def cancel_build(build_id, credentials, cloud_project):
+  """Cancel a GCB build"""
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False,
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+  cloudbuild.projects().builds().cancel(projectId=cloud_project,
+                                        id=build_id).execute()

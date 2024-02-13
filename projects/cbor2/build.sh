@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,14 @@
 #
 ################################################################################
 
+# Ensure C extension gets built
+export CBOR2_BUILD_C_EXTENSION=1
+
+# Build and install project (using current CFLAGS, CXXFLAGS). This is required
+# for projects with C extensions so that they're built with the proper flags.
 pip3 install .
 
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+    compile_python_fuzzer $fuzzer
 done
