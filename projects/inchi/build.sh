@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+cd INCHI-1-SRC
 $CC $CFLAGS -Wno-everything -DTARGET_API_LIB -DCOMPILE_ANSI_ONLY -ansi -c \
     INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c
 ar rcs $WORK/libinchi.a *.o
