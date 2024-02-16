@@ -1,0 +1,13 @@
+homepage: "https://cert-manager.io"
+primary_contact: "tim.ramlot@venafi.com"
+auto_ccs:
+  - "ashley.davis@venafi.com"
+  - "mael.valais@gmail.com"
+vendor_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/cert-manager/cert-manager'
