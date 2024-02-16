@@ -11,6 +11,7 @@ auto_ccs:
   - "jsharp@fastly.com"
   - "telliott@fastly.com"
   - "saule.cabrera@gmail.com"
+  - "jeff.charles@shopify.com"
 sanitizers:
   - address
 fuzzing_engines:
