@@ -30,6 +30,7 @@ libs/container \
 libs/container_hash/ \
 libs/core \
 libs/describe \
+libs/endian \
 libs/headers/ \
 libs/intrusive/ \
 libs/move/ \
