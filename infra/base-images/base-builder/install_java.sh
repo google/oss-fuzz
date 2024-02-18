@@ -35,6 +35,8 @@ build --java_runtime_version=local_jdk_15
 build --cxxopt=-stdlib=libc++
 build --linkopt=-lc++
 EOF
+
+sed -i 's/da607faed78c4cb5a5637ef74a36fdd2286f85ca5192222c4664efec2d529bb8/a0a45349bf5d57bbefe2669225cda802c5d9ab8ea412a5e683f52bdcf3f16c65/g' -i WORKSPACE.bazel
 bazel build //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar //deploy:jazzer-api //launcher:jazzer
 cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar
 cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver
