@@ -51,9 +51,9 @@ for i in $(seq 3 4); do
 done
 
 # set up dictionary and options to use it
-for bits in {,_16,_32}; do
-  for linksize in {,_3l,_4l}; do
+for bits in "" "_16" "_32"; do
+  cp "pcre2_fuzzer${bits}.dict" "${OUT}/pcre2_fuzzer${bits}.dict"
+  for linksize in "" "_3l" "_4l"; do
     cp "pcre2_fuzzer${bits}.options" "${OUT}/pcre2_fuzzer${bits}${linksize}.options"
-    cp "pcre2_fuzzer${bits}.dict" "${OUT}/pcre2_fuzzer${bits}${linksize}.dict"
   done
 done
