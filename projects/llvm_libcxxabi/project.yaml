@@ -1,4 +1,4 @@
-homepage: "http://libcxxabi.llvm.org/"
+homepage: "https://libcxxabi.llvm.org/"
 language: c++
 primary_contact: "kcc@google.com"
 main_repo: https://github.com/llvm/llvm-project

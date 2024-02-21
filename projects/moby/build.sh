@@ -25,8 +25,6 @@ then
 	
 fi
 
-cd $SRC/instrumentation
-go run main.go --target_dir=$SRC/moby --check_io_length=true
 cd $SRC/moby
 printf "package libnetwork\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/moby/registerfuzzdependency.go
 

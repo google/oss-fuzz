@@ -2,6 +2,7 @@ homepage: "https://github.com/igraph/igraph"
 main_repo: "https://github.com/igraph/igraph"
 language: c
 primary_contact: "szhorvat@gmail.com"
+coverage_extra_args: -ignore-filename-regex=.*libxml2-2.*/.*
 auto_ccs:
   - "Adam@adalogics.com"
   - "ntamas@gmail.com"
@@ -11,11 +12,10 @@ sanitizers:
   - undefined
   - memory
 architectures:
- - x86_64
- - i386
-
+  - x86_64
+  - i386
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+  - centipede

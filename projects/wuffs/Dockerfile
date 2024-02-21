@@ -36,9 +36,9 @@ RUN mkdir libjpeg_turbo_corpus && \
     rm -rf seed-corpora
 
 RUN mkdir pngsuite_corpus && \
-    git clone --depth=1 https://github.com/MozillaSecurity/fuzzdata && \
-    mv ./fuzzdata/samples/png/common/*.png ./pngsuite_corpus && \
-    rm -rf fuzzdata
+    git clone --depth=1 https://github.com/nigeltao/mozsec-fuzzdata && \
+    mv ./mozsec-fuzzdata/samples/png/common/*.png ./pngsuite_corpus && \
+    rm -rf mozsec-fuzzdata
 
 RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
 RUN mkdir rapidjson_corpus
@@ -48,6 +48,10 @@ RUN rm rapidjson.zip
 RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
 RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
 RUN rm -rf simdjson-fuzz
+
+RUN git clone --depth 1 https://github.com/nigeltao/xz-tests-files
+RUN rm -rf xz-tests-files/.git
+RUN mv xz-tests-files xz_corpus
 
 # Finish.
 

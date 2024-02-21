@@ -6,27 +6,27 @@
 	<artifactId>poi-fuzzer</artifactId>
 	<version>${fuzzedLibaryVersion}</version>
 	<packaging>jar</packaging>
-	
+
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<fuzzedLibaryVersion>5.2.3</fuzzedLibaryVersion>
-		<exec.mainClass>ossfuzz.LongLongHashMapFuzzer</exec.mainClass>
+		<exec.mainClass>org.apache.poi.XLSX2CSVFuzzer</exec.mainClass>
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
-	
+
 	<dependencies>
 		<!--
 			On the CI, install the jazzer file with
-		
+
 				mvn install:install-file -Dfile=${JAZZER_API_PATH} \
 					-DgroupId="com.code-intelligence" \
 					-DartifactId="jazzer-api" \
 					-Dversion="0.12.0" \
 					-Dpackaging=jar
-		
+
 			in order to avoid mismatching driver/api versions.
 		-->
 		<dependency>
@@ -41,8 +41,23 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-scratchpad</artifactId>
+			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-examples</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.20.0</version>
 		</dependency>
 	</dependencies>
 
@@ -66,10 +81,38 @@
 				</configuration>
 				<executions>
 					<execution>
+						<id>shade-poi</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<outputFile>target/assembly/${project.artifactId}-${fuzzedLibaryVersion}.jar</outputFile>
+							<artifactSet>
+								<includes>
+									<includes>org.apache.poi:poi</includes>
+									<includes>org.apache.poi:poi-ooxml</includes>
+									<includes>org.apache.poi:poi-scratchpad</includes>
+								</includes>
+							</artifactSet>
+						</configuration>
+					</execution>
+					<execution>
+						<id>shade-non-poi</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<outputFile>target/assembly/${project.artifactId}-libs-${fuzzedLibaryVersion}.jar</outputFile>
+							<artifactSet>
+								<excludes>
+									<excludes>org.apache.poi:poi</excludes>
+									<excludes>org.apache.poi:poi-ooxml</excludes>
+									<excludes>org.apache.poi:poi-scratchpad</excludes>
+								</excludes>
+							</artifactSet>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

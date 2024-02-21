@@ -17,6 +17,10 @@
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz_patch.patch
 
+if [ "$SANITIZER" = "undefined" ]; then
+  rm $SRC/tensorflow/tensorflow/security/fuzzing/cc/core/function/BUILD
+fi
+
 # Rename all fuzzer rules to oss-fuzz rules.
 find $SRC/tensorflow/tensorflow/ -name "BUILD" -exec sed -i 's/tf_cc_fuzz_test/tf_oss_fuzz_fuzztest/g' {} \;
 
@@ -26,6 +30,7 @@ sed -i 's/build:linux --copt=\"-Wno-array-parameter\"/# overwritten/g' ./.bazelr
 sed -i 's/build:linux --copt=\"-Wno-stringop-overflow\"/# overwritten/g' ./.bazelrc
 
 # Force Python3, run configure.py to pick the right build config
+export TF_PYTHON_VERSION=3.9
 PYTHON=python3
 yes "" | ${PYTHON} configure.py
 
@@ -41,7 +46,7 @@ synchronize_coverage_directories() {
     # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
     declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
       "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
-      "--exclude" "*")
+      "--include" "*.def" "--exclude" "*")
 
     # Sync existing code.
     ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
@@ -113,7 +118,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
 else
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.15 --strip=never"
 fi
 
 # Do not use compile_fuzztests.sh to synchronize coverage folders as we use

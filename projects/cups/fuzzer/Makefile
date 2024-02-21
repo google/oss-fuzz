@@ -8,7 +8,7 @@ INCDIR=-I./../ -I./../cups/
 MACRO=-D_CUPS_SOURCE -D_FORTIFY_SOURCE=2 -D_REENTRANT -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_THREAD_SAFE -D_REENTRANT
 EXTFLAGS=-Wall -Werror
 LIBDIR=-L./../cups/
-LibFLAGS=$(LIBDIR) $(LIB_FUZZING_ENGINE) -lcups -lcupsimage -lssl -lcrypto -lz -lpthread
+LibFLAGS=$(LIBDIR) $(LIB_FUZZING_ENGINE) -lcups -lcupsimage -lssl -lcrypto -lz -lpthread -l:libavahi-client.a -l:libavahi-common.a -l:libdbus-1.a -lsystemd 
 
 all: $(TARGET)
 

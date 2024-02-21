@@ -53,9 +53,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fclose(fp);
 
   // Write an empty config file.
-  char filename2[256];
-  sprintf(filename2, "/tmp/config-%d.cfg", getpid());
-  FILE *fp2 = fopen(filename2, "wb");
+  char file_to_load[256];
+  char file_to_save[256];
+  sprintf(file_to_load, "/tmp/config-%d.cfg", getpid());
+  sprintf(file_to_save, "/tmp/ftosave-%d.png", getpid());
+  FILE *fp2 = fopen(file_to_load, "wb");
   if (!fp2) {
     return 0;
   }
@@ -66,18 +68,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   try {
     Ogre::STBIImageCodec::startup();
     Ogre::ConfigFile cf;
-    cf.load(filename2);
+    cf.load(file_to_load);
     std::ifstream file1(filename, std::ios::in | std::ios::binary);
     Ogre::DataStreamPtr data1 =
         Ogre::DataStreamPtr(OGRE_NEW Ogre::FileStreamDataStream(&file1, false));
     Ogre::Image img;
     img.load(data1, "png");
+    img.save(file_to_save);
   } catch (Ogre::ItemIdentityException) {
   } catch (Ogre::InternalErrorException) {
   }
 
   Ogre::STBIImageCodec::shutdown();
   unlink(filename);
-  unlink(filename2);
+  unlink(file_to_load);
   return 0;
 }

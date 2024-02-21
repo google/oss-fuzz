@@ -89,6 +89,15 @@ fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]]
 then
     fuzz_branches+=("6")
+    fuzz_branches+=("7")
+fi
+
+if [[ `shuf -i 0-9 -n 1` -eq 0 ]]
+then
+    # adds quadratic complexity custom mutator one random build out of 10
+    clang -fPIE -I. -c $SRC/quadfuzz/quadfuzz.c -o $SRC/quadfuzz/quadfuzz.o
+    export LIB_FUZZING_ENGINE="-fsanitize=fuzzer $SRC/quadfuzz/quadfuzz.o"
+    echo "Using quadfuzz"
 fi
 
 for branch in "${fuzz_branches[@]}"; do

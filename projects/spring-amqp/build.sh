@@ -58,7 +58,7 @@ else
   popd
 
   #install
-  (cd $PROJECT && ./gradlew publishToMavenLocal -x javadoc -Dmaven.repo.local=$OUT/m2)
+  (cd $PROJECT && ./gradlew publishToMavenLocal -x javadoc -x asciidoctor -Dmaven.repo.local=$OUT/m2)
   $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath
@@ -76,17 +76,17 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-  LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-  ./open-jdk-17/bin/java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.$fuzzer_basename \
-  \$@" > $OUT/$fuzzer_basename
+JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=com.example.$fuzzer_basename \
+--jvm_args=\"\$mem_settings\" \
+\$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
 

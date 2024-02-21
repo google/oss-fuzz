@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake libgc-dev
+RUN apt-get update && apt-get install -y cmake libgc-dev pkg-config
 RUN git clone --depth 1 https://github.com/arximboldi/immer.git immer
 WORKDIR immer
 COPY build.sh $SRC/

@@ -1,0 +1,12 @@
+<toolchains><toolchain><type>jdk</type>
+    <provides><version>1.8</version></provides>
+	<configuration><jdkHome>${env.JAVA_HOME}</jdkHome></configuration></toolchain>
+	<toolchain><type>jdk</type><provides><version>11</version></provides>
+	<configuration><jdkHome>${env.JAVA_HOME}</jdkHome></configuration></toolchain>
+	<toolchain><type>jdk</type><provides><version>14</version></provides>
+	<configuration><jdkHome>${env.JAVA_HOME}</jdkHome></configuration></toolchain>
+	<toolchain><type>jdk</type><provides><version>15</version></provides>
+	<configuration><jdkHome>${env.JAVA_HOME}</jdkHome></configuration></toolchain>
+	<toolchain><type>jdk</type><provides><version>17</version></provides>
+	<configuration><jdkHome>${env.JAVA_HOME}</jdkHome></configuration></toolchain>
+</toolchains>

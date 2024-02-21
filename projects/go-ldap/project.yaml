@@ -1,0 +1,11 @@
+homepage: "https://github.com/go-ldap/ldap"
+language: go
+primary_contact: "cp@lumen.sh"
+auto_ccs:
+  - "johnweldon4@gmail.com"
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/go-ldap/ldap"

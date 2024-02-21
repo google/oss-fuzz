@@ -17,5 +17,5 @@
 pip3 install .
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data $SRC/jsonschema_specifications/jsonschema_specifications/schemas:jsonschema_specifications/schemas
 done

@@ -26,6 +26,16 @@ mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
   --disable-tests --disable-samples --with-data-packaging=static
 make install -j$(nproc)
 
+# For fuzz-introspector, exclude all functions in the tests directory,
+# libprotobuf-mutator and protobuf source code.
+# See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+icu/
+tarantool/build/test
+EOF
+
 cd $SRC/tarantool
 
 # Avoid compilation issue due to some undefined references. They are defined in
@@ -53,15 +63,17 @@ cmake_args=(
     -DOSS_FUZZ=ON
     -DLUA_USE_APICHECK=ON
     -DLUA_USE_ASSERT=ON
+    -DLUAJIT_USE_SYSMALLOC=ON
+    -DLUAJIT_ENABLE_GC64=ON
     $SANITIZERS_ARGS
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS}"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
 
     # Linker
     -DCMAKE_LINKER="${LD}"
@@ -70,7 +82,6 @@ cmake_args=(
     -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
 
     # Dependencies
-    -DENABLE_BUNDLED_LIBCURL=OFF
     -DENABLE_BUNDLED_LIBUNWIND=OFF
     -DENABLE_BUNDLED_ZSTD=OFF
 )

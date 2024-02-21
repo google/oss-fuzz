@@ -23,8 +23,14 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/fuzz && \
     done
 
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/seed-corpora
-RUN cd seed-corpora && zip -r ../decompress_fuzzer_seed_corpus.zip afl-testcases/jpeg* bugs/decompress* $SRC/libjpeg-turbo/testimages/*.jpg
-RUN cd seed-corpora && zip -r ../compress_fuzzer_seed_corpus.zip afl-testcases/bmp afl-testcases/gif* afl-testcases/targa bugs/compress* $SRC/libjpeg-turbo/testimages/*.bmp $SRC/libjpeg-turbo/testimages/*.ppm
+RUN cd seed-corpora && zip -r ../decompress_fuzzer_seed_corpus.zip afl-testcases/jpeg* bugs/decompress*
+RUN cat fuzz/branches.txt | while read branch; do \
+      zip -r decompress_fuzzer_seed_corpus.zip libjpeg-turbo.$branch/testimages/*.jpg; \
+    done
+RUN cd seed-corpora && zip -r ../compress_fuzzer_seed_corpus.zip afl-testcases/bmp afl-testcases/gif* afl-testcases/targa bugs/compress*
+RUN cat fuzz/branches.txt | while read branch; do \
+      zip -r compress_fuzzer_seed_corpus.zip libjpeg-turbo.$branch/testimages/*.bmp libjpeg-turbo.$branch/testimages/*.ppm; \
+    done
 RUN rm -rf seed-corpora
 
 COPY build.sh $SRC/

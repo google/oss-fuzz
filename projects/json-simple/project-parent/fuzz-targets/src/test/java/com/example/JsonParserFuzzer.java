@@ -17,7 +17,6 @@
 package com.example;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.junit.FuzzTest;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

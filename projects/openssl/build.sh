@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
+
 CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -60,11 +62,22 @@ function build_fuzzers() {
     done
     cp fuzz/oids.txt $OUT/asn1${SUFFIX}.dict
     cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
+    df
+    rm -rf *
+    df
 }
 
 cd $SRC/openssl/
 build_fuzzers ""
-cd $SRC/openssl111/
-build_fuzzers "_111"
+
+# In introspector only build the master branch
+if [[ "$SANITIZER" == introspector ]]; then
+  exit 0
+fi
+
 cd $SRC/openssl30/
 build_fuzzers "_30"
+cd $SRC/openssl31/
+build_fuzzers "_31"
+cd $SRC/openssl32/
+build_fuzzers "_32"

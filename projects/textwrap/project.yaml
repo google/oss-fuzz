@@ -1,6 +1,6 @@
 homepage: "https://crates.io/crates/textwrap"
 language: rust
-primary_contact: "martin@geisler.net"
+primary_contact: "mrtn.gslr@gmail.com"
 auto_ccs:
   - "github@ireas.org"
   - "guillaume1.gomez@gmail.com"

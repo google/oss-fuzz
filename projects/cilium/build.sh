@@ -15,5 +15,6 @@
 #
 ################################################################################
 
+
 $SRC/cilium/test/fuzzing/oss-fuzz-build.sh
 $SRC/cncf-fuzzing/projects/cilium/build.sh

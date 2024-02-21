@@ -1,0 +1,14 @@
+homepage: "https://aptos.dev"
+language: rust
+primary_contact: "gerardo@aptoslabs.com"
+main_repo: "https://github.com/aptos-labs/aptos-core"
+auto_ccs:
+  - "oss-fuzz-notifications@aptoslabs.com"
+  - "security@aptoslabs.com"
+  - "andrea.cappa@aptoslabs.com"
+  - "marco.ilardi@aptoslabs.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: -ignore-filename-regex=.*/rustc/.*

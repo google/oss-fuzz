@@ -9,6 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#include "git-compat-util.h"
 #include <ftw.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -23,7 +24,6 @@ int cmd_diff_index(int argc, const char **argv, const char *prefix);
 int cmd_diff_tree(int argc, const char **argv, const char *prefix);
 
 void generateGitConfig(char *);
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 
 void generateGitConfig(char *target_dir)
 {
@@ -38,14 +38,14 @@ void generateGitConfig(char *target_dir)
   creat(target_dir, 0777);
 }
 
+static int initialized = 0;
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	int i;
 	int no_of_commit;
 	int max_commit_count;
 	char *argv[6];
-	char *data_chunk;
-	char *basedir = "./.git";
 
 	/*
 	 * End this round of fuzzing if the data is not large enough
@@ -55,43 +55,27 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		return 0;
 	}
 
+	if (!initialized)
+	{
+		put_envs();
+		create_templ_dir();
+		initialized = 1;
+	}
+
 	/*
 	 * Cleanup if needed
 	 */
-	generateGitConfig("/tmp/.my_gitconfig");
-	system("ls -lart ./");
-  putenv("GIT_CONFIG_NOSYSTEM=true");
-  putenv("GIT_AUTHOR_EMAIL=FUZZ@LOCALHOST");
-  putenv("GIT_AUTHOR_NAME=FUZZ");
-  putenv("GIT_COMMITTER_NAME=FUZZ");
-  putenv("GIT_COMMITTER_EMAIL=FUZZ@LOCALHOST");
-
-  /*
-   * Create an empty and accessible template directory.
-   */
-  char template_directory[250];
-  snprintf(template_directory, 250, "/tmp/templatedir-%d", getpid());
-  struct stat stats;
-  stat(template_directory, &stats);
-  if (S_ISDIR(stats.st_mode) == 0) {
-    mkdir(template_directory, 0777);
-  }
-  char template_directory_env[350];
-  snprintf(template_directory_env, 350,
-           "GIT_TEMPLATE_DIR=%s", template_directory);
-  putenv(template_directory_env);
-
-  putenv("GIT_CONFIG_GLOBAL=/tmp/.my_gitconfig");
 	system("rm -rf ./.git");
 	system("rm -rf ./TEMP-*");
+	/* add initial files for git add */
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_2");
 
-	system("ls -lart ./");
+	initialize_the_repository();
+
 	/*
 	 *  Initialize the repository
 	 */
-	initialize_the_repository();
 	if (reset_git_folder())
 	{
 		repo_clear(the_repository);
@@ -106,18 +90,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	data += 4;
 	size -= 4;
 
-	data_chunk = xmallocz_gently(HASH_HEX_SIZE);
-
-	if (!data_chunk)
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
-
 	for (i = 0; i < no_of_commit; i++)
 	{
-		memcpy(data_chunk, data, HASH_HEX_SIZE);
-		if(generate_commit(data_chunk, HASH_SIZE))
+		if(generate_commit(data, HASH_SIZE))
 		{
 			repo_clear(the_repository);
 			return 0;
@@ -125,7 +100,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		data += HASH_HEX_SIZE;
 		size -= HASH_HEX_SIZE;
 	}
-	free(data_chunk);
 
 	argv[0] = "branch";
 	argv[1] = "-f";
@@ -140,74 +114,60 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Generate random file for diff
 	 */
-	data_chunk = xmallocz_gently(HASH_SIZE);
-
-	memcpy(data_chunk, data, HASH_SIZE);
-	randomize_git_file(".", "TEMP_1", data_chunk, HASH_SIZE);
+	randomize_git_file(".", "TEMP_1", data, HASH_SIZE);
 	data += (HASH_SIZE);
 	size -= (HASH_SIZE);
 
-	memcpy(data_chunk, data, HASH_SIZE);
-	randomize_git_file(".", "TEMP_2", data_chunk, HASH_SIZE);
+	randomize_git_file(".", "TEMP_2", data, HASH_SIZE);
 	data += (HASH_SIZE);
 	size -= (HASH_SIZE);
-
-	free(data_chunk);
 
 	/*
 	 * Calling git diff command
 	 */
 	argv[0] = "diff";
 	argv[1] = NULL;
-	if (cmd_diff(1, (const char **)argv, (const char *)""))
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
+	cmd_diff(1, (const char **)argv, (const char *)"");
 
 	argv[1] = "TEMP_1";
 	argv[2] = NULL;
-	if(cmd_diff(2, (const char **)argv, (const char *)""))
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
+	cmd_diff(2, (const char **)argv, (const char *)"");
+
 	argv[2] = "TEMP_2";
 	argv[3] = NULL;
-	if(cmd_diff(3, (const char **)argv, (const char *)""))
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
+	cmd_diff(3, (const char **)argv, (const char *)"");
+
 	argv[1] = "HEAD";
 	argv[2] = NULL;
-	if (cmd_diff(2, (const char **)argv, (const char *)"")) {
-    repo_clear(the_repository);
-    return 0;
-  }
+	cmd_diff(2, (const char **)argv, (const char *)"");
+
 	argv[1] = "--cached";
 	argv[2] = NULL;
 	cmd_diff(2, (const char **)argv, (const char *)"");
+
 	argv[1] = "--diff-filter=MRC";
 	argv[2] = "HEAD";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
+
 	argv[1] = "--diff-filter=MRC";
 	argv[2] = "HEAD";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
+
 	argv[1] = "-R";
 	argv[2] = "HEAD";
 	argv[3] = NULL;
 	cmd_diff(3, (const char **)argv, (const char *)"");
+
 	argv[1] = "master";
 	argv[2] = "new_branch";
 	argv[3] = NULL;
  	cmd_diff(3, (const char **)argv, (const char *)"");
 
-        /*
-         * Calling git diff-files command
-         */
+	/*
+	* Calling git diff-files command
+	*/
 	argv[0] = "diff-files";
 	argv[1] = NULL;
 	cmd_diff_files(1, (const char **)argv, (const char *)"");
@@ -218,9 +178,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[3] = NULL;
 	cmd_diff_files(3, (const char **)argv, (const char *)"");
 
-        /*
-         * Calling git diff-tree command
-         */
+	/*
+	* Calling git diff-tree command
+	*/
 	argv[0] = "diff-tree";
 	argv[1] = "master";
 	argv[2] = "--";
@@ -233,9 +193,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	argv[4] = NULL;
 	cmd_diff_tree(4, (const char **)argv, (const char *)"");
 
-        /*
-         * Calling git diff-index command
-         */
+	/*
+	* Calling git diff-index command
+	*/
 	argv[0] = "diff-index";
 	argv[1] = "master";
 	argv[2] = "--";

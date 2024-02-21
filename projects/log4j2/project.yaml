@@ -6,7 +6,6 @@ main_repo: https://github.com/apache/logging-log4j2
 sanitizers:
 - address
 vendor_ccs:
-- meumertzheim@code-intelligence.com
 - wagner@code-intelligence.com
 - norbert.schneider@code-intelligence.com
 - hlin@code-intelligence.com

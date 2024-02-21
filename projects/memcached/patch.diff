@@ -1,0 +1,26 @@
+diff --git a/Makefile.am b/Makefile.am
+index 4208331..11c3e1b 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,6 +1,7 @@
+ bin_PROGRAMS = memcached
+ pkginclude_HEADERS = protocol_binary.h xxhash.h
+-noinst_PROGRAMS = memcached-debug sizes testapp timedrun
++#noinst_PROGRAMS = memcached-debug sizes testapp timedrun
++memcached_LINK = true
+ 
+ BUILT_SOURCES=
+ 
+diff --git a/memcached.c b/memcached.c
+index 306a952..4520bdb 100644
+--- a/memcached.c
++++ b/memcached.c
+@@ -4730,7 +4730,7 @@ static int _mc_meta_load_cb(const char *tag, void *ctx, void *data) {
+     return reuse_mmap;
+ }
+ 
+-int main (int argc, char **argv) {
++int main2 (int argc, char **argv) {
+     int c;
+     bool lock_memory = false;
+     bool do_daemonize = false;

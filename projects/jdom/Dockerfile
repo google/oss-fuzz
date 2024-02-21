@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz -o ant.tar.gz && \
+RUN curl -L https://archive.apache.org/dist/ant/binaries/apache-ant-1.10.14-bin.tar.gz -o ant.tar.gz && \
     mkdir -p $SRC/ant && \
     tar -zxvf ant.tar.gz -C $SRC/ant --strip-components=1 && \
     rm -rf ant.tar.gz

@@ -18,7 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
- gettext \
  autogen \
  autopoint \
  autoconf \
@@ -40,6 +39,14 @@ RUN apt-get update && apt-get install -y \
  libtasn1-bin \
  libz-dev
 
+# Get a more recent version of gettext as the one in the package
+# manager is too old for wget2.
+RUN wget https://ftp.gnu.org/pub/gnu/gettext/gettext-0.22.2.tar.gz && \
+    tar -xzf ./gettext-0.22.2.tar.gz && \
+    cd gettext-0.22.2 && \
+    ./configure && \
+    make && \
+    make install
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
 RUN git clone git://git.savannah.gnu.org/gnulib.git
@@ -49,6 +56,11 @@ RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
+
+# Get a more recent version of automake as the one in the package
+# manager is too old for wget2.
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 
 RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 

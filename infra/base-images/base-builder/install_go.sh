@@ -16,10 +16,12 @@
 ################################################################################
 
 cd /tmp
-curl --silent -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.19
-rm -rf ./installer_linux
+wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+mkdir temp-go
+tar -C temp-go/ -xzf go1.21.0.linux-amd64.tar.gz
+mkdir /root/.go/
+mv temp-go/go/* /root/.go/
+rm -rf temp-go
 
 echo 'Set "GOPATH=/root/go"'
 echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'

@@ -14,22 +14,21 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev
+RUN apt-get update && apt-get install -y ffmpeg python3-pip gtk-doc-tools libffi-dev
 RUN pip3 install meson==0.55.3 ninja
 
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-RUN tar xvJf $SRC/glib-2.64.2.tar.xz 
+RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 
+RUN pip3 install corpus-replicator
+RUN corpus-replicator -o corpus image_gif_gif_ffmpeg.yml image_jpg_jpg_ffmpeg.yml image_png_png_ffmpeg.yml image
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git && \
-    git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
-    mkdir corpus && \
     find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' corpus/ ';' && \
     find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t corpus/ && \
-    mv $SRC/fuzzdata/samples/gif/*.gif corpus/ && \
     zip -q $SRC/gdk-pixbuf_seed_corpus.zip corpus/* && \
-    rm -rf libpng fuzzdata corpus
-    
+    rm -rf libpng corpus
+
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/png.dict
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict $SRC/jpeg.dict
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/gif.dict $SRC/gif.dict

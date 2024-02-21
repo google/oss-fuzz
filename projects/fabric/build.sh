@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+
 # Temporarily disable coverage build in OSS-Fuzz's CI
 if [ -n "${OSS_FUZZ_CI-}" ]
 then

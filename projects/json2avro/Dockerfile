@@ -20,4 +20,5 @@ RUN git clone --depth 1 https://github.com/allegro/json-avro-converter/ json2avr
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+ENV TARGET_PACKAGE_PREFIX tech.allegro.schema.json2avro.converter.*
 WORKDIR $SRC/json2avro

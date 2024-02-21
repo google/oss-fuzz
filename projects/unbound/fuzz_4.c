@@ -71,6 +71,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t nr) {
   memset(&priv, 0, sizeof(struct iter_priv));
   ie.priv = &priv;
 
+  struct module_qstate qstate;
+  memset(&qstate, 0, sizeof(struct module_qstate));
+  qstate.env = &env;
+  qstate.region = reg;
 
   if (parse_packet(pkt, &msg, reg) != LDNS_RCODE_NOERROR) {    
     goto out;
@@ -80,7 +84,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t nr) {
   }
 
 
-  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &ie);   
+  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie);
 
 out:
   rrset_cache_delete(env.rrset_cache);

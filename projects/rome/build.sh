@@ -22,7 +22,7 @@ MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15 -Dmaven
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
-cp "rome-core/target/rome-core-$CURRENT_VERSION.jar" $OUT/rome.jar
+cp "rome/target/rome-$CURRENT_VERSION.jar" $OUT/rome.jar
 
 ALL_JARS="rome.jar"
 

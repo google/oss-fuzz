@@ -176,7 +176,8 @@ class ProjectYamlChecker:
     """Returns True if all section names are valid."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.error(f'{name} is not a valid section name ({valid_names})')
+        self.error(
+            f'{name} is not a valid section name ({self.VALID_SECTION_NAMES})')
 
   def check_required_sections(self):
     """Returns True if all required sections are in |self.data|."""

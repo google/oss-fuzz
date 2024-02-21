@@ -16,9 +16,13 @@
 ################################################################################
 
 # Build fuzzers in $OUT.
-pip3 cache purge
+python3 -m pip cache purge
+# Compiling with sancov is causing some issues at the moment. This is likely
+# due to some missing flags propagated throughout.
 unset RUSTFLAGS
-pip3 install .
+unset CXXFLAGS
+unset CFLAGS
+python3 -m pip install .
 
 cd $SRC
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do

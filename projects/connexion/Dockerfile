@@ -14,6 +14,7 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip asgiref flask
+RUN git clone --depth=1 https://github.com/python-jsonschema/jsonschema-specifications jsonschema_specifications
 RUN git clone https://github.com/spec-first/connexion connexion
 COPY *.sh *py $SRC/
 WORKDIR $SRC/connexion

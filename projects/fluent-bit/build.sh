@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+find /usr/ -name "libyaml*.so" -exec rm {} \;
+find /usr/ -name "libyaml-0*" -exec rm {} \;
+
 # For fuzz-introspector, cxclude all functions in the fluent-bit/lib/ directory
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
@@ -24,12 +27,19 @@ EOF
 
 cd fluent-bit
 
-# Avoid building tests we don't need
-sed -i 's/prepare_unit_tests(flb/#prepare_unit_tests(flb/g' ./tests/internal/CMakeLists.txt
+# Patch files for fuzzing purposes. Only do if they have not already been patched.
+if [ $(grep "fuzz" -ic ./lib/msgpack-c/src/zone.c) -eq 0 ]
+then
+  # Avoid building tests we don't need
+  sed -i 's/prepare_unit_tests(flb/#prepare_unit_tests(flb/g' ./tests/internal/CMakeLists.txt
+  sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
+  sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
+fi
 
-sed -i 's/malloc(/fuzz_malloc(/g' ./lib/msgpack-c/src/zone.c
-sed -i 's/struct msgpack_zone_chunk {/void *fuzz_malloc(size_t size) {if (size > 0xa00000) return NULL;\nreturn malloc(size);}\nstruct msgpack_zone_chunk {/g' ./lib/msgpack-c/src/zone.c
-
+# Remove the existing build, which makes it more convenient to build 
+# fuzzers with multiple sanitizers using the same working directory.
+rm -rf ./build
+mkdir build
 cd build
 export CFLAGS="$CFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
 export CXXFLAGS="$CXXFLAGS -fcommon -DFLB_TESTS_OSSFUZZ=ON"
@@ -103,7 +113,7 @@ EXTRA_FLAGS="-DFLB_BINARY=OFF \
   -DFLB_METRICS=ON   \
   -DFLB_DEBUG=ON     \
   -DMBEDTLS_FATAL_WARNINGS=OFF \
-  -DFLB_CONFIG_YAML=OFF"
+  -DFLB_CONFIG_YAML=ON"
 
 cmake -DFLB_TESTS_INTERNAL=ON \
       -DFLB_TESTS_INTERNAL_FUZZ=ON \
@@ -122,3 +132,9 @@ else
 fi
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/
+
+# Add seeds to config-yaml fuzzer
+mkdir -p $SRC/config_yaml_seeds
+cd $SRC/config_yaml_seeds
+find $SRC/fluent-bit/tests/internal/data/config_format/yaml -name "*.yaml" -exec cp {} . \;
+zip -rj $OUT/flb-it-fuzz-config_yaml_fuzzer_OSSFUZZ_seed_corpus.zip $SRC/config_yaml_seeds/*

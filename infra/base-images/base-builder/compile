@@ -132,6 +132,11 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
+if [ "$FUZZING_LANGUAGE" = "go" ]; then
+  # required by Go 1.20
+  export CXX="${CXX} -lresolv"
+fi
+
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
   sanitizer_with_fuzzer_lib_dir=`python3 -c "import atheris; import os; print(atheris.path())"`
   sanitizer_with_fuzzer_output_lib=$OUT/sanitizer_with_fuzzer.so
@@ -154,13 +159,22 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
   jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
   if [ "$SANITIZER" = "address" ]; then
-    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --asan "$@"
+EOF
   elif [ "$SANITIZER" = "undefined" ]; then
-    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
-  elif [ "$SANITIZER" = "coverage" ]; then
-    # Coverage builds require no instrumentation.
+    cat > $jazzer_driver_with_sanitizer << 'EOF'
+#!/bin/bash
+this_dir=$(dirname "$0")
+"$this_dir/jazzer_driver" --ubsan "$@"
+EOF
+  elif [ "$SANITIZER" = "coverage" ] ||  [ "$SANITIZER" = "introspector" ]; then
+    # Coverage & introspector builds require no instrumentation.
     cp $(which jazzer_driver) $jazzer_driver_with_sanitizer
   fi
+  chmod +x $jazzer_driver_with_sanitizer
 
   # Disable leak checking since the JVM triggers too many false positives.
   export CFLAGS="$CFLAGS -fno-sanitize=leak"
@@ -176,6 +190,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   export CXXFLAGS="$CXXFLAGS -g"
   export FI_BRANCH_PROFILE=1
   export FUZZ_INTROSPECTOR=1
+  export FUZZ_INTROSPECTOR_AUTO_FUZZ=1
 
   # Move ar and ranlib
   mv /usr/bin/ar /usr/bin/old-ar
@@ -214,7 +229,8 @@ if [ "$FUZZING_LANGUAGE" = "rust" ]; then
   # Copy rust std lib to its path with a hash.
   export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
   mkdir -p /rustc/$rustch/
-  cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
+  export rustdef=`rustup toolchain list | grep default | cut -d' ' -f1`
+  cp -r /rust/rustup/toolchains/$rustdef/lib/rustlib/src/rust/library/ /rustc/$rustch/
 fi
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
@@ -237,8 +253,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
-  apt-get install -y libjpeg-dev zlib1g-dev
-  python3 -m pip install --upgrade setuptools
+  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
+  python3 -m pip install --upgrade pip setuptools
   python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
   python3 -m pip install --prefer-binary matplotlib
 
@@ -257,6 +273,8 @@ if [ "$SANITIZER" = "introspector" ]; then
   mkdir -p $SRC/inspector
   find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "fuzzerLogFile-*.data.yaml" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "fuzzerLogFile-*.data.debug_info" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "allFunctionsWithMain-*.yaml" -exec cp {} $SRC/inspector/ \;
 
   # Move coverage report.
   if [ -d "$OUT/textcov_reports" ]

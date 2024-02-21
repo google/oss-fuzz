@@ -1,0 +1,13 @@
+homepage: "https://github.com/signalapp/mp4san"
+language: rust
+primary_contact: "usual.beach5937@jessacake.com"
+main_repo: "https://github.com/signalapp/mp4san"
+auto_ccs:
+  - "jrose@signal.org"
+  - "ehren@signal.org"
+vendor_ccs:
+  - "security@signal.org"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

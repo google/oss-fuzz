@@ -13,21 +13,19 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
 package org.apache.struts.test;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class StrutsSimpleRequestFuzzer {
- 
+
     private static String g_host = "localhost";
     private static int g_port = 8080;
 
@@ -40,6 +38,7 @@ public class StrutsSimpleRequestFuzzer {
     }
 
     public void runTest(String fuzzyString) {
+        com.code_intelligence.jazzer.api.BugDetectors.allowNetworkConnections();
 
         Server server = null;
 
@@ -73,13 +72,9 @@ public class StrutsSimpleRequestFuzzer {
             http.connect();
 
             System.out.println(http.getResponseCode() + " " + http.getResponseMessage());
-
-        } catch (IOException ex) {
-            /* ignore */
-        } catch (IllegalArgumentException ex) {
+        } catch (IOException | IllegalArgumentException ex) {
             /* ignore */
         } finally {
-
             if (server != null) {
                 do {
                     try {

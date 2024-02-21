@@ -18,8 +18,8 @@ export CFLAGS="$CFLAGS -fPIE"
 export CXXFLAGS="$CFLAGS -fPIE"
 export LDFLAGS="$CFLAGS -fPIE"
 
-./configure --enable-static --disable-shared --with-dnssd=no
-make 
+./configure --enable-static --disable-shared
+make
 
 pushd fuzzer/
 make

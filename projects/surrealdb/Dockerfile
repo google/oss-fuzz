@@ -16,9 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 https://github.com/surrealdb/surrealdb surrealdb
+RUN git clone --depth 1 https://github.com/surrealdb/docs.surrealdb.com.git surrealdb_website
 WORKDIR surrealdb
 # TODO(surrealdb/surrealdb#1873): Remove `RUN rustup.*` lines once 
 # rust-lang/rust#110475 is fixed.
 RUN rustup install nightly-2023-04-21
 RUN rustup default nightly-2023-04-21
+# needed for MSAN and coverage build
+RUN rustup component add rust-src
 COPY build.sh $SRC/

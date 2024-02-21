@@ -15,10 +15,8 @@
 #
 ################################################################################
 
-# Temporarily disable randomization and enforce a safe and sane setup
-
-# In emergencies where afl++'s own compiler fails set this to "1":
-export AFL_LLVM_MODE_WORKAROUND=0
+# If LLVM once again does weird changes then enable this:
+#export AFL_LLVM_INSTRUMENT=LLVM-NATIVE
 
 # AFL++ setup
 echo "Copying precompiled AFL++"
@@ -43,7 +41,6 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 export AFL_IGNORE_PROBLEMS=1
 # No complain on unknown AFL environment variables
 export AFL_IGNORE_UNKNOWN_ENVS=1
-
 
 # Provide a way to document the AFL++ options used in this build:
 echo

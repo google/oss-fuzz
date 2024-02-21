@@ -1,0 +1,12 @@
+homepage: "https://crates.io/crates/askama"
+language: rust
+primary_contact: "djc.ochtman@gmail.com"
+main_repo: "https://github.com/djc/askama"
+vendor_ccs:
+  - maxnair.dev@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

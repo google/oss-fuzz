@@ -37,10 +37,10 @@ apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends
 
 
-wget -q https://download.swift.org/swift-5.7-release/ubuntu2004/swift-5.7-RELEASE/swift-5.7-RELEASE-ubuntu20.04.tar.gz
-tar xzf swift-5.7-RELEASE-ubuntu20.04.tar.gz
-cp -r swift-5.7-RELEASE-ubuntu20.04/usr/* /usr/
-rm -rf swift-5.7-RELEASE-ubuntu20.04.tar.gz swift-5.7-RELEASE-ubuntu20.04/
+wget -q https://download.swift.org/swift-5.8.1-release/ubuntu2004/swift-5.8.1-RELEASE/swift-5.8.1-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-5.8.1-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-5.8.1-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-5.8.1-RELEASE-ubuntu20.04.tar.gz swift-5.8.1-RELEASE-ubuntu20.04/
 # TODO: Move to a seperate work dir
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project

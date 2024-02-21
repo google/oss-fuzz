@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake python python-setuptools
-RUN git clone --depth 1 --branch v4 https://github.com/aquynh/capstone.git capstonev4
+RUN git clone --depth 1 --branch v5 https://github.com/aquynh/capstone.git capstonev5
 RUN git clone --depth 1 --branch next https://github.com/aquynh/capstone.git capstonenext
 WORKDIR $SRC
 COPY build.sh $SRC/

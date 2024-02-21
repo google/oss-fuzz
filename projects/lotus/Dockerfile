@@ -19,5 +19,12 @@ RUN apt-get update && apt-get install -y mesa-opencl-icd ocl-icd-opencl-dev gcc 
     git bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev
 RUN git clone --depth 1 https://github.com/filecoin-project/lotus
 RUN git clone --depth 1 https://github.com/filecoin-project/fuzzing-lotus
+
+RUN wget https://go.dev/dl/go$(cat lotus/GO_VERSION_MIN).linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go$(cat lotus/GO_VERSION_MIN).linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+
 COPY build.sh $SRC/
 WORKDIR $SRC/lotus

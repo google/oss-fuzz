@@ -21,6 +21,7 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   # Add relevant data and two hidden modules
   compile_python_fuzzer $fuzzer \
       --add-data ./connexion/resources/schemas/:connexion/resources/schemas/ \
+      --add-data $SRC/jsonschema_specifications/jsonschema_specifications/schemas:jsonschema_specifications/schemas \
       --hidden-import=asgiref \
       --hidden-import=flask
 done

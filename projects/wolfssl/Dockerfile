@@ -14,19 +14,18 @@
 #
 ################################################################################
 
-# Held back because of github.com/google/oss-fuzz/pull/8313
-# Please fix failure and upgrade.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:111d6b9d3a52bd3392602c71dc8936c628607a7a9bc86d381db7586f9b1e840f
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python bsdmainutils libcrypt-dev:i386
-RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
+RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
+RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
 RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
 RUN git clone --depth 1 https://github.com/guidovranken/wolf-ssl-ssh-fuzzers
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.tar.bz2
+RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 # Retrieve corpora from other projects

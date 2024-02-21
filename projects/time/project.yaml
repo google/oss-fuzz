@@ -1,0 +1,12 @@
+homepage: "https://opensource.fb.com"
+language: go
+primary_contact: "leoleovich@meta.com"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+  - "pcullen@meta.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/facebook/time"
+file_github_issue: True

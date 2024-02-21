@@ -77,7 +77,16 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 # Regex to match special chars in project name.
 SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
 
-LANGUAGES_WITH_BUILDER_IMAGES = {'go', 'jvm', 'python', 'rust', 'swift'}
+LANGUAGE_TO_BASE_BUILDER_IMAGE = {
+    'c': 'base-builder',
+    'c++': 'base-builder',
+    'go': 'base-builder-go',
+    'javascript': 'base-builder-javascript',
+    'jvm': 'base-builder-jvm',
+    'python': 'base-builder-python',
+    'rust': 'base-builder-rust',
+    'swift': 'base-builder-swift'
+}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
@@ -256,11 +265,10 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   generate_parser = subparsers.add_parser(
       'generate', help='Generate files for new project.')
   generate_parser.add_argument('project')
-  generate_parser.add_argument(
-      '--language',
-      default=constants.DEFAULT_LANGUAGE,
-      choices=['c', 'c++', 'rust', 'go', 'jvm', 'swift', 'python'],
-      help='Project language.')
+  generate_parser.add_argument('--language',
+                               default=constants.DEFAULT_LANGUAGE,
+                               choices=LANGUAGE_TO_BASE_BUILDER_IMAGE.keys(),
+                               help='Project language.')
   _add_external_project_args(generate_parser)
 
   build_image_parser = subparsers.add_parser('build_image',
@@ -372,6 +380,9 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                help='do not download corpus backup from '
                                'OSS-Fuzz; use corpus located in '
                                'build/corpus/<project>/<fuzz_target>/')
+  coverage_parser.add_argument('--no-serve',
+                               action='store_true',
+                               help='do not serve a local HTTP server.')
   coverage_parser.add_argument('--port',
                                default='8008',
                                help='specify port for'
@@ -830,9 +841,11 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       ]
 
   command += [
-      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work', '-t',
+      '-v', f'{project_out}:/out', '-v', f'{project.work}:/work',
       f'gcr.io/oss-fuzz/{project.name}'
   ]
+  if sys.stdin.isatty():
+    command.insert(-1, '-t')
 
   result = docker_run(command, architecture=architecture)
   if not result:
@@ -1207,10 +1220,12 @@ def coverage(args):
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
-      'HTTP_PORT=%s' % args.port,
       'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
       'ARCHITECTURE=' + args.architecture,
   ]
+
+  if not args.no_serve:
+    env.append(f'HTTP_PORT={args.port}')
 
   run_args = _env_to_docker_args(env)
 
@@ -1587,9 +1602,7 @@ def _get_current_datetime():
 
 def _base_builder_from_language(language):
   """Returns the base builder for the specified language."""
-  if language not in LANGUAGES_WITH_BUILDER_IMAGES:
-    return 'base-builder'
-  return 'base-builder-{language}'.format(language=language)
+  return LANGUAGE_TO_BASE_BUILDER_IMAGE[language]
 
 
 def _generate_impl(project, language):

@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 cd $SRC/crossplane
 $SRC/crossplane/test/fuzz/oss_fuzz_build.sh
 cd $SRC/crossplane-runtime

@@ -18,34 +18,52 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export CXXFLAGS="$CXXFLAGS -D_LIBCPP_DEBUG=1"
 export GO111MODULE=off
 
 # Install Go stable binaries
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
-if [[ $CFLAGS = *-m32* ]]
-then
-    tar zxf $SRC/go1.20.4.linux-386.tar.gz
-else
-    tar zxf $SRC/go1.20.4.linux-amd64.tar.gz
-fi
-mkdir $SRC/go-bootstrap/go/packages/
 
-# Compile and install Go development version
-cd $SRC/go/src/
-export GOROOT=$SRC/go-bootstrap/go/
-export GOPATH=$GOROOT/packages
+tar zxf $SRC/go1.21.3.linux-amd64.tar.gz
+mv go/ go-121
+export GOROOT_121=$SRC/go-bootstrap/go-121/
+export GOPATH_121=$GOROOT_121/packages/
+mkdir $GOPATH_121
+mkdir -p $GOPATH_121/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_121/src/golang.org/x/crypto/
+mkdir -p $GOPATH_121/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_121/src/golang.org/x/sys/
+export PATH_GO_121=$GOROOT_121/bin:$GOROOT_121/packages/bin:$PATH
+
+tar zxf $SRC/go1.20.10.linux-amd64.tar.gz
+mv go/ go-120
+export GOROOT_120=$SRC/go-bootstrap/go-120/
+export GOPATH_120=$GOROOT_120/packages/
+mkdir $GOPATH_120
+mkdir -p $GOPATH_120/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_120/src/golang.org/x/crypto/
+mkdir -p $GOPATH_120/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_120/src/golang.org/x/sys/
+export PATH_GO_120=$GOROOT_120/bin:$GOROOT_120/packages/bin:$PATH
+
+# Compile Go development version
+cd $SRC/go-dev/src/
 export OLD_PATH=$PATH
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-./make.bash
-export PATH=$OLD_PATH
-unset OLD_PATH
-export GOROOT=$(realpath ../)
-export GOPATH=$GOROOT/packages
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-rm -rf $SRC/go-bootstrap/
+PATH="$PATH_GO_120" ./make.bash
+export GOROOT_DEV=$(realpath ../)
+export GOPATH_DEV=$GOROOT_DEV/packages
+mkdir $GOPATH_DEV
+mkdir -p $GOPATH_DEV/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_DEV/src/golang.org/x/crypto/
+mkdir -p $GOPATH_DEV/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_DEV/src/golang.org/x/sys/
+export PATH_GO_DEV=$GOROOT_DEV/bin:$GOROOT_DEV/packages/bin:$PATH
+
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -81,9 +99,6 @@ export INCLUDE_PATH_FLAGS=""
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
-
-git clone https://github.com/golang/crypto $GOPATH/src/golang.org/x/crypto
-git clone https://github.com/golang/sys.git $GOPATH/src/golang.org/x/sys
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
@@ -260,8 +275,6 @@ then
     # Disable speculative load hardening because
     # this results in MSAN false positives
     sed -i '/.*x86-speculative-load-hardening.*/d' lib/CMakeLists.txt
-    sed -i '/.*x86-speculative-load-hardening.*/d' modules_linux/common/ModuleCommon.cmake
-
 
     # Unittests don't build with clang and are not needed anyway
     sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
@@ -309,8 +322,8 @@ make -B
 
 # Compile mpdecimal
 cd $SRC/
-tar zxf mpdecimal-2.5.1.tar.gz
-cd mpdecimal-2.5.1/
+tar zxf mpdecimal-4.0.0.tar.gz
+cd mpdecimal-4.0.0/
 ./configure
 cd libmpdec/
 make libmpdec.a -j$(nproc)
@@ -355,18 +368,18 @@ cd $SRC/cryptofuzz/modules/cryptopp
 make -B
 
 ##############################################################################
-# Compile mbed TLS
+# Compile Mbed TLS
 cd $SRC/mbedtls/
-scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
-scripts/config.pl set MBEDTLS_CMAC_C
-scripts/config.pl set MBEDTLS_NIST_KW_C
-scripts/config.pl set MBEDTLS_ARIA_C
+scripts/config.py set MBEDTLS_PLATFORM_MEMORY
+scripts/config.py set MBEDTLS_CMAC_C
+scripts/config.py set MBEDTLS_NIST_KW_C
+scripts/config.py set MBEDTLS_ARIA_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
-    scripts/config.pl unset MBEDTLS_HAVE_ASM
-    scripts/config.pl unset MBEDTLS_PADLOCK_C
-    scripts/config.pl unset MBEDTLS_AESNI_C
-    scripts/config.pl unset MBEDTLS_AESCE_C
+    scripts/config.py unset MBEDTLS_HAVE_ASM
+    scripts/config.py unset MBEDTLS_PADLOCK_C
+    scripts/config.py unset MBEDTLS_AESNI_C
+    scripts/config.py unset MBEDTLS_AESCE_C
 fi
 mkdir build/
 cd build/
@@ -374,9 +387,14 @@ cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc)
 export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
 export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
-# Compile Cryptofuzz mbed crypto module
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS -DCRYPTOFUZZ_TF_PSA_CRYPTO"
+
+# Compile Cryptofuzz module for Mbed TLS with the legacy crypto API
 cd $SRC/cryptofuzz/modules/mbedtls
+make -B
+
+# Compile Cryptofuzz module for Mbed TLS with the PSA crypto API
+cd $SRC/cryptofuzz/modules/tf-psa-crypto
 make -B
 
 ##############################################################################
@@ -493,12 +511,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang module
+# Compile Cryptofuzz Golang (121) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
     cd $SRC/cryptofuzz/modules/golang
-    make -B
+    GOROOT="$GOROOT_121" GOPATH="$GOPATH_121" PATH="$PATH_GO_121" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -528,6 +545,8 @@ then
     LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
 fi
 
+rm -f $SRC/cryptofuzz/modules/golang/module.a
+
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # libtomcrypt can only be compiled with NSS, because OpenSSL, LibreSSL and
@@ -540,12 +559,14 @@ fi
 
 ##############################################################################
 # Compile wolfCrypt
+cd $SRC/wolfsm/
+./install.sh
 cd $SRC/wolfssl
 # Enable additional wolfCrypt features which cannot be activated through arguments to ./configure
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-aesccm --enable-aesctr --enable-xts --enable-des3 --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-aessiv --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt --enable-aesgcm-stream --enable-shake128 --enable-siphash --enable-eccsi --with-eccminsz=0 --enable-aeseax --enable-ed25519-stream --enable-ed448-stream --enable-sm2 --enable-sm3 --enable-sm4-cbc --enable-sm4-ccm --enable-sm4-ctr --enable-sm4-ecb --enable-sm4-gcm --enable-smallstack"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -567,6 +588,14 @@ export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
 # Compile Cryptofuzz wolfcrypt (without assembly) module
 cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
+
+##############################################################################
+# Compile Cryptofuzz Golang (120) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_120" GOPATH="$GOPATH_120" PATH="$PATH_GO_120" make -B
+fi
 
 # OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
 export SAVE_CXXFLAGS="$CXXFLAGS"
@@ -644,7 +673,17 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
+rm -f $SRC/cryptofuzz/modules/golang/module.a
+
 export CXXFLAGS="$SAVE_CXXFLAGS"
+
+##############################################################################
+# Compile Cryptofuzz Golang (dev branch) module
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    cd $SRC/cryptofuzz/modules/golang
+    GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" make -B
+fi
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -655,9 +694,9 @@ then
     cd build
     if [[ $CFLAGS = *-m32* ]]
     then
-        setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
     else
-        cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
     make -j$(nproc) crypto
 
@@ -694,7 +733,7 @@ make -B -f Makefile-mini-gmp
 cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
+GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
 make -j$(nproc) crypto
 
 # Compile Cryptofuzz BoringSSL (with assembly) module

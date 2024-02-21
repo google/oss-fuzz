@@ -49,6 +49,7 @@ done
 
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
 SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
+COVERAGE_TARGET_FILE="$FUZZER_STATS_DIR/coverage_targets.txt"
 
 # Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
 PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
@@ -68,7 +69,9 @@ TIMEOUT=1h
 objects=""
 
 # Number of CPUs available, this is needed for running tests in parallel.
+# Set the max number of parallel jobs to be the CPU count and a max of 10.
 NPROC=$(nproc)
+MAX_PARALLEL_COUNT=10
 
 CORPUS_DIR=${CORPUS_DIR:-"/corpus"}
 
@@ -300,9 +303,17 @@ for fuzz_target in $FUZZ_TARGETS; do
     if [[ $FUZZING_ENGINE != "none" ]]; then
       grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || grep "testing\.T" $fuzz_target > /dev/null 2>&1 || continue
     fi
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_go_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "python" ]]; then
     echo "Entering python fuzzing"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_python_fuzz_target $fuzz_target
   elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
     # Continue if not a fuzz target.
@@ -311,6 +322,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_java_fuzz_target $fuzz_target &
   elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
     # Continue if not a fuzz target.
@@ -319,6 +334,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_javascript_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
@@ -327,6 +346,10 @@ for fuzz_target in $FUZZ_TARGETS; do
     fi
 
     echo "Running $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
     run_fuzz_target $fuzz_target &
 
     # Rewrite object if its a FUZZTEST target
@@ -343,9 +366,9 @@ for fuzz_target in $FUZZ_TARGETS; do
   fi
 
 
-  # Do not spawn more processes than the number of CPUs available.
+  # Limit the number of processes to be spawned.
   n_child_proc=$(jobs -rp | wc -l)
-  while [ "$n_child_proc" -eq "$NPROC" ]; do
+  while [[ "$n_child_proc" -eq "$NPROC" || "$n_child_proc" -gt "$MAX_PARALLEL_COUNT" ]]; do
     sleep 4
     n_child_proc=$(jobs -rp | wc -l)
   done
@@ -414,8 +437,41 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   classes_dir=$DUMPS_DIR/classes
   mkdir $classes_dir
   for fuzz_target in $FUZZ_TARGETS; do
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
     cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
   done
+
+  # Dump classes in jar file to dump directory. This action includes all
+  # the classes of the project that are not executed by the fuzzers to
+  # the dump directory. Duplicate classes in the dump directory will be
+  # overwritten. We need to do this to include all possible classes in
+  # the coverage report and avoid duplicate classes from different jar
+  # files which jacoco fails to handle.
+  for jar_file in $(ls $OUT/*.jar)
+  do
+    if [[ $jar_file != $OUT/jazzer* ]]
+    then
+      tempdir=$(mktemp -d)
+      cd $tempdir && jar xvf $jar_file && cd -
+      cp -r $tempdir/* $classes_dir/
+      rm -r $tempdir
+    fi
+  done
+
+  # Clean up files that can create duplicate class names which breaks Jacoco.
+  # Remove META-INF folder because some jar may store duplications of the same
+  # class file in the META-INF for other java versions.
+  find $classes_dir -name "META-INF" | xargs rm -rf
+  # Remove all files that are not a java class because some jar may contain
+  # Kotlin class which has the same name as a java class and Jacoco fail to
+  # distinguish them.
+  find $classes_dir -type f -not -name "*.class" | xargs rm -f
+  # Remove all class files which have a dot in their file name which are normally
+  # used to name a duplication of the legitimate class file.
+  find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
@@ -493,12 +549,16 @@ else
 
     generate_html $profdata_path "$shared_libraries" "$fuzz_target" "$report_dir"
   done
+
+  set +e
 fi
 
 # Make sure report is readable.
 chmod -R +r $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR
 find $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR -type d -exec chmod +x {} +
 
+# HTTP_PORT is optional.
+set +u
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"

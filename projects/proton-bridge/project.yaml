@@ -1,0 +1,10 @@
+homepage: "https://proton.me"
+language: go
+primary_contact: "security@proton.me"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/ProtonMail/proton-bridge"

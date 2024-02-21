@@ -1,0 +1,15 @@
+homepage: https://github.com/nodeca/js-yaml
+language: javascript
+main_repo: https://github.com/nodeca/js-yaml
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "christopher.krah@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

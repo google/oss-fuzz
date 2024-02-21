@@ -1,0 +1,10 @@
+homepage: "https://www.memcached.org/"
+language: c
+main_repo: "https://github.com/memcached/memcached"
+primary_contact: "alan@cacheforge.com"
+auto_ccs:
+  - "bxa@stripe.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

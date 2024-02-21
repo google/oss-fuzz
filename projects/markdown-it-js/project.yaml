@@ -1,0 +1,8 @@
+homepage: https://github.com/markdown-it/markdown-it
+language: javascript
+primary_contact: adoxalim@gmail.com
+main_repo: https://github.com/markdown-it/markdown-it.git
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none

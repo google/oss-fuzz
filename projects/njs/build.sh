@@ -18,7 +18,12 @@
 # Build pcre dependency to be linked statically.
 pushd $SRC/pcre2
 ./autogen.sh
-CFLAGS="$CFLAGS -fno-use-cxa-atexit" CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit" ./configure
+if [ "$SANITIZER" == "introspector" ]; then
+  # Disable sanitizers for introspector for pcre. We only care about njs and it's blocking the build.
+  CFLAGS="" CXXFLAGS="" LIB_FUZZING_ENGINE="" ./configure
+else
+  CFLAGS="$CFLAGS -fno-use-cxa-atexit" CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit" ./configure
+fi
 make -j$(nproc) clean
 make -j$(nproc) all
 make install

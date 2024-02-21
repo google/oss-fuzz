@@ -10,7 +10,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "builtin.h"
+#include "hex.h"
 #include "repository.h"
+#include "strbuf.h"
 #include "fuzz-cmd-base.h"
 
 int cmd_add(int argc, const char **argv, const char *prefix);
@@ -27,8 +29,6 @@ int cmd_mv(int argc, const char **argv, const char *prefix);
 int cmd_rerere(int argc, const char **argv, const char *prefix);
 int cmd_status(int argc, const char **argv, const char *prefix);
 int cmd_version(int argc, const char **argv, const char *prefix);
-
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -62,6 +62,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		return 0;
 	}
 
+	put_envs();
+
 	/*
 	 *  Initialize the repository
 	 */
@@ -85,23 +87,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	data += 4;
 	size -= 4;
 
-	data_chunk = xmallocz_gently(HASH_HEX_SIZE);
-
-	if (!data_chunk)
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
-
 	for (i = 0; i < no_of_commit; i++)
 	{
-		memcpy(data_chunk, data, HASH_HEX_SIZE);
-		generate_commit(data_chunk, HASH_SIZE);
+		if(generate_commit(data, HASH_SIZE))
+		{
+			repo_clear(the_repository);
+			return 0;
+		}
 		data += HASH_HEX_SIZE;
 		size -= HASH_HEX_SIZE;
 	}
-
-	free(data_chunk);
 
 	/*
 	 *  Create branch
@@ -115,13 +110,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 * Alter content of TEMP_1 and TEMP_2
 	 */
-	data_chunk = xmallocz_gently(HASH_SIZE * 2);
-	memcpy(data_chunk, data, HASH_SIZE * 2);
 	char *nameset[] = {"TEMP_1", "TEMP_2"};
-	randomize_git_files(".", nameset, 2, data_chunk, HASH_SIZE * 2);
+	randomize_git_files(".", nameset, 2, data, HASH_SIZE * 2);
 	data += (HASH_SIZE * 2);
 	size -= (HASH_SIZE * 2);
-	free(data_chunk);
 
 	/*
 	 * Generate random name for different usage

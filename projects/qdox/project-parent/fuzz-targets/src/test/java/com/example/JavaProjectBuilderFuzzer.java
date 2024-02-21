@@ -36,7 +36,7 @@ class JavaProjectBuilderFuzzer {
             src.getPackage();
             src.getImports();
             src.getClasses();
-        } catch (ParseException | ArrayIndexOutOfBoundsException | NullPointerException | EmptyStackException e) {
+        } catch (ParseException | ArrayIndexOutOfBoundsException | NullPointerException | EmptyStackException | Error e) {
             // Need to catch in order to find more interesting bugs.
         }
     }

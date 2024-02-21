@@ -33,7 +33,7 @@ then
   CONFIGURE_FLAGS="no-asm"
 fi
 ./config --debug no-tests ${CFLAGS} --prefix=${WORK} \
-	 --openssldir=${WORK}/openssl ${CONFIGURE_FLAGS}
+         --openssldir=${WORK}/openssl --libdir=lib ${CONFIGURE_FLAGS}
 make -j$(nproc) LDCMD="${CXX} ${CXXFLAGS}"
 make install_sw
 

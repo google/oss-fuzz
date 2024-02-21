@@ -15,16 +15,15 @@
 #
 ################################################################################
 
-# until clang 16 is used for C cf https://github.com/rust-lang/rust/issues/107149#issuecomment-1492637779
-rustup default nightly-2023-03-24
+export LLVM_SYS_150_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 
-export LLVM_SYS_140_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
+nightly="+nightly-2023-10-05"
 
-cargo +nightly fuzz build universal_cranelift --features=universal,cranelift -O
-cargo +nightly fuzz build universal_llvm --features=universal,llvm -O
-cargo +nightly fuzz build universal_singlepass --features=universal,singlepass -O
-cargo +nightly fuzz build metering --features=universal,cranelift -O
-cargo +nightly fuzz build deterministic --features=universal,cranelift,llvm,singlepass -O
+cargo $nightly fuzz build universal_cranelift --features=universal,cranelift -O
+cargo $nightly fuzz build universal_llvm --features=universal,llvm -O
+cargo $nightly fuzz build universal_singlepass --features=universal,singlepass -O
+cargo $nightly fuzz build metering --features=universal,cranelift -O
+cargo $nightly fuzz build deterministic --features=universal,cranelift,llvm,singlepass -O
 
 fuzz_targets="universal_cranelift \
   universal_llvm \
@@ -33,8 +32,7 @@ fuzz_targets="universal_cranelift \
   deterministic"
 fuzz_target_output_dir=target/x86_64-unknown-linux-gnu/release
 
-for target in $fuzz_targets
-do
-  cp $fuzz_target_output_dir/$target $OUT/
-  cp $SRC/default.options $OUT/$target.options
+for target in $fuzz_targets; do
+	cp $fuzz_target_output_dir/$target $OUT/
+	cp $SRC/default.options $OUT/$target.options
 done

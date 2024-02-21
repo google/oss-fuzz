@@ -16,16 +16,22 @@ package daemon
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 
 	"github.com/moby/sys/mount"
 	"github.com/sirupsen/logrus"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/backend"
 	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/container"
 	"github.com/docker/docker/daemon/config"
 	"github.com/docker/docker/daemon/images"
+	"github.com/docker/docker/image"
+	dockerreference "github.com/docker/docker/reference"
+	"github.com/opencontainers/go-digest"
 
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
@@ -34,30 +40,43 @@ func init() {
 	logrus.SetLevel(logrus.ErrorLevel)
 }
 
+func IsJSON(input []byte) bool {
+	var js json.RawMessage
+	return json.Unmarshal(input, &js) == nil
+}
+
 func FuzzDaemonSimple(data []byte) int {
 	if os.Getuid() != 0 {
 		return -1
 	}
 
 	f := fuzz.NewConsumer(data)
-	c := &container.Container{}
-	f.GenerateStruct(c)
-	if c.ID == "" {
-		return 0
-	}
 
-	options := imagetypes.GetImageOpts{}
-	f.GenerateStruct(&options)
-
-	refOrID, err := f.GetString()
-	if err != nil || refOrID == "" {
-		return -1
-	}
-
-	getContainer, err := f.GetString()
+	// reference store
+	referenceStoreJson, err := f.GetBytes()
 	if err != nil {
 		return 0
 	}
+
+	if !IsJSON(referenceStoreJson) {
+		return 0
+	}
+	// referenceStore
+	rsDir, err := os.MkdirTemp("", "referenceStore")
+	if err != nil {
+		return 0
+	}
+	defer os.RemoveAll(rsDir)
+	jsonFile := filepath.Join(rsDir, "repositories.json")
+	err = os.WriteFile(jsonFile, referenceStoreJson, 0o666)
+	if err != nil {
+		panic(err)
+	}
+	rStore, err := dockerreference.NewReferenceStore(jsonFile)
+	if err != nil {
+		return 0
+	}
+	// end reference store
 
 	testRoot, err := os.MkdirTemp("", "test-dir")
 	if err != nil {
@@ -84,23 +103,131 @@ func FuzzDaemonSimple(data []byte) int {
 		return 0
 	}
 
-	d := &Daemon{configStore: cfg,
-		root:         cfg.Root,
-		imageService: images.NewImageService(images.ImageServiceConfig{}),
+	imgStoreDir, err := os.MkdirTemp("", "images-fs-store")
+	if err != nil {
+		panic(err)
 	}
 
-	store := container.NewMemoryStore()
-	store.Add(c.ID, c)
+	fsBackend, err := image.NewFSStoreBackend(imgStoreDir)
+	if err != nil {
+		panic(err)
+	}
+
+	defer os.RemoveAll(imgStoreDir)
+
+	is, err := image.NewImageStore(fsBackend, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	d := &Daemon{
+		root:         cfg.Root,
+		imageService: images.NewImageService(images.ImageServiceConfig{ReferenceStore: rStore, ImageStore: is}),
+		containers:   container.NewMemoryStore(),
+	}
+
+	configStore := &configStore{Config: *cfg}
+	d.configStore.Store(configStore)
 
 	containersReplica, err := container.NewViewDB()
 	if err != nil {
 		panic(err)
 	}
 
-	d.containers = store
 	d.containersReplica = containersReplica
 
-	_, _ = d.imageService.GetImage(context.Background(), refOrID, options)
-	_, _ = d.GetContainer(getContainer)
+	var noOfCalls int
+	noOfCalls, err = f.GetInt()
+	if err != nil {
+		return 0
+	}
+	if noOfCalls < 2 {
+		noOfCalls = 2
+	}
+	for i := 0; i < noOfCalls%10; i++ {
+		typeOfCall, err := f.GetInt()
+		if err != nil {
+			return 0
+		}
+		//fmt.Println("calling ", typeOfCall%8)
+		switch typeOfCall % 11 {
+		case 0:
+			refOrID, err := f.GetString()
+			if err != nil {
+				return -1
+			}
+			if refOrID == "" {
+				continue
+			}
+			options := imagetypes.GetImageOpts{}
+			f.GenerateStruct(&options)
+			_, _ = d.imageService.GetImage(context.Background(), refOrID, options)
+		case 1:
+
+			getContainer, err := f.GetString()
+			if err != nil {
+				return 0
+			}
+			_, _ = d.GetContainer(getContainer)
+		case 2:
+			c := &container.Container{}
+			f.GenerateStruct(c)
+			if c.ID == "" {
+				continue
+			}
+			c.State = container.NewState()
+			c.ExecCommands = container.NewExecStore()
+			d.containers.Add(c.ID, c)
+		case 3:
+			refOrID, err := f.GetString()
+			if err != nil {
+				return -1
+			}
+			d.containers.Delete(refOrID)
+		case 4:
+			d.containers.List()
+		case 5:
+			d.containers.Size()
+		case 6:
+			name, err := f.GetString()
+			if err != nil {
+				return -1
+			}
+			res, err := f.GetString()
+			if err != nil {
+				return -1
+			}
+			_, _ = d.ContainerCopy(name, res)
+		case 7:
+			prefixOrName, err := f.GetString()
+			if err != nil {
+				return -1
+			}
+			c := &backend.ContainerAttachConfig{}
+			f.GenerateStruct(c)
+			d.ContainerAttach(prefixOrName, c)
+		case 8:
+			imageConfig, err := f.GetBytes()
+			if err != nil {
+				return 0
+			}
+			parent, err := f.GetString()
+			if err != nil {
+				return 0
+			}
+			dig := digest.FromBytes([]byte("fuzz"))
+			_, _ = d.imageService.CreateImage(context.Background(), imageConfig, parent, dig)
+		case 9:
+			params := &types.ContainerCreateConfig{}
+			f.GenerateStruct(params)
+			_, _ = d.ContainerCreate(context.Background(), *params)
+		case 10:
+			name, err := f.GetString()
+			if err != nil {
+				return 0
+			}
+			_, _ = d.ContainerChanges(context.Background(), name)
+		}
+	}
 	return 1
 }

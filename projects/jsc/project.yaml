@@ -14,4 +14,4 @@ fuzzing_engines:
 sanitizers:
   - address
 blackbox: true
-main_repo: 'git://git.webkit.org/WebKit.git'
+main_repo: 'https://github.com/WebKit/WebKit.git'

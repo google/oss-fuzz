@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/dgraph-io/dgraph
-COPY build.sh $SRC/
+COPY build.sh fuzz_parser_test.go $SRC/
 WORKDIR $SRC/dgraph

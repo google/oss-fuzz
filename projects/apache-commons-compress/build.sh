@@ -20,8 +20,8 @@ mv $SRC/{*.zip,*.dict} $OUT
 
 pushd "$SRC/commons-compress"
   MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
-  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
-  CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.5.1:shade $MAVEN_ARGS
+  CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate \
    -Dexpression=project.version -q -DforceStdout)
   cp "target/commons-compress-$CURRENT_VERSION.jar" $OUT/commons-compress.jar
 popd
@@ -39,6 +39,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
+  cp $SRC/Base*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash

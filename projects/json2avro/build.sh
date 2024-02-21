@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-export TARGET_PACKAGE_PREFIX="tech.allegro.schema.json2avro.converter."
-
 chmod +x ./gradlew
 ./gradlew clean build -x test
 

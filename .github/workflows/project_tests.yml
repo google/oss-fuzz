@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ matrix.engine }}-${{ matrix.architecture }}-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       actions: write
     strategy:
@@ -53,11 +56,6 @@ jobs:
       ARCHITECTURE: ${{ matrix.architecture }}
 
     steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - uses: actions/checkout@v3
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0

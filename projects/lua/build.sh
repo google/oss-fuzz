@@ -15,17 +15,33 @@
 #
 ################################################################################
 
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed "s~CFLAGS=~CFLAGS+=~g" -i $SRC/lua/makefile
-sed "s~MYLDFLAGS=~MYLDFLAGS=${CFLAGS} ~g" -i $SRC/lua/makefile
-sed "s|CC= gcc|CC= ${CC}|g" -i $SRC/lua/makefile
+# For some reason the linker will complain if address sanitizer is not used
+# in introspector builds.
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS="${CFLAGS} -fsanitize=address"
+  export CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+fi
 
-cd $SRC/lua
-make
-cp ../fuzz_lua.c .
-$CC $CFLAGS -c fuzz_lua.c -o fuzz_lua.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua ./liblua.a
+PACKAGES="build-essential ninja-build cmake make"
+if [ "$ARCHITECTURE" = "i386" ]; then
+    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
+elif [ "$ARCHITECTURE" = "aarch64" ]; then
+    PACKAGES="$PACKAGES zlib1g-dev:arm64 libreadline-dev:arm64 libunwind-dev:arm64"
+else
+    PACKAGES="$PACKAGES zlib1g-dev libreadline-dev libunwind-dev"
+fi
+apt-get update
+apt-get install -y $PACKAGES
+
+# For fuzz-introspector, exclude all functions in the tests directory,
+# libprotobuf-mutator and protobuf source code.
+# See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+testdir/build/tests/capi/external.protobuf_mutator
+testdir/build/tests/capi/luaL_loadbuffer_proto/
+EOF
 
 cd $SRC/testdir
 
@@ -35,7 +51,7 @@ if [[ $FUZZING_ENGINE == centipede ]]
 then
     sed -i \
         '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
-        tests/CMakeLists.txt
+        tests/capi/CMakeLists.txt
 fi
 
 # Clean up potentially persistent build directory.
@@ -78,6 +94,12 @@ git config --global --add safe.directory '*'
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
 cmake --build build --parallel
 
+LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
+$CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua $LUALIB_PATH/liblua.a
+
+cp corpus_dir/*.options $OUT/
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/tests/ -name '*_test' -type f);
 do
@@ -90,5 +112,5 @@ do
   if [ -e "$dict_path" ]; then
     cp $dict_path "$OUT/$name.dict"
   fi
-  [[ -e $corpus_dir ]] && zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done

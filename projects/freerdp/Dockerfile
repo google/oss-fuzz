@@ -15,12 +15,20 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+
+# See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
 RUN apt-get update && apt-get install -y \
-	build-essential git-core cmake ninja-build pkg-config zlib1g-dev \
+	build-essential git-core cmake ninja-build pkg-config zlib1g-dev ccache \
 	libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxkbfile-dev \
 	libxv-dev libxi-dev libxdamage-dev libxrender-dev libxrandr-dev \
 	libssl-dev libasound2-dev libcups2-dev libpulse-dev libcairo2-dev \
-	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev
+	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev \
+	libpkcs11-helper1-dev libpkcs11-helper1 libsdl2-ttf-dev \
+	libwayland-dev libpam0g-dev libxcb-damage0-dev ccache libxtst-dev \
+	libfuse-dev libsystemd-dev libsoxr-dev libsdl2-dev docbook-xsl \
+	libkrb5-dev krb5-multidev libcjson-dev libswscale-dev libswresample-dev \
+	libpcsclite-dev xsltproc libsdl2-dev
+
 RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
 
 WORKDIR FreeRDP

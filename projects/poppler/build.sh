@@ -21,9 +21,6 @@ export PKG_CONFIG="`which pkg-config` --static"
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export PATH=$PREFIX/bin:$PATH
 
-# AFL++ specific setting
-export AFL_LLVM_INSTRUMENT=NATIVE
-
 BUILD=$WORK/build
 
 rm -rf $WORK/*
@@ -32,8 +29,8 @@ mkdir -p $BUILD
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_76_0.tar.bz2
-cd boost_1_76_0/
+tar jxf boost_1_83_0.tar.bz2
+cd boost_1_83_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -193,6 +190,8 @@ cmake .. \
   -DENABLE_LIBJPEG=OFF \
   -DENABLE_GLIB=$POPPLER_ENABLE_GLIB \
   -DENABLE_LIBCURL=OFF \
+  -DENABLE_GPGME=OFF \
+  -DENABLE_QT6=OFF \
   -DENABLE_QT5=ON \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=$POPPLER_ENABLE_GLIB \
