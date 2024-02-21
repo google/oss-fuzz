@@ -29,12 +29,19 @@ rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 cd jazzer && \
+
 git checkout b12d1ea863b336b120e192700ac11c9744af6cfd # v0.17.1
+#git checkout b12132743b2c0d0def680512c0c4bcb052e20b1b # v0.22.1
 cat << 'EOF' >> .bazelrc
 build --java_runtime_version=local_jdk_15
 build --cxxopt=-stdlib=libc++
 build --linkopt=-lc++
 EOF
+
+# Hotfix: https://github.com/google/oss-fuzz/issues/11613
+sed -i 's/da607faed78c4cb5a5637ef74a36fdd2286f85ca5192222c4664efec2d529bb8/a0a45349bf5d57bbefe2669225cda802c5d9ab8ea412a5e683f52bdcf3f16c65/g' ./WORKSPACE.bazel
+sed -i 's/bazel-toolchain-0.6.3/toolchains_llvm-0.6.3/g' ./WORKSPACE.bazel
+
 bazel build //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar //deploy:jazzer-api //launcher:jazzer
 cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar
 cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver

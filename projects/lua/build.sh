@@ -39,8 +39,8 @@ apt-get install -y $PACKAGES
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
-testdir/build/tests/external.protobuf_mutator
-testdir/build/tests/luaL_loadbuffer_proto/
+testdir/build/tests/capi/external.protobuf_mutator
+testdir/build/tests/capi/luaL_loadbuffer_proto/
 EOF
 
 cd $SRC/testdir
@@ -51,7 +51,7 @@ if [[ $FUZZING_ENGINE == centipede ]]
 then
     sed -i \
         '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
-        tests/CMakeLists.txt
+        tests/capi/CMakeLists.txt
 fi
 
 # Clean up potentially persistent build directory.

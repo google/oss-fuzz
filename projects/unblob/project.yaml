@@ -1,0 +1,10 @@
+homepage: https://unblob.org
+main_repo: https://github.com/onekey-sec/unblob
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+primary_contact: kaiserquentin@gmail.com
+vendor_ccs:
+- research@onekey.com

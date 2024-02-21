@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-# Checkout branch here as opposed to the Dockerfile to make CIFuzz happy
-git checkout go
-mv $SRC/state_fuzzer.go $GVISOR_ROOT/
-compile_go_fuzzer gvisor.dev/gvisor FuzzStateLoad state_load_fuzz
+cp -r $SRC/pki_fuzzer.go $SRC/cert-manager/pkg/util/pki/
+
+compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzParseSubjectStringToRawDERBytes FuzzParseSubjectStringToRawDERBytes
+compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzDecodePrivateKeyBytes FuzzDecodePrivateKeyBytes
+
