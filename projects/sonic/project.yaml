@@ -9,4 +9,3 @@ fuzzing_engines:
 sanitizers:
   - address
   - memory
-view_restrictions: none
