@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
+pip3 install .
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/google/gvisor
-COPY build.sh state_fuzzer.go $SRC/
-ENV GVISOR_ROOT $SRC/gvisor
-WORKDIR $GVISOR_ROOT
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+  fuzz_target=$(basename $fuzzer .py)
+  find ${SRC}/unblob/tests/integration -path '*/__input__/*' -type f -print | zip $OUT/${fuzz_target}_seed_corpus.zip -@
+  compile_python_fuzzer $fuzzer --hidden-import=_cffi_backend
+done

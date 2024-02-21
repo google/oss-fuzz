@@ -1,0 +1,6 @@
+homepage: "https://steveicarus.github.io/iverilog"
+language: c++
+primary_contact: "steve@icarus.com"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/steveicarus/iverilog"

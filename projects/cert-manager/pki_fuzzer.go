@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,18 +13,14 @@
 // limitations under the License.
 //
 
-package fuzzing
+package pki
 
-import (
-	"bytes"
-	"context"
-	"gvisor.dev/gvisor/pkg/buffer"
-	"gvisor.dev/gvisor/pkg/state"
-)
+func FuzzParseSubjectStringToRawDERBytes(data []byte) int {
+	ParseSubjectStringToRawDERBytes(string(data))
+	return 1
+}
 
-func FuzzStateLoad(data []byte) int {
-	ctx := context.Background()
-	var toLoad *buffer.View
-	_, _ = state.Load(ctx, bytes.NewReader(data), toLoad)
+func FuzzDecodePrivateKeyBytes(data []byte) int {
+	DecodePrivateKeyBytes(data)
 	return 1
 }
