@@ -30,8 +30,6 @@ cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 cd jazzer && \
 
-#git checkout b12d1ea863b336b120e192700ac11c9744af6cfd # v0.17.1
-#git checkout b12132743b2c0d0def680512c0c4bcb052e20b1b # v0.22.1
 # Latest fix followig a depedency issue: (https://github.com/CodeIntelligenceTesting/jazzer/issues/896)
 git checkout 96205feebc7135075ffa48aae3f22e38cae5dc45
 cat << 'EOF' >> .bazelrc
