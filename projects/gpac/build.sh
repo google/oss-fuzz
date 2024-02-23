@@ -15,12 +15,11 @@
 #
 ################################################################################
 
-cd gpac
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
 make
 
 
-fuzzers=$(find $SRC/testsuite/oss-fuzzers -name "fuzz_*.c")
+fuzzers=$(find $SRC/gpac/testsuite/oss-fuzzers -name "fuzz_*.c")
 for f in $fuzzers; do
 
     fuzzerName=$(basename $f .c)
@@ -32,8 +31,8 @@ for f in $fuzzers; do
       -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
 
 
-    if [ -d "$SRC/testsuite/oss-fuzzers/${fuzzerName}_corpus" ]; then
-        zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/testsuite/oss-fuzzers/${fuzzerName}_corpus/*
+    if [ -d "$SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}_corpus" ]; then
+        zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}_corpus/*
     fi
 
 done
