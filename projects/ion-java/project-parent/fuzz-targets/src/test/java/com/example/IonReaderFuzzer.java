@@ -31,12 +31,11 @@ class IonReaderFuzzer {
         try {
             IonReader reader = IonReaderBuilder
                                 .standard()
-                                .withAnnotationIteratorReuseEnabled(data.consumeBoolean())
                                 .withIncrementalReadingEnabled(data.consumeBoolean())
                                 .build(data.consumeRemainingAsString());
             read(reader);
             reader.close();
-        } catch (IOException | NullPointerException | IllegalStateException | IllegalArgumentException | ArrayIndexOutOfBoundsException | IonException | AssertionError e) {
+        } catch (IOException | IllegalStateException | IllegalArgumentException | IonException e) {
             // Need to be caught to get more interesting findings.
         }
     }

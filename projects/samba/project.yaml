@@ -12,6 +12,7 @@ auto_ccs:
   - "gdeschner@gmail.com"
   - "volker.lendecke@gmail.com"
   - "davidmmulder@gmail.com"
+  - "josutton256@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

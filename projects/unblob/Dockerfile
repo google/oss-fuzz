@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone https://github.com/onekey-sec/unblob
+RUN unblob/unblob/install-deps.sh
+RUN pip install ./unblob
 
-# Checkout branch here as opposed to the Dockerfile to make CIFuzz happy
-git checkout go
-mv $SRC/state_fuzzer.go $GVISOR_ROOT/
-compile_go_fuzzer gvisor.dev/gvisor FuzzStateLoad state_load_fuzz
+COPY build.sh $SRC/
+WORKDIR $SRC/unblob

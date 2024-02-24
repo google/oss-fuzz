@@ -62,7 +62,7 @@ cd $NDPI_HOME
 make -j$(nproc)
 
 # Build LUA
-make -C $NTOPNG_HOME/third-party/lua-5.4.3 generic
+make -C $NTOPNG_HOME/third-party/lua-5.4.6 generic
 
 # Build librrdtool
 cd $NTOPNG_HOME/third-party/rrdtool-1.4.8

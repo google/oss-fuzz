@@ -29,8 +29,6 @@ auto_ccs:
 primary_contact: kfm@google.com
 vendor_ccs:
 - david@adalogics.com
-- riccardo.schirone@trailofbits.com
-- facundo.tuesca@trailofbits.com
 labels:
   "*":
     - protobuf-ossfuzz-bugz-1260285

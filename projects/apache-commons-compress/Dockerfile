@@ -47,6 +47,8 @@ RUN \
     zip -j0  $SRC/ArchiverArjFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.arj && \
     zip -j0  $SRC/ArchiverCpioFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.cpio && \
     zip -uj0 $SRC/ArchiverCpioFuzzer_seed_corpus.zip commons-compress/src/test/resources/archives/*.cpio && \
+    zip -j0  $SRC/ArchiverDumpFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.dump && \
+    zip -uj0 $SRC/ArchiverDumpFuzzer_seed_corpus.zip commons-compress/src/test/resources/org/apache/commons/compress/dump/*.dump && \
     zip -j0  $SRC/CompressSevenZFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.7z && \
     zip -uj0 $SRC/CompressTarFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.tar && \
     zip -uj0 $SRC/CompressTarFuzzer_seed_corpus.zip commons-compress/src/test/resources/archives/*.tar && \
@@ -59,6 +61,8 @@ RUN \
     zip -j0  $SRC/CompressorDeflate64Fuzzer_seed_corpus.zip commons-compress/src/test/resources/*.deflate && \
     zip -uj0 $SRC/CompressorGzipFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.gz && \
     zip -j0  $SRC/CompressorLZ4Fuzzer_seed_corpus.zip commons-compress/src/test/resources/*lz4 && \
+    zip -j0  $SRC/CompressorPack200Fuzzer_seed_corpus.zip commons-compress/src/test/resources/*.pack && \
+    zip -uj0 $SRC/CompressorPack200Fuzzer_seed_corpus.zip commons-compress/src/test/resources/pack200/*.pack && \
     zip -uj0 $SRC/CompressorSnappyFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.sz && \
     zip -j0  $SRC/CompressorZFuzzer_seed_corpus.zip commons-compress/src/test/resources/*.Z
 

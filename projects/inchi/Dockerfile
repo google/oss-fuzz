@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y wget make unzip git
-RUN wget https://www.inchi-trust.org/download/106/INCHI-1-SRC.zip
-RUN unzip INCHI-1-SRC.zip
-WORKDIR INCHI-1-SRC
+RUN git clone --depth=1 https://github.com/IUPAC-InChI/InChI inchi
+WORKDIR inchi
 COPY build.sh *_fuzzer.c $SRC/

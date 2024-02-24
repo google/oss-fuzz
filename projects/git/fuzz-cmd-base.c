@@ -22,7 +22,7 @@ limitations under the License.
  * and possibly messing up of certain git config file to fuzz different
  * git command execution logic. Return -1 if it fails to create the file.
  */
-int randomize_git_file(char *dir, char *name, char *data, int size)
+int randomize_git_file(char *dir, char *name, const unsigned char *data, int size)
 {
 	FILE *fp;
 	int ret = 0;
@@ -54,23 +54,15 @@ int randomize_git_file(char *dir, char *name, char *data, int size)
  * remaining bytes (if not divisible) will be ignored.
  */
 void randomize_git_files(char *dir, char *name_set[],
-	int files_count, char *data, int size)
+	int files_count, const unsigned char *data, int size)
 {
 	int i;
 	int data_size = size / files_count;
-	char *data_chunk = xmallocz_gently(data_size);
-
-	if (!data_chunk)
-	{
-		return;
-	}
 
 	for (i = 0; i < files_count; i++)
 	{
-		memcpy(data_chunk, data + (i * data_size), data_size);
-		randomize_git_file(dir, name_set[i], data_chunk, data_size);
+		randomize_git_file(dir, name_set[i], data + (i * data_size), data_size);
 	}
-	free(data_chunk);
 }
 
 /*
@@ -79,10 +71,10 @@ void randomize_git_files(char *dir, char *name_set[],
  * passing to the above functions to get randomized content for later
  * fuzzing of git command.
  */
-void generate_random_file(char *data, int size)
+void generate_random_file(const unsigned char *data, int size)
 {
 	unsigned char *hash = xmallocz_gently(size);
-	char *data_chunk = xmallocz_gently(size);
+	const unsigned char *data_chunk = data + size;
 	struct strbuf fname = STRBUF_INIT;
 
 	if (!hash || !data_chunk)
@@ -91,13 +83,11 @@ void generate_random_file(char *data, int size)
 	}
 
 	memcpy(hash, data, size);
-	memcpy(data_chunk, data + size, size);
 
 	strbuf_addf(&fname, "TEMP-%s-TEMP", hash_to_hex(hash));
 	randomize_git_file(".", fname.buf, data_chunk, size);
 
 	free(hash);
-	free(data_chunk);
 	strbuf_release(&fname);
 }
 
@@ -105,7 +95,7 @@ void generate_random_file(char *data, int size)
  * This function provides a shorthand for generate commit in master
  * branch.
  */
-int generate_commit(char *data, int size)
+int generate_commit(const unsigned char *data, int size)
 {
 	return generate_commit_in_branch(data, size, "master");
 }
@@ -115,20 +105,11 @@ int generate_commit(char *data, int size)
  * worktree with randomization to provide a target for the fuzzing
  * of git command under specific branch.
  */
-int generate_commit_in_branch(char *data, int size, char *branch_name)
+int generate_commit_in_branch(const unsigned char *data, int size, char *branch_name)
 {
 	char *argv[4];
-	char *data_chunk = xmallocz_gently(HASH_HEX_SIZE);
 
-	if (!data_chunk)
-	{
-		return -1;
-	}
-
-	memcpy(data_chunk, data, size * 2);
-	generate_random_file(data_chunk, size);
-
-	free(data_chunk);
+	generate_random_file(data, size);
 
 	argv[0] = "add";
 	argv[1] = "TEMP-*-TEMP";
@@ -144,7 +125,6 @@ int generate_commit_in_branch(char *data, int size, char *branch_name)
 	if (cmd_commit(2, (const char **)argv, (const char *)""))
 	{
 		return -2;
-
 	}
   	return 0;
 }
@@ -161,8 +141,9 @@ int reset_git_folder(void)
 {
 	char *argv[6];
 	argv[0] = "init";
-	argv[1] = NULL;
-	if (cmd_init_db(1, (const char **)argv, (const char *)""))
+	argv[1] = "--quiet";
+	argv[2] = NULL;
+	if (cmd_init_db(2, (const char **)argv, (const char *)""))
 	{
 		return -1;
 	}
@@ -237,4 +218,32 @@ int get_max_commit_count(int data_size, int git_files_count, int reserve_size)
 	}
 
 	return count;
+}
+
+static char template_directory_env[350];
+
+void create_templ_dir(void)
+{
+	/*
+	* Create an empty and accessible template directory.
+	*/
+	char template_directory[250];
+	snprintf(template_directory, 250, "/tmp/templatedir-%d", getpid());
+	struct stat stats;
+	if (stat(template_directory, &stats) != 0 || S_ISDIR(stats.st_mode) == 0)
+	{
+		mkdir(template_directory, 0777);
+	}
+	snprintf(template_directory_env, 350,
+			"GIT_TEMPLATE_DIR=%s", template_directory);
+	putenv(template_directory_env);
+}
+
+void put_envs(void)
+{
+	putenv("GIT_CONFIG_NOSYSTEM=true");
+	putenv("GIT_AUTHOR_EMAIL=FUZZ@LOCALHOST");
+	putenv("GIT_AUTHOR_NAME=FUZZ");
+	putenv("GIT_COMMITTER_NAME=FUZZ");
+	putenv("GIT_COMMITTER_EMAIL=FUZZ@LOCALHOST");
 }

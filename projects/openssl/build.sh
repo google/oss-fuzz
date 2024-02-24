@@ -62,6 +62,9 @@ function build_fuzzers() {
     done
     cp fuzz/oids.txt $OUT/asn1${SUFFIX}.dict
     cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
+    df
+    rm -rf *
+    df
 }
 
 cd $SRC/openssl/

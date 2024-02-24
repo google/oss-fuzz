@@ -13,8 +13,6 @@ limitations under the License.
 
 int cmd_version(int argc, const char **argv, const char *prefix);
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
 	int path;

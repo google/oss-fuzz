@@ -169,6 +169,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --enable-libvpx \
         --enable-libxml2 \
         --enable-nonfree \
+        --disable-libdrm \
         --disable-muxers \
         --disable-protocols \
         --disable-demuxer=rtp,rtsp,sdp \
@@ -256,6 +257,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --optflags=-O1 \
         --enable-gpl \
         --enable-libxml2 \
+        --disable-libdrm \
         --disable-muxers \
         --disable-protocols \
         --disable-devices \
