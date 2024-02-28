@@ -1,0 +1,293 @@
+# Copyright 2018 The PDFium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../pdfium.gni")
+#import("fuzzers/")
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "font_renamer.cpp",
+    "font_renamer.h",
+    "fx_string_testhelpers.cpp",
+    "fx_string_testhelpers.h",
+    "invalid_seekable_read_stream.cpp",
+    "invalid_seekable_read_stream.h",
+    "pseudo_retainable.h",
+    "scoped_set_tz.cpp",
+    "scoped_set_tz.h",
+    "string_write_stream.cpp",
+    "string_write_stream.h",
+    "test_fonts.cpp",
+    "test_fonts.h",
+    "test_loader.cpp",
+    "test_loader.h",
+    "test_support.h",
+    "utils/bitmap_saver.cpp",
+    "utils/bitmap_saver.h",
+    "utils/file_util.cpp",
+    "utils/file_util.h",
+    "utils/hash.cpp",
+    "utils/hash.h",
+  ]
+  data = [ "resources/" ]
+  public_deps = [
+    ":path_service",
+    "//third_party/test_fonts",
+  ]
+  deps = [
+    "../:pdfium_public_headers",
+    "../core/fdrm",
+    "../core/fxcrt",
+    "../core/fxge",
+    "image_diff",
+  ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
+  visibility = [ "../*" ]
+  if (pdf_enable_v8) {
+    sources += [
+      "v8_initializer.cpp",
+      "v8_initializer.h",
+    ]
+    deps += [
+      "//v8",
+      "//v8:v8_libplatform",
+    ]
+    configs += [ "//v8:external_startup_data" ]
+  }
+}
+
+executable("pdf_cmap_fuzzer") {
+  sources = [
+    "fuzzers/pdf_cmap_fuzzer.cc"
+  ]
+  deps = [
+    "../:freetype_common",
+    "../core/fpdfapi/font",
+    "../core/fxcrt",
+  ]
+  cflags = [ "-fsanitize=fuzzer-no-link" ]
+  ldflags = [ "-fsanitize=fuzzer,address" ]
+}
+
+source_set("fuzzer_helper") {
+  sources = [
+    "fuzzers/pdfium_fuzzer_helper.cc",
+    "fuzzers/pdfium_fuzzer_helper.h",
+  ]
+  deps = [
+    "../:pdfium_public_headers",
+    "../fpdfsdk",
+  ]
+}
+
+executable("pdfium_xfa_fuzzer") {
+  sources = [
+    "fuzzers/pdfium_xfa_fuzzer.cc"
+  ]
+  deps = [
+    ":fuzzer_helper",
+    "../:pdfium_public_headers"
+  ]
+  cflags = [ "-fsanitize=fuzzer-no-link" ]
+  ldflags = [ "-fsanitize=fuzzer,address" ]
+}
+
+executable("pdf_cjs_util_fuzzer") {
+  sources = [
+    "fuzzers/pdf_cjs_util_fuzzer.cc"
+  ]
+  deps = [
+    "../core/fxcrt",
+    "../fpdfsdk",
+    "../fxjs"
+  ]
+  cflags = [ "-fsanitize=fuzzer-no-link" ]
+  ldflags = [ "-fsanitize=fuzzer,address" ]
+}
+
+executable("pdf_formcalc_context_fuzzer") {
+  sources = [ "fuzzers/pdf_formcalc_context_fuzzer.cc" ]
+  deps = [
+    ":fuzzer_helper",
+    "../:pdfium_public_headers",
+    "../core/fxcrt",
+    "../fpdfsdk",
+    "../fpdfsdk/fpdfxfa",
+    "../fxjs",
+    "../xfa/fxfa"
+  ]
+  cflags = [ "-fsanitize=fuzzer-no-link" ]
+  ldflags = [ "-fsanitize=fuzzer,address" ]
+}
+
+executable("pdf_jpx_fuzzer") {
+  sources = [ "fuzzers/pdf_jpx_fuzzer.cc" ]
+  deps = [
+    "../core/fpdfapi/page",
+    "../core/fxcodec",
+    "../core/fxcrt",
+    "../core/fxge",
+  ]
+  cflags = [ "-fsanitize=fuzzer-no-link" ]
+  ldflags = [ "-fsanitize=fuzzer,address" ]
+}
+
+source_set("path_service") {
+  testonly = true
+  sources = [
+    "utils/path_service.cpp",
+    "utils/path_service.h",
+  ]
+  deps = [ "../core/fxcrt" ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
+  visibility = [ "../*" ]
+}
+
+source_set("test_environments") {
+  testonly = true
+  sources = [
+    "pdf_test_environment.cpp",
+    "pdf_test_environment.h",
+  ]
+  deps = [
+    ":test_support",
+    "../core/fxcrt",
+    "../core/fxge",
+    "//testing/gtest",
+  ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
+  if (pdf_enable_v8) {
+    sources += [
+      "v8_test_environment.cpp",
+      "v8_test_environment.h",
+    ]
+    deps += [
+      "../fxjs",
+      "//v8",
+      "//v8:v8_libplatform",
+    ]
+    configs += [ "//v8:external_startup_data" ]
+  }
+  if (pdf_enable_xfa) {
+    sources += [
+      "xfa_test_environment.cpp",
+      "xfa_test_environment.h",
+    ]
+    deps += [
+      "../fxjs:gc",
+      "../xfa/fgas/font",
+    ]
+  }
+}
+
+source_set("unit_test_support") {
+  testonly = true
+  sources = []
+  deps = []
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
+  public_deps = [
+    ":test_environments",
+    ":test_support",
+  ]
+  if (pdf_enable_v8) {
+    sources += [
+      "fxv8_unittest.cpp",
+      "fxv8_unittest.h",
+    ]
+    deps += [
+      "../fxjs",
+      "//testing/gtest",
+    ]
+    configs += [ "//v8:external_startup_data" ]
+    if (pdf_enable_xfa) {
+      sources += [
+        "fxgc_unittest.cpp",
+        "fxgc_unittest.h",
+      ]
+      deps += [
+        "../fxjs:gc",
+        "//testing/gtest",
+      ]
+    }
+  }
+}
+
+source_set("embedder_test_support") {
+  testonly = true
+  sources = [
+    "embedder_test.cpp",
+    "embedder_test.h",
+    "embedder_test_constants.cpp",
+    "embedder_test_constants.h",
+    "embedder_test_environment.cpp",
+    "embedder_test_environment.h",
+    "embedder_test_mock_delegate.h",
+    "embedder_test_timer_handling_delegate.h",
+    "fake_file_access.cpp",
+    "fake_file_access.h",
+    "range_set.cpp",
+    "range_set.h",
+  ]
+  deps = [
+    "../:pdfium_public_headers",
+    "../core/fdrm",
+    "../core/fxcrt",
+    "../core/fxge",
+    "../third_party:pdfium_base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  public_deps = [
+    ":test_environments",
+    ":test_support",
+  ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
+  visibility = [ "../*" ]
+  if (pdf_enable_v8) {
+    sources += [
+      "external_engine_embedder_test.cpp",
+      "external_engine_embedder_test.h",
+      "js_embedder_test.cpp",
+      "js_embedder_test.h",
+    ]
+    deps += [
+      "../fxjs",
+      "//v8",
+      "//v8:v8_libplatform",
+    ]
+    configs += [ "//v8:external_startup_data" ]
+    if (pdf_enable_xfa) {
+      sources += [
+        "xfa_js_embedder_test.cpp",
+        "xfa_js_embedder_test.h",
+      ]
+      deps += [
+        "../fpdfsdk",
+        "../fpdfsdk/fpdfxfa",
+        "../xfa/fxfa",
+        "../xfa/fxfa/parser",
+      ]
+    }
+  }
+}
+
+# Dummy group to keep satisfy references from //build.
+group("test_scripts_shared") {
+}
