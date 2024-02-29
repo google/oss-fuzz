@@ -18,6 +18,9 @@
 (
 export CXXFLAGS="$CXXFLAGS -std=c++17"
 export LDFLAGS="-stdlib=libc++"
+# for UBSAN
+export CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 cd $SRC/libdaq
 ./bootstrap
 ./configure --enable-static --disable-shared
