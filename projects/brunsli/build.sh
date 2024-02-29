@@ -15,19 +15,21 @@
 #
 ################################################################################
 
-cmake . -DBUILD_TESTING=OFF
+cmake . -DBUILD_TESTING=ON
 make clean
-make -j$(nproc) brunslidec-static
+make -j$(nproc) all
 
 # TODO(eustas): add seed corpus
 
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode.cc \
+    ./CMakeFiles/build_huffman_table_test.dir/c/tests/test_utils.cc.o \
     -o $OUT/fuzz_decode $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
     ./_deps/brotli-build/libbrotlidec-static.a \
     ./_deps/brotli-build/libbrotlicommon-static.a
 
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode_streaming.cc \
+    ./CMakeFiles/build_huffman_table_test.dir/c/tests/test_utils.cc.o \
     -o $OUT/fuzz_decode_streaming $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
     ./_deps/brotli-build/libbrotlidec-static.a \
