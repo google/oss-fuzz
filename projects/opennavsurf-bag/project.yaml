@@ -7,6 +7,7 @@ auto_ccs:
   - "glen.rice@noaa.gov"
   - "dongpengxu.unh@gmail.com"
   - "akshitamavurapu@gmail.com"
+  - "giuseppemasetti@gmail.com"
 architectures:
   - x86_64
 main_repo: 'https://github.com/OpenNavigationSurface/BAG'
