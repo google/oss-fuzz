@@ -20,7 +20,7 @@ git checkout devel
 
 sed -i 's/add_subdirectory/#add_subdirectory/g' ./tools/CMakeLists.txt
 mkdir build && cd build
-cmake ../ -DENABLE_STATIC=ON
+cmake ../ -DBUILD_SHARED_LIBS=OFF
 make
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
