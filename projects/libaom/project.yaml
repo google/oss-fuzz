@@ -7,6 +7,8 @@ sanitizers:
 - undefined
 auto_ccs:
 - jhuoponen@google.com
+- jianj@google.com
+- jingning@google.com
 - jzern@google.com
 - wtc@google.com
 - yunqingwang@google.com
