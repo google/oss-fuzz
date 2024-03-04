@@ -1,0 +1,24 @@
+homepage: "https://cert-manager.io"
+# Send reports to the cert-manager-security distribution list.
+# - https://cert-manager.io/docs/contributing/security/
+# - https://github.com/cert-manager/community/blob/main/SECURITY.md#reporting-process
+primary_contact: "cert-manager-security@googlegroups.com"
+# Allow people listed in maintainers.csv file to sign in to https://oss-fuzz.com/
+# - https://github.com/cert-manager/community/blob/main/maintainers.csv
+auto_ccs:
+  - "ashley.davis@venafi.com" # Ashley Davis,sgtcodfish,Venafi
+  - "i@am.so-aweso.me"        # Jake Sanders,jakexks,G-Research
+  - "irbekrm@gmail.com"       # Irbe Krumina,irbekrm,Tailscale
+  - "jmunnelly@apple.com"     # James Munnelly,munnerz,Apple
+  - "mael.valais@gmail.com"   # Maël Valais,maelvls,Venafi
+  - "me@joshvanl.dev"         # Josh van Leeuwen,joshvanl,Diagrid
+  - "richard.wall@venafi.com" # Richard Wall,wallrj,Venafi
+  - "tim.ramlot@venafi.com"   # Tim Ramlot,inteon,Venafi
+vendor_ccs :
+  - "adam@adalogics.com"      # Adam Korczynski,AdamKorcz,ADALogics
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/cert-manager/cert-manager'

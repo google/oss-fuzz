@@ -28,7 +28,10 @@ with atheris.instrument_imports():
 
 REPO_PATH = '/src/curl'
 PROJECT_NAME = 'curl'
-oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(REPO_PATH, PROJECT_NAME)
+
+with mock.patch('get_coverage._get_oss_fuzz_fuzzer_stats_dir_url',
+                return_value="randomurl"):
+  oss_fuzz_coverage = get_coverage.OSSFuzzCoverage(REPO_PATH, PROJECT_NAME)
 
 
 def TestOneInput(data):
