@@ -34,5 +34,12 @@ RUN git clone --branch dev --depth 5000 git://code.qt.io/qt/qtbase.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
 RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
+# Pin configure script to older version to avoid
+# https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=66939
+# https://bugreports.qt.io/browse/QTBUG-122914
+WORKDIR $SRC/qt/qtbase
+RUN git checkout be009c6857dc75c0bdf789c4ac9323f0cf1fd9e6~1 -- cmake/QtProcessConfigureArgs.cmake
+WORKDIR $SRC/qt
+
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
