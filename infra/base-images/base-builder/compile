@@ -19,11 +19,6 @@ echo "---------------------------------------------------------------"
 
 OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
 
-# This is a temporary fix: fall back to LLVM14's old pass manager
-if [ -n "${OLD_LLVMPASS-}" ]; then
-  export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
-fi
-
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   if [ "$FUZZING_ENGINE" != "libfuzzer" ] && [ "$FUZZING_ENGINE" != "wycheproof" ]; then
     echo "ERROR: JVM projects can be fuzzed with libFuzzer or tested with wycheproof engines only."

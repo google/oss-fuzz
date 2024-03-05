@@ -57,7 +57,7 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 # Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
-git checkout 946a41a51f44207941b3729a0733dfc1e236644e
+git checkout 9eb79319239629c1b23cf7a59e5ebb2bab319a34
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
@@ -91,7 +91,7 @@ function clone_with_retries {
 }
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
-PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
+PROJECTS_TO_BUILD="compiler-rt;clang;lld"
 function cmake_llvm {
   extra_args="$@"
   cmake -G "Ninja" \
@@ -99,6 +99,7 @@ function cmake_llvm {
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
@@ -120,7 +121,7 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-# For fuzz introspector.
+For fuzz introspector.
 echo "Applying introspector changes"
 OLD_WORKING_DIR=$PWD
 cd $LLVM_SRC
@@ -222,7 +223,7 @@ function cmake_libcxx {
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
       $extra_args \
       $LLVM_SRC/llvm
