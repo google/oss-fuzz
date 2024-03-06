@@ -15,6 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
+# Install packages we need to build dependencies
+RUN apt-get update && apt-get install -y nasm
 RUN git clone --depth 1 https://github.com/intel/vtpm-td.git
 COPY build.sh $SRC/
 WORKDIR $SRC/vtpm-td

@@ -24,18 +24,22 @@ bash sh_script/pre-build.sh
 
 for CRATE_DIR in ${FUZZ_CRATE_DIRS[@]};
 do
-  echo "Building crate: $CRATE_DIR"
-  cd $CRATE_DIR
-  cargo fuzz build -O
-  FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-  fuzz_tcs=$(cargo fuzz list)
-  for tcs in ${fuzz_tcs[@]}; do
-    if [[ $tcs =~ "afl" ]]; then
-      continue
-    else
-      FUZZ_TARGET_NAME=$tcs
-      CRATE_NAME=$(basename $CRATE_DIR)
-      cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/$CRATE_NAME-$FUZZ_TARGET_NAME
-    fi
-  done
+  if [[ $CRATE_DIR =~ "deps" ]]; then
+    continue
+  else    
+    echo "Building crate: $CRATE_DIR"
+    cd $CRATE_DIR
+    cargo fuzz build -O
+    FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+    fuzz_tcs=$(cargo fuzz list)
+    for tcs in ${fuzz_tcs[@]}; do
+      if [[ $tcs =~ "afl" ]]; then
+        continue
+      else
+        FUZZ_TARGET_NAME=$tcs
+        CRATE_NAME=$(basename $CRATE_DIR)
+       cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/$CRATE_NAME-$FUZZ_TARGET_NAME
+      fi
+    done
+  fi
 done
