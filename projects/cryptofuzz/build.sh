@@ -25,6 +25,17 @@ export GO111MODULE=off
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
 
+tar zxf $SRC/go1.22.1.linux-amd64.tar.gz
+mv go/ go-122
+export GOROOT_122=$SRC/go-bootstrap/go-122/
+export GOPATH_122=$GOROOT_122/packages/
+mkdir $GOPATH_122
+mkdir -p $GOPATH_122/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_122/src/golang.org/x/crypto/
+mkdir -p $GOPATH_122/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_122/src/golang.org/x/sys/
+export PATH_GO_121=$GOROOT_122/bin:$GOROOT_122/packages/bin:$PATH
+
 tar zxf $SRC/go1.21.3.linux-amd64.tar.gz
 mv go/ go-121
 export GOROOT_121=$SRC/go-bootstrap/go-121/
@@ -511,11 +522,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang (121) module
+# Compile Cryptofuzz Golang (122) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/golang
-    GOROOT="$GOROOT_121" GOPATH="$GOPATH_121" PATH="$PATH_GO_121" make -B
+    GOROOT="$GOROOT_122" GOPATH="$GOPATH_122" PATH="$PATH_GO_122" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
