@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+$SRC/litmus/chaoscenter/fuzz_build.sh
