@@ -16,3 +16,28 @@
 ################################################################################
 # Run the OSS-Fuzz script in the project
 $SRC/stb/tests/ossfuzz.sh
+
+# Additional fuzzers
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_gif_read_fuzzer.c \
+    -o $OUT/stb_gif_read_fuzzer $LIB_FUZZING_ENGINE
+
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_bmp_read_fuzzer.c \
+    -o $OUT/stb_bmp_read_fuzzer $LIB_FUZZING_ENGINE
+
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_jpeg_read_fuzzer.c \
+    -o $OUT/stb_jpeg_read_fuzzer $LIB_FUZZING_ENGINE
+
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_pic_read_fuzzer.c \
+    -o $OUT/stb_pic_read_fuzzer $LIB_FUZZING_ENGINE
+
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_psd_read_fuzzer.c \
+    -o $OUT/stb_psd_read_fuzzer $LIB_FUZZING_ENGINE
+
+$CXX $CXXFLAGS -std=c++11 -I. -DSTB_IMAGE_IMPLEMENTATION  \
+    $SRC/stb/tests/stbi_extended_read_fuzzer.c \
+    -o $OUT/stb_extended_read_fuzzer $LIB_FUZZING_ENGINE

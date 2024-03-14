@@ -36,3 +36,9 @@ RUN cp $SRC/stbi/gif.tar.gz $SRC/stbi/jpg.tar.gz $SRC/stbi/bmp.zip $SRC/stbi/gif
 
 WORKDIR stb
 COPY build.sh $SRC/
+COPY stbi_gif_read_fuzzer.c $SRC/stb/tests/
+COPY stbi_bmp_read_fuzzer.c $SRC/stb/tests/
+COPY stbi_jpeg_read_fuzzer.c $SRC/stb/tests/
+COPY stbi_pic_read_fuzzer.c $SRC/stb/tests/
+COPY stbi_psd_read_fuzzer.c $SRC/stb/tests/
+COPY stbi_extended_read_fuzzer.c $SRC/stb/tests/
