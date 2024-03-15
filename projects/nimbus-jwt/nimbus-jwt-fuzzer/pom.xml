@@ -11,7 +11,7 @@
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>9.30.1</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>9.37.2</fuzzedLibaryVersion>
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
