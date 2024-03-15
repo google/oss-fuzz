@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --single-branch --branch fuzz-initial-integration https://github.com/manunio/python-multipart python-multipart
+RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
 RUN python3 -m pip install --upgrade pip
 WORKDIR python-multipart
 COPY build.sh $SRC/
