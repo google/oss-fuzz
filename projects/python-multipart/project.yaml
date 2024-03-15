@@ -1,6 +1,6 @@
 homepage: "https://github.com/Kludex/python-multipart"
 language: python
-primary_contact: ""
+primary_contact: "marcelotryle@gmail.com"
 main_repo: "https://github.com/Kludex/python-multipart"
 fuzzing_engines:
   - libfuzzer
