@@ -272,7 +272,7 @@ if [ "$SANITIZER" = "introspector" ]; then
   mkdir -p $SRC/inspector
   find $SRC/ -name "fuzzerLogFile-*.data" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "fuzzerLogFile-*.data.yaml" -exec cp {} $SRC/inspector/ \;
-  find $SRC/ -name "fuzzerLogFile-*.data.debug_info" -exec cp {} $SRC/inspector/ \;
+  find $SRC/ -name "fuzzerLogFile-*.data.debug_*" -exec cp {} $SRC/inspector/ \;
   find $SRC/ -name "allFunctionsWithMain-*.yaml" -exec cp {} $SRC/inspector/ \;
 
   # Move coverage report.

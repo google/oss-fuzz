@@ -13,6 +13,7 @@
  limitations under the License.
  */
 
+#include "quickjs.h"
 #include "quickjs-libc.h"
 
 #include <stdint.h>
@@ -35,7 +36,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         rt = JS_NewRuntime();
         // 64 Mo
         JS_SetMemoryLimit(rt, 0x4000000);
-        //TODO JS_SetMaxStackSize ?
+        // 64 Kb
+        JS_SetMaxStackSize(rt, 0x10000);
         ctx = JS_NewContextRaw(rt);
         JS_SetModuleLoaderFunc(rt, NULL, js_module_loader, NULL);
         JS_AddIntrinsicBaseObjects(ctx);

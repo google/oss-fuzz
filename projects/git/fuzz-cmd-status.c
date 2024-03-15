@@ -15,7 +15,7 @@ limitations under the License.
 
 int cmd_status(int argc, const char **argv, const char *prefix);
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+static int initialized = 0;
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -23,25 +23,27 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	int no_of_commit;
 	int max_commit_count;
 	char *argv[2];
-	char *data_chunk;
-	char *basedir = "./.git";
 
 	/*
 	 * End this round of fuzzing if the data is not large enough
 	 */
-	if (size <= (HASH_HEX_SIZE + INT_SIZE) || reset_git_folder())
+	if (size <= (HASH_HEX_SIZE + INT_SIZE))
 	{
 		return 0;
 	}
 
-	/*
-	 *  Initialize the repository
-	 */
-	initialize_the_repository();
-	if (repo_init(the_repository, basedir, "."))
+	if (!initialized)
 	{
-		return 0;
+		put_envs();
+		create_templ_dir();
+		initialized = 1;
 	}
+
+	system("rm -rf ./.git");
+	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
+	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_2");
+
+	initialize_the_repository();
 
 	if (reset_git_folder())
 	{
@@ -57,23 +59,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	data += 4;
 	size -= 4;
 
-	data_chunk = xmallocz_gently(HASH_HEX_SIZE);
-
-	if (!data_chunk)
-	{
-		repo_clear(the_repository);
-		return 0;
-	}
-
 	for (i = 0; i < no_of_commit; i++)
 	{
-		memcpy(data_chunk, data, HASH_HEX_SIZE);
-		generate_commit(data_chunk, HASH_SIZE);
+		if(generate_commit(data, HASH_SIZE))
+		{
+			repo_clear(the_repository);
+			return 0;
+		}
 		data += HASH_HEX_SIZE;
 		size -= HASH_HEX_SIZE;
 	}
-
-	free(data_chunk);
 
 	/*
 	 * Calling target git command

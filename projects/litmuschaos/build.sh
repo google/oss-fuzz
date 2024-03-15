@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,4 @@
 #
 ################################################################################
 
-# build project
-npm install
-npm install @jazzer.js/core
-
-# build fuzzers
-compile_javascript_fuzzer markdown-it fuzz.js -i markdown-it
+$SRC/litmus/chaoscenter/fuzz_build.sh
