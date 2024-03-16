@@ -17,11 +17,11 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-export JAVA_HOME="$OUT/open-jdk-21"
+export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
-rsync -aL --exclude=*.zip "/usr/lib/jvm/java-21-openjdk-amd64/" "$JAVA_HOME"
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-./gradlew lib:jar
+./gradlew --console=plain lib:jar
 cp lib/build/libs/fastcsv-*.jar $OUT/fastcsv.jar
 
 ALL_JARS="fastcsv.jar"
@@ -35,7 +35,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 21
+  javac -cp $BUILD_CLASSPATH $fuzzer --release 17
   cp $SRC/$fuzzer_basename.class $OUT/
 
 
@@ -48,8 +48,8 @@ if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
-JAVA_HOME=\"\$this_dir/open-jdk-21/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-21/lib/server\":\$this_dir \
+JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
