@@ -30,7 +30,8 @@ JCC_DIR = '/usr/local/bin'
 
 def run_experiment(project_name, target_name, args, output_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name):
+                   experiment_name, local_artifact_path,
+                   upload_reproducer_path):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -74,8 +75,11 @@ def run_experiment(project_name, target_name, args, output_path,
   local_output_path = '/workspace/output.log'
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
+  local_target_path = os.path.join(build.out, target_name)
   local_corpus_zip_path = '/workspace/corpus/corpus.zip'
-  fuzzer_args = ' '.join(args)
+  if not local_artifact_path:
+    local_artifact_path = os.path.join(build.out, 'artifacts')
+  fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
@@ -90,6 +94,7 @@ def run_experiment(project_name, target_name, args, output_path,
           'bash',
           '-c',
           (f'mkdir -p {local_corpus_path} && '
+           f'mkdir -p {local_artifact_path} && '
            f'run_fuzzer {target_name} {fuzzer_args} '
            f'|& tee {local_output_path} || true'),
       ]
@@ -112,6 +117,32 @@ def run_experiment(project_name, target_name, args, output_path,
            f'zip -r {local_corpus_zip_path} * && '
            f'gsutil -m cp {local_corpus_zip_path} {upload_corpus_path} || '
            f'rm -f {local_corpus_zip_path}'),
+      ],
+  })
+
+  # Upload binary.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'entrypoint':
+          '/bin/bash',
+      'args': [
+          '-c',
+          (f'gsutil cp {local_target_path} '
+           f'{upload_reproducer_path}/{target_name} || true'),
+      ],
+  })
+
+  # Upload reproducer.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'entrypoint':
+          '/bin/bash',
+      'args': [
+          '-c',
+          (f'gsutil -m cp -r {local_artifact_path} {upload_reproducer_path} || '
+           'true'),
       ],
   })
 
@@ -213,17 +244,25 @@ def main():
   parser.add_argument('--upload_corpus',
                       required=True,
                       help='GCS location to upload corpus.')
+  parser.add_argument('--upload_reproducer',
+                      required=True,
+                      help='GCS location to upload reproducer.')
   parser.add_argument('--upload_coverage',
                       required=True,
                       help='GCS location to upload coverage data.')
   parser.add_argument('--experiment_name',
                       required=True,
                       help='Experiment name.')
+  parser.add_argument('--local_artifact_path',
+                      required=False,
+                      default='',
+                      help='libFuzzer local artifact directory.')
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_build_log, args.upload_corpus,
-                 args.upload_coverage, args.experiment_name)
+                 args.upload_coverage, args.experiment_name,
+                 args.local_artifact_path, args.upload_reproducer)
 
 
 if __name__ == '__main__':
