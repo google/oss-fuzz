@@ -19,7 +19,7 @@
 cd $SRC/libspdm
 mkdir build
 cd build
-cmake -DARCH=x64 -DTOOLCHAIN=LIBFUZZER -DTARGET=Release -DCRYPTO=mbedtls ..
+cmake -DARCH=x64 -DTOOLCHAIN=LIBFUZZER -DTARGET=Release -DCRYPTO=mbedtls -DGCOV=ON ..
 make copy_sample_key
 make
 cp -r ./bin/* $OUT

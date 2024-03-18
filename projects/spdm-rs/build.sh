@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +14,21 @@
 # limitations under the License.
 #
 ################################################################################
+set -eox pipefail
+pushd $SRC/spdm-rs
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-RUN git clone https://github.com/litmuschaos/chaos-exporter.git
-RUN git clone https://github.com/litmuschaos/litmus-go.git
-RUN git clone https://github.com/litmuschaos/litmusctl.git
-RUN git clone https://github.com/litmuschaos/chaos-runner.git
-COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+export CARGO_TARGET_DIR=$SRC/spdm-rs/target
+FUZZ_TARGET_OUTPUT_DIR=${CARGO_TARGET_DIR}/x86_64-unknown-linux-gnu/release
+
+bash sh_script/pre-build.sh
+
+pushd spdmlib
+cargo fuzz build --release
+for f in fuzz/fuzz_targets/*.rs
+do
+    FUZZ_TARGET_NAME=$(basename ${f%.*})
+    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+done
+popd # spdmlib
+
+popd # $SRC/spdm-rs

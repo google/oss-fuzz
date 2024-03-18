@@ -14,11 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-RUN git clone https://github.com/litmuschaos/chaos-exporter.git
-RUN git clone https://github.com/litmuschaos/litmus-go.git
-RUN git clone https://github.com/litmuschaos/litmusctl.git
-RUN git clone https://github.com/litmuschaos/chaos-runner.git
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth 1 --recursive https://github.com/ccc-spdm-tools/spdm-rs.git
 COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+WORKDIR $SRC/spdm-rs

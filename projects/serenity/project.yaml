@@ -11,6 +11,7 @@ auto_ccs:
   - "idan.horowitz@gmail.com"
   - "timledbetter@gmail.com"
   - "atkinssj@serenityos.org"
+  - "thakis@chromium.org"
   - "~awesomekling/serenityos-dev@lists.sr.ht"
 
 # Bug reports are public by default:
