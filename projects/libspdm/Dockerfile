@@ -14,11 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-RUN git clone https://github.com/litmuschaos/chaos-exporter.git
-RUN git clone https://github.com/litmuschaos/litmus-go.git
-RUN git clone https://github.com/litmuschaos/litmusctl.git
-RUN git clone https://github.com/litmuschaos/chaos-runner.git
+FROM gcr.io/oss-fuzz-base/base-builder
+#ENV http_proxy 'http://proxy.example.com:80/'
+#ENV https_proxy 'https://proxy.example.com:80/'
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+#RUN git config --global http.proxy http://proxy.example.com:80/
+#RUN git config --global https.proxy https://proxy.example.com:80/
+RUN git clone --depth 1 https://github.com/DMTF/libspdm.git libspdm && cd libspdm && git submodule update --init    # or use other version control
 COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+WORKDIR $SRC/libspdm

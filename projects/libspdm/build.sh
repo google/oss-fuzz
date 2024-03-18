@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-RUN git clone https://github.com/litmuschaos/chaos-exporter.git
-RUN git clone https://github.com/litmuschaos/litmus-go.git
-RUN git clone https://github.com/litmuschaos/litmusctl.git
-RUN git clone https://github.com/litmuschaos/chaos-runner.git
-COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+# build project
+cd $SRC/libspdm
+mkdir build
+cd build
+cmake -DARCH=x64 -DTOOLCHAIN=LIBFUZZER -DTARGET=Release -DCRYPTO=mbedtls ..
+make copy_sample_key
+make
+cp -r ./bin/* $OUT

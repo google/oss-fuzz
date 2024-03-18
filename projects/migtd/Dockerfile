@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/litmuschaos/litmus.git
-RUN git clone https://github.com/litmuschaos/chaos-exporter.git
-RUN git clone https://github.com/litmuschaos/litmus-go.git
-RUN git clone https://github.com/litmuschaos/litmusctl.git
-RUN git clone https://github.com/litmuschaos/chaos-runner.git
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+# Install packages we need to build dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    nasm \
+    llvm \
+    clang
+RUN git clone --depth 1 https://github.com/intel/MigTD.git
 COPY build.sh $SRC/
-WORKDIR $SRC/litmus
+WORKDIR $SRC/MigTD

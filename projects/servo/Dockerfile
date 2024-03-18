@@ -16,6 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone --depth 1 https://github.com/servo/html5ever
+RUN git clone --depth 1 https://github.com/servo/rust-cssparser
 RUN git clone --depth 1 https://github.com/servo/rust-url
 
 WORKDIR $SRC
