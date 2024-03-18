@@ -17,7 +17,7 @@
 import atheris
 import sys
 
-with atheris.instrument_imports():
+with atheris.instrument_imports(include=["lxml.etree", "lxml"]):
   from lxml import etree as et
 
 
@@ -32,19 +32,20 @@ def TestOneInput(data):
       tree = et.ElementTree(root)
       success = True
   except et.XMLSyntaxError:
-    None
+    return -1  # Reject so the input will not be added to the corpus.
 
   if success:
     try:
       a = et.Element("a")
       tree.getelementpath(a)
     except ValueError:
-      None
+      return -1  # Reject so the input will not be added to the corpus.
 
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()

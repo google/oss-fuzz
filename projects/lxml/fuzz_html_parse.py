@@ -17,22 +17,42 @@
 import atheris
 import sys
 
-with atheris.instrument_imports():
+with atheris.instrument_imports(include=["lxml"]):
   from lxml import etree as et
+
+
+def is_expected_error(error_content_list, error_msg):
+  for error in error_content_list:
+    if error in error_msg:
+      return True
+  return False
 
 
 def TestOneInput(data):
   try:
     root = et.HTML(data)
-    if root != None:
-      et.tostring(root)
-  except et.LxmlError:
-    None
+    et.tostring(root)
+  except (et.LxmlError, TypeError, ValueError) as e:
+    expected_error_message_content = [
+        "C14N",
+        "serialisation",
+        "cannot be serialized",
+        "unicode must not",
+    ]
+    if isinstance(e, et.LxmlError) or (
+        isinstance(e, (TypeError, ValueError)) and
+        is_expected_error(expected_error_message_content, str(e))):
+      # Known exception raised by the source code are not interesting.
+      return -1  # Reject so the input will not be added to the corpus.
+    else:
+      # Unexpected exceptions might be a bug in the source or in our test.
+      raise e  # Alert a human to take a closer look at what caused this.
 
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()

@@ -18,9 +18,8 @@ import atheris
 import sys
 import io
 
-with atheris.instrument_imports():
-  from lxml import etree as et
-  from lxml import sax
+with atheris.instrument_imports(include=["lxml", "lxml.etree", "lxml.sax"]):
+  from lxml import sax, etree as et
 
 
 def TestOneInput(data):
@@ -31,11 +30,13 @@ def TestOneInput(data):
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
   except et.LxmlError:
-    None
+    return -1  # Reject so the input will not be added to the corpus.
+
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()
