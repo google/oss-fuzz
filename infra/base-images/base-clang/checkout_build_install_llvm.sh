@@ -146,7 +146,8 @@ rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
 # Use the clang we just built from now on.
-CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+export CC=clang
+export CXX=clang++
 
 function free_disk_space {
     rm -rf $LLVM_SRC $SRC/chromium_tools
@@ -226,13 +227,13 @@ function cmake_libcxx {
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
       $extra_args \
-      $LLVM_SRC/llvm
+      -S $LLVM_SRC/runtimes
 }
 
 # 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
-cmake_libcxx $CMAKE_EXTRA_ARGS \
+cmake_libcxx \
     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
@@ -250,7 +251,7 @@ cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
-cmake_libcxx $CMAKE_EXTRA_ARGS \
+cmake_libcxx \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
