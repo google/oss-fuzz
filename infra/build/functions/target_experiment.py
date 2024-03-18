@@ -77,7 +77,7 @@ def run_experiment(project_name, target_name, args, output_path,
   default_target_path = os.path.join(build.out, target_name)
   local_target_dir = os.path.join(build.out, 'target')
   local_corpus_zip_path = '/workspace/corpus/corpus.zip'
-  local_artifact_path = os.path.join(build.out, 'artifacts')
+  local_artifact_path = os.path.join(build.out, 'artifacts/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
 
   env = build_project.get_env(project_yaml['language'], build)
