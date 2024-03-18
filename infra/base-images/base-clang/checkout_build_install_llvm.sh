@@ -121,7 +121,7 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-For fuzz introspector.
+# For fuzz introspector.
 echo "Applying introspector changes"
 OLD_WORKING_DIR=$PWD
 cd $LLVM_SRC
