@@ -165,11 +165,14 @@ def run_experiment(project_name, target_name, args, output_path,
             '-c',
             (f'if [ -f {local_target_dir}/{target_name} ]; then '
              f'{local_target_dir}/{target_name} {local_artifact_path}/* > '
-             f'{local_stacktrace_path}/{target_name}.st 2>&1; else '
-             f'for b in {local_target_dir}/*; do "$b" {local_artifact_path}/* >'
-             f' "{local_stacktrace_path}/$b.st" 2>&1; done'
-             f'gsutil -m cp -r {local_stacktrace_path} {upload_reproducer_path} '
-             '|| true'),
+             f'{local_stacktrace_path}/{target_name}.st 2>&1; '
+             'else '
+             f'for target in {local_target_dir}/*; do '
+             f'"$target" {local_artifact_path}/* > '
+             f'"{local_stacktrace_path}/$target.st" 2>&1; '
+             'done; fi; '
+             f'gsutil -m cp -r {local_stacktrace_path} {upload_reproducer_path}'
+             ' || true'),
         ],
     })
 
