@@ -35,10 +35,6 @@ RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing \
       >> $SRC/seed_data/dicts/__base.dict \
     && rm -rf fuzzing
 
-COPY build.sh $SRC/
-# Upstream has at least one fuzz target that is not fully implemented from:
-# https://github.com/lxml/lxml/pull/313 so the targets in this repo are coppied
-# to a different directory to avoid confusion in build.sh.
-COPY *.py $SRC/fuzz_targets/
+COPY build.sh *.py $SRC/
 
 WORKDIR $SRC/lxml
