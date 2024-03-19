@@ -78,6 +78,7 @@ def run_experiment(project_name, target_name, args, output_path,
   local_target_dir = os.path.join(build.out, 'target')
   local_corpus_zip_path = '/workspace/corpus/corpus.zip'
   local_artifact_path = os.path.join(build.out, 'artifacts/')
+  local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
 
   env = build_project.get_env(project_yaml['language'], build)
@@ -95,6 +96,7 @@ def run_experiment(project_name, target_name, args, output_path,
           (f'mkdir -p {local_corpus_path} && '
            f'mkdir -p {local_target_dir} && '
            f'mkdir -p {local_artifact_path} && '
+           f'mkdir -p {local_stacktrace_path} && '
            f'run_fuzzer {target_name} {fuzzer_args} '
            f'|& tee {local_output_path} || true'),
       ]
@@ -149,6 +151,24 @@ def run_experiment(project_name, target_name, args, output_path,
         'args': [
             '-c',
             (f'gsutil -m cp -r {local_artifact_path} {upload_reproducer_path} '
+             '|| true'),
+        ],
+    })
+
+    # Upload stacktrace.
+    steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'entrypoint':
+            '/bin/bash',
+        'args': [
+            '-c',
+            (f'if [ -f {local_target_dir}/{target_name} ]; then '
+             f'{local_target_dir}/{target_name} {local_artifact_path}/* > '
+             f'{local_stacktrace_path}/{target_name}.st 2>&1; else '
+             f'for b in {local_target_dir}/*; do "$b" {local_artifact_path}/* >'
+             f' "{local_stacktrace_path}/$b.st" 2>&1; done'
+             f'gsutil -m cp -r {local_stacktrace_path} {upload_reproducer_path} '
              '|| true'),
         ],
     })
