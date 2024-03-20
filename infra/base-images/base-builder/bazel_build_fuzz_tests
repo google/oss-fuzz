@@ -48,7 +48,6 @@ for oss_fuzz_test in "${OSS_FUZZ_TESTS[@]}"; do
 done
 
 declare -r BAZEL_BUILD_FLAGS=(
-    "-c" "opt"
     "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
     "--@rules_fuzzing//fuzzing:java_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_java_engine" \
     "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
@@ -58,6 +57,7 @@ declare -r BAZEL_BUILD_FLAGS=(
     "--verbose_failures" \
     "--spawn_strategy=standalone" \
     "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
+
     ${BAZEL_EXTRA_BUILD_FLAGS[*]}
 )
 
