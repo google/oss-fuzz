@@ -17,6 +17,8 @@
 
 echo "---------------------------------------------------------------"
 
+sysctl -w vm.mmap_rnd_bits=28
+
 OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
 
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
