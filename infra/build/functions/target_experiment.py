@@ -138,7 +138,7 @@ def run_experiment(project_name, target_name, args, output_path,
              f'find {build.out} -type f -name {target_name} -exec bash -c '
              f'\'cp "$0" "{local_target_dir}/$(echo "$0" | sed "s@/@_@g")"\' '
              f'{{}} \\; && gsutil cp -r {local_target_dir} '
-             f'{upload_reproducer_path}/{target_name} || true'),
+             f'{upload_reproducer_path}/target_binary || true'),
         ],
     })
 
