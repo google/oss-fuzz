@@ -57,7 +57,6 @@ declare -r BAZEL_BUILD_FLAGS=(
     "--verbose_failures" \
     "--spawn_strategy=standalone" \
     "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
-
     ${BAZEL_EXTRA_BUILD_FLAGS[*]}
 )
 
