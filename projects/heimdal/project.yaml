@@ -1,0 +1,6 @@
+homepage: "https://github.com/heimdal/heimdal"
+main_repo: "https://github.com/heimdal/heimdal"
+language: c
+primary_contact: "cryptonector@gmail.com"
+auto_ccs :
+ - "david@adalogics.com"
