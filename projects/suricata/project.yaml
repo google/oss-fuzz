@@ -8,6 +8,7 @@ sanitizers:
   - address
   - memory
   - undefined
+  - nalloc
 fuzzing_engines:
   - afl
   - honggfuzz

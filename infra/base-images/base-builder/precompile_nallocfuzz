@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,21 +15,17 @@
 #
 ################################################################################
 
-FUZZER=$1
-shift
+echo "Precompiling nallocfuzz"
 
-if [ ! -v TESTCASE ]; then
-    TESTCASE="/testcase"
-fi
+pushd $SRC/nallocfuzz/ > /dev/null
+pushd libbacktrace > /dev/null
+./configure
+make -j$(nproc)
+popd > /dev/null
+clang -fPIE -I. -c nallocsan.c -o nallocsan.o
+ar -x libbacktrace/.libs/libbacktrace.a
+ar rcs nallocsan.a *.o
+rm *.o
+popd > /dev/null
 
-if [ ! -f $TESTCASE ]; then
-  echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
-  exit 1
-fi
-
-export RUN_FUZZER_MODE="interactive"
-export FUZZING_ENGINE="libfuzzer"
-export SKIP_SEED_CORPUS="1"
-export FUZZ_REPRODUCE_VERBOSE="1"
-
-run_fuzzer $FUZZER $@ $TESTCASE
+echo "Done."

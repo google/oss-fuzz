@@ -72,6 +72,8 @@ ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
 ENV SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
 
+ENV SANITIZER_FLAGS_nalloc "-DLLVMFuzzerTestOneInput=NaloFuzzerTestOneInput -DLLVMFuzzerInitialize=NaloFuzzerInitialize $SANITIZER_FLAGS_address"
+
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
 
@@ -108,6 +110,11 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
+
+RUN git clone --depth 1 https://github.com/catenacyber/nallocfuzz.git
+RUN git clone --depth 1 https://github.com/ianlancetaylor/libbacktrace.git $SRC/nallocfuzz/libbacktrace
+COPY precompile_nallocfuzz /usr/local/bin/
+RUN precompile_nallocfuzz
 
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \

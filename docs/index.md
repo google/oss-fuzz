@@ -42,7 +42,7 @@ execution environment and reporting tool.
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 [ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
 
-Currently, OSS-Fuzz supports C/C++, Rust, Go, Python and Java/JVM code. Other
+Currently, OSS-Fuzz supports C/C++, Rust, Go, Python, Swift and Java/JVM code. Other
 languages supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64
 and i386 builds.
 

@@ -140,12 +140,19 @@ UndefinedBehaviourSanitizer build, just specify all supported sanitizers except 
 If you want to test a particular sanitizer to see what crashes it generates without filing
 them in the issue tracker, you can set an `experimental` flag. For example, if you want to test "memory", set `experimental: True` like this:
 
+[Nalloc](https://github.com/catenacyber/nallocfuzz) ("nalloc") is also supported
+but is not enabled by default due to the likelihood of bugs in the targets rather
+than in the software itself.
+
+Nalloc sanitizer injects allocation failures, and uses in addition address sanitizer.
+
 ```
 sanitizers:
  - address
  - memory:
     experimental: True
  - undefined
+ - nalloc
  ```
 
 Crashes can be accessed on the [ClusterFuzz
