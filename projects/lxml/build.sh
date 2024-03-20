@@ -15,16 +15,13 @@
 #
 ################################################################################
 
-export LIBXML2_VERSION=2.12.6
-export LIBXSLT_VERSION=1.1.39
-export STATICBUILD=true
-export CFLAGS="$CFLAGS -fPIC -DCYTHON_CLINE_IN_TRACEBACK=1"
-
-if [[ $SANITIZER = *coverage* ]]; then
-  export COVERAGE=true
-  export OPTION_WITH_COVERAG=true
-  export OPTION_WITH_CLINE=true
-fi
+# Flags to link sanitizers at runtime.
+# Anything not forwarded is required by lxml.
+export CFLAGS="$CFLAGS -fPIC"
+export CXXFLAGS="$CXXFLAGS -fPIC"
+## Use LD values if already set, (Fuzz Introspector may set them) otherwise use the OSS-Fuzz suggested linker and flags.
+: "${LD:=${CXX}}"
+: "${LDFLAGS:=${CXXFLAGS}}"
 
 if [[ "$SANITIZER" = 'undefined' ]]; then
   # libiconv-1.17 (a dependency of libxml2) triggers several UBSAN errors similar to:
@@ -32,22 +29,35 @@ if [[ "$SANITIZER" = 'undefined' ]]; then
   # Disabling the UBSAN shift check, while not ideal, appears to be the simplest way to avoid hindering the fuzzer
   # with false positives for now and libxml2 is already being fuzzed independently so there is little value in
   # checking it here as well.
-  export CFLAGS="$CFLAGS -fno-sanitize=shift"
-  export CXXFLAGS="$CXXFLAGS -fno-sanitize=shift"
+  export CFLAGS+=" -fno-sanitize=shift"
+  export CXXFLAGS+=" -fno-sanitize=shift"
 fi
-python3 -u setup.py build --with-cython
+# lxml build Settings
+if [[ $SANITIZER = *coverage* ]] || [[ $SANITIZER = 'introspector' ]]; then
+  export COVERAGE=1
+  export OPTION_WITH_COVERAGE=1
+fi
+export STATICBUILD=1
+
+make require-cython
+make clean
+make SETUPFLAGS='--with-clines --with-unicode-strings' build PYTHON_WITH_CYTHON='--with-cython' -j"$(nproc)"
 python3 -m pip install .
 
 SEED_DATA_DIR="$SRC/seed_data"
 
-find "$SEED_DATA_DIR" \( -name '*_seed_corpus.zip' -o -name '*.dict' \)  ! -name '__base.dict' -exec printf 'Copying: %s\n' {} \; -exec cp {} "$OUT" \;
+find $SEED_DATA_DIR \( -name '*_seed_corpus.zip' -o -name '*.options' -o -name '*.dict' \) \
+  ! \( -name '__base.dict' \) -exec printf 'Copying: %s\n' {} \; \
+  -exec chmod a-x {} \; \
+  -exec cp {} "$OUT" \;
 
-find "$SRC" -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' fuzz_harness; do
-   compile_python_fuzzer "$fuzz_harness" --add-data="$SRC/lxml/build/lib.linux-x86_64-cpython-38/lxml:."
+find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' fuzz_harness; do
+  compile_python_fuzzer "$fuzz_harness" \
+    --collect-all="lxml"
 
-  if [[ -r "$SEED_DATA_DIR/dicts/__base.dict" ]]; then
+  if [[ -r "$SEED_DATA_DIR/__base.dict" ]]; then
     fuzz_harness_basename=$(basename "$fuzz_harness")
-    # Append __base.dict content to the copied file in $OUT
-    cat "$SEED_DATA_DIR/dicts/__base.dict" >> "$OUT/$fuzz_harness_basename.dict"
+    # Copy the shared dictionary file content to a fuzz target specific .dict in $OUT.
+    cat "$SEED_DATA_DIR/__base.dict" >>"$OUT/$fuzz_harness_basename.dict"
   fi
 done

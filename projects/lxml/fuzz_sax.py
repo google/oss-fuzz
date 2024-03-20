@@ -18,18 +18,18 @@ import atheris
 import sys
 import io
 
-with atheris.instrument_imports(include=["lxml", "lxml.etree", "lxml.sax"]):
-  from lxml import sax, etree as et
+with atheris.instrument_imports():
+  from lxml import sax, etree
 
 
 def TestOneInput(data):
   try:
     f = io.BytesIO(data)
-    parsed = et.parse(f)
+    parsed = etree.parse(f)
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except et.LxmlError:
+  except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
 
 

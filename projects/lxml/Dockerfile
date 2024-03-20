@@ -22,7 +22,7 @@ RUN python3 -m pip install --upgrade pip \
 
 RUN git clone --depth 1 https://github.com/DaveLak/oss-fuzz-inputs.git oss-fuzz-inputs \
     && rsync -avc oss-fuzz-inputs/lxml/ $SRC/seed_data/ \
-    && rm -rf oss-fuzz-inputs
+    && rm -rf oss-fuzz-inputs;
 RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing \
     && cat fuzzing/dictionaries/html.dict \
         fuzzing/dictionaries/css.dict \
@@ -32,8 +32,8 @@ RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing \
         fuzzing/dictionaries/xslt.dict \
         fuzzing/dictionaries/xpath.dict \
         fuzzing/dictionaries/regexp.dict \
-      >> $SRC/seed_data/dicts/__base.dict \
-    && rm -rf fuzzing
+      >> $SRC/seed_data/__base.dict \
+    && rm -rf fuzzing;
 
 COPY build.sh *.py $SRC/
 

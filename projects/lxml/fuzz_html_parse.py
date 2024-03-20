@@ -17,8 +17,8 @@
 import atheris
 import sys
 
-with atheris.instrument_imports(include=["lxml"]):
-  from lxml import etree as et
+with atheris.instrument_imports():
+  from lxml import etree
 
 
 def is_expected_error(error_content_list, error_msg):
@@ -30,16 +30,16 @@ def is_expected_error(error_content_list, error_msg):
 
 def TestOneInput(data):
   try:
-    root = et.HTML(data)
-    et.tostring(root)
-  except (et.LxmlError, TypeError, ValueError) as e:
+    root = etree.HTML(data)
+    etree.tostring(root)
+  except (etree.LxmlError, TypeError, ValueError) as e:
     expected_error_message_content = [
         "C14N",
         "serialisation",
         "cannot be serialized",
         "unicode must not",
     ]
-    if isinstance(e, et.LxmlError) or (
+    if isinstance(e, etree.LxmlError) or (
         isinstance(e, (TypeError, ValueError)) and
         is_expected_error(expected_error_message_content, str(e))):
       # Known exception raised by the source code are not interesting.

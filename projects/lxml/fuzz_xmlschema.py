@@ -18,19 +18,19 @@ import atheris
 import sys
 import io
 
-with atheris.instrument_imports(include=["lxml", "lxml.etree"]):
-  from lxml import etree as et
+with atheris.instrument_imports():
+  from lxml import etree
 
 
 def TestOneInput(data):
   """Targets XML schema validation. More APIs should be added"""
   try:
-    schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO(b"<a><b></b></a>"))
+    schema_raw = etree.parse(io.BytesIO(data))
+    valid_tree = etree.parse(io.BytesIO(b"<a><b></b></a>"))
 
-    schema = et.XMLSchema(schema_raw)
+    schema = etree.XMLSchema(schema_raw)
     schema.validate(valid_tree)
-  except et.LxmlError:
+  except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
 
 

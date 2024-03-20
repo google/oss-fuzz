@@ -18,21 +18,21 @@ import atheris
 import sys
 import io
 
-with atheris.instrument_imports(
-    include=["lxml", "lxml.etree", "lxml.isoschematron"]):
-  from lxml import isoschematron, etree as et
+with atheris.instrument_imports():
+  from lxml import etree
+  from lxml.isoschematron import Schematron
 
 
 def TestOneInput(data):
   """Targets Schematron. Currently validates, but we should add more APIs"""
   try:
-    schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO(b"<AAA><BBB/><CCC/></AAA>"))
+    schema_raw = etree.parse(io.BytesIO(data))
+    valid_tree = etree.parse(io.BytesIO(b"<AAA><BBB/><CCC/></AAA>"))
 
-    schematron = isoschematron.Schematron(schema_raw)
+    schematron = Schematron(schema_raw)
     schematron.validate(valid_tree)
-  except (et.LxmlError, KeyError) as e:
-    if isinstance(e, et.LxmlError) or (
+  except (etree.LxmlError, KeyError) as e:
+    if isinstance(e, etree.LxmlError) or (
         isinstance(e, KeyError) and "None" in str(e)
         # This possibility is tracked here: https://bugs.launchpad.net/lxml/+bug/2058177
     ):

@@ -17,19 +17,19 @@ import atheris
 import sys
 import io
 
-with atheris.instrument_imports(include=["lxml", "lxml.etree"]):
-  from lxml import etree as et
+with atheris.instrument_imports():
+  from lxml import etree
 
 
 def TestOneInput(data):
   """Targets XSLT. More APIs on the st object should be added"""
   try:
-    style = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO(b"<a><b>B</b><c>C</c></a>"))
+    style = etree.parse(io.BytesIO(data))
+    valid_tree = etree.parse(io.BytesIO(b"<a><b>B</b><c>C</c></a>"))
 
-    st = et.XSLT(style)
+    st = etree.XSLT(style)
     st(valid_tree)
-  except et.LxmlError:
+  except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
 
 

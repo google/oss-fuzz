@@ -17,26 +17,26 @@
 import atheris
 import sys
 
-with atheris.instrument_imports(include=["lxml.etree", "lxml"]):
-  from lxml import etree as et
+with atheris.instrument_imports():
+  from lxml import etree
 
 
 def TestOneInput(data):
   tree = None
   success = False
   try:
-    root = et.XML(data)
+    root = etree.XML(data)
     if root != None:
-      et.indent(root)
+      etree.indent(root)
 
-      tree = et.ElementTree(root)
+      tree = etree.ElementTree(root)
       success = True
-  except et.XMLSyntaxError:
+  except etree.XMLSyntaxError:
     return -1  # Reject so the input will not be added to the corpus.
 
   if success:
     try:
-      a = et.Element("a")
+      a = etree.Element("a")
       tree.getelementpath(a)
     except ValueError:
       return -1  # Reject so the input will not be added to the corpus.
