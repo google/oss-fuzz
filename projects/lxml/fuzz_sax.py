@@ -29,8 +29,12 @@ def TestOneInput(data):
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except etree.LxmlError:
-    return -1  # Reject so the input will not be added to the corpus.
+  except (etree.LxmlError, ValueError) as e:
+    if isinstance(e, etree.LxmlError) or (isinstance(e, ValueError) and
+                                          "Invalid" in str(e)):
+      return -1  # Reject so the input will not be added to the corpus.
+    else:
+      raise e
 
 
 def main():

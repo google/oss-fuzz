@@ -44,10 +44,11 @@ make clean
 make SETUPFLAGS='--with-clines --with-unicode-strings' build PYTHON_WITH_CYTHON='--with-cython' -j"$(nproc)"
 python3 -m pip install .
 
+# Directory to look in for dictionaries, options files, and seed corpa:
 SEED_DATA_DIR="$SRC/seed_data"
 
 find $SEED_DATA_DIR \( -name '*_seed_corpus.zip' -o -name '*.options' -o -name '*.dict' \) \
-  ! \( -name '__base.dict' \) -exec printf 'Copying: %s\n' {} \; \
+  ! \( -name '__base.*' \) -exec printf 'Copying: %s\n' {} \; \
   -exec chmod a-x {} \; \
   -exec cp {} "$OUT" \;
 
@@ -55,9 +56,13 @@ find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' 
   compile_python_fuzzer "$fuzz_harness" \
     --collect-all="lxml"
 
-  if [[ -r "$SEED_DATA_DIR/__base.dict" ]]; then
-    fuzz_harness_basename=$(basename "$fuzz_harness")
-    # Copy the shared dictionary file content to a fuzz target specific .dict in $OUT.
-    cat "$SEED_DATA_DIR/__base.dict" >>"$OUT/$fuzz_harness_basename.dict"
+  common_base_dictionary_filename="$SEED_DATA_DIR/__base.dict"
+  if [[ -r "$common_base_dictionary_filename" ]]; then
+    # Strip the `.py` extension from the filename and replace it with `.dict`.
+    fuzz_harness_dictionary_filename="$(basename "$fuzz_harness" .py).dict"
+
+    printf 'Appending %s to %s\n' "$common_base_dictionary_filename" "$OUT/$fuzz_harness_dictionary_filename"
+    cat "$common_base_dictionary_filename" >> "$OUT/$fuzz_harness_dictionary_filename"
   fi
 done
+
