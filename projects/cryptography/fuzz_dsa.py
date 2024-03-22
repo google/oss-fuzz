@@ -22,7 +22,7 @@ with atheris.instrument_imports():
 def TestInput(input_bytes):
     fdp = atheris.FuzzedDataProvider(input_bytes)
 
-    private_key = dsa.generate_private_key(key_size=1024)
+    private_key = dsa.generate_private_key(key_size=2048)
     public_key = private_key.public_key()
 
     data = fdp.ConsumeBytes(20)
