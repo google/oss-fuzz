@@ -14,14 +14,31 @@
 # limitations under the License.
 #
 ################################################################################
+# Directory to look in for dictionaries, options files, and seed corpa:
+SEED_DATA_DIR="$SRC/seed_data"
+
+# Workaround for oss-fuzz not being able to recognise which croniter modules are used.
+# See https://github.com/ossf/fuzz-introspector/issues/1010
+export PYFUZZPACKAGE="$SRC/requests/src/requests"
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install .
+python3 -m pip install .
 
-mkdir tests/fuzz/
-cp ../fuzz_server.py tests/fuzz/
 
-# Build fuzzers in $OUT.
-for fuzzer in $(ls tests/fuzz/fuzz*.py); do
-  compile_python_fuzzer $fuzzer
+find $SEED_DATA_DIR \( -name '*_seed_corpus.zip' -o -name '*.options' -o -name '*.dict' \) \
+  ! \( -name '__base.*' \) -exec printf 'Copying: %s\n' {} \; \
+  -exec chmod a-x {} \; \
+  -exec cp {} "$OUT" \;
+
+find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' fuzz_harness; do
+  compile_python_fuzzer "$fuzz_harness"
+
+  common_base_dictionary_filename="$SEED_DATA_DIR/__base.dict"
+  if [[ -r "$common_base_dictionary_filename" ]]; then
+    # Strip the `.py` extension from the filename and replace it with `.dict`.
+    fuzz_harness_dictionary_filename="$(basename "$fuzz_harness" .py).dict"
+
+    printf 'Appending %s to %s\n' "$common_base_dictionary_filename" "$OUT/$fuzz_harness_dictionary_filename"
+    cat "$common_base_dictionary_filename" >> "$OUT/$fuzz_harness_dictionary_filename"
+  fi
 done

@@ -16,7 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN git clone --depth 1 --branch main https://github.com/psf/requests.git
+RUN git clone --depth 1 --branch main https://github.com/psf/requests.git requests \
+    && python3 -m pip install --upgrade pip \
+    && python3 -m pip install 'setuptools~=42.0';
 
+RUN mkdir -p $SRC/seed_data \
+    && git clone --depth 1 https://github.com/google/fuzzing fuzzing \
+    && cat fuzzing/dictionaries/http.dict \
+        fuzzing/dictionaries/url.dict \
+      >> $SRC/seed_data/__base.dict \
+    && rm -rf fuzzing;
+
+COPY build.sh *.py $SRC/
 WORKDIR $SRC/requests
-COPY build.sh fuzz_server.py $SRC/
