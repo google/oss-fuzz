@@ -25,3 +25,6 @@ done
 
 find . -name '*.rhai' -exec zip $OUT/scripting_seed_corpus.zip {} \;
 cp $OUT/scripting_seed_corpus.zip $OUT/ast_seed_corpus.zip
+
+cp fuzz/fuzz_targets/rhai_keywords.dict $OUT/ast.dict
+cp fuzz/fuzz_targets/rhai_keywords.dict $OUT/scripting.dict
