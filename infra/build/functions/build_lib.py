@@ -629,7 +629,7 @@ def wait_for_build(build_id, credentials, cloud_project):
                                   'INTERNAL_ERROR', 'EXPIRED', 'CANCELLED'):
         # Build done.
         return
-    except googleapiclient.errors.HttpError:
+    except (googleapiclient.errors.HttpError, BrokenPipeError):
       pass
 
     time.sleep(15)  # Avoid rate limiting.
