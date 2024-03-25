@@ -17,13 +17,12 @@
 # Directory to look in for dictionaries, options files, and seed corpa:
 SEED_DATA_DIR="$SRC/seed_data"
 
-# Workaround for oss-fuzz not being able to recognise which croniter modules are used.
+# Help Fuzz Introspector find the package entrypoint.
 # See https://github.com/ossf/fuzz-introspector/issues/1010
 export PYFUZZPACKAGE="$SRC/requests/src/requests"
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
 python3 -m pip install .
-
 
 find $SEED_DATA_DIR \( -name '*_seed_corpus.zip' -o -name '*.options' -o -name '*.dict' \) \
   ! \( -name '__base.*' \) -exec printf 'Copying: %s\n' {} \; \
