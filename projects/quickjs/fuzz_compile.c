@@ -58,11 +58,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     }
 
     if (Size > 0) {
-        if (Data[Size-1] != 0) {
-            return 0;
-        }
+        uint8_t *NullTerminatedData = (uint8_t *)malloc(Size + 1);
+        memcpy(NullTerminatedData, Data, Size);
+        NullTerminatedData[Size] = 0;
         JSValue obj;
-        obj = JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_FLAG_COMPILE_ONLY | JS_EVAL_TYPE_GLOBAL | JS_EVAL_TYPE_MODULE);
+        obj = JS_Eval(ctx, (const char *)NullTerminatedData, Size, "<none>", JS_EVAL_FLAG_COMPILE_ONLY | JS_EVAL_TYPE_GLOBAL | JS_EVAL_TYPE_MODULE);
+        free(NullTerminatedData);
         //TODO target with JS_ParseJSON
         if (JS_IsException(obj)) {
             return 0;
