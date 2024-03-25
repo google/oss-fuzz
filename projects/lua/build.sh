@@ -98,7 +98,11 @@ LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
 $CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua $LUALIB_PATH/liblua.a
 
-cp corpus_dir/*.options $OUT/
+# If the dict filename is the same as your target binary name
+# (i.e. `%fuzz_target%.dict`), it will be automatically used.
+# If the name is different (e.g. because it is shared by several
+# targets), specify this in .options file.
+cp corpus_dir/*.dict corpus_dir/*.options $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/tests/ -name '*_test' -type f);
@@ -108,9 +112,5 @@ do
   corpus_dir="corpus_dir/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  dict_path="corpus_dir/$module.dict"
-  if [ -e "$dict_path" ]; then
-    cp $dict_path "$OUT/$name.dict"
-  fi
   [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done
