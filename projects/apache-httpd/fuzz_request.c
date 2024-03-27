@@ -108,7 +108,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       apr_bucket_brigade *tmp_bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
       conn.keepalive = AP_CONN_UNKNOWN;
 
-      ap_run_pre_read_request(r, conn);
+      ap_run_pre_read_request(r, &conn);
 
       core_server_config conf_mod;
       conf_mod.http_conformance   = (char)af_get_short(&data2, &size2);
