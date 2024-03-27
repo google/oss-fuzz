@@ -34,6 +34,9 @@ limitations under the License.
 #include "ap_provider.h"
 #include "ap_regex.h"
 
+#include "http_log.h"
+#include "http_protocol.h"
+
 #include "ada_fuzz_header.h"
 
 static const char *http_scheme2(const request_rec *r) {
