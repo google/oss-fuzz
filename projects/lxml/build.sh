@@ -60,9 +60,16 @@ find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' 
   if [[ -r "$common_base_dictionary_filename" ]]; then
     # Strip the `.py` extension from the filename and replace it with `.dict`.
     fuzz_harness_dictionary_filename="$(basename "$fuzz_harness" .py).dict"
+    output_file="$OUT/$fuzz_harness_dictionary_filename"
 
-    printf 'Appending %s to %s\n' "$common_base_dictionary_filename" "$OUT/$fuzz_harness_dictionary_filename"
-    cat "$common_base_dictionary_filename" >> "$OUT/$fuzz_harness_dictionary_filename"
+    printf 'Appending %s to %s\n' "$common_base_dictionary_filename" "$output_file"
+    # Ensure a newline is added at the end of the file before appending,
+    # but only if the file already exists and is not empty.
+    if [[ -s "$output_file" ]]; then
+      echo >> "$output_file"
+    fi
+    cat "$common_base_dictionary_filename" >> "$output_file"
   fi
 done
+
 
