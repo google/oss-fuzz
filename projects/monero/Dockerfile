@@ -17,7 +17,7 @@
 # Multistage docker build, requires docker 17.05
 
 # builder stage
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 
 RUN set -ex && \
     apt-get update && \

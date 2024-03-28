@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
