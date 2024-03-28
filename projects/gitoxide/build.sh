@@ -25,7 +25,7 @@ for CRATE_DIR in ${FUZZ_CRATE_DIRS[@]};
 do
   echo "Building crate: $CRATE_DIR"
   cd $CRATE_DIR
-  cargo +nightly-2023-12-28 fuzz build -O --debug-assertions
+  cargo +nightly fuzz build -O --debug-assertions
   FUZZ_TARGET_OUTPUT_DIR=$CARGO_BUILD_TARGET_DIR/x86_64-unknown-linux-gnu/release
   for f in fuzz/fuzz_targets/*.rs
   do
