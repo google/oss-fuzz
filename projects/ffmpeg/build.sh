@@ -278,7 +278,6 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --disable-bsfs \
         --disable-vaapi \
         --disable-vdpau \
-        --disable-crystalhd \
         --disable-v4l2_m2m \
         --disable-cuda_llvm \
         --enable-demuxers \
