@@ -35,14 +35,17 @@ fi
 export CXXFLAGS="$CXXFLAGS -flto=thin"
 export LDFLAGS="-flto=thin"
 
-export CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
+# Not using the CPPFLAGS environment variable, as it
+# disables $(host_os)_$(release_type)_CPPFLAGS in depends.
+export CFLAGS="$CFLAGS -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
+export CXXFLAGS="$CXXFLAGS -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
   make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
-       CPPFLAGS="$CPPFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" -j$(nproc)
+       -j$(nproc)
 )
 
 # Build the fuzz targets
