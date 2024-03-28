@@ -250,7 +250,7 @@ function run_javascript_fuzz_target {
   local nyc_json_summary_file="$coverage_dir/coverage-summary.json"
 
   local args="-runs=0 $corpus_dummy"
-  local jazzerjs_args="--coverage --coverageDirectory $coverage_dir --coverageReporters json --coverageReporters json-summary"
+  local jazzerjs_args="--coverage --coverage_directory $coverage_dir --coverage_reporters json --coverage_reporters json-summary"
 
   JAZZERJS_EXTRA_ARGS=$jazzerjs_args $OUT/$target $args &> $LOGS_DIR/$target.log
 
