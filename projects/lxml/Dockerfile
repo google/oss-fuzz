@@ -15,11 +15,26 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone --depth 1 https://github.com/lxml/lxml
-RUN apt-get install -y zlib1g-dev
-RUN pip3 install Cython
+RUN git clone --depth 1 https://github.com/lxml/lxml $SRC/lxml
+RUN apt-get update && apt-get install -y zlib1g-dev make autoconf automake libtool pkg-config rsync
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install 'setuptools~=69.0' 'pyinstaller~=6.0' -r $SRC/lxml/requirements.txt
 
-COPY build.sh $SRC/
-COPY fuzz_* $SRC/lxml/
+RUN git clone --depth 1 https://github.com/DaveLak/oss-fuzz-inputs.git oss-fuzz-inputs \
+    && rsync -avc oss-fuzz-inputs/lxml/ $SRC/seed_data/ \
+    && rm -rf oss-fuzz-inputs;
+RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing \
+    && cat fuzzing/dictionaries/html.dict \
+        fuzzing/dictionaries/css.dict \
+        fuzzing/dictionaries/svg.dict \
+        fuzzing/dictionaries/xml.dict \
+        fuzzing/dictionaries/rss.dict \
+        fuzzing/dictionaries/xslt.dict \
+        fuzzing/dictionaries/xpath.dict \
+        fuzzing/dictionaries/regexp.dict \
+      >> $SRC/seed_data/__base.dict \
+    && rm -rf fuzzing;
+
+COPY build.sh *.py $SRC/
 
 WORKDIR $SRC/lxml
