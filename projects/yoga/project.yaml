@@ -1,0 +1,12 @@
+homepage: "https://yogalayout.dev/"
+language: c++
+primary_contact: "oss-fuzz@meta.com"
+
+auto_ccs:
+  - "nathaniel.brough@gmail.com"
+  
+main_repo: "https://github.com/facebook/yoga"
+
+sanitizers:
+  - address
+  - memory
