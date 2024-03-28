@@ -18,16 +18,75 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 # See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
 RUN apt-get update && apt-get install -y \
-	build-essential git-core cmake ninja-build pkg-config zlib1g-dev ccache \
-	libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxkbfile-dev \
-	libxv-dev libxi-dev libxdamage-dev libxrender-dev libxrandr-dev \
-	libssl-dev libasound2-dev libcups2-dev libpulse-dev libcairo2-dev \
-	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev \
-	libpkcs11-helper1-dev libpkcs11-helper1 libsdl2-ttf-dev \
-	libwayland-dev libpam0g-dev libxcb-damage0-dev ccache libxtst-dev \
-	libfuse-dev libsystemd-dev libsoxr-dev libsdl2-dev docbook-xsl \
-	libkrb5-dev krb5-multidev libcjson-dev libswscale-dev libswresample-dev \
-	libpcsclite-dev xsltproc libsdl2-dev
+	build-essential \
+	ccache \
+	cmake \
+	docbook-xsl \
+	git-core \
+	krb5-multidev \
+	libasound2-dev \
+	libavcodec-dev \
+	libavutil-dev \
+	libcairo2-dev \
+	libcjson-dev \
+	libcups2-dev \
+	libdbus-glib-1-dev \
+	libfaac-dev \
+	libfaad-dev \
+	libfuse3-dev \
+	libfuse-dev \
+	libgsm1-dev \
+	libicu-dev \
+	libjpeg-dev \
+	libkrb5-dev \
+	libopus-dev \
+	libpam0g-dev \
+	libpcsclite-dev \
+	libpkcs11-helper1 \
+	libpkcs11-helper1-dev \
+	libpng-dev \
+	libpulse-dev \
+	libsdl2-2.0-0 \
+	libsdl2-dev \
+	libsdl2-image-dev \
+	libsdl2-ttf-dev \
+	libsoxr-dev \
+	libssl-dev \
+	libswresample-dev \
+	libswscale-dev \
+	libsystemd-dev \
+	libudev-dev \
+	liburiparser-dev \
+	libusb-1.0-0-dev \
+	libwayland-dev \
+	libwebkit2gtk-4.0-dev \
+	libwebp-dev \
+	libx11-dev \
+	libxcb-damage0-dev \
+	libxcursor-dev \
+	libxdamage-  dev \
+	libxdamage-dev \
+	libxext-dev \
+	libxfixes-dev \
+	libxi-dev \
+	libxinerama-dev \
+	libxkbcommon-dev \
+	libxkbfile-dev \
+	libxml2-dev \
+	libxrandr-dev \
+	libxrender-dev \
+	libxtst-dev \
+	libxv-dev \
+	ninja-build \
+	ocl-icd-opencl-dev \
+	opencl-c-headers \
+	opencl-headers \
+	opensc-pkcs11 \
+	pkg-config \
+	uuid-dev \
+	xsltproc \
+	xsltproc libsdl2-dev \
+	zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
 
