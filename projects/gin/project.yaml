@@ -1,0 +1,8 @@
+homepage: "https://github.com/gin-gonic/gin"
+primary_contact: "appleboy.tw@gmail.com"
+language: go
+main_repo: "https://github.com/gin-gonic/gin"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
