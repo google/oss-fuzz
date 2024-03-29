@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 static int initialized = 0;
 JSRuntime *rt;
