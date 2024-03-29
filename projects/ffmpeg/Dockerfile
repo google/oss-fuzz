@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 RUN apt-get update && apt-get install -y make autoconf libtool build-essential \
 	libass-dev:i386 libfreetype6-dev:i386 \
 	libvdpau-dev:i386 libxcb1-dev:i386 libxcb-shm0-dev:i386 libdrm-dev:i386 \
