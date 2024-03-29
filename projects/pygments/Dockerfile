@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:0a1e30a23f64bd6ef855089bf5091343af81f6f17f1954e00c5cab4264c80d01
 
 RUN git clone \
 	--depth 1 \
