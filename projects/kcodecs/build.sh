@@ -23,7 +23,7 @@ FUZZ_CXXFLAGS="${CXXFLAGS}"
 unset CFLAGS
 unset CXXFLAGS
 # gperf is a code generator, so no need to sanitize it
-./configure --prefix=/usr
+./configure --prefix=/usr CXX='clang++ -std=c++14'  # Avoid C++17 due to clang-18 error
 make -j$(nproc) install
 export CFLAGS="${FUZZ_CFLAGS}"
 export CXXFLAGS="${FUZZ_CXXFLAGS}"
