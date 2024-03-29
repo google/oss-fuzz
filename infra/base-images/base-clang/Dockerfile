@@ -58,7 +58,8 @@ ENV CCC "clang++"
 # The implicit-function-declaration and implicit-int errors are downgraded to a
 # warning, to allow compiling legacy code.
 # See https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
+# Same for vla-cxx-extension
 
-ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=vla-cxx-extension -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
