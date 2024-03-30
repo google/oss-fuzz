@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/gitpython-developers/gitpython gitpython
+RUN git clone https://github.com/gitpython-developers/gitpython gitpython \
+    && python3 -m pip install --upgrade pip;
+
 COPY *.sh *py $SRC/
 WORKDIR $SRC/gitpython
