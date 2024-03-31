@@ -12,13 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import atheris
 import io
 import sys
+import os
 import shutil
-import atheris
 
-from git.objects import Tree
-from git import Repo
+with atheris.instrument_imports():
+  from git.objects import Tree
+  from git.repo import Repo
 
 
 def TestOneInput(data):
@@ -45,11 +47,10 @@ def TestOneInput(data):
   try:
     fuzz_tree._deserialize(io.BytesIO(data))
   except IndexError:
-    pass
+    return -1
 
 
 def main():
-  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 

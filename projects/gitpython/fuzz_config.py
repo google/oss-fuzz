@@ -12,31 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import atheris
 import sys
 import io
-import atheris
+from configparser import MissingSectionHeaderError, ParsingError
 
-import configparser
-from git import GitConfigParser
+with atheris.instrument_imports():
+  from git import GitConfigParser
 
 
 def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
   sio = io.BytesIO(data)
   sio.name = "/tmp/fuzzconfig.config"
   git_config = GitConfigParser(sio)
   try:
     git_config.read()
-  except configparser.MissingSectionHeaderError:
-    pass
-  except configparser.ParsingError:
-    pass
-  except UnicodeDecodeError:
-    pass
+  except (MissingSectionHeaderError, ParsingError, UnicodeDecodeError):
+    return -1  # Reject inputs raising expected exceptions
+  except (IndexError, ValueError) as e:
+    if isinstance(e, IndexError) and "string index out of range" in str(e):
+      # Known possibility that might be patched
+      # See: https://github.com/gitpython-developers/GitPython/issues/1887
+      pass
+    elif isinstance(e, ValueError) and "embedded null byte" in str(e):
+      # The `os.path.expanduser` function, which does not accept strings
+      # containing null bytes might raise this.
+      return -1
+    else:
+      raise e  # Raise unanticipated exceptions as they might be bugs
 
 
 def main():
-  atheris.instrument_all()
   atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 

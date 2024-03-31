@@ -16,5 +16,15 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/gitpython-developers/gitpython gitpython \
     && python3 -m pip install --upgrade pip;
 
+RUN mkdir -p $SRC/seed_data \
+    && git clone --depth 1 https://github.com/DaveLak/oss-fuzz-inputs.git oss-fuzz-inputs \
+    && rsync -avc oss-fuzz-inputs/gitpython/ $SRC/seed_data/ \
+    && rm -rf oss-fuzz-inputs;
+
+RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing \
+    && cat fuzzing/dictionaries/utf8.dict \
+      >> $SRC/seed_data/__base.dict \
+    && rm -rf fuzzing;
+
 COPY *.sh *py $SRC/
 WORKDIR $SRC/gitpython
