@@ -1,12 +1,6 @@
 homepage: "https://dgraph.io"
 main_repo: "https://github.com/dgraph-io/dgraph"
-primary_contact: "Adam@adalogics.com"
-auto_ccs :
-  - "pawan@dgraph.io"
-  - "manish@dgraph.io"
-  - "ibrahim@dgraph.io"
-  - "daniel@dgraph.io"
-  - "vvbalaji@dgraph.io"
+primary_contact: "security@dgraph.io"
 language: go
 fuzzing_engines:
   - libfuzzer
