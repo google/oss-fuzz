@@ -112,15 +112,15 @@ find $SRC/u-root/pkg/boot/netboot/ipxe/testdata/fuzz/corpora -name "*.seed" -exe
 compile_native_go_fuzzer $SRC/u-root/pkg/boot/netboot/ipxe FuzzParseIpxeConfig fuzz_ipxe_parse_config
 
 # smbios pkg
-cd $SRC/u-root/pkg/smbios
-go mod init smbios
-printf "package smbios\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdep.go
-go mod tidy
-cp $SRC/u-root/pkg/smbios/testdata/fuzz/*.dict $SRC/u-root/pkg/smbios/testdata/fuzz/*.options $OUT
+# cd $SRC/u-root/pkg/smbios
+# go mod init smbios
+# printf "package smbios\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > registerfuzzdep.go
+# go mod tidy
+# cp $SRC/u-root/pkg/smbios/testdata/fuzz/*.dict $SRC/u-root/pkg/smbios/testdata/fuzz/*.options $OUT
 
-## FuzzParseInfo
-find $SRC/u-root/pkg/smbios/testdata -name "*.bin" -exec zip $OUT/fuzz_smbios_parse_info_seed_corpus.zip {} +
-compile_native_go_fuzzer $SRC/u-root/pkg/smbios FuzzParseInfo fuzz_smbios_parse_info
+# ## FuzzParseInfo
+# find $SRC/u-root/pkg/smbios/testdata -name "*.bin" -exec zip $OUT/fuzz_smbios_parse_info_seed_corpus.zip {} +
+# compile_native_go_fuzzer $SRC/u-root/pkg/smbios FuzzParseInfo fuzz_smbios_parse_info
 
 # ip cmd
 # cd $SRC/u-root/cmds/core/ip
