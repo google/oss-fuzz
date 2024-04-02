@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e  # Pin due to ubsan: call to function _ through pointer to incorrect function type
 RUN apt-get update && apt-get install -y pkg-config libncurses5-dev libssl-dev python3-pip
 RUN pip3 install -U meson ninja
 RUN git clone https://github.com/irssi/irssi
