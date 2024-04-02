@@ -1,6 +1,9 @@
 homepage: "https://dgraph.io"
 main_repo: "https://github.com/dgraph-io/dgraph"
 primary_contact: "security@dgraph.io"
+auto_ccs :
+  - "harshil@dgraph.io"
+  - "ryan@dgraph.io"
 language: go
 fuzzing_engines:
   - libfuzzer
