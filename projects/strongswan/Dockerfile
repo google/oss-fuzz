@@ -14,7 +14,8 @@
 #
 ##############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e  # Pin due to ubsan: call to function _ through pointer to incorrect function type
+# Pin due to ubsan: call to function _ through pointer to incorrect function type
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 RUN apt-get update && apt-get install -y automake autoconf libtool pkg-config gettext perl python flex bison gperf lcov libgmp3-dev
 RUN git clone --depth 1 https://github.com/strongswan/strongswan.git strongswan
 RUN git clone --depth 1 https://github.com/strongswan/fuzzing-corpora.git strongswan/fuzzing-corpora

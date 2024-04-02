@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e  # Pin due to ubsan: call to function _ through pointer to incorrect function type
+# Pin due to ubsan: call to function _ through pointer to incorrect function type
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget gettext automake libxml2-dev m4 pkg-config bison flex python3.8-venv libssl-dev zlib1g-dev
 RUN git clone --depth 1 https://github.com/dovecot/core dovecot
 WORKDIR dovecot

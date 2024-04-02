@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e  # Pin due to ubsan: call to function _ through pointer to incorrect function type
+# Pin due to ubsan: call to function _ through pointer to incorrect function type
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
 RUN apt-get update && apt-get install -y libz-dev autoconf mercurial
 RUN hg clone https://hg.ucc.asn.au/dropbear-fuzzcorpus dropbear-corpus
 RUN git clone https://github.com/mkj/dropbear dropbear
