@@ -2,7 +2,7 @@ diff --git a/src/blockdata.c b/src/blockdata.c
 index 4c26155..9612447 100644
 --- a/src/blockdata.c
 +++ b/src/blockdata.c
-@@ -15,16 +15,22 @@
+@@ -15,18 +15,24 @@
  */
  
  #include "dnsmasq.h"
@@ -14,7 +14,7 @@ index 4c26155..9612447 100644
 +void *total_allocated[200] = {0};
 +static int fuzz_total_alloc_ptr = 0;
 +
- static void blockdata_expand(int n)
+ static void add_blocks(int n)
  {
    struct blockdata *new = whine_malloc(n * sizeof(struct blockdata));
    
@@ -25,7 +25,9 @@ index 4c26155..9612447 100644
        int i;
        
        new[n-1].next = keyblock_free;
-@@ -45,11 +51,23 @@ void blockdata_init(void)
+       keyblock_free = new;
+ 
+@@ -45,11 +51,23 @@
    blockdata_count = 0;
    blockdata_hwm = 0;
  
@@ -35,7 +37,7 @@ index 4c26155..9612447 100644
 +
    /* Note that daemon->cachesize is enforced to have non-zero size if OPT_DNSSEC_VALID is set */  
    if (option_bool(OPT_DNSSEC_VALID))
-     blockdata_expand(daemon->cachesize);
+     add_blocks(daemon->cachesize);
  }
  
 +void fuzz_blockdata_cleanup() {
@@ -81,20 +83,20 @@ diff --git a/src/dhcp6.c b/src/dhcp6.c
 index edb87a4..937b5a7 100644
 --- a/src/dhcp6.c
 +++ b/src/dhcp6.c
-@@ -123,7 +123,9 @@ void dhcp6_packet(time_t now)
- 	      (union mysockaddr *)&from, NULL, DHCPV6_SERVER_PORT);
- #endif
+@@ -118,7 +118,9 @@
+   if ((sz = recv_dhcp_packet(daemon->dhcp6fd, &msg)) == -1)
+     return;
    
 -  for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 +  int tmp_val = 0;
 +  for (cmptr = CMSG_FIRSTHDR(&msg); cmptr && tmp_val < 1; tmp_val++) {
-+	  tmp_val++;
++         tmp_val++;
      if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
        {
- 	union {
-@@ -135,9 +137,11 @@ void dhcp6_packet(time_t now)
- 	if_index = p.p->ipi6_ifindex;
- 	dst_addr = p.p->ipi6_addr;
+    union {
+@@ -130,9 +132,11 @@
+    if_index = p.p->ipi6_ifindex;
+    dst_addr = p.p->ipi6_addr;
        }
 +  }
  
@@ -102,9 +104,9 @@ index edb87a4..937b5a7 100644
 +  if (!indextoname(daemon->dhcp6fd, if_index, ifr.ifr_name)) {
      return;
 +  }
- 
-   if (relay_reply6(&from, sz, ifr.ifr_name))
-     {
+   
+ #ifdef HAVE_LINUX_NETWORK
+   /* This works around a possible Linux kernel bug when using interfaces
 diff --git a/src/netlink.c b/src/netlink.c
 index da82943..819b3c0 100644
 --- a/src/netlink.c
