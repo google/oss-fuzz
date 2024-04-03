@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-# Pin due to ubsan: call to function _ through pointer to incorrect function type
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake python-six wget
 # We need libmbedtls > 2.5.1 otherwise it does not include the lib for static linking
 RUN wget https://open62541.org/libmbedtls/libmbedtls-dev_2.6.0-1_amd64.deb && \

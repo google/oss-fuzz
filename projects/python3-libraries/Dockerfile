@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-# Pin due to ubsan: call to function _ through pointer to incorrect function type
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y build-essential libncursesw5-dev libreadline-dev libssl-dev libgdbm-dev libc6-dev libsqlite3-dev tk-dev libbz2-dev zlib1g-dev libffi-dev
 RUN git clone https://github.com/python/cpython.git cpython
