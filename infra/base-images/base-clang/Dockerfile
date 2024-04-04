@@ -59,8 +59,10 @@ ENV CCC "clang++"
 # warning, to allow compiling legacy code.
 # See https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
 # Same for vla-cxx-extension, deprecated-declarations, int-conversion,
-# incompatible-function-pointer-types, enum-constexpr-conversion
+# incompatible-function-pointer-types, enum-constexpr-conversion,
+# dynamic-exception-spec, invalid-unevaluated-string, unused-but-set-variable,
+# strict-prototypes, missing-field-initializers
 
-ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=enum-constexpr-conversion -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-error=deprecated-declarations -Wno-error=vla-cxx-extension -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=missing-field-initializers -Wno-error=strict-prototypes -Wno-error=unused-but-set-variable -Wno-error=invalid-unevaluated-string -Wno-error=dynamic-exception-spec -Wno-error=enum-constexpr-conversion -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-error=deprecated-declarations -Wno-error=vla-cxx-extension -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
