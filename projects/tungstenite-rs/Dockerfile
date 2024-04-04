@@ -14,6 +14,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:c5216a9896a598dced7ce6708bb3226e443473f567045b4f282595776cc641f1
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 
 ## Install build dependencies.
 RUN git clone --depth 1 https://github.com/snapview/tungstenite-rs.git
