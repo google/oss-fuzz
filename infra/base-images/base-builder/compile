@@ -133,6 +133,8 @@ if [ "$SANITIZER" = "undefined" ]; then
   # Disable "function" sanitizer for C code for now, because many projects,
   # possibly via legacy C code are affected.
   # The projects should be fixed and this workaround be removed in the future.
+  # TODO(#11778):
+  # https://github.com/google/oss-fuzz/issues/11778
   export CFLAGS="$CFLAGS -fno-sanitize=function"
 fi
 
