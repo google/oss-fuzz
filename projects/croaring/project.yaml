@@ -8,7 +8,7 @@ sanitizers:
   - address
   - undefined
   # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-12b78d7a-4346-47d6-8109-5ede78fbad38.txt:
-      experimental: True
+  #    experimental: True
 main_repo: "https://github.com/RoaringBitmap/CRoaring"
 fuzzing_engines:
   - libfuzzer
