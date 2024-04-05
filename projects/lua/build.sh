@@ -92,7 +92,7 @@ git config --global --add safe.directory '*'
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --parallel
+cmake --build build --parallel --verbose
 
 LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
 $CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
