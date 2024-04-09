@@ -28,7 +28,7 @@ import build_project
 JCC_DIR = '/usr/local/bin'
 
 
-def run_experiment(project_name, target_name, args, output_path,
+def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
                    experiment_name, upload_reproducer_path):
   config = build_project.Config(testing=True,
@@ -72,6 +72,7 @@ def run_experiment(project_name, target_name, args, output_path,
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
+  local_err_path = '/workspace/err.log'
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   default_target_path = os.path.join(build.out, target_name)
@@ -80,6 +81,20 @@ def run_experiment(project_name, target_name, args, output_path,
   local_artifact_path = os.path.join(build.out, 'artifacts/')
   local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
+
+  # Upload err.log.
+  if errlog_path:
+    compile_step_index = next((i for (i, d) in enumerate(steps)
+                               if '&& compile' in ' '.join(d['args'])), -1)
+    if compile_step_index == -1:
+      print('Cannot find compile step')
+
+    # Insert the upload step right after compile step.
+    steps.insert(compile_step_index + 1, {
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', local_err_path, errlog_path],
+      'allowFailure': True
+    })
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
@@ -268,6 +283,10 @@ def main():
   parser.add_argument('--upload_build_log',
                       required=True,
                       help='GCS build log location.')
+  parser.add_argument('--upload_err_log',
+                      required=False,
+                      default='',
+                      help='GCS JCC error log location.')
   parser.add_argument('--upload_output_log',
                       required=True,
                       help='GCS log location.')
@@ -287,7 +306,7 @@ def main():
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
-                 args.upload_build_log, args.upload_corpus,
+                 args.upload_err_log, args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
                  args.upload_reproducer)
 
