@@ -91,9 +91,9 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
     else:
       # Insert the upload step right after compile step.
       steps.insert(compile_step_index + 1, {
-        'name': 'gcr.io/cloud-builders/gsutil',
-        'args': ['-m', 'cp', local_err_path, errlog_path],
-        'allowFailure': True
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': ['-m', 'cp', local_err_path, errlog_path],
+          'allowFailure': True
       })
 
   env = build_project.get_env(project_yaml['language'], build)
