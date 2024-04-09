@@ -72,7 +72,7 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
-  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360
+  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360.
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   default_target_path = os.path.join(build.out, target_name)
@@ -87,8 +87,6 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
     compile_step_index = -1
     for i, step in enumerate(steps):
       step_args = step.get('args', [])
-      if not step_args:
-        continue
       if '&& compile' in ' '.join(step_args):
         compile_step_index = i
         break
