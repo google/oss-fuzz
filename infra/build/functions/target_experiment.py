@@ -72,7 +72,7 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
-  local_err_path = '/workspace/err.log'
+  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   default_target_path = os.path.join(build.out, target_name)
@@ -82,19 +82,25 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
 
-  # Upload err.log.
+  # Upload JCC's err.log.
   if errlog_path:
-    compile_step_index = next((i for (i, d) in enumerate(steps)
-                               if '&& compile' in ' '.join(d['args'])), -1)
+    compile_step_index = -1
+    for i, step in enumerate(steps):
+      step_args = step.get('args', [])
+      if not step_args:
+        continue
+      if '&& compile' in ' '.join(step_args):
+        compile_step_index = i
+        break
     if compile_step_index == -1:
-      print('Cannot find compile step')
+      print('Cannot find compile step.')
     else:
       # Insert the upload step right after compile step.
-      steps.insert(compile_step_index + 1, {
+      upload_jcc_err_step = {
           'name': 'gcr.io/cloud-builders/gsutil',
-          'args': ['-m', 'cp', local_err_path, errlog_path],
-          'allowFailure': True
-      })
+          'args': ['cp', local_jcc_err_path, errlog_path]
+      }
+      steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
