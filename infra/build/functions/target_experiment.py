@@ -88,13 +88,13 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
                                if '&& compile' in ' '.join(d['args'])), -1)
     if compile_step_index == -1:
       print('Cannot find compile step')
-
-    # Insert the upload step right after compile step.
-    steps.insert(compile_step_index + 1, {
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', local_err_path, errlog_path],
-      'allowFailure': True
-    })
+    else:
+      # Insert the upload step right after compile step.
+      steps.insert(compile_step_index + 1, {
+        'name': 'gcr.io/cloud-builders/gsutil',
+        'args': ['-m', 'cp', local_err_path, errlog_path],
+        'allowFailure': True
+      })
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
