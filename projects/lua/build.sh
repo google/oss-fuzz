@@ -63,6 +63,8 @@ case $SANITIZER in
   *) SANITIZERS_ARGS="" ;;
 esac
 
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
