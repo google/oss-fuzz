@@ -86,7 +86,7 @@ then
 fi
 
 fuzz_branches=("")
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" ]] && [[ "$CIFUZZ" != "true" ]]
 then
     fuzz_branches+=("6")
     fuzz_branches+=("7")
