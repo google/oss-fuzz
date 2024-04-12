@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout bb419272223f251599a5f9c7581073e23a487369 && \
+    git checkout cfb5266a4c45cbec8663bb1b215c7fd326c60901 && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \
