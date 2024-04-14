@@ -1,4 +1,4 @@
-homepage: "https://xz.tukaani.org/xz-utils/"
+homepage: "https://tukaani.org/xz/"
 language: c++
 primary_contact: "lasse.collin@tukaani.org"
 auto_ccs:
