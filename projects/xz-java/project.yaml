@@ -1,4 +1,4 @@
-homepage: "https://xz.tukaani.org/xz-for-java/"
+homepage: "https://tukaani.org/xz/java.html"
 language: jvm
 primary_contact: "lasse.collin@tukaani.org"
 fuzzing_engines:
