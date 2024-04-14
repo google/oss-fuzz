@@ -23,8 +23,7 @@
   --disable-xz \
   --disable-xzdec \
   --disable-lzmadec \
-  --disable-lzmainfo \
-  --disable-ifunc
+  --disable-lzmainfo
 
 make clean
 make -j$(nproc)
