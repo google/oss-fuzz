@@ -131,11 +131,6 @@ cat generic.dict >> $OUT/fuzz_applayerparserparse$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap_aware$branch.dict
 
-df
-# clean to leave enough space for CIFuzz
-make clean
-df
-
 # build corpuses
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring"$branch"_seed_corpus.zip suricata.yaml
