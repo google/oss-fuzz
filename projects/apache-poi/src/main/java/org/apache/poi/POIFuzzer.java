@@ -124,8 +124,16 @@ public class POIFuzzer {
 	public static void checkExtractor(POITextExtractor extractor) throws IOException {
 		extractor.getDocument();
 		extractor.getFilesystem();
-		extractor.getMetadataTextExtractor();
-		extractor.getText();
+		try {
+			extractor.getMetadataTextExtractor();
+		} catch (IllegalStateException e) {
+			// can happen here
+		}
+		try {
+			extractor.getText();
+		} catch (OpenXML4JRuntimeException e) {
+			// can happen here
+		}
 
 		if (extractor instanceof POIOLE2TextExtractor) {
 			POIOLE2TextExtractor ole2Extractor = (POIOLE2TextExtractor) extractor;
