@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.zip -o ant.zip && \
+RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.14-bin.zip -o ant.zip && \
     unzip ant.zip -d $SRC/ant && \
     rm -rf ant.zip
 
-ENV ANT $SRC/ant/apache-ant-1.10.12/bin/ant
+ENV ANT $SRC/ant/apache-ant-1.10.14/bin/ant
 
 RUN svn checkout https://svn.code.sf.net/p/hsqldb/svn/base/trunk hsqldb-svn
 

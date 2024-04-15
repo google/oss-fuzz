@@ -38,7 +38,7 @@ public class POIVisioFuzzer {
 			visio.write(NullOutputStream.INSTANCE);
 		} catch (IOException | POIXMLException |
 				 BufferUnderflowException | RecordFormatException | OpenXML4JRuntimeException |
-				 IllegalArgumentException | IndexOutOfBoundsException e) {
+				 IllegalArgumentException | IndexOutOfBoundsException | IllegalStateException e) {
 			// expected here
 		}
 
