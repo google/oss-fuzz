@@ -86,7 +86,7 @@ then
 fi
 
 fuzz_branches=("")
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
     fuzz_branches+=("6")
     fuzz_branches+=("7")
@@ -130,11 +130,6 @@ cat generic.dict >> $OUT/fuzz_siginit$branch.dict
 cat generic.dict >> $OUT/fuzz_applayerparserparse$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap_aware$branch.dict
-
-df
-# clean to leave enough space for CIFuzz
-make clean
-df
 
 # build corpuses
 # default configuration file
