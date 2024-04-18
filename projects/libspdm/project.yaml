@@ -4,6 +4,7 @@ primary_contact: "zhiqiang.zhao@intel.com"
 auto_ccs:
   - "jiewen.yao@intel.com"
   - "wenxing.hou@intel.com"
+  - "hanx.xiao@intel.com"
 sanitizers:
   - address
 fuzzing_engines:

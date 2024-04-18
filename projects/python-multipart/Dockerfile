@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,25 +14,9 @@
 #
 ################################################################################
 
-./autogen.sh --no-po4a --no-doxygen
-./configure \
-  --enable-static \
-  --disable-debug \
-  --disable-shared \
-  --disable-xz \
-  --disable-xzdec \
-  --disable-lzmadec \
-  --disable-lzmainfo \
-  --disable-ifunc
-
-make clean
-make -j$(nproc)
-make -C tests/ossfuzz
-
-cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
-cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
-
-find $SRC/xz/tests/files -name "*.lzma" \
--exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
-find $SRC/xz/tests/files -name "*.xz" \
--exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
+RUN python3 -m pip install --upgrade pip
+WORKDIR python-multipart
+COPY build.sh $SRC/

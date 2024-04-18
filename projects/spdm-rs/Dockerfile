@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf autopoint libtool zip
-RUN git clone https://github.com/tukaani-project/xz.git
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth 1 --recursive https://github.com/ccc-spdm-tools/spdm-rs.git
 COPY build.sh $SRC/
-WORKDIR xz
+WORKDIR $SRC/spdm-rs

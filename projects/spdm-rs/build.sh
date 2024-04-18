@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,22 +14,21 @@
 # limitations under the License.
 #
 ################################################################################
+set -eox pipefail
+pushd $SRC/spdm-rs
 
-FROM gcr.io/oss-fuzz-base/base-builder
+export CARGO_TARGET_DIR=$SRC/spdm-rs/target
+FUZZ_TARGET_OUTPUT_DIR=${CARGO_TARGET_DIR}/x86_64-unknown-linux-gnu/release
 
+bash sh_script/pre-build.sh
 
-RUN apt-get update && apt-get install -y \
-	autoconf \
-	automake \
-	libtool \
-	make
+pushd spdmlib
+cargo fuzz build --release
+for f in fuzz/fuzz_targets/*.rs
+do
+    FUZZ_TARGET_NAME=$(basename ${f%.*})
+    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+done
+popd # spdmlib
 
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/fancycode/lzma-fuzz.git \
-	lzma-fuzz
-
-WORKDIR lzma-fuzz
-
-COPY build.sh $SRC/
+popd # $SRC/spdm-rs

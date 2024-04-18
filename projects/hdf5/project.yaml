@@ -5,6 +5,8 @@ primary_contact: "derobins@hdfgroup.org"
 vendor_ccs:
   - "Adam@adalogics.com"
   - "David@adalogics.com"
+  - "jhenderson@hdfgroup.org"
+  - "nfortne2@hdfgroup.org"
 sanitizers:
   - address
   - undefined

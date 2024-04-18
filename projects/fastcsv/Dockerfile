@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt update && apt install -y openjdk-21-jdk
+RUN apt update && apt install -y openjdk-17-jdk
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     mv fuzzing/dictionaries/csv.dict $SRC/csv.dict && \

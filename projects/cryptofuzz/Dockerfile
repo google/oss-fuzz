@@ -40,7 +40,7 @@ RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
-RUN git clone --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git
+RUN git clone --depth 1 --recurse-submodules -b development https://github.com/Mbed-TLS/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
@@ -62,7 +62,7 @@ RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
-RUN wget https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 RUN bash -c "wget $(curl https://ziglang.org/download/index.json | jq -r '.master."x86_64-linux".tarball') -O zig-latest.tar.xz"

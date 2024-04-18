@@ -154,8 +154,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     fz_drop_stream(ctx, stream);
   }
   fz_catch(ctx) {
+    fz_report_error(ctx);
+    fz_log_error(ctx, "error rendering pages");
   }
 
+  fz_flush_warnings(ctx);
   fz_drop_context(ctx);
 
   return 0;

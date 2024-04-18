@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# build and install fuzzers
-make clean
-make -j$(nproc)
-make install DEST=$OUT
+python3 -m pip install '.[dev]'
+for fuzzer in $(find $SRC -name "fuzz_*.py"); do
+	compile_python_fuzzer $fuzzer
+done

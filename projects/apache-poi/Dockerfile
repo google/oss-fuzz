@@ -42,7 +42,10 @@ WORKDIR ${SRC}
 RUN git clone --depth 1 https://github.com/apache/poi.git
 
 # install packages required for font-handling and other code in java.awt.*
-RUN apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6
+RUN apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 \
+&& apt-get clean autoclean \
+&& apt-get autoremove --yes \
+&& rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

@@ -48,8 +48,9 @@ WORKDIR ${SRC}
 ENV LIBRARY_NAME htmlunit
 RUN git clone https://github.com/HtmlUnit/htmlunit.git ${SRC}/${LIBRARY_NAME}
 
-ADD patch-disable-pgp.diff ${SRC}/
-RUN cd ${SRC}/htmlunit && (for i in ${SRC}/patch-*.diff; do tr -d '\015' < $i | git apply -v; done )
+# pgp now disabled by MVN_FLAGS in build.sh
+# ADD patch-disable-pgp.diff ${SRC}/
+# RUN cd ${SRC}/htmlunit && (for i in ${SRC}/patch-*.diff; do tr -d '\015' < $i | git apply -v; done )
 
 ADD build.sh ${SRC}/
 ADD ${LIBRARY_NAME}-fuzzer ${SRC}/${LIBRARY_NAME}-fuzzer/
