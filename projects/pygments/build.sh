@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install .
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
