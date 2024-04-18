@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/gitpython-developers/gitpython gitpython;
-RUN chmod +x $SRC/gitpython/fuzzing/oss-fuzz-scripts/container-environment-bootstrap.sh && \
-    $SRC/gitpython/fuzzing/oss-fuzz-scripts/container-environment-bootstrap.sh;
+RUN git clone https://github.com/gitpython-developers/gitpython gitpython
+RUN $SRC/gitpython/fuzzing/oss-fuzz-scripts/container-environment-bootstrap.sh
 
 COPY *.sh $SRC/
 WORKDIR $SRC/gitpython
