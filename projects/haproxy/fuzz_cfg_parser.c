@@ -15,9 +15,13 @@
 #
 ################################################################################
 */
-#include <stdlib.h>
-#include <stdio.h>
+
+#include <haproxy/cfgparse.h>
+
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)

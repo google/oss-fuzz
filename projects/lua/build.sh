@@ -63,6 +63,14 @@ case $SANITIZER in
   *) SANITIZERS_ARGS="" ;;
 esac
 
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
+# Workaround for a LeakSanitizer crashes,
+# see https://github.com/google/oss-fuzz/issues/11798.
+if [ "$ARCHITECTURE" = "aarch64" ]; then
+    export ASAN_OPTIONS=detect_leaks=0
+fi
+
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
@@ -92,7 +100,7 @@ git config --global --add safe.directory '*'
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --parallel
+cmake --build build --parallel --verbose
 
 LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
 $CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o

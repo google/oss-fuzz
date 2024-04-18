@@ -1,0 +1,12 @@
+homepage: "https://www.psc.edu/home-hpn-ssh"
+language: c
+primary_contact: "rapier1@gmail.com"
+auto_ccs:
+  - "rapier@psc.edu"
+  - "mwd@psc.edu"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/rapier1/hpn-ssh.git'
