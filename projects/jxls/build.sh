@@ -1,6 +1,4 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,16 +13,14 @@
 #
 ################################################################################
 
-
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
 mv $SRC/*.dict $OUT
 
-git apply $SRC/build.patch --whitespace=fix --reject
+CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
 
-./gradlew clean shadowJar -x :jxls:javadoc -x :jxls-poi:test
+mvn package
 
-cp "../jxls/jxls/build/libs/jxls-$CURRENT_VERSION-all.jar" $OUT/jxls.jar
-cp "../jxls/jxls-poi/build/libs/jxls-poi-$CURRENT_VERSION-all.jar" $OUT/jxls-poi.jar
+cp "jxls/target/jxls-$CURRENT_VERSION.jar" $OUT/jxls.jar
+cp "jxls-poi/target/jxls-poi-$CURRENT_VERSION.jar" $OUT/jxls-poi.jar
 
 ALL_JARS=$(find $OUT/ -name *.jar ! -name jazzer*.jar -printf "%f ")
 
@@ -40,7 +36,6 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  #cp $SRC/$fuzzer_basename.class $OUT/
   cp $SRC/*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
@@ -56,7 +51,7 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"\$mem_settings\" \
+--jvm_args=\"\$mem_settings:-Djava.awt.headless=true\" \
 \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
 done

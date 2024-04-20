@@ -16,16 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN rm -rf $SRC/project-parent/jxls
+RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
-RUN chmod +x $SRC/jxls/gradlew
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+RUN apt-get update && apt-get install -y maven
 
-COPY *.patch $SRC/
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 COPY *.dict $SRC/
