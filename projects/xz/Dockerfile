@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-
-# See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
-# Install Git and base dependences.
-RUN apt-get update && apt-get install -y devscripts equivs \
-	build-essential git-core cmake ninja-build pkg-config ccache
-
-RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
-
-WORKDIR FreeRDP
-
-# Install all dependencies required by the nightly package.
-RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
-
+RUN apt-get update && apt-get install -y make autoconf autopoint libtool zip
+RUN git clone https://github.com/tukaani-project/xz.git
 COPY build.sh $SRC/
+WORKDIR xz

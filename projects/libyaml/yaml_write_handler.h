@@ -26,12 +26,12 @@ static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
   out->buf = (unsigned char *)realloc(out->buf, out->size + size);
   if (!out->buf) {
     out->size = 0;
-    return 1;
+    return 0;
   }
 
   memcpy(out->buf + out->size, buffer, size);
   out->size += size;
-  return 0;
+  return 1;
 }
 
 #endif // YAML_WRITE_HANDLER_H_

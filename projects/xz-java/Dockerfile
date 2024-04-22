@@ -14,18 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-# See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
-# Install Git and base dependences.
-RUN apt-get update && apt-get install -y devscripts equivs \
-	build-essential git-core cmake ninja-build pkg-config ccache
-
-RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
-
-WORKDIR FreeRDP
-
-# Install all dependencies required by the nightly package.
-RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
+RUN apt-get install ant -y
+RUN git clone --depth 1 https://github.com/tukaani-project/xz-java $SRC/xz-java
 
 COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/xz-java

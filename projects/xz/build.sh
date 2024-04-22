@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +15,24 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+./autogen.sh --no-po4a --no-doxygen
+./configure \
+  --enable-static \
+  --disable-debug \
+  --disable-shared \
+  --disable-xz \
+  --disable-xzdec \
+  --disable-lzmadec \
+  --disable-lzmainfo
 
-# See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
-# Install Git and base dependences.
-RUN apt-get update && apt-get install -y devscripts equivs \
-	build-essential git-core cmake ninja-build pkg-config ccache
+make clean
+make -j$(nproc)
+make -C tests/ossfuzz
 
-RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
+cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
+cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
 
-WORKDIR FreeRDP
-
-# Install all dependencies required by the nightly package.
-RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
-
-COPY build.sh $SRC/
+find $SRC/xz/tests/files -name "*.lzma" \
+-exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
+find $SRC/xz/tests/files -name "*.xz" \
+-exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
