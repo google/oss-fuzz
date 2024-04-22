@@ -96,7 +96,15 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
       # Insert the upload step right after compile step.
       upload_jcc_err_step = {
           'name': 'gcr.io/cloud-builders/gsutil',
-          'args': ['cp', local_jcc_err_path, errlog_path]
+          'entrypoint':
+              '/bin/bash',
+          'args': [
+              '-c',
+              (f'test -f {local_jcc_err_path} || '
+               f'echo "Failed to generate JCC error log." >> '
+               f'{local_jcc_err_path} && '
+               f'gsutil cp {local_jcc_err_path} {errlog_path}'),
+          ]
       }
       steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
