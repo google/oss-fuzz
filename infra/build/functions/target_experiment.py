@@ -102,8 +102,8 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
           'args': [
               '-c',
               (f'test -f {local_jcc_err_path} || '
-               f'echo "Failed to generate JCC error log." >> '
-               f'{local_jcc_err_path} && '
+               f'echo "Failed to generate JCC error log." | '
+               f'tee -a {local_jcc_err_path} && '
                f'gsutil cp {local_jcc_err_path} {errlog_path}'),
           ]
       }
