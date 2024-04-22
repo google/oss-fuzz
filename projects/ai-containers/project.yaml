@@ -6,6 +6,8 @@ main_repo: https://github.com/intel/ai-containers
 sanitizers:
 - address
 vendor_ccs:
-- srikanth.ramakrishna@intel.com
 - tyler.titsworth@intel.com
 - jitendra.patil@intel.com
+- clayne.b.robison@intel.com
+- srikanth.ramakrishna@intel.com
+- sharvil.shah@intel.com
