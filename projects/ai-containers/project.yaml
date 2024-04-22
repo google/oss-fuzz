@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/intel/ai-containers
+language: python
+main_repo: https://github.com/intel/ai-containers
+sanitizers:
+- address
+vendor_ccs:
+- srikanth.ramakrishna@intel.com
+- tyler.titsworth@intel.com
+- jitendra.patil@intel.com
