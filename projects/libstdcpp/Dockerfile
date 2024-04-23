@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-testing-2403-roll-clang@sha256:0bc4e74ed3f5f2097980ed79cbef0f962fe1926d997ee581a44ccb0009c42a24
 RUN sed -i -e 's/^# deb-src/deb-src/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt build-dep -y g++-10
