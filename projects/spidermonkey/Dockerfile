@@ -23,6 +23,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   yasm \
   python \
   patchelf \
+  libxml2 \
   llvm-dev curl
 # we need llvm-dev for llvm-objdump
 
@@ -34,5 +35,5 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $SRC/rustbuild.s
     $SRC/rustbuild.sh -y
 
 RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
-WORKDIR mozilla-central/js/src/
+WORKDIR mozilla-central/
 COPY build.sh $SRC/
