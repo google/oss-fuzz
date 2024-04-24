@@ -5,7 +5,7 @@ auto_ccs:
   - "zlowram@gmail.com"
   - "aleksandrosansan@gmail.com"
   - "peron.clem@gmail.com"
-  - "egecetin@hotmail.com.tr"
+  - "egecetin97@gmail.com"
 fuzzing_engines:
   - afl
   - libfuzzer
