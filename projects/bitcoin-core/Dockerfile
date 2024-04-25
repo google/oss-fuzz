@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-testing-2403-roll-clang@sha256:0bc4e74ed3f5f2097980ed79cbef0f962fe1926d997ee581a44ccb0009c42a24
 
 # Packages taken from:
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
