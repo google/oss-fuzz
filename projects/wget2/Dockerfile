@@ -57,10 +57,8 @@ RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
 
-# Get a more recent version of automake as the one in the package
-# manager is too old for wget2.
-RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
-    apt install ./automake_1.16.5-1.3_all.deb
+# Bump some old packages to the required version
+RUN sed --in-place 's/focal/noble/g' /etc/apt/sources.list && apt-get update && apt-get install binutils automake --reinstall --yes
 
 RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
