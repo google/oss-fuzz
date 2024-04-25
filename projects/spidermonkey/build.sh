@@ -19,28 +19,30 @@
 source $HOME/.cargo/env
 rustup default nightly
 
+# Write mozconfig file.
+echo '
+ac_add_options --enable-application=js
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-shell
+
+ac_add_options --enable-debug
+ac_add_options --enable-optimize="-O2 -gline-tables-only"
+
+ac_add_options --disable-jemalloc
+ac_add_options --disable-tests
+ac_add_options --enable-address-sanitizer
+
+CFLAGS="-fsanitize=address"
+CXXFLAGS="-fsanitize=address"
+LDFLAGS="-fsanitize=address"
+' > ./mozconfig
+export MOZCONFIG=./mozconfig
+
 # Install dependencies.
-export MOZBUILD_STATE_PATH=/root/.mozbuild
-export SHELL=/bin/bash
-cd ../../
-./mach --no-interactive bootstrap --application-choice browser
-cd js/src/
+./mach --no-interactive bootstrap --application-choice js
 
-autoconf2.13
+./mach build "-j$(nproc)"
 
-mkdir build_DBG.OBJ
-cd build_DBG.OBJ
-
-../configure \
-    --enable-debug \
-    --enable-optimize="-O2 -gline-tables-only" \
-    --disable-jemalloc \
-    --disable-tests \
-    --enable-address-sanitizer
-
-make "-j$(nproc)"
-
-cp dist/bin/js $OUT
+cp obj-shell/dist/bin/js $OUT
 
 # Copy libraries.
 mkdir -p $OUT/lib

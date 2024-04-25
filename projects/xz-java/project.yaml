@@ -1,0 +1,10 @@
+homepage: "https://tukaani.org/xz/java.html"
+language: jvm
+primary_contact: "lasse.collin@tukaani.org"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/tukaani-project/xz-java"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"

@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,24 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-bin
-RUN git clone https://github.com/stephane/libmodbus.git
-RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat.git
-COPY build.sh $SRC/
-COPY fuzz/ $SRC/libmodbus/fuzz/
-WORKDIR $SRC/libmodbus/
+./autogen.sh --no-po4a --no-doxygen
+./configure \
+  --enable-static \
+  --disable-debug \
+  --disable-shared \
+  --disable-xz \
+  --disable-xzdec \
+  --disable-lzmadec \
+  --disable-lzmainfo
+
+make clean
+make -j$(nproc)
+make -C tests/ossfuzz
+
+cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
+cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
+
+find $SRC/xz/tests/files -name "*.lzma" \
+-exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
+find $SRC/xz/tests/files -name "*.xz" \
+-exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
