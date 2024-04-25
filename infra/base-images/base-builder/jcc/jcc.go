@@ -357,6 +357,9 @@ func WriteStdErrOut(outstr string, errstr string) {
 	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
+	// Record what source file produced the error.
+	// TODO: Should we write the actual flags used instead?
+	AppendStringToFile("/workspace/err.log", os.Args)
 	AppendStringToFile("/workspace/err.log", errstr)
 }
 
