@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS     -gdwarf-4"
+export CXXFLAGS="$CXXFLAGS -gdwarf-4"
+
 $SRC/build_cryptofuzz.sh
 
 cd $SRC/bitcoin-core/
