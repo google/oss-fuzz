@@ -291,6 +291,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       if (!done) {
         if (!documents_equal(documents + count, &document)) {
           yaml_parser_delete(&parser);
+          yaml_document_delete(&document);
           goto error;
         }
         count++;
@@ -300,12 +301,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     yaml_parser_delete(&parser);
   }
 
-  for (int k = 0; k < document_number; k++) {
-    yaml_document_delete(documents + k);
-  }
 
 error:
 
+  for (int k = 0; k < document_number; k++) {
+    yaml_document_delete(documents + k);
+  }
   free(out.buf);
   return 0;
 }
