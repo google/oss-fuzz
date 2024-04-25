@@ -56,11 +56,9 @@ sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./confi
 if [ "$SANITIZER" = "memory" ]; then
   # _FORTIFY_SOURCE is not compatible with MSAN.
   export CPPFLAGS="${CPPFLAGS} -U_FORTIFY_SOURCE"
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
-else
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 fi
 
+CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 make -j$(nproc)
 
 WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./src/test/fuzz/fuzz" || true
