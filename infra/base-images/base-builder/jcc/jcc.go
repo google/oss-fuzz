@@ -359,7 +359,7 @@ func WriteStdErrOut(outstr string, errstr string) {
 	fmt.Fprint(os.Stderr, errstr)
 	// Record what source file produced the error.
 	// TODO: Should we write the actual flags used instead?
-	AppendStringToFile("/workspace/err.log", os.Args)
+	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", os.Args))
 	AppendStringToFile("/workspace/err.log", errstr)
 }
 
