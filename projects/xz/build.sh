@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,24 @@
 #
 ################################################################################
 
-mkdir build && cd build
-cmake -DBUILD_SHARED_LIBS=OFF ..
-make pistache_static
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
-    -std=c++17 -I../include/ ../tests/fuzzers/fuzz_parser.cpp ./src/libpistache.a
+./autogen.sh --no-po4a --no-doxygen
+./configure \
+  --enable-static \
+  --disable-debug \
+  --disable-shared \
+  --disable-xz \
+  --disable-xzdec \
+  --disable-lzmadec \
+  --disable-lzmainfo
 
-zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus
+make clean
+make -j$(nproc)
+make -C tests/ossfuzz
+
+cp $SRC/xz/tests/ossfuzz/config/*.options $OUT/
+cp $SRC/xz/tests/ossfuzz/config/*.dict $OUT/
+
+find $SRC/xz/tests/files -name "*.lzma" \
+-exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
+find $SRC/xz/tests/files -name "*.xz" \
+-exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;

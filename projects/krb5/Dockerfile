@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf bison flex
 RUN git clone --depth 1 https://github.com/krb5/krb5
-RUN git clone https://github.com/0x34d/oss-fuzz-bloat
+RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
 COPY build.sh $SRC/
 COPY fuzzing/ $SRC/krb5/fuzzing/
 WORKDIR $SRC/krb5/
