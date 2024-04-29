@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-bca72181-cfb2-4b2f-98f1-c2addee0aa4b.txt
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python bison flex texinfo lzip bsdmainutils
 RUN git clone --depth 1 --branch cryptofuzz https://github.com/libecc/libecc.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
