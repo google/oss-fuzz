@@ -43,7 +43,7 @@ func CopyFile(src string, dst string) {
 	}
 }
 
-func TryFixCCompilation(cmdline []string) (string, []string, int, string, string) {
+func TryFixCCompilation(cmdline []string) ([]string, int, string, string) {
 	var newFile string = ""
 	for i, arg := range cmdline {
 		if !strings.HasSuffix(arg, ".c") {
@@ -60,21 +60,22 @@ func TryFixCCompilation(cmdline []string) (string, []string, int, string, string
 		break
 	}
 	if newFile == "" {
-		return "", []string{}, 1, "", ""
+		return []string{}, 1, "", ""
 	}
 	bin := "clang++"
 	newCmdline := []string{"-stdlib=libc++"}
 	newCmdline = append(cmdline, newCmdline...)
+	newFullArgs := append([]string{bin}, newCmdline...)
 
 	retcode, out, err := Compile(bin, newCmdline)
 	if retcode == 0 {
-		return bin, newCmdline, retcode, out, err
+		return newFullArgs, retcode, out, err
 	}
 	correctedCmdline, corrected, _ := CorrectMissingHeaders(bin, newCmdline)
 	if corrected {
-		return bin, correctedCmdline, 0, "", ""
+		return append([]string{bin}, correctedCmdline...), 0, "", ""
 	}
-	return bin, newCmdline, retcode, out, err
+	return newFullArgs, retcode, out, err
 }
 
 func ExtractMissingHeader(compilerOutput string) (string, bool) {
@@ -354,13 +355,12 @@ func AppendStringToFile(filepath, new_content string) error {
 	return err
 }
 
-func WriteStdErrOut(bin string, args []string, outstr string, errstr string) {
+func WriteStdErrOut(args []string, outstr string, errstr string) {
 	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
-	// Record what source file produced the error.
-	fullargs := append([]string{bin}, args...)
-	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", fullargs))
+	// Record what compile args produced the error.
+	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args))
 	AppendStringToFile("/workspace/err.log", errstr)
 }
 
@@ -388,9 +388,10 @@ func main() {
 	} else {
 		bin = "clang"
 	}
+	fullCmdArgs := append([]string{bin}, newArgs...)
 	retcode, out, errstr := Compile(bin, newArgs)
 	if retcode == 0 {
-		WriteStdErrOut(bin, newArgs, out, errstr)
+		WriteStdErrOut(fullCmdArgs, out, errstr)
 		os.Exit(0)
 	}
 
@@ -411,20 +412,20 @@ func main() {
 		// Nothing else we can do. Just write the error and exit.
 		// Just print the original error for debugging purposes and
 		//  to make build systems happy.
-		WriteStdErrOut(bin, newArgs, out, errstr)
+		WriteStdErrOut(fullCmdArgs, out, errstr)
 		os.Exit(retcode)
 	}
-	fixbin, fixargs, fixret, fixout, fixerr := TryFixCCompilation(newArgs)
+	fixargs, fixret, fixout, fixerr := TryFixCCompilation(newArgs)
 	if fixret != 0 {
 		// We failed, write stdout and stderr from the first failure and
 		// from fix failures so we can know what the code did wrong and
 		// how to improve jcc to fix more issues.
-		WriteStdErrOut(bin, newArgs, out, errstr)
+		WriteStdErrOut(fullCmdArgs, out, errstr)
 		fmt.Println("\nFix failure")
 		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixbin, fixargs, fixout, fixerr)
+		WriteStdErrOut(fixargs, fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.
-	WriteStdErrOut(fixbin, fixargs, fixout, fixerr)
+	WriteStdErrOut(fixargs, fixout, fixerr)
 }
