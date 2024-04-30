@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-testing-2403-roll-clang@sha256:0bc4e74ed3f5f2097980ed79cbef0f962fe1926d997ee581a44ccb0009c42a24
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 WORKDIR llvm-project
 COPY build.sh $SRC/
+
