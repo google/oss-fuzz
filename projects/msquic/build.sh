@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Temporary workaround for clang-18
+export CFLAGS="$CFLAGS     -Wno-error=invalid-unevaluated-string"
+export CXXFLAGS="$CXXFLAGS -Wno-error=invalid-unevaluated-string"
+
 pwsh ./scripts/build.ps1 -Static -DisableTest -DisablePerf -DisableLogs -Parallel 1
 
 cd $SRC/msquic/src/fuzzing
