@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-e701b6fa-f3a0-414e-ad6e-0223e6d42ebd.txt
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get install -y software-properties-common make autoconf build-essential wget lzip libtool python
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
 RUN git clone --depth 1 https://github.com/randombit/botan.git
