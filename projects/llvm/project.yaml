@@ -20,7 +20,7 @@ auto_ccs:
 
 sanitizers:
   - address
-  - memory
+#  - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-a3d59d5e-8ae4-4294-9a84-bed1f85c2923.txt
 
 fuzzing_engines:
   - libfuzzer

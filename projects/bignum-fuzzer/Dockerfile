@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-6083635a-3f72-444d-80ef-3a0a26670cf7.txt
 RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget lzip
 RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig
 ENV PATH=$PATH:/usr/local/go/bin
