@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS     -Wno-error=missing-field-initializers"
+export CXXFLAGS="$CXXFLAGS -Wno-error=missing-field-initializers"
+
 # Now build the content
 ./BuildFuzzers.sh --oss-fuzz
 
