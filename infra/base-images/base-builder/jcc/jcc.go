@@ -377,7 +377,7 @@ func main() {
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	newArgs = append(args, "-w")
+	newArgs := append(args, "-w")
 
 	var bin string
 	if isCPP {
