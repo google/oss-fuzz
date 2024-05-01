@@ -62,18 +62,18 @@ func TryFixCCompilation(cmdline []string) ([]string, int, string, string) {
 	if newFile == "" {
 		return []string{}, 1, "", ""
 	}
-	bin := "clang++"
+	cppBin := "clang++"
 	newCmdline := []string{"-stdlib=libc++"}
 	newCmdline = append(cmdline, newCmdline...)
-	newFullArgs := append([]string{bin}, newCmdline...)
+	newFullArgs := append([]string{cppBin}, newCmdline...)
 
-	retcode, out, err := Compile(bin, newCmdline)
+	retcode, out, err := Compile(cppBin, newCmdline)
 	if retcode == 0 {
 		return newFullArgs, retcode, out, err
 	}
-	correctedCmdline, corrected, _ := CorrectMissingHeaders(bin, newCmdline)
+	correctedCmdline, corrected, _ := CorrectMissingHeaders(cppBin, newCmdline)
 	if corrected {
-		return append([]string{bin}, correctedCmdline...), 0, "", ""
+		return append([]string{cppBin}, correctedCmdline...), 0, "", ""
 	}
 	return newFullArgs, retcode, out, err
 }
