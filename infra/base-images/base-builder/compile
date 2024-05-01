@@ -86,9 +86,9 @@ fi
 
 if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then
-  # Take all libraries from lib/msan and MSAN_LIBS_PATH
+  # Take all libraries from lib/msan
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
-  cp -R /usr/msan/lib/* /usr/local/lib/
+  cp -R /usr/msan/lib/* /usr/local/lib/x86_64-unknown-linux-gnu/
 
   echo 'Building without MSan instrumented libraries.'
 fi
