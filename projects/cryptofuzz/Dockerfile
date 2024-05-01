@@ -41,7 +41,7 @@ RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
-RUN git clone --depth 1 --recurse-submodules -b development https://github.com/Mbed-TLS/mbedtls.git
+RUN git clone --depth 1 --recurse-submodules -b mbedtls-3.6 https://github.com/Mbed-TLS/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
