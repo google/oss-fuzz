@@ -89,6 +89,7 @@ then
   # Take all libraries from lib/msan
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
   cp -R /usr/msan/lib/* /usr/local/lib/x86_64-unknown-linux-gnu/
+  cp -R /usr/msan/include/* /usr/local/include
 
   echo 'Building without MSan instrumented libraries.'
 fi
