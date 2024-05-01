@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
 # or a Rust toolchain.
 RUN pip3 install 'pip>=20'
 
-RUN git clone --depth 1 --recurse-submodules -b development https://github.com/Mbed-TLS/mbedtls
+RUN git clone --depth 1 --recurse-submodules -b mbedtls-3.6 https://github.com/Mbed-TLS/mbedtls
 # Install Python packages from PyPI
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
