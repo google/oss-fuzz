@@ -3,8 +3,9 @@ language: c++
 primary_contact: "caolanm@gmail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  #- memory:
+  #   experimental: True
+  #   # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-712b40fe-c70f-4ece-90a2-150c61afc6f4.txt
   - undefined
 fuzzing_engines:
   # see https://github.com/google/oss-fuzz/issues/6233 for missing afl
