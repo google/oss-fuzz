@@ -21,7 +21,7 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-dc084406-0ddc-4ebd-a7be-2387cffb19ff.txt
+  - memory
   - undefined
 architectures:
   - x86_64
