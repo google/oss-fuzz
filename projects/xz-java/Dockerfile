@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,34 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-import io
-import atheris
+#
+################################################################################
 
-import configparser
-from git import GitConfigParser
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+RUN apt-get install ant -y
+RUN git clone --depth 1 https://github.com/tukaani-project/xz-java $SRC/xz-java
 
-def TestOneInput(data):
-  fdp = atheris.FuzzedDataProvider(data)
-  sio = io.BytesIO(data)
-  sio.name = "/tmp/fuzzconfig.config"
-  git_config = GitConfigParser(sio)
-  try:
-    git_config.read()
-  except configparser.MissingSectionHeaderError:
-    pass
-  except configparser.ParsingError:
-    pass
-  except UnicodeDecodeError:
-    pass
-
-
-def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/xz-java

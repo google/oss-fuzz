@@ -43,7 +43,7 @@ cd "$WIRESHARK_BUILD_PATH"
 
 cmake -GNinja \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -DCMAKE_C_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CFLAGS" -DCMAKE_CXX_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CXXFLAGS" \
       -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES $SRC/wireshark/
 
 ninja all-fuzzers

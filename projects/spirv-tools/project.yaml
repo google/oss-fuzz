@@ -8,7 +8,7 @@ auto_ccs:
   - "nathangauer@google.com"
 sanitizers:
   - address
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-8e0fc9d7-ba92-4454-94f7-93c4223a30a6.txt
   - undefined
 main_repo: 'https://github.com/KhronosGroup/SPIRV-Tools.git'
 architectures:
