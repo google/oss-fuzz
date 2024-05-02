@@ -94,8 +94,8 @@ cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -432,17 +432,17 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile libgpg-error (dependency of libgcrypt)
     cd $SRC/
-    tar jxvf libgpg-error-1.36.tar.bz2
-    cd libgpg-error-1.36/
+    tar jxvf libgpg-error-1.49.tar.bz2
+    cd libgpg-error-1.49/
     if [[ $CFLAGS != *-m32* ]]
     then
         ./configure --enable-static
     else
         ./configure --enable-static --host=i386
     fi
-    make -j$(nproc)
+    ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
     make install
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.49/src/.libs/libgpg-error.a"
 
     # Compile libgcrypt
     cd $SRC/libgcrypt

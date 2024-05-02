@@ -22,7 +22,6 @@ ARG arch=x86_64
 
 ENV FUZZINTRO_OUTDIR=$SRC
 
-
 # Install newer cmake.
 ENV CMAKE_VERSION 3.24.2
 RUN apt-get update && apt-get install -y wget sudo && \
@@ -36,7 +35,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout 2188913aac0f423ec2aa6f4efdd5de6df0752376 && \
+    git checkout cfb5266a4c45cbec8663bb1b215c7fd326c60901 && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \
@@ -56,6 +55,12 @@ ENV CCC "clang++"
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
 # https://llvm.org/docs/LibFuzzer.html#fuzzer-friendly-build-mode
 
-ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+# The implicit-function-declaration and implicit-int errors are downgraded to a
+# warning, to allow compiling legacy code.
+# See https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
+# Same for deprecated-declarations, int-conversion,
+# incompatible-function-pointer-types, enum-constexpr-conversion
+
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=enum-constexpr-conversion -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-error=deprecated-declarations -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"

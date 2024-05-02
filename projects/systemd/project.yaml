@@ -13,7 +13,6 @@ fuzzing_engines:
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
-  - dimitri.ledkov@canonical.com
   - poettering@gmail.com
   - watanabe.yu@gmail.com
   - evvers@ya.ru

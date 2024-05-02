@@ -18,6 +18,8 @@
 # Fuzzer runner. Appends .options arguments and seed corpus to users args.
 # Usage: $0 <fuzzer_name> <fuzzer_args>
 
+sysctl -w vm.mmap_rnd_bits=28
+
 export PATH=$OUT:$PATH
 cd $OUT
 

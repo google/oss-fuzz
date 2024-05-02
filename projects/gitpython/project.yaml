@@ -1,10 +1,11 @@
-fuzzing_engines:
-- libfuzzer
-homepage: https://github.com/gitpython-developers/gitpython
+homepage: "https://github.com/gitpython-developers/gitpython"
 language: python
-main_repo: https://github.com/gitpython-developers/gitpython
+primary_contact: "byronimo@gmail.com"
+auto_ccs:
+  - "david.js.lakin@gmail.com"
+  - "eliah.kagan@gmail.com"
+main_repo: "https://github.com/gitpython-developers/gitpython"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
-- address
-- undefined
-vendor_ccs:
-- david@adalogics.com
+  - address

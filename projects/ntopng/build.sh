@@ -33,14 +33,17 @@ make -j$(nproc)
 make install
 
 # zeromq
-cd $SRC/zeromq-4.3.4
+cd $SRC/zeromq-4.3.5
 ./autogen.sh
+(
+export CXXFLAGS="-Wno-error=missing-braces -stdlib=libc++"
 ./configure --without-documentation --without-libsodium --enable-static --disable-shared
 make -j$(nproc)
 make install
+)
 
 # json-c
-cd $SRC/json-c-json-c-0.16-20220414
+cd $SRC/json-c-json-c-0.17-20230812
 mkdir build
 cd build
 cmake -DBUILD_SHARED_LIBS=OFF ..

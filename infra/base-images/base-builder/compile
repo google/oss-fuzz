@@ -17,12 +17,9 @@
 
 echo "---------------------------------------------------------------"
 
-OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
+sysctl -w vm.mmap_rnd_bits=28
 
-# This is a temporary fix: fall back to LLVM14's old pass manager
-if [ -n "${OLD_LLVMPASS-}" ]; then
-  export SANITIZER_FLAGS_introspector=$(echo $SANITIZER_FLAGS_introspector | sed -r 's/-O0/-flegacy-pass-manager/')
-fi
+OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
 
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
   if [ "$FUZZING_ENGINE" != "libfuzzer" ] && [ "$FUZZING_ENGINE" != "wycheproof" ]; then
@@ -77,6 +74,7 @@ fi
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/local/lib
+    cp -R /usr/i386/include/* /usr/local/include
 fi
 
 # Don't use a fuzzing engine with Jazzer which has libFuzzer built-in or with
@@ -130,6 +128,15 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+
+if [ "$SANITIZER" = "undefined" ]; then
+  # Disable "function" sanitizer for C code for now, because many projects,
+  # possibly via legacy C code are affected.
+  # The projects should be fixed and this workaround be removed in the future.
+  # TODO(#11778):
+  # https://github.com/google/oss-fuzz/issues/11778
+  export CFLAGS="$CFLAGS -fno-sanitize=function"
+fi
 
 if [ "$FUZZING_LANGUAGE" = "go" ]; then
   # required by Go 1.20

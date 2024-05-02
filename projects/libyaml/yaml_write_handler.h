@@ -18,20 +18,30 @@
 typedef struct yaml_output_buffer {
   unsigned char *buf;
   size_t size;
+  size_t capacity;
 } yaml_output_buffer_t;
 
 static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
+  size_t newsize;
   yaml_output_buffer_t *out = (yaml_output_buffer_t *)data;
 
-  out->buf = (unsigned char *)realloc(out->buf, out->size + size);
+  /* Double buffer size whenever necessary */
+  if (out->size + size >= out->capacity) {
+    newsize = out->capacity << 1;
+    if (newsize < out->size + size) {
+      newsize = out->size + size;
+    }
+    out->buf = (unsigned char *)realloc(out->buf, newsize);
+    out->capacity = newsize;
+  }
   if (!out->buf) {
     out->size = 0;
-    return 1;
+    return 0;
   }
 
   memcpy(out->buf + out->size, buffer, size);
   out->size += size;
-  return 0;
+  return 1;
 }
 
 #endif // YAML_WRITE_HANDLER_H_

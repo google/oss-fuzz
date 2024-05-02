@@ -6,7 +6,7 @@ vendor_ccs:
   - "twsmith@mozilla.com"
 sanitizers:
   - address
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-f5583c45-faa2-44d4-8b2f-b27e83c25588.txt
   - undefined
 architectures:
   - x86_64
