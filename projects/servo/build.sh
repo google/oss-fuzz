@@ -19,6 +19,10 @@ cd $SRC/html5ever/html5ever
 cargo fuzz build -O 
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
 
+cd $SRC/rust-cssparser/
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/cssparser $OUT/fuzz-cssparser
+
 cd $SRC/rust-url/url
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/fuzz-url-parse

@@ -21,6 +21,8 @@ RUN git clone \
 	--branch master \
 	https://github.com/pygments/pygments.git
 
+RUN python3 -m pip install --upgrade pip
+
 WORKDIR pygments
 
 RUN git clone --depth 1 https://github.com/google/fuzzing

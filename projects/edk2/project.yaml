@@ -1,0 +1,10 @@
+homepage: "https://www.tianocore.org"
+language: c
+fuzzing_engines:
+   - libfuzzer
+sanitizers:
+   - address
+   - undefined
+primary_contact: "edk2-hbfa-ossfuzz@intel.com"
+main_repo: "https://github.com/tianocore/edk2"
+file_github_issue: false

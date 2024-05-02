@@ -2,7 +2,7 @@ homepage: "https://github.com/benhoyt/inih"
 language: c
 primary_contact: "benhoyt@gmail.com"
 auto_ccs:
-  - "ajsinghyadav00@gmail.com"
+  - "pkillarjun@protonmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

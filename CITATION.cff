@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+title: OSS-Fuzz
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Abhishek
+    family-names: Arya
+    affiliation: Google LLC
+    email: aarya@google.com
+    orcid: 'https://orcid.org/0009-0009-4558-4314'
+  - given-names: Oliver
+    family-names: Chang
+    email: ochang@google.com
+    affiliation: Google LLC
+    orcid: 'https://orcid.org/0009-0006-3181-4551'
+  - given-names: Jonathan
+    family-names: Metzman
+    email: metzman@google.com
+    affiliation: Google LLC
+    orcid: 'https://orcid.org/0000-0002-7042-0444'
+  - given-names: Kostya
+    family-names: Serebryany
+    email: kcc@google.com
+    affiliation: Google LLC
+    orcid: 'https://orcid.org/0009-0009-2379-3641'
+  - given-names: Dongge
+    family-names: Liu
+    email: donggeliu@google.com
+    affiliation: Google LLC
+    orcid: 'https://orcid.org/0000-0003-4821-7033'
+repository-code: 'https://github.com/google/oss-fuzz'
+abstract: >-
+  OSS-Fuzz is an open-source project by Google that provides
+  continuous fuzzing for open-source software. It aims to
+  make common open-source software more secure and stable by
+  combining modern fuzzing techniques with scalable,
+  distributed execution. As of August 2023, OSS-Fuzz has
+  helped identify and fix over 10,000 vulnerabilities and
+  36,000 bugs across 1,000 projects.
+keywords:
+  - open-source
+  - fuzzing
+license: Apache-2.0
+

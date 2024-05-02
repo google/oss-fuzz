@@ -1,9 +1,9 @@
 homepage: "https://tukaani.org/xz/"
 language: c++
-primary_contact: "jiat0218@gmail.com"
+primary_contact: "lasse.collin@tukaani.org"
 auto_ccs:
-  - "lasse.collin@tukaani.org"
   - "bshas3@gmail.com"
+  - "samjd1024@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

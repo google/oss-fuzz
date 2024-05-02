@@ -49,6 +49,10 @@ RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
 RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
 RUN rm -rf simdjson-fuzz
 
+RUN git clone --depth 1 https://github.com/nigeltao/xz-tests-files
+RUN rm -rf xz-tests-files/.git
+RUN mv xz-tests-files xz_corpus
+
 # Finish.
 
 WORKDIR wuffs

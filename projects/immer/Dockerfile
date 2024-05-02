@@ -14,15 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 RUN apt-get update && apt-get install -y cmake libgc-dev pkg-config
-# install Catch2 from sources, since Ubuntu 20.04 (currently the base for
-# this image) does not ship it
-RUN git clone -b v2.x --depth 1 https://github.com/catchorg/Catch2.git && \
-    cd Catch2 && \
-    cmake -DCATCH_BUILD_TESTING=OFF -DCATCH_BUILD_EXAMPLES=OFF -DCATCH_ENABLE_COVERAGE=OFF -DCATCH_ENABLE_WERROR=OFF -DCATCH_INSTALL_DOCS=OFF -DCATCH_INSTALL_HELPERS=OFF -Bbuild && \
-    cmake --build build && \
-    cmake --build build --target install
 RUN git clone --depth 1 https://github.com/arximboldi/immer.git immer
 WORKDIR immer
 COPY build.sh $SRC/

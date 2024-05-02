@@ -8,3 +8,7 @@ fuzzing_engines:
   - libfuzzer
 vendor_ccs:
   - maxnair.dev@gmail.com
+  - jkratzer@mozilla.com
+  - twsmith@mozilla.com
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

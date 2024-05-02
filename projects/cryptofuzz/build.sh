@@ -83,8 +83,8 @@ cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -322,8 +322,8 @@ make -B
 
 # Compile mpdecimal
 cd $SRC/
-tar zxf mpdecimal-2.5.1.tar.gz
-cd mpdecimal-2.5.1/
+tar zxf mpdecimal-4.0.0.tar.gz
+cd mpdecimal-4.0.0/
 ./configure
 cd libmpdec/
 make libmpdec.a -j$(nproc)
@@ -368,7 +368,7 @@ cd $SRC/cryptofuzz/modules/cryptopp
 make -B
 
 ##############################################################################
-# Compile mbed TLS
+# Compile Mbed TLS
 cd $SRC/mbedtls/
 scripts/config.py set MBEDTLS_PLATFORM_MEMORY
 scripts/config.py set MBEDTLS_CMAC_C
@@ -387,9 +387,14 @@ cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc)
 export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
 export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
-# Compile Cryptofuzz mbed crypto module
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS -DCRYPTOFUZZ_TF_PSA_CRYPTO"
+
+# Compile Cryptofuzz module for Mbed TLS with the legacy crypto API
 cd $SRC/cryptofuzz/modules/mbedtls
+make -B
+
+# Compile Cryptofuzz module for Mbed TLS with the PSA crypto API
+cd $SRC/cryptofuzz/modules/tf-psa-crypto
 make -B
 
 ##############################################################################
@@ -416,17 +421,17 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile libgpg-error (dependency of libgcrypt)
     cd $SRC/
-    tar jxvf libgpg-error-1.36.tar.bz2
-    cd libgpg-error-1.36/
+    tar jxvf libgpg-error-1.49.tar.bz2
+    cd libgpg-error-1.49/
     if [[ $CFLAGS != *-m32* ]]
     then
         ./configure --enable-static
     else
         ./configure --enable-static --host=i386
     fi
-    make -j$(nproc)
+    ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
     make install
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.49/src/.libs/libgpg-error.a"
 
     # Compile libgcrypt
     cd $SRC/libgcrypt

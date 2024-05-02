@@ -8,6 +8,6 @@ auto_ccs:
   - jon.sneyers@gmail.com
 sanitizers:
   - address
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-b070b9c3-fcf2-4220-84f7-a99937964cc5.txt
   - undefined
 main_repo: 'https://github.com/imagemagick/imagemagick'

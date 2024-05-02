@@ -16,6 +16,8 @@
 ################################################################################
 set -euxo pipefail
 
+export CXXFLAGS="$CXXFLAGS -Wno-error=missing-field-initializers"
+
 fuzz_harness=$(ls -d test/fuzz/device/*/)
 for h in $fuzz_harness
 do

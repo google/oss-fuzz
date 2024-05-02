@@ -20,7 +20,7 @@ cd lib
 cp fuzz/fuzz_targets/*.dict $OUT/ || true
 
 # Add additional compiler flags required for a successful build.
-export RUSTFLAGS="$RUSTFLAGS --cfg uuid_unstable"
+export RUSTFLAGS="$RUSTFLAGS --cfg surrealdb_unstable"
 
 cargo fuzz build -O --debug-assertions
 

@@ -1,0 +1,10 @@
+homepage: "https://typst.app/"
+language: rust
+primary_contact: "laurmaedje@googlemail.com"
+main_repo: "https://github.com/typst/typst.git"
+auto_ccs:
+  - nathaniel.brough@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

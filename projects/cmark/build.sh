@@ -21,10 +21,10 @@ cmake ../
 make cmark_static
 cd ..
 
-$CC $CFLAGS -Isrc -Ibuild/src -c test/cmark-fuzz.c -o cmark_fuzzer.o
+$CC $CFLAGS -Isrc -Ibuild/src -c fuzz/cmark-fuzz.c -o cmark_fuzzer.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE cmark_fuzzer.o build/src/libcmark.a -o $OUT/cmark_fuzzer
 cp $SRC/*.options $OUT/
-cp test/fuzzing_dictionary $OUT/cmark.dict
+cp fuzz/dictionary $OUT/cmark.dict
 
 mkdir -p corpus
 python3 test/spec_tests.py --fuzz-corpus corpus --spec test/spec.txt

@@ -9,7 +9,7 @@ community.
 
 [Fuzz testing]: https://en.wikipedia.org/wiki/Fuzz_testing
 [buffer overflow]: https://en.wikipedia.org/wiki/Buffer_overflow
-[thousands]: https://bugs.chromium.org/p/chromium/issues/list?q=label%3AStability-LibFuzzer%2CStability-AFL%20-status%3ADuplicate%2CWontFix&can=1
+[thousands]: https://issues.chromium.org/issues?q=label:Stability-LibFuzzer%20-status:Duplicate,WontFix
 [guided in-process fuzzing of Chrome components]: https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html
 
 In cooperation with the [Core Infrastructure Initiative] and the [OpenSSF],

@@ -15,6 +15,7 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update
-RUN git clone https://github.com/benhoyt/inih
-COPY build.sh $SRC/
+RUN git clone https://github.com/benhoyt/inih.git
+COPY inihfuzz.c $SRC/inih/inihfuzz.c
+COPY build.sh $SRC/build.sh
 WORKDIR $SRC/inih/

@@ -28,6 +28,7 @@ git apply  --ignore-space-change --ignore-whitespace $SRC/project.patch
 mkdir build && cd build
 
 cmake -DBUILD_SHARED_LIBS=OFF \
-      -DABSL_MIN_LOG_LEVEL=4 ..
+      -DABSL_MIN_LOG_LEVEL=4 \
+      -DBUILD_TESTS=OFF ..
 make -j$(nproc)
 find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;
