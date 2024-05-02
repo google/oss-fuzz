@@ -15,7 +15,10 @@
 #
 ################################################################################
 
-$SRC/build_cryptofuzz.sh
+if [ "$SANITIZER" != "introspector" ]; then
+  # Temporarily skip this under introspector
+  $SRC/build_cryptofuzz.sh
+fi
 
 cd $SRC/bitcoin-core/
 
