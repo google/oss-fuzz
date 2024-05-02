@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: OSS-Fuzz
 message: >-
-  If you use this software, please cite it using the
+  If you use this software in a work with citations, please cite it using the
   metadata from this file.
 type: software
 authors:
