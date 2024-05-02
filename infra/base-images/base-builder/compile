@@ -22,8 +22,8 @@ sysctl -w vm.mmap_rnd_bits=28
 OSS_FUZZ_ON_DEMAND="${OSS_FUZZ_ON_DEMAND:-0}"
 
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-  if [ "$FUZZING_ENGINE" != "libfuzzer" ] && [ "$FUZZING_ENGINE" != "wycheproof" ]; then
-    echo "ERROR: JVM projects can be fuzzed with libFuzzer or tested with wycheproof engines only."
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
   if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "none" ] && [ "$SANITIZER" != "introspector" ]; then
