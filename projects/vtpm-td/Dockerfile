@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-# build project
-npm install
-npm install @jazzer.js/core
-
-# build fuzzers
-compile_javascript_fuzzer markdown-it fuzz.js -i markdown-it
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+# Install packages we need to build dependencies
+RUN apt-get update && apt-get install -y nasm
+RUN git clone --depth 1 https://github.com/intel/vtpm-td.git
+COPY build.sh $SRC/
+WORKDIR $SRC/vtpm-td

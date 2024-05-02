@@ -7,10 +7,11 @@ auto_ccs:
   - "glen.rice@noaa.gov"
   - "dongpengxu.unh@gmail.com"
   - "akshitamavurapu@gmail.com"
+  - "giuseppemasetti@gmail.com"
 architectures:
   - x86_64
 main_repo: 'https://github.com/OpenNavigationSurface/BAG'
 sanitizers:
   - address
   - undefined
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-ba0d87bd-a741-4415-8fc3-c96fd151be8c.txt

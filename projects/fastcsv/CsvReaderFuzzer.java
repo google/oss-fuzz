@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const { FuzzedDataProvider } = require("@jazzer.js/core");
-const MarkdownIt = require('markdown-it');
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
-/**
- * @param { Buffer } fuzzerInputData
- */
-module.exports.fuzz = function (fuzzerInputData) {
-    const data = new FuzzedDataProvider(fuzzerInputData);
-    const inputText = data.consumeRemainingAsString();
+import de.siegmar.fastcsv.reader.CsvReader;
+import de.siegmar.fastcsv.reader.CsvParseException;
+
+public class CsvReaderFuzzer {
+  public static void fuzzerTestOneInput(byte[] input) {
     try {
-
-        const mdLinkifyEnabled = new MarkdownIt({
-            linkify: true,
-        });
-        mdLinkifyEnabled.render(inputText);
-
-
-    } catch (e) {
-        throw e;
+      CsvReader.builder()
+        .ofCsvRecord(new InputStreamReader(new ByteArrayInputStream(input), StandardCharsets.UTF_8))
+        .stream()
+        .toList();
+    } catch (CsvParseException e) {
     }
-};
+  }
+}

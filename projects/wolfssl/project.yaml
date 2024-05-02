@@ -10,8 +10,6 @@ auto_ccs:
   - "dgarske80@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
-  - "tim.weller@wolfssl.com"
-  - "ticket.number.352@gmail.com"
   - "jordan@wolfssl.com"
   - "jordanjphillips1@gmail.com"
   - "anthony@wolfssl.com"
@@ -23,7 +21,7 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-dc084406-0ddc-4ebd-a7be-2387cffb19ff.txt
   - undefined
 architectures:
   - x86_64

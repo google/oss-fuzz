@@ -22,6 +22,8 @@ then
 
 fi
 
+export GOTOOLCHAIN="local"
+
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
 cd $SRC/text

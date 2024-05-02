@@ -36,10 +36,10 @@ RUN mkdir libprotobuf-mutator/build; cd libprotobuf-mutator/build; \
 
 ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
 RUN tar -xvzf libpcap-1.9.1.tar.gz
-ADD https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz zeromq-4.3.4.tar.gz
-RUN tar -xvzf zeromq-4.3.4.tar.gz
-ADD https://github.com/json-c/json-c/archive/refs/tags/json-c-0.16-20220414.tar.gz json-c-0.16-20220414.tar.gz
-RUN tar -xvzf json-c-0.16-20220414.tar.gz
+ADD https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz zeromq-4.3.5.tar.gz
+RUN tar -xvzf zeromq-4.3.5.tar.gz
+ADD https://github.com/json-c/json-c/archive/refs/tags/json-c-0.17-20230812.tar.gz json-c-0.17-20230812.tar.gz
+RUN tar -xvzf json-c-0.17-20230812.tar.gz
 ADD https://github.com/maxmind/libmaxminddb/releases/download/1.7.1/libmaxminddb-1.7.1.tar.gz libmaxminddb-1.7.1.tar.gz
 RUN tar -xvzf libmaxminddb-1.7.1.tar.gz;
 

@@ -16,5 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/litmuschaos/litmus.git
-RUN cp $SRC/litmus/chaoscenter/fuzz_build.sh $SRC/build.sh
+RUN git clone https://github.com/litmuschaos/chaos-exporter.git
+RUN git clone https://github.com/litmuschaos/litmus-go.git
+RUN git clone https://github.com/litmuschaos/litmusctl.git
+RUN git clone https://github.com/litmuschaos/chaos-runner.git
+COPY build.sh $SRC/
 WORKDIR $SRC/litmus

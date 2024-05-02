@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 # or a Rust toolchain.
 RUN pip3 install 'pip>=20'
 
-RUN git clone --recursive --depth 1 -b development https://github.com/Mbed-TLS/mbedtls.git mbedtls
+RUN git clone --recursive --depth 1 -b mbedtls-3.6 https://github.com/Mbed-TLS/mbedtls.git mbedtls
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
 
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl

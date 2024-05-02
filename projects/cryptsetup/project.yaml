@@ -8,7 +8,7 @@ auto_ccs:
   - daniel.zatovic@gmail.com
 sanitizers:
   - address
-  - memory
+  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-bf77a9dc-080e-4e3b-ba89-cbaf65a54e61.txt
   - undefined
 architectures:
   - x86_64

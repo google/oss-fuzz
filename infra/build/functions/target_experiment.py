@@ -28,9 +28,9 @@ import build_project
 JCC_DIR = '/usr/local/bin'
 
 
-def run_experiment(project_name, target_name, args, output_path,
+def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name):
+                   experiment_name, upload_reproducer_path):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -72,10 +72,42 @@ def run_experiment(project_name, target_name, args, output_path,
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
+  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360.
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
+  default_target_path = os.path.join(build.out, target_name)
+  local_target_dir = os.path.join(build.out, 'target')
   local_corpus_zip_path = '/workspace/corpus/corpus.zip'
-  fuzzer_args = ' '.join(args)
+  local_artifact_path = os.path.join(build.out, 'artifacts/')
+  local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
+  fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
+
+  # Upload JCC's err.log.
+  if errlog_path:
+    compile_step_index = -1
+    for i, step in enumerate(steps):
+      step_args = step.get('args', [])
+      if '&& compile' in ' '.join(step_args):
+        compile_step_index = i
+        break
+    if compile_step_index == -1:
+      print('Cannot find compile step.')
+    else:
+      # Insert the upload step right after compile step.
+      upload_jcc_err_step = {
+          'name':
+              'gcr.io/cloud-builders/gsutil',
+          'entrypoint':
+              '/bin/bash',
+          'args': [
+              '-c',
+              (f'test -f {local_jcc_err_path} || '
+               f'echo "Failed to generate JCC error log." | '
+               f'tee -a {local_jcc_err_path} && '
+               f'gsutil cp {local_jcc_err_path} {errlog_path}'),
+          ]
+      }
+      steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
@@ -90,6 +122,9 @@ def run_experiment(project_name, target_name, args, output_path,
           'bash',
           '-c',
           (f'mkdir -p {local_corpus_path} && '
+           f'mkdir -p {local_target_dir} && '
+           f'mkdir -p {local_artifact_path} && '
+           f'mkdir -p {local_stacktrace_path} && '
            f'run_fuzzer {target_name} {fuzzer_args} '
            f'|& tee {local_output_path} || true'),
       ]
@@ -114,6 +149,60 @@ def run_experiment(project_name, target_name, args, output_path,
            f'rm -f {local_corpus_zip_path}'),
       ],
   })
+
+  if upload_reproducer_path:
+    # Upload binary. First copy the binary directly from default_target_path,
+    # if that fails, find it under build out dir and copy to local_target_dir.
+    # If either succeeds, then upload it to bucket.
+    # If multiple files are found, suffix them and upload them all.
+    steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'entrypoint':
+            '/bin/bash',
+        'args': [
+            '-c',
+            (f'cp {default_target_path} {local_target_dir} 2>/dev/null || '
+             f'find {build.out} -type f -name {target_name} -exec bash -c '
+             f'\'cp "$0" "{local_target_dir}/$(echo "$0" | sed "s@/@_@g")"\' '
+             f'{{}} \\; && gsutil cp -r {local_target_dir} '
+             f'{upload_reproducer_path}/target_binary || true'),
+        ],
+    })
+
+    # Upload reproducer.
+    steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'entrypoint':
+            '/bin/bash',
+        'args': [
+            '-c',
+            (f'gsutil -m cp -r {local_artifact_path} {upload_reproducer_path} '
+             '|| true'),
+        ],
+    })
+
+    # Upload stacktrace.
+    steps.append({
+        'name':
+            'gcr.io/cloud-builders/gsutil',
+        'entrypoint':
+            '/bin/bash',
+        'args': [
+            '-c',
+            (f'if [ -f {local_target_dir}/{target_name} ]; then '
+             f'{local_target_dir}/{target_name} {local_artifact_path}/* > '
+             f'{local_stacktrace_path}/{target_name}.st 2>&1; '
+             'else '
+             f'for target in {local_target_dir}/*; do '
+             f'"$target" {local_artifact_path}/* > '
+             f'"{local_stacktrace_path}/$target.st" 2>&1; '
+             'done; fi; '
+             f'gsutil -m cp -r {local_stacktrace_path} {upload_reproducer_path}'
+             ' || true'),
+        ],
+    })
 
   # Build for coverage.
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
@@ -207,12 +296,20 @@ def main():
   parser.add_argument('--upload_build_log',
                       required=True,
                       help='GCS build log location.')
+  parser.add_argument('--upload_err_log',
+                      required=False,
+                      default='',
+                      help='GCS JCC error log location.')
   parser.add_argument('--upload_output_log',
                       required=True,
                       help='GCS log location.')
   parser.add_argument('--upload_corpus',
                       required=True,
                       help='GCS location to upload corpus.')
+  parser.add_argument('--upload_reproducer',
+                      required=False,
+                      default='',
+                      help='GCS location to upload reproducer.')
   parser.add_argument('--upload_coverage',
                       required=True,
                       help='GCS location to upload coverage data.')
@@ -222,8 +319,9 @@ def main():
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
-                 args.upload_build_log, args.upload_corpus,
-                 args.upload_coverage, args.experiment_name)
+                 args.upload_err_log, args.upload_build_log, args.upload_corpus,
+                 args.upload_coverage, args.experiment_name,
+                 args.upload_reproducer)
 
 
 if __name__ == '__main__':

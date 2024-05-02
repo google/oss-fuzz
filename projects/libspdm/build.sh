@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-javascript
-
-COPY build.sh $SRC/
-
-RUN git clone https://github.com/markdown-it/markdown-it.git
-
-WORKDIR $SRC/markdown-it
-
-COPY fuzz*.js $SRC/markdown-it/
+# build project
+cd $SRC/libspdm
+mkdir build
+cd build
+cmake -DARCH=x64 -DTOOLCHAIN=LIBFUZZER -DTARGET=Release -DCRYPTO=mbedtls -DGCOV=ON ..
+make copy_sample_key
+make
+cp -r ./bin/* $OUT

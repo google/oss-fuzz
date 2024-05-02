@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 RUN apt-get update && apt-get install --yes cmake autoconf libtool pkg-config
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
@@ -23,12 +24,12 @@ RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/extra-cmake-mod
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v3.8.0 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v1.0.3 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 -b v3.8.1 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v1.0.4 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
 RUN git clone --depth 1 -b v2.5.0 https://github.com/uclouvain/openjpeg.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth=1 --branch v0.9.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
+RUN git clone --depth=1 --branch v0.10.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC
