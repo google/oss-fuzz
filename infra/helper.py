@@ -1372,7 +1372,8 @@ def run_fuzzer(args):
   if not check_project_exists(args.project):
     return False
 
-  if not _check_fuzzer_exists(args.project, args.fuzzer_name, args.architecture):
+  if not _check_fuzzer_exists(args.project, args.fuzzer_name,
+                              args.architecture):
     return False
 
   env = [
