@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-
-
-RUN apt-get update && apt-get install -y \
-	autoconf \
-	automake \
-	libtool \
-	make
-
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/fancycode/lzma-fuzz.git \
-	lzma-fuzz
-
-WORKDIR lzma-fuzz
-
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get install -y libz-dev libssl1.1 libssl-dev libedit-dev zip libpkcs11
+RUN git clone https://github.com/rapier1/hpn-ssh
+RUN git clone --depth 1 https://github.com/djmdjm/openssh-fuzz-cases
+WORKDIR hpn-ssh
 COPY build.sh $SRC/

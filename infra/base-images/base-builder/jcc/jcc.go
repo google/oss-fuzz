@@ -357,7 +357,7 @@ func WriteStdErrOut(outstr string, errstr string) {
 	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
-	AppendStringToFile("/out/err.log", errstr)
+	AppendStringToFile("/workspace/err.log", errstr)
 }
 
 func main() {
