@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-git pull --all
-git checkout oss_fuzz_tests
+#git pull --all
+#git checkout oss_fuzz_tests
 
 # Enable null cipher
 sed -i 's/#define CFLAG_INTERNAL.*/#define CFLAG_INTERNAL 0/' cipher.c
