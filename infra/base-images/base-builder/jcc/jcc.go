@@ -359,9 +359,8 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 	// Prints |outstr| to stdout, prints |errstr| to stderr, and saves |errstr| to err.log.
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
-	// Record what compile args produced the error.
-	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args))
-	AppendStringToFile("/workspace/err.log", errstr)
+	// Record what compile args produced the error and the error itself in log file.
+	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args) + errstr)
 }
 
 func main() {
