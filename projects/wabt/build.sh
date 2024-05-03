@@ -16,8 +16,6 @@
 ################################################################################
 
 # build project
-CXXFLAGS="$CXXFLAGS -fPIC"
-CFLAGS="$CFLAGS -fPIC"
 mkdir build
 cd build
 cmake ..
