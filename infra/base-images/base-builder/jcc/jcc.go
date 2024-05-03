@@ -399,11 +399,12 @@ func main() {
 	// When we fail we should try to write the original out/err and one from
 	// the corrected.
 
-	_, headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
+	headersFixArgs, headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
 	if headersFixed {
 		// We succeeded here but it's kind of complicated to get out and
 		// err from TryCompileAndFixHeadersOnce. The output and err is
 		// not so important on success so just be silent.
+		WriteStdErrOut(append([]string{bin}, headersFixArgs...), "", "")
 		os.Exit(0)
 	}
 
