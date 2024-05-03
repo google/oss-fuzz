@@ -21,6 +21,9 @@ cp $SRC/libraw_cr2_fuzzer_seed_corpus.zip \
     $SRC/libraw_raf_fuzzer_seed_corpus.zip \
     $OUT/
 
+CXXFLAGS="$CXXFLAGS -fPIC"
+CFLAGS="$CFLAGS -fPIC"
+
 # build project
 autoreconf --install
 ./configure --disable-examples
