@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Pinned because of https://github.com/google/oss-fuzz/pull/11887
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:b61fe9b3100043f683ca3ef6dc1f940b7da43c011b10ceecbf530f943a0c2d6d
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
 
 RUN git clone --depth 1 https://github.com/libimobiledevice/libplist
