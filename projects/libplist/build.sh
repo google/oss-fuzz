@@ -16,8 +16,8 @@
 #
 ################################################################################
 
-CXXFLAGS="$CXXFLAGS -fPIC"
-CFLAGS="$CFLAGS -fPIC"
+CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
+CFLAGS="$CFLAGS -fuse-ld=lld"
 ./autogen.sh --without-cython --enable-debug --without-tests
 make -j$(nproc) clean
 make -j$(nproc) all
