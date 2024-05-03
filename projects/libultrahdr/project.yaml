@@ -3,7 +3,7 @@ language: c++
 primary_contact: "dichenzhang@google.com"
 sanitizers:
   - address
-  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-c0b4a952-1726-4be3-9260-c4f9dd8c8550.txt
+  - memory
   - undefined:
      experimental: True
 auto_ccs:
