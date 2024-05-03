@@ -9,6 +9,7 @@ auto_ccs:
   - "eric@efcs.ca"
   - "ldionne.2@gmail.com"
   - "koraq@xs4all.nl"
+  - "nikolasklauser@berlin.de"
   
 fuzzing_engines:
   - afl
