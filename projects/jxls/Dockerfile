@@ -16,10 +16,27 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+# Download and install JDK 17
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add - && \
+    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main" | tee /etc/apt/sources.list.d/adoptopenjdk.list && \
+    apt-get update && \
+    apt-get install -y adoptopenjdk-17-hotspot && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME /usr/lib/jvm/adoptopenjdk-17-hotspot
+
 RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
 
 RUN apt-get update && apt-get install -y maven
+
+# Set PATH to include JDK 17 binaries
+ENV PATH $JAVA_HOME/bin:$PATH
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
