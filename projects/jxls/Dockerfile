@@ -17,27 +17,22 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 # Download and install JDK 17
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add - && \
-    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main" | tee /etc/apt/sources.list.d/adoptopenjdk.list && \
-    apt-get update && \
-    apt-get install -y adoptopenjdk-17-hotspot && \
-    rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME /usr/java/$JAVA_VERSION
+ENV PATH $PATH:$JAVA_HOME/bin
+# Download and install JDK 17
+RUN apt-get install -y wget apt-transport-https gpg
 
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/adoptopenjdk-17-hotspot
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+RUN echo "deb https://packages.adoptium.net/artifactory/deb/ focal main" | tee /etc/apt/sources.list.d/adoptium.list
+RUN apt-get update && apt-get install -y temurin-17-jdk
+
 
 RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
 
 RUN apt-get update && apt-get install -y maven
 
-# Set PATH to include JDK 17 binaries
-ENV PATH $JAVA_HOME/bin:$PATH
-
+# Build the project
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 COPY *.dict $SRC/
