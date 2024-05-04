@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 static int initialized = 0;
 JSRuntime *rt;
@@ -57,13 +58,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     }
 
     if (Size > 0) {
-        //is it more efficient to malloc(Size+1) and memcpy ?
-        if (Data[Size-1] != 0) {
-            return 0;
-        }
+        uint8_t *NullTerminatedData = (uint8_t *)malloc(Size + 1);
+        memcpy(NullTerminatedData, Data, Size);
+        NullTerminatedData[Size] = 0;
         nbinterrupts = 0;
         //the final 0 does not count (as in strlen)
-        JSValue val = JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_TYPE_GLOBAL);
+        JSValue val = JS_Eval(ctx, (const char *)NullTerminatedData, Size, "<none>", JS_EVAL_TYPE_GLOBAL);
+        free(NullTerminatedData);
         //TODO targets with JS_ParseJSON, JS_ReadObject
         if (!JS_IsException(val)) {
             js_std_loop(ctx);

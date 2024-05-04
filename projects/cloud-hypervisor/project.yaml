@@ -1,12 +1,11 @@
 homepage: "https://github.com/cloud-hypervisor/cloud-hypervisor"
 language: rust
-primary_contact: "sebastien.boeuf@intel.com"
+primary_contact: "chen.bo@intel.com"
 auto_ccs:
   - "michael2012zhao@hotmail.com"
   - "Henry.Wang@arm.com"
   - "rbradford@rivosinc.com"
   - "samuel.e.ortiz@protonmail.com"
-  - "chen.bo@intel.com"
   - "liuwe@microsoft.com"
   - "seb@rivosinc.com"
   - "nistephe@microsoft.com"

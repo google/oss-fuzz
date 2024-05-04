@@ -63,6 +63,14 @@ case $SANITIZER in
   *) SANITIZERS_ARGS="" ;;
 esac
 
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
+# Workaround for a LeakSanitizer crashes,
+# see https://github.com/google/oss-fuzz/issues/11798.
+if [ "$ARCHITECTURE" = "aarch64" ]; then
+    export ASAN_OPTIONS=detect_leaks=0
+fi
+
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
@@ -92,13 +100,17 @@ git config --global --add safe.directory '*'
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --parallel
+cmake --build build --parallel --verbose
 
 LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
 $CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua $LUALIB_PATH/liblua.a
 
-cp corpus_dir/*.options $OUT/
+# If the dict filename is the same as your target binary name
+# (i.e. `%fuzz_target%.dict`), it will be automatically used.
+# If the name is different (e.g. because it is shared by several
+# targets), specify this in .options file.
+cp corpus_dir/*.dict corpus_dir/*.options $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/tests/ -name '*_test' -type f);
@@ -108,9 +120,5 @@ do
   corpus_dir="corpus_dir/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  dict_path="corpus_dir/$module.dict"
-  if [ -e "$dict_path" ]; then
-    cp $dict_path "$OUT/$name.dict"
-  fi
   [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done

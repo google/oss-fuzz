@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-
-RUN apt-get update && apt-get install -y \
-	autoconf \
-	automake \
-	libtool \
-	make
-
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/fancycode/lzma-fuzz.git \
-	lzma-fuzz
-
-WORKDIR lzma-fuzz
-
-COPY build.sh $SRC/
+hbfa-fl/oss-fuzz/build.sh

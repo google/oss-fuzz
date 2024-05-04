@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +14,12 @@
 #
 ################################################################################
 
-# build and install fuzzers
-make clean
-make -j$(nproc)
-make install DEST=$OUT
+FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && apt-get install -y \
+    python3 nasm uuid-dev
+
+RUN git clone https://github.com/tianocore/edk2.git --recursive
+RUN git clone https://github.com/intel/hbfa-fl
+
+COPY build.sh $SRC/
