@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:c5216a9896a598dced7ce6708bb3226e443473f567045b4f282595776cc641f1
+# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-8bc8a5ea-9bfb-421d-bfe9-911828e88741.txt
 
 RUN apt-get update && \
     apt-get install -y software-properties-common wget make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo lzip bsdmainutils
@@ -34,13 +35,13 @@ RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
-RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
+RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.49.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
-RUN git clone --depth 1 --recurse-submodules -b development https://github.com/Mbed-TLS/mbedtls.git
+RUN git clone --depth 1 --recurse-submodules -b mbedtls-3.6 https://github.com/Mbed-TLS/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git

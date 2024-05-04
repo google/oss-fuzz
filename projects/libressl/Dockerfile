@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-db180642-1ff0-4223-91e6-3bf060adb174.txt
 
 RUN apt-get update && apt-get install -y make cmake wget autoconf automake libtool bison flex texinfo lzip
 RUN git clone --depth 1 https://github.com/libressl/portable.git libressl
@@ -28,6 +29,3 @@ RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f
 WORKDIR libressl
 RUN ./update.sh
 COPY build.sh *.options $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
