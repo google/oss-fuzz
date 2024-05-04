@@ -11,7 +11,7 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-#  - memory # temporarily disabled due to spurious error
+  - memory
 architectures:
   - x86_64
   - i386
