@@ -34,20 +34,6 @@ esac
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 cmake_args=(
-    # Specific to FreeRDP.
-    -DWITH_SAMPLE=OFF
-    -DWITH_SERVER=ON
-    -DWITH_PROXY=OFF
-    -DWITH_SHADOW=OFF
-    -DWITH_CLIENT=OFF
-    -DWITH_ALSA=OFF
-    -DWITH_X11=OFF
-    -DWITH_LIBSYSTEMD=OFF
-    -DWITH_FUSE=OFF
-    -DWITH_AAD=OFF
-    -DWITH_FFMPEG=OFF
-    -DWITH_SWSCALE=OFF
-
     # clang-15 segfaults on linking binaries when LTO is enabled,
     # see https://github.com/google/oss-fuzz/pull/10448#issuecomment-1578160436
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
@@ -56,9 +42,6 @@ cmake_args=(
 
     -DCMAKE_BUILD_TYPE=Debug
     -DBUILD_SHARED_LIBS=OFF
-    -DOSS_FUZZ=ON
-    -DBUILD_FUZZERS=ON
-    -DBUILD_TESTING=ON
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
@@ -77,7 +60,7 @@ cmake_args=(
 
 # Build the project and fuzzers.
 rm -rf build
-cmake "${cmake_args[@]}" -S . -B build -G Ninja
+cmake "${cmake_args[@]}" -S . -B build -G Ninja -C ci/cmake-preloads/config-oss-fuzz.cmake
 cmake --build build --parallel --target fuzzers
 
 for f in $(find build/Testing/ -name 'TestFuzz*' -type f);

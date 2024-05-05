@@ -16,6 +16,7 @@
 ################################################################################
 
 # Install dependencies.
+npm install --ignore-scripts --no-save emnapi
 npm install
 npm install --save-dev @jazzer.js/core
 

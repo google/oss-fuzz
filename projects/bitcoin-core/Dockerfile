@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # Packages taken from:
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
-RUN wget https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 WORKDIR bitcoin-core
 COPY build.sh $SRC/
 COPY build_cryptofuzz.sh $SRC/

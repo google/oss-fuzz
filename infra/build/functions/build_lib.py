@@ -23,13 +23,16 @@ import six.moves.urllib.parse as urlparse
 import sys
 import time
 import subprocess
+import tarfile
 import tempfile
 import json
+import uuid
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
 import google.api_core.client_options
 import google.auth
+from google.cloud import storage
 from oauth2client import service_account as service_account_lib
 import requests
 import yaml
@@ -547,6 +550,15 @@ def get_build_body(steps,
   return build_body
 
 
+def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
+  """Prepare a .tgz containing the files required to build `oss_fuzz_project`."""
+  # Just the projects/<project> dir should be sufficient.
+  project_rel_path = os.path.join('projects', oss_fuzz_project)
+  with tarfile.open(temp_tgz_path, 'w:gz') as tar:
+    tar.add(os.path.join(OSS_FUZZ_ROOT, project_rel_path),
+            arcname=project_rel_path)
+
+
 def run_build(  # pylint: disable=too-many-arguments
     oss_fuzz_project,
     steps,
@@ -566,19 +578,24 @@ def run_build(  # pylint: disable=too-many-arguments
                               use_build_pool=use_build_pool,
                               experiment=experiment)
   if experiment:
-    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
-      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
-      config_file.seek(0)
-      subprocess.run([
-          'gcloud',
-          'builds',
-          'submit',
-          '--project=oss-fuzz',
-          f'--config={config_file.name}',
-      ],
-                     cwd=OSS_FUZZ_ROOT)
+    with tempfile.NamedTemporaryFile(suffix='source.tgz') as tgz_file:
+      # Archive the necessary files for the build.
+      _tgz_local_build(oss_fuzz_project, tgz_file.name)
+      gcs_client = storage.Client()
+      # This is the automatically created Cloud Build bucket for Cloud Build.
+      bucket_name = gcs_client.project + '_cloudbuild'
+      bucket = gcs_client.bucket(bucket_name)
+      blob_name = f'source/{str(uuid.uuid4())}.tgz'
+      blob = bucket.blob(blob_name)
+      logging.info(f'Uploading project to {bucket_name}/{blob_name}')
+      blob.upload_from_filename(tgz_file.name)
 
-      return 'NO-ID'  # Doesn't matter, this is just printed to the user.
+      build_body['source'] = {
+          'storageSource': {
+              'bucket': bucket_name,
+              'object': blob_name,
+          }
+      }
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -594,3 +611,36 @@ def run_build(  # pylint: disable=too-many-arguments
   logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
                f'GCB page: {get_gcb_url(build_id, cloud_project)}')
   return build_id
+
+
+def wait_for_build(build_id, credentials, cloud_project):
+  """Wait for a GCB build."""
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False,
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+
+  while True:
+    try:
+      status = cloudbuild.projects().builds().get(projectId=cloud_project,
+                                                  id=build_id).execute()
+      if status.get('status') in ('SUCCESS', 'FAILURE', 'TIMEOUT',
+                                  'INTERNAL_ERROR', 'EXPIRED', 'CANCELLED'):
+        # Build done.
+        return
+    except (googleapiclient.errors.HttpError, BrokenPipeError):
+      pass
+
+    time.sleep(15)  # Avoid rate limiting.
+
+
+def cancel_build(build_id, credentials, cloud_project):
+  """Cancel a GCB build"""
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False,
+                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+  cloudbuild.projects().builds().cancel(projectId=cloud_project,
+                                        id=build_id).execute()

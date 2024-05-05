@@ -18,4 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 ## Install build dependencies.
 RUN apt-get update
 RUN git clone --depth 1 https://github.com/pest-parser/pest.git
+# needed for MSAN and coverage build
+RUN rustup component add rust-src
 COPY build.sh $SRC/

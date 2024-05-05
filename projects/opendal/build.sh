@@ -15,7 +15,7 @@
 
 # build fuzz targets
 cd $SRC/opendal/core
-cargo +nightly fuzz build -O --debug-assertions
+cargo +nightly-2023-12-28 fuzz build -O --debug-assertions
 
 # copy fuzz targets to $OUT
 targets=(
@@ -24,10 +24,10 @@ targets=(
 )
 
 cp $SRC/.fs.env $OUT/.fs.env
-cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
-cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
+cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
+cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
 
 cp $SRC/.memory.env $OUT/.memory.env
-cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
-cp ../target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
+cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
+cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
 

@@ -14,13 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Pinned because of https://github.com/google/oss-fuzz/pull/11887
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:b61fe9b3100043f683ca3ef6dc1f940b7da43c011b10ceecbf530f943a0c2d6d
 RUN apt-get update && apt-get install -y cmake libtool make python
 RUN git clone --recursive https://github.com/WebAssembly/wabt
 WORKDIR wabt
 RUN git submodule init
 RUN git submodule update
 COPY build.sh *_fuzzer.cc $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

@@ -1,0 +1,11 @@
+homepage: "https://github.com/intel/vtpm-td"
+language: rust
+primary_contact: "wei3.liu@intel.com"
+auto_ccs:
+  - "jiewen.yao@intel.com"
+  - "min.m.xu@intel.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/intel/vtpm-td.git'

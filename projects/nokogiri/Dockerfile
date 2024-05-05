@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get --no-install-recommends install -y build-essential make curl wget
 
-RUN git clone https://github.com/sparklemotion/nokogiri.git
+RUN git clone --depth=1 https://github.com/sparklemotion/nokogiri.git
 
 COPY build.sh $SRC

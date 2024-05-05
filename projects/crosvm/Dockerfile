@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone --depth=1 --recursive https://chromium.googlesource.com/crosvm/crosvm $SRC/crosvm
 
-RUN apt-get upgrade && apt-get install --yes --no-install-recommends \
+RUN apt-get update && apt-get install --yes --no-install-recommends \
     libclang-dev \
     pkg-config \
     libcap-dev

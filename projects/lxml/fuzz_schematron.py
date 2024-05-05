@@ -16,26 +16,36 @@
 
 import atheris
 import sys
-
 import io
-from lxml import etree as et
+
+with atheris.instrument_imports():
+  from lxml import etree
+  from lxml.isoschematron import Schematron
 
 
 def TestOneInput(data):
   """Targets Schematron. Currently validates, but we should add more APIs"""
   try:
-    schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO(b'<AAA><BBB/><CCC/></AAA>'))
-    
-    schema = et.Schematron(schema_raw)
-    schame.validate(valid_tree)
-  except et.LxmlError:
-    None
+    schema_raw = etree.parse(io.BytesIO(data))
+    valid_tree = etree.parse(io.BytesIO(b"<AAA><BBB/><CCC/></AAA>"))
+
+    schematron = Schematron(schema_raw)
+    schematron.validate(valid_tree)
+  except (etree.LxmlError, KeyError) as e:
+    if isinstance(e, etree.LxmlError) or (
+        isinstance(e, KeyError) and "None" in str(e)
+        # This possibility is tracked here: https://bugs.launchpad.net/lxml/+bug/2058177
+    ):
+      return -1  # Reject so the input will not be added to the corpus.
+    else:
+      # Unexpected exceptions might be a bug in the source or in our test.
+      raise e  # Alert a human to take a closer look at what caused this.
+
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()

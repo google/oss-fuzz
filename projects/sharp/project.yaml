@@ -6,11 +6,3 @@ fuzzing_engines:
 sanitizers:
 - none
 primary_contact: "lovell.fuller@gmail.com"
-vendor_ccs:
-  - "wagner@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "christopher.krah@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"

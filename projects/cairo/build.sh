@@ -30,6 +30,7 @@ mkdir -p $BUILD
 # Build glib
 pushd $SRC/glib/
 meson \
+    setup \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
@@ -50,6 +51,7 @@ make install
 # Build cairo
 pushd $SRC/cairo
 CFLAGS="-DDEBUG_SVG_RENDER $CFLAGS" meson \
+    setup \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
@@ -71,7 +73,7 @@ if [ ! -f "${OUT}/cairo.dict" ]; then
 fi
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
-DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject" 
+DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 

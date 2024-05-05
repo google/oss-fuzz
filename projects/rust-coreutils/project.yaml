@@ -7,3 +7,6 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 file_github_issue: True
+vendor_ccs:
+  - "sylvestre.ledru@gmail.com"
+  - "dhofstet@gmail.com"
