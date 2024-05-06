@@ -28,6 +28,9 @@ RUN JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/jre/bin/java::")
 ENV JAVA_HOME $JAVA_HOME
 ENV PATH $PATH:$JAVA_HOME/bin
 
+RUN echo $JAVA_HOME
+RUN echo $PATH
+
 
 RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
