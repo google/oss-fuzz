@@ -8,7 +8,9 @@ auto_ccs:
   - "bigcheesegs@gmail.com"
   - "eric@efcs.ca"
   - "ldionne.2@gmail.com"
-
+  - "koraq@xs4all.nl"
+  - "nikolasklauser@berlin.de"
+  
 fuzzing_engines:
   - afl
   - honggfuzz

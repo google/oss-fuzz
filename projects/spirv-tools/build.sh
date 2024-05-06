@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
+
 git clone https://github.com/KhronosGroup/SPIRV-Headers external/spirv-headers --depth=1
 git clone https://github.com/protocolbuffers/protobuf   external/protobuf      --branch v3.13.0.1
 git clone https://dawn.googlesource.com/dawn --depth=1
@@ -73,7 +75,7 @@ popd
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # SPIRV-Tools and tint repositories.
 mkdir $WORK/tint-binary-corpus
-python3 dawn/src/tint/fuzzers/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus standard-build/tools/spirv-as
+python3 $SCRIPT_DIR/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus standard-build/tools/spirv-as
 mkdir $WORK/spirv-binary-corpus-hashed-names
 tint_test_cases=`ls $WORK/tint-binary-corpus/*.spv`
 spirv_tools_test_cases=`find test/fuzzers/corpora -name "*.spv"`

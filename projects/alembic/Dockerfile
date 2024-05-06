@@ -26,6 +26,3 @@ RUN git clone -b v2.5.9 --depth 1 https://github.com/AcademySoftwareFoundation/o
 
 COPY build.sh *.h *.cc $SRC/
 WORKDIR $WORK/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
