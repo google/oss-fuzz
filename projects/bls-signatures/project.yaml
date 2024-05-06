@@ -5,7 +5,7 @@ main_repo: "https://github.com/supranational/blst.git"
 sanitizers:
  - address
  - undefined
- # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-3cd81ff0-7552-4e87-973e-ff5da4520ad5.txt
+ - memory
 architectures:
  - x86_64
  - i386

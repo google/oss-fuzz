@@ -18,12 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config wget
 
-ENV CMAKE_VERSION 3.29.2
-RUN apt-get update && apt-get install -y wget sudo && \
-    wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix="/usr/local"
-
 RUN git clone --depth 1 https://github.com/OSGeo/PROJ PROJ
 
 RUN git clone --depth 1 https://github.com/curl/curl.git PROJ/curl
@@ -33,6 +27,3 @@ RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git PROJ/libtiff
 WORKDIR PROJ
 
 RUN cp test/fuzzers/build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

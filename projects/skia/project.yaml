@@ -19,7 +19,7 @@ vendor_ccs:
 sanitizers:
  - address
  - undefined
- # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-8aacfca6-c946-4753-a977-d836fc3e334f.txt
+ - memory
 help_url: "https://skia.org/docs/dev/testing/fuzz/"
 builds_per_day: 4
 main_repo: 'https://skia.googlesource.com/skia.git'

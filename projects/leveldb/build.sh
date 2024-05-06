@@ -16,6 +16,10 @@
 #
 ################################################################################
 
+# Avoid: clang++: error: invalid argument '-fsanitize=vptr' not allowed with '-fno-rtti'
+CFLAGS="$CFLAGS     -fno-sanitize=vptr"
+CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 cd $SRC/leveldb
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=0 \

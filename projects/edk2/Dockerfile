@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +14,12 @@
 #
 ################################################################################
 
-echo "ATHERIS INSTALL"
-unset CFLAGS CXXFLAGS
-# PYI_STATIC_ZLIB=1 is needed for installing pyinstaller 5.0
-export PYI_STATIC_ZLIB=1
-LIBFUZZER_LIB=$( echo /usr/local/lib/clang/*/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer_no_main.a ) pip3 install -v --no-cache-dir "atheris>=2.1.1" "pyinstaller==5.0.1" "setuptools==42.0.2" "coverage==6.3.2"
-rm -rf /tmp/*
+FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && apt-get install -y \
+    python3 nasm uuid-dev
+
+RUN git clone https://github.com/tianocore/edk2.git --recursive
+RUN git clone https://github.com/intel/hbfa-fl
+
+COPY build.sh $SRC/
