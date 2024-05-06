@@ -15,6 +15,7 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+  - aarch64
 fuzzing_engines:
   - afl
   - honggfuzz
