@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+echo $JAVA_HOME
+
+java --version
 
 mv $SRC/*.dict $OUT
 
