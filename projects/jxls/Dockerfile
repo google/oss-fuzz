@@ -17,14 +17,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 # Download and install JDK 17
-ENV JAVA_HOME /usr/java/$JAVA_VERSION
-ENV PATH $PATH:$JAVA_HOME/bin
-# Download and install JDK 17
 RUN apt-get install -y wget apt-transport-https gpg
 
 RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
 RUN echo "deb https://packages.adoptium.net/artifactory/deb/ focal main" | tee /etc/apt/sources.list.d/adoptium.list
 RUN apt-get update && apt-get install -y temurin-17-jdk
+
+# Set JAVA_HOME
+RUN JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/jre/bin/java::")
+ENV JAVA_HOME $JAVA_HOME
+ENV PATH $PATH:$JAVA_HOME/bin
 
 
 RUN rm -rf $SRC/jxls
