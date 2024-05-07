@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
-WORKDIR testdir
-RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
-COPY build.sh testdir/
-WORKDIR $SRC
+RUN apt-get update && apt-get install -y nasm libass-dev libass-dev:i386 && pip3 install meson ninja
+RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
+RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
+RUN git clone --depth 1 --recursive https://github.com/haasn/libplacebo libplacebo
+WORKDIR mpv
 COPY build.sh $SRC/
-COPY fuzz_lua.c $SRC/

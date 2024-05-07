@@ -1,0 +1,10 @@
+homepage: "https://github.com/jelmer/dulwich"
+main_repo: "https://github.com/jelmer/dulwich"
+language: python
+primary_contact: "jvernooij@gmail.com"
+auto_ccs:
+  - "david.js.lakin@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
