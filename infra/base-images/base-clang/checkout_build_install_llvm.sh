@@ -223,6 +223,7 @@ function cmake_libcxx {
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PIC=ON \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
