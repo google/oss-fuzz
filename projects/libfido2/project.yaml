@@ -15,5 +15,5 @@ fuzzing_engines:
     - libfuzzer
     - honggfuzz
     - afl
-    # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163
+    - centipede
 main_repo: 'https://github.com/Yubico/libfido2'
