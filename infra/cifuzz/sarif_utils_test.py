@@ -74,16 +74,13 @@ class GetSarifDataTest(unittest.TestCase):
         stacktrace, '/root/target')['runs'][0]['results']
     self.assertEqual(actual_result, [])
 
-
   def test_msan(self):
     """Tests that MSAN stacktraces don't exception."""
-    stacktrace_filename = os.path.join(TEST_DATA,
-                                       'sarif_utils_msan_stack.txt')
+    stacktrace_filename = os.path.join(TEST_DATA, 'sarif_utils_msan_stack.txt')
     with open(stacktrace_filename, 'r') as fp:
       stacktrace = fp.read()
 
-    actual_result = sarif_utils.get_sarif_data(
-        stacktrace, '/root/target')
+    actual_result = sarif_utils.get_sarif_data(stacktrace, '/root/target')
 
 
 class RedactSrcPathTest(unittest.TestCase):
