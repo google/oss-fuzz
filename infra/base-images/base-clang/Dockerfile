@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-# Docker image with head clang installed.
+# Docker image with clang installed.
 
 FROM gcr.io/oss-fuzz-base/base-image
 
