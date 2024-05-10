@@ -13,7 +13,6 @@ architectures:
 main_repo: 'https://git.lysator.liu.se/nettle/nettle'
 
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 

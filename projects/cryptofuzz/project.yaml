@@ -46,7 +46,6 @@ architectures:
 main_repo: 'https://github.com/guidovranken/cryptofuzz'
 
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 

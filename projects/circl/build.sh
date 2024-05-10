@@ -84,6 +84,8 @@ cd $SRC/cryptofuzz/modules/blst/
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/modules/circl/
+go mod init cryptofuzz/circl
+go mod tidy
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/
