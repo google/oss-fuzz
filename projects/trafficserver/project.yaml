@@ -9,6 +9,7 @@ auto_ccs:
   - "bcall@apache.org"
   - "lhedstrom@gmail.com"
   - "brian.neradt@gmail.com"
+  - "masaori@apache.org"
 fuzzing_engines:
   - libfuzzer
   - afl
