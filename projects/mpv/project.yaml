@@ -1,6 +1,8 @@
 homepage: "https://github.com/mpv-player/mpv"
 language: c
 primary_contact: "kasper93@gmail.com"
+auto_ccs:
+  - "jeebjp@gmail.com"
 architectures:
   - x86_64
   - i386
