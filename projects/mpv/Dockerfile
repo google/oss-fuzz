@@ -13,9 +13,8 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y nasm libass-dev libass-dev:i386 && pip3 install meson ninja
+RUN apt-get update && apt-get install -y nasm pkg-config gperf && pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
 RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-RUN git clone --depth 1 --recursive https://github.com/haasn/libplacebo libplacebo
 WORKDIR mpv
 COPY build.sh $SRC/
