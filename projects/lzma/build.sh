@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/BurntSushi/toml toml
-COPY build.sh $SRC/
-WORKDIR $SRC/toml
+# build and install fuzzers
+make clean
+make -j$(nproc)
+make install DEST=$OUT

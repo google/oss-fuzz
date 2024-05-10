@@ -180,7 +180,10 @@ def get_error_source_info(crash_info):
   frame = get_error_frame(crash_info)
   if not frame:
     return (None, 1)
-  return redact_src_path(frame.filename), int(frame.fileline or 1)
+  try:
+    return redact_src_path(frame.filename), int(frame.fileline or 1)
+  except TypeError:
+    return (None, 1)
 
 
 def get_rule_index(crash_type):

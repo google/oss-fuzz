@@ -190,7 +190,12 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
           options.arguments.extend(LIBFUZZER_OPTIONS_NO_REPORT_OOM)
 
         if self.config.parallel_fuzzing:
-          options.arguments.extend(get_libfuzzer_parallel_options())
+          if self.config.sanitizer == 'memory':
+            # TODO(https://github.com/google/oss-fuzz/issues/11915): Don't gate
+            # this after jobs is fixed for MSAN.
+            logging.info('Not using jobs because it breaks MSAN.')
+          else:
+            options.arguments.extend(get_libfuzzer_parallel_options())
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)

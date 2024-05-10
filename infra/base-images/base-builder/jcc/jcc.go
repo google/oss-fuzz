@@ -377,13 +377,12 @@ func main() {
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	newArgs := []string{"-w", "-stdlib=libc++"}
-	newArgs = append(args, newArgs...)
+	newArgs := append(args, "-w")
 
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		// TODO: Should `-stdlib=libc++` be added only here?
+		newArgs = append(args, "-stdlib=libc++")
 	} else {
 		bin = "clang"
 	}
