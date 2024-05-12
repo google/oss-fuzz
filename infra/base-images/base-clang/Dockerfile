@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-# Docker image with head clang installed.
+# Docker image with clang installed.
 
 FROM gcr.io/oss-fuzz-base/base-image
 
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout cfb5266a4c45cbec8663bb1b215c7fd326c60901 && \
+    git checkout 9ba518ae284d8207e0503741833c4a15fdf7491a && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \
