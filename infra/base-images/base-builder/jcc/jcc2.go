@@ -360,16 +360,23 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
 	// Record what compile args produced the error and the error itself in log file.
-	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args) + errstr)
+	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args)+errstr)
 }
 
 func main() {
+	fmt.Println("MAAAAIN")
 	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
 	if err != nil {
 		log.Println(err)
 	}
 	defer f.Close()
+	if _, err := os.Stat("/out/statefile"); !errors.Is(err, os.ErrNotExist) {
+		log.Println(err)
+		fmt.Println(err)
+		fmt.Println("EEXXIT")
+		os.Exit(0)
+	}
+	fmt.Println("MAAAAIN")
 	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
 		log.Println(err)
 	}
@@ -377,55 +384,51 @@ func main() {
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	newArgs := []string{"-w", "-stdlib=libc++"}
-	newArgs = append(args, newArgs...)
+	fmt.Println(isCPP)
+	newArgs := append(args, "-w")
 
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		// TODO: Should `-stdlib=libc++` be added only here?
+		newArgs = append(args, "-stdlib=libc++")
 	} else {
 		bin = "clang"
 	}
 	fullCmdArgs := append([]string{bin}, newArgs...)
+	if IsCompilingTarget(fullCmdArgs) {
+		WriteTargetArgsAndCommitImage(fullCmdArgs)
+		os.Exit(0)
+	}
 	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+	WriteStdErrOut(fullCmdArgs, out, errstr)
+	os.Exit(retcode)
+}
 
-	// Note that on failures or when we succeed on the first try, we should
-	// try to write the first out/err to stdout/stderr.
-	// When we fail we should try to write the original out/err and one from
-	// the corrected.
+func WriteTargetArgsAndCommitImage(cmdline []string) {
+	fmt.Println("WRITTE")
+	f, _ := os.OpenFile("/out/statefile", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f.WriteString(strings.Join(cmdline, " "))
+	f.Close()
+	hostname, _ := os.Hostname()
+	dockerArgs := []string{"commit", hostname, "frozen"}
+	cmd := exec.Command("docker", dockerArgs...)
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	cmd.Stdin = os.Stdin
+	cmd.Run()
+	fmt.Println(outb.String(), errb.String())
+	fmt.Println("COMMIT")
+}
 
-	headersFixArgs, headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
-	if headersFixed {
-		// We succeeded here but it's kind of complicated to get out and
-		// err from TryCompileAndFixHeadersOnce. The output and err is
-		// not so important on success so just be silent.
-		WriteStdErrOut(append([]string{bin}, headersFixArgs...), "", "")
-		os.Exit(0)
+func IsCompilingTarget(cmdline []string) bool {
+	for _, arg := range cmdline {
+		// This can fail if people do crazy things they aren't supposed to e.g.
+		if arg == "-fsanitize=fuzzer" {
+			fmt.Println(true)
+			return true
+		}
 	}
-
-	if isCPP {
-		// Nothing else we can do. Just write the error and exit.
-		// Just print the original error for debugging purposes and
-		//  to make build systems happy.
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(retcode)
-	}
-	fixargs, fixret, fixout, fixerr := TryFixCCompilation(newArgs)
-	if fixret != 0 {
-		// We failed, write stdout and stderr from the first failure and
-		// from fix failures so we can know what the code did wrong and
-		// how to improve jcc to fix more issues.
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		fmt.Println("\nFix failure")
-		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixargs, fixout, fixerr)
-		os.Exit(retcode)
-	}
-	// The fix suceeded, write its out and err.
-	WriteStdErrOut(fixargs, fixout, fixerr)
+	fmt.Println(false)
+	return false
 }
