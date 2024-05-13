@@ -23,7 +23,6 @@ auto_ccs:
   - "whalechang@google.com"
 sanitizers:
   - address
-  - memory
   - undefined
 fuzzing_engines:
   - afl
