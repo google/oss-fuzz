@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN git clone --depth=1 https://github.com/googleapis/python-iam
-WORKDIR python-iam
-
+RUN python3 -m pip install --upgrade pip
+RUN git clone --depth 1 https://github.com/googleapis/google-cloud-python
+WORKDIR google-cloud-python
 COPY build.sh fuzz_*.py $SRC/

@@ -15,10 +15,10 @@
 #
 ################################################################################
 
+cd packages/google-cloud-iam/
+
 # Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install --upgrade pip
-pip3 install google-cloud-core
-pip3 install .
+ python3 -m pip install .
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
