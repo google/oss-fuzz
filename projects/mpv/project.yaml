@@ -1,10 +1,14 @@
 homepage: "https://github.com/mpv-player/mpv"
 language: c
 primary_contact: "kasper93@gmail.com"
+auto_ccs:
+  - "jeebjp@gmail.com"
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
 sanitizers:
   - address
+  - memory:
+      experimental: true
   - undefined
 main_repo: 'https://github.com/mpv-player/mpv'
