@@ -17,20 +17,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 # Download and install JDK 17
-RUN apt-get install -y wget apt-transport-https gpg
-
-RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
-RUN echo "deb https://packages.adoptium.net/artifactory/deb/ focal main" | tee /etc/apt/sources.list.d/adoptium.list
-RUN apt-get update && apt-get install -y temurin-17-jdk
-
-# Set JAVA_HOME
-RUN JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/jre/bin/java::")
-ENV JAVA_HOME $JAVA_HOME
+RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null \
+    && echo "deb https://packages.adoptium.net/artifactory/deb/ focal main" | tee /etc/apt/sources.list.d/adoptium.list \
+    && apt-get update && apt-get install -y temurin-17-jdk
+# Remove the directory (ensure this is correct and necessary for your application)
+RUN rm -rf $SRC/project-parent/jxls
+# Set JAVA_HOME. This needs to be adjusted to the path where the JDK is installed.
+# Since we're installing temurin-17-jdk, we'll set it directly.
+ENV JAVA_HOME /usr/lib/jvm/temurin-17-jdk-amd64
 ENV PATH $PATH:$JAVA_HOME/bin
-
-RUN echo $JAVA_HOME
-RUN echo $PATH
-
 
 RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
