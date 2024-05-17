@@ -26,7 +26,7 @@ pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --disable-shared --enable-gpl --enable-nonfree \
             --disable-programs --disable-asm --pkg-config-flags="--static" \
-            --disable-protocol=rtp,srtp \
+            --disable-network \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
 make install
