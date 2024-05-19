@@ -23,8 +23,7 @@ RUN git clone --depth 1 --branch=RB-3.2 https://github.com/AcademySoftwareFounda
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/karchive.git
-#RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b jxr_support_kf5 https://invent.kde.org/mircomir/kimageformats.git
+RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/kimageformats.git
 RUN git clone --depth 1 -b v3.8.1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 -b v1.0.4 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
