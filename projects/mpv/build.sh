@@ -26,27 +26,45 @@ pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --disable-shared --enable-gpl --enable-nonfree \
             --disable-programs --disable-asm --pkg-config-flags="--static" \
+            --disable-network \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
 make install
-popd
-
-pushd $SRC/libplacebo
-meson setup build -Ddefault_library=static -Dprefer_static=true --libdir $LIBDIR
-meson install -C build
 popd
 
 pushd $SRC/mpv
 sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]/d; \
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
           link_flags += \['$LIB_FUZZING_ENGINE'\]|" meson.build
+mkdir subprojects
+meson wrap update-db
+# Explicitly download wraps as nested projects have older versions of them.
+meson wrap install expat
+meson wrap install harfbuzz
+meson wrap install libpng
+meson wrap install zlib
+cat <<EOF > subprojects/libplacebo.wrap
+[wrap-git]
+url = https://github.com/haasn/libplacebo
+revision = master
+depth = 1
+clone-recursive = true
+EOF
+cat <<EOF > subprojects/libass.wrap
+[wrap-git]
+url = https://github.com/libass/libass
+revision = master
+depth = 1
+EOF
 meson setup build -Ddefault_library=static -Dprefer_static=true \
-                  -Dfuzzers=true -Dlibmpv=true -Dcplayer=false \
-                  -Dc_link_args="$CXXFLAGS -lc++ -Wl,-rpath,'\$ORIGIN/lib'" \
+                  -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
+                  -Dlibplacebo:lcms=enabled -Dlcms2=enabled \
+                  -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled -Dlibplacebo:demos=false \
+                  -Dlibass:asm=disabled -Dlibass:libunibreak=enabled -Dlibass:fontconfig=enabled \
+                  -Dc_link_args="$CXXFLAGS -lc++" -Dcpp_link_args="$CXXFLAGS" \
+                  -Dlibarchive=disabled -Drubberband=disabled -Ddrm=disabled -Dwayland=disabled \
+                  -Dlua=disabled -Djavascript=enabled -Duchardet=enabled \
                   --libdir $LIBDIR
 meson compile -C build
 
 cp ./build/fuzzers/fuzzer_*  $OUT/ || true
-# Static lib not available, requirement pulled by libass
-mkdir -p $OUT/lib/
-cp /usr/$LIBDIR/libgraphite2.so.3 $OUT/lib/

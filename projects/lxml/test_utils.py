@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y nasm pkg-config gperf && pip3 install meson ninja
-RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
-RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-WORKDIR mpv
-COPY build.sh $SRC/
+from typing import List  # pragma: no cover
+import atheris  # pragma: no cover
+
+
+@atheris.instrument_func
+def is_expected_error(error_message_list: List[str],
+                      exception: Exception):  # pragma: no cover
+  """Checks if the message of a given exception matches any of the expected error messages."""
+  for error in error_message_list:
+    if error in str(exception):
+      return True
+  return False
