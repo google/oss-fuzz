@@ -20,7 +20,7 @@
   Usage:
     python infra/helper.py build_image kimageformats
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory kimageformats
-    python infra/helper.py run_fuzzer kimageformats kimgio_[ani|avif|exr|hdr|heif|jxl|kra|ora|pcx|pic|psd|qoi|ras|raw|rgb|tga|xcf]_fuzzer
+    python infra/helper.py run_fuzzer kimageformats kimgio_[ani|avif|exr|hdr|heif|jxl|jxr|kra|ora|pcx|pic|psd|qoi|ras|raw|rgb|tga|xcf]_fuzzer
 */
 
 
@@ -34,6 +34,7 @@
 #include "hdr_p.h"
 #include "heif_p.h"
 #include "jxl_p.h"
+#include "jxr_p.h"
 #include "kra.h"
 #include "ora.h"
 #include "qoi_p.h"
