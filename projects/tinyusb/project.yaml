@@ -2,8 +2,9 @@ homepage: "https://docs.tinyusb.org/en/latest/"
 language: c++
 primary_contact: "Ha Thach"
 main_repo: "https://github.com/hathach/tinyusb.git"
-primary_contact: "tinyusb.org@gmail.com"
+primary_contact: "thach@tinyusb.org"
 auto_ccs:
+  - "tinyusb.org@gmail.com"
   - "nathaniel.brough@gmail.com"
 
 sanitizers:

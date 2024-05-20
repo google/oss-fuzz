@@ -2,7 +2,11 @@ homepage: "https://buildwithmatter.com/"
 language: c++
 primary_contact: "andreilitvin@google.com"
 auto_ccs:
+  - "asad_haque@comcast.com"
+  - "lalabdulkarim@csa-iot.org"
   - "mboyington@google.com"
+  - "szewczyk@google.com"
+  - "tennessee@google.com"
 sanitizers:
   - address
   - undefined

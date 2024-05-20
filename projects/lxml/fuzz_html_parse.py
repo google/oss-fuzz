@@ -16,16 +16,10 @@
 
 import atheris
 import sys
+from test_utils import is_expected_error
 
 with atheris.instrument_imports():
   from lxml import etree
-
-
-def is_expected_error(error_content_list, error_msg):
-  for error in error_content_list:
-    if error in error_msg:
-      return True
-  return False
 
 
 def TestOneInput(data):
@@ -41,7 +35,7 @@ def TestOneInput(data):
     ]
     if isinstance(e, etree.LxmlError) or (
         isinstance(e, (TypeError, ValueError)) and
-        is_expected_error(expected_error_message_content, str(e))):
+        is_expected_error(expected_error_message_content, e)):
       # Known exception raised by the source code are not interesting.
       return -1  # Reject so the input will not be added to the corpus.
     else:
