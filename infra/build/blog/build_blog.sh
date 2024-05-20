@@ -33,5 +33,5 @@ cp -rf $BASE/content .
 # Build the site
 hugo -D
 
-# Launch site
-#python3 -m http.server 8011 -d ./public
+# Uncomment the following to launch site automatically
+#python3 -m http.server 8011 -d ./oss-fuzz-blog/page/public
