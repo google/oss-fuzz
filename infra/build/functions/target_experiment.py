@@ -230,9 +230,10 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
           '-c',
           (
               f'timeout 30m coverage {target_name}; ret=$?; '
-              '[ $ret -eq 124 ] '  # Return code 124 indicates a time out.
-              '&& echo "coverage a timed out after 30 minutes" '
-              '|| echo "coverage a completed with exit status $EXIT_STATUS"'),
+              '[ $ret -eq 124 ] '  # Exit code 124 indicates a time out.
+              f'&& echo "coverage {target_name} timed out after 30 minutes" '
+              f'|| echo "coverage {target_name} completed with exit code $ret"'
+          ),
       ],
   })
 
