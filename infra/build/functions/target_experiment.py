@@ -228,9 +228,11 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
           '/bin/bash',
       'args': [
           '-c',
-          (f'timeout 30m coverage {target_name}; ret=$?; [ $ret -eq 124 ] '
-           '&& echo "coverage a timed out after 30 minutes" '
-           '|| echo "coverage a completed with exit status $EXIT_STATUS"'),
+          (
+              f'timeout 30m coverage {target_name}; ret=$?; '
+              '[ $ret -eq 124 ] '  # Return code 124 indicates a time out.
+              '&& echo "coverage a timed out after 30 minutes" '
+              '|| echo "coverage a completed with exit status $EXIT_STATUS"'),
       ],
   })
 
