@@ -16,17 +16,19 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-# Download and install JDK 17
+# Install necessary packages
 RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
-RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null \
-    && echo "deb https://packages.adoptium.net/artifactory/deb/ focal main" | tee /etc/apt/sources.list.d/adoptium.list \
-    && apt-get update && apt-get install -y temurin-17-jdk
-# Remove the directory (ensure this is correct and necessary for your application)
-RUN rm -rf $SRC/project-parent/jxls
-# Set JAVA_HOME. This needs to be adjusted to the path where the JDK is installed.
-# Since we're installing temurin-17-jdk, we'll set it directly.
-ENV JAVA_HOME /usr/lib/jvm/temurin-17-jdk-amd64
+# Download and install JDK 17 from the official Oracle website
+RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/17+35/61f34f82bd5b40629948c6f6a52b8fe0/jdk-17_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
+RUN mkdir -p /usr/lib/jvm && tar -zxf /tmp/jdk-17_linux-x64_bin.tar.gz -C /usr/lib/jvm
+RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk-17/bin/java 100
+RUN update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/jdk-17/bin/javac 100
+# Clean up
+RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
+# Set JAVA_HOME and PATH
+ENV JAVA_HOME /usr/lib/jvm/jdk-17
 ENV PATH $PATH:$JAVA_HOME/bin
+
 
 RUN rm -rf $SRC/jxls
 RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
