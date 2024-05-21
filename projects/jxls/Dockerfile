@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # Install necessary packages
 RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
 # Download and install JDK 17 from the official Oracle website
-RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/17+35/61f34f82bd5b40629948c6f6a52b8fe0/jdk-17_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
+RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
 RUN mkdir -p /usr/lib/jvm && tar -zxf /tmp/jdk-17_linux-x64_bin.tar.gz -C /usr/lib/jvm
 RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk-17/bin/java 100
 RUN update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/jdk-17/bin/javac 100
