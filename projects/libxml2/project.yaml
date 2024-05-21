@@ -1,4 +1,4 @@
-homepage: "http://www.xmlsoft.org/"
+homepage: "https://gitlab.gnome.org/GNOME/libxml2"
 language: c++
 primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
@@ -20,6 +20,7 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+  - aarch64
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
