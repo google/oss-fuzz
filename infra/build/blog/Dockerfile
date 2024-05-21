@@ -25,7 +25,12 @@ RUN mkdir -p hugo-bin && \
 
 ENV PATH="${PATH}:/hugo-bin/"
 
-COPY content hugo.toml /
+RUN git clone https://github.com/luizdepra/hugo-coder hugo-coder && \
+    cd hugo-coder && \
+    git checkout 759cc945636473d251a28597e2007cbb7d11631d # 17th May 2024
+
+COPY content /content
+COPY hugo.toml /hugo.toml
 COPY build_blog.sh /build_blog.sh
 RUN /build_blog.sh
 

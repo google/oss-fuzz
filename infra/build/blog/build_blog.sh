@@ -1,3 +1,4 @@
+#!/bin/bash -eux
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,16 +17,32 @@
 
 BASE=$PWD
 
+if [ -d "${BASE}/hugo-coder" ]
+then
+  echo "Local version of hugo exists. Using this."
+else
+  # When writing the blog outeside of docker we clone Hugo here.
+  git clone https://github.com/luizdepra/hugo-coder hugo-coder
+  cd hugo-coder
+  git checkout 759cc945636473d251a28597e2007cbb7d11631d # 17th May 2024
+  cd ../
+fi
+
 # Build the site
+if [ -d "${BASE}/oss-fuzz-blog" ]
+then
+  rm -rf ${BASE}/oss-fuzz-blog
+fi
 mkdir oss-fuzz-blog
 cd oss-fuzz-blog
 
 hugo new site page
 cd page
+
 git init
-git submodule add https://github.com/luizdepra/hugo-coder.git themes/hugo-coder
 
 # Copy over our content
+cp -rf ${BASE}/hugo-coder themes/hugo-coder
 cp $BASE/hugo.toml .
 rm -rf ./content
 cp -rf $BASE/content .
