@@ -21,10 +21,18 @@ RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
 # Download and install JDK 17 from the official Oracle website
 RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
 RUN mkdir -p /usr/lib/jvm && tar -zxf /tmp/jdk-17_linux-x64_bin.tar.gz -C /usr/lib/jvm
+
+RUN ls /usr/lib/jvm/jdk-17
+
+RUN ls /usr/lib/jvm/jdk-17/java -version
   
 # Set JAVA_HOME and PATH
 ENV JAVA_HOME /usr/lib/jvm/jdk-17
 ENV PATH $JAVA_HOME/bin:$PATH
+
+RUN echo $JAVA_HOME
+RUN echo $PATH
+
 
 # Create a script to set Java environment variables
 RUN echo 'export JAVA_HOME=/usr/lib/jvm/jdk-17' >> /etc/profile.d/java.sh
