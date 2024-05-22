@@ -25,6 +25,14 @@ RUN mkdir -p /usr/lib/jvm && tar -zxf /tmp/jdk-17_linux-x64_bin.tar.gz -C /usr/l
 # Set JAVA_HOME and PATH
 ENV JAVA_HOME /usr/lib/jvm/jdk-17
 ENV PATH $JAVA_HOME/bin:$PATH
+
+# Create a script to set Java environment variables
+RUN echo 'export JAVA_HOME=/usr/lib/jvm/jdk-17' >> /etc/profile.d/java.sh
+RUN echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile.d/java.sh
+# Source the script to apply the environment variables
+RUN chmod +x /etc/profile.d/java.sh
+RUN /bin/bash -c "source /etc/profile.d/java.sh"
+
 # Clean up
 RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
 # Confirm Java installation
