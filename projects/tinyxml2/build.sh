@@ -21,7 +21,7 @@ sed -i 's/CXXFLAGS =/#CXXFLAGS/g' Makefile
 make -j$(nproc) clean
 make -j$(nproc) all
 
-fuzz_harness=$(ls -d "$SRC"/*_fuzzer.cpp)
+fuzz_harness=$(ls -d "$SRC"/*.cpp)
 for h in $fuzz_harness; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ "$h" \
     -o "$OUT/$(basename "$h")" $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
