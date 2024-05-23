@@ -20,14 +20,16 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
 # Download and install JDK 17 from the official Oracle website
 RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
-RUN mkdir -p /usr/lib/jvm && tar -zxf /tmp/jdk-17_linux-x64_bin.tar.gz -C /usr/lib/jvm
 
-RUN ls /usr/lib/jvm/jdk-17
+# Create a directory for JDK installation within the user's home directory
+RUN mkdir -p /home/user/jdk-17
+RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk-17
 
-RUN ls /usr/lib/jvm/jdk-17/java -version
-  
+# Verify the extraction path
+RUN ls /home/user/jdk-17
+
 # Set JAVA_HOME and PATH
-ENV JAVA_HOME /usr/lib/jvm/jdk-17
+ENV JAVA_HOME /home/user/jdk-17/jdk-17
 ENV PATH $JAVA_HOME/bin:$PATH
 
 RUN echo $JAVA_HOME
