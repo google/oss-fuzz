@@ -51,6 +51,11 @@ $CXX $CXXFLAGS -I . ../boost_uuid_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_uuid_fu
 #boost programoptions
 $CXX $CXXFLAGS -I . ../boost_programoptions_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_programoptions_fuzzer stage/lib/libboost_program_options.a
 
+#boost beast
+$CXX $CXXFLAGS -I . ../boost_beast_request_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_beast_request_fuzzer
+$CXX $CXXFLAGS -I . ../boost_beast_response_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_beast_response_fuzzer
+$CXX $CXXFLAGS -I . ../boost_beast_ws_server_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_beast_ws_server_fuzzer
+
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 # find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # If you have dictionaries.
