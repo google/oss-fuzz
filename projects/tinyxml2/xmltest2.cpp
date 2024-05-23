@@ -25,7 +25,7 @@ using namespace std;
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	char pathname[256];
-	sprintf(pathname, "/dev/shm/fuzz-%d", getpid());
+	sprintf(pathname, "/tmp/libfuzzer.%d", getpid());
 	FILE *fp = fopen(pathname, "wb");
 	fwrite(data, size, 1, fp);
   	fclose(fp);
