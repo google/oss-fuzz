@@ -35,10 +35,14 @@ ENV PATH $JAVA_HOME/bin:$PATH
 RUN echo $JAVA_HOME
 RUN echo $PATH
 
+RUN ls $JAVA_HOME
+RUN java -version
+
 
 # Create a script to set Java environment variables
-RUN echo 'export JAVA_HOME=/usr/lib/jvm/jdk-17' >> /etc/profile.d/java.sh
+RUN echo 'export JAVA_HOME=/home/user/jdk-17/jdk-17' >> /etc/profile.d/java.sh
 RUN echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile.d/java.sh
+
 # Source the script to apply the environment variables
 RUN chmod +x /etc/profile.d/java.sh
 RUN /bin/bash -c "source /etc/profile.d/java.sh"
