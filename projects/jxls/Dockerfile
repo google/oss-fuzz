@@ -25,23 +25,16 @@ RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=
 RUN mkdir -p /home/user/jdk-17
 RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk-17
 
-# Verify the extraction path
-RUN ls /home/user/jdk-17
-
-# Set JAVA_HOME and PATH
-ENV JAVA_HOME /home/user/jdk-17/jdk-17
+# Detect the extracted JDK folder name
+RUN JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f")
+ENV JAVA_HOME /home/user/jdk-17/$JDK_FOLDER
 ENV PATH $JAVA_HOME/bin:$PATH
-
-RUN echo $JAVA_HOME
-RUN echo $PATH
-
-RUN ls $JAVA_HOME
-RUN java -version
-
-
 # Create a script to set Java environment variables
-RUN echo 'export JAVA_HOME=/home/user/jdk-17/jdk-17' >> /etc/profile.d/java.sh
+RUN echo 'export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/profile.d/java.sh
 RUN echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile.d/java.sh
+
+RUN echo $JDK_FOLDER
+RUN ls $JDK_FOLDER
 
 # Source the script to apply the environment variables
 RUN chmod +x /etc/profile.d/java.sh
