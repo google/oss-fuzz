@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
-RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone https://gitlab.com/gnuwget/gnulib-mirror.git gnulib
 RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar xz && mv libunistring-* libunistring
 RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
