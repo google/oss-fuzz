@@ -69,6 +69,7 @@ make install
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
+sed -i 's/0\.21/0\.19\.8/g' configure.ac
 ./bootstrap
 
 LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
