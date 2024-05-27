@@ -1,7 +1,7 @@
 +++
 authors = ["OSS-Fuzz Maintainers"]
 title = "Introducing LLM-based harness synthesis for unfuzzed projects"
-date = "2024-05-24"
+date = "2024-05-27"
 description = "Introducing LLM-based harness generation for unfuzzed projects."
 categories = [
     "Fuzzing",
