@@ -228,7 +228,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 Example 3, Simpleson harness ([PR](https://github.com/gregjesl/simpleson/pull/40))
 
 ```c
-nclude <stdlib.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
