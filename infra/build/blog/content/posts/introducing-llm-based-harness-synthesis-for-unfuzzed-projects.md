@@ -16,7 +16,7 @@ categories = [
 
 As part of the OSS-Fuzz-Gen project, we’ve been working on generating fuzzing harnesses for OSS-Fuzz projects with the goal of improving fuzzing coverage and unearthing more vulnerabilities. 
 
-Results previously published from our ongoing work described in our [blog post](https://security.googleblog.com/2023/08/ai-powered-fuzzing-breaking-bug-hunting.html) showed promising results, with absolute coverage increases of up to 35% across several projects, and 6 new vulnerabilities discovered. However, this work only applied to projects already integrated into OSS-Fuzz as it uses the existing fuzzing build setups scripts in the given OSS-Fuzz project.
+Results previously published from our ongoing work described in our [blog post](https://security.googleblog.com/2023/08/ai-powered-fuzzing-breaking-bug-hunting.html) showed promising results, with absolute coverage increases of up to 35% across over 160 OSS-Fuzz projects, and [6 new vulnerabilities](https://github.com/google/oss-fuzz-gen/?tab=readme-ov-file#bugs-discovered) discovered. However, this work only applied to projects already integrated into OSS-Fuzz as it uses the existing fuzzing build setups scripts in the given OSS-Fuzz project.
 
 Recently, we experimented with generating fuzzing harnesses for arbitrary C/C++ software projects, using the same LLM techniques.
 
