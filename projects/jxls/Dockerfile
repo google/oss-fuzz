@@ -20,35 +20,23 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
 # Download and install JDK 17 from the official Oracle website
 RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
-
 # Create a directory for JDK installation within the user's home directory
 RUN mkdir -p /home/user/jdk-17
 RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk-17
-
-# Detect the extracted JDK folder name
-RUN JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f")
-ENV JAVA_HOME /home/user/jdk-17/$JDK_FOLDER
-ENV PATH $JAVA_HOME/bin:$PATH
-# Create a script to set Java environment variables
-RUN echo 'export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/profile.d/java.sh
-RUN echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile.d/java.sh
-
-RUN echo $JDK_FOLDER
-RUN ls $JDK_FOLDER
-
-# Source the script to apply the environment variables
-RUN chmod +x /etc/profile.d/java.sh
-RUN /bin/bash -c "source /etc/profile.d/java.sh"
-
+# Set the JAVA_HOME and PATH variables correctly
+RUN JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f") && \
+    export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER && \
+    export PATH=$JAVA_HOME/bin:$PATH && \
+    echo 'export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/environment && \
+    echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/environment && \
+    source /etc/environment
 # Clean up
 RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
+
 # Confirm Java installation
 RUN java -version
 
-
-RUN rm -rf $SRC/jxls
-RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
-
+# Install Maven
 RUN apt-get update && apt-get install -y maven
 
 # Build the project
