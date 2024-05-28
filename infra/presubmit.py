@@ -232,10 +232,10 @@ def check_project_yaml(paths):
 
 def _check_one_seed_corpus(path):
   """Returns False and prints error if |path| is a seed corpus."""
-  if os.path.dirname(os.path.dirname(path)) != 'projects':
+  if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
     return True
 
-  if os.path.splitext(path)[1] == 'zip':
+  if os.path.splitext(path)[1] == '.zip':
     print('Don\'t commit seed corpora into the ClusterFuzz repo,'
           'they bloat it forever.')
     return False
