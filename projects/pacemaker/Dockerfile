@@ -61,9 +61,7 @@ RUN git clone https://github.com/ClusterLabs/libqb && cd libqb && \
     ./autogen.sh && ./configure && make && make install
 
 # Uncomment before merging
-#RUN git clone --depth 1 https://github.com/ClusterLabs/pacemaker
-
-RUN git clone --depth 1 https://github.com/DavidKorczynski/pacemaker && cd pacemaker && git pull origin oss-fuzz-integration
+RUN git clone --depth 1 https://github.com/ClusterLabs/pacemaker
 
 WORKDIR pacemaker
 COPY build.sh $SRC/

@@ -18,8 +18,6 @@
 make build -j$(nproc)
 
 for fuzzer in iso8601 strings utils cib_file; do
-  echo "Building fuzzer: ${fuzzer}"
-
   $CC $CFLAGS $LIB_FUZZING_ENGINE -c ./fuzzers/${fuzzer}_fuzzer.c          \
    -I/usr/local/include/libxml2/ -I./include/crm/common -I./include        \
    -I./include/crm/ -I/usr/include/glib-2.0                                \
@@ -28,8 +26,8 @@ for fuzzer in iso8601 strings utils cib_file; do
   # Link with CXX for Centipede
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}_fuzzer.o                    \
    -o $OUT/${fuzzer}_fuzzer                                                \
-   -Wl,--start-group  ./lib/pacemaker/.libs/libpacemaker.a                 \
-   ./lib/cib/.libs/libcib.a ./lib/common/.libs/libcrmcommon.a -lbz2        \
+   -Wl,--start-group ./lib/cib/.libs/libcib.a                              \
+   ./lib/common/.libs/libcrmcommon.a -lbz2                                 \
    -l:libxslt.a -lrt -ldl -lc -l:libuuid.a -l:libicuuc.a -l:libglib-2.0.a  \
    -l:libz.a -l:libxml2.a ./lib/cib/.libs/libcib.a                         \
    ./lib/pengine/.libs/libpe_rules.a ./lib/pengine/.libs/libpe_status.a    \
