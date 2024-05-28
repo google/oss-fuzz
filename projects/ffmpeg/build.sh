@@ -144,7 +144,7 @@ rm $FFMPEG_DEPS_PATH/lib/*.so.*
 cd $SRC/ffmpeg
 if [[ "$ARCHITECTURE" == i386 ]]; then
 
-      FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm'
+      FFMPEG_BUILD_ARGS='--arch=i386 --cpu=i386'
 else
       FFMPEG_BUILD_ARGS=''
 fi
@@ -157,6 +157,8 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --pkg-config-flags="--static" \
         --enable-ossfuzz \
         --libfuzzer=$LIB_FUZZING_ENGINE \
+        --disable-inline-asm \
+        --disable-asm \
         --optflags=-O1 \
         --enable-gpl \
         --enable-nonfree \
