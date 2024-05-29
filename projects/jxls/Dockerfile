@@ -23,16 +23,22 @@ RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=
 # Create a directory for JDK installation within the user's home directory
 RUN mkdir -p /home/user/jdk-17
 RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk-17
-# Set the JAVA_HOME and PATH variables correctly
-RUN JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f") && \
-    export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER && \
-    export PATH=$JAVA_HOME/bin:$PATH && \
-    echo 'JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/environment && \
-    echo 'PATH=$JAVA_HOME/bin:$PATH' >> /etc/environment
 
-# Ensure the variables are available in subsequent commands
+# Debug: List the contents of the JDK installation directory
+RUN ls -la /home/user/jdk-17
+
+# Set the JAVA_HOME and PATH variables correctly
+ENV JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f")
 ENV JAVA_HOME /home/user/jdk-17/$JDK_FOLDER
 ENV PATH $JAVA_HOME/bin:$PATH
+
+# Debug: Print the JDK_FOLDER, JAVA_HOME, and PATH environment variables
+RUN echo "JDK_FOLDER: $JDK_FOLDER"
+RUN echo "JAVA_HOME: $JAVA_HOME"
+RUN echo "PATH: $PATH"
+
+# Confirm Java installation
+RUN java -version
 
 # Clean up
 RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
