@@ -27,9 +27,13 @@ RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk-17
 RUN JDK_FOLDER=$(find /home/user/jdk-17 -maxdepth 1 -type d -name "jdk-*" -printf "%f") && \
     export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER && \
     export PATH=$JAVA_HOME/bin:$PATH && \
-    echo 'export JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/environment && \
-    echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/environment && \
-    source /etc/environment
+    echo 'JAVA_HOME=/home/user/jdk-17/$JDK_FOLDER' >> /etc/environment && \
+    echo 'PATH=$JAVA_HOME/bin:$PATH' >> /etc/environment
+
+# Ensure the variables are available in subsequent commands
+ENV JAVA_HOME /home/user/jdk-17/$JDK_FOLDER
+ENV PATH $JAVA_HOME/bin:$PATH
+
 # Clean up
 RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
 
