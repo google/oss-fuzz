@@ -20,7 +20,7 @@ GRPC_PYTHON_CFLAGS="${CFLAGS}" \
 GRPC_PYTHON_BUILD_SYSTEM_RE2=true \
 GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true \
 GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true \
-python3 -m pip install . --no-binary protobuf,grpcio
+python3 -m pip install -v . --no-binary :all:
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
