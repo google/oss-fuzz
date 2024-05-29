@@ -14,23 +14,22 @@
 # limitations under the License.
 """Fuzzer for google/cloud/resourcemanager_v3/services/tag_values/client.py"""
 
-import os
 import sys
+import mock
 import atheris
 
-import mock
-
-from google.auth import credentials as ga_credentials
-from google.longrunning import operations_pb2
-from google.iam.v1 import iam_policy_pb2
-from google.iam.v1 import policy_pb2 
-from google.cloud.resourcemanager_v3.services.tag_values import (
-    TagValuesAsyncClient,
-    TagValuesClient,
-    pagers,
-    transports,
-)
-from google.cloud.resourcemanager_v3.types import tag_values
+with atheris.instrument_imports():
+    from google.auth import credentials as ga_credentials
+    from google.longrunning import operations_pb2
+    from google.iam.v1 import iam_policy_pb2
+    from google.iam.v1 import policy_pb2
+    from google.cloud.resourcemanager_v3.services.tag_values import (
+        TagValuesAsyncClient,
+        TagValuesClient,
+        pagers,
+        transports,
+    )
+    from google.cloud.resourcemanager_v3.types import tag_values
 
 
 def test_get_tag_value(fdp, client):
@@ -133,8 +132,7 @@ def TestOneInput(data):
         target(fdp, client)
 
 def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 
 if __name__ == "__main__":
