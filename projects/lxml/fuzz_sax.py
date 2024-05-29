@@ -29,10 +29,15 @@ def TestOneInput(data):
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except (etree.LxmlError, ValueError) as e:
+  except (etree.LxmlError, ValueError, IndexError) as e:
     if isinstance(e, etree.LxmlError) or (isinstance(e, ValueError) and
                                           "Invalid" in str(e)):
       return -1  # Reject so the input will not be added to the corpus.
+    elif isinstance(
+        e, IndexError
+    ) and "lxml.sax.ElementTreeContentHandler.processingInstruction" in str(e):
+      # This possibility is a bug and tracked here: https://bugs.launchpad.net/lxml/+bug/2011542
+      return 0  # Accept the input in the corpus to enable regression testing when fixed.
     else:
       raise e
 

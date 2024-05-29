@@ -31,8 +31,7 @@ def TestOneInput(data):
 
     schematron = Schematron(schema_raw)
     schematron.validate(valid_tree)
-  except (etree.LxmlError, KeyError):
-    # The `KeyError` possibility is tracked here: https://bugs.launchpad.net/lxml/+bug/2058177
+  except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
 
 
