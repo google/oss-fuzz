@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && \
-    apt-get install libre2-dev zlib1g-dev libssl-dev --yes
+    apt-get install -y libre2-dev zlib1g-dev libssl-dev
 RUN python3 -m pip install --upgrade pip
 RUN git clone --depth 1 https://github.com/googleapis/google-cloud-python $SRC/google-cloud-python
 WORKDIR $SRC/google-cloud-python/packages/google-cloud-iam
