@@ -22,13 +22,14 @@ RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
 RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
 
 # extract JDK installation
-RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user
+RUN mkdir -p /home/user/jdk
+RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk
 
 # Debug: List the contents of the user home directory
-RUN ls -la /home/user
+RUN ls -la /home/user/jdk
 
 # Set the JAVA_HOME and PATH variables correctly
-ENV JAVA_HOME /home/user/jdk-17.0.10
+ENV JAVA_HOME /home/user/jdk/jdk-17.0.10
 ENV PATH $JAVA_HOME/bin:$PATH
 
 # Debug: Print the JDK_FOLDER, JAVA_HOME, and PATH environment variables
