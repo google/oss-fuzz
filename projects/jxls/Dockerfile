@@ -32,13 +32,9 @@ RUN ls -la /home/user/jdk
 ENV JAVA_HOME /home/user/jdk/jdk-17.0.10
 ENV PATH $JAVA_HOME/bin:$PATH
 
-# Debug: Print the JDK_FOLDER, JAVA_HOME, and PATH environment variables
-RUN echo "JDK_FOLDER: $JDK_FOLDER"
+# Debug: Print the JAVA_HOME, and PATH environment variables
 RUN echo "JAVA_HOME: $JAVA_HOME"
 RUN echo "PATH: $PATH"
-
-# Confirm Java installation
-RUN java -version
 
 # Clean up
 RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
@@ -48,6 +44,9 @@ RUN java -version
 
 # Install Maven
 RUN apt-get update && apt-get install -y maven
+
+RUN echo "$SRC"
+RUN ls $SRC
 
 # Build the project
 COPY build.sh $SRC/
