@@ -16,6 +16,7 @@ package main
 
 import (
 	"bytes"
+        "encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -370,18 +371,15 @@ func main() {
 		log.Println(err)
 	}
 	defer f.Close()
-	if _, err := os.Stat("/out/statefile"); !errors.Is(err, os.ErrNotExist) {
-		log.Println(err)
-		fmt.Println(err)
-		fmt.Println("EEXXIT")
-		os.Exit(0)
-	}
-	// fmt.Println("MAAAAIN")
 	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
 		log.Println(err)
 	}
 
 	args := os.Args[1:]
+        if args[0] == "unfreeze" {
+           fmt.Println("unfreeze")
+           unfreeze()
+        }
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
 	// fmt.Println(isCPP)
@@ -404,10 +402,20 @@ func main() {
 	os.Exit(retcode)
 }
 
+type BuildCommand struct {
+    CWD  string        `json:"cwd"`
+    CMD  []string      `json:"cmd"`
+}
+
 func WriteTargetArgsAndCommitImage(cmdline []string) {
 	fmt.Println("WRITTE")
-	f, _ := os.OpenFile("/out/statefile", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	f.WriteString(strings.Join(cmdline, " "))
+	f, _ := os.OpenFile("/out/statefile.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+        buildcmd := BuildCommand{
+        CWD:"",
+        CMD: cmdline,
+        }
+        jsonData, _ := json.Marshal(buildcmd)
+	f.Write(jsonData)
 	f.Close()
 	hostname, _ := os.Hostname()
 	dockerArgs := []string{"commit", hostname, "frozen"}
@@ -433,6 +441,29 @@ func IsCompilingTarget(cmdline []string) bool {
 			return true
 		}
 	}
-	// fmt.Println(false)
 	return false
+}
+
+func parseCommand(command string) (string, []string) {
+       args := strings.Fields(command)
+       commandBin := args[0]
+       commandArgs := args[1:]
+       return commandBin, commandArgs
+}
+
+func unfreeze() {
+       if _, err := os.Stat("/out/statefile.json"); !errors.Is(err, os.ErrNotExist) {
+               log.Println(err)
+               os.Exit(1)
+       }
+       content, err := ioutil.ReadFile("/out/statefile.json")
+       if err != nil {
+               log.Fatal(err)
+       }
+
+       var command BuildCommand
+       json.Unmarshal(content, &command)
+       bin, args := parseCommand(strings.Join(command.CMD, " "))
+       os.Chdir(command.CWD)
+       ExecBuildCommand(bin, args)
 }
