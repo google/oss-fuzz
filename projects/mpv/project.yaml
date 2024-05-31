@@ -1,4 +1,5 @@
 homepage: "https://github.com/mpv-player/mpv"
+main_repo: "https://github.com/mpv-player/mpv"
 language: c
 primary_contact: "kasper93@gmail.com"
 auto_ccs:
@@ -11,4 +12,8 @@ sanitizers:
   - memory:
       experimental: True
   - undefined
-main_repo: 'https://github.com/mpv-player/mpv'
+fuzzing_engines:
+  - afl
+  - centipede
+  - honggfuzz
+  - libfuzzer
