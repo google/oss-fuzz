@@ -61,7 +61,7 @@ RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
 
 # XZ
-RUN git clone --depth 1 https://github.com/xz-mirror/xz
+RUN git clone --depth 1 https://github.com/tukaani-project/xz
 
 # Zstd
 RUN git clone --depth 1 https://github.com/facebook/zstd

@@ -19,23 +19,33 @@ import sys
 import io
 
 with atheris.instrument_imports():
-  from lxml import etree as et
-  from lxml import sax
+  from lxml import sax, etree
 
 
 def TestOneInput(data):
   try:
     f = io.BytesIO(data)
-    parsed = et.parse(f)
+    parsed = etree.parse(f)
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except et.LxmlError:
-    None
+  except (etree.LxmlError, ValueError, IndexError) as e:
+    if isinstance(e, etree.LxmlError) or (isinstance(e, ValueError) and
+                                          "Invalid" in str(e)):
+      return -1  # Reject so the input will not be added to the corpus.
+    elif isinstance(
+        e, IndexError
+    ) and "lxml.sax.ElementTreeContentHandler.processingInstruction" in str(e):
+      # This possibility is a bug and tracked here: https://bugs.launchpad.net/lxml/+bug/2011542
+      return 0  # Accept the input in the corpus to enable regression testing when fixed.
+    else:
+      raise e
+
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()

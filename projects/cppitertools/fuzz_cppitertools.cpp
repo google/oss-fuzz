@@ -90,7 +90,7 @@ void FuzzCompress(const uint8_t *data, size_t size) {
   std::vector<bool> bvec;
   for (int i = 0; i < 100; i++) {
     ivec.push_back(fdp.ConsumeIntegralInRange(1, 1000000));
-    ivec.push_back(fdp.ConsumeBool());
+    bvec.push_back(fdp.ConsumeBool());
   }
   auto c = compress(ivec, bvec);
   std::vector<int> v(std::begin(c), std::end(c));

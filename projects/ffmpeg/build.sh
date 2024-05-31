@@ -169,6 +169,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --enable-libvpx \
         --enable-libxml2 \
         --enable-nonfree \
+        --disable-libdrm \
         --disable-muxers \
         --disable-protocols \
         --disable-demuxer=rtp,rtsp,sdp \
@@ -223,6 +224,30 @@ for c in $CONDITIONALS; do
       patchelf --set-rpath '$ORIGIN/lib' $OUT/$fuzzer_name
 done
 
+# Build fuzzers for encoders
+CONDITIONALS=$(grep 'ENCODER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_ENCODER 1/\1/')
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+      # When running in CI, check the first targets only to save time and disk space
+      CONDITIONALS=(${CONDITIONALS[@]:0:2})
+fi
+
+for c in $CONDITIONALS; do
+      fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
+      symbol=$(echo $c | sed "s/.*/\L\0/")
+      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
+      make tools/target_enc_${symbol}_fuzzer
+      mv tools/target_enc_${symbol}_fuzzer $OUT/${fuzzer_name}
+      patchelf --set-rpath '$ORIGIN/lib' $OUT/$fuzzer_name
+done
+
+
+# Build fuzzer for sws
+fuzzer_name=ffmpeg_SWS_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
+make tools/target_sws_fuzzer
+mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
+patchelf --set-rpath '$ORIGIN/lib' $OUT/$fuzzer_name
+
 # Build fuzzer for demuxer
 fuzzer_name=ffmpeg_DEMUXER_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
@@ -256,6 +281,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --optflags=-O1 \
         --enable-gpl \
         --enable-libxml2 \
+        --disable-libdrm \
         --disable-muxers \
         --disable-protocols \
         --disable-devices \
@@ -269,7 +295,6 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
         --disable-bsfs \
         --disable-vaapi \
         --disable-vdpau \
-        --disable-crystalhd \
         --disable-v4l2_m2m \
         --disable-cuda_llvm \
         --enable-demuxers \

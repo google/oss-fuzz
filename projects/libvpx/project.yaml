@@ -6,8 +6,10 @@ sanitizers:
 - memory
 - undefined
 auto_ccs:
+- jianj@google.com
+- jingning@google.com
 - jzern@google.com
-- johannkoenig@google.com
+- wtc@google.com
 vendor_ccs:
 - twsmith@mozilla.com
 main_repo: 'https://chromium.googlesource.com/webm/libvpx'

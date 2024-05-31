@@ -39,13 +39,15 @@ COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
+# Pin coverage to the same as in the base builder:
+# https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/install_python.sh#L22
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage $CODE_COVERAGE_SRC && \
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
     pip3 install -r requirements.txt && \
     pip3 install MarkupSafe==0.23 && \
-    pip3 install coverage
+    pip3 install coverage==6.3.2
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and

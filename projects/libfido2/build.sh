@@ -78,6 +78,7 @@ done
  # Prepare seed corpora
 tar xzf ${SRC}/corpus.tgz
 (set -e ; cd fuzz_assert/corpus    ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
+(set -e ; cd fuzz_attobj/corpus    ; zip -r ${OUT}/fuzz_attobj_seed_corpus.zip .)
 (set -e ; cd fuzz_bio/corpus       ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
 (set -e ; cd fuzz_cred/corpus      ; zip -r ${OUT}/fuzz_cred_seed_corpus.zip .)
 (set -e ; cd fuzz_credman/corpus   ; zip -r ${OUT}/fuzz_credman_seed_corpus.zip .)

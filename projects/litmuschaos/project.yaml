@@ -1,0 +1,14 @@
+homepage: "https://litmuschaos.io/"
+main_repo: "https://github.com/litmuschaos/litmus.git"
+primary_contact: "saranya.jena@harness.io"
+auto_ccs :
+  - "karthik.s@harness.io"
+  - "rajbabu.das@harness.io"
+  - "vedant.shrotria@harness.io"
+  - "sarthak.jain@harness.io"
+  - "shubham.chaudhary@harness.io"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

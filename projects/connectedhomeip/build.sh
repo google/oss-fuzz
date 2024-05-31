@@ -28,6 +28,10 @@ set -u
 # - `enable_rrti` enables RTTI to support UBSan build
 # - `chip_enable_thread_safety_checks` disabled since OSS-Fuzz clang does not
 #   seem to currently support or need this analysis
+# - `chip_enable_openthread` disabled since OSS-Fuzz clang issues a compile
+#   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
+#   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
+#   implementations.
 # - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
@@ -35,6 +39,7 @@ gn gen out/fuzz_targets \
     is_clang=true \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
+    chip_enable_openthread=false \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains

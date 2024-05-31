@@ -18,15 +18,14 @@
 cd libyang
 git checkout devel
 
-sed -i 's/add_subdirectory/#add_subdirectory/g' ./tools/CMakeLists.txt
 mkdir build && cd build
-cmake ../ -DENABLE_STATIC=ON
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_TOOLS=OFF ..
 make
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
 for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
-  $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I../src -I../src/plugins_exts -I./src -I./compat
+  $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I./libyang -I./compat
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}.o -o $OUT/${fuzzer} \
     ./libyang.a ${static_pcre}
 done

@@ -1,5 +1,5 @@
 homepage: "http://www.graphicsmagick.org/"
-main_repo: "https://github.com/kstep/graphicsmagick"
+main_repo: "https://foss.heptapod.net/graphicsmagick/graphicsmagick"
 language: c++
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
@@ -9,8 +9,7 @@ auto_ccs:
 sanitizers:
     - address
     - memory
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-# - memory
+    - undefined
 architectures:
     - x86_64
     - i386

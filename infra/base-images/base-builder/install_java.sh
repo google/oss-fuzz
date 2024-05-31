@@ -29,12 +29,15 @@ rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 cd $SRC/
 git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 cd jazzer && \
-git checkout b12d1ea863b336b120e192700ac11c9744af6cfd # v0.17.1
+
+# Latest fix followig a depedency issue: (https://github.com/CodeIntelligenceTesting/jazzer/issues/896)
+git checkout 96205feebc7135075ffa48aae3f22e38cae5dc45
 cat << 'EOF' >> .bazelrc
 build --java_runtime_version=local_jdk_15
 build --cxxopt=-stdlib=libc++
 build --linkopt=-lc++
 EOF
+
 bazel build //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar //deploy:jazzer-api //launcher:jazzer
 cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar
 cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver

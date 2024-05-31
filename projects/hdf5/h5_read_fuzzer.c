@@ -12,6 +12,8 @@ limitations under the License.
 
 #include "hdf5.h"
 
+#include <unistd.h>
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     // Some old logic with regards to skipping first byte. Leaving it here

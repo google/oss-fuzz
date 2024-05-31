@@ -3,6 +3,7 @@ language: c++
 primary_contact: "huili2@cisco.com"
 auto_ccs:
   - "guangwwa@cisco.com"
+  - "openh264-review@cisco.com"
   - "sijchen@cisco.com"
   - "yanqian@cisco.com"
   - "xiaotianshimail@gmail.com"
@@ -23,4 +24,3 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-

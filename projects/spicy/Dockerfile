@@ -47,7 +47,7 @@ RUN apt-get update \
  && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
  # Install a recent CMake.
  && mkdir -p /opt/cmake \
- && curl -L https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.0-Linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
+ && curl -L https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

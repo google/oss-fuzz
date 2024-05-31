@@ -25,16 +25,16 @@ export GO111MODULE=off
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
 
-tar zxf $SRC/go1.21.3.linux-amd64.tar.gz
-mv go/ go-121
-export GOROOT_121=$SRC/go-bootstrap/go-121/
-export GOPATH_121=$GOROOT_121/packages/
-mkdir $GOPATH_121
-mkdir -p $GOPATH_121/src/golang.org/x/crypto/
-cp -R $SRC/go-crypto/* $GOPATH_121/src/golang.org/x/crypto/
-mkdir -p $GOPATH_121/src/golang.org/x/sys/
-cp -R $SRC/go-sys/* $GOPATH_121/src/golang.org/x/sys/
-export PATH_GO_121=$GOROOT_121/bin:$GOROOT_121/packages/bin:$PATH
+tar zxf $SRC/go1.22.1.linux-amd64.tar.gz
+mv go/ go-122
+export GOROOT_122=$SRC/go-bootstrap/go-122/
+export GOPATH_122=$GOROOT_122/packages/
+mkdir $GOPATH_122
+mkdir -p $GOPATH_122/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_122/src/golang.org/x/crypto/
+mkdir -p $GOPATH_122/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_122/src/golang.org/x/sys/
+export PATH_GO_122=$GOROOT_122/bin:$GOROOT_122/packages/bin:$PATH
 
 tar zxf $SRC/go1.20.10.linux-amd64.tar.gz
 mv go/ go-120
@@ -83,8 +83,8 @@ cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -421,26 +421,26 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile libgpg-error (dependency of libgcrypt)
     cd $SRC/
-    tar jxvf libgpg-error-1.36.tar.bz2
-    cd libgpg-error-1.36/
+    tar jxvf libgpg-error-1.49.tar.bz2
+    cd libgpg-error-1.49/
     if [[ $CFLAGS != *-m32* ]]
     then
         ./configure --enable-static
     else
         ./configure --enable-static --host=i386
     fi
-    make -j$(nproc)
+    ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
     make install
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.49/src/.libs/libgpg-error.a"
 
     # Compile libgcrypt
     cd $SRC/libgcrypt
     autoreconf -ivf
     if [[ $CFLAGS = *-m32* ]]
     then
-        ./configure --enable-static --disable-doc --host=i386
+        ./configure --enable-static --disable-doc --disable-jent-support --host=i386
     else
-        ./configure --enable-static --disable-doc
+        ./configure --enable-static --disable-doc --disable-jent-support
     fi
     make -j$(nproc)
 
@@ -511,11 +511,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang (121) module
+# Compile Cryptofuzz Golang (122) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/golang
-    GOROOT="$GOROOT_121" GOPATH="$GOPATH_121" PATH="$PATH_GO_121" make -B
+    GOROOT="$GOROOT_122" GOPATH="$GOPATH_122" PATH="$PATH_GO_122" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]

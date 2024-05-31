@@ -16,6 +16,7 @@
 ################################################################################
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+rm -rf $SRC/mongo-go-driver/vendor
 go run cmd/build-oss-fuzz-corpus/main.go $OUT/fuzz_decode_seed_corpus.zip
 
 mv bson/fuzz_test.go bson/fuzz.go

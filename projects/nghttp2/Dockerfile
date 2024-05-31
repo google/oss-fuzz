@@ -20,11 +20,8 @@ RUN apt-get update && apt-get install -y \
   autoconf \
   automake \
   libtool \
-  pkg-config \
-  libcunit1 \
-  libcunit1-doc \
-  libcunit1-dev
+  pkg-config
 
-RUN git clone --depth 1 https://github.com/nghttp2/nghttp2.git
+RUN git clone --recursive --shallow-submodules --depth 1 https://github.com/nghttp2/nghttp2.git
 WORKDIR nghttp2
 COPY build.sh *.options $SRC/
