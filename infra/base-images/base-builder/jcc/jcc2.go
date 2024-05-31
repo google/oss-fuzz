@@ -16,7 +16,7 @@ package main
 
 import (
 	"bytes"
-        "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -375,10 +375,10 @@ func main() {
 	}
 
 	args := os.Args[1:]
-        if args[0] == "unfreeze" {
-           fmt.Println("unfreeze")
-           unfreeze()
-        }
+	if args[0] == "unfreeze" {
+		fmt.Println("unfreeze")
+		unfreeze()
+	}
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
 	newArgs := append(args, "-w")
@@ -401,19 +401,19 @@ func main() {
 }
 
 type BuildCommand struct {
-    CWD  string        `json:"CWD"`
-    CMD  []string      `json:"CMD"`
+	CWD string   `json:"CWD"`
+	CMD []string `json:"CMD"`
 }
 
 func WriteTargetArgsAndCommitImage(cmdline []string) {
 	fmt.Println("WRITE COMMAND")
 	f, _ := os.OpenFile("/out/statefile.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-        wd, _ := os.Getwd()
-        buildcmd := BuildCommand{
-        CWD: wd,
-        CMD: cmdline,
-        }
-        jsonData, _ := json.Marshal(buildcmd)
+	wd, _ := os.Getwd()
+	buildcmd := BuildCommand{
+		CWD: wd,
+		CMD: cmdline,
+	}
+	jsonData, _ := json.Marshal(buildcmd)
 	f.Write(jsonData)
 	f.Close()
 	hostname, _ := os.Hostname()
@@ -434,7 +434,7 @@ func IsCompilingTarget(cmdline []string) bool {
 		if arg == "-fsanitize=fuzzer" {
 			return true
 		}
-                if arg == "-lFuzzingEngine" {
+		if arg == "-lFuzzingEngine" {
 			return true
 		}
 	}
@@ -442,21 +442,21 @@ func IsCompilingTarget(cmdline []string) bool {
 }
 
 func parseCommand(command string) (string, []string) {
-       args := strings.Fields(command)
-       commandBin := args[0]
-       commandArgs := args[1:]
-       return commandBin, commandArgs
+	args := strings.Fields(command)
+	commandBin := args[0]
+	commandArgs := args[1:]
+	return commandBin, commandArgs
 }
 
 func unfreeze() {
-       content, err := ioutil.ReadFile("/out/statefile.json")
-       if err != nil {
-               log.Fatal(err)
-       }
-       var command BuildCommand
-       json.Unmarshal(content, &command)
-       bin, args := parseCommand(strings.Join(command.CMD, " "))
-       os.Chdir(command.CWD)
-       ExecBuildCommand(bin, args)
-       os.Exit(0)
+	content, err := ioutil.ReadFile("/out/statefile.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var command BuildCommand
+	json.Unmarshal(content, &command)
+	bin, args := parseCommand(strings.Join(command.CMD, " "))
+	os.Chdir(command.CWD)
+	ExecBuildCommand(bin, args)
+	os.Exit(0)
 }
