@@ -346,7 +346,7 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 
 func AppendStringToFile(filepath, new_content string) error {
 	// Appends |new_content| to the content of |filepath|.
-	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -365,7 +365,7 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 }
 
 func main() {
-	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}
