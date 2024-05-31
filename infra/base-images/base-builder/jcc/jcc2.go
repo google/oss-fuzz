@@ -346,7 +346,7 @@ func CppifyHeaderIncludes(contents string) (string, error) {
 
 func AppendStringToFile(filepath, new_content string) error {
 	// Appends |new_content| to the content of |filepath|.
-	file, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -403,15 +403,16 @@ func main() {
 }
 
 type BuildCommand struct {
-    CWD  string        `json:"cwd"`
-    CMD  []string      `json:"cmd"`
+    CWD  string        `json:"CWD"`
+    CMD  []string      `json:"CMD"`
 }
 
 func WriteTargetArgsAndCommitImage(cmdline []string) {
 	fmt.Println("WRITTE")
 	f, _ := os.OpenFile("/out/statefile.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+        wd, _ := os.Getwd()
         buildcmd := BuildCommand{
-        CWD:"",
+        CWD: wd,
         CMD: cmdline,
         }
         jsonData, _ := json.Marshal(buildcmd)
@@ -452,18 +453,26 @@ func parseCommand(command string) (string, []string) {
 }
 
 func unfreeze() {
-       if _, err := os.Stat("/out/statefile.json"); !errors.Is(err, os.ErrNotExist) {
-               log.Println(err)
-               os.Exit(1)
-       }
+fmt.Println("un")
+       // if _, err := os.Stat("/out/statefile.json"); !errors.Is(err, os.ErrNotExist) {
+       // fmt.Println("DNE")
+       //         log.Println(err)
+       //         os.Exit(1)
+       // }
+       fmt.Println("stated")
        content, err := ioutil.ReadFile("/out/statefile.json")
        if err != nil {
                log.Fatal(err)
        }
+       fmt.Println("read")
 
        var command BuildCommand
        json.Unmarshal(content, &command)
+       fmt.Println(command.CMD)
        bin, args := parseCommand(strings.Join(command.CMD, " "))
        os.Chdir(command.CWD)
+       fmt.Println(bin)
+       fmt.Println(args)
        ExecBuildCommand(bin, args)
+       os.Exit(0)
 }
