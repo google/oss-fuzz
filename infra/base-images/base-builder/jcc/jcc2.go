@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -365,7 +365,6 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 }
 
 func main() {
-	// fmt.Println("MAAAAIN")
 	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -382,7 +381,6 @@ func main() {
         }
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	// fmt.Println(isCPP)
 	newArgs := append(args, "-w")
 
 	var bin string
@@ -408,7 +406,7 @@ type BuildCommand struct {
 }
 
 func WriteTargetArgsAndCommitImage(cmdline []string) {
-	fmt.Println("WRITTE")
+	fmt.Println("WRITE COMMAND")
 	f, _ := os.OpenFile("/out/statefile.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
         wd, _ := os.Getwd()
         buildcmd := BuildCommand{
@@ -427,18 +425,16 @@ func WriteTargetArgsAndCommitImage(cmdline []string) {
 	cmd.Stdin = os.Stdin
 	cmd.Run()
 	fmt.Println(outb.String(), errb.String())
-	fmt.Println("COMMIT")
+	fmt.Println("COMMIT IMAGE")
 }
 
 func IsCompilingTarget(cmdline []string) bool {
 	for _, arg := range cmdline {
 		// This can fail if people do crazy things they aren't supposed to e.g.
 		if arg == "-fsanitize=fuzzer" {
-			fmt.Println(true)
 			return true
 		}
                 if arg == "-lFuzzingEngine" {
-			fmt.Println(true)
 			return true
 		}
 	}
@@ -453,26 +449,14 @@ func parseCommand(command string) (string, []string) {
 }
 
 func unfreeze() {
-fmt.Println("un")
-       // if _, err := os.Stat("/out/statefile.json"); !errors.Is(err, os.ErrNotExist) {
-       // fmt.Println("DNE")
-       //         log.Println(err)
-       //         os.Exit(1)
-       // }
-       fmt.Println("stated")
        content, err := ioutil.ReadFile("/out/statefile.json")
        if err != nil {
                log.Fatal(err)
        }
-       fmt.Println("read")
-
        var command BuildCommand
        json.Unmarshal(content, &command)
-       fmt.Println(command.CMD)
        bin, args := parseCommand(strings.Join(command.CMD, " "))
        os.Chdir(command.CWD)
-       fmt.Println(bin)
-       fmt.Println(args)
        ExecBuildCommand(bin, args)
        os.Exit(0)
 }
