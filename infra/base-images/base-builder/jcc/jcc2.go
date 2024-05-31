@@ -364,7 +364,7 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 }
 
 func main() {
-	fmt.Println("MAAAAIN")
+	// fmt.Println("MAAAAIN")
 	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -376,7 +376,7 @@ func main() {
 		fmt.Println("EEXXIT")
 		os.Exit(0)
 	}
-	fmt.Println("MAAAAIN")
+	// fmt.Println("MAAAAIN")
 	if _, err := f.WriteString(fmt.Sprintf("%s\n", os.Args)); err != nil {
 		log.Println(err)
 	}
@@ -384,7 +384,7 @@ func main() {
 	args := os.Args[1:]
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
-	fmt.Println(isCPP)
+	// fmt.Println(isCPP)
 	newArgs := append(args, "-w")
 
 	var bin string
@@ -428,7 +428,11 @@ func IsCompilingTarget(cmdline []string) bool {
 			fmt.Println(true)
 			return true
 		}
+                if arg == "-lFuzzingEngine" {
+			fmt.Println(true)
+			return true
+		}
 	}
-	fmt.Println(false)
+	// fmt.Println(false)
 	return false
 }
