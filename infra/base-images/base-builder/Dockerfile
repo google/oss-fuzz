@@ -134,7 +134,7 @@ RUN precompile_honggfuzz
 RUN cd $SRC && \
     git clone https://github.com/google/fuzztest && \
     cd fuzztest && \
-    git checkout a37d133f714395cabc20dd930969a889495c9f53 && \
+    git checkout fd280e8e93064a8c0263d232743e1e70542b0b5e && \
     rm -rf .git
 
 ENV CENTIPEDE_BIN_DIR=$SRC/fuzztest/bazel-bin

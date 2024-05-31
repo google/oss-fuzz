@@ -18,6 +18,37 @@
 echo -n "Precompiling centipede"
 
 # Build Centipede with bazel.
+
+cd "$SRC/fuzztest/"
+patch_build=$(cat << 'EOF'
+diff --git a/centipede/BUILD b/centipede/BUILD
+index 2000e02..e1301b1 100644
+--- a/centipede/BUILD
++++ b/centipede/BUILD
+@@ -17,7 +17,6 @@
+
+ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+ load("@rules_proto//proto:defs.bzl", "proto_library")
+-load(":instrument.bzl", "cc_uninstrumented_binary")
+
+ VISIBILITY = ["//visibility:public"]
+
+@@ -61,11 +60,6 @@ cc_binary(
+     ],
+ )
+
+-cc_uninstrumented_binary(
+-    name = "centipede_uninstrumented",
+-    binary = ":centipede",
+-    visibility = PUBLIC_API_VISIBILITY,
+-)
+
+ # A standalone seed corpus generator.
+ cc_binary(
+EOF
+)
+echo "$patch_build" | git apply
+
 cd "$SRC/fuzztest/centipede/"
 apt-get update && apt-get install libssl-dev -y
 unset CXXFLAGS CFLAGS
