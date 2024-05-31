@@ -9,6 +9,6 @@ architectures:
 sanitizers:
   - address
   - memory:
-      experimental: true
+      experimental: True
   - undefined
 main_repo: 'https://github.com/mpv-player/mpv'
