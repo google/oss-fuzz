@@ -10,3 +10,5 @@ sanitizers:
 vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
+# Bug reports are public by default:
+view_restrictions: none
