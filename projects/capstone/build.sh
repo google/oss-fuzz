@@ -33,7 +33,7 @@ do
     (
     export CFLAGS=""
     export AFL_NOOPT=1
-    python setup.py install
+    python3 setup.py install
     )
     cd $SRC/capstone$branch/suite
     mkdir fuzz/corpus
