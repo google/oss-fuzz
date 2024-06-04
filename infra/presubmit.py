@@ -254,7 +254,7 @@ def _check_one_apt_update(path):
   if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
     return True
 
-  if os.path.basename(path) != "Dockerfile":
+  if os.path.basename(path) != 'Dockerfile':
     return True
 
   with open(path, 'r') as file:
