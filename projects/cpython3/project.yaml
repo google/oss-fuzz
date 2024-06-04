@@ -6,6 +6,7 @@ auto_ccs:
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
  - "greg@krypto.org"
+ - "pablogsal@python.org"
 fuzzing_engines:
   - afl
   - honggfuzz
