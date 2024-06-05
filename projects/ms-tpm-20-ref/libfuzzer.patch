@@ -103,7 +103,7 @@ index 0000000..1fe6f8f
 --- /dev/null
 +++ b/TPMCmd/fuzzer/tpm_cmd.c
 @@ -0,0 +1,442 @@
-+// Copyright 2024 Google Inc.
++// Copyright 2024 Google LLC
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
 +// you may not use this file except in compliance with the License.
