@@ -22,4 +22,4 @@ cd ms-tpm-20-ref/TPMCmd
 make
 cp fuzzer/tpm_cmd $OUT
 cp $SRC/tpm_cmd.options $OUT
-cp $SRC/tpm_cmd_seed_corpus.zip $OUT
+cp $SRC/tpm2-command-corpus/tpm_cmd_seed_corpus.zip $OUT

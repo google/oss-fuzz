@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf-archive libssl-dev pkg-config
 RUN git clone --depth=1 https://github.com/microsoft/ms-tpm-20-ref
+RUN git clone --depth=1 https://github.com/tklengyel/tpm2-command-corpus
 COPY build.sh $SRC/
 COPY libfuzzer.patch $SRC/
 COPY tpm_cmd.options $SRC/
-COPY tpm_cmd_seed_corpus.zip $SRC/
 RUN cd ms-tpm-20-ref && git apply $SRC/libfuzzer.patch
