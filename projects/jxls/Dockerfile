@@ -45,11 +45,15 @@ RUN java -version
 # Install Maven
 RUN apt-get update && apt-get install -y maven
 
-RUN echo "$SRC"
-RUN ls $SRC
+# Clone project
+RUN echo "Cloning jxls into $SRC"
+RUN git clone https://github.com/jxlsteam/jxls $SRC
 
-# Build the project
+# Copy fuzzer files
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 COPY *.dict $SRC/
-WORKDIR $SRC/jxls
+WORKDIR $SRC
+
+RUN ls .
+
