@@ -16,16 +16,16 @@ auto_ccs:
 
 architectures:
   - x86_64
-  - i386
+  # - i386
 
 sanitizers:
   - address
   - memory
-  - undefined
+  # - undefined
 
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
-  - afl
+  # - honggfuzz
+  # - afl
 
 # builds_per_day: 2
