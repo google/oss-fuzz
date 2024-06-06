@@ -1,14 +1,27 @@
 homepage: "https://openprinting.github.io/cups/"
+main_repo: 'https://github.com/OpenPrinting/cups'
+# help_url:
 language: c
-primary_contact: "security@msweet.org"
+
+primary_contact: "jiongchiyu@gmail.com"
 auto_ccs:
-  - "ajsinghyadav00@gmail.com"
+  - "till.kamppeter@gmail.com"
+  - "ossfuzz@iosifache.me"
+  - "msweet@msweet.org"
+# vendor_ccs:
+
+architectures:
+  - x86_64
+  # - i386
+
+sanitizers:
+  - address
+  - memory
+  # - undefined
+
 fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-sanitizers:
-  - address
-  - memory
-  - undefined
-main_repo: 'https://github.com/OpenPrinting/cups'
+
+# builds_per_day: 2
