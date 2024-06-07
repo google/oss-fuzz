@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS -Wno-deprecated-declarations"
+export CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"
 make build -j$(nproc)
 
 for fuzzer in iso8601 cib_file; do
