@@ -38,7 +38,7 @@ RUN tar -xvf wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz \
   && rm wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz \
   && ln -s /opt/wasm-tools/wasm-tools /usr/local/bin/wasm-tools
 
-WORKDIR $SRC
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-micro-runtime wamr
+WORKDIR wamr
 
 COPY build.sh $SRC/
