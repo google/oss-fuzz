@@ -17,7 +17,7 @@
 # by default.
 #   - MVP
 (
-  cd wamr/tests/fuzz/wasm-mutator-fuzz/
+  cd tests/fuzz/wasm-mutator-fuzz/
 
   if [[ "${SANITIZER}" == "address" ]]; then
     cmake -S . -B build -DWAMR_BUILD_SANITIZER=asan\
