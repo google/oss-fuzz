@@ -14,22 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-export CFLAGS="$CFLAGS -fPIE"
-export CXXFLAGS="$CFLAGS -fPIE"
-export LDFLAGS="$CFLAGS -fPIE"
 
-./configure --enable-static --disable-shared
-make
-
-pushd fuzzer/
-make
-cp FuzzCUPS $OUT/FuzzCUPS
-cp FuzzIPP $OUT/FuzzIPP
-cp FuzzRaster $OUT/FuzzRaster
-popd
-
-pushd $SRC/oss-fuzz-bloat/cups
-cp FuzzCUPS_seed_corpus.zip $OUT/FuzzCUPS_seed_corpus.zip
-cp FuzzIPP_seed_corpus.zip $OUT/FuzzIPP_seed_corpus.zip
-cp FuzzRaster_seed_corpus.zip $OUT/FuzzRaster_seed_corpus.zip
-popd
+$SRC/fuzzing/cups/oss_fuzz_build.sh
