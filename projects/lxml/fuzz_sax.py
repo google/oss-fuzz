@@ -17,6 +17,7 @@
 import atheris
 import sys
 import io
+from test_utils import is_expected_error
 
 with atheris.instrument_imports():
   from lxml import sax, etree
@@ -29,15 +30,14 @@ def TestOneInput(data):
 
     handler = sax.ElementTreeContentHandler()
     sax.ElementTreeProducer(parsed, handler).saxify()
-  except (etree.LxmlError, ValueError, IndexError) as e:
-    if isinstance(e, etree.LxmlError) or (isinstance(e, ValueError) and
-                                          "Invalid" in str(e)):
-      return -1  # Reject so the input will not be added to the corpus.
-    elif isinstance(
-        e, IndexError
-    ) and "lxml.sax.ElementTreeContentHandler.processingInstruction" in str(e):
+  except (etree.LxmlError, etree.LxmlSyntaxError):
+    return -1  # Reject so the input will not be added to the corpus.
+  except (ValueError, IndexError, AttributeError) as e:
+    if "lxml.sax.ElementTreeContentHandler.processingInstruction" in str(e):
       # This possibility is a bug and tracked here: https://bugs.launchpad.net/lxml/+bug/2011542
       return 0  # Accept the input in the corpus to enable regression testing when fixed.
+    elif is_expected_error(["Invalid", "has no attribute"], e):
+      return -1
     else:
       raise e
 
