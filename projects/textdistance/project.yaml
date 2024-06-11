@@ -1,0 +1,11 @@
+homepage: "https://github.com/life4/textdistance"
+language: python
+primary_contact: "gram@orsinium.dev"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/life4/textdistance.git"
