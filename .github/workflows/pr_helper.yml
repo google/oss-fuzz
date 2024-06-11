@@ -31,7 +31,7 @@ jobs:
           pip install -r infra/ci/requirements.txt
 
       - name: setup go environment
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - run: go install github.com/ossf/criticality_score/cmd/criticality_score@latest
