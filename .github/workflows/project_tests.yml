@@ -56,7 +56,7 @@ jobs:
       ARCHITECTURE: ${{ matrix.architecture }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
