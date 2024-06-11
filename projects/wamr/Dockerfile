@@ -19,21 +19,21 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt upgrade -y \
   && apt install -y build-essential clang llvm
 
-#
-# Installation location
-WORKDIR /opt
-
 # install llvm
 ARG LLVM_VER=15.0.6
-RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VER}/clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04.tar.xz
-RUN tar -xvf clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
+RUN cd /opt \
+  && wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VER}/clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+RUN cd /opt \
+  && tar -xvf clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
   && mv clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04 llvm-${LLVM_VER} \
   && rm clang+llvm-${LLVM_VER}-x86_64-linux-gnu-ubuntu-18.04.tar.xz
 
 # install wasm-tools
 ARG WASM_TOOLS_VER=1.205.0
-RUN wget https://github.com/bytecodealliance/wasm-tools/releases/download/v${WASM_TOOLS_VER}/wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz
-RUN tar -xvf wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz \
+RUN cd /opt \
+  && wget https://github.com/bytecodealliance/wasm-tools/releases/download/v${WASM_TOOLS_VER}/wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz
+RUN cd /opt \
+  && tar -xvf wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz \
   && mv wasm-tools-${WASM_TOOLS_VER}-x86_64-linux wasm-tools \
   && rm wasm-tools-${WASM_TOOLS_VER}-x86_64-linux.tar.gz \
   && ln -s /opt/wasm-tools/wasm-tools /usr/local/bin/wasm-tools
