@@ -1,0 +1,10 @@
+homepage: "https://www.pymc.io/projects/examples/en/latest/gallery.html"
+language: python
+primary_contact: "pymc.devs@gmail.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/pymc-devs/pymc-examples'
