@@ -1,0 +1,12 @@
+homepage: "https://github.com/MacPaw/OpenAI"
+language: swift
+primary_contact: "krivoblotsky@macpaw.com"
+auto_ccs :
+  - "security@macpaw.com"
+  - "artem@macpaw.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - thread
+main_repo: 'https://github.com/MacPaw/OpenAI'
