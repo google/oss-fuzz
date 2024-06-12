@@ -1,0 +1,10 @@
+homepage: 'https://github.com/python-lsp/python-lsp-server'
+language: python
+primary_contact: "ccordoba12@gmail.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/python-lsp/python-lsp-server'
