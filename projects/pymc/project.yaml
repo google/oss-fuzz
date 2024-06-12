@@ -1,0 +1,10 @@
+homepage: "https://docs.pymc.io/"
+language: python
+primary_contact: "pymc.devs@gmail.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: "http://github.com/pymc-devs/pymc"
