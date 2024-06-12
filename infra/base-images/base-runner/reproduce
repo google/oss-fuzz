@@ -22,7 +22,7 @@ if [ ! -v TESTCASE ]; then
     TESTCASE="/testcase"
 fi
 
-if [ ! -f $TESTCASE ]; then
+if [ ! -d $TESTCASE ]; then
   echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
   exit 1
 fi
