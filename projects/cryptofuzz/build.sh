@@ -34,18 +34,7 @@ mkdir -p $GOPATH_122/src/golang.org/x/crypto/
 cp -R $SRC/go-crypto/* $GOPATH_122/src/golang.org/x/crypto/
 mkdir -p $GOPATH_122/src/golang.org/x/sys/
 cp -R $SRC/go-sys/* $GOPATH_122/src/golang.org/x/sys/
-export PATH_GO_121=$GOROOT_122/bin:$GOROOT_122/packages/bin:$PATH
-
-tar zxf $SRC/go1.21.3.linux-amd64.tar.gz
-mv go/ go-121
-export GOROOT_121=$SRC/go-bootstrap/go-121/
-export GOPATH_121=$GOROOT_121/packages/
-mkdir $GOPATH_121
-mkdir -p $GOPATH_121/src/golang.org/x/crypto/
-cp -R $SRC/go-crypto/* $GOPATH_121/src/golang.org/x/crypto/
-mkdir -p $GOPATH_121/src/golang.org/x/sys/
-cp -R $SRC/go-sys/* $GOPATH_121/src/golang.org/x/sys/
-export PATH_GO_121=$GOROOT_121/bin:$GOROOT_121/packages/bin:$PATH
+export PATH_GO_122=$GOROOT_122/bin:$GOROOT_122/packages/bin:$PATH
 
 tar zxf $SRC/go1.20.10.linux-amd64.tar.gz
 mv go/ go-120
@@ -449,9 +438,9 @@ then
     autoreconf -ivf
     if [[ $CFLAGS = *-m32* ]]
     then
-        ./configure --enable-static --disable-doc --host=i386
+        ./configure --enable-static --disable-doc --disable-jent-support --host=i386
     else
-        ./configure --enable-static --disable-doc
+        ./configure --enable-static --disable-doc --disable-jent-support
     fi
     make -j$(nproc)
 
