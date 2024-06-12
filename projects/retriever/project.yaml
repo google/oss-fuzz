@@ -1,0 +1,10 @@
+homepage: "https://retriever.readthedocs.io/en/latest/"
+language: python
+primary_contact: "henrykironde@gmail.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: "https://github.com/weecology/retriever"
