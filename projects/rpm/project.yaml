@@ -1,0 +1,6 @@
+homepage: "https://rpm.org/"
+language: c
+primary_contact: "someone@rpm.org"
+main_repo: "https://github.com/rpm-software-management/rpm"
+auto_ccs:
+  - "david@adalogics.com"
