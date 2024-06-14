@@ -31,13 +31,23 @@ unset CFLAGS
 unset CXXFLAGS
 
 BASE_CFG=(
+-DCONFIG_ZEPHYR_POSIX=y
 -DCONFIG_ASSERT=y
 -DCONFIG_SYS_HEAP_BIG_ONLY=y
 -DCONFIG_ZEPHYR_NATIVE_DRIVERS=y
 -DCONFIG_ARCH_POSIX_LIBFUZZER=y
 -DCONFIG_ARCH_POSIX_FUZZ_TICKS=100
--DCONFIG_ASAN=y
 )
+
+if [ "x$SANITIZER" = "xaddress" ]; then
+    BASE_CFG+=("-DCONFIG_ASAN=y")
+elif [ "x$SANITIZER" = "xundefined" ]; then
+    BASE_CFG+=("-DCONFIG_UBSAN=y")
+    BASE_CFG+=("-DCONFIG_ASAN=n")  # kconfig defaults this =y
+else
+    echo "Unsupported sanitizer: $SANITIZER"
+    exit 1
+fi
 
 cd $SRC/sof/sof
 
