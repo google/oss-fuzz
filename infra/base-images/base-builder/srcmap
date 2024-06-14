@@ -17,6 +17,19 @@
 
 # Deterimine srcmap of checked out source code
 
+# Emits a JSON map of the form:
+#
+# { { "$DIR" : { "type":"$SCM", "url":"$REMOTE", "rev":"$COMMIT" } }, ... }
+
+# Allow the project to generate this itself in $SRC/srcmap.json and
+# use that if present.  Some integration tools like west or repo don't
+# conform to the conventions below.
+
+if [ -e "$SRC/srcmap.json" ]; then
+  cat "$SRC/srcmap.json"
+  exit
+fi
+
 SRCMAP=$(tempfile)
 echo "{}" > $SRCMAP
 
