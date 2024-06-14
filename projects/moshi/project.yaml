@@ -1,0 +1,10 @@
+homepage: "https://github.com/square/moshi"
+language: jvm
+primary_contact: "someone@moshi.com"
+main_repo: "https://github.com/square/moshi"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
