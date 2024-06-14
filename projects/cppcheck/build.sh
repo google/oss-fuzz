@@ -18,7 +18,11 @@
 # build fuzzer
 
 cd $SRC/cppcheck/oss-fuzz
-make oss-fuzz-client
+make oss-fuzz-client raw_fuzzer
 cp oss-fuzz-client $OUT/
+cp raw_fuzzer $OUT/
 
-
+# Build corpus for raw fuzzer
+mkdir $SRC/raw-corpus
+find $SRC/cppcheck -name "*.cpp" -exec cp {} $SRC/raw-corpus/ \;
+zip -rj $OUT/raw_fuzzer_seed_corpus.zip $SRC/raw-corpus/*
