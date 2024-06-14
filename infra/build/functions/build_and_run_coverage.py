@@ -185,6 +185,21 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
         ],
     })
 
+  # Upload the fuzzer logs. Delete the old ones just in case
+  upload_fuzzer_logs_url = bucket.get_upload_url('logs')
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
+  build_steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          '-r',
+          os.path.join(build.out, 'logs'),
+          upload_fuzzer_logs_url,
+      ],
+  })
+
   # Upload the fuzzer stats. Delete the old ones just in case.
   upload_fuzzer_stats_url = bucket.get_upload_url('fuzzer_stats')
 
@@ -217,21 +232,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
             upload_textcov_reports_url,
         ],
     })
-
-  # Upload the fuzzer logs. Delete the old ones just in case
-  upload_fuzzer_logs_url = bucket.get_upload_url('logs')
-  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'logs'),
-          upload_fuzzer_logs_url,
-      ],
-  })
 
   # Upload srcmap.
   srcmap_upload_url = bucket.get_upload_url('srcmap')
