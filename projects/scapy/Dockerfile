@@ -23,4 +23,4 @@ RUN git clone \
 
 WORKDIR scapy
 
-COPY build.sh pcap_fuzzer.py $SRC/
+COPY build.sh $SRC/
