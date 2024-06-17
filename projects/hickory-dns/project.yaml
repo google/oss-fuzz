@@ -1,6 +1,6 @@
-homepage: "https://github.com/bluejekyll/trust-dns"
+homepage: "https://github.com/hickory-dns/hickory-dns"
 language: rust
-main_repo: "https://github.com/bluejekyll/trust-dns"
+main_repo: "https://github.com/hickory-dns/hickory-dns"
 primary_contact: "bluejekyll@gmail.com"
 auto_ccs:
   - djc.ochtman@gmail.com
