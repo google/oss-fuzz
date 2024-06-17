@@ -54,7 +54,7 @@ apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 # languages, projects, ...) is needed.
 # Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released
 # recently enough to fully support this clang version.
-OUR_LLVM_REVISION=llvmorg-18-init-4631-gd50b56d1
+OUR_LLVM_REVISION=llvmorg-18.1.7
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
@@ -95,6 +95,7 @@ function cmake_llvm {
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
@@ -208,6 +209,7 @@ function cmake_libcxx {
       -DLIBCXX_ENABLE_SHARED=OFF \
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_ENABLE_PIC=ON \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
