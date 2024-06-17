@@ -344,8 +344,8 @@ type BuildCommand struct {
 }
 
 func WriteTargetArgsAndCommitImage(cmdline []string) {
-	fmt.Println("WRITE COMMAND")
-	f, _ := os.OpenFile("/out/statefile.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	log.Println("WRITE COMMAND")
+	f, _ := os.OpenFile("/out/statefile.json", os.O_CREATE|os.O_WRONLY, 0644)
 	wd, _ := os.Getwd()
 	buildcmd := BuildCommand{
 		CWD: wd,
@@ -368,7 +368,8 @@ func WriteTargetArgsAndCommitImage(cmdline []string) {
 
 func IsCompilingTarget(cmdline []string) bool {
 	for _, arg := range cmdline {
-		// This can fail if people do crazy things they aren't supposed to e.g.
+		// This can fail if people do crazy things they aren't supposed
+		// to such as using some other means to link in libFuzzer.
 		if arg == "-fsanitize=fuzzer" {
 			return true
 		}
