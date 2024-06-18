@@ -6,7 +6,7 @@ auto_ccs:
   - "vglavnyy@gmail.com"
 sanitizers:
   - address
-  # - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-95e0163b-a2c5-4cfe-8e1f-dcf521c125e0.txt
+  - memory
   - undefined
 main_repo: 'https://github.com/google/flatbuffers'
 file_github_issue: True

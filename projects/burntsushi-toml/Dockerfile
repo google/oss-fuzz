@@ -18,5 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/BurntSushi/toml toml
 COPY build.sh $SRC/
-COPY *.go $SRC/toml
 WORKDIR $SRC/toml

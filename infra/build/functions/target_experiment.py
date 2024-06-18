@@ -220,11 +220,20 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ])
   steps.append({
-      'name': build_lib.get_runner_image_name(''),
-      'env': env,
+      'name':
+          build_lib.get_runner_image_name(''),
+      'env':
+          env,
+      'entrypoint':
+          '/bin/bash',
       'args': [
-          'coverage',
-          target_name,
+          '-c',
+          (
+              f'timeout 30m coverage {target_name}; ret=$?; '
+              '[ $ret -eq 124 ] '  # Exit code 124 indicates a time out.
+              f'&& echo "coverage {target_name} timed out after 30 minutes" '
+              f'|| echo "coverage {target_name} completed with exit code $ret"'
+          ),
       ],
   })
 
@@ -268,6 +277,8 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   })
 
   credentials, _ = google.auth.default()
+  # Empirically, 3 hours is more than enough for 30-minute fuzzing cloud builds.
+  build_lib.BUILD_TIMEOUT = 3 * 60 * 60
   build_id = build_project.run_build(project_name,
                                      steps,
                                      credentials,

@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
@@ -48,7 +47,7 @@ RUN apt-get update \
  && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
  # Install a recent CMake.
  && mkdir -p /opt/cmake \
- && curl -L https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.0-Linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
+ && curl -L https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

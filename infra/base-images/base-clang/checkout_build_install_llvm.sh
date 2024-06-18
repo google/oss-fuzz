@@ -223,6 +223,7 @@ function cmake_libcxx {
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PIC=ON \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
@@ -247,14 +248,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blocklist.txt
+cat <<EOF > $WORK/msan/ignorelist.txt
 fun:__gxx_personality_*
 EOF
 
 cmake_libcxx \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-ignorelist=$WORK/msan/ignorelist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx

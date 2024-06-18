@@ -17,25 +17,37 @@
 import atheris
 import sys
 import io
+from test_utils import is_expected_error
 
 with atheris.instrument_imports():
-  from lxml import etree as et
+  from lxml import etree
 
 
 def TestOneInput(data):
   """Targets XML schema validation. More APIs should be added"""
   try:
-    schema_raw = et.parse(io.BytesIO(data))
-    valid_tree = et.parse(io.BytesIO(b'<a><b></b></a>'))
-    
-    schema = et.XMLSchema(schema_raw)
-    schame.validate(valid_tree)
-  except et.LxmlError:
-    None
+    schema_raw = etree.parse(io.BytesIO(data))
+    valid_tree = etree.parse(io.BytesIO(b"<a><b></b></a>"))
+
+    schema = etree.XMLSchema(schema_raw)
+    schema.validate(valid_tree)
+  except etree.LxmlError:
+    return -1  # Reject so the input will not be added to the corpus.
+  except (ValueError, TypeError) as e:
+    expected_exceptions = [
+        "Input object has no document",
+        "Invalid input object",
+    ]
+    if is_expected_error(expected_exceptions, e):
+      return -1
+    else:
+      raise e
+
 
 def main():
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
+
 
 if __name__ == "__main__":
   main()
