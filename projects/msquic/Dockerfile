@@ -25,11 +25,6 @@ RUN apt-get update && \
     apt-get install -y powershell && \
     rm -rf /var/lib/apt/lists/*
 
-ENV CMAKE_VERSION=3.24.2
-ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz cmake.tar.gz
-RUN tar xvf cmake.tar.gz -C /usr/local --strip 1 \
-    && rm cmake.tar.gz
-
 RUN git clone https://github.com/microsoft/msquic && \
     cd msquic && \
     git submodule init submodules/clog && \
