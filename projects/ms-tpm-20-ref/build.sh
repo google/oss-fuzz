@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
-export CFLAGS="$CFLAGS -fPIE"
-export CXXFLAGS="$CFLAGS -fPIE"
-export LDFLAGS="$CFLAGS -fPIE"
 
-./configure --enable-static --disable-shared
+# build project
+cd ms-tpm-20-ref/TPMCmd
+./bootstrap
+./configure --enable-libfuzzer
 make
-
-pushd fuzzer/
-make
-cp FuzzCUPS $OUT/FuzzCUPS
-cp FuzzIPP $OUT/FuzzIPP
-cp FuzzRaster $OUT/FuzzRaster
-popd
-
-pushd $SRC/oss-fuzz-bloat/cups
-cp FuzzCUPS_seed_corpus.zip $OUT/FuzzCUPS_seed_corpus.zip
-cp FuzzIPP_seed_corpus.zip $OUT/FuzzIPP_seed_corpus.zip
-cp FuzzRaster_seed_corpus.zip $OUT/FuzzRaster_seed_corpus.zip
-popd
+cp fuzzer/tpm_cmd $OUT
+cp $SRC/tpm_cmd.options $OUT
+cp $SRC/tpm2-command-corpus/tpm_cmd_seed_corpus.zip $OUT

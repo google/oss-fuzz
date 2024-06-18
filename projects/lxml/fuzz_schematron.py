@@ -17,6 +17,7 @@
 import atheris
 import sys
 import io
+from test_utils import is_expected_error
 
 with atheris.instrument_imports():
   from lxml import etree
@@ -31,9 +32,13 @@ def TestOneInput(data):
 
     schematron = Schematron(schema_raw)
     schematron.validate(valid_tree)
-  except (etree.LxmlError, KeyError):
-    # The `KeyError` possibility is tracked here: https://bugs.launchpad.net/lxml/+bug/2058177
+  except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
+  except (ValueError, TypeError) as e:
+    if is_expected_error(["Empty tree", "None not allowed as a stylesheet parameter"], e):
+      return -1
+    else:
+      raise e
 
 
 def main():
