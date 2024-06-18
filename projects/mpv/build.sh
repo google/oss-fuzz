@@ -69,7 +69,7 @@ url = https://github.com/libass/libass
 revision = master
 depth = 1
 EOF
-meson setup build -Ddefault_library=static -Dprefer_static=true \
+meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
                   -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
                   -Dlibplacebo:lcms=enabled -Dlcms2=enabled \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled -Dlibplacebo:demos=false \
