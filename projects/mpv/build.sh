@@ -32,6 +32,19 @@ make -j`nproc`
 make install
 popd
 
+# The option `-fuse-ld=gold` can't be passed via `CFLAGS` or `CXXFLAGS` because
+# Meson injects `-Werror=ignored-optimization-argument` during compile tests.
+# Remove the `-fuse-ld=` and let Meson handle it.
+# https://github.com/mesonbuild/meson/issues/6377#issuecomment-575977919
+if [[ "$CFLAGS" == *"-fuse-ld=gold"* ]]; then
+    export CFLAGS="${CFLAGS//-fuse-ld=gold/}"
+    export CC_LD=gold
+fi
+if [[ "$CXXFLAGS" == *"-fuse-ld=gold"* ]]; then
+    export CXXFLAGS="${CXXFLAGS//-fuse-ld=gold/}"
+    export CXX_LD=gold
+fi
+
 pushd $SRC/mpv
 sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]/d; \
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
@@ -56,7 +69,7 @@ url = https://github.com/libass/libass
 revision = master
 depth = 1
 EOF
-meson setup build -Ddefault_library=static -Dprefer_static=true \
+meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
                   -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
                   -Dlibplacebo:lcms=enabled -Dlcms2=enabled \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled -Dlibplacebo:demos=false \
