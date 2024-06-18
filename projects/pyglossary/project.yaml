@@ -1,0 +1,11 @@
+homepage: "https://pypi.org/project/pyglossary/3.3.0/"
+language: python
+primary_contact: "saeed.gnu@gmail.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/ilius/pyglossary.giit"
