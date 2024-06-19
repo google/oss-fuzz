@@ -18,7 +18,10 @@ echo $JAVA_HOME
 
 java --version
 
+echo $SRC
 echo $OUT
+
+ls .
 
 mv *.dict $OUT
 
