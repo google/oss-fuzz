@@ -18,7 +18,9 @@ echo $JAVA_HOME
 
 java --version
 
-mv $SRC/*.dict $OUT
+echo $OUT
+
+mv *.dict $OUT
 
 
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -39,10 +41,10 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+for fuzzer in $(find . -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/*.class $OUT/
+  cp *.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
