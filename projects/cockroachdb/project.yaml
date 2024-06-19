@@ -1,0 +1,9 @@
+homepage: "https://www.cockroachlabs.com/"
+language: go
+primary_contact: "nukit.tailor@cockroachlabs.com"
+main_repo: "https://github.com/cockroachdb/cockroach.git"
+file_github_issue: false
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
