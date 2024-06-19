@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -302,8 +303,7 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 }
 
 func main() {
-	f, err := os.OpenFile("/tmp/jcc.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
+	f, err := os.OpenFile("/tmp/jcc.log", os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}
@@ -313,6 +313,10 @@ func main() {
 	}
 
 	args := os.Args[1:]
+	if args[0] == "unfreeze" {
+		fmt.Println("unfreeze")
+		unfreeze()
+	}
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
 	newArgs := append(args, "-w")
@@ -325,44 +329,73 @@ func main() {
 		bin = "clang"
 	}
 	fullCmdArgs := append([]string{bin}, newArgs...)
+	if IsCompilingTarget(fullCmdArgs) {
+		WriteTargetArgsAndCommitImage(fullCmdArgs)
+		os.Exit(0)
+	}
 	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+	WriteStdErrOut(fullCmdArgs, out, errstr)
+	os.Exit(retcode)
+}
 
-	// Note that on failures or when we succeed on the first try, we should
-	// try to write the first out/err to stdout/stderr.
-	// When we fail we should try to write the original out/err and one from
-	// the corrected.
+type BuildCommand struct {
+	CWD string   `json:"CWD"`
+	CMD []string `json:"CMD"`
+}
 
-	headersFixArgs, headersFixed, _ := CorrectMissingHeaders(bin, newArgs)
-	if headersFixed {
-		// We succeeded here but it's kind of complicated to get out and
-		// err from TryCompileAndFixHeadersOnce. The output and err is
-		// not so important on success so just be silent.
-		WriteStdErrOut(append([]string{bin}, headersFixArgs...), "", "")
-		os.Exit(0)
+func WriteTargetArgsAndCommitImage(cmdline []string) {
+	log.Println("WRITE COMMAND")
+	f, _ := os.OpenFile("/out/statefile.json", os.O_CREATE|os.O_WRONLY, 0644)
+	wd, _ := os.Getwd()
+	buildcmd := BuildCommand{
+		CWD: wd,
+		CMD: cmdline,
 	}
+	jsonData, _ := json.Marshal(buildcmd)
+	f.Write(jsonData)
+	f.Close()
+	hostname, _ := os.Hostname()
+	dockerArgs := []string{"commit", hostname, "frozen"}
+	cmd := exec.Command("docker", dockerArgs...)
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	cmd.Stdin = os.Stdin
+	cmd.Run()
+	fmt.Println(outb.String(), errb.String())
+	fmt.Println("COMMIT IMAGE")
+}
 
-	if isCPP {
-		// Nothing else we can do. Just write the error and exit.
-		// Just print the original error for debugging purposes and
-		//  to make build systems happy.
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(retcode)
+func IsCompilingTarget(cmdline []string) bool {
+	for _, arg := range cmdline {
+		// This can fail if people do crazy things they aren't supposed
+		// to such as using some other means to link in libFuzzer.
+		if arg == "-fsanitize=fuzzer" {
+			return true
+		}
+		if arg == "-lFuzzingEngine" {
+			return true
+		}
 	}
-	fixargs, fixret, fixout, fixerr := TryFixCCompilation(newArgs)
-	if fixret != 0 {
-		// We failed, write stdout and stderr from the first failure and
-		// from fix failures so we can know what the code did wrong and
-		// how to improve jcc to fix more issues.
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		fmt.Println("\nFix failure")
-		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixargs, fixout, fixerr)
-		os.Exit(retcode)
+	return false
+}
+
+func parseCommand(command string) (string, []string) {
+	args := strings.Fields(command)
+	commandBin := args[0]
+	commandArgs := args[1:]
+	return commandBin, commandArgs
+}
+
+func unfreeze() {
+	content, err := ioutil.ReadFile("/out/statefile.json")
+	if err != nil {
+		log.Fatal(err)
 	}
-	// The fix suceeded, write its out and err.
-	WriteStdErrOut(fixargs, fixout, fixerr)
+	var command BuildCommand
+	json.Unmarshal(content, &command)
+	bin, args := parseCommand(strings.Join(command.CMD, " "))
+	os.Chdir(command.CWD)
+	ExecBuildCommand(bin, args)
+	os.Exit(0)
 }

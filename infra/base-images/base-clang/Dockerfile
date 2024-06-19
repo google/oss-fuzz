@@ -23,6 +23,7 @@ ARG arch=x86_64
 ENV FUZZINTRO_OUTDIR=$SRC
 
 # Install newer cmake.
+# Many projects, as well as recent clang versions, need a newer cmake.
 ENV CMAKE_VERSION 3.29.2
 RUN apt-get update && apt-get install -y wget sudo && \
     wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \

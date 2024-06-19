@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y curl python3-pip python3-setuptools python3-wheel cmake git nasm && \
-    pip3 install meson ninja
-
-RUN git clone --depth 1 https://github.com/AOMediaCodec/libavif.git libavif
-WORKDIR libavif
-
-COPY build.sh avif_decode_seed_corpus.zip $SRC/
+RUN apt-get update && apt-get install -y make
+RUN git clone --depth 1 https://github.com/gavinhoward/bc.git bc-gh
+WORKDIR bc-gh
+COPY build.sh $SRC/

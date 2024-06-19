@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-./configure --debug --no-regex --no-pcre2
-make all
 
-pushd fuzzer/
-make
-cp Fuzz_http $OUT/Fuzz_http
-cp Fuzz_json $OUT/Fuzz_json
-popd
+./configure -Z
+make -j$(nproc) all
 
-pushd $SRC/oss-fuzz-bloat/nginx-unit/
-cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
-cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
-popd
+cp bin/*_fuzzer_* $OUT/
