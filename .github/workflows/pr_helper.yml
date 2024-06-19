@@ -16,9 +16,9 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup python environment
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
           cache: pip
@@ -31,7 +31,7 @@ jobs:
           pip install -r infra/ci/requirements.txt
 
       - name: setup go environment
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
       - run: go install github.com/ossf/criticality_score/cmd/criticality_score@latest
@@ -46,7 +46,7 @@ jobs:
 
       - name: Leave comments
         if: env.IS_INTERNAL == 'FALSE'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -59,7 +59,7 @@ jobs:
 
       - name: Add labels for valid PR
         if: env.IS_READY_FOR_MERGE == 'True'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             github.rest.issues.addLabels({

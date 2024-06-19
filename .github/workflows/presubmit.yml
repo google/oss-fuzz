@@ -18,14 +18,14 @@ jobs:
       cancel-in-progress: true
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Setup python environment
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
           cache: pip
