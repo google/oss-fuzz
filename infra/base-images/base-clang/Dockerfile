@@ -23,6 +23,7 @@ ARG arch=x86_64
 ENV FUZZINTRO_OUTDIR=$SRC
 
 # Install newer cmake.
+# Many projects, as well as recent clang versions, need a newer cmake.
 ENV CMAKE_VERSION 3.29.2
 RUN apt-get update && apt-get install -y wget sudo && \
     wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
@@ -35,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout aaa84483df2bcd7cd30ec100430c04f9ae48a3a9 && \
+    git checkout 1feaa9b9ee338d6a33d64fd833328c31def7ace2 && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \

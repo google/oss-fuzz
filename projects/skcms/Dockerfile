@@ -24,6 +24,12 @@ RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com
 # current directory for build script
 WORKDIR skcms
 
+RUN apt-get update && \
+    apt-get install -y systemd && \
+    wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
+    dpkg -i /tmp/docker-ce.deb && \
+    rm /tmp/docker-ce.deb
+
 COPY build.sh $SRC/
 
 COPY iccprofile.options iccprofile.dict $SRC/skcms/

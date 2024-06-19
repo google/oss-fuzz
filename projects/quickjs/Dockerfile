@@ -17,5 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/bellard/quickjs quickjs
+RUN git clone --depth 1 https://github.com/renatahodovan/quickjs-corpus
 WORKDIR $SRC/quickjs
 COPY build.sh $SRC/
