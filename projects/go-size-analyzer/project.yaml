@@ -1,8 +1,7 @@
 homepage: "https://github.com/Zxilly/go-size-analyzer"
 language: go
 main_repo: "https://github.com/Zxilly/go-size-analyzer"
-auto_ccs:
-  - "zxilly@outlook.com"
+primary_contact: "zhouxinyu1001@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
