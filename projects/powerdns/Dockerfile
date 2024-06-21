@@ -15,10 +15,7 @@
 ################################################################################
 
 # base image with clang toolchain
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-
-# maintainer for this file
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # install required packages to build your project
 RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex boost1.71-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
