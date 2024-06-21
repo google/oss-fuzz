@@ -24,9 +24,9 @@ fi
 
 pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
-            --disable-shared --enable-gpl --enable-nonfree \
-            --disable-programs --disable-asm --pkg-config-flags="--static" \
-            --disable-network \
+            --enable-{gpl,nonfree} \
+            --disable-{asm,bsfs,doc,encoders,filters,muxers,network,postproc,programs,shared} \
+            --pkg-config-flags="--static" \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
 make install
@@ -50,12 +50,13 @@ sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-fra
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
           link_flags += \['$LIB_FUZZING_ENGINE'\]|" meson.build
 mkdir subprojects
-meson wrap update-db
-# Explicitly download wraps as nested projects have older versions of them.
 meson wrap install expat
+meson wrap install fontconfig
+meson wrap install freetype2
+meson wrap install fribidi
 meson wrap install harfbuzz
-meson wrap install libpng
-meson wrap install zlib
+meson wrap install lcms2
+meson wrap install uchardet
 cat <<EOF > subprojects/libplacebo.wrap
 [wrap-git]
 url = https://github.com/haasn/libplacebo
@@ -71,13 +72,13 @@ depth = 1
 EOF
 meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
                   -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
-                  -Dlibplacebo:lcms=enabled -Dlcms2=enabled \
-                  -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled -Dlibplacebo:demos=false \
-                  -Dlibass:asm=disabled -Dlibass:libunibreak=enabled -Dlibass:fontconfig=enabled \
+                  -Duchardet=enabled -Dlcms2=enabled \
+                  -Dfreetype2:harfbuzz=disabled -Dfreetype2:zlib=disabled -Dfreetype2:png=disabled \
+                  -Dlibplacebo:lcms=enabled -Dlibplacebo:demos=false \
+                  -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
+                  -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
                   -Dc_link_args="$CXXFLAGS -lc++" -Dcpp_link_args="$CXXFLAGS" \
-                  -Dlibarchive=disabled -Drubberband=disabled -Ddrm=disabled -Dwayland=disabled \
-                  -Dlua=disabled -Djavascript=enabled -Duchardet=enabled \
                   --libdir $LIBDIR
 meson compile -C build
 
-cp ./build/fuzzers/fuzzer_*  $OUT/ || true
+find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec cp {} "$OUT" \; -exec echo "{} -> $OUT" \;
