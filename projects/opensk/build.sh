@@ -17,10 +17,6 @@
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 
-# do not use override toolchain
-# cf https://rust-lang.github.io/rustup/overrides.html
-export RUSTUP_TOOLCHAIN=nightly-2023-12-28
-
 build_and_copy() {
   pushd "$1"
   cargo fuzz build --release --debug-assertions
