@@ -62,8 +62,11 @@ RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
+    # If version "Jinja2==2.10" is in requirements.txt, bump it to a patch version that
+    # supports upgrading its MarkupSafe dependency to a Python 3.10 compatible release:
+    sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt && \
     pip3 install -r requirements.txt && \
-    pip3 install MarkupSafe==0.23 && \
+    pip3 install MarkupSafe==2.0.1 && \
     pip3 install coverage==6.3.2
 
 # Default environment options for various sanitizers.
