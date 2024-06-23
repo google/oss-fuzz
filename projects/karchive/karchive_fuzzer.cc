@@ -28,11 +28,11 @@
 #include <QCoreApplication>
 #include <QVector>
 
-#include <KF5/KArchive/k7zip.h>
-#include <KF5/KArchive/ktar.h>
-#include <KF5/KArchive/kzip.h>
-#include <KF5/KArchive/kar.h>
-#include <KF5/KArchive/kcompressiondevice.h>
+#include <KF6/KArchive/k7zip.h>
+#include <KF6/KArchive/ktar.h>
+#include <KF6/KArchive/kzip.h>
+#include <KF6/KArchive/kar.h>
+#include <KF6/KArchive/kcompressiondevice.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
