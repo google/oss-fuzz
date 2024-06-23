@@ -39,9 +39,21 @@ meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static buildd
 ninja -C builddir
 ninja -C builddir install
 
+# Compile and install libxml2
+cd "$SRC/libxml2"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir
+ninja -C builddir
+ninja -C builddir install
+
+# Compile and install Fontconfig
+cd "$SRC/fontconfig"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dtests=disabled -Dtools=disabled
+ninja -C builddir
+ninja -C builddir install
+
 # Compile and install Cairo
 cd "$SRC/cairo"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dfontconfig:tests=disabled -Dfontconfig:tools=disabled -Dpixman:tests=disabled
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dpixman:tests=disabled -Dtests=disabled
 ninja -C builddir
 ninja -C builddir install
 
