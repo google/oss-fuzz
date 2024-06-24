@@ -42,6 +42,22 @@ func CopyFile(src string, dst string) {
 	}
 }
 
+func RemoveFailureCausingFlags(cmd []string) []string {
+    // Skip arguments that convert warnings to errors or make the command fail.
+    var newCmd []string
+    for _, arg := range cmd {
+        // Skip arguments that convert warnings to errors
+		if strings.HasPrefix(arg, "-Werror") ||
+			arg == "-pedantic-errors" ||
+			arg == "-Wfatal-errors" ||
+			arg == "-Weverything" {
+			continue
+		}
+        newCmd = append(newCmd, arg)
+    }
+    return newCmd
+}
+
 func TryFixCCompilation(cmdline []string) ([]string, int, string, string) {
 	var newFile string = ""
 	for i, arg := range cmdline {
@@ -316,6 +332,8 @@ func main() {
 	basename := filepath.Base(os.Args[0])
 	isCPP := basename == "clang++-jcc"
 	newArgs := append(args, "-w")
+
+    newArgs = RemoveFailureCausingFlags(newArgs)
 
 	var bin string
 	if isCPP {
