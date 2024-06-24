@@ -94,4 +94,4 @@ meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static
                   --libdir $LIBDIR
 meson compile -C build fuzzers
 
-find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec cp {} "$OUT" \; -exec echo "{} -> $OUT" \;
+find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
