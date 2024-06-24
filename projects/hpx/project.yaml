@@ -1,0 +1,10 @@
+homepage: 'https://hpx.stellar-group.org'
+language: c++
+primary_contact: 'hartmut.kaiser@gmail.com'
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/STEllAR-GROUP/hpx'
