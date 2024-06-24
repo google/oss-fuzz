@@ -37,7 +37,7 @@ do
     )
     cd $SRC/capstone$branch/suite
     mkdir fuzz/corpus
-    find MC/ -name *.cs | ./test_corpus.py
+    find MC/ -name *.cs | ./test_corpus3.py
     cd fuzz
     zip -r fuzz_disasm"$branch"_seed_corpus.zip corpus/
     cp fuzz_disasm"$branch"_seed_corpus.zip $OUT/
