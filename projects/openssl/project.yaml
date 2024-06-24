@@ -11,6 +11,7 @@ auto_ccs:
  - "nhorman@openssl.org"
  - "tjh@openssl.org"
  - "tjh@cryptsoft.com"
+ - "sashan@openssl.org"
 sanitizers:
  - address
  - memory:
