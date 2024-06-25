@@ -1,6 +1,4 @@
-homepage: "https://marzer.github.io/tomlplusplus/"
+homepage: "https://crowcpp.org/master/"
 language: c++
-primary_contact: "mark.gillard@outlook.com.au"
-auto_ccs:
-  - "capuanobailey@gmail.com"
-main_repo: "https://github.com/marzer/tomlplusplus.git"
+primary_contact: "capuanobailey@gmail.com"
+main_repo: "https://github.com/CrowCpp/Crow"
