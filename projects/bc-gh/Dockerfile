@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 ################################################################################
 
-# build fuzz targets
-cd $SRC/opendal/core
-cargo fuzz build -O --debug-assertions
-
-# copy fuzz targets to $OUT
-targets=(
-  fuzz_reader
-  fuzz_writer
-)
-
-cp $SRC/.fs.env $OUT/.fs.env
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
-
-cp $SRC/.memory.env $OUT/.memory.env
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make
+RUN git clone --depth 1 https://github.com/gavinhoward/bc.git bc-gh
+WORKDIR bc-gh
+COPY build.sh $SRC/
