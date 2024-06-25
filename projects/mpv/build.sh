@@ -22,10 +22,19 @@ else
   FFMPEG_BUILD_ARGS=''
 fi
 
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+ffmpeg
+mpv/subprojects
+mpv/build/subprojects
+EOF
+
 pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --enable-{gpl,nonfree} \
             --disable-{asm,bsfs,doc,encoders,filters,muxers,network,postproc,programs,shared} \
+            --enable-filter={scale,sine,yuvtestsrc} \
             --pkg-config-flags="--static" \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
@@ -72,13 +81,17 @@ depth = 1
 EOF
 meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
                   -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
-                  -Duchardet=enabled -Dlcms2=enabled \
+                  -Duchardet=enabled -Dlcms2=enabled -Dtests=false \
                   -Dfreetype2:harfbuzz=disabled -Dfreetype2:zlib=disabled -Dfreetype2:png=disabled \
+                  -Dharfbuzz:tests=disabled -Dharfbuzz:introspection=disabled -Dharfbuzz:docs=disabled \
+                  -Dharfbuzz:utilities=disabled -Dfontconfig:doc=disabled -Dfontconfig:nls=disabled \
+                  -Dfontconfig:tests=disabled -Dfontconfig:tools=disabled -Dfontconfig:cache-build=disabled \
+                  -Dfribidi:deprecated=false -Dfribidi:docs=false -Dfribidi:bin=false -Dfribidi:tests=false \
                   -Dlibplacebo:lcms=enabled -Dlibplacebo:demos=false \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
                   -Dc_link_args="$CXXFLAGS -lc++" -Dcpp_link_args="$CXXFLAGS" \
                   --libdir $LIBDIR
-meson compile -C build
+meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec cp {} "$OUT" \; -exec echo "{} -> $OUT" \;
