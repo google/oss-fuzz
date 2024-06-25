@@ -332,8 +332,6 @@ func main() {
 	isCPP := basename == "clang++-jcc"
 	newArgs := append(args, "-w")
 
-    newArgs = RemoveFailureCausingFlags(newArgs)
-
 	var bin string
 	if isCPP {
 		bin = "clang++"
@@ -341,12 +339,21 @@ func main() {
 	} else {
 		bin = "clang"
 	}
-	fullCmdArgs := append([]string{bin}, newArgs...)
-	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+ 	fullCmdArgs := append([]string{bin}, newArgs...)
+ 	retcode, out, errstr := Compile(bin, newArgs)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
+
+ 	// Some projects convert warnings to errors, undo this and try again.
+ 	newArgs = RemoveFailureCausingFlags(newArgs)
+ 	retcode, out, errstr = Compile(bin, newArgs)
+ 	fullCmdArgs = append([]string{bin}, newArgs...)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
 
 	// Note that on failures or when we succeed on the first try, we should
 	// try to write the first out/err to stdout/stderr.
