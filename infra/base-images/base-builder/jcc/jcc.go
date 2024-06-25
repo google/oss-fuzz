@@ -383,8 +383,6 @@ func main() {
 		// how to improve jcc to fix more issues.
 		WriteStdErrOut(fullCmdArgs, out, errstr)
 		fmt.Println("\nFix failure")
-		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixargs, fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.
