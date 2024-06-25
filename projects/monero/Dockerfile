@@ -53,7 +53,7 @@ RUN set -ex && \
 WORKDIR monero
 
 ENV CFLAGS="${CFLAGS} -fPIC -pthread"
-ENV CXXFLAGS="${CXXFLAGS} -fPIC -pthread"
+ENV CXXFLAGS="${CXXFLAGS} -fPIC -pthread -std=c++11"
 
 ## Boost
 ARG BOOST_VERSION=1_70_0
