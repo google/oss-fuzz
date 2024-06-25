@@ -49,8 +49,7 @@ func RemoveFailureCausingFlags(cmd []string) []string {
         // Skip arguments that convert warnings to errors
 		if strings.HasPrefix(arg, "-Werror") ||
 			arg == "-pedantic-errors" ||
-			arg == "-Wfatal-errors" ||
-			arg == "-Weverything" {
+			arg == "-Wfatal-errors" {
 			continue
 		}
         newCmd = append(newCmd, arg)
