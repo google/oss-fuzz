@@ -99,7 +99,7 @@ $ python infra/helper.py coverage --fuzz-target=<fuzz_target_name> \
     --corpus-dir=<my_local_corpus_dir> $PROJECT_NAME
 ```
 
-### Additional arguments for `llvm-cov` (C/C++ only)
+### Additional arguments for `llvm-cov` (C/C++/Rust only)
 
 You may want to use some of the options provided by the [llvm-cov tool], like
 `-ignore-filename-regex=`. You can pass these to the helper script after `--`:
