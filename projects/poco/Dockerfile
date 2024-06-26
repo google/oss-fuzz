@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-testing-update-clang
 RUN apt-get update && apt-get install -y openssl libssl-dev git make cmake libssl-dev 
 RUN git clone --depth 1 https://github.com/pocoproject/poco
 WORKDIR $SRC/poco
