@@ -16,7 +16,11 @@
 
 #!/bin/bash -eu
 
-./bootstrap
+if [ -f ./autogen.sh ]; then
+  ./autogen.sh
+else
+  ./bootstrap
+fi
 ./configure --enable-static
 make clean
 
