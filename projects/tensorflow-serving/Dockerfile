@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
+
 RUN apt-get update && apt-get install -y make autoconf automake libtool default-jdk bison m4 \
     build-essential\
     curl \
@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool default-
     mcpp \
     sqlite \
     uuid-runtime \
-    zlib1g-dev 
+    zlib1g-dev
 RUN python3 -m pip install numpy
 RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildifier-linux-amd64 \
     -O /usr/local/bin/buildifier && chmod a+x /usr/local/bin/buildifier
