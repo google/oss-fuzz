@@ -24,6 +24,9 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
   export CXXFLAGS="$CXXFLAGS -m32"
 fi
 
+cd $SRC/ffmpeg
+sed -i 's/ -fsanitize=address/ -fno-sanitize-address-use-odr-indicator -fsanitize=address/g' ./configure
+
 # Build dependencies.
 export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
