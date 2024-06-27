@@ -1,0 +1,10 @@
+homepage: 'http://jupyter.org'
+language: python
+primary_contact: 'jupyter@googlegroups.com'
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/jupyter/qtconsole'
