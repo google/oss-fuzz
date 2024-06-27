@@ -11,3 +11,7 @@ sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+# - afl  # Temporarily disabled after a clang-18 bump, to avoid link errors "undefined reference to [...]"
+  - honggfuzz
+  - libfuzzer
