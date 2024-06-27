@@ -52,9 +52,9 @@ fi
 # The Envoy build configuration may clobber CFLAGS/CXXFLAGS, so we use separate
 # environment variables that are understood by rules_fuzzing.
 export FUZZING_CFLAGS="$CFLAGS"
-export FUZZING_CXXFLAGS="$CXXFLAGS"
+export FUZZING_CXXFLAGS="$CXXFLAGS -Wno-error=thread-safety-reference-return"
 
-# Disable instrumentation in various external libraries. These 
+# Disable instrumentation in various external libraries. These
 # are fuzzed elsewhere.
 # The following disables both coverage-instrumentation and other sanitizer instrumentation.
 # We disable instrumentation in:
