@@ -78,7 +78,7 @@ BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")
-for f in $fuzzers $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c; do
+for f in $fuzzers ; do
   fuzzer_name=$(basename $f .c)
   $CC $CFLAGS $BUILD_CFLAGS \
     -c $f -o $WORK/${fuzzer_name}.o
@@ -90,4 +90,17 @@ for f in $fuzzers $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c; do
     -Wl,-Bdynamic
   cd $OUT; ln -sf cairo_seed_corpus.zip ${fuzzer_name}_seed_corpus.zip
   cd $OUT; ln -sf cairo.dict ${fuzzer_name}.dict
+done
+
+# Fuzzers with non-PNG dict/seed corpus.
+for f in $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c ; do
+  fuzzer_name=$(basename $f .c)
+  $CC $CFLAGS $BUILD_CFLAGS \
+    -c $f -o $WORK/${fuzzer_name}.o
+  $CXX $CXXFLAGS \
+    $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
+    $PREDEPS_LDFLAGS \
+    $BUILD_LDFLAGS \
+    $LIB_FUZZING_ENGINE \
+    -Wl,-Bdynamic
 done
