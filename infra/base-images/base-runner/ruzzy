@@ -15,5 +15,5 @@
 #
 ################################################################################
 
-LD_PRELOAD=$(ruby -e 'require "ruzzy"; print Ruzzy::ASAN_PATH') \
+ASAN_OPTIONS="allocator_may_return_null=1:detect_leaks=0:use_sigaltstack=0" LD_PRELOAD=$(ruby -e 'require "ruzzy"; print Ruzzy::ASAN_PATH') \
 	ruby $@

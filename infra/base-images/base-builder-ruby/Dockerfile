@@ -16,9 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-# TODO: I think it's not used.
-ENV ASAN_OPTIONS="allocator_may_return_null=1:detect_leaks=0:use_sigaltstack=0"
-
 RUN git clone https://github.com/trailofbits/ruzzy.git $SRC/ruzzy
 
 RUN install_ruby.sh
