@@ -45,6 +45,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     std::unique_ptr<KCompressionDevice> gzipKD(new KCompressionDevice(&b, false, KCompressionDevice::GZip));
     std::unique_ptr<KCompressionDevice> bzipKD(new KCompressionDevice(&b, false, KCompressionDevice::BZip2));
     std::unique_ptr<KCompressionDevice> xzKD(new KCompressionDevice(&b, false, KCompressionDevice::Xz));
+    std::unique_ptr<KCompressionDevice> zstdKD(new KCompressionDevice(&b, false, KCompressionDevice::Zstd));
 
     const QVector<KArchive*> handlers = {
         new K7Zip(&b),
