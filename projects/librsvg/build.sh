@@ -21,11 +21,16 @@ set -o nounset
 
 PREFIX="/usr"
 
-# Don't instrument the third-party dependencies that we build
+# The OSS-Fuzz 'compile' script automatically adds instrumentation flags to the CFLAGS and CXXFLAGS
+# environment variables. These flags cause build errors with some of the third-party dependencies,
+# so we save them for restoration later.
 CFLAGS_SAVE="$CFLAGS"
 CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
+
+# Set the non-instrumentation flags manually. -O1 is particularly important for avoiding spurious
+# timeouts caused by unoptimized dependencies.
+export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 # Compile and install GLib
 cd "$SRC/glib"
