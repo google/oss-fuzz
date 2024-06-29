@@ -13,16 +13,26 @@ limitations under the License.
 #include "tinyxml2/tinyxml2.h"
 
 #include <string>
+#include <cstdio>
 #include <cstdint>
+#include <cstdlib>
+
+#include <unistd.h>
 
 using namespace tinyxml2;
 using namespace std;
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	std::string data_string(reinterpret_cast<const char*>(data), size);
+	char pathname[256];
+	sprintf(pathname, "/tmp/libfuzzer.%d", getpid());
+	FILE *fp = fopen(pathname, "wb");
+	fwrite(data, size, 1, fp);
+  	fclose(fp);
+    
 	XMLDocument doc;
-	doc.Parse( data_string.c_str() );
+	doc.LoadFile(pathname);
 
+    unlink(pathname);
 	return 0;
 }
