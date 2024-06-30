@@ -53,6 +53,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         new KTar(gzipKD.get()),
         new KTar(bzipKD.get()),
         new KTar(xzKD.get()),
+        new KTar(zstdKD.get()),
         new KZip(&b),
         new KAr(&b)
     };
