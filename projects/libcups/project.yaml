@@ -1,0 +1,31 @@
+homepage: "https://github.com/OpenPrinting/libcups"
+main_repo: "https://github.com/OpenPrinting/libcups.git"
+# help_url:
+language: c++
+
+primary_contact: "jiongchiyu@gmail.com"
+auto_ccs:
+  - "till.kamppeter@gmail.com"
+  - "ossfuzz@iosifache.me"
+  # - "msweet@msweet.org"
+  # - "jsmeix@suse.de"
+  # - "debian@alteholz.de"
+  # - "zdohnal@redhat.com"
+  # - "basu.aveek@gmail.com"
+# vendor_ccs:
+
+architectures:
+  - x86_64
+  # - i386
+
+sanitizers:
+  - address
+  - memory
+  # - undefined
+
+fuzzing_engines:
+  - libfuzzer
+  # - honggfuzz
+  # - afl
+
+# builds_per_day: 2

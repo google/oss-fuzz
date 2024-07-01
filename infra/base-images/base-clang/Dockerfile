@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-# Docker image with head clang installed.
+# Docker image with clang installed.
 
 FROM gcr.io/oss-fuzz-base/base-image
 
@@ -23,6 +23,7 @@ ARG arch=x86_64
 ENV FUZZINTRO_OUTDIR=$SRC
 
 # Install newer cmake.
+# Many projects, as well as recent clang versions, need a newer cmake.
 ENV CMAKE_VERSION 3.29.2
 RUN apt-get update && apt-get install -y wget sudo && \
     wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
@@ -35,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout cfb5266a4c45cbec8663bb1b215c7fd326c60901 && \
+    git checkout 9022fc1e9f4d6258497ef6b3c0bbf76a7b9f4505 && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \

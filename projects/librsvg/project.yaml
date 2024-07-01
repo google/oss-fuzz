@@ -1,0 +1,13 @@
+homepage: "https://gitlab.gnome.org/GNOME/librsvg/"
+language: rust
+primary_contact: "federico.mena@gmail.com"
+auto_ccs:
+  - "correctmost@gmail.com"
+main_repo: "https://gitlab.gnome.org/GNOME/librsvg.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=rust/.*
+  -ignore-filename-regex=rustc/.*

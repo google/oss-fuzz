@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool gperf
-RUN pip3 install -U meson==1.2.0 ninja packaging
+RUN pip3 install -U meson==1.3.0 ninja packaging
 
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib

@@ -135,6 +135,10 @@ and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of
 a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
+`report-timeouts`: Determines whether to report fails due to timeouts.
+
+`report-ooms`: Determines whether to report fails due to OOM.
+
 ```yaml
 {% raw %}
 name: CIFuzz

@@ -17,6 +17,6 @@
 
 cp -r $SRC/pki_fuzzer.go $SRC/cert-manager/pkg/util/pki/
 
-compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzParseSubjectStringToRawDERBytes FuzzParseSubjectStringToRawDERBytes
+compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzUnmarshalSubjectStringToRDNSequence FuzzUnmarshalSubjectStringToRDNSequence
 compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzDecodePrivateKeyBytes FuzzDecodePrivateKeyBytes
 
