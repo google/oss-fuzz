@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
 	build-essential cmake make coreutils sed lld \
 	autoconf automake libtool zlib1g-dev \
@@ -25,6 +24,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN wget https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-src.tgz && \
     tar xzvf ./icu4c-71_1-src.tgz -C $SRC
+
+ENV UBSAN_OPTIONS="print_stacktrace=1:print_summary=1:silence_unsigned_overflow=1:strip_path_prefix=/workspace/:symbolize=1:dedup_token_length=3:report_error_type=1"
 
 RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
 WORKDIR $SRC/tarantool
