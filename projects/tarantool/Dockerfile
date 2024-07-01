@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y \
 RUN wget https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-src.tgz && \
     tar xzvf ./icu4c-71_1-src.tgz -C $SRC
 
+ENV UBSAN_OPTIONS="print_stacktrace=1:print_summary=1:silence_unsigned_overflow=1:strip_path_prefix=/workspace/:symbolize=1:dedup_token_length=3:report_error_type=1"
+
 RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
 WORKDIR $SRC/tarantool
 
