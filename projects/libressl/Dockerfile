@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-db180642-1ff0-4223-91e6-3bf060adb174.txt
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make cmake wget autoconf automake libtool bison flex texinfo lzip
 RUN git clone --depth 1 https://github.com/libressl/portable.git libressl
