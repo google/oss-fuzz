@@ -16,7 +16,7 @@ architectures:
   - x86_64
   - i386
 fuzzing_engines:
+#  - afl  # temporarily disabled to debug https://github.com/google/oss-fuzz/issues/12142#issuecomment-2204027194
 #  - centipede # temporarily disabled due to spurious "Step #22 - "build-check-centipede-none-x86_64": OSError: [Errno 28] No space left on device"
   - libfuzzer
   - honggfuzz
-  - afl
