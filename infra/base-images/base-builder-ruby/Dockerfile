@@ -16,35 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://github.com/trailofbits/ruzzy.git $SRC/ruzzy
-
-RUN install_ruby.sh
 ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
-
-RUN gem update --system 3.5.11
-
-# Install ruzzy
-WORKDIR $SRC/ruzzy
-
-# The MAKE variable allows overwriting the make command at runtime. This forces the
-# Ruby C extension to respect ENV variables when compiling, like CC, CFLAGS, etc.
-ENV MAKE="make --environment-overrides V=1"
-
-RUN CC="clang" \
-CXX="clang++" \
-LDSHARED="clang -shared" \
-LDSHAREDXX="clang++ -shared" \
-gem build
-
-RUN MAKE="make --environment-overrides V=1" \
-CC="clang" \
-CXX="clang++" \
-LDSHARED="clang -shared" \
-LDSHAREDXX="clang++ -shared" \
-CXXFLAGS="-fPIC" \
-CFLAGS="-fPIC" \
-RUZZY_DEBUG=1 gem install --install-dir /install/ruzzy --development --verbose ruzzy-*.gem
-
+RUN install_ruby.sh
 
 ENV LDSHARED="$CC -shared"
 ENV LDSHAREDXX="$CXX -shared"
