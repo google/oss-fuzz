@@ -1,4 +1,4 @@
-# Copyright 2019 Evan Miller
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
+FROM gcr.io/oss-fuzz-base/base-builder-ruby
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
+RUN git clone --depth 1 --single-branch https://github.com/ohler55/ox.git $SRC/ox-ruby
 
-make
+ENV CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
+ENV CXXFLAGS="$XXFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
 
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
+COPY build.sh $SRC/build.sh
+COPY fuzz_*.rb $SRC/harnesses/.
 
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls
+WORKDIR $SRC

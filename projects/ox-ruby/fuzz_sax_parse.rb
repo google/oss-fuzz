@@ -1,4 +1,5 @@
-# Copyright 2019 Evan Miller
+# frozen_string_literal: true
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +14,31 @@
 # limitations under the License.
 #
 ################################################################################
+require 'ruzzy'
+require 'ox'
 
-#!/bin/bash -eu
+class MyHandler < Ox::Sax
+  # Called for the opening of an element
+  def start_element(name)
+  end
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
+  # Called for the text content of an element
+  def text(value)
+  end
 
-make
+  # Called for the closing of an element
+  def end_element(name)
+  end
+end
 
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
+test_one_input = lambda do |data|
+  begin
+    handler = MyHandler.new
+    Ox.sax_parse(handler, StringIO.new(data))
+  rescue Ox::ParseError, EncodingError
+    # pass
+  end
+  return 0
+end
 
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls
+Ruzzy.fuzz(test_one_input)

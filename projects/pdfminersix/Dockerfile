@@ -1,4 +1,4 @@
-# Copyright 2019 Evan Miller
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,11 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN mkdir $SRC/corpus
+RUN git clone --depth 1 https://github.com/pdfminer/pdfminer.six.git pdfminer.six \
+        && cp pdfminer.six/fuzzing/build.sh $SRC/ \
+	&& cp pdfminer.six/samples/simple* $SRC/corpus
+WORKDIR $SRC/pdfminer.six
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
-
-make
-
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
-
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls

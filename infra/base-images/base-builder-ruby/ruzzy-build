@@ -1,4 +1,5 @@
-# Copyright 2019 Evan Miller
+#!/usr/bin/env bash -e
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +15,14 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
+fuzz_target=$(basename "$1")
+echo "BASENAME: $fuzz_target ---"
+harness_sh=${fuzz_target::-3}
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
+cp $1 $OUT/$fuzz_target
 
-make
+echo """#!/usr/bin/env bash
 
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
-
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls
+ruzzy $fuzz_target
+""" > $OUT/$harness_sh
+chmod +x $OUT/$harness_sh

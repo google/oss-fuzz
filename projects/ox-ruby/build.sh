@@ -1,4 +1,5 @@
-# Copyright 2019 Evan Miller
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +15,13 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
+# setup
+BUILD=$WORK/Build
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
+cd $SRC/ox-ruby
+gem build
+RUZZY_DEBUG=1 gem install --development --verbose *.gem
 
-make
-
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
-
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls
+for fuzz_target_path in $SRC/harnesses/fuzz_*.rb; do
+	ruzzy-build "$fuzz_target_path"
+done

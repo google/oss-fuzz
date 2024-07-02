@@ -1,4 +1,5 @@
-# Copyright 2019 Evan Miller
+#!/bin/bash
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +15,11 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
+apt update
+apt install -y lsb-release software-properties-common gnupg2 binutils xz-utils libyaml-dev
+gpg2 --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+curl -sSL https://get.rvm.io | bash
 
-if [ -f ./autogen.sh ]; then
-  ./autogen.sh
-else
-  ./bootstrap
-fi
-./configure --enable-static
-make clean
+. /etc/profile.d/rvm.sh
 
-make
-
-zip $OUT/fuzz_xls_seed_corpus.zip test/files/*.xls fuzz/corpus/*.xls
-
-make fuzz_xls
-cp fuzz_xls $OUT/fuzz_xls
+rvm install ruby-3.3.1
