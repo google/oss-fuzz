@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Temporarily disable -fsanitize=object-size, until https://github.com/google/oss-fuzz/pull/12087#issuecomment-2175839203 is fixed
+# Temporarily disable -fsanitize=object-size, until https://github.com/arximboldi/immer/issues/274 is fixed
 if [ "$SANITIZER" = undefined ]; then
     export CFLAGS="$CFLAGS     -fno-sanitize=object-size"
     export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
