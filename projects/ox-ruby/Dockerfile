@@ -22,6 +22,6 @@ ENV CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-commo
 ENV CXXFLAGS="$XXFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
 
 COPY build.sh $SRC/build.sh
-COPY fuzz_*.rb $SRC/harnesses/.
+COPY fuzz_*.rb $SRC/harnesses/
 
 WORKDIR $SRC

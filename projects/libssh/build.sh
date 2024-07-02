@@ -39,3 +39,5 @@ for f in $fuzzers; do
     fi
 done
 popd
+
+echo "SRCMAAAAAAP" && cat /workspace/srcmap.json || true
