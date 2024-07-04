@@ -4,6 +4,8 @@ primary_contact: "security@ntp.org"
 main_repo: "https://bitbucket.nwtime.org/scm/websites/ntpwww.git"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
+  - "hart@ntp.org"
+  - "stenn@nwtime.org"
 fuzzing_engines:
   - afl
   - libfuzzer
