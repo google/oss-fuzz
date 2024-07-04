@@ -10,7 +10,3 @@ architectures:
   - aarch64
   - i386
   - x86_64
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
