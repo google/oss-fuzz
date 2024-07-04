@@ -24,7 +24,7 @@ fi
 cp "$CENTIPEDE_BIN_DIR/libcentipede_runner.pic.a" "$LIB_FUZZING_ENGINE"
 
 export CENTIPEDE_FLAGS=`cat "$SRC/fuzztest/centipede/clang-flags.txt" | tr '\n' ' '`
-export LIBRARIES_FLAGS="-Wno-unused-command-line-argument -Wl,-lstdc++ -Wl,-ldl -Wl,-lrt -Wl,-lpthread -Wl,$SRC/fuzztest/centipede/weak.o"
+export LIBRARIES_FLAGS="-Wno-unused-command-line-argument -Wl,-ldl -Wl,-lrt -Wl,-lpthread -Wl,$SRC/fuzztest/centipede/weak.o"
 
 export CFLAGS="$CFLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
 export CXXFLAGS="$CXXFLAGS $CENTIPEDE_FLAGS $LIBRARIES_FLAGS"
