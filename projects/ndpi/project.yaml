@@ -9,3 +9,8 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/ntop/nDPI.git'
+
+#Coverage report doesn't analyze custom mutator code (see https://github.com/google/oss-fuzz/issues/12143)
+# -> exclude it. Note that we keep including all the other third-parties code
+coverage_extra_args: >
+  -ignore-filename-regex=src/lib/third_party/src/fuzz/.*

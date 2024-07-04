@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install --yes cmake ninja-build
-RUN curl -L http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz -O
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kcodecs.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git
-COPY build.sh $SRC
-COPY kcodecs_fuzzer.cc $SRC
-WORKDIR kcodecs
+FROM gcr.io/oss-fuzz-base/base-builder-ruby
+
+RUN git clone --depth 1 --single-branch https://github.com/ohler55/ox.git $SRC/ox-ruby
+
+ENV CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
+ENV CXXFLAGS="$XXFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
+
+COPY build.sh $SRC/build.sh
+COPY fuzz_*.rb $SRC/harnesses/.
+
+WORKDIR $SRC

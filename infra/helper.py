@@ -52,6 +52,7 @@ BASE_IMAGES = {
     'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
     'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
     'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
+    'ruby': ['gcr.io/oss-fuzz-base/base-builder-ruby'],
     'swift': ['gcr.io/oss-fuzz-base/base-builder-swift'],
 }
 

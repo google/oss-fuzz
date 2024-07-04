@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install --yes cmake ninja-build
-RUN curl -L http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz -O
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kcodecs.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git
-COPY build.sh $SRC
-COPY kcodecs_fuzzer.cc $SRC
-WORKDIR kcodecs
+# setup
+BUILD=$WORK/Build
+
+cd $SRC/ox-ruby
+gem build
+RUZZY_DEBUG=1 gem install --development --verbose *.gem
+
+for fuzz_target_path in $SRC/harnesses/fuzz_*.rb; do
+	ruzzy-build "$fuzz_target_path"
+done

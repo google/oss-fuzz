@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+# frozen_string_literal: true
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +14,31 @@
 # limitations under the License.
 #
 ################################################################################
+require 'ruzzy'
+require 'ox'
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install --yes cmake ninja-build
-RUN curl -L http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz -O
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kcodecs.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git
-COPY build.sh $SRC
-COPY kcodecs_fuzzer.cc $SRC
-WORKDIR kcodecs
+class MyHandler < Ox::Sax
+  # Called for the opening of an element
+  def start_element(name)
+  end
+
+  # Called for the text content of an element
+  def text(value)
+  end
+
+  # Called for the closing of an element
+  def end_element(name)
+  end
+end
+
+test_one_input = lambda do |data|
+  begin
+    handler = MyHandler.new
+    Ox.sax_parse(handler, StringIO.new(data))
+  rescue Ox::ParseError, EncodingError
+    # pass
+  end
+  return 0
+end
+
+Ruzzy.fuzz(test_one_input)
