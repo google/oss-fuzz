@@ -1,4 +1,4 @@
-homepage: "https://github.com/bitcoin/bitcoin"
+homepage: "https://bitcoincore.org/"
 main_repo: 'https://github.com/bitcoin/bitcoin.git'
 language: c++
 primary_contact: "macro.fuzzing.uxuga@aleeas.com"
