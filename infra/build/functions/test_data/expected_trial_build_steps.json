@@ -126,6 +126,22 @@
     "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-ruby"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
       "gcr.io/oss-fuzz-base/base-runner-testing-mybranch"
     ],
     "waitFor": "-"

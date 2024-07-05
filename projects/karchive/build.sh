@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# build zstd
+cd $SRC
+cd zstd
+cmake -S build/cmake -DBUILD_SHARED_LIBS=OFF
+make install -j$(nproc)
+
 # Build zlib
 cd $SRC
 cd zlib
@@ -65,31 +71,20 @@ make install -j$(nproc)
 # Build qtbase
 cd $SRC
 cd qtbase
-# add the flags to Qt build too
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_CXX               = \$\${CROSS_COMPILE}clang++~QMAKE_CXX = $CXX~g" mkspecs/common/clang.conf
-sed -i -e "s~QMAKE_CC                = \$\${CROSS_COMPILE}clang~QMAKE_CC = $CC~g" mkspecs/common/clang.conf
-# make qmake compile faster
-sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
-# add QT_NO_WARNING_OUTPUT to make the output a bit cleaner by not containing lots of QBuffer::seek: Invalid pos
-sed -i -e "s/DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH/DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH QT_NO_WARNING_OUTPUT/g" src/corelib/corelib.pro
-./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
-cd src
-../bin/qmake -o Makefile src.pro
-make sub-corelib sub-rcc -j$(nproc)
+./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-gui -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
+cmake --build . --parallel $(nproc)
+cmake --install .
+
 
 # Build karchive
 cd $SRC
 cd karchive
 rm -rf poqm
-cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
 # Build karchive_fuzzer
-$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I /usr/local/include/KF5/KArchive -L $SRC/qtbase/lib -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libbz2.a -llzma -lQt5Core /usr/local/lib/libz.a
+$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a
 
 cd $SRC
 find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@

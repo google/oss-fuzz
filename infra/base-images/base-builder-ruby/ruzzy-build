@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+#!/usr/bin/env bash -e
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-./configure --debug --no-regex --no-pcre2
-make all
 
-pushd fuzzer/
-make
-cp Fuzz_http $OUT/Fuzz_http
-cp Fuzz_json $OUT/Fuzz_json
-popd
+fuzz_target=$(basename "$1")
+echo "BASENAME: $fuzz_target ---"
+harness_sh=${fuzz_target::-3}
 
-pushd $SRC/oss-fuzz-bloat/nginx-unit/
-cp Fuzz_http_seed_corpus.zip $OUT/Fuzz_http_seed_corpus.zip
-cp Fuzz_json_seed_corpus.zip $OUT/Fuzz_json_seed_corpus.zip
-popd
+cp $1 $OUT/$fuzz_target
+
+echo """#!/usr/bin/env bash
+
+ruzzy $fuzz_target
+""" > $OUT/$harness_sh
+chmod +x $OUT/$harness_sh
