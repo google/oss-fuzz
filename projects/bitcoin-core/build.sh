@@ -29,6 +29,11 @@ cd $SRC/bitcoin-core/
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
   export BUILD_TRIPLET="i686-pc-linux-gnu"
+
+  # Temp workaround
+  mkdir /usr/local/lib/clang/18/lib/linux
+  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan_static.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan_static-i386.a
+  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan-i386.a
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
