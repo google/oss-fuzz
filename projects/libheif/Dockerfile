@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
     mercurial \
     pkg-config \
     yasm \
-    zlib-dev
+    zlib1g-dev
 
 RUN git clone \
     --depth 1 \
