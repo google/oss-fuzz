@@ -19,7 +19,7 @@ RUN pip3 install --upgrade pip
 RUN mkdir $SRC/corpus
 RUN git clone --depth 1 https://github.com/pdfminer/pdfminer.six.git pdfminer.six \
         && cp pdfminer.six/fuzzing/build.sh $SRC/ \
-	&& mkdir $SRC/corpus \
+	&& mkdir -p $SRC/corpus \
 	&& find "pdfminer.six/samples/" -type f -exec cp {} "$SRC/corpus" \;
 WORKDIR $SRC/pdfminer.six
 
