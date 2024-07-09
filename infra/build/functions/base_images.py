@@ -29,6 +29,7 @@ BASE_IMAGES = [
     'base-builder-javascript',
     'base-builder-jvm',
     'base-builder-python',
+    'base-builder-ruby',
     'base-builder-rust',
     'base-builder-swift',
     'base-runner',

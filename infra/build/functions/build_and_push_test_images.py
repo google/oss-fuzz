@@ -124,6 +124,7 @@ def build_and_push_images(test_image_suffix):
           'base-builder-javascript',
           'base-builder-jvm',
           'base-builder-python',
+          'base-builder-ruby',
           'base-builder-rust',
       ],
   ]
