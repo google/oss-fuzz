@@ -1193,7 +1193,7 @@ def download_corpora(args):
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
-def coverage(args):
+def coverage(args):  # pylint: disable=too-many-branches
   """Generates code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
     logger.error(
