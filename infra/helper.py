@@ -39,22 +39,25 @@ BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
 
-BASE_IMAGES = {
-    'generic': [
-        'gcr.io/oss-fuzz-base/base-image',
-        'gcr.io/oss-fuzz-base/base-clang',
-        'gcr.io/oss-fuzz-base/base-builder',
-        BASE_RUNNER_IMAGE,
-        'gcr.io/oss-fuzz-base/base-runner-debug',
-    ],
-    'go': ['gcr.io/oss-fuzz-base/base-builder-go'],
-    'javascript': ['gcr.io/oss-fuzz-base/base-builder-javascript'],
-    'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
-    'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
-    'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
-    'ruby': ['gcr.io/oss-fuzz-base/base-builder-ruby'],
-    'swift': ['gcr.io/oss-fuzz-base/base-builder-swift'],
+LANGUAGE_TO_BASE_BUILDER_IMAGE = {
+    'c': 'base-builder',
+    'c++': 'base-builder',
+    'go': 'base-builder-go',
+    'javascript': 'base-builder-javascript',
+    'jvm': 'base-builder-jvm',
+    'python': 'base-builder-python',
+    'ruby': 'base-builder-ruby',
+    'rust': 'base-builder-rust',
+    'swift': 'base-builder-swift'
 }
+
+GENERIC_IMAGES = [
+    'gcr.io/oss-fuzz-base/base-image',
+    'gcr.io/oss-fuzz-base/base-clang',
+    'gcr.io/oss-fuzz-base/base-builder',
+    BASE_RUNNER_IMAGE,
+    'gcr.io/oss-fuzz-base/base-runner-debug',
+]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
@@ -77,17 +80,6 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 # Regex to match special chars in project name.
 SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
-
-LANGUAGE_TO_BASE_BUILDER_IMAGE = {
-    'c': 'base-builder',
-    'c++': 'base-builder',
-    'go': 'base-builder-go',
-    'javascript': 'base-builder-javascript',
-    'jvm': 'base-builder-jvm',
-    'python': 'base-builder-python',
-    'rust': 'base-builder-rust',
-    'swift': 'base-builder-swift'
-}
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
 CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
@@ -1685,13 +1677,18 @@ def shell(args):
 def pull_images(language=None):
   """Pulls base images used to build projects in language lang (or all if lang
   is None)."""
-  for base_image_lang, base_images in BASE_IMAGES.items():
-    if (language is None or base_image_lang == 'generic' or
-        base_image_lang == language):
-      for base_image in base_images:
-        if not docker_pull(base_image):
-          return False
+  for image in GENERIC_IMAGES:
+    if not docker_pull(image):
+      return False
 
+  if language in LANGUAGE_TO_BASE_BUILDER_IMAGE:
+    return docker_pull(
+        f'gcr.io/oss-fuzz-base/{LANGUAGE_TO_BASE_BUILDER_IMAGE[language]}')
+
+  assert language is None
+  for image_suffix in LANGUAGE_TO_BASE_BUILDER_IMAGE.values():
+    if not docker_pull(f'gcr.io/oss-fuzz-base/{image_suffix}'):
+      return False
   return True
 
 
