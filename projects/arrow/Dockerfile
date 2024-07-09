@@ -14,20 +14,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y -q && \
-    apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
         build-essential \
         cmake \
         flex \
-        libboost-all-dev \
+        libboost-dev \
         ninja-build \
         python3
+# Temporarily use newer boost until the base image it bumped
+RUN sed --in-place 's/focal/noble/g' /etc/apt/sources.list && apt update && apt install libboost-dev --reinstall --yes
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
