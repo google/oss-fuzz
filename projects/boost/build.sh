@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Work around build issue
+cp "/usr/local/include/x86_64-unknown-linux-gnu/c++/v1/__config_site" "/usr/local/include/c++/v1/"
+
 # Build boost
 CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" \
     ./bootstrap.sh --with-toolset=clang --prefix=/usr;
