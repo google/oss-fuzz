@@ -87,6 +87,7 @@ LANGUAGE_TO_BASE_BUILDER_IMAGE = {
     'python': 'base-builder-python',
     'rust': 'base-builder-rust',
     'swift': 'base-builder-swift'
+    'ruby': 'base-builder-ruby'
 }
 ARM_BUILDER_NAME = 'oss-fuzz-buildx-builder'
 
