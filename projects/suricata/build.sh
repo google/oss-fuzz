@@ -43,8 +43,8 @@ cp lib/liblz4.a /usr/local/lib/
 cp lib/lz4*.h /usr/local/include/
 cd ..
 
-tar -xvzf jansson-2.12.tar.gz
-cd jansson-2.12
+tar -xvzf jansson-2.14.tar.gz
+cd jansson-2.14
 ./configure --disable-shared
 make -j$(nproc)
 make install

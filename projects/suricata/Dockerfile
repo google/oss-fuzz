@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y build-essential autoconf automake libto
 # TODO libmagic, liblzma and other optional libraries
 ADD https://github.com/PhilipHazel/pcre2/releases/download/pcre2-10.39/pcre2-10.39.tar.gz pcre2-10.39.tar.gz
 ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
-ADD http://www.digip.org/jansson/releases/jansson-2.12.tar.gz jansson-2.12.tar.gz
+ADD https://github.com/akheron/jansson/releases/download/v2.14/jansson-2.14.tar.gz jansson-2.14.tar.gz
 RUN git clone --depth=1 https://github.com/yaml/libyaml
 ADD https://github.com/lz4/lz4/archive/v1.9.2.tar.gz lz4-1.9.2.tar.gz
 RUN git clone --depth 1 https://github.com/catenacyber/quadfuzz.git
