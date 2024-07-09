@@ -52,13 +52,12 @@ LANGUAGE_TO_BASE_BUILDER_IMAGE = {
 }
 
 GENERIC_IMAGES = [
-        'gcr.io/oss-fuzz-base/base-image',
-        'gcr.io/oss-fuzz-base/base-clang',
-        'gcr.io/oss-fuzz-base/base-builder',
-        BASE_RUNNER_IMAGE,
-        'gcr.io/oss-fuzz-base/base-runner-debug',
+    'gcr.io/oss-fuzz-base/base-image',
+    'gcr.io/oss-fuzz-base/base-clang',
+    'gcr.io/oss-fuzz-base/base-builder',
+    BASE_RUNNER_IMAGE,
+    'gcr.io/oss-fuzz-base/base-runner-debug',
 ]
-
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
@@ -1683,7 +1682,8 @@ def pull_images(language=None):
       return False
 
   if language in LANGUAGE_TO_BASE_BUILDER_IMAGE:
-    return docker_pull(f'gcr.io/oss-fuzz-base/{LANGUAGE_TO_BASE_BUILDER_IMAGE[language]}')
+    return docker_pull(
+        f'gcr.io/oss-fuzz-base/{LANGUAGE_TO_BASE_BUILDER_IMAGE[language]}')
 
   assert language is None
   for image_suffix in LANGUAGE_TO_BASE_BUILDER_IMAGE.values():
