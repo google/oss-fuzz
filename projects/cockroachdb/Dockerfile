@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --branch FuzzTests https://github.com/Nukitt/cockroach.git cockroach
-
+RUN git clone --depth 1 https://github.com/cockroachdb/cockroach.git cockroach
 WORKDIR cockroach
 COPY build.sh $SRC/
