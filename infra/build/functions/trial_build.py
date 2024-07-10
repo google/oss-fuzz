@@ -107,13 +107,12 @@ def handle_special_projects(args):
   if 'all' in args.projects:  # Explicit opt-in for all.
     args.projects = all_projects
     return
+  project_languages = get_project_languages()
   for project in args.projects[:]:
-    if project not in all_projects:
-      project_languages = get_project_languages()
-      if project in project_languages.keys():
-        language = project
-        args.projects.remove(language)
-        args.projects.extend(project_languages[language])
+    if project in project_languages.keys():
+      language = project
+      args.projects.remove(language)
+      args.projects.extend(project_languages[language])
 
 
 def get_args(args=None):
