@@ -21,16 +21,11 @@ import (
 
 func FuzzLoadYAMLByFilePath(f *testing.F) {
 	f.Fuzz(func(t *testing.T, fileContents []byte) {
-		fp, err := os.Create("yaml_file.yml")
+		err := os.WriteFile("yaml_file.yml", fileContents, 0600)
 		if err != nil {
-			panic(err)
+			t.Fatal(err)
 		}
-		_, err = fp.Write(fileContents)
-		if err != nil {
-			fp.Close()
-			panic(err)
-		}
-		fp.Close()
+
 		_, _ = LoadYAMLByFilePath("yaml_file.yml")
 	})
 }
