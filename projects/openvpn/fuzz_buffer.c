@@ -42,7 +42,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         buf = alloc_buf_gc(_size, &gc);
         bufp = &buf;
       } else {
-        tmp = get_random_string();
+        tmp = fuzz_random_get_string_max_length(BUF_SIZE_MAX - 1);
         buf = string_alloc_buf(tmp, &gc);
         bufp = &buf;
         free(tmp);

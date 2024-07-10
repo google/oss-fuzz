@@ -25,4 +25,3 @@ COPY fuzz*.cpp $SRC/
 COPY fuzz*.c $SRC/
 COPY fuzz*.h $SRC/openvpn/src/openvpn/
 
-COPY crypto_patch.txt $SRC/crypto_patch.txt

@@ -24,4 +24,3 @@ void gb_init();
 void gb_cleanup();
 char *gb_get_random_string();
 
-int fuzz_success;
