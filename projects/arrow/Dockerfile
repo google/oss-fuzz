@@ -26,8 +26,7 @@ RUN apt-get update -y -q && \
         libboost-dev \
         ninja-build \
         python3
-# Temporarily use newer boost until the base image it bumped
-RUN sed --in-place 's/focal/noble/g' /etc/apt/sources.list && apt update && apt install libboost-dev --reinstall --yes
+RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
