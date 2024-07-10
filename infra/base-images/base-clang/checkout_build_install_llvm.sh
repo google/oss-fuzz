@@ -88,22 +88,6 @@ function clone_with_retries {
 }
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
-PROJECTS_TO_BUILD="clang;lld"
-function cmake_llvm {
-  extra_args="$@"
-  cmake -G "Ninja" \
-      -DLIBCXX_ENABLE_SHARED=OFF \
-      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DLIBCXXABI_ENABLE_SHARED=OFF \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
-      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \
-      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
-      $extra_args \
-      $LLVM_SRC/llvm
-}
-
 git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
 echo "Using LLVM revision: $OUR_LLVM_REVISION"
 
@@ -123,7 +107,17 @@ mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 cd $WORK/llvm-stage2
-cmake_llvm
+cmake -G "Ninja" \
+  -DLIBCXX_ENABLE_SHARED=OFF \
+  -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+  -DLIBCXXABI_ENABLE_SHARED=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
+  -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+  $LLVM_SRC/llvm
+
 ninja -j $NPROC
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2

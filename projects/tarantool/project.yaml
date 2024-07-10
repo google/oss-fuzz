@@ -12,7 +12,7 @@ auto_ccs:
   - "imun.dev@gmail.com"
 sanitizers:
   - address
-  - undefined
+  # - undefined  # Temporarily disabled until https://github.com/tarantool/tarantool/issues/10143 is fixed
 architectures:
   - x86_64
 main_repo: "https://github.com/tarantool/tarantool"
