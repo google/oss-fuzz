@@ -23,7 +23,6 @@ RUN apt-get update -y -q && \
         build-essential \
         cmake \
         flex \
-        libboost-dev \
         ninja-build \
         python3
 RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
