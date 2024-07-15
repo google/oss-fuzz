@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/ron-rs/ron ron
-# See https://github.com/serde-rs/serde/issues/2770#issuecomment-2212162225
-ENV RUSTUP_TOOLCHAIN nightly-2024-07-07
-WORKDIR ron
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/lima-vm/lima
+WORKDIR lima
+COPY build.sh FuzzLoadYAMLByFilePath.go $SRC/

@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/ron-rs/ron ron
-# See https://github.com/serde-rs/serde/issues/2770#issuecomment-2212162225
-ENV RUSTUP_TOOLCHAIN nightly-2024-07-07
-WORKDIR ron
-COPY build.sh $SRC/
+mv $SRC/FuzzLoadYAMLByFilePath.go $SRC/lima/pkg/store/fuzz_test.go
+printf "package store\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/lima/pkg/store/register.go
+go mod tidy
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/store FuzzLoadYAMLByFilePath FuzzLoadYAMLByFilePath
