@@ -21,11 +21,16 @@ set -o nounset
 
 PREFIX="/usr"
 
-# Don't instrument the third-party dependencies that we build
+# The OSS-Fuzz 'compile' script automatically adds instrumentation flags to the CFLAGS and CXXFLAGS
+# environment variables. These flags cause build errors with some of the third-party dependencies,
+# so we save them for restoration later.
 CFLAGS_SAVE="$CFLAGS"
 CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
+
+# Set the non-instrumentation flags manually. -O1 is particularly important for avoiding spurious
+# timeouts caused by unoptimized dependencies.
+export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 # Compile and install GLib
 cd "$SRC/glib"
@@ -39,9 +44,21 @@ meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static buildd
 ninja -C builddir
 ninja -C builddir install
 
+# Compile and install libxml2
+cd "$SRC/libxml2"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir
+ninja -C builddir
+ninja -C builddir install
+
+# Compile and install Fontconfig
+cd "$SRC/fontconfig"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dtests=disabled -Dtools=disabled
+ninja -C builddir
+ninja -C builddir install
+
 # Compile and install Cairo
 cd "$SRC/cairo"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dfontconfig:tests=disabled -Dfontconfig:tools=disabled -Dpixman:tests=disabled
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dpixman:tests=disabled -Dtests=disabled
 ninja -C builddir
 ninja -C builddir install
 

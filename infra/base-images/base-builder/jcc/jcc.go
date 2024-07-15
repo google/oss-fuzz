@@ -42,6 +42,21 @@ func CopyFile(src string, dst string) {
 	}
 }
 
+func RemoveFailureCausingFlags(cmd []string) []string {
+    // Skip arguments that convert warnings to errors or make the command fail.
+    var newCmd []string
+    for _, arg := range cmd {
+        // Skip arguments that convert warnings to errors
+		if strings.HasPrefix(arg, "-Werror") ||
+			arg == "-pedantic-errors" ||
+			arg == "-Wfatal-errors" {
+			continue
+		}
+        newCmd = append(newCmd, arg)
+    }
+    return newCmd
+}
+
 func TryFixCCompilation(cmdline []string) ([]string, int, string, string) {
 	var newFile string = ""
 	for i, arg := range cmdline {
@@ -324,12 +339,21 @@ func main() {
 	} else {
 		bin = "clang"
 	}
-	fullCmdArgs := append([]string{bin}, newArgs...)
-	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+ 	fullCmdArgs := append([]string{bin}, newArgs...)
+ 	retcode, out, errstr := Compile(bin, newArgs)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
+
+ 	// Some projects convert warnings to errors, undo this and try again.
+ 	newArgs = RemoveFailureCausingFlags(newArgs)
+ 	retcode, out, errstr = Compile(bin, newArgs)
+ 	fullCmdArgs = append([]string{bin}, newArgs...)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
 
 	// Note that on failures or when we succeed on the first try, we should
 	// try to write the first out/err to stdout/stderr.
@@ -359,8 +383,6 @@ func main() {
 		// how to improve jcc to fix more issues.
 		WriteStdErrOut(fullCmdArgs, out, errstr)
 		fmt.Println("\nFix failure")
-		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixargs, fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.

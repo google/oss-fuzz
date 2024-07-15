@@ -20,11 +20,6 @@
 git submodule update --init --recursive
 git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
-
-# Temporary workaround. Can be removed once OSS-Fuzz rust toolchain is bumped.
-export RUSTUP_TOOLCHAIN=nightly-2024-02-12
-
-
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {

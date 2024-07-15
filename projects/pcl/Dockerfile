@@ -32,14 +32,14 @@ RUN apt-get update && apt-get install -y \
     qtbase5-dev qttools5-dev zlib1g-dev
 
 # Install and build boost from source so we can have it use libc++
-RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
-    tar xzf boost_1_70_0.tar.gz && \
-    cd boost_1_70_0 && \
+RUN wget https://sourceforge.net/projects/boost/files/boost/1.85.0/boost_1_85_0.tar.gz && \
+    tar xzf boost_1_85_0.tar.gz && \
+    cd boost_1_85_0 && \
     ./bootstrap.sh --with-toolset=clang && \
     ./b2 clean && \
     ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" -j$(nproc) install && \
     cd .. && \
-    rm -rf boost_1_70_0]
+    rm -rf boost_1_85_0
 
 RUN git clone --depth 1 https://github.com/PointCloudLibrary/pcl
 COPY build.sh $SRC/

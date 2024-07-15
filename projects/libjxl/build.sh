@@ -83,13 +83,17 @@ cmake \
   "${SRC}/libjxl"
 
 fuzzers=(
-  color_encoding_fuzzer
   cjxl_fuzzer
+  color_encoding_fuzzer
+  decode_basic_info_fuzzer
   djxl_fuzzer
   fields_fuzzer
   icc_codec_fuzzer
   jpegli_dec_fuzzer
   rans_fuzzer
+  set_from_bytes_fuzzer
+  streaming_fuzzer
+  transforms_fuzzer
 )
 
 ninja clean
