@@ -17,7 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/mongodb/bson-rust bson-rust
-# See https://github.com/serde-rs/serde/issues/2770#issuecomment-2212162225
-ENV RUSTUP_TOOLCHAIN nightly-2024-07-07
 WORKDIR bson-rust
 COPY build.sh $SRC/
