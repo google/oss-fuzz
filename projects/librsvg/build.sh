@@ -90,11 +90,12 @@ cargo update --package serde --precise 1.0.203
 cargo fuzz build -O
 cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 
-# Build a seed corpus by using the afl-fuzz SVGs
+# Build a seed corpus consisting of all the SVGs from the librsvg repo
 CORPUS_DIR="$WORK/corpus"
 mkdir -p "$CORPUS_DIR"
 
-for file in "$SRC"/librsvg/afl-fuzz/input/*.svg; do
+FILES=$(find "$SRC/librsvg" -type f -iname "*.svg")
+for file in $FILES; do
   cp "$file" "$CORPUS_DIR/$(md5sum "$file" | cut -f 1 -d ' ').svg"
 done
 
