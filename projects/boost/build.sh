@@ -21,7 +21,8 @@ cp "/usr/local/include/x86_64-unknown-linux-gnu/c++/v1/__config_site" "/usr/loca
 # Build boost
 CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" \
     ./bootstrap.sh --with-toolset=clang --prefix=/usr;
-./b2 toolset=clang cxxflags="$CXXFLAGS -stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" --with-graph --with-filesystem --with-program_options headers stage;
+echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$CXXFLAGS\" <linkflags>\"${LIB_FUZZING_ENGINE}\" ;" >user-config.jam
+./b2 --user-config=user-config.jam --toolset=clang-ossfuzz link=static --with-headers --with-graph --with-filesystem --with-program_options headers stage;
 
 # Very simple build rule, but sufficient here.
 #boost regexp
