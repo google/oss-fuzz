@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for sarif_utils.py"""
-import copy
 import os
 import unittest
 from unittest import mock

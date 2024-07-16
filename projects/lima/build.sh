@@ -15,8 +15,9 @@
 #
 ################################################################################
 
-git apply $SRC/python-multipart/*.patch
-python3 -m pip install '.[dev]'
-for fuzzer in $(find $SRC -name "fuzz_*.py"); do
-	compile_python_fuzzer $fuzzer
-done
+printf "package store\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/lima/pkg/store/register.go
+go mod tidy
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/store FuzzLoadYAMLByFilePath FuzzLoadYAMLByFilePath
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/cidata FuzzSetupEnv FuzzSetupEnv
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/iso9660util FuzzIsISO9660 FuzzIsISO9660
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/guestagent/procnettcp FuzzParse FuzzParse

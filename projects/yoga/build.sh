@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+cmake -B build -S . -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF -D CMAKE_BUILD_TYPE="Release" -G Ninja
+cmake --build build --target fuzz_layout
 
-git apply $SRC/python-multipart/*.patch
-python3 -m pip install '.[dev]'
-for fuzzer in $(find $SRC -name "fuzz_*.py"); do
-	compile_python_fuzzer $fuzzer
-done
+cp ./build/fuzz/fuzz_layout $OUT/

@@ -17,6 +17,16 @@
 
 set -ex
 
+# Install Boost headers
+(
+ cd $SRC/
+ tar jxf boost_1_85_0.tar.bz2
+ cd boost_1_85_0/
+ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+ CFLAGS="" CXXFLAGS="" ./b2 headers
+ cp -R boost/ /usr/include/
+)
+
 ARROW=${SRC}/arrow/cpp
 
 cd ${WORK}
