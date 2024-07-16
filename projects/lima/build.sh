@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-mv $SRC/FuzzLoadYAMLByFilePath.go $SRC/lima/pkg/store/fuzz_test.go
 printf "package store\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/lima/pkg/store/register.go
 go mod tidy
 compile_native_go_fuzzer github.com/lima-vm/lima/pkg/store FuzzLoadYAMLByFilePath FuzzLoadYAMLByFilePath
