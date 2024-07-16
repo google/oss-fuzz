@@ -73,7 +73,7 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
-PROJECT_COVERAGE_EXTRA_ARGS = re.compile(
+PROJECT_COVERAGE_EXTRA_ARGS_REGEX = re.compile(
     r'\s*coverage_extra_args\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
@@ -163,7 +163,7 @@ class Project:
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
       for line in content.splitlines():
-        match = PROJECT_COVERAGE_EXTRA_ARGS.match(line)
+        match = PROJECT_COVERAGE_EXTRA_ARGS_REGEX.match(line)
         if match:
           return match.group(1)
     # Return empty string when no extra args are specified. No need to log a
