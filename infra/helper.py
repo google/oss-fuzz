@@ -73,6 +73,9 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
+PROJECT_COVERAGE_EXTRA_ARGS = re.compile(
+    r'\s*coverage_extra_args\s*:\s*([^\s]+)')
+
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 # Regex to match special chars in project name.
@@ -147,6 +150,25 @@ class Project:
 
     logger.warning('Language not specified in project.yaml. Assuming c++.')
     return constants.DEFAULT_LANGUAGE
+
+  @property
+  def coverage_extra_args(self):
+    """Returns project coverage extra args."""
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logger.warning('No project.yaml.')
+      return ''
+
+    with open(project_yaml_path) as file_handle:
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = PROJECT_COVERAGE_EXTRA_ARGS.match(line)
+        if match:
+          return match.group(1)
+    # Return empty string when no extra args are specified. No need to log a
+    # warning here since no extra coverage args is the norm.
+    return ''
 
   @property
   def out(self):
@@ -1216,13 +1238,15 @@ def coverage(args):  # pylint: disable=too-many-branches
     if not download_corpora(args):
       return False
 
+  extra_cov_args = (
+    f'{args.project.coverage_extra_args.strip()} {" ".join(args.extra_args)}')
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'HELPER=True',
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
-      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
+      'COVERAGE_EXTRA_ARGS=%s' % extra_cov_args,
       'ARCHITECTURE=' + args.architecture,
   ]
 
