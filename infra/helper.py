@@ -1239,7 +1239,7 @@ def coverage(args):  # pylint: disable=too-many-branches
       return False
 
   extra_cov_args = (
-    f'{args.project.coverage_extra_args.strip()} {" ".join(args.extra_args)}')
+      f'{args.project.coverage_extra_args.strip()} {" ".join(args.extra_args)}')
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'HELPER=True',
