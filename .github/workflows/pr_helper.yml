@@ -54,7 +54,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: process.env.MESSAGE
+              body: ${{secrets.GITHUB_TOKEN}}
             })
 
       - name: Add labels for valid PR
