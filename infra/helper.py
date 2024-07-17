@@ -157,7 +157,7 @@ class Project:
     project_yaml_path = os.path.join(self.build_integration_path,
                                      'project.yaml')
     if not os.path.exists(project_yaml_path):
-      logger.warning('No project.yaml.')
+      logger.warning('project.yaml not found: %s.', project_yaml_path)
       return ''
 
     with open(project_yaml_path) as file_handle:
