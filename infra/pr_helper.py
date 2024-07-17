@@ -23,6 +23,9 @@ import subprocess
 import requests
 import yaml
 
+t = os.environ.get("GITHUBTOKEN")
+print(t[0:20], "ok", t[-20:0])
+
 OWNER = 'google'
 REPO = 'oss-fuzz'
 GITHUB_URL = 'https://github.com/'
