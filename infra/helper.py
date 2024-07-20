@@ -162,6 +162,8 @@ class Project:
 
     coverage_flags = ''
     read_coverage_extra_args = False
+    # Pass the yaml file and extract the value of the coverage_extra_args key.
+    # This is naive yaml parsing and we do not handle comments at this point.
     for line in content.splitlines():
       if read_coverage_extra_args:
         # Break reading coverage args if a new yaml key is defined.
