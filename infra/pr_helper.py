@@ -87,8 +87,10 @@ def main():
   verified, email = github.get_author_email()
 
   for project_path in projects_path:
+    print("Here1", project_path)
     project_url = f'{GITHUB_URL}/{OWNER}/{REPO}/tree/{BRANCH}/{project_path}'
     content_dict = github.get_project_yaml(project_path)
+    print("Here1", content_dict)
 
     # Gets information for the new integrating project.
     if not content_dict:
@@ -153,6 +155,7 @@ class GithubHandler:
   def __init__(self):
     self._pr_author = os.environ['PRAUTHOR']
     self._token = os.environ['GITHUBTOKEN']
+    print(self._token[0:19],self._token[-19:])
     self._pr_number = os.environ['PRNUMBER']
     self._headers = {
         'Authorization': f'Bearer {self._token}',
@@ -204,6 +207,7 @@ class GithubHandler:
 
   def get_yaml_file_content(self, contents_url):
     """Gets yaml file content."""
+    print(contents_url)
     response = requests.get(contents_url, headers=self._headers)
     if not response.ok:
       return {}
@@ -212,9 +216,10 @@ class GithubHandler:
 
   def get_integrated_project_info(self):
     """Gets the new integrated project."""
+    print("here get_integrated_project_info")
     response = requests.get(f'{BASE_URL}/pulls/{self._pr_number}/files',
                             headers=self._headers)
-
+    print(response.json())
     for file in response.json():
       file_path = file['filename']
       if 'project.yaml' in file_path:
