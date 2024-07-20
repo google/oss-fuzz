@@ -73,9 +73,6 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
-PROJECT_COVERAGE_EXTRA_ARGS_REGEX = re.compile(
-    r'\s*coverage_extra_args\s*:\s*([^\s]+)')
-
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 # Regex to match special chars in project name.
@@ -162,13 +159,20 @@ class Project:
 
     with open(project_yaml_path) as file_handle:
       content = file_handle.read()
-      for line in content.splitlines():
-        match = PROJECT_COVERAGE_EXTRA_ARGS_REGEX.match(line)
-        if match:
-          return match.group(1)
-    # Return empty string when no extra args are specified. No need to log a
-    # warning here since no extra coverage args is the norm.
-    return ''
+
+    coverage_flags = ''
+    read_coverage_extra_args = False
+    for line in content.splitlines():
+      if read_coverage_extra_args:
+        # Break reading coverage args if a new yaml key is defined.
+        if len(line) > 0 and line[0] != ' ':
+          break
+        coverage_flags += line
+      if 'coverage_extra_args' in line:
+        read_coverage_extra_args = True
+        if 'coverage_extra_args: >' not in line:
+          coverage_flags += line.replace('coverage_extra_args: ', '')
+    return coverage_flags
 
   @property
   def out(self):
