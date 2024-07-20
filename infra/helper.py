@@ -170,6 +170,7 @@ class Project:
         coverage_flags += line
       if 'coverage_extra_args' in line:
         read_coverage_extra_args = True
+        # Include the first line only if it's not a multi-line value.
         if 'coverage_extra_args: >' not in line:
           coverage_flags += line.replace('coverage_extra_args: ', '')
     return coverage_flags
