@@ -20,16 +20,16 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/facebook/zstd.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
-RUN git clone https://git.tukaani.org/xz.git
+RUN git clone https://github.com/tukaani-project/xz.git
 RUN git clone --depth 1 --branch=RB-3.2 https://github.com/AcademySoftwareFoundation/openexr.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v3.8.1 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v1.0.4 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 -b v3.9.1 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v1.1.0 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
-RUN git clone --depth 1 -b v2.5.0 https://github.com/uclouvain/openjpeg.git
+RUN git clone --depth 1 -b v2.5.2 https://github.com/uclouvain/openjpeg.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
 RUN git clone --depth=1 --branch v0.10.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
