@@ -21,3 +21,5 @@ compile_native_go_fuzzer github.com/lima-vm/lima/pkg/store FuzzLoadYAMLByFilePat
 compile_native_go_fuzzer github.com/lima-vm/lima/pkg/cidata FuzzSetupEnv FuzzSetupEnv
 compile_native_go_fuzzer github.com/lima-vm/lima/pkg/iso9660util FuzzIsISO9660 FuzzIsISO9660
 compile_native_go_fuzzer github.com/lima-vm/lima/pkg/guestagent/procnettcp FuzzParse FuzzParse
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/yqutil FuzzEvaluateExpression FuzzEvaluateExpression
+compile_native_go_fuzzer github.com/lima-vm/lima/pkg/downloader FuzzDownload FuzzDownload
