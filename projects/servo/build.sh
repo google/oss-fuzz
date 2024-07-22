@@ -21,14 +21,10 @@ cd ..
 cargo fuzz build -O 
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
 
-cd $SRC/rust-cssparser/fuzz
-cargo update -p serde --precise 1.0.200
-cd ..
+cd $SRC/rust-cssparser
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/cssparser $OUT/fuzz-cssparser
 
-cd $SRC/rust-url/url/fuzz
-cargo update -p serde --precise 1.0.200
-cd ..
+cd $SRC/rust-url/url
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/fuzz-url-parse
