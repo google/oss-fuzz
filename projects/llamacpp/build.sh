@@ -16,8 +16,8 @@
 ################################################################################
 
 export GGML_NO_OPENMP=1
-sed -i 's/:= c++/:= clang++/g' ./Makefile
-sed -i 's/:= cc/:= clang/g' ./Makefile 
+sed -i 's/:= c++/:= ${CXX}/g' ./Makefile
+sed -i 's/:= cc/:= ${CC}/g' ./Makefile
 
 UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc)
 
