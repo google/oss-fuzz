@@ -17,12 +17,16 @@
 
 cd "$SRC"
 
-wget -qO- https://botan.randombit.net/releases/Botan-2.16.0.tar.xz | tar xJ
-cd Botan-2.16.0
+wget -qO- https://botan.randombit.net/releases/Botan-3.4.0.tar.xz | tar xJ
+cd Botan-3.4.0
+# Once updated to the 3.5.0, use  | sed 's/curve25519/x25519/g' below
+BOTAN_MODULES=$(<"$SRC/rnp/ci/botan3-modules" tr '\n' ',')
 ./configure.py --prefix=/usr --cc-bin="$CXX" --cc-abi-flags="$CXXFLAGS" \
+               --unsafe-fuzzer-mode \
+               --with-fuzzer-lib='FuzzingEngine' \
+               --minimized-build \
                --disable-modules=locking_allocator \
-               --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
-               --with-fuzzer-lib='FuzzingEngine'
+               --enable-modules="$BOTAN_MODULES"
 make "-j$(nproc)"
 make install
 
@@ -48,7 +52,6 @@ cmake \
     -DBUILD_SHARED_LIBS=on \
     -DBUILD_TESTING=off \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-    -DDOWNLOAD_SEXP:BOOL=ON \
     "$SRC/rnp"
 make "-j$(nproc)"
 
@@ -62,5 +65,5 @@ done
 
 mkdir -p "${OUT}/lib"
 cp src/lib/librnp.so.0 "${OUT}/lib/"
-cp /usr/lib/libbotan-2.so.16 "${OUT}/lib/"
+cp /usr/lib/libbotan-3.so.* "${OUT}/lib/"
 cp /lib/x86_64-linux-gnu/libjson-c.so.* "${OUT}/lib/"
