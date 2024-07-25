@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/pygments/pygments.git
-
-RUN python3 -m pip install --upgrade pip
-
-WORKDIR pygments
-
-RUN git clone --depth 1 https://github.com/google/fuzzing
-
-COPY build.sh fuzz_guesser.py fuzz_lexers.py $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake xxd
+RUN git clone https://github.com/ggerganov/llama.cpp
+WORKDIR llama.cpp
+COPY build.sh $SRC/
+COPY fuzzers fuzzers

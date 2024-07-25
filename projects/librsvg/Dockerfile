@@ -40,12 +40,6 @@ RUN git clone --depth=1 --branch=1.18.0 https://gitlab.freedesktop.org/cairo/cai
 RUN git clone --depth=1 --branch=8.4.0 https://github.com/harfbuzz/harfbuzz.git
 RUN git clone --depth=1 --branch=1.52.2 https://gitlab.gnome.org/GNOME/pango.git
 
-# A recent nightly must be used to compile serde: https://github.com/serde-rs/serde/issues/2770
-# This has the unfortunate side effect of breaking coverage reports until LLVM is upgraded:
-# https://github.com/google/oss-fuzz/pull/12077
-ENV RUSTUP_TOOLCHAIN="nightly-2024-07-10"
-
-COPY build.sh "$SRC/"
-COPY *.options "$OUT/"
+COPY build.sh *.options "$SRC/"
 
 WORKDIR "$SRC/librsvg"

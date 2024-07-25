@@ -80,14 +80,25 @@ export CXXFLAGS="${CXXFLAGS_SAVE}"
 
 # Compile and copy the fuzz target(s)
 cd "$SRC/librsvg/fuzz"
+
+# Pin serde because it now requires a nightly compiler that is more recent than the one on the
+# OSS-Fuzz image:
+# https://github.com/serde-rs/serde/issues/2770
+# https://github.com/google/oss-fuzz/pull/12077
+cargo update --package serde --precise 1.0.203
+
 cargo fuzz build -O
 cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 
-# Build a seed corpus by using the afl-fuzz SVGs
+# Copy options files for fuzz targets
+cp "$SRC"/*.options "$OUT/"
+
+# Build a seed corpus consisting of all the SVGs from the librsvg repo
 CORPUS_DIR="$WORK/corpus"
 mkdir -p "$CORPUS_DIR"
 
-for file in "$SRC"/librsvg/afl-fuzz/input/*.svg; do
+FILES=$(find "$SRC/librsvg" -type f -iname "*.svg")
+for file in $FILES; do
   cp "$file" "$CORPUS_DIR/$(md5sum "$file" | cut -f 1 -d ' ').svg"
 done
 

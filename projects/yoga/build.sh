@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+cmake -B build -S . -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF -D CMAKE_BUILD_TYPE="Release" -G Ninja
+cmake --build build --target fuzz_layout
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/pygments/pygments.git
-
-RUN python3 -m pip install --upgrade pip
-
-WORKDIR pygments
-
-RUN git clone --depth 1 https://github.com/google/fuzzing
-
-COPY build.sh fuzz_guesser.py fuzz_lexers.py $SRC/
+cp ./build/fuzz/fuzz_layout $OUT/

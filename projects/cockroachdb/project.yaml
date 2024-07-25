@@ -2,8 +2,7 @@ homepage: "https://www.cockroachlabs.com/"
 language: go
 primary_contact: "stan@cockroachlabs.com"
 auto_ccs:
-  - "renato@cockroachlabs.com"
-  - "nukit.tailor@cockroachlabs.com"
+  - "test-eng@cockroachlabs.com"
 main_repo: "https://github.com/cockroachdb/cockroach.git"
 file_github_issue: true
 fuzzing_engines:
