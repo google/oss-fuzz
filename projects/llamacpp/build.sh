@@ -18,6 +18,11 @@
 export GGML_NO_OPENMP=1
 sed -i 's/:= c++/:= ${CXX}/g' ./Makefile
 sed -i 's/:= cc/:= ${CC}/g' ./Makefile
+# Avoid function that forks + starts instance of gdb.
+sed -i 's/ggml_print_backtrace();//g' ./ggml/include/ggml.h
+
+# Remove statefulness during fuzzing.
+sed -i 's/static bool is_first_call/bool is_first_call/g' ./ggml/src/ggml.c
 
 UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc)
 
@@ -41,6 +46,16 @@ cp fuzzers/*.dict $OUT/
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_json_to_grammar.cpp -o $OUT/fuzz_json_to_grammar
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_grammar.cpp -o $OUT/fuzz_grammar
+
+# Create a corpus for load_model_fuzzer
+./llama-gguf dummy.gguf w
+mkdir $SRC/load-model-corpus
+mv dummy.gguf $SRC/load-model-corpus/
+zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model
+echo "[libfuzzer]" > $OUT/fuzz_load_model.options
+echo "detect_leaks=0" >> $OUT/fuzz_load_model.options
 
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
