@@ -24,8 +24,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       parsed_grammar.symbol_ids.end()) {
     std::vector<const llama_grammar_element *> grammar_rules(
         parsed_grammar.c_rules());
-    llama_grammar_init(grammar_rules.data(), grammar_rules.size(),
+    auto grammar = llama_grammar_init(grammar_rules.data(), grammar_rules.size(),
                        parsed_grammar.symbol_ids.at("root"));
+    if (grammar != nullptr) {
+      llama_grammar_free(grammar);
+    }
   }
   return 0;
 }
