@@ -18,12 +18,19 @@
 # b44ExpLogTable.cpp only contains a definition of main().
 sed -i 's/Source\/OpenEXR\/IlmImf\/b44ExpLogTable.cpp//' Makefile.srcs
 sed -i 's/Source\/LibTIFF4\/tif_getimage.c/Source\/LibTIFF4\/tif_getimage.c Source\/LibTIFF4\/tif_hash_set.c/g' ./Makefile.srcs
-make LIBRARIES=-lc++ -j$(nproc)
+export CXXFLAGS="$CXXFLAGS -std=c++14"  # Avoid C++17 build error
+(
+ # Avoid tmpnam link error
+ cd Source/LibJXR
+ dos2unix ./image/encode/strenc.c
+ patch -p1 -i $SRC/jxrlib_tmpnam.patch
+)
+make LIBRARIES=-lc++ -j$(nproc) -f Makefile.gnu libfreeimage.a
 
-INSTALL_DIR="$PWD/Dist"
+INSTALL_DIR=$PWD
 
 cd $SRC
 
-$CXX $CXXFLAGS -I${INSTALL_DIR}/ $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS -I${INSTALL_DIR}/ -I${INSTALL_DIR}/Source $LIB_FUZZING_ENGINE \
   load_from_memory_fuzzer.cc ${INSTALL_DIR}/libfreeimage.a \
   -o $OUT/load_from_memory_fuzzer

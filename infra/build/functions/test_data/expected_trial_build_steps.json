@@ -106,6 +106,13 @@
       "gcr.io/oss-fuzz-base/base-builder-python"
     ]
   },
+  {"args": ["pull", "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch"],
+   "name": "gcr.io/cloud-builders/docker",
+   "waitFor": "-"},
+  {"args": ["tag",
+            "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch",
+            "gcr.io/oss-fuzz-base/base-builder-ruby"],
+   "name": "gcr.io/cloud-builders/docker"},
   {
     "name": "gcr.io/cloud-builders/docker",
     "args": [
@@ -120,6 +127,22 @@
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-rust-testing-mybranch",
       "gcr.io/oss-fuzz-base/base-builder-rust"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch"
+    ],
+    "waitFor": "-"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-ruby"
     ]
   },
   {

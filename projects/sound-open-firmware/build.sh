@@ -30,19 +30,10 @@ unset CXX
 unset CFLAGS
 unset CXXFLAGS
 
-BASE_CFG=(
--DCONFIG_ASSERT=y
--DCONFIG_SYS_HEAP_BIG_ONLY=y
--DCONFIG_ZEPHYR_NATIVE_DRIVERS=y
--DCONFIG_ARCH_POSIX_LIBFUZZER=y
--DCONFIG_ARCH_POSIX_FUZZ_TICKS=100
--DCONFIG_ASAN=y
-)
-
 cd $SRC/sof/sof
 
-west build -p -b native_posix ./app -- "${BASE_CFG[@]}"
-cp build/zephyr/zephyr.exe $OUT/sof-ipc3
+scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf
+cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc3
 
-west build -p -b native_posix ./app -- "${BASE_CFG[@]}" -DCONFIG_IPC_MAJOR_4=y
-cp build/zephyr/zephyr.exe $OUT/sof-ipc4
+scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf
+cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc4

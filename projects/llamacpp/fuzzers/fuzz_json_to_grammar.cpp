@@ -1,4 +1,4 @@
-/* Copyright 2022 Google LLC
+/* Copyright 2024 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -9,7 +9,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <nxt_main.h>
-#include "nxt_h1proto.c"
 
-nxt_int_t nxt_http_parse_fuzz(nxt_str_t *request, nxt_lvlhsh_t *hash);
+#include "grammar-parser.h"
+#include "json-schema-to-grammar.h"
+
+using json = nlohmann::json;
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+  try {
+    json_schema_to_grammar(json::parse(data, data + size));
+  } catch (...) {
+    return 0;
+  }
+
+  return 0;
+}

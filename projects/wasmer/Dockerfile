@@ -25,11 +25,6 @@ RUN mkdir -p $SRC/.llvm && curl --proto '=https' --tlsv1.2 -sSf \
     https://github.com/wasmerio/llvm-custom-builds/releases/download/15.x/llvm-linux-amd64.tar.xz -L -o - | \
     tar xJv -C $SRC/.llvm
 
-ARG rust_version=nightly-2023-10-05
-RUN rustup install ${rust_version}
-RUN rustup component add rust-src --toolchain ${rust_version}-x86_64-unknown-linux-gnu
-RUN rustup default ${rust_version}
-
 WORKDIR wasmer
 
 COPY build.sh default.options $SRC/
