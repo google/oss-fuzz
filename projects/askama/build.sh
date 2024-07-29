@@ -17,6 +17,10 @@
 
 set -eox pipefail
 
+pushd $SRC/askama/fuzz
+cargo update -p serde --precise 1.0.200
+popd
+
 target_out_dir=fuzz/target/x86_64-unknown-linux-gnu/release
 cargo fuzz build -O
 cargo fuzz list | while read i; do
