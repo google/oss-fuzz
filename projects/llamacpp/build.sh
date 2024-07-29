@@ -19,7 +19,7 @@ export GGML_NO_OPENMP=1
 sed -i 's/:= c++/:= ${CXX}/g' ./Makefile
 sed -i 's/:= cc/:= ${CC}/g' ./Makefile
 # Avoid function that forks + starts instance of gdb.
-sed -i 's/ggml_print_backtrace();//g' ./ggml/include/ggml.h
+sed -i 's/ggml_print_backtrace();//g' ./ggml/src/ggml.c
 
 # Remove statefulness during fuzzing.
 sed -i 's/static bool is_first_call/bool is_first_call/g' ./ggml/src/ggml.c
