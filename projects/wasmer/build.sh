@@ -20,6 +20,10 @@ export LLVM_SYS_150_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 # Needed for coverage to work.
 nightly="+$RUSTUP_TOOLCHAIN"
 
+pushd $SRC/wasmer/fuzz
+cargo update -p serde --precise 1.0.203
+popd
+
 cargo $nightly fuzz build universal_cranelift --features=universal,cranelift -O
 cargo $nightly fuzz build universal_llvm --features=universal,llvm -O
 cargo $nightly fuzz build universal_singlepass --features=universal,singlepass -O
