@@ -18,21 +18,12 @@
 # Clean up potentially persistent build directory.
 [[ -e $SRC/tarantool/build ]] && rm -rf $SRC/tarantool/build
 
-# Build ICU for linking statically.
-mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
-
-[ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
-  $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
-  --disable-tests --disable-samples --with-data-packaging=static
-make install -j$(nproc)
-
 # For fuzz-introspector, exclude all functions in the tests directory,
 # libprotobuf-mutator and protobuf source code.
 # See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
-icu/
 tarantool/build/test
 EOF
 
@@ -59,6 +50,7 @@ esac
 cmake_args=(
     # Specific to Tarantool
     -DENABLE_BACKTRACE=OFF
+    -DBUILD_STATIC_WITH_BUNDLED_LIBS=ON
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
     -DLUA_USE_APICHECK=ON
