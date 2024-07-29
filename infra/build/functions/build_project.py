@@ -22,7 +22,6 @@ Usage: build_project.py <project_dir>
 from __future__ import print_function
 
 import argparse
-import collections
 from dataclasses import dataclass
 import datetime
 import json

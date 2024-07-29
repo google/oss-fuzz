@@ -6,11 +6,12 @@ auto_ccs:
  - "matt@openssl.org"
  - "richard@levitte.org"
  - "tomas@openssl.org"
- - "hlandau@openssl.org"
  - "paulidale@openssl.org"
  - "nhorman@openssl.org"
  - "tjh@openssl.org"
  - "tjh@cryptsoft.com"
+ - "sashan@openssl.org"
+ - "viktor@openssl.org"
 sanitizers:
  - address
  - memory:

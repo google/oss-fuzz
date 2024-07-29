@@ -14,10 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget dos2unix
 RUN svn checkout https://svn.code.sf.net/p/freeimage/svn/ freeimage-svn
 WORKDIR $SRC/freeimage-svn/FreeImage/trunk/
+RUN wget "https://salsa.debian.org/debian-phototools-team/jxrlib/-/raw/7e12ab1185b347c0edfd893471c055e3ae7830b5/debian/patches/082bb032be1f6c75173bf603252e4f37bfded9fa.patch" --output-document=$SRC/jxrlib_tmpnam.patch
 COPY build.sh $SRC/
 COPY load_from_memory_fuzzer.cc $SRC/

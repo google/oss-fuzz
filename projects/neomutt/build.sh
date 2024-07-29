@@ -16,7 +16,7 @@
 ################################################################################
 
 ./configure --fuzzing --disable-doc --disable-nls --disable-idn
-make fuzz
+make fuzz -j$(nproc)
 cp fuzz/address-fuzz $OUT/
 
 cd $SRC/corpus-address

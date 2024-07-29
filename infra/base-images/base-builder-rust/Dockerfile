@@ -22,4 +22,15 @@ ENV PATH=$PATH:/rust/bin
 # Set up custom environment variable for source code copy for coverage reports
 ENV OSSFUZZ_RUSTPATH /rust
 
+# Force rustup to ignore `rust-toolchain` and `rust-toolchain.toml` files by
+# manually specifying what toolchain to use. Note that this environment variable
+# is additionally used by `install_rust.sh` as the toolchain to install.
+# cf https://rust-lang.github.io/rustup/overrides.html
+ENV RUSTUP_TOOLCHAIN nightly-2024-02-12
+
+# Configure the linker used by default for x86_64 linux to be `clang` instead of
+# rustc's default of `cc` which is able to find custom-built libraries like
+# `libc++` by default more easily.
+ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER clang
+
 RUN install_rust.sh

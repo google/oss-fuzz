@@ -21,22 +21,15 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # Base packages
-RUN apt-get -y update
-RUN apt-get install -y \
+RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
       libtool ninja-build python3-pip
 RUN pip3 install west
 
 # Zephyr SDK:
-#
-# Zephyr doesn't provide a clean "get the latest version" URL, but
-# note that the use of the /latest/ path component at least ensures
-# this will fail on a new release.
-ARG SDK_VER=0.16.1
-WORKDIR /root
-RUN curl -L -o sdktmp.tar.xz https://github.com/zephyrproject-rtos/sdk-ng/releases/latest/download/zephyr-sdk-${SDK_VER}_linux-x86_64_minimal.tar.xz
-RUN tar xf sdktmp.tar.xz; rm sdktmp.tar.xz
-RUN zephyr-sdk-*/setup.sh -h
+COPY fetch-sdk.sh /root
+WORKDIR /root/
+RUN ./fetch-sdk.sh
 
 WORKDIR $SRC
 
