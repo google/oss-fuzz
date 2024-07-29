@@ -17,4 +17,4 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/lima-vm/lima
 WORKDIR lima
-COPY build.sh FuzzLoadYAMLByFilePath.go $SRC/
+COPY build.sh $SRC/
