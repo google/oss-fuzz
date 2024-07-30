@@ -19,13 +19,9 @@ cd $SRC/botan
 
 ln -s $SRC/fuzzer_corpus .
 
-./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --disable-shared --disable-modules=locking_allocator \
-               --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
-               --without-os-features=getrandom,getentropy --with-fuzzer-lib='FuzzingEngine'
+./src/scripts/config_for_oss_fuzz.py $CXX "$CXXFLAGS"
 
-make -j$(nproc) libs
-make -j$(nproc) fuzzers
+make -j$(nproc) libs fuzzers
 make fuzzer_corpus_zip
 
 # the seed corpus zips will also be in this directory
