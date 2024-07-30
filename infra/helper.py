@@ -721,14 +721,14 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
-      'docker', 'run', '--privileged', '--shm-size=2g', '--platform',
-      platform
+      'docker', 'run', '--privileged', '--shm-size=2g', '--platform', platform
   ]
-  if not os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'):
-      command.append('--rm')
+  if os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'):
+    command.append('--name')
+    command.append(os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'))
   else:
-      command.append('--name')
-      command.append(os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'))
+    command.append('--rm')
+
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
