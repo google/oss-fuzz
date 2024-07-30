@@ -5,4 +5,5 @@ runs:
   using: ubuntu-latest
   steps:
     - id: "pr_helper"
+      shell: bash
       run: 'python infra/pr_helper/pr_helper.py'
