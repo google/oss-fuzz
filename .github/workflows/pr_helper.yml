@@ -1,12 +1,8 @@
 name: PR helper
 on:
-  pull_request_target:
-    types: [opened]
-    branches:
-      - master
+  pull_request:
     paths:
-      - 'projects/**'
-
+      - 'infra/**'
 jobs:
   build:
     runs-on: ubuntu-latest
