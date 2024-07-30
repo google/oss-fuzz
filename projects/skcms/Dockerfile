@@ -33,3 +33,4 @@ RUN apt-get update && \
 COPY build.sh $SRC/
 
 COPY iccprofile.options iccprofile.dict $SRC/skcms/
+Fake
