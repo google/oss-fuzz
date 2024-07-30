@@ -61,11 +61,11 @@ cmake_args=(
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
+    -DCMAKE_C_FLAGS="${CFLAGS}"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
 
     # Linker
     -DCMAKE_LINKER="${LD}"
@@ -83,8 +83,8 @@ git config --global --add safe.directory '*'
 
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
-cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --target fuzzers --parallel
+cmake "${cmake_args[@]}" -S . -B build
+cmake --build build --target fuzzers --parallel --verbose || bash
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/test/fuzz/ -name '*_fuzzer' -type f);
