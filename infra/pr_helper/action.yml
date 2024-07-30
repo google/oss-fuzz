@@ -2,4 +2,5 @@
 name: 'pr-helper'
 description: "PR helper."
 runs:
-  python infra/pr_helper.py
+  using: 'python'
+  main: 'infra/pr_helper/pr_helper.py'
