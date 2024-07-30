@@ -1,0 +1,5 @@
+# action.yml
+name: 'pr-helper'
+description: "PR helper."
+runs:
+  python infra/pr_helper.py
