@@ -3,4 +3,6 @@ name: 'pr-helper'
 description: "PR helper."
 runs:
   using: ubuntu-latest
-  run: 'python infra/pr_helper/pr_helper.py'
+  steps:
+    - id: "pr_helper"
+      run: 'python infra/pr_helper/pr_helper.py'
