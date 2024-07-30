@@ -38,11 +38,7 @@ jobs:
 
       - name: Check if authors are authorized to modify.
         id: checkAuthor
-        env:
-          GITHUBTOKEN: ${{secrets.GITHUB_TOKEN}}
-          PRAUTHOR: ${{ github.event.pull_request.user.login }}
-          PRNUMBER: ${{ github.event.pull_request.number }} 
-        run: python infra/pr_helper.py
+        uses: google/oss-fuzz/cflite_pr@ms
 
       - name: Leave comments
         if: env.IS_INTERNAL == 'FALSE'
