@@ -39,7 +39,7 @@ jobs:
           GITHUBTOKEN: ${{secrets.GITHUB_TOKEN}}
           PRAUTHOR: ${{ github.event.pull_request.user.login }}
           PRNUMBER: ${{ github.event.pull_request.number }}
-        uses: google/oss-fuzz/cflite_pr@ms
+        uses: google/oss-fuzz/infra/cflite_pr@ms
 
       - name: Leave comments
         if: env.IS_INTERNAL == 'FALSE'
