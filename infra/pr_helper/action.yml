@@ -2,5 +2,5 @@
 name: 'pr-helper'
 description: "PR helper."
 runs:
-  using: 'python'
-  main: 'infra/pr_helper/pr_helper.py'
+  using: ubuntu-latest
+  run: 'python infra/pr_helper/pr_helper.py'
