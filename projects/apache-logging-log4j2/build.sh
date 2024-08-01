@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-./logging-log4j2/generate-fuzzer-scripts.sh "$OUT"
+./logging-log4j2/oss-fuzz-build.sh "$OUT"
