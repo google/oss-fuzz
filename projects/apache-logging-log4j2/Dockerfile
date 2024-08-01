@@ -39,8 +39,5 @@ ENV JAVA_HOME /usr/lib/jvm/zulu17
 ENV JVM_LD_LIBRARY_PATH /usr/lib/jvm/zulu17/lib/server
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/out:/usr/lib/jvm/zulu17/bin
 
-# Clone the Log4j repository
-RUN git clone --depth 1 --branch fuzzing --single-branch https://github.com/apache/logging-log4j2
-
 COPY build.sh $SRC/
 WORKDIR $SRC
