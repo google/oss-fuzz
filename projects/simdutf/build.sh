@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
-RUN git clone --depth 1 https://github.com/simdutf/simdutf simdutf
-WORKDIR simdutf
-COPY build.sh $SRC/
+fuzz/build.sh
