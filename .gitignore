@@ -1,5 +1,3 @@
-.idea
-**/*.iml
 /.vscode/
 *.pyc
 /build/
