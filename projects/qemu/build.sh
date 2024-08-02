@@ -1,5 +1,4 @@
-#!/bin/sh -e
-# Copyright 2020 Google Inc.
+#!/bin/sh -e # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,12 @@
 #
 ################################################################################
 
-pip3 install meson
+pip3 install meson tomli
 
-./scripts/oss-fuzz/build.sh
+cd $SRC/glib
+CC="" CFLAGS="" CXX="" CXXFLAGS="" meson setup --buildtype=plain --default-library=shared builddir -Dtests=false
+CC="" CFLAGS="" CXX="" CXXFLAGS="" ninja -C builddir
+ninja -C builddir install
+
+cd $SRC/qemu/
+$SRC/qemu/scripts/oss-fuzz/build.sh

@@ -19,9 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-builder-ruby
 RUN git clone --depth 1 --single-branch https://github.com/ohler55/ox.git $SRC/ox-ruby
 
 ENV CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
-ENV CXXFLAGS="$XXFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
+ENV CXXFLAGS="$CXXFLAGS -fsanitize=fuzzer-no-link -fno-omit-frame-pointer -fno-common -fPIC -g"
 
 COPY build.sh $SRC/build.sh
-COPY fuzz_*.rb $SRC/harnesses/.
+COPY fuzz_*.rb $SRC/harnesses/
 
 WORKDIR $SRC
