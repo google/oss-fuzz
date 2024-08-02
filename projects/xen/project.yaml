@@ -5,7 +5,7 @@ auto_ccs:
   - "tamas.k.lengyel@gmail.com"
   - "jbeulich@suse.com"
   - "andrew.cooper3@citrix.com"
-  - "roger.pau@citrix.com"
+  - "roger.pau@cloud.com"
   - "sstabellini@kernel.org"
 sanitizers:
   - address
