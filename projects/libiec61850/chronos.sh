@@ -3,6 +3,7 @@
 
 # Initialize re-run.sh
 echo "#!/bin/bash" > re-run.sh
+echo "source /src/saved_vars.sh" >> re-run.sh
 chmod +x re-run.sh
 
 export FUZZ_TARGET="fuzz_mms_decode.c"
@@ -21,6 +22,7 @@ log_command() {
 execute_or_log_command() {
     local cmd="$BASH_COMMAND"
     if [[ "$cmd" == *"$FUZZ_TARGET"* ]]; then
+        declare -p > /src/saved_vars.sh
         log_command "$cmd"
         echo "Simulated (logged) execution of: $cmd"
         export LOGGING="true"
