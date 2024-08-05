@@ -61,7 +61,6 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
     "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
     "-DENABLE_FUZZING=1"
-    "-DWITH_COVERAGE=1"
     "-DENABLE_PROTOBUF=1"
     "-DPARALLEL_COMPILE_JOBS=$NUM_JOBS"
 )
@@ -69,7 +68,7 @@ CLICKHOUSE_CMAKE_FLAGS=(
 if [ "$SANITIZER" = "coverage" ]; then
     cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
 fi
 
 TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -\! -name '*gtest_*' -prune -execdir basename {} .cpp ';' | tr '\n' ' ')
