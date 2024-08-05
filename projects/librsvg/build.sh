@@ -93,6 +93,9 @@ cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 # Copy options files for fuzz targets
 cp "$SRC"/*.options "$OUT/"
 
+# Copy suppressions file for fuzz targets
+cp "$SRC/librsvg/tools/lsan.supp" "$OUT/"
+
 # Build a seed corpus consisting of all the SVGs from the librsvg repo
 CORPUS_DIR="$WORK/corpus"
 mkdir -p "$CORPUS_DIR"
