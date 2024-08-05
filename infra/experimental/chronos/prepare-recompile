@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+# Prepare a project for fuzz target recompilation via chronos.sh
+# Usage:
+# (in OSS-Fuzz root dir) infra/experimental/chronos/prepare-recompile.sh <project> <fuzz-target-name> <fuzzing-language>
+# E.g.:
+#infra/experimental/chronos/prepare-recompile.sh libiec61850 fuzz_mms_decode.c c
+
+
+
+PROJECT=$1
+FUZZ_TARGET=$2
+FUZZING_LANGUAGE=$3
+
+# Step 1: Copy chronos.sh to its project directory.
+cp infra/experimental/chronos/chronos.sh "projects/$PROJECT/"
+
+# Step 2: Copy chronos.sh to image and set FUZZ_TARGET and FUZZING_LANGUAGE in its Dockerfile.
+{
+    echo "COPY chronos.sh /src";
+    echo "ENV FUZZ_TARGET=\"$FUZZ_TARGET\"";
+    echo "ENV FUZZING_LANGUAGE=\"$FUZZING_LANGUAGE\"";
+} >> "projects/$PROJECT/Dockerfile"
+
+# Step 3: Source chronos.sh at the beginning of its build.sh.
+sed -i.bak "1s|^|source \"/src/chronos.sh\"\n|" "projects/$PROJECT/build.sh"
+
