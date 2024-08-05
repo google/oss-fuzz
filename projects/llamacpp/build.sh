@@ -24,7 +24,7 @@ sed -i 's/ggml_print_backtrace();//g' ./ggml/src/ggml.c
 # Remove statefulness during fuzzing.
 sed -i 's/static bool is_first_call/bool is_first_call/g' ./ggml/src/ggml.c
 
-UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc)
+UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc) llama-gguf llama-server
 
 
 # Convert models into header files so we can use them for fuzzing.
