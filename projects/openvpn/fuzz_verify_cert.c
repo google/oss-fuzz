@@ -59,7 +59,7 @@ static int init_session_opt(struct tls_options **_opt, struct gc_arena *gc) {
   int r;
 
   ALLOC_OBJ_GC(*_opt, struct tls_options, gc);
-  if (opt == NULL) {
+  if (*_opt == NULL) {
 		return -1;
   }
 
