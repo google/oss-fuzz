@@ -1,0 +1,10 @@
+homepage: "https://pyhf.readthedocs.io/"
+language: python
+primary_contact: "scikit-hep-admins@googlegroups.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: "https://github.com/scikit-hep/pyhf"
