@@ -1,9 +1,9 @@
-homepage: https://logging.apache.org/log4j/2.x
-main_repo: https://github.com/apache/logging-log4j2
+homepage: "https://logging.apache.org/log4j/2.x"
+main_repo: "https://github.com/apache/logging-log4j2"
 language: jvm
 
 fuzzing_engines:
-- libfuzzer
+  - libfuzzer
 sanitizers:
   - address
 
@@ -12,6 +12,6 @@ sanitizers:
 #
 # [1] https://logging.apache.org/team-list.html
 # [2] https://google.github.io/oss-fuzz/getting-started/new-project-guide/#primary
-primary_contact:
-- volkan@yazi.ci
-- piotr.karwasz@gmail.com
+primary_contact: volkan@yazi.ci
+auto_ccs:
+  - piotr.karwasz@gmail.com
