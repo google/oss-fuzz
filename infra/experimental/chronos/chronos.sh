@@ -47,7 +47,7 @@ execute_or_record_command() {
 
     if [[ "$START_RECORDING" == "true" ]]; then
         record_command "$BASH_COMMAND"
-        echo "Simulated (logged) execution of: $BASH_COMMAND"
+        echo "Recorded execution of: $BASH_COMMAND"
     fi
 }
 
