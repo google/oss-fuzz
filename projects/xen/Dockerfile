@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
-RUN git clone --depth 1 https://github.com/simdutf/simdutf simdutf
-WORKDIR simdutf
+
+RUN apt-get update && apt-get -y install iasl uuid-dev \
+    libncurses-dev pkg-config libglib2.0-dev libpixman-1-dev \
+    libyajl-dev
+RUN git clone --depth=1 https://xenbits.xen.org/git-http/xen.git
+
 COPY build.sh $SRC/
