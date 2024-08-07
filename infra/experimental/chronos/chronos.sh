@@ -14,9 +14,15 @@
 #
 ################################################################################
 
+# This script records the ENV and commands needed for fuzz target recompilation.
+# It intercepts bash commands to save: 1) the ENV variable values before
+# building the fuzz target (`recompile_env.sh`) and 2) all subsequent bash
+# commands from that point (`recompile`). Combined with Docker, this setup
+# allows for recompiling the fuzz target without rebuilding the entire project.
 # Usage:
-# 1. Set FUZZ_TARGET (e.g., in Dockerfile)
-# 2. Source this file before compiling the fuzz target (source chronos.sh).
+# 1. Set FUZZ_TARGET (e.g., in project's Dockerfile)
+# 2. Source this file before compiling the fuzz target (e.g., source chronos.sh
+# at the beginning of project's build.sh).
 
 export START_RECORDING="false"
 RECOMPILE_ENV="/usr/local/bin/recompile_env.sh"
