@@ -23,8 +23,8 @@ RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/mratsim/constantine
 RUN wget -q https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 RUN wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz
-RUN wget -q https://nim-lang.org/download/nim-1.6.12-linux_x64.tar.xz
-RUN wget -q https://nim-lang.org/download/nim-1.6.12-linux_x32.tar.xz
+RUN wget -q https://nim-lang.org/download/nim-2.0.8-linux_x64.tar.xz
+RUN wget -q https://nim-lang.org/download/nim-2.0.8-linux_x32.tar.xz
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305

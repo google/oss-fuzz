@@ -163,6 +163,7 @@ COPY bazel_build_fuzz_tests \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \
+    install_ruby.sh \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \

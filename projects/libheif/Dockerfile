@@ -22,11 +22,13 @@ RUN apt-get update && apt-get install -y \
     automake \
     build-essential \
     cmake \
+    libbrotli-dev \
     libtool \
     make \
     mercurial \
     pkg-config \
-    yasm
+    yasm \
+    zlib1g-dev
 
 RUN git clone \
     --depth 1 \
