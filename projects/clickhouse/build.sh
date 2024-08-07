@@ -73,6 +73,11 @@ fi
 
 TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -\! -name '*gtest_*' -prune -execdir basename {} .cpp ';' | tr '\n' ' ')
 
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  # When running in CI, check the first targets only to save time and disk space
+  TARGETS=( ${TARGETS[@]:0:2} )
+fi
+
 for FUZZER_TARGET in $TARGETS
 do
     # Skip this fuzzer because of linker errors (the size of the binary is too big)
