@@ -34,7 +34,7 @@ pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --enable-{gpl,nonfree} \
             --disable-{asm,bsfs,doc,encoders,filters,muxers,network,postproc,programs,shared} \
-            --enable-filter={scale,sine,yuvtestsrc} \
+            --enable-filter={sine,yuvtestsrc} \
             --pkg-config-flags="--static" \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
