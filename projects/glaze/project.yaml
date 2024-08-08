@@ -1,0 +1,7 @@
+homepage: "https://github.com/stephenberry/glaze"
+language: c++
+primary_contact: "pauldreikossfuzz@gmail.com"
+auto_ccs:
+   - "stephenberry.developer@gmail.com"
+main_repo: "https://github.com/stephenberry/glaze.git"
+file_github_issue: true
