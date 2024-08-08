@@ -23,7 +23,8 @@ mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
 
 [ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
   $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
-  --disable-tests --disable-samples --with-data-packaging=static
+  --disable-tests --disable-samples --with-data-packaging=static ||
+  find $SRC/tarantool -name config.log -exec cat {} +
 make install -j$(nproc)
 
 # For fuzz-introspector, exclude all functions in the tests directory,
