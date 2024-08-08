@@ -87,9 +87,11 @@ do
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
-    # We have to preserve LLVMFuzzerTestOneInput symbol in the resulting binary to not fail this check
+    # We have to preserve certain symbols e.g. LLVMFuzzerTestOneInput and some sanitizer-related once to not fail build checks:
+    # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/bad_build_check#L173
     # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/test_all.py#L92-L96
-    strip --strip-unneeded -K LLVMFuzzerTestOneInput $TEMP
+    # because of that we strip only debug symbols
+    strip --strip-debug $TEMP
 done
 
 # copy out fuzzer binaries
