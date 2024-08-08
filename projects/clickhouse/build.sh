@@ -87,7 +87,9 @@ do
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
-    strip --strip-unneeded $TEMP
+    # We have to preserve LLVMFuzzerTestOneInput symbol in the resulting binary to not fail this check
+    # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/test_all.py#L92-L96
+    strip --strip-unneeded -K LLVMFuzzerTestOneInput $TEMP
 done
 
 # copy out fuzzer binaries
