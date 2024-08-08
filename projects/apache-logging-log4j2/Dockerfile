@@ -24,15 +24,17 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # [1] https://github.com/apache/logging-parent/blob/main/.github/workflows/build-reusable.yaml#L54
 
 # Add the Zulu APT repository
-RUN apt-get install -y gnupg ca-certificates && \
+RUN apt-get update && \
+    apt-get install -y gnupg ca-certificates && \
     wget -q -O - https://repos.azul.com/azul-repo.key | \
     gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | \
-    tee /etc/apt/sources.list.d/zulu.list && \
-    apt-get update
+    tee /etc/apt/sources.list.d/zulu.list
+
 
 # Install Zulu 17
-RUN apt-get install -y zulu17-jdk
+RUN apt-get update && \
+    apt-get install -y zulu17-jdk
 
 # Update Java-related environment variables
 ENV JAVA_HOME /usr/lib/jvm/zulu17
