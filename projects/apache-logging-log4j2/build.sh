@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN git clone --depth 1 https://github.com/apache/logging-log4j2
-
-COPY build.sh $SRC/
-COPY *.java *.xml $SRC/
-WORKDIR $SRC/logging-log4j2
+git clone --depth 1 --branch fuzzing --single-branch https://github.com/apache/logging-log4j2
+./logging-log4j2/oss-fuzz-build.sh "$OUT"
