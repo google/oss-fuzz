@@ -1,0 +1,10 @@
+homepage: "https://www.boost.org/"
+language: c++
+primary_contact: "vinnie.falco@gmail.com"
+auto_ccs:
+   - "ashtumashtum@gmail.com"
+main_repo: 'https://github.com/boostorg/beast.git'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
