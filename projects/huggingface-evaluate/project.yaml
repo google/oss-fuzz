@@ -1,0 +1,8 @@
+homepage: https://github.com/huggingface/evaluate
+main_repo: https://github.com/huggingface/evaluate
+language: python
+primary_contact: arthur@adalogics.com
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
