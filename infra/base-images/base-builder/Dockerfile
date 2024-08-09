@@ -19,9 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-clang
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
-# Build and install latest Python 3 (3.8.3).
-ENV PYTHON_VERSION 3.8.3
-RUN export PYTHON_DEPS="\
+# Build and install latest Python 3.10.
+ENV PYTHON_VERSION 3.10.14
+RUN PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
         libgdbm-dev \
@@ -39,12 +39,14 @@ RUN export PYTHON_DEPS="\
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j install && \
+    make -j$(nproc) install && \
     ldconfig && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    rm -rf /usr/local/lib/python3.8/test && \
+    rm -rf /usr/local/lib/python${PYTHON_VERSION%.*}/test && \
+    python3 -m ensurepip && \
+    python3 -m pip install --upgrade pip && \
     apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
 # Install six for Bazel rules.
