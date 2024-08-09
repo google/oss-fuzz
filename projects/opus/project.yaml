@@ -4,6 +4,7 @@ primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
   - "flim@google.com"
   - "tomdenton@google.com"
+  - "le.businessman@gmail.com"
 vendor_ccs:
   - "twsmith@mozilla.com"
 fuzzing_engines:

@@ -241,6 +241,7 @@ def build_base_images():
       'base-builder-python',
       'base-builder-rust',
       'base-builder-swift',
+      'base-builder-ruby',
       'base-runner',
   ]
   for image in images:

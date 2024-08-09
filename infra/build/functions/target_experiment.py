@@ -298,6 +298,7 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
 
 
 def main():
+  """Runs a target experiment on GCB."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('--project', required=True, help='Project name')
   parser.add_argument('--target', required=True, help='Target name')

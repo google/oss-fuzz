@@ -25,12 +25,12 @@ export CXXFLAGS="$CXXFLAGS -std=c++14"  # Avoid C++17 build error
  dos2unix ./image/encode/strenc.c
  patch -p1 -i $SRC/jxrlib_tmpnam.patch
 )
-make LIBRARIES=-lc++ -j$(nproc)
+make LIBRARIES=-lc++ -j$(nproc) -f Makefile.gnu libfreeimage.a
 
-INSTALL_DIR="$PWD/Dist"
+INSTALL_DIR=$PWD
 
 cd $SRC
 
-$CXX $CXXFLAGS -I${INSTALL_DIR}/ $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS -I${INSTALL_DIR}/ -I${INSTALL_DIR}/Source $LIB_FUZZING_ENGINE \
   load_from_memory_fuzzer.cc ${INSTALL_DIR}/libfreeimage.a \
   -o $OUT/load_from_memory_fuzzer
