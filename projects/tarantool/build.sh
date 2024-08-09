@@ -30,15 +30,6 @@ EOF
 
 cd $SRC/tarantool
 
-# Avoid compilation issue due to some undefined references. They are defined in
-# libc++ and used by Centipede so -lc++ needs to come after centipede's lib.
-if [[ $FUZZING_ENGINE == centipede ]]
-then
-    sed -i \
-        '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
-        test/fuzz/CMakeLists.txt
-fi
-
 case $SANITIZER in
   address) SANITIZERS_ARGS="-DENABLE_ASAN=ON" ;;
   undefined) SANITIZERS_ARGS="-DENABLE_UB_SANITIZER=ON" ;;
