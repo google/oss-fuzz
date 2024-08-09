@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
 	autoconf automake libtool zlib1g-dev libzstd-dev \
 	libunwind-dev ninja-build
 
-RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
+RUN git clone --jobs $(nproc) --recursive https://github.com/ligurio/tarantool
 WORKDIR $SRC/tarantool
+RUN git checkout ligurio/gh-xxxx-vclock_from_string
 
 COPY build.sh $SRC/
