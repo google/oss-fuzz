@@ -35,8 +35,6 @@ cp infra/experimental/chronos/chronos.sh "projects/$PROJECT/"
     echo "COPY chronos.sh /src";
     echo "ENV FUZZ_TARGET=\"$FUZZ_TARGET\"";
     echo "ENV FUZZING_LANGUAGE=\"$FUZZING_LANGUAGE\"";
+    # Step 3: Source chronos.sh at the beginning of its build.sh.
+    echo "RUN sed -i.bak \"1s|^|source \\\"/src/chronos.sh\\\"\\n|\" \"/src/build.sh\""
 } >> "projects/$PROJECT/Dockerfile"
-
-# Step 3: Source chronos.sh at the beginning of its build.sh.
-sed -i.bak "1s|^|source \"/src/chronos.sh\"\n|" "projects/$PROJECT/build.sh"
-
