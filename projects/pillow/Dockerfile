@@ -43,7 +43,8 @@ RUN python3 -m pip install --upgrade pip
 COPY build.sh $SRC/
 
 # pillow optional runtime dependencies
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
      python3-tk \
      tcl8.6-dev \
      tk8.6-dev
