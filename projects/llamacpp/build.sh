@@ -51,6 +51,7 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_grammar.cp
 ./llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
 mv dummy.gguf $SRC/load-model-corpus/
+mv $SRC/llama.cpp/models/ggml-vocab-falcon.gguf $SRC/load-model-corpus/
 zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
 find $SRC/llama.cpp/models/ -name *.gguf -exec cp {} $SRC/load-model-corpus/ \;
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
