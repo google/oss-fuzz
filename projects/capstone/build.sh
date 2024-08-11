@@ -33,7 +33,7 @@ do
     (
     export CFLAGS=""
     export AFL_NOOPT=1
-    pip install .
+    python3 -m pip install -y .
     )
     cd $SRC/capstone$branch/suite
     mkdir fuzz/corpus
@@ -53,5 +53,5 @@ do
     fi
     $CXX $CXXFLAGS $FUZZO -o $OUT/fuzz_disasm$branch libcapstone.a $LIB_FUZZING_ENGINE
 
-    pip uninstall -y capstone
+    python3 -m pip uninstall -y capstone
 done
