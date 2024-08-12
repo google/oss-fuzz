@@ -24,6 +24,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
       libtool ninja-build python3-pip
+RUN python3 -m pip install --upgrade pip
 RUN pip3 install west
 
 # Zephyr SDK:
