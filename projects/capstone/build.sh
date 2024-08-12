@@ -18,7 +18,7 @@
 #add next branch
 for branch in v5 next
 do
-    cd capstone$branch
+    cd $SRC/capstone$branch
     # build project
     mkdir build
     # does not seem to work in source directory
@@ -33,7 +33,7 @@ do
     (
     export CFLAGS=""
     export AFL_NOOPT=1
-    python3 setup.py install
+    python3 -m pip install .
     )
     cd $SRC/capstone$branch/suite
     mkdir fuzz/corpus
@@ -53,5 +53,5 @@ do
     fi
     $CXX $CXXFLAGS $FUZZO -o $OUT/fuzz_disasm$branch libcapstone.a $LIB_FUZZING_ENGINE
 
-    cd ../../
+    python3 -m pip uninstall -y capstone
 done
