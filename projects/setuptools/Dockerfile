@@ -14,6 +14,7 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/pypa/setuptools setuptools
-RUN python3 -m pip install --upgrade pip tomli tomli-w railroad-diagrams pyparsing jinja2
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install 'pyinstaller==6.10.0' tomli tomli-w railroad-diagrams pyparsing jinja2
 COPY *.sh *py $SRC/
 WORKDIR $SRC/setuptools

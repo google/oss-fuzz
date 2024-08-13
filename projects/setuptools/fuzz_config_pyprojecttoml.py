@@ -16,7 +16,7 @@
 import sys
 import atheris
 
-from setuptools.extern import tomli
+import tomli
 from setuptools.config.pyprojecttoml import (
     read_configuration
 )
@@ -31,7 +31,7 @@ def TestOneInput(data):
   config_path = "/tmp/pyproject.taml"
   with open(config_path, "w") as cf:
       cf.write(fdp.ConsumeUnicodeNoSurrogates(4096))
-      
+
   try:
     config = read_configuration(config_path)
   except tomli.TOMLDecodeError:
