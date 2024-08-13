@@ -32,10 +32,10 @@ make_dictionary_for_fuzz_harness() {
 # the path, which causes this assert check to fail.
 sed -i 's/def do_override():/def do_override():\n    return True\n\ndef do_override2():/g' _distutils_hack/__init__.py
 
-git clone https://github.com/pypa/distutils
-cd distutils
+pushd "$SRC/distutils"
 pip3 install .
-cd ..
+popd
+
 pip3 install .
 
 cd ../
