@@ -15,6 +15,19 @@
 #
 ################################################################################
 
+make_dictionary_for_fuzz_harness() {
+  local fuzz_harness="$1"
+  local base_dictionary="$SRC/__base.dict"
+  local output_dict="$OUT/${fuzz_harness##*/}"
+  output_dict="${output_dict%.py}.dict"
+
+  [[ -r "$base_dictionary" ]] && {
+    [[ -s "$output_dict" ]] && echo >>"$output_dict"
+    cat "$base_dictionary" >>"$output_dict"
+  }
+}
+
+
 # We need this because pyinstaller used in OSS-Fuzz will affect
 # the path, which causes this assert check to fail.
 sed -i 's/def do_override():/def do_override():\n    return True\n\ndef do_override2():/g' _distutils_hack/__init__.py
@@ -28,11 +41,12 @@ pip3 install .
 cd ../
 mkdir forbuilding
 cd forbuilding
-
 # Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+for fuzzer in $(find "$SRC" -name 'fuzz_*.py'); do
+  compile_python_fuzzer "$fuzzer"
+  make_dictionary_for_fuzz_harness "$fuzzer"
 done
 
-wget https://raw.githubusercontent.com/pypa/setuptools/52c990172fec37766b3566679724aa8bf70ae06d/setup.cfg
-zip $OUT/fuzz_config_pyprojecttoml_seed_corpus.zip ./setup.cfg
+
+wget https://raw.githubusercontent.com/pypa/setuptools/main/pyproject.toml
+zip $OUT/fuzz_config_pyprojecttoml_seed_corpus.zip ./pyproject.toml

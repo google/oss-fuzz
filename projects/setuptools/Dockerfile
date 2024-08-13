@@ -16,5 +16,10 @@ FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/pypa/setuptools setuptools
 RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install 'pyinstaller==6.10.0' tomli tomli-w railroad-diagrams pyparsing jinja2
+RUN urls="\
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/utf8.dict \
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/toml.dict" \
+  && target_file="$SRC/__base.dict" \
+  && echo $urls | xargs -n 1 wget -qO- >> $target_file
 COPY *.sh *py $SRC/
 WORKDIR $SRC/setuptools
