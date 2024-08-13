@@ -15,9 +15,23 @@
 #
 ################################################################################
 
+cd $SRC/go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
+
+cd $SRC/opentelemetry-collector
+cd receiver/otlpreceiver
+printf "package otlpreceiver \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./fuzz-register.go
+go mod tidy
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
+go mod tidy
+compile_native_go_fuzzer go.opentelemetry.io/collector/receiver/otlpreceiver FuzzReceiverHandlers FuzzReceiverHandlers
+cd -
 
 cd pdata
 printf "package ptrace\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/opentelemetry-collector/pdata/ptrace/register.go
+go mod tidy
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 go mod tidy
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/plog FuzzUnmarshalJsonLogs FuzzUnmarshalJsonLogs_plogs
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/plog FuzzUnmarshalPBLogs FuzzUnmarshalPBLogs_plogs
