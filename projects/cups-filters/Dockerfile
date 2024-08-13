@@ -18,9 +18,10 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential 
 
 # for cups-filters-2.x
-RUN apt-get install -y gnutls-dev libppd-dev libavahi-common-dev libavahi-client-dev autopoint gettext libcups2-dev ghostscript mupdf-tools 
+RUN apt-get update && apt-get install -y gnutls-dev libppd-dev libavahi-common-dev libavahi-client-dev autopoint gettext libcups2-dev ghostscript mupdf-tools 
+
 # for cups-filters-1.x
-RUN apt-get install -y libexif-dev libglib2.0-dev libavahi-glib-dev liblcms2-dev libfreetype6-dev libfontconfig1-dev libqpdf-dev libpoppler-cpp-dev poppler-utils \
+RUN apt-get update && apt-get install -y libexif-dev libglib2.0-dev libavahi-glib-dev liblcms2-dev libfreetype6-dev libfontconfig1-dev libqpdf-dev libpoppler-cpp-dev poppler-utils \
 libunistring-dev libsystemd-dev libcap-dev
 
 # ubuntu 20.04 only supports cups-filters 1.x
