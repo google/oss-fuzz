@@ -286,6 +286,12 @@ echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_sws_fuzzer
 mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
 
+# Build fuzzer for swr
+fuzzer_name=ffmpeg_SWR_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
+make tools/target_swr_fuzzer
+mv tools/target_swr_fuzzer $OUT/${fuzzer_name}
+
 # Build fuzzer for demuxer
 fuzzer_name=ffmpeg_DEMUXER_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
