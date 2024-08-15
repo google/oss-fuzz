@@ -5,9 +5,20 @@ auto_ccs:
   - "kleisauke@gmail.com"
   - "lovell.fuller@gmail.com"
 main_repo: 'https://github.com/libvips/libvips'
-
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+coverage_extra_args: \
+  -ignore-filename-regex=*/src/aom/* \
+  -ignore-filename-regex=*/src/cgif/* \
+  -ignore-filename-regex=*/src/highway/* \
+  -ignore-filename-regex=*/src/lcms/* \
+  -ignore-filename-regex=*/src/libexif/* \
+  -ignore-filename-regex=*/src/libheif/* \
+  -ignore-filename-regex=*/src/libimagequant/* \
+  -ignore-filename-regex=*/src/libjpeg-turbo/* \
+  -ignore-filename-regex=*/src/libspng/* \
+  -ignore-filename-regex=*/src/libtiff/* \
+  -ignore-filename-regex=*/src/libwebp/* \
+  -ignore-filename-regex=*/src/zlib/*
