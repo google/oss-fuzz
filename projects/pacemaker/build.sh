@@ -17,22 +17,21 @@
 
 export CFLAGS="$CFLAGS -Wno-deprecated-declarations"
 export CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"
-make build -j$(nproc)
+make -j$(nproc) build
 
-for fuzzer in iso8601 cib_file; do
-  $CC $CFLAGS $LIB_FUZZING_ENGINE -c ./fuzzers/${fuzzer}_fuzzer.c          \
-   -I/usr/local/include/libxml2/ -I./include/crm/common -I./include        \
-   -I./include/crm/ -I/usr/include/glib-2.0                                \
+for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
+  FUZZER="$(basename "$FUZZER_SOURCE" .c)"
+
+  $CC $CFLAGS $LIB_FUZZING_ENGINE -c "$FUZZER_SOURCE"                      \
+   -o "${OUT}/${FUZZER}.o"                                                 \
+   -I./include -I/usr/local/include/libxml2 -I/usr/include/glib-2.0        \
    -I/usr/lib/x86_64-linux-gnu/glib-2.0/include/
 
   # Link with CXX for Centipede
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}_fuzzer.o                    \
-   -o $OUT/${fuzzer}_fuzzer                                                \
-   -Wl,--start-group ./lib/cib/.libs/libcib.a                              \
-   ./lib/common/.libs/libcrmcommon.a -lbz2                                 \
-   -l:libxslt.a -lrt -ldl -lc -l:libuuid.a -l:libicuuc.a -l:libglib-2.0.a  \
-   -l:libz.a -l:libxml2.a ./lib/cib/.libs/libcib.a                         \
-   ./lib/pengine/.libs/libpe_rules.a ./lib/pengine/.libs/libpe_status.a    \
-   -lgnutls \
-   -Wl,--end-group -l:libqb.a
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE                                       \
+   "$OUT/${FUZZER}.o" -o "$OUT/${FUZZER}"                                  \
+   ./lib/cib/.libs/libcib.a ./lib/pengine/.libs/libpe_rules.a              \
+   ./lib/common/.libs/libcrmcommon.a -l:libqb.a                            \
+   -l:libxslt.a -l:libxml2.a -l:libglib-2.0.a -l:libuuid.a -l:libicuuc.a   \
+   -l:libz.a -lgnutls -lbz2 -lrt -ldl -lc
 done
