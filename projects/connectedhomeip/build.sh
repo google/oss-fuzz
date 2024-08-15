@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+
+# workaround to get Fuzz Introspector to build; making it link with lld instead of the environment's gold linker which gives an error
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS=$(echo "$CFLAGS" | sed 's/gold/lld/g')
+  export CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/gold/lld/g')
+fi
+
 cd $SRC/connectedhomeip
 
 # Activate Pigweed environment
