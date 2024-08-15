@@ -397,7 +397,7 @@ index 0000000..1fe6f8f
 +
 +static inline uint32_t reverse4(uint32_t _in) {
 +    uint8_t *in = (uint8_t*)&_in;
-+    return (in[0] << 24) | (in[1] << 16) | (in[2] << 8) | in[3];
++    return ((uint32_t)in[0] << 24) | (in[1] << 16) | (in[2] << 8) | in[3];
 +}
 +
 +// tpm2_startup -c

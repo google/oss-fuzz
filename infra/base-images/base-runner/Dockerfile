@@ -18,11 +18,12 @@
 # Keeping the rust toolchain in the image wastes 1 GB.
 FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-RUN apt-get update && apt-get install -y cargo
+RUN apt-get update && apt-get install -y cargo libyaml-dev
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
+FROM gcr.io/oss-fuzz-base/base-builder-ruby AS base-ruby
 
 # Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
@@ -86,6 +87,15 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
+
+# Copy built ruby and ruzzy from builder
+COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
+COPY --from=base-ruby /install/ruzzy /install/ruzzy
+COPY ruzzy /usr/bin/ruzzy
+ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
+# RubyGems installation directory
+ENV GEM_HOME="$OUT/fuzz-gem"
+ENV GEM_PATH="/install/ruzzy"
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
