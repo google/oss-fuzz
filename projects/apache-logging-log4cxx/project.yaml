@@ -3,9 +3,6 @@ main_repo: "https://github.com/apache/logging-log4cxx"
 language: c++
 
 fuzzing_engines:
-  - afl
-  - centipede
-  - honggfuzz
   - libfuzzer
 
 sanitizers:
