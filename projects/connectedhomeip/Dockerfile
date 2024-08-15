@@ -27,6 +27,10 @@ RUN apt-get update && \
 # the one already installed in /usr/local/bin
 ENV PATH="/usr/bin/:${PATH}"
 
+# This fixes setuptools bug related to version 71 
+# https://github.com/pypa/setuptools/issues/4483 
+RUN pip install -U packaging
+
 # PEP-517 needed for cryptography. Update pip
 RUN pip3 install --upgrade pip setuptools wheel
 

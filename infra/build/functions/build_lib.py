@@ -22,10 +22,8 @@ import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
-import subprocess
 import tarfile
 import tempfile
-import json
 import uuid
 
 from googleapiclient.discovery import build as cloud_build
@@ -327,7 +325,9 @@ def get_pull_test_images_steps(test_image_suffix):
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
+      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-builder-rust',
+      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-runner',
   ]
   steps = []
@@ -517,12 +517,13 @@ def get_runner_image_name(test_image_suffix):
   return image
 
 
-def get_build_body(steps,
-                   timeout,
-                   body_overrides,
-                   build_tags,
-                   use_build_pool=True,
-                   experiment=False):
+def get_build_body(  # pylint: disable=too-many-arguments
+    steps,
+    timeout,
+    body_overrides,
+    build_tags,
+    use_build_pool=True,
+    experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -551,7 +552,8 @@ def get_build_body(steps,
 
 
 def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
-  """Prepare a .tgz containing the files required to build `oss_fuzz_project`."""
+  """Prepare a .tgz containing the files required to build
+  `oss_fuzz_project`."""
   # Just the projects/<project> dir should be sufficient.
   project_rel_path = os.path.join('projects', oss_fuzz_project)
   with tarfile.open(temp_tgz_path, 'w:gz') as tar:
@@ -559,7 +561,7 @@ def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
             arcname=project_rel_path)
 
 
-def run_build(  # pylint: disable=too-many-arguments
+def run_build(  # pylint: disable=too-many-arguments, too-many-locals
     oss_fuzz_project,
     steps,
     credentials,

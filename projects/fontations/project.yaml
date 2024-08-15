@@ -4,6 +4,9 @@ primary_contact: "rsheeter@google.com"
 auto_ccs:
   - "drott@google.com"
   - "grieger@google.com"
+  - "colin.rofls@gmail.com"
+  - "cbrokaw@google.com"
+  - "clupo@google.com"
 sanitizers:
   - address
 fuzzing_engines:
