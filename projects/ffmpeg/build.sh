@@ -115,7 +115,9 @@ make -j$(nproc) all
 make install
 
 cd $SRC/libvpx
-if [[ "$ARCHITECTURE" == i386 ]]; then
+if [[ "$SANITIZER" == "memory" ]] || [[ "$FUZZING_ENGINE" == "centipede" ]]; then
+      TARGET="--target=generic-gnu"
+elif [[ "$ARCHITECTURE" == i386 ]]; then
       TARGET="--target=x86-linux-gcc"
 else
       TARGET=""
