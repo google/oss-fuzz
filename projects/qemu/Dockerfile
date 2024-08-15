@@ -15,9 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build libglib2.0-dev \
+ARG glib_tag=2.78.4
+RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build  \
     libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
     libattr1 libattr1-dev libcap-ng-dev pkg-config
+RUN git clone --depth 1 --branch $glib_tag https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu
 COPY build.sh $SRC/
