@@ -25,7 +25,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 )
 
@@ -41,6 +40,21 @@ func CopyFile(src string, dst string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func RemoveFailureCausingFlags(cmd []string) []string {
+    // Skip arguments that convert warnings to errors or make the command fail.
+    var newCmd []string
+    for _, arg := range cmd {
+        // Skip arguments that convert warnings to errors
+		if strings.HasPrefix(arg, "-Werror") ||
+			arg == "-pedantic-errors" ||
+			arg == "-Wfatal-errors" {
+			continue
+		}
+        newCmd = append(newCmd, arg)
+    }
+    return newCmd
 }
 
 func TryFixCCompilation(cmdline []string) ([]string, int, string, string) {
@@ -169,63 +183,6 @@ func CorrectMissingHeaders(bin string, cmd []string) ([]string, bool, error) {
 	return cmd, false, nil
 }
 
-func EnsureDir(dirPath string) {
-	// Checks if a path is an existing directory, otherwise create one.
-	if pathInfo, err := os.Stat(dirPath); err == nil {
-		if isDir := pathInfo.IsDir(); !isDir {
-			panic(dirPath + " exists but is not a directory.")
-		}
-	} else if errors.Is(err, fs.ErrNotExist) {
-		if err := os.MkdirAll(dirPath, 0755); err != nil {
-			panic("Failed to create directory: " + dirPath + ".")
-		}
-		fmt.Println("Created directory: " + dirPath + ".")
-	} else {
-		panic("An error occurred in os.Stat(" + dirPath + "): " + err.Error())
-	}
-}
-
-func GenerateAST(bin string, args []string, filePath string) {
-	// Generates AST.
-	outFile, err := os.Create(filePath)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer outFile.Close()
-
-	cmd := exec.Command(bin, args...)
-	cmd.Stdout = outFile
-	cmd.Run()
-}
-
-func GenerateASTs(bin string, args []string, astDir string) {
-	// Generates an AST for each C/CPP file in the command.
-	// Cannot save AST when astDir is not available.
-	EnsureDir(astDir)
-
-	// Target file suffixes.
-	suffixes := []string{".cpp", ".cc", ".cxx", ".c++", ".c", ".h", ".hpp"}
-	// C/CPP targets in the command.
-	targetFiles := []string{}
-	// Flags to generate AST.
-	flags := []string{"-Xclang", "-ast-dump=json", "-fsyntax-only"}
-	for _, arg := range args {
-		targetFileExt := strings.ToLower(filepath.Ext(arg))
-		if slices.Contains(suffixes, targetFileExt) {
-			targetFiles = append(targetFiles, arg)
-			continue
-		}
-		flags = append(flags, arg)
-	}
-
-	// Generate an AST for each target file. Skips AST generation when a
-	// command has no target file (e.g., during linking).
-	for _, targetFile := range targetFiles {
-		filePath := filepath.Join(astDir, fmt.Sprintf("%s.ast", filepath.Base(targetFile)))
-		GenerateAST(bin, append(flags, targetFile), filePath)
-	}
-}
-
 func ExecBuildCommand(bin string, args []string) (int, string, string) {
 	// Executes the original command.
 	cmd := exec.Command(bin, args...)
@@ -238,10 +195,6 @@ func ExecBuildCommand(bin string, args []string) (int, string, string) {
 }
 
 func Compile(bin string, args []string) (int, string, string) {
-	// Generate ASTs f we define this ENV var.
-	if astDir := os.Getenv("JCC_GENERATE_AST_DIR"); astDir != "" {
-		GenerateASTs(bin, args, astDir)
-	}
 	// Run the actual command.
 	return ExecBuildCommand(bin, args)
 }
@@ -360,7 +313,7 @@ func WriteStdErrOut(args []string, outstr string, errstr string) {
 	fmt.Print(outstr)
 	fmt.Fprint(os.Stderr, errstr)
 	// Record what compile args produced the error and the error itself in log file.
-	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args) + errstr)
+	AppendStringToFile("/workspace/err.log", fmt.Sprintf("%s\n", args)+errstr)
 }
 
 func main() {
@@ -386,12 +339,21 @@ func main() {
 	} else {
 		bin = "clang"
 	}
-	fullCmdArgs := append([]string{bin}, newArgs...)
-	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+ 	fullCmdArgs := append([]string{bin}, newArgs...)
+ 	retcode, out, errstr := Compile(bin, newArgs)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
+
+ 	// Some projects convert warnings to errors, undo this and try again.
+ 	newArgs = RemoveFailureCausingFlags(newArgs)
+ 	retcode, out, errstr = Compile(bin, newArgs)
+ 	fullCmdArgs = append([]string{bin}, newArgs...)
+ 	if retcode == 0 {
+ 	 	WriteStdErrOut(fullCmdArgs, out, errstr)
+ 	 	os.Exit(0)
+ 	}
 
 	// Note that on failures or when we succeed on the first try, we should
 	// try to write the first out/err to stdout/stderr.
@@ -421,8 +383,6 @@ func main() {
 		// how to improve jcc to fix more issues.
 		WriteStdErrOut(fullCmdArgs, out, errstr)
 		fmt.Println("\nFix failure")
-		// Print error back to stderr so tooling that relies on this can proceed
-		WriteStdErrOut(fixargs, fixout, fixerr)
 		os.Exit(retcode)
 	}
 	// The fix suceeded, write its out and err.

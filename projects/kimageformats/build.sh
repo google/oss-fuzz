@@ -15,6 +15,72 @@
 #
 ################################################################################
 
+# build zstd
+cd $SRC
+cd zstd
+cmake -S build/cmake -DBUILD_SHARED_LIBS=OFF
+make install -j$(nproc)
+
+# Build zlib
+cd $SRC
+cd zlib
+./configure --static
+make install -j$(nproc)
+
+# Build libzip
+cd $SRC
+cd libzip
+cmake . -DBUILD_SHARED_LIBS=OFF
+make install -j$(nproc)
+
+# Build bzip2
+# Inspired from ../bzip2/build
+cd $SRC
+tar xzf bzip2-*.tar.gz && rm -f bzip2-*.tar.gz
+cd bzip2-*
+SRCL=(blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o)
+
+for source in ${SRCL[@]}; do
+    name=$(basename $source .o)
+    $CC $CFLAGS -c ${name}.c
+done
+rm -f libbz2.a
+ar cq libbz2.a ${SRCL[@]}
+cp -f bzlib.h /usr/local/include
+cp -f libbz2.a /usr/local/lib
+
+# Build xz
+export ORIG_CFLAGS="${CFLAGS}"
+export ORIG_CXXFLAGS="${CXXFLAGS}"
+unset CFLAGS
+unset CXXFLAGS
+cd $SRC
+cd xz
+./autogen.sh --no-po4a --no-doxygen
+./configure --enable-static --disable-debug --disable-shared --disable-xz --disable-xzdec --disable-lzmainfo
+make install -j$(nproc)
+export CFLAGS="${ORIG_CFLAGS}"
+export CXXFLAGS="${ORIG_CXXFLAGS}"
+
+# Build extra-cmake-modules
+cd $SRC
+cd extra-cmake-modules
+cmake .
+make install -j$(nproc)
+
+cd $SRC
+cd qtbase
+./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-widgets -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
+cmake --build . --parallel $(nproc)
+cmake --install .
+
+cd $SRC
+cd karchive
+rm -rf poqm
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
+make install -j$(nproc)
+
+# Build LibRaw
 cd $SRC
 cd LibRaw
 TMP_CFLAGS=$CFLAGS
@@ -28,45 +94,8 @@ make install -j$(nproc)
 CFLAGS=$TMP_CFLAGS
 CXXFLAGS=$TMP_CXXFLAGS
 
-cd $SRC
-cd zlib
-./configure --static
-make install -j$(nproc)
 
-cd $SRC
-cd libzip
-cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_DOC=OFF
-make install -j$(nproc)
-
-cd $SRC
-cd extra-cmake-modules
-cmake .
-make install -j$(nproc)
-
-cd $SRC
-cd qtbase
-# add the flags to Qt build too
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_CXX               = \$\${CROSS_COMPILE}clang++~QMAKE_CXX = $CXX~g" mkspecs/common/clang.conf
-sed -i -e "s~QMAKE_CC                = \$\${CROSS_COMPILE}clang~QMAKE_CC = $CC~g" mkspecs/common/clang.conf
-# disable sanitize=vptr for harfbuzz since it compiles without rtti
-sed -i -e "s/TARGET = qtharfbuzz/TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr/g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
-# make qmake compile faster
-sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
-./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
-cd src
-../bin/qmake -o Makefile src.pro
-make sub-gui -j$(nproc)
-
-cd $SRC
-cd karchive
-rm -rf poqm
-cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
-make install -j$(nproc)
-
+# Build aom
 cd $SRC
 cd aom
 mkdir build.libavif
@@ -76,20 +105,23 @@ cmake -DBUILD_SHARED_LIBS=0 -DENABLE_DOCS=0 -DENABLE_EXAMPLES=0 -DENABLE_TESTDAT
 make -j$(nproc)
 make install -j$(nproc)
 
+# Build libavif
 cd $SRC
 ln -s "$SRC/aom" "$SRC/libavif/ext/"
 cd libavif
 mkdir build
 cd build
-CFLAGS="$CFLAGS -fPIC" cmake -DBUILD_SHARED_LIBS=OFF -DAVIF_ENABLE_WERROR=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON ..
+CFLAGS="$CFLAGS -fPIC" cmake -DBUILD_SHARED_LIBS=OFF -DAVIF_ENABLE_WERROR=OFF -DAVIF_CODEC_AOM=LOCAL -DAVIF_LIBYUV=OFF ..
 make -j$(nproc)
 
+# Build libde265
 cd $SRC
 cd libde265
 cmake -DBUILD_SHARED_LIBS=OFF -DDISABLE_SSE=ON .
 make -j$(nproc)
 make install -j$(nproc)
 
+# Build openjpeg
 cd $SRC
 cd openjpeg
 mkdir build
@@ -98,6 +130,7 @@ cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_CODEC=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 
+# Build openexr
 cd $SRC
 cd openexr
 mkdir _build
@@ -106,7 +139,7 @@ cmake  -DBUILD_SHARED_LIBS=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 
-
+# Build libheif
 cd $SRC
 cd libheif
 #Reduce max width and height to avoid allocating too much memory
@@ -118,11 +151,12 @@ cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_DAV1D=OFF -DWIT
 make -j$(nproc)
 make install -j$(nproc)
 
+# Build libjxl
 cd $SRC
 cd libjxl
 mkdir build
 cd build
-CXXFLAGS="$CXXFLAGS -DHWY_COMPILE_ONLY_SCALAR" cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_JPEGLI=OFF -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=ON -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_ENABLE_TOOLS=OFF ..
+CXXFLAGS="$CXXFLAGS -DHWY_COMPILE_ONLY_SCALAR" cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_JPEGLI=OFF -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=ON -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_FUZZERS=OFF ..
 make -j$(nproc) jxl jxl_cms jxl_threads
 
 cd $SRC
@@ -149,10 +183,11 @@ echo "$HANDLER_TYPES" | while read class format; do
 (
   fuzz_target_name=kimgio_${format}_fuzzer
 
-  $SRC/qtbase/bin/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
+  /usr/libexec/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
   header=`ls $SRC/kimageformats/src/imageformats/$format*.h`
-  $SRC/qtbase/bin/moc $header -o moc_`basename $header .h`.cpp
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/Imath -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_2.a /usr/local/lib/libIex-3_2.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_2.a /usr/local/lib/libOpenEXRCore-3_2.a /usr/local/lib/libOpenEXRUtil-3_2.a /usr/local/lib/libopenjp2.a
+  /usr/libexec/moc $header -o moc_`basename $header .h`.cpp
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -I $SRC/kimageformats/src/imageformats/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/KF6/KArchive/ -I /usr/local/include/Imath -I /usr/include/QtCore/ -I /usr/include/QtGui/ -I . $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt6Gui -lQt6Core -lQt6BundledLibpng -lQt6BundledHarfbuzz -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_2.a /usr/local/lib/libIex-3_2.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_2.a /usr/local/lib/libOpenEXRCore-3_2.a /usr/local/lib/libOpenEXRUtil-3_2.a /usr/local/lib/libopenjp2.a /usr/local/lib/libzstd.a -llzma /usr/local/lib/libbz2.a -lclang_rt.builtins
+  # -lclang_rt.builtins in the previous line is a temporary workaround to avoid a linker error "undefined reference to __truncsfhf2". Investigate why this is needed here, but not anywhere else, and possibly remove it.
 
   find . -name "*.${format}" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
 )

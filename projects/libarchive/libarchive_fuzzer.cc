@@ -33,12 +33,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
     return 0;
   }
 
+  archive_read_add_passphrase(a, "secret");
+
   if (ARCHIVE_OK != archive_read_open_memory(a, buf, len)) {
     archive_read_free(a);
     return 0;
   }
-
-  archive_read_add_passphrase(a, "secret");
 
   while(1) {
     std::vector<uint8_t> data_buffer(getpagesize(), 0);

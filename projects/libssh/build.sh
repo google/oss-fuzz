@@ -20,7 +20,8 @@ mkdir -p $BUILD
 pushd $BUILD
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    -DBUILD_SHARED_LIBS=OFF -DWITH_INSECURE_NONE=ON $SRC/libssh
+    -DBUILD_SHARED_LIBS=OFF -DWITH_INSECURE_NONE=ON -DWITH_EXEC=OFF \
+    $SRC/libssh
 make "-j$(nproc)"
 
 fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.c")

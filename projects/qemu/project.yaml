@@ -15,4 +15,5 @@ fuzzing_engines:
   - libfuzzer
 architectures:
   - x86_64
+selective_unpack: true
 main_repo: 'https://git.qemu.org/git/qemu.git'

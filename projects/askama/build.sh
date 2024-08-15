@@ -17,18 +17,12 @@
 
 set -eox pipefail
 
-FUZZ_CRATE_DIRS=$(find . -type d -name fuzz -exec dirname $(readlink -f {}) \;)
+pushd $SRC/askama/fuzz
+cargo update -p serde --precise 1.0.200
+popd
 
-for CRATE_DIR in ${FUZZ_CRATE_DIRS[@]};
-do
-  echo "Building crate: $CRATE_DIR"
-  cd $CRATE_DIR
-  cargo +nightly-2023-12-28 fuzz build -O
-  FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-  for f in fuzz/fuzz_targets/*.rs
-  do
-      FUZZ_TARGET_NAME=$(basename ${f%.*})
-      CRATE_NAME=$(basename $CRATE_DIR)
-      cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/$CRATE_NAME-$FUZZ_TARGET_NAME
-  done
+target_out_dir=fuzz/target/x86_64-unknown-linux-gnu/release
+cargo fuzz build -O
+cargo fuzz list | while read i; do
+    cp $target_out_dir/$i $OUT/
 done
