@@ -20,6 +20,9 @@
 CFLAGS="$CFLAGS     -fno-sanitize=vptr"
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 
+# Pick C++17 due to use of std::filesystem
+CXXFLAGS="$CXXFLAGS -std=c++17"
+
 cd $SRC/leveldb
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=0 \
@@ -28,7 +31,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=0 \
 for fuzzer in fuzz_db; do
     # Compile
     $CXX $CXXFLAGS -c ../${fuzzer}.cc -o ${fuzzer}.o \
-        -DLEVELDB_PLATFORM_POSIX=1 -std=c++11 -Wall \
+        -DLEVELDB_PLATFORM_POSIX=1 -Wall \
         -I$SRC/leveldb/build/include -I$SRC/leveldb/ -I$SRC/leveldb/include
 
     # Link

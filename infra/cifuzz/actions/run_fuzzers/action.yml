@@ -52,6 +52,14 @@ inputs:
     description: "Whether to output fuzzing results to SARIF."
     required: false
     default: false
+  report-timeouts:
+    description: "Whether to report fails due to timeout."
+    required: false
+    default: true
+  report-ooms:
+    description: "Whether to report fails due to OOM."
+    required: false
+    default: true
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -70,3 +78,5 @@ runs:
     CFL_PLATFORM: 'github'
     PARALLEL_FUZZING: ${{ inputs.parallel-fuzzing }}
     OUTPUT_SARIF: ${{ inputs.output-sarif }}
+    REPORT_TIMEOUTS: ${{ inputs.report-timeouts }}
+    REPORT_OOMS: ${{ inputs.report-ooms}}

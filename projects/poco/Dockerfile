@@ -21,4 +21,6 @@ RUN git clone --depth 1 https://github.com/pocoproject/poco
 WORKDIR $SRC/poco
 COPY build.sh \
      json_parse_fuzzer.cc \
+     xml_parse_fuzzer.cc \
+     xml.dict \
      $SRC/
