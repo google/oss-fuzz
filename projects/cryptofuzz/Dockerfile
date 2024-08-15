@@ -62,7 +62,7 @@ RUN git clone --depth 1 https://github.com/paulmillr/noble-secp256k1.git
 RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
 RUN apt-get remove -y libunwind8
-RUN apt-get install -y libssl-dev
+RUN apt-get update && apt-get install -y libssl-dev
 RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 RUN wget https://nodejs.org/dist/v14.17.1/node-v14.17.1-linux-x64.tar.xz
 RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt

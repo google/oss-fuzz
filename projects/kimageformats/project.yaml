@@ -9,3 +9,4 @@ sanitizers:
 main_repo: 'https://invent.kde.org/frameworks/kimageformats.git'
 auto_ccs:
   - dnovomesky@gmail.com
+  - mircomir@gmail.com

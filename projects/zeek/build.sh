@@ -23,8 +23,7 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --disable-python \
                 --disable-zeekctl \
                 --disable-auxtools \
-                --disable-broker-tests \
-		--disable-spicy
+                --disable-broker-tests
 
 cd build
 ninja install

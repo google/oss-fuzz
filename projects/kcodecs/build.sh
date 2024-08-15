@@ -36,28 +36,19 @@ make install
 
 cd $SRC
 cd qtbase
-# add the flags to Qt build too
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-# make qmake compile faster
-sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
-./configure --zlib=qt --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
-cd src
-../bin/qmake -o Makefile src.pro
-make sub-corelib sub-rcc -j$(nproc)
+./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-gui -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
+cmake --build . --parallel $(nproc)
+cmake --install .
 
 cd $SRC
 cd kcodecs
 rm -rf poqm
-cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SRC/qtbase
+cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug
 make -j$(nproc) VERBOSE=1
 
-
-$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kcodecs_fuzzer.cc -o $OUT/kcodecs_fuzzer \
-               -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/kcodecs/src \
-               -I $SRC/kcodecs/src/probers -L $SRC/qtbase/lib -L $SRC/kcodecs/lib \
-               -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE -lKF5Codecs
+$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/kcodecs_fuzzer.cc -o $OUT/kcodecs_fuzzer \
+               -I /usr/include/QtCore/ -I $SRC/kcodecs/src \
+               -I $SRC/kcodecs/src/probers -L $SRC/kcodecs/lib \
+               -lQt6Core -lm -lQt6BundledPcre2 -lQt6BundledZLIB -ldl -lpthread $LIB_FUZZING_ENGINE -lKF6Codecs
 
 zip -qr $OUT/kcodecs_fuzzer_seed_corpus.zip $SRC/uchardet/test/ $SRC/kcodecs/autotests/data
