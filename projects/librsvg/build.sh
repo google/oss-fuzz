@@ -21,11 +21,16 @@ set -o nounset
 
 PREFIX="/usr"
 
-# Don't instrument the third-party dependencies that we build
+# The OSS-Fuzz 'compile' script automatically adds instrumentation flags to the CFLAGS and CXXFLAGS
+# environment variables. These flags cause build errors with some of the third-party dependencies,
+# so we save them for restoration later.
 CFLAGS_SAVE="$CFLAGS"
 CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
+
+# Set the non-instrumentation flags manually. -O1 is particularly important for avoiding spurious
+# timeouts caused by unoptimized dependencies.
+export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 # Compile and install GLib
 cd "$SRC/glib"
@@ -39,9 +44,21 @@ meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static buildd
 ninja -C builddir
 ninja -C builddir install
 
+# Compile and install libxml2
+cd "$SRC/libxml2"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir
+ninja -C builddir
+ninja -C builddir install
+
+# Compile and install Fontconfig
+cd "$SRC/fontconfig"
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dtests=disabled -Dtools=disabled
+ninja -C builddir
+ninja -C builddir install
+
 # Compile and install Cairo
 cd "$SRC/cairo"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dfontconfig:tests=disabled -Dfontconfig:tools=disabled -Dpixman:tests=disabled
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dpixman:tests=disabled -Dtests=disabled
 ninja -C builddir
 ninja -C builddir install
 
@@ -63,14 +80,28 @@ export CXXFLAGS="${CXXFLAGS_SAVE}"
 
 # Compile and copy the fuzz target(s)
 cd "$SRC/librsvg/fuzz"
+
+# Pin serde because it now requires a nightly compiler that is more recent than the one on the
+# OSS-Fuzz image:
+# https://github.com/serde-rs/serde/issues/2770
+# https://github.com/google/oss-fuzz/pull/12077
+cargo update --package serde --precise 1.0.203
+
 cargo fuzz build -O
 cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 
-# Build a seed corpus by using the afl-fuzz SVGs
+# Copy options files for fuzz targets
+cp "$SRC"/*.options "$OUT/"
+
+# Create dictionary files for fuzz targets
+cat "$SRC/fuzzing/dictionaries/"{css,svg,xml}.dict > "$OUT/render_document.dict"
+
+# Build a seed corpus consisting of all the SVGs from the librsvg repo
 CORPUS_DIR="$WORK/corpus"
 mkdir -p "$CORPUS_DIR"
 
-for file in "$SRC"/librsvg/afl-fuzz/input/*.svg; do
+FILES=$(find "$SRC/librsvg" -type f -iname "*.svg")
+for file in $FILES; do
   cp "$file" "$CORPUS_DIR/$(md5sum "$file" | cut -f 1 -d ' ').svg"
 done
 

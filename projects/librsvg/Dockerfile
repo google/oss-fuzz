@@ -34,11 +34,14 @@ RUN pip3 install --no-cache-dir \
 RUN git clone --depth=1 --no-tags https://gitlab.gnome.org/GNOME/librsvg.git
 RUN git clone --depth=1 --branch=2.78.5 https://gitlab.gnome.org/GNOME/glib.git
 RUN git clone --depth=1 --branch=VER-2-13-2 https://gitlab.freedesktop.org/freetype/freetype.git
+RUN git clone --depth=1 --branch=v2.13.1 https://gitlab.gnome.org/GNOME/libxml2.git
+RUN git clone --depth=1 --branch=2.15.0 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
 RUN git clone --depth=1 --branch=1.18.0 https://gitlab.freedesktop.org/cairo/cairo.git
 RUN git clone --depth=1 --branch=8.4.0 https://github.com/harfbuzz/harfbuzz.git
 RUN git clone --depth=1 --branch=1.52.2 https://gitlab.gnome.org/GNOME/pango.git
 
-COPY build.sh "$SRC/"
-COPY *.options "$OUT/"
+RUN git clone --depth=1 --no-tags https://github.com/google/fuzzing.git
+
+COPY build.sh *.options "$SRC/"
 
 WORKDIR "$SRC/librsvg"
