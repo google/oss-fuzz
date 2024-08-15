@@ -227,6 +227,8 @@ make -j$(nproc) install
 export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
 make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
+rsync -av rsync://samples.ffmpeg.org/samples/avi/ffv1/testset/ $SRC/ffmpeg/ffv1testset
+
 # Build the fuzzers.
 cd $SRC/ffmpeg
 
@@ -284,6 +286,12 @@ echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_sws_fuzzer
 mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
 
+# Build fuzzer for swr
+fuzzer_name=ffmpeg_SWR_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
+make tools/target_swr_fuzzer
+mv tools/target_swr_fuzzer $OUT/${fuzzer_name}
+
 # Build fuzzer for demuxer
 fuzzer_name=ffmpeg_DEMUXER_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
@@ -297,6 +305,7 @@ rm $(find fate-suite -name '*.pcm')
 
 zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
 zip -r $OUT/ffmpeg_AV_CODEC_ID_HEVC_fuzzer_seed_corpus.zip fate-suite/hevc fate-suite/hevc-conformance
+zip -r $OUT/ffmpeg_AV_CODEC_ID_FFV1_fuzzer_seed_corpus.zip ffv1testset
 
 # Build fuzzer for demuxer fed at IO level
 fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer

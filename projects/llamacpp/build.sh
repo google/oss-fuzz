@@ -19,13 +19,15 @@ export GGML_NO_OPENMP=1
 sed -i 's/:= c++/:= ${CXX}/g' ./Makefile
 sed -i 's/:= cc/:= ${CC}/g' ./Makefile
 # Avoid function that forks + starts instance of gdb.
-sed -i 's/ggml_print_backtrace();//g' ./ggml/include/ggml.h
+sed -i 's/ggml_print_backtrace();//g' ./ggml/src/ggml.c
 
 # Remove statefulness during fuzzing.
 sed -i 's/static bool is_first_call/bool is_first_call/g' ./ggml/src/ggml.c
 
-UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc)
+# Patch callocs to avoid allocating large chunks.
+sed -i 's/ggml_calloc(size_t num, size_t size) {/ggml_calloc(size_t num, size_t size) {\nif ((num * size) > 9000000) {GGML_ABORT("calloc err");}\n/g' -i ./ggml/src/ggml.c
 
+UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc) llama-gguf llama-server
 
 # Convert models into header files so we can use them for fuzzing.
 xxd -i models/ggml-vocab-bert-bge.gguf > model_header_bge.h
@@ -51,7 +53,9 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_grammar.cp
 ./llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
 mv dummy.gguf $SRC/load-model-corpus/
+mv $SRC/llama.cpp/models/ggml-vocab-falcon.gguf $SRC/load-model-corpus/
 zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
+find $SRC/llama.cpp/models/ -name *.gguf -exec cp {} $SRC/load-model-corpus/ \;
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
     -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model
 echo "[libfuzzer]" > $OUT/fuzz_load_model.options
