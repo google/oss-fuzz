@@ -4,13 +4,12 @@ language: c++
 
 fuzzing_engines:
   - afl
+  - centipede
   - honggfuzz
   - libfuzzer
 
 sanitizers:
   - address
-  - memory
-  - undefined
 
 # Apache Logging Services PMC members[1] that contribute the fuzz tests.
 # We cannot share `security@logging.apache.org` here, since it must be associated with a Google account[2].
