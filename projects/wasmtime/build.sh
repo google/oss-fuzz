@@ -20,7 +20,6 @@
 git submodule update --init --recursive
 git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
-
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {

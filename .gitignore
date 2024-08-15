@@ -6,3 +6,7 @@
 *.swp
 .venv
 .gdb_history
+
+# IntelliJ IDEA
+/.idea
+**/*.iml

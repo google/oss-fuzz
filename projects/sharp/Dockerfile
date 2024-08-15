@@ -16,6 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
+RUN mkdir afl-testcases
+RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases
 RUN git clone --depth 1 https://github.com/lovell/sharp.git
 
 COPY build.sh $SRC/
