@@ -14,26 +14,23 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && apt-get install -y make autoconf libtool build-essential \
-	libass-dev:i386 libfreetype6-dev:i386 \
-	libvdpau-dev:i386 libxcb1-dev:i386 libxcb-shm0-dev:i386 libdrm-dev:i386 \
-	texinfo libbz2-dev:i386 libbz2-1.0:i386 lib32z1 zlib1g:i386 zlib1g-dev:i386 yasm cmake mercurial wget \
-	xutils-dev libpciaccess-dev:i386 nasm rsync libvpx-dev:i386 gcc-multilib \
-	libass-dev libfreetype6-dev libsdl1.2-dev \
-	libvdpau-dev libxcb1-dev libxcb-shm0-dev libdrm-dev \
-	pkg-config texinfo libbz2-dev zlib1g zlib1g-dev yasm cmake mercurial wget \
-	xutils-dev libpciaccess-dev nasm rsync libvpx-dev chrpath
-
-RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y nasm pkg-config rsync autoconf libtool gperf
+RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
     apt install ./automake_1.16.5-1.3_all.deb
+RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson ninja
+
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
-RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2
+RUN curl -O https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.12.tar.bz2
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
-RUN git clone --depth 1 https://github.com/intel/libva
-RUN git clone --depth 1 -b libvdpau-1.2 git://people.freedesktop.org/~aplattner/libvdpau
+RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
+RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
+RUN git clone --depth 1 https://github.com/fribidi/fribidi
+RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz
+RUN git clone --depth 1 https://github.com/libass/libass
+RUN git clone --depth 1 https://github.com/madler/zlib
+RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opus.git

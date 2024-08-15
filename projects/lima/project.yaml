@@ -1,0 +1,10 @@
+homepage: "https://lima-vm.io/"
+language: go
+primary_contact: "jdubois@suse.com"
+main_repo: "https://github.com/lima-vm/lima"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

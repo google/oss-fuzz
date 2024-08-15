@@ -56,7 +56,7 @@ bash bootstrap
 make -j$(nproc)
 make install
 
-NETTLE_CONFIGURE_FLAGS=""
+NETTLE_CONFIGURE_FLAGS="--disable-assembler"  # Temporarily disalbe asm to work around error "undefined reference to [...]"
 if [[ $CFLAGS = *sanitize=memory* ]]; then
   NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
 fi
