@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+pushd $SRC/toml_edit/crates/toml_edit_fuzz
+cargo update -p serde --precise 1.0.203
+popd
+
 cd $SRC/toml_edit
 cargo fuzz build --fuzz-dir=./crates/toml_edit_fuzz -O
 cp target/x86_64-unknown-linux-gnu/release/parse_document $OUT/

@@ -52,6 +52,7 @@ BASE_IMAGES = {
     'jvm': ['gcr.io/oss-fuzz-base/base-builder-jvm'],
     'python': ['gcr.io/oss-fuzz-base/base-builder-python'],
     'rust': ['gcr.io/oss-fuzz-base/base-builder-rust'],
+    'ruby': ['gcr.io/oss-fuzz-base/base-builder-ruby'],
     'swift': ['gcr.io/oss-fuzz-base/base-builder-swift'],
 }
 
@@ -84,6 +85,7 @@ LANGUAGE_TO_BASE_BUILDER_IMAGE = {
     'javascript': 'base-builder-javascript',
     'jvm': 'base-builder-jvm',
     'python': 'base-builder-python',
+    'ruby': 'base-builder-ruby',
     'rust': 'base-builder-rust',
     'swift': 'base-builder-swift'
 }
@@ -145,6 +147,35 @@ class Project:
 
     logger.warning('Language not specified in project.yaml. Assuming c++.')
     return constants.DEFAULT_LANGUAGE
+
+  @property
+  def coverage_extra_args(self):
+    """Returns project coverage extra args."""
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      logger.warning('project.yaml not found: %s.', project_yaml_path)
+      return ''
+
+    with open(project_yaml_path) as file_handle:
+      content = file_handle.read()
+
+    coverage_flags = ''
+    read_coverage_extra_args = False
+    # Pass the yaml file and extract the value of the coverage_extra_args key.
+    # This is naive yaml parsing and we do not handle comments at this point.
+    for line in content.splitlines():
+      if read_coverage_extra_args:
+        # Break reading coverage args if a new yaml key is defined.
+        if len(line) > 0 and line[0] != ' ':
+          break
+        coverage_flags += line
+      if 'coverage_extra_args' in line:
+        read_coverage_extra_args = True
+        # Include the first line only if it's not a multi-line value.
+        if 'coverage_extra_args: >' not in line:
+          coverage_flags += line.replace('coverage_extra_args: ', '')
+    return coverage_flags
 
   @property
   def out(self):
@@ -690,9 +721,14 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
-      'docker', 'run', '--rm', '--privileged', '--shm-size=2g', '--platform',
-      platform
+      'docker', 'run', '--privileged', '--shm-size=2g', '--platform', platform
   ]
+  if os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'):
+    command.append('--name')
+    command.append(os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'))
+  else:
+    command.append('--rm')
+
   # Support environments with a TTY.
   if sys.stdin.isatty():
     command.append('-i')
@@ -1192,7 +1228,7 @@ def download_corpora(args):
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
-def coverage(args):
+def coverage(args):  # pylint: disable=too-many-branches
   """Generates code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
     logger.error(
@@ -1214,13 +1250,15 @@ def coverage(args):
     if not download_corpora(args):
       return False
 
+  extra_cov_args = (
+      f'{args.project.coverage_extra_args.strip()} {" ".join(args.extra_args)}')
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'HELPER=True',
       'FUZZING_LANGUAGE=%s' % args.project.language,
       'PROJECT=%s' % args.project.name,
       'SANITIZER=coverage',
-      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
+      'COVERAGE_EXTRA_ARGS=%s' % extra_cov_args,
       'ARCHITECTURE=' + args.architecture,
   ]
 

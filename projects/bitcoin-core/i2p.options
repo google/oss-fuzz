@@ -1,0 +1,2 @@
+[libfuzzer]
+dict = i2p.dict
