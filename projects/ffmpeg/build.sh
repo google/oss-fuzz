@@ -124,7 +124,8 @@ else
 fi
 
 LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-        --disable-examples --disable-unit-tests \
+        --disable-docs --disable-examples --disable-tools --disable-unit-tests \
+        --enable-vp9-highbitdepth \
         --size-limit=12288x12288 \
         --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
         $TARGET
