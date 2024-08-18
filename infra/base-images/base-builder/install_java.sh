@@ -22,25 +22,3 @@ mkdir -p $JAVA_HOME
 tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
 rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
-
-# Install the latest Jazzer in $OUT.
-# jazzer_api_deploy.jar is required only at build-time, the agent and the
-# drivers are copied to $OUT as they need to be present on the runners.
-cd $SRC/
-git clone https://github.com/CodeIntelligenceTesting/jazzer && \
-cd jazzer && \
-
-# Latest fix followig a depedency issue: (https://github.com/CodeIntelligenceTesting/jazzer/issues/896)
-git checkout 96205feebc7135075ffa48aae3f22e38cae5dc45
-cat << 'EOF' >> .bazelrc
-build --java_runtime_version=local_jdk_15
-build --cxxopt=-stdlib=libc++
-build --linkopt=-lc++
-EOF
-
-bazel build //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar //deploy:jazzer-api //launcher:jazzer
-cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar
-cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver
-cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH
-rm -rf ~/.cache/bazel ~/.cache/bazelisk
-rm -rf $SRC/jazzer

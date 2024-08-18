@@ -22,3 +22,37 @@ ENV PATH $PATH:$JAVA_HOME/bin
 ENV JAZZER_API_PATH "/usr/local/lib/jazzer_api_deploy.jar"
 
 RUN install_java.sh
+
+RUN chmod 777 /usr/local/bin && chmod 777 /usr/local/lib
+
+RUN useradd -m jazzer_user
+
+USER jazzer_user
+
+WORKDIR $SRC
+
+RUN git clone https://github.com/CodeIntelligenceTesting/jazzer && \
+    cd jazzer && \
+    git checkout aa376ca3c0255b9cf04e1fc79fcf1fe5c63b2376
+
+WORKDIR $SRC/jazzer
+
+RUN echo "build --java_runtime_version=local_jdk_15" >> .bazelrc \
+    && echo "build --cxxopt=-stdlib=libc++" >> .bazelrc \
+    && echo "build --linkopt=-lc++" >> .bazelrc
+
+RUN bazel build \
+    //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar \
+    //deploy:jazzer-api \
+    //launcher:jazzer
+
+RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar && \
+    cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver && \
+    cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH
+
+USER root
+
+RUN rm -rf /home/jazzer_user/.cache/bazel /home/jazzer_user/.cache/bazelisk && \
+    rm -rf $SRC/jazzer
+
+RUN chmod 755 /usr/local/bin && chmod 755 /usr/local/lib
