@@ -30,3 +30,5 @@ compile_native_go_fuzzer github.com/sigstore/sigstore-go/pkg/verify/fuzz FuzzVer
 
 zip -j $OUT/FuzzSignedEntityVerifier_seed_corpus.zip examples/trusted-root-public-good.json
 
+zip $OUT/FuzzBundle_seed_corpus.zip examples/bundle-*.json
+mv $SRC/FuzzBundle.dict $OUT/
