@@ -30,8 +30,9 @@ RUN git clone --depth=1 https://github.com/catenacyber/fuzzpcap
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
 ENV RUSTUP_TOOLCHAIN nightly
-RUN cargo install --force cbindgen
-# TODO remove once https://redmine.openinfosecfoundation.org/issues/7130 is solved
+# TODO remove version pinning once https://redmine.openinfosecfoundation.org/issues/7206 is fixed
+RUN cargo install --version 0.26.0 --force cbindgen
+# TODO remove once we have clang with coverage version 9 as rustc
 ENV RUSTUP_TOOLCHAIN nightly-2024-02-12
 
 RUN git clone --depth 1 https://github.com/OISF/suricata.git suricata

@@ -40,6 +40,8 @@ RUN git clone --depth=1 --branch=1.18.0 https://gitlab.freedesktop.org/cairo/cai
 RUN git clone --depth=1 --branch=8.4.0 https://github.com/harfbuzz/harfbuzz.git
 RUN git clone --depth=1 --branch=1.52.2 https://gitlab.gnome.org/GNOME/pango.git
 
+RUN git clone --depth=1 --no-tags https://github.com/google/fuzzing.git
+
 COPY build.sh *.options "$SRC/"
 
 WORKDIR "$SRC/librsvg"

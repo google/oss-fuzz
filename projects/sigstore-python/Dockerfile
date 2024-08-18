@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/usr/bin/python3
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && apt-get install -y automake ffmpeg libtool
-RUN git clone --depth 1 -b master https://android.googlesource.com/platform/external/libldac
-RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
-RUN corpus-replicator -o corpora audio_pcm_wav_ffmpeg.yml audio
-
-WORKDIR libldac
-
-COPY build.sh libldac_encode_fuzzer.cc $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN git clone https://github.com/sigstore/sigstore-python
+COPY *.sh *py *.dict $SRC/
+WORKDIR $SRC/sigstore-python

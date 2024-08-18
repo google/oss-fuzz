@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:v1
 
-RUN apt-get update && apt-get install -y automake ffmpeg libtool
-RUN git clone --depth 1 -b master https://android.googlesource.com/platform/external/libldac
-RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
-RUN corpus-replicator -o corpora audio_pcm_wav_ffmpeg.yml audio
-
-WORKDIR libldac
-
-COPY build.sh libldac_encode_fuzzer.cc $SRC/
+RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
+WORKDIR boost
+RUN git submodule update --init libs/beast
+RUN git -C libs/beast checkout develop
+RUN git submodule update --init tools/boostdep
+RUN python3 tools/boostdep/depinst/depinst.py --git_args "--jobs 3" beast
+COPY build.sh $SRC/
