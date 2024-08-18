@@ -49,4 +49,15 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE xml_fuzzer.o \
     ./lib/libPocoFoundation.a \
     -o $OUT/xml_parser_fuzzer -lpthread -ldl -lrt
 
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/Foundation/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o date_time_fuzzer.o -c $SRC/date_time_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE date_time_fuzzer.o \
+    ./lib/libPocoFoundation.a \
+    -o $OUT/date_time_fuzzer -lpthread -ldl -lrt
+
 cp $SRC/xml.dict $OUT/xml_parser_fuzzer.dict
