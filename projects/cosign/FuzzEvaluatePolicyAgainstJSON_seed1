@@ -1,0 +1,18 @@
+package sigstore
+isCompliant[response] {
+    attestationsKeylessATT := input.authorityMatches.keylessatt.attestations
+    result = (count(attestationsKeylessATT) == 1)
+    attestationsKeyATT := input.authorityMatches.keyatt.attestations
+    result = (count(attestationsKeyATT) == 1)
+    keySignature := input.authorityMatches.keysignature.signatures
+    result = (count(keySignature) == 1)
+
+    errorMsg = ""
+    warnMsg = "Throw warning error even if succeeded"
+
+    response := {
+        "result" : result,
+        "error" : errorMsg,
+        "warning" : warnMsg
+    }
+}

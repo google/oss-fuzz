@@ -24,3 +24,11 @@ compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign/rego FuzzValid
 compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign FuzzImportKeyPairLoadPrivateKey FuzzImportKeyPairLoadPrivateKey
 compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign FuzzSigVerify FuzzSigVerify
 compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/policy FuzzEvaluatePolicyAgainstJSON FuzzEvaluatePolicyAgainstJSON
+
+cp $SRC/*.dict $OUT/
+zip -j $OUT/FuzzEvaluatePolicyAgainstJSON_seed_corpus.zip $SRC/FuzzEvaluatePolicyAgainstJSON_seed*
+zip -j $OUT/FuzzEvaluatePolicyAgainstJSON_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzValidateJSON_cue_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzValidateJSON_rego_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+cp $SRC/afl-fuzz/dictionaries/json.dict $OUT/FuzzValidateJSON_cue.dict
+cp $SRC/afl-fuzz/dictionaries/json.dict $OUT/FuzzValidateJSON_rego.dict
