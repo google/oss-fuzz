@@ -16,10 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk-amd64
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_15_HOME /usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server
 ENV PATH $PATH:$JAVA_HOME/bin
 ENV JAZZER_API_PATH "/usr/local/lib/jazzer_api_deploy.jar"
+ENV JAZZER_JUNIT_PATH "/usr/local/bin/jazzer_junit.jar"
 
 RUN install_java.sh
 
@@ -37,18 +39,20 @@ RUN git clone https://github.com/CodeIntelligenceTesting/jazzer && \
 
 WORKDIR $SRC/jazzer
 
-RUN echo "build --java_runtime_version=local_jdk_15" >> .bazelrc \
+RUN echo "build --java_runtime_version=local_jdk_17" >> .bazelrc \
     && echo "build --cxxopt=-stdlib=libc++" >> .bazelrc \
     && echo "build --linkopt=-lc++" >> .bazelrc
 
 RUN bazel build \
     //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar \
     //deploy:jazzer-api \
+    //deploy:jazzer-junit \
     //launcher:jazzer
 
 RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar && \
     cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver && \
-    cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH
+    cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH && \
+    cp $(bazel cquery --output=files //deploy:jazzer-junit) $JAZZER_JUNIT_PATH
 
 USER root
 
@@ -56,3 +60,5 @@ RUN rm -rf /home/jazzer_user/.cache/bazel /home/jazzer_user/.cache/bazelisk && \
     rm -rf $SRC/jazzer
 
 RUN chmod 755 /usr/local/bin && chmod 755 /usr/local/lib
+
+WORKDIR $SRC
