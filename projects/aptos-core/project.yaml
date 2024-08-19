@@ -11,4 +11,5 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+selective_unpack: true
 coverage_extra_args: -ignore-filename-regex=.*/rustc/.*
