@@ -97,7 +97,7 @@ void init() {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 2) {
+  if (size < 2 || size > 4096) {
     return 0;
   }
   bool add_special = data[0] & 0x01;

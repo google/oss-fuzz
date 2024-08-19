@@ -23,7 +23,8 @@ mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
 
 [ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
   $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
-  --disable-tests --disable-samples --with-data-packaging=static
+  --disable-tests --disable-samples --with-data-packaging=static ||
+  find $SRC/tarantool -name config.log -exec cat {} +
 make install -j$(nproc)
 
 # For fuzz-introspector, exclude all functions in the tests directory,
@@ -52,6 +53,14 @@ case $SANITIZER in
   undefined) SANITIZERS_ARGS="-DENABLE_UB_SANITIZER=ON" ;;
   *) SANITIZERS_ARGS="" ;;
 esac
+
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
+# Workaround for a LeakSanitizer crashes,
+# see https://github.com/google/oss-fuzz/issues/11798.
+if [ "$ARCHITECTURE" = "aarch64" ]; then
+    export ASAN_OPTIONS=detect_leaks=0
+fi
 
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime

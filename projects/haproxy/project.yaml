@@ -7,6 +7,8 @@ auto_ccs:
   - "willy@1wt.eu"
   - "tribuslukas58@gmail.com"
   - "christopher.faulet@gmail.com"
+  - "vkrasnobaeva@haproxy.com"
+  - "wlallemand@haproxy.com"
 sanitizers:
   - address
 
