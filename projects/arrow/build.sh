@@ -35,7 +35,6 @@ cd ${WORK}
 # would report leaks and error out.
 export ASAN_OPTIONS="detect_leaks=0"
 
-# Snappy disabled as it forces `-fno-rtti`, which is incompatible with UBSAN.
 cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
