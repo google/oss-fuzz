@@ -30,10 +30,10 @@ unset CXX
 unset CFLAGS
 unset CXXFLAGS
 
-cd $SRC/sof/sof
+cd $SRC/sof_workspace
 
-scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf
+sof/scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf
 cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc3
 
-scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf
+sof/scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf
 cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc4
