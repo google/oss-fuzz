@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/sigstore/cosign
+# For json corpus
+RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
+# For json dictionary
+RUN git clone --depth=1 https://github.com/rc0r/afl-fuzz
 
-RUN apt-get update && apt-get install -y automake ffmpeg libtool
-RUN git clone --depth 1 -b master https://android.googlesource.com/platform/external/libldac
-RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
-RUN corpus-replicator -o corpora audio_pcm_wav_ffmpeg.yml audio
-
-WORKDIR libldac
-
-COPY build.sh libldac_encode_fuzzer.cc $SRC/
+COPY build.sh *_seed* *.dict $SRC/
+WORKDIR $SRC/cosign

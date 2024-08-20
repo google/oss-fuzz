@@ -16,7 +16,7 @@
 ################################################################################
 
 mkdir build && cd build
-cmake -DBUILD_SHARED_LIBS=OFF ..
+cmake -DBUILD_SHARED_LIBS=OFF -DPISTACHE_BUILD_TESTS=OFF ..
 make pistache_static
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
     -std=c++17 -I../include/ ../tests/fuzzers/fuzz_parser.cpp ./src/libpistache.a

@@ -1,0 +1,18 @@
+package sigstore
+import "struct"
+import "list"
+authorityMatches: {
+  keyatt: {
+      attestations: struct.MaxFields(1) & struct.MinFields(1)
+  },
+  keysignature: {
+      signatures: list.MaxItems(1) & list.MinItems(1)
+  },    
+  if( len(authorityMatches.keylessatt.attestations) < 2) {
+      keylessattMinAttestations: 2
+      keylessattMinAttestations: "Error"
+  },
+  keylesssignature: {
+      signatures: list.MaxItems(1) & list.MinItems(1)
+  }
+}

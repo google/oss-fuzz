@@ -7,6 +7,6 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/ohler55/ox'
-
+disabled: true
 fuzzing_engines:
   - libfuzzer
