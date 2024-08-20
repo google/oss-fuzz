@@ -36,9 +36,9 @@ jobs:
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/cifuzz/requirements.txt
 
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v2
         with:
-          version: '298.0.0'
+          version: '489.0.0'
       - run: |
           sudo env "PATH=$PATH" gcloud components install beta cloud-datastore-emulator
 
