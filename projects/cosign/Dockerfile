@@ -21,5 +21,5 @@ RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
 # For json dictionary
 RUN git clone --depth=1 https://github.com/rc0r/afl-fuzz
 
-COPY build.sh *_seed* *.dict $SRC/
+COPY build.sh $SRC/
 WORKDIR $SRC/cosign
