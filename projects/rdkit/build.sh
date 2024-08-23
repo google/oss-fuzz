@@ -34,9 +34,10 @@ export CFLAGS="$OLD_CFLAGS"
 # It works if we build `rdkit` using gcc or build boost using clang instead.
 # We've opted for building boost using clang.
 cd $SRC && \
-wget --quiet https://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_69_0.tar.bz2 && \
-tar xjf boost_1_69_0.tar.bz2 && \
-cd $SRC/boost_1_69_0 && \
+wget --quiet https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.bz2 && \
+tar xjf boost_1_70_0.tar.bz2 && \
+cd $SRC/boost_1_70_0 && \
+sed -i 's/std::unary_function/std::__unary_function/g' boost/container_hash/hash.hpp && \
 ./bootstrap.sh --with-toolset=clang --with-libraries=serialization,system,iostreams,regex && \
 ./b2 -q -j$(nproc) toolset=clang linkflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" cxxflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" link=static install
 
@@ -56,6 +57,6 @@ find . -type f -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 #find . -type f -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 corpora=$(find . -type d -name "*_fuzzer")
 for corpus in $corpora; do
-	corpus_basename=$(basename $corpus)
-	zip -j $OUT/${corpus_basename}_seed_corpus.zip ${corpus}/*
+        corpus_basename=$(basename $corpus)
+        zip -j $OUT/${corpus_basename}_seed_corpus.zip ${corpus}/*
 done
