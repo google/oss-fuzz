@@ -180,6 +180,7 @@ function run_python_fuzz_target {
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
+    cat $LOGS_DIR/$target.log
     return 0
   fi
   mv .coverage $OUT/.coverage_$target
