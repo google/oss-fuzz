@@ -17,7 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config \
     libssl-dev wget liblzma-dev python-dev python3-dev
-
+# Build requires automake 1.16.3
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb    
 RUN git clone --depth 1 https://github.com/lsh123/xmlsec
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxslt.git
