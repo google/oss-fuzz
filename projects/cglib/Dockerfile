@@ -16,6 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+ENV JAVA_HOME $JAVA_15_HOME
+ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server
+ENV PATH $JAVA_HOME/bin:$PATH
+
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip

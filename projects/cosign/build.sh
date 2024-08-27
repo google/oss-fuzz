@@ -15,12 +15,5 @@
 #
 ################################################################################
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
+./test/fuzz/oss_fuzz_build.sh
 
-mv ./pkg/cosign/keys_test.go ./pkg/cosign/keys_test_keep_in_fuzz_scope.go
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign/attestation FuzzGenerateStatement FuzzGenerateStatement
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign/cue FuzzValidateJSON FuzzValidateJSON_cue
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign/rego FuzzValidateJSON FuzzValidateJSON_rego
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign FuzzImportKeyPairLoadPrivateKey FuzzImportKeyPairLoadPrivateKey
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/cosign FuzzSigVerify FuzzSigVerify
-compile_native_go_fuzzer github.com/sigstore/cosign/v2/pkg/policy FuzzEvaluatePolicyAgainstJSON FuzzEvaluatePolicyAgainstJSON

@@ -15,7 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/AdamKorcz/cosign --branch=fuzz-aug-24
+RUN git clone --depth 1 https://github.com/sigstore/cosign
+# For json corpus
+RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
+# For json dictionary
+RUN git clone --depth=1 https://github.com/rc0r/afl-fuzz
 
-COPY build.sh $SRC
+COPY build.sh $SRC/
 WORKDIR $SRC/cosign

@@ -21,5 +21,5 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
 
-zip -j $OUT/fuzz_verify_artifact_seed_corpus.zip test/unit/assets/bundle_*.sigstore
+zip -j $OUT/fuzz_verify_artifact_seed_corpus.zip test/assets/bundle_*.sigstore
 mv $SRC/*.dict $OUT/

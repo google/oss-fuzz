@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/sigstore/sigstore-go
-COPY build.sh $SRC/
-WORKDIR $SRC/sigstore-go
+git clone --quiet --depth 1 --branch fuzzing --single-branch https://github.com/apache/logging-log4cxx
+./logging-log4cxx/src/fuzzers/bash/oss-fuzz-build.sh "$OUT"

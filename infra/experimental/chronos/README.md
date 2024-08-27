@@ -4,11 +4,18 @@ Under `OSS-Fuzz` root directory:
 export PROJECT=libiec61850
 export FUZZ_TARGET=fuzz_mms_decode.c
 export FUZZING_LANGUAGE=c
+
 infra/experimental/chronos/prepare-recompile "$PROJECT" "$FUZZ_TARGET" "$FUZZING_LANGUAGE"
 python infra/helper.py build_image "$PROJECT"
-docker run -ti --entrypoint="/bin/sh" --name "${PROJECT}-origin" "gcr.io/oss-fuzz/${PROJECT}" -c "compile && rm -rf /out/*"
-docker commit "${PROJECT}-origin" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached"
-docker run -ti --entrypoint="recompile" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached"
+# AddressSanitizer.
+docker run -ti --entrypoint="/bin/sh" --env SANITIZER="address" --name "${PROJECT}-origin-asan" "gcr.io/oss-fuzz/${PROJECT}" -c "compile && rm -rf /out/*"
+docker commit "${PROJECT}-origin-asan" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-asan"
+docker run -ti --entrypoint="recompile" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-asan"
+
+# Coverage measurement.
+docker run -ti --entrypoint="/bin/sh" --env SANITIZER="coverage" --name "${PROJECT}-origin-cov" "gcr.io/oss-fuzz/${PROJECT}" -c "compile && rm -rf /out/*"
+docker commit "${PROJECT}-origin-cov" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-cov"
+docker run -ti --entrypoint="recompile" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-cov"
 ```
 
 # Assumptions
