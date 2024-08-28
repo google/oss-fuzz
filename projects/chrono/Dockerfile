@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN git clone --depth 1 https://github.com/chronotype/chrono chrono
+RUN git clone --depth 1 https://github.com/chronotope/chrono chrono
 WORKDIR $SRC
 
 COPY build.sh $SRC/
