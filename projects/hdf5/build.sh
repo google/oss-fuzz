@@ -41,6 +41,7 @@ $CC $CFLAGS  -std=c99 -c \
   $SRC/h5_read_fuzzer.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_read_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_read_fuzzer
 
+$OUT/h5_read_fuzzer
 
 $CC $CFLAGS  -std=c99 -c \
   -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
