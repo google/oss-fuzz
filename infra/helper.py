@@ -1722,14 +1722,18 @@ def shell(args):
 def pull_images(language=None):
   """Pulls base images used to build projects in language lang (or all if lang
   is None)."""
-  for base_image_lang, base_images in BASE_IMAGES.items():
-    if (language is None or base_image_lang == 'generic' or
-        base_image_lang == language):
-      for base_image in base_images:
-        if not docker_pull(base_image):
-          return False
-
-  return True
+  images = [
+    base_image
+    for base_image_lang, base_images in BASE_IMAGES.items()
+    for base_image in base_images
+    if (
+        language is None
+        or base_image_lang == 'generic'
+        or base_image_lang == language
+    )
+  ]
+  thread_pool = ThreadPool()
+  return all(thread_pool.map(docker_pull, images))
 
 
 if __name__ == '__main__':
