@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool-bin
-RUN git clone --depth 1 https://github.com/madler/zlib
+RUN git clone --depth 1 --branch test-70617 https://github.com/tbeu/zlib
 RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
 RUN git clone --depth 1 --branch hdf5_1_14 https://github.com/HDFGroup/hdf5.git hdf5
 WORKDIR matio
