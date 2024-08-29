@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool-bin
-RUN git clone --depth 1 --branch test-70617 https://github.com/tbeu/zlib
-RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
-RUN git clone --depth 1 --branch hdf5_1_14 https://github.com/HDFGroup/hdf5.git hdf5
-WORKDIR matio
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN git clone --depth 1 https://github.com/chronotope/chrono chrono
+WORKDIR $SRC
+
 COPY build.sh $SRC/
