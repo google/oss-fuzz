@@ -27,6 +27,9 @@ sed -i 's/static bool is_first_call/bool is_first_call/g' ./ggml/src/ggml.c
 # Patch callocs to avoid allocating large chunks.
 sed -i 's/ggml_calloc(size_t num, size_t size) {/ggml_calloc(size_t num, size_t size) {\nif ((num * size) > 9000000) {GGML_ABORT("calloc err");}\n/g' -i ./ggml/src/ggml.c
 
+# Patch a potentially unbounded loop that causes timeouts
+sed -i 's/ok = ok \&\& (info->n_dims <= GGML_MAX_DIMS);/ok = ok \&\& (info->n_dims <= GGML_MAX_DIMS);\nif (!ok) {fclose(file); gguf_free(ctx); return NULL;}/g' ./ggml/src/ggml.c
+
 UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc) llama-gguf llama-server
 
 # Convert models into header files so we can use them for fuzzing.
