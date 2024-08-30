@@ -34,8 +34,15 @@ limitations under the License.
 #include "model_header_falcon.h"
 #include "model_header_gpt_2.h"
 
+#include <setjmp.h>
+#include <unistd.h>
+
 llama_model *model;
 llama_context *ctx;
+
+
+jmp_buf fuzzing_jmp_buf;
+extern "C" void __wrap_abort(void) { longjmp(fuzzing_jmp_buf, 1); }
 
 void init() {
 
@@ -118,6 +125,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     std::vector<llama_token> tokens =
         llama_tokenize(ctx, payload.c_str(), add_special, parse_special);
     llama_detokenize(ctx, tokens);
+
+    auto n_past = 0;
+    if (setjmp(fuzzing_jmp_buf) == 0) {
+      llama_decode(ctx, llama_batch_get_one(tokens.data(), tokens.size(), n_past, 0));
+    }
   } catch (...) {
   }
 

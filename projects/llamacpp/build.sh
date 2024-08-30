@@ -67,14 +67,14 @@ echo "detect_leaks=0" >> $OUT/fuzz_load_model.options
 
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BGE fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bge
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BPE  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bpe
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_SPM  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_spm
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_COMMAND_R  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_command_r
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_AQUILA  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_aquila
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_QWEN2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_qwen2
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_GPT_2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_gpt_2
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BAICHUAN  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_baichuan
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_DEEPSEEK_CODER  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_deepseek_coder
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_FALCON  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_falcon
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BGE fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bge
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BPE  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bpe
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_SPM  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_spm
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_COMMAND_R  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_command_r
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_AQUILA  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_aquila
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_QWEN2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_qwen2
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_GPT_2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_gpt_2
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BAICHUAN  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_baichuan
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_DEEPSEEK_CODER  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_deepseek_coder
+    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_FALCON  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_falcon
 fi
