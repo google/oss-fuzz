@@ -13,15 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import atheris
 import colorlog
+import pendulum
 from datetime import datetime, timedelta
 with atheris.instrument_imports():
-   import airflow
    from airflow import DAG
    from airflow.exceptions import AirflowException
-   from airflow.operators.dummy_operator import DummyOperator
-   from airflow.operators.python_operator import PythonOperator
+   from airflow.operators.empty import EmptyOperator
+   from airflow.operators.python import PythonOperator
 
 def py_func():
    return
@@ -32,7 +33,7 @@ def TestInput(input_bytes):
    default_args = {
       'owner': fdp.ConsumeString(8),
       'depends_on_past': fdp.ConsumeBool(),
-      'start_date': airflow.utils.dates.days_ago(fdp.ConsumeIntInRange(1,5)),
+      'start_date': pendulum.today('UTC').add(days=-fdp.ConsumeIntInRange(1,5)),
       'email': [fdp.ConsumeString(8)],
       'email_on_failure': fdp.ConsumeBool(),
       'email_on_retry': fdp.ConsumeBool(),
@@ -41,8 +42,8 @@ def TestInput(input_bytes):
    }
 
    try:
-      with DAG(fdp.ConsumeString(8), schedule_interval='@daily', default_args=default_args) as dag:
-         dummy_task = DummyOperator(task_id=fdp.ConsumeString(8), retries=fdp.ConsumeIntInRange(1,5))
+      with DAG(fdp.ConsumeString(8), schedule='@daily', default_args=default_args) as dag:
+         dummy_task = EmptyOperator(task_id=fdp.ConsumeString(8), retries=fdp.ConsumeIntInRange(1,5))
          python_task = PythonOperator(task_id=fdp.ConsumeString(8), python_callable=py_func)
 
          dummy_task >> python_task
@@ -50,7 +51,7 @@ def TestInput(input_bytes):
       pass
 
 def main():
-   atheris.Setup(sys.argv, TestInput, enable_python_coverage=True)
+   atheris.Setup(sys.argv, TestInput)
    atheris.Fuzz()
 
 if __name__ == "__main__":
