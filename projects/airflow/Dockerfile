@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN apt-get install sqlite3
-RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip \
+    && pip3 install 'pyinstaller==6.10'
 
 RUN git clone https://github.com/apache/airflow
 ENV AIRFLOW_HOME=$SRC/airflow/
