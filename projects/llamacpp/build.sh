@@ -61,10 +61,6 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
 ./llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
 mv dummy.gguf $SRC/load-model-corpus/
-mv $SRC/llama.cpp/models/ggml-vocab-falcon.gguf $SRC/load-model-corpus/
-mv $SRC/llama.cpp/models/ggml-vocab-bert-bge.gguf $SRC/load-model-corpus/
-mv $SRC/llama.cpp/models/ggml-vocab-phi-3.gguf $SRC/load-model-corpus/
-mv $SRC/llama.cpp/models/ggml-vocab-llama-spm.gguf $SRC/load-model-corpus/
 zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
 cp $OUT/fuzz_load_model_seed_corpus.zip $OUT/fuzz_inference_seed_corpus.zip
 
@@ -76,8 +72,6 @@ cp fuzzers/llama.dict $OUT/fuzz_load_model.dict
 cp fuzzers/llama.dict $OUT/fuzz_inference.dict
 cp fuzzers/llama.dict $OUT/fuzz_json_to_grammar.dict
 cp fuzzers/llama.dict $OUT/fuzz_grammar.dict
-
-exit 0
 
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
