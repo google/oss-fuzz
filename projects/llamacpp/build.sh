@@ -58,7 +58,7 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
     -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_inference
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_structured
+    -Wl,--wrap,abort fuzzers/fuzz_structured.cpp -o $OUT/fuzz_structured
 
 # Prepare some dicts and seeds
 ./llama-gguf dummy.gguf w
