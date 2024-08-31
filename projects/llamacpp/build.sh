@@ -57,6 +57,9 @@ $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
     -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_inference
 
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_structured
+
 # Prepare some dicts and seeds
 ./llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
@@ -68,10 +71,12 @@ echo "[libfuzzer]" > $OUT/fuzz_load_model.options
 echo "detect_leaks=0" >> $OUT/fuzz_load_model.options
 
 cp $OUT/fuzz_load_model.options $OUT/fuzz_inference.options
+cp $OUT/fuzz_load_model.options $OUT/fuzz_structured.options
 cp fuzzers/llama.dict $OUT/fuzz_load_model.dict
 cp fuzzers/llama.dict $OUT/fuzz_inference.dict
-cp fuzzers/llama.dict $OUT/fuzz_json_to_grammar.dict
 cp fuzzers/llama.dict $OUT/fuzz_grammar.dict
+cp fuzzers/llama.dict $OUT/fuzz_structured.dict
+cp fuzzers/llama.dict $OUT/fuzz_json_to_grammar.dict
 
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
