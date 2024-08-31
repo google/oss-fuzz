@@ -16,12 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get install sqlite3
+RUN apt-get update && apt-get install -y sqlite3
 RUN pip3 install --upgrade pip \
     && pip3 install 'pyinstaller==6.10'
-
-RUN git clone https://github.com/apache/airflow
+RUN git clone --depth 1 https://github.com/apache/airflow
 ENV AIRFLOW_HOME=$SRC/airflow/
-WORKDIR airflow
+WORKDIR $SRC/airflow
 
 COPY build.sh dag_fuzz.py $SRC/
