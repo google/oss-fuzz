@@ -5,7 +5,10 @@ main_repo: "https://github.com/simdutf/simdutf"
 auto_ccs:
   - "nathaniel.brough@gmail.com"
   - "pauldreikossfuzz@gmail.com"
-
+sanitizers:
+  - address
+  - undefined
+  - memory
 fuzzing_engines:
   - afl
   - honggfuzz
