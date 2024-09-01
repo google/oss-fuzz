@@ -14,3 +14,6 @@ fuzzing_engines:
   - honggfuzz
   - libfuzzer
   - centipede
+architectures:
+  - x86_64
+  - aarch64
