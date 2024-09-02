@@ -635,6 +635,18 @@ def _add_environment_args(parser):
                       action='append',
                       help="set environment variable e.g. VAR=value")
 
+def _get_environment_args(args):
+  """Loop through the environment arguments provided by the user and creates
+  a list that can be later used as docker arguments."""
+  environment_args = []
+  if args.e:
+    for environment_arg in args.e:
+      environment_args += [
+        '-e',
+        environment_arg
+      ]
+  return environment_args
+
 
 def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
   """Builds image."""
@@ -921,6 +933,9 @@ def run_clusterfuzzlite(args):
             '-e',
             f'OSS_FUZZ_PROJECT_NAME={args.project.name}',
         ]
+
+      docker_run_command += _get_environment_args(args)
+
       docker_run_command += [
           '-v',
           f'{filestore_path}:{filestore_path}',
