@@ -1,0 +1,15 @@
+homepage: https://kexa.io/
+language: javascript
+main_repo: https://github.com/4urcloud/Kexa
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+primary_contact:
+- adrien.eppling@4urcloud.eu
+auto_ccs:
+- adrien.eppling@4urcloud.eu
+- esteban.mathia@innovtech.eu
+vendor_ccs:
+- adrien.eppling@4urcloud.eu
+- esteban.mathia@innovtech.eu
