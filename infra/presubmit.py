@@ -232,10 +232,10 @@ def check_project_yaml(paths):
 
 def _check_one_seed_corpus(path):
   """Returns False and prints error if |path| is a seed corpus."""
-  if os.path.dirname(os.path.dirname(path)) != 'projects':
+  if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
     return True
 
-  if os.path.splitext(path)[1] == 'zip':
+  if os.path.splitext(path)[1] == '.zip':
     print('Don\'t commit seed corpora into the ClusterFuzz repo,'
           'they bloat it forever.')
     return False
@@ -249,11 +249,39 @@ def check_seed_corpus(paths):
   return all([_check_one_seed_corpus(path) for path in paths])
 
 
+def _check_one_apt_update(path):
+  """Checks that a Dockerfile uses apt-update before apt-install"""
+  if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
+    return True
+
+  if os.path.basename(path) != 'Dockerfile':
+    return True
+
+  with open(path, 'r') as file:
+    dockerfile = file.read()
+    if 'RUN apt install' in dockerfile or 'RUN apt-get install' in dockerfile:
+      print('Please add an "apt-get update" before "apt-get install". '
+            'Otherwise, a cached and outdated RUN layer may lead to install '
+            'failures.')
+      return False
+
+  return True
+
+
+def check_apt_update(paths):
+  """Checks that all Dockerfile use apt-update before apt-install"""
+  return all([_check_one_apt_update(path) for path in paths])
+
+
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, check_project_yaml, check_lib_fuzzing_engine,
-      check_seed_corpus
+      check_license,
+      yapf,
+      check_project_yaml,
+      check_lib_fuzzing_engine,
+      check_seed_corpus,
+      check_apt_update,
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more

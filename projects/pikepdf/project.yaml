@@ -1,0 +1,11 @@
+homepage: "https://pikepdf.readthedocs.io/en/latest/index.html"
+language: python
+primary_contact: "james@purplerock.ca"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/pikepdf/pikepdf.git"

@@ -1,0 +1,11 @@
+homepage: "https://github.com/ccc-spdm-tools/spdm-rs"
+main_repo: 'https://github.com/ccc-spdm-tools/spdm-rs.git'
+language: rust
+primary_contact: "xiaoyu1.lu@intel.com"
+auto_ccs:
+  - "jiewen.yao@intel.com"
+  - "longlong.yang@intel.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

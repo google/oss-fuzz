@@ -1,0 +1,8 @@
+# Suppress spurious leak reports:
+# https://gnome.pages.gitlab.gnome.org/librsvg/devel-docs/memory_leaks.html
+
+[asan]
+detect_leaks = 0
+
+[libfuzzer]
+detect_leaks = 0

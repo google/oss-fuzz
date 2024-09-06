@@ -21,8 +21,8 @@ export LINK_FLAGS=""
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -84,6 +84,8 @@ cd $SRC/cryptofuzz/modules/blst/
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/modules/circl/
+go mod init cryptofuzz/circl
+go mod tidy
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/

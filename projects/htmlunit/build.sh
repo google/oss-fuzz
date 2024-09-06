@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-MVN_FLAGS="-DskipTests -Dmaven.javadoc.skip"
+MVN_FLAGS="-DskipTests -Dmaven.javadoc.skip -Denforcer.skip=true -Dgpg.skip"
 
 ALL_JARS=""
 #LIBRARY_NAME="htmlunit" #set by Dockerfile

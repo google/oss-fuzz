@@ -9,6 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#define USE_THE_REPOSITORY_VARIABLE
+
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -34,7 +36,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		create_templ_dir();
 	}
 
-	initialize_the_repository();
+	initialize_repository(the_repository);
 
 	if (!initialized)
 	{

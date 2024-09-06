@@ -16,12 +16,9 @@
 #
 ################################################################################
 
-# Due to https://github.com/bazelbuild/bazel/issues/11128, affecting Bazel 4.0
-# or earlier, we cannot use the "@rules_fuzzing//" prefix for the label-typed
-# cc_engine configuration flag when fuzzing directly the rules_fuzzing workspace.
-#
-# This is NOT needed for any other Bazel repository that depends on
-# rules_fuzzing.
-export BAZEL_EXTRA_BUILD_FLAGS="--//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine"
+# Work around https://github.com/bazelbuild/bazel/issues/21592: 
+# The `layering_check` feature does not work with `--spawn_strategy=standalone`,
+# which is the default for OSS-Fuzz builds.
+export BAZEL_EXTRA_BUILD_FLAGS="--spawn_strategy=sandboxed"
 
 bazel_build_fuzz_tests

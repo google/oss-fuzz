@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make build-essential
 
-RUN git clone -b oss_fuzz --depth 1 https://github.com/aawc/unrar.git
+RUN git clone -b main --depth 1 https://github.com/aawc/unrar.git
 WORKDIR unrar
 
 COPY build.sh $SRC/

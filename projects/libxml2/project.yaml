@@ -1,4 +1,4 @@
-homepage: "http://www.xmlsoft.org/"
+homepage: "https://gitlab.gnome.org/GNOME/libxml2"
 language: c++
 primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
@@ -13,6 +13,7 @@ vendor_ccs:
   - "james_e_kim@apple.com"
   - "rding23@apple.com"
   - "albassam@apple.com"
+  - "zakr@apple.com"
 sanitizers:
   - address
   - memory
@@ -20,6 +21,7 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+  - aarch64
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

@@ -25,9 +25,6 @@ then
     make -j$(nproc) all
     make -j$(nproc) install
     )
-    # Temporary workaround for https://github.com/rust-lang/rust/issues/107149
-    # until oss-fuzz clang is up to rustc clang (15.0.6).
-    export RUSTFLAGS="$RUSTFLAGS -Zsanitizer-memory-track-origins -Cllvm-args=-msan-eager-checks=0"
 fi
 
 (
@@ -46,8 +43,8 @@ cp lib/liblz4.a /usr/local/lib/
 cp lib/lz4*.h /usr/local/include/
 cd ..
 
-tar -xvzf jansson-2.12.tar.gz
-cd jansson-2.12
+tar -xvzf jansson-2.14.tar.gz
+cd jansson-2.14
 ./configure --disable-shared
 make -j$(nproc)
 make install
@@ -86,9 +83,8 @@ then
 fi
 
 fuzz_branches=("")
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("6")
     fuzz_branches+=("7")
 fi
 

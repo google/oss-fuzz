@@ -1,0 +1,7 @@
+homepage: "https://github.com/google/mdbook-i18n-helpers"
+main_repo: "https://github.com/google/mdbook-i18n-helpers.git"
+language: rust
+primary_contact: "mgeisler@google.com"
+auto_ccs:
+  - "kdark@google.com"
+  - "darkhanu@gmail.com"

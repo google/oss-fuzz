@@ -50,21 +50,18 @@ LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutil
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-15-init-1464-gbf7f8d6f
+# On each bump a full trial run for everything (fuzzing engines, sanitizers,
+# languages, projects, ...) is needed.
+# Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released
+# recently enough to fully support this clang version.
+OUR_LLVM_REVISION=llvmorg-18-init-4631-gd50b56d1
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
-# Pin clang due to https://github.com/google/oss-fuzz/issues/7617
-git checkout 946a41a51f44207941b3729a0733dfc1e236644e
-
-# To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
-# *not* force a manual downgrade). Set to 1 to force a manual downgrade.
-# DO NOT CHANGE THIS UNTIL https://github.com/google/oss-fuzz/issues/7273 is
-# RESOLVED.
-FORCE_OUR_REVISION=1
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
+# Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
+git checkout 9eb79319239629c1b23cf7a59e5ebb2bab319a34
 
 LLVM_SRC=$SRC/llvm-project
 # Checkout
@@ -91,34 +88,8 @@ function clone_with_retries {
 }
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
-PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
-function cmake_llvm {
-  extra_args="$@"
-  cmake -G "Ninja" \
-      -DLIBCXX_ENABLE_SHARED=OFF \
-      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DLIBCXXABI_ENABLE_SHARED=OFF \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \
-      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
-      $extra_args \
-      $LLVM_SRC/llvm
-}
-
-set +e
-git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION
-IS_OUR_REVISION_ANCESTOR_RETCODE=$?
-set -e
-
-# Use our revision if specified by FORCE_OUR_REVISION or if our revision is a
-# later revision than Chrome's (i.e. not an ancestor of Chrome's).
-if [ $IS_OUR_REVISION_ANCESTOR_RETCODE -ne 0 ] || [ $FORCE_OUR_REVISION -eq 1 ] ; then
-  LLVM_REVISION=$OUR_LLVM_REVISION
-fi
-
-git -C $LLVM_SRC checkout $LLVM_REVISION
-echo "Using LLVM revision: $LLVM_REVISION"
+git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
+echo "Using LLVM revision: $OUR_LLVM_REVISION"
 
 # For fuzz introspector.
 echo "Applying introspector changes"
@@ -136,7 +107,17 @@ mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 cd $WORK/llvm-stage2
-cmake_llvm
+cmake -G "Ninja" \
+  -DLIBCXX_ENABLE_SHARED=OFF \
+  -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+  -DLIBCXXABI_ENABLE_SHARED=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
+  -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+  $LLVM_SRC/llvm
+
 ninja -j $NPROC
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
@@ -145,7 +126,8 @@ rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
 # Use the clang we just built from now on.
-CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+export CC=clang
+export CXX=clang++
 
 function free_disk_space {
     rm -rf $LLVM_SRC $SRC/chromium_tools
@@ -221,17 +203,18 @@ function cmake_libcxx {
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_ENABLE_PIC=ON \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
       -DLLVM_BINUTILS_INCDIR="/usr/include/" \
       $extra_args \
-      $LLVM_SRC/llvm
+      -S $LLVM_SRC/runtimes
 }
 
 # 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
-cmake_libcxx $CMAKE_EXTRA_ARGS \
+cmake_libcxx \
     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
@@ -245,14 +228,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blocklist.txt
+cat <<EOF > $WORK/msan/ignorelist.txt
 fun:__gxx_personality_*
 EOF
 
-cmake_libcxx $CMAKE_EXTRA_ARGS \
+cmake_libcxx \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-ignorelist=$WORK/msan/ignorelist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx

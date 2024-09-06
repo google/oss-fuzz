@@ -22,14 +22,15 @@ import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
-import subprocess
+import tarfile
 import tempfile
-import json
+import uuid
 
 from googleapiclient.discovery import build as cloud_build
 import googleapiclient.discovery
 import google.api_core.client_options
 import google.auth
+from google.cloud import storage
 from oauth2client import service_account as service_account_lib
 import requests
 import yaml
@@ -324,7 +325,9 @@ def get_pull_test_images_steps(test_image_suffix):
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
+      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-builder-rust',
+      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-runner',
   ]
   steps = []
@@ -514,12 +517,13 @@ def get_runner_image_name(test_image_suffix):
   return image
 
 
-def get_build_body(steps,
-                   timeout,
-                   body_overrides,
-                   build_tags,
-                   use_build_pool=True,
-                   experiment=False):
+def get_build_body(  # pylint: disable=too-many-arguments
+    steps,
+    timeout,
+    body_overrides,
+    build_tags,
+    use_build_pool=True,
+    experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -547,7 +551,17 @@ def get_build_body(steps,
   return build_body
 
 
-def run_build(  # pylint: disable=too-many-arguments
+def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
+  """Prepare a .tgz containing the files required to build
+  `oss_fuzz_project`."""
+  # Just the projects/<project> dir should be sufficient.
+  project_rel_path = os.path.join('projects', oss_fuzz_project)
+  with tarfile.open(temp_tgz_path, 'w:gz') as tar:
+    tar.add(os.path.join(OSS_FUZZ_ROOT, project_rel_path),
+            arcname=project_rel_path)
+
+
+def run_build(  # pylint: disable=too-many-arguments, too-many-locals
     oss_fuzz_project,
     steps,
     credentials,
@@ -566,23 +580,24 @@ def run_build(  # pylint: disable=too-many-arguments
                               use_build_pool=use_build_pool,
                               experiment=experiment)
   if experiment:
-    with tempfile.NamedTemporaryFile(suffix='build.json') as config_file:
-      config_file.write(bytes(json.dumps(build_body), 'utf-8'))
-      config_file.seek(0)
-      result = subprocess.run([
-          'gcloud',
-          'builds',
-          'submit',
-          '--project=oss-fuzz',
-          f'--config={config_file.name}',
-          '--async',
-          '--format=get(id)',
-      ],
-                              stdout=subprocess.PIPE,
-                              cwd=OSS_FUZZ_ROOT,
-                              encoding='utf-8',
-                              check=True)
-      return result.stdout.strip()
+    with tempfile.NamedTemporaryFile(suffix='source.tgz') as tgz_file:
+      # Archive the necessary files for the build.
+      _tgz_local_build(oss_fuzz_project, tgz_file.name)
+      gcs_client = storage.Client()
+      # This is the automatically created Cloud Build bucket for Cloud Build.
+      bucket_name = gcs_client.project + '_cloudbuild'
+      bucket = gcs_client.bucket(bucket_name)
+      blob_name = f'source/{str(uuid.uuid4())}.tgz'
+      blob = bucket.blob(blob_name)
+      logging.info(f'Uploading project to {bucket_name}/{blob_name}')
+      blob.upload_from_filename(tgz_file.name)
+
+      build_body['source'] = {
+          'storageSource': {
+              'bucket': bucket_name,
+              'object': blob_name,
+          }
+      }
 
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -616,7 +631,7 @@ def wait_for_build(build_id, credentials, cloud_project):
                                   'INTERNAL_ERROR', 'EXPIRED', 'CANCELLED'):
         # Build done.
         return
-    except googleapiclient.errors.HttpError:
+    except (googleapiclient.errors.HttpError, BrokenPipeError):
       pass
 
     time.sleep(15)  # Avoid rate limiting.

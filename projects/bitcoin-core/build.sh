@@ -15,7 +15,13 @@
 #
 ################################################################################
 
-$SRC/build_cryptofuzz.sh
+# Print date to embed it into build logs
+date
+
+if [ "$SANITIZER" != "introspector" ]; then
+  # Temporarily skip this under introspector
+  $SRC/build_cryptofuzz.sh
+fi
 
 cd $SRC/bitcoin-core/
 
@@ -23,6 +29,11 @@ cd $SRC/bitcoin-core/
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
   export BUILD_TRIPLET="i686-pc-linux-gnu"
+
+  # Temp workaround
+  mkdir /usr/local/lib/clang/18/lib/linux
+  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan_static.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan_static-i386.a
+  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan-i386.a
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
@@ -32,36 +43,45 @@ fi
 # Skip CFLAGS for now, to avoid:
 # "/usr/bin/ld: error: Failed to link module lib/libevent.a.llvm.17822.buffer.c: Expected at most one ThinLTO module per bitcode file".
 # export CFLAGS="$CFLAGS -flto=thin"
-export CXXFLAGS="$CXXFLAGS -flto=thin"
-export LDFLAGS="-flto=thin"
+# Skip CXXFLAGS for now, to avoid: undefined reference to __sancov_gen_.
+# export CXXFLAGS="$CXXFLAGS -flto=thin"
+# export LDFLAGS="-flto=thin"
 
-export CPPFLAGS="-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
+export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
   make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
-       CPPFLAGS="$CPPFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" -j$(nproc)
+       -j$(nproc)
 )
 
 # Build the fuzz targets
 
-sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./configure.ac"
-./autogen.sh
+sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./src/test/fuzz/util/CMakeLists.txt"
 
 # OSS-Fuzz will provide CC, CXX, etc. So only set:
-# * --enable-fuzz, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
-# * CONFIG_SITE, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
+# * -DBUILD_FOR_FUZZING=ON, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
+# * --toolchain, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
+EXTRA_BUILD_OPTIONS=
 if [ "$SANITIZER" = "memory" ]; then
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" --disable-hardening --with-asm=no
-else
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
+  # _FORTIFY_SOURCE is not compatible with MSAN.
+  EXTRA_BUILD_OPTIONS="-DAPPEND_CPPFLAGS='-U_FORTIFY_SOURCE'"
 fi
 
-make -j$(nproc)
+cmake -B build_fuzz \
+  --toolchain depends/${BUILD_TRIPLET}/toolchain.cmake \
+  `# Setting these flags to an empty string ensures that the flags set by an OSS-Fuzz environment remain unaltered` \
+  -DCMAKE_C_FLAGS_RELWITHDEBINFO="" \
+  -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="" \
+  -DBUILD_FOR_FUZZING=ON \
+  -DSANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" \
+  $EXTRA_BUILD_OPTIONS
 
-WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./src/test/fuzz/fuzz" || true
+cmake --build build_fuzz -j$(nproc)
+
+WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./build_fuzz/src/test/fuzz/fuzz" || true
 readarray FUZZ_TARGETS < "/tmp/a"
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
@@ -73,19 +93,20 @@ fi
 # executable with a "magic string" as the name of the fuzz target.
 #
 # An alternative to mocking the string in the finished binary would be to
-# replace the string in the source code and re-invoke 'make'. This is slower,
+# replace the string in the source code and re-invoke 'cmake --build'. This is slower,
 # so use the hack.
 export MAGIC_STR="b5813eee2abc9d3358151f298b75a72264ffa119d2f71ae7fefa15c4b70b4bc5b38e87e3107a730f25891ea428b2b4fabe7a84f5bfa73c79e0479e085e4ff157"
 sed -i "s|std::getenv(\"FUZZ\")|\"$MAGIC_STR\"|g" "./src/test/fuzz/fuzz.cpp"
-make -j$(nproc)
+cmake --build build_fuzz -j$(nproc)
 
 # Replace the magic string with the actual name of each fuzz target
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
-  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./src/test/fuzz/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
+  df --human-readable ./src
+  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./build_fuzz/src/test/fuzz/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
 
   chmod +x "$OUT/$fuzz_target"
   (
-    cd assets/fuzz_seed_corpus
+    cd assets/fuzz_corpora
     if [ -d "$fuzz_target" ]; then
       zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
     fi
