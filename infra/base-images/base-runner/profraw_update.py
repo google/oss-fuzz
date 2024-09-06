@@ -123,8 +123,8 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
 
 def main():
   """Helper script for upgrading a profraw file to latest version."""
-  if len(sys.argv) != 4:
-    sys.stderr.write('Usage: %s <binary> <profraw> <output>\n' % sys.argv[0])
+  if len(sys.argv) < 3:
+    sys.stderr.write('Usage: %s <binary> options? <profraw>...\n' % sys.argv[0])
     return 1
 
   # First find llvm profile sections addresses in the elf, quick and dirty.
@@ -140,14 +140,31 @@ def main():
     elif b'__llvm_prf_data' in line:
       sect_prf_data = int(line.split()[3], 16)
 
-  # Then open and read the input profraw file.
-  with open(sys.argv[2], 'rb') as input_file:
-    profraw_base = bytearray(input_file.read())
-  # Do the upgrade, returning a bytes object.
-  profraw_latest = upgrade(profraw_base, sect_prf_cnts, sect_prf_data)
-  # Write the output to the file given to the command line.
-  with open(sys.argv[3], 'wb') as output_file:
-    output_file.write(profraw_latest)
+  out_name = "default.profup"
+  in_place = False
+  start = 2
+  if sys.argv[2] == "-i":
+    in_place = True
+    start = start + 1
+  elif sys.argv[2] == "-o":
+    out_name = sys.argv[3]
+    start = 4
+
+  if len(sys.argv) < start:
+    sys.stderr.write('Usage: %s <binary> options <profraw>...\n' % sys.argv[0])
+    return 1
+
+  for i in range(start, len(sys.argv)):
+    # Then open and read the input profraw file.
+    with open(sys.argv[i], 'rb') as input_file:
+      profraw_base = bytearray(input_file.read())
+    # Do the upgrade, returning a bytes object.
+    profraw_latest = upgrade(profraw_base, sect_prf_cnts, sect_prf_data)
+    # Write the output to the file given to the command line.
+    if in_place:
+      out_name = sys.argv[i]
+    with open(out_name, 'wb') as output_file:
+      output_file.write(profraw_latest)
 
   return 0
 
