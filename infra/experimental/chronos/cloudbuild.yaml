@@ -1,0 +1,47 @@
+# CloudBuild for generating Chronos-cached images.
+steps:
+- name: ubuntu
+  args:
+  - infra/experimental/chronos/prepare-recompile
+  - ${_PROJECT}
+  - ${_FUZZ_TARGET}
+  - ${_FUZZING_LANGUAGE}
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - .
+  dir: projects/${_PROJECT}
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint="/bin/sh"
+  - --env=SANITIZER=address
+  - --name=${_PROJECT}-origin-asan
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "compile && rm -rf /out/*"
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - commit
+  - ${_PROJECT}-origin-asan
+  - gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-asan
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint="/bin/sh"
+  - --env=SANITIZER=coverage
+  - --name=${_PROJECT}-origin-cov
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "compile && rm -rf /out/*"
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - commit
+  - ${_PROJECT}-origin-cov
+  - gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-cov
+images:
+- gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-asan
+- gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-cov
+timeout: 1800s
