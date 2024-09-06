@@ -1,0 +1,65 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+# CloudBuild for generating Chronos-cached images.
+steps:
+- name: ubuntu
+  args:
+  - infra/experimental/chronos/prepare-recompile
+  - ${_PROJECT}
+  - ${_FUZZ_TARGET}
+  - ${_FUZZING_LANGUAGE}
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - .
+  dir: projects/${_PROJECT}
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint=/bin/sh
+  - --env=SANITIZER=address
+  - --name=${_PROJECT}-origin-asan
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "compile && rm -rf /out/*"
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - commit
+  - ${_PROJECT}-origin-asan
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint=/bin/sh
+  - --env=SANITIZER=coverage
+  - --name=${_PROJECT}-origin-cov
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "compile && rm -rf /out/*"
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - commit
+  - ${_PROJECT}-origin-cov
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
+images:
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
+timeout: 1800s
+serviceAccount: 'projects/oss-fuzz/serviceAccounts/builder@oss-fuzz.iam.gserviceaccount.com'
+options:
+  logging: CLOUD_LOGGING_ONLY
