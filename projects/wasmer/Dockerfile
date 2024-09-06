@@ -27,4 +27,7 @@ RUN mkdir -p $SRC/.llvm && curl --proto '=https' --tlsv1.2 -sSf \
 
 WORKDIR wasmer
 
+# dead code warnings with nightly-2024-07-12
+ENV RUSTUP_TOOLCHAIN nightly-2024-02-12
+
 COPY build.sh default.options $SRC/
