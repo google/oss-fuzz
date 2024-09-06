@@ -29,6 +29,9 @@ set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
 set -u
 
+#This adds zap-cli to PATH, needed for fuzzing all-clusters-app
+export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
+
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
 # - `is_clang` selects clang toolchains (does not support AFL fuzzing engine)
@@ -39,7 +42,7 @@ set -u
 #   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
 #   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
 #   implementations.
-# - `target_ldflags` forces compiler to use LLVM's linker
+# - `target_ldflags` forces compiler to use LLVM's linker + explicitly linking some libraries (statically)
 gn gen out/fuzz_targets \
   --args="
     oss_fuzz=true \
@@ -47,7 +50,7 @@ gn gen out/fuzz_targets \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
     chip_enable_openthread=false \
-    target_ldflags=[\"-fuse-ld=lld\"]"
+    target_ldflags=[\"-fuse-ld=lld\", \"-Bstatic\", \"-lselinux\", \"-lmount\", \"-lblkid\", \"-lz\", \"-lpcre\", \"-lffi\", \"-lgmodule-2.0\", \"-Wl,-Bdynamic\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
 deactivate
