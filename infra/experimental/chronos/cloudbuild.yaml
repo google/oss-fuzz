@@ -16,7 +16,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
-  - --entrypoint="/bin/sh"
+  - --entrypoint=/bin/sh
   - --env=SANITIZER=address
   - --name=${_PROJECT}-origin-asan
   - gcr.io/oss-fuzz/${_PROJECT}
@@ -26,11 +26,11 @@ steps:
   args:
   - commit
   - ${_PROJECT}-origin-asan
-  - gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-asan
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
-  - --entrypoint="/bin/sh"
+  - --entrypoint=/bin/sh
   - --env=SANITIZER=coverage
   - --name=${_PROJECT}-origin-cov
   - gcr.io/oss-fuzz/${_PROJECT}
@@ -40,8 +40,11 @@ steps:
   args:
   - commit
   - ${_PROJECT}-origin-cov
-  - gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-cov
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
 images:
-- gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-asan
-- gcr.io/oss-fuzz/${_PROJECT}-ofg-cached-cov
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
 timeout: 1800s
+serviceAccount: 'projects/oss-fuzz/serviceAccounts/builder@oss-fuzz.iam.gserviceaccount.com'
+options:
+  logging: CLOUD_LOGGING_ONLY
