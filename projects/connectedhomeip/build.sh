@@ -50,7 +50,7 @@ gn gen out/fuzz_targets \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
     chip_enable_openthread=false \
-    target_ldflags=[\"-fuse-ld=lld\", \"-Bstatic\", \"-lselinux\", \"-lmount\", \"-lblkid\", \"-lz\", \"-lpcre\", \"-lffi\", \"-lgmodule-2.0\", \"-Wl,-Bdynamic\"]"
+    target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
 deactivate

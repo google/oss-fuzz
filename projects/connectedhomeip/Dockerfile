@@ -40,7 +40,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 --branch AA/UBSANandpkgconfig https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
+
 
 # Ensure global python has access to build requirements
 RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt
