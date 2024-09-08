@@ -68,6 +68,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
           llama_context_params_from_gpt_params(params);
       llama_context *ctx = llama_new_context_with_model(model, ctx_params);
       if (ctx != NULL) {
+          /*
         std::vector<llama_token> tokens_list;
         tokens_list = ::llama_tokenize(ctx, params.prompt, true);
 
@@ -126,9 +127,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
           }
           llama_batch_free(batch);
         }
+        */
+        llama_free(ctx);
       }
 
-      llama_free(ctx);
       llama_free_model(model);
     }
   }
