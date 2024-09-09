@@ -124,7 +124,7 @@ $CC $CFLAGS \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
 	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
-	./libdw/libdw.a ./libelf/libelf.a "$zlib" \
+	./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-dwfl-core"
 
 $CC $CFLAGS \
