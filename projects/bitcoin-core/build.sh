@@ -106,7 +106,7 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
 
   chmod +x "$OUT/$fuzz_target"
   (
-    cd assets/fuzz_seed_corpus
+    cd assets/fuzz_corpora
     if [ -d "$fuzz_target" ]; then
       zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
     fi

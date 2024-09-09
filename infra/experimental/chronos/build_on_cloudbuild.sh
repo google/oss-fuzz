@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
+PROJECT=$1
+FUZZ_TARGET=$2
+FUZZING_LANGUAGE=$3
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && apt-get install -y openssl libssl-dev git make cmake libssl-dev 
-RUN git clone --depth 1 https://github.com/pocoproject/poco
-WORKDIR $SRC/poco
-COPY build.sh \
-     json_parse_fuzzer.cc \
-     xml_parse_fuzzer.cc \
-     date_time_fuzzer.cc \
-     jwt_decode_fuzzer.cc \
-     xml.dict \
-     $SRC/
+gcloud builds submit "https://github.com/google/oss-fuzz" \
+  --git-source-revision=master \
+  --config=cloudbuild.yaml \
+  --substitutions=_PROJECT=$PROJECT,_FUZZ_TARGET=$FUZZ_TARGET,_FUZZING_LANGUAGE=$FUZZING_LANGUAGE \
+  --project=oss-fuzz
