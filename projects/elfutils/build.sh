@@ -81,7 +81,7 @@ fi
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --disable-demangler --without-bzlib --without-lzma --without-zstd \
-	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS"; then
+	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS"; then
     cat config.log
     exit 1
 fi
@@ -124,7 +124,7 @@ $CC $CFLAGS \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
 	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
-	./libdw/libdw.a ./libelf/libelf.a "$zlib" \
+	./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-dwfl-core"
 
 $CC $CFLAGS \
