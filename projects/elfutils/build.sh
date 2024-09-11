@@ -30,7 +30,7 @@
 #
 #  $ git clone https://github.com/google/oss-fuzz
 #  $ cd oss-fuzz/projects/elfutils
-#  $ git clone git://sourceware.org/git/elfutils.git
+#  $ git clone https://sourceware.org/git/elfutils.git
 #  $ ./build.sh
 #  $ wget -O fuzz-dwfl-core-corpus.zip "https://storage.googleapis.com/elfutils-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/elfutils_fuzz-dwfl-core/public.zip"
 #  $ unzip -d CORPUS fuzz-dwfl-core-corpus.zip
