@@ -42,7 +42,7 @@ export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
 #   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
 #   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
 #   implementations.
-# - `target_ldflags` forces compiler to use LLVM's linker + explicitly linking some libraries (statically)
+# - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
     oss_fuzz=true \
