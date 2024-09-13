@@ -13,8 +13,8 @@ limitations under the License.
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "attr.h"
 #include "git-compat-util.h"
+#include "attr.h"
 
 struct attr_state {
 	const struct git_attr *attr;
