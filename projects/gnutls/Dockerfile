@@ -14,8 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -38,7 +37,7 @@ RUN apt-get update && apt-get install -y \
  lzip
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
-RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth=1 git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN hg clone https://gmplib.org/repo/gmp/ gmp || \
@@ -50,6 +49,3 @@ RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

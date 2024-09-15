@@ -1,0 +1,12 @@
+homepage: "https://github.com/ohler55/ox"
+language: ruby
+primary_contact: "TODO@template.test"
+auto_ccs:
+  - "TODO@template.test"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/ohler55/ox'
+disabled: true
+fuzzing_engines:
+  - libfuzzer

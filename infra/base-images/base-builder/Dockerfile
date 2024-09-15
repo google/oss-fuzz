@@ -161,6 +161,7 @@ COPY bazel_build_fuzz_tests \
     install_javascript.sh \
     install_java.sh \
     install_python.sh \
+    install_ruby.sh \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \
@@ -170,8 +171,10 @@ COPY bazel_build_fuzz_tests \
 
 # TODO: Build this as part of a multi-stage build.
 ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc /usr/local/bin/
-ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc /usr/local/bin/
-RUN chmod +x /usr/local/bin/clang-jcc && chmod +x /usr/local/bin/clang++-jcc
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc /usr/local/bin
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc2 /usr/local/bin/
+ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc2 /usr/local/bin
+RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/clang-jcc2 /usr/local/bin/clang++-jcc2
 
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/

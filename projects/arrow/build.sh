@@ -17,6 +17,16 @@
 
 set -ex
 
+# Install Boost headers
+(
+ cd $SRC/
+ tar jxf boost_1_85_0.tar.bz2
+ cd boost_1_85_0/
+ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+ CFLAGS="" CXXFLAGS="" ./b2 headers
+ cp -R boost/ /usr/include/
+)
+
 ARROW=${SRC}/arrow/cpp
 
 cd ${WORK}
@@ -49,10 +59,10 @@ cmake ${ARROW} -GNinja \
     -DPARQUET_REQUIRE_ENCRYPTION=off \
     -DARROW_WITH_BROTLI=on \
     -DARROW_WITH_BZ2=off \
-    -DARROW_WITH_LZ4=off \
-    -DARROW_WITH_SNAPPY=off \
-    -DARROW_WITH_ZLIB=off \
-    -DARROW_WITH_ZSTD=off \
+    -DARROW_WITH_LZ4=on \
+    -DARROW_WITH_SNAPPY=on \
+    -DARROW_WITH_ZLIB=on \
+    -DARROW_WITH_ZSTD=on \
     -DARROW_USE_GLOG=off \
     -DARROW_USE_ASAN=off \
     -DARROW_USE_UBSAN=off \

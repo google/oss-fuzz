@@ -163,7 +163,7 @@ cp $(which llvm-symbolizer) $OUT/
 
 # Copy Jazzer to $OUT if needed.
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
+  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $(which jazzer_junit.jar) $OUT/
   jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
   if [ "$SANITIZER" = "address" ]; then
     cat > $jazzer_driver_with_sanitizer << 'EOF'
