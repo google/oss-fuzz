@@ -30,7 +30,7 @@
 #
 #  $ git clone https://github.com/google/oss-fuzz
 #  $ cd oss-fuzz/projects/elfutils
-#  $ git clone git://sourceware.org/git/elfutils.git
+#  $ git clone https://sourceware.org/git/elfutils.git
 #  $ ./build.sh
 #  $ wget -O fuzz-dwfl-core-corpus.zip "https://storage.googleapis.com/elfutils-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/elfutils_fuzz-dwfl-core/public.zip"
 #  $ unzip -d CORPUS fuzz-dwfl-core-corpus.zip
@@ -81,7 +81,7 @@ fi
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --disable-demangler --without-bzlib --without-lzma --without-zstd \
-	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="-Wno-error $CXX" CXXFLAGS="$CXXFLAGS" LDFLAGS="$CFLAGS"; then
+	    CC="$CC" CFLAGS="-Wno-error $CFLAGS" CXX="$CXX" CXXFLAGS="-Wno-error $CXXFLAGS" LDFLAGS="$CFLAGS"; then
     cat config.log
     exit 1
 fi
@@ -97,7 +97,7 @@ ASAN_OPTIONS=detect_leaks=0 make -j$(nproc) V=1
 # it's also built with ASan and UBSan.
 git clone https://github.com/madler/zlib
 pushd zlib
-git checkout v1.2.12
+git checkout v1.3.1
 if ! ./configure --static; then
     cat configure.log
     exit 1
@@ -124,7 +124,7 @@ $CC $CFLAGS \
 	-I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
 	-c "$SRC/fuzz-dwfl-core.c" -o fuzz-dwfl-core.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-dwfl-core.o \
-	./libdw/libdw.a ./libelf/libelf.a "$zlib" \
+	./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-dwfl-core"
 
 $CC $CFLAGS \

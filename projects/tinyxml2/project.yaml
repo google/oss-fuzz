@@ -14,5 +14,3 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-  - centipede
-

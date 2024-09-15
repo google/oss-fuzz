@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
 #
 # Build static libs for dependencies
 #
+RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install mussels
 RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-mussels-cookbook.git
 

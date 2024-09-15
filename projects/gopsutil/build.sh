@@ -19,4 +19,4 @@ cp $SRC/fuzz_test.go ./process/
 go mod tidy
 printf "package process\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./process/register.go
 go mod tidy
-compile_native_go_fuzzer github.com/shirou/gopsutil/v3/process FuzzTest FuzzTest
+compile_native_go_fuzzer github.com/shirou/gopsutil/v4/process FuzzTest FuzzTest

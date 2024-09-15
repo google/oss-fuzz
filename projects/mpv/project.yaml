@@ -13,7 +13,6 @@ sanitizers:
   - undefined
 fuzzing_engines:
   - afl
-  - centipede
   - honggfuzz
   - libfuzzer
 selective_unpack: true
