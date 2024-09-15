@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Prepare a project for fuzz target recompilation via chronos.sh
+# Usage:
+# (in OSS-Fuzz root dir) infra/experimental/chronos/prepare-recompile.sh <project> <fuzz-target-name> <fuzzing-language>
+# E.g.:
+#infra/experimental/chronos/prepare-recompile.sh libiec61850 fuzz_mms_decode.c c
+
+
+
+PROJECT=$1
+FUZZ_TARGET=$2
+FUZZING_LANGUAGE=$3
+
+# Step 1: Copy chronos.sh to its project directory.
+cp infra/experimental/chronos/chronos.sh "projects/$PROJECT/"
+
+# Step 2: Copy chronos.sh to image and set FUZZ_TARGET and FUZZING_LANGUAGE in its Dockerfile.
+{
+    echo "COPY chronos.sh /src";
+    echo "ENV FUZZ_TARGET=\"$FUZZ_TARGET\"";
+    echo "ENV FUZZING_LANGUAGE=\"$FUZZING_LANGUAGE\"";
+    # Step 3: Source chronos.sh at the beginning of its build.sh.
+    echo "RUN sed -i.bak \"1s|^|source \\\"/src/chronos.sh\\\"\\n|\" \"/src/build.sh\""
+} >> "projects/$PROJECT/Dockerfile"

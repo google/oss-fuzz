@@ -7,6 +7,7 @@ vendor_ccs:
   - "David@adalogics.com"
   - "jhenderson@hdfgroup.org"
   - "nfortne2@hdfgroup.org"
+  - "hyoklee@hdfgroup.org"  
 sanitizers:
   - address
   - undefined
