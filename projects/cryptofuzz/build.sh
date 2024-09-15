@@ -25,7 +25,18 @@ export GO111MODULE=off
 mkdir $SRC/go-bootstrap
 cd $SRC/go-bootstrap
 
-tar zxf $SRC/go1.22.1.linux-amd64.tar.gz
+tar zxf $SRC/go1.23.1.linux-amd64.tar.gz
+mv go/ go-123
+export GOROOT_123=$SRC/go-bootstrap/go-123/
+export GOPATH_123=$GOROOT_123/packages/
+mkdir $GOPATH_123
+mkdir -p $GOPATH_123/src/golang.org/x/crypto/
+cp -R $SRC/go-crypto/* $GOPATH_123/src/golang.org/x/crypto/
+mkdir -p $GOPATH_123/src/golang.org/x/sys/
+cp -R $SRC/go-sys/* $GOPATH_123/src/golang.org/x/sys/
+export PATH_GO_123=$GOROOT_123/bin:$GOROOT_123/packages/bin:$PATH
+
+tar zxf $SRC/go1.22.7.linux-amd64.tar.gz
 mv go/ go-122
 export GOROOT_122=$SRC/go-bootstrap/go-122/
 export GOPATH_122=$GOROOT_122/packages/
@@ -36,21 +47,10 @@ mkdir -p $GOPATH_122/src/golang.org/x/sys/
 cp -R $SRC/go-sys/* $GOPATH_122/src/golang.org/x/sys/
 export PATH_GO_122=$GOROOT_122/bin:$GOROOT_122/packages/bin:$PATH
 
-tar zxf $SRC/go1.20.10.linux-amd64.tar.gz
-mv go/ go-120
-export GOROOT_120=$SRC/go-bootstrap/go-120/
-export GOPATH_120=$GOROOT_120/packages/
-mkdir $GOPATH_120
-mkdir -p $GOPATH_120/src/golang.org/x/crypto/
-cp -R $SRC/go-crypto/* $GOPATH_120/src/golang.org/x/crypto/
-mkdir -p $GOPATH_120/src/golang.org/x/sys/
-cp -R $SRC/go-sys/* $GOPATH_120/src/golang.org/x/sys/
-export PATH_GO_120=$GOROOT_120/bin:$GOROOT_120/packages/bin:$PATH
-
 # Compile Go development version
 cd $SRC/go-dev/src/
 export OLD_PATH=$PATH
-PATH="$PATH_GO_120" ./make.bash
+PATH="$PATH_GO_123" ./make.bash
 export GOROOT_DEV=$(realpath ../)
 export GOPATH_DEV=$GOROOT_DEV/packages
 mkdir $GOPATH_DEV
@@ -402,7 +402,12 @@ make -B
 cd $SRC/botan
 if [[ $CFLAGS != *-m32* ]]
 then
-    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    if [[ $CFLAGS != *sanitize=memory* ]]
+    then
+        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    else
+        ./configure.py --disable-asm --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    fi
 else
     ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
 fi
@@ -511,11 +516,11 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang (122) module
+# Compile Cryptofuzz Golang (123) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/golang
-    GOROOT="$GOROOT_122" GOPATH="$GOPATH_122" PATH="$PATH_GO_122" make -B
+    GOROOT="$GOROOT_123" GOPATH="$GOPATH_123" PATH="$PATH_GO_123" make -B
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -590,11 +595,11 @@ cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
 
 ##############################################################################
-# Compile Cryptofuzz Golang (120) module
+# Compile Cryptofuzz Golang (122) module
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     cd $SRC/cryptofuzz/modules/golang
-    GOROOT="$GOROOT_120" GOPATH="$GOPATH_120" PATH="$PATH_GO_120" make -B
+    GOROOT="$GOROOT_122" GOPATH="$GOPATH_122" PATH="$PATH_GO_122" make -B
 fi
 
 # OpenSSL can currently not be used together with wolfCrypt due to symbol collisions

@@ -85,7 +85,6 @@ fi
 fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("6")
     fuzz_branches+=("7")
 fi
 

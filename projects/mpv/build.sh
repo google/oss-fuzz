@@ -95,3 +95,6 @@ meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static
 meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
+
+rsync -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
+zip -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'

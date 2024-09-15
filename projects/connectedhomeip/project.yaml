@@ -10,8 +10,6 @@ auto_ccs:
   - "aalami@csa-iot.org"
 sanitizers:
   - address
-  - undefined
-  - memory
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

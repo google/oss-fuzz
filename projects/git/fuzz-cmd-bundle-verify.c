@@ -9,6 +9,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+#define USE_THE_REPOSITORY_VARIABLE
+
 #include <stddef.h>
 #include <stdint.h>
 #include "fuzz-cmd-base.h"
@@ -32,7 +34,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		initialized = 1;
 	}
 
-	initialize_the_repository();
+	initialize_repository(the_repository);
 
 	argv[0] = "init";
 	argv[1] = "--quiet";
