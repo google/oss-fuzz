@@ -2,7 +2,6 @@ homepage: "https://github.com/bufbuild/protocompile"
 primary_contact: "jhumphries@buf.build"
 auto_ccs:
   - "oss-fuzz-reports@buf.build"
-  - "p.antoine@catenacyber.fr"
 language: go
 fuzzing_engines:
   - libfuzzer
