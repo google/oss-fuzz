@@ -24,5 +24,7 @@ COPY build.sh \
      xml_parse_fuzzer.cc \
      date_time_fuzzer.cc \
      jwt_decode_fuzzer.cc \
+     http_message_fuzzer.cc \
+     mail_message_fuzzer.cc \
      xml.dict \
      $SRC/
