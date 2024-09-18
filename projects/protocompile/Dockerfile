@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/jhump/protoreflect
+RUN git clone --depth 1 https://github.com/bufbuild/protocompile
 
-COPY fuzz_protoparse.go $SRC/protoreflect/desc/protoparse/
-COPY fuzz_dynamic.go $SRC/protoreflect/proto_decoder/
+COPY fuzz_protocompile.go $SRC/protocompile
 
 COPY build.sh $SRC/
-WORKDIR $SRC/protoreflect
+WORKDIR $SRC/protocompile
