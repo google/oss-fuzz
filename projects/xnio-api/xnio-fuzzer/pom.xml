@@ -11,7 +11,7 @@
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>3.8.8.Final</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>3.8.14.Final</fuzzedLibaryVersion>
 		<exec.mainClass>com.sun.xml.rpc.processor.modeler.rmi.SOAPSimpleTypeCreatorFuzzer</exec.mainClass>
 	</properties>
 
