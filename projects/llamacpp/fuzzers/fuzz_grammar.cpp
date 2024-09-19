@@ -10,25 +10,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "grammar-parser.h"
+#include <string>
 #include "llama.h"
+#include "llama-grammar.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::string payload(reinterpret_cast<const char *>(data), size);
-  auto parsed_grammar = grammar_parser::parse(payload.c_str());
-  if (parsed_grammar.rules.empty()) {
-    return 0;
-  }
 
-  if (parsed_grammar.symbol_ids.find("root") !=
-      parsed_grammar.symbol_ids.end()) {
-    std::vector<const llama_grammar_element *> grammar_rules(
-        parsed_grammar.c_rules());
-    auto grammar = llama_grammar_init(grammar_rules.data(), grammar_rules.size(),
-                       parsed_grammar.symbol_ids.at("root"));
-    if (grammar != nullptr) {
-      llama_grammar_free(grammar);
-    }
-  }
+  llama_grammar_parser parsed_grammar;
+  parsed_grammar.parse(payload.c_str());
+
   return 0;
 }
