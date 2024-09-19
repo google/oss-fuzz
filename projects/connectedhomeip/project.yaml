@@ -7,10 +7,9 @@ auto_ccs:
   - "mboyington@google.com"
   - "szewczyk@google.com"
   - "tennessee@google.com"
+  - "aalami@csa-iot.org"
 sanitizers:
   - address
-  - undefined
-  - memory
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

@@ -13,10 +13,10 @@ sanitizers:
   - undefined
 fuzzing_engines:
   - afl
-  - centipede
   - honggfuzz
   - libfuzzer
 selective_unpack: true
 coverage_extra_args: >
   -ignore-filename-regex=mpv/subprojects/.*
+  -ignore-filename-regex=mpv/build/subprojects/.*
   -ignore-filename-regex=ffmpeg/.*

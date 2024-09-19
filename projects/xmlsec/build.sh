@@ -23,7 +23,6 @@ mkdir -p $XMLSEC_DEPS_PATH
 cd $SRC/libxml2
 ./autogen.sh \
     --without-legacy \
-    --without-push \
     --without-python \
     --without-zlib \
     --without-lzma \

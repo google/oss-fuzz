@@ -21,9 +21,11 @@ RUN pip3 install -U meson==1.3.0 ninja packaging
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git && \
-    zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/*
+    zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/* && \
+    zip -q $SRC/svg-render-fuzzer_seed_corpus.zip $SRC/cairo/test/svg/*.svg
 
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/cairo.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/svg.dict $SRC/svg-render-fuzzer.dict
 
 WORKDIR $SRC/cairo
 COPY targets $SRC/fuzz
