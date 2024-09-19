@@ -15,7 +15,11 @@ limitations under the License.
 #include <setjmp.h>
 #include <unistd.h>
 
+const char *model_arch = "llama";
+const char *gen_arch = "general.architecture";
 jmp_buf fuzzing_jmp_buf;
+
+struct llama_model_kv_override fuzz_kv_overrides[2];
 
 extern "C" void __wrap_abort(void) { longjmp(fuzzing_jmp_buf, 1); }
 
@@ -39,6 +43,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     (void)ctx;
     return progress > 0.50;
   };
+
+  fuzz_kv_overrides[0].tag = LLAMA_KV_OVERRIDE_TYPE_STR;
+  strcpy(fuzz_kv_overrides[0].val_str, model_arch);
+  std::strcpy(fuzz_kv_overrides[0].key, gen_arch);
+
+  params.kv_overrides =
+      (const struct llama_model_kv_override *)fuzz_kv_overrides;
 
   if (setjmp(fuzzing_jmp_buf) == 0) {
     auto *model = llama_load_model_from_file(filename, params);

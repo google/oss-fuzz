@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y nasm pkg-config gperf && pip3 install meson ninja
+RUN apt-get update && apt-get install -y nasm pkg-config gperf zip rsync && pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
 RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
 WORKDIR mpv

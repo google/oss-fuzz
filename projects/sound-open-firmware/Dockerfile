@@ -24,6 +24,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
       libtool ninja-build python3-pip
+RUN python3 -m pip install --upgrade pip
 RUN pip3 install west
 
 # Zephyr SDK:
@@ -31,20 +32,19 @@ COPY fetch-sdk.sh /root
 WORKDIR /root/
 RUN ./fetch-sdk.sh
 
-WORKDIR $SRC
-
 # SOF itself (also pulls in Zephyr + modules via west)
-RUN west init -m https://github.com/thesofproject/sof sof
-RUN cd sof && west update
+RUN west init -m https://github.com/thesofproject/sof $SRC/sof_workspace
+WORKDIR $SRC/sof_workspace
+RUN west update
 
 # Sort of a kludge: oss-fuzz has a "srcmap" tool to generate
 # origin/commit info for .git directories automatically.  But it
 # assumes that the remote is named "origin", which is not true for
 # west (by design!).  Fix up a fake "origin"
-RUN cd sof; sh -c "$(west list -f '(cd {path}; git remote add origin {url});' | sed 1d)"
+RUN cd $SRC/sof_workspace; sh -c "$(west list -f '(cd {path}; git remote add origin {url});' | sed 1d)"
 
 # Zephyr has its own python requirements
-RUN pip3 install -r sof/zephyr/scripts/requirements-base.txt
+RUN pip3 install -r $SRC/sof_workspace/zephyr/scripts/requirements-base.txt
 
 # Hacks: the oss-fuzz-base/base-clang image (and its derivatives) lack
 # some of the binutils-compatible LLVM tools that a SOF/Zephyr build
@@ -63,6 +63,11 @@ RUN ln -s /usr/bin/strip /usr/local/bin/llvm-strip
 # done the work to make the source base 64 bit clean).  The oss-fuzz
 # runner image does not have a i386 libstdc++.so.6!  But, well, we
 # don't actually need any symbols from it, so...
-RUN touch empty.c; gcc -m32 -c empty.c; ar rs /usr/lib32/libstdc++.a empty.o
+RUN cd $SRC; touch empty.c; gcc -m32 -c empty.c; ar rs /usr/lib32/libstdc++.a empty.o
+
+# If a user is mounting their local source directory for debugging
+# then we need to tell git to chill out and just take the repo. If we
+# don't west fails with bogus error messages.
+RUN git config --global --add safe.directory /src/sof_workspace/zephyr
 
 COPY build.sh $SRC/

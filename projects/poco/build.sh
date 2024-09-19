@@ -35,3 +35,46 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE json_fuzzer.o \
     ./lib/libPocoJSON.a \
     ./lib/libPocoFoundation.a \
     -o $OUT/json_parser_fuzzer -lpthread -ldl -lrt
+
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/XML/include \
+    -I/src/poco/Foundation/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o xml_fuzzer.o -c $SRC/xml_parse_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE xml_fuzzer.o \
+    ./lib/libPocoXML.a \
+    ./lib/libPocoFoundation.a \
+    -o $OUT/xml_parser_fuzzer -lpthread -ldl -lrt
+
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/Foundation/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o date_time_fuzzer.o -c $SRC/date_time_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE date_time_fuzzer.o \
+    ./lib/libPocoFoundation.a \
+    -o $OUT/date_time_fuzzer -lpthread -ldl -lrt
+
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/JWT/include \
+    -I/src/poco/Foundation/include \
+    -I/src/poco/JSON/include \
+    -I/src/poco/Crypto/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o jwt_decode_fuzzer.o -c $SRC/jwt_decode_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE jwt_decode_fuzzer.o \
+    ./lib/libPocoJWT.a \
+    ./lib/libPocoJSON.a \
+    ./lib/libPocoFoundation.a \
+    ./lib/libPocoCrypto.a \
+    -o $OUT/jwt_decode_fuzzer -lpthread -ldl -lrt -lssl -lcrypto
+
+cp $SRC/xml.dict $OUT/xml_parser_fuzzer.dict
