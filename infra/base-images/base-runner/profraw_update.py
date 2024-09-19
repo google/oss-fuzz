@@ -40,6 +40,10 @@ def relativize_address(data, offset, databegin, sect_prf_cnts, sect_prf_data):
     value = struct.pack('Q', value)
     for i in range(8):
       data[offset + i] = value[i]
+    # address was made relative
+    return True
+  # no changes done
+  return False
 
 
 def upgrade(data, sect_prf_cnts, sect_prf_data):
@@ -47,20 +51,24 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
   generic_header = HeaderGeneric._make(struct.unpack('QQ', data[:16]))
   if generic_header.magic != PROFRAW_MAGIC:
     raise Exception('Bad magic.')
+  base_version = generic_header.version
+
+  if base_version >= 9:
+    # Nothing to do.
+    return data
+  if base_version < 5 or base_version == 6:
+    raise Exception('Unhandled version.')
+
   if generic_header.version == 5:
     generic_header = generic_header._replace(version=7)
     # Upgrade from version 5 to 7 by adding binaryids field.
     data = data[:8] + struct.pack('Q', generic_header.version) + struct.pack(
         'Q', 0) + data[16:]
-  if generic_header.version < 7:
-    raise Exception('Unhandled version.')
   if generic_header.version == 7:
     # cf https://reviews.llvm.org/D111123
     generic_header = generic_header._replace(version=8)
     data = data[:8] + struct.pack('Q', generic_header.version) + data[16:]
-  was8 = False
   if generic_header.version == 8:
-    was8 = True
     # see https://reviews.llvm.org/D138846
     generic_header = generic_header._replace(version=9)
     # Upgrade from version 8 to 9 by adding NumBitmapBytes, PaddingBytesAfterBitmapBytes and BitmapDelta fields.
@@ -70,7 +78,7 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
 
   v9_header = HeaderVersion9._make(struct.unpack('QQQQQQQQQQQQ', data[16:112]))
 
-  if v9_header.BinaryIdsSize % 8 != 0:
+  if base_version <= 8 and v9_header.BinaryIdsSize % 8 != 0:
     # Adds padding for binary ids.
     # cf commit b9f547e8e51182d32f1912f97a3e53f4899ea6be
     # cf https://reviews.llvm.org/D110365
@@ -81,10 +89,10 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
     data = data[:112 + v9_header.BinaryIdsSize] + bytes(
         padlen) + data[112 + v9_header.BinaryIdsSize:]
 
-  if was8:
+  if base_version <= 8:
     offset = 112 + v9_header.BinaryIdsSize
     for d in range(v9_header.DataSize):
-      # add BitmapPtr and aligned u32(NumBitmapBytes)
+      # Add BitmapPtr and aligned u32(NumBitmapBytes)
       data = data[:offset + 3 * 8] + struct.pack(
           'Q', 0) + data[offset + 3 * 8:offset + 6 * 8] + struct.pack(
               'Q', 0) + data[offset + 6 * 8:]
@@ -94,14 +102,15 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
                                                  value) + data[offset + 3 * 8:]
       offset += 8 * 8
 
-  if v9_header.CountersDelta != (sect_prf_cnts -
-                                 sect_prf_data) & 0xffffffffffffffff:
-    # Rust linking seems to add an offset...
-    sect_prf_data = v9_header.CountersDelta - sect_prf_cnts + sect_prf_data
-    sect_prf_cnts = v9_header.CountersDelta
+  if base_version >= 8:
+    # Nothing more to do.
+    return data
 
+  # Last changes are relaed to bump from 7 to version 8 making CountersPtr relative.
   dataref = sect_prf_data
-  relativize_address(data, 64, dataref, sect_prf_cnts, sect_prf_data)
+  # 80 is offset of CountersDelta.
+  if not relativize_address(data, 80, dataref, sect_prf_cnts, sect_prf_data):
+    return data
 
   offset = 112 + v9_header.BinaryIdsSize
   # This also works for C+Rust binaries compiled with
