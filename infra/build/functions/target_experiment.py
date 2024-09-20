@@ -326,7 +326,10 @@ def main():
   parser.add_argument('--experiment_name',
                       required=True,
                       help='Experiment name.')
-  parser.add_argument('--tags', nargs='*', help='Tags for cloud build.')
+  parser.add_argument('--tags',
+                      nargs='*',
+                      help='Tags for cloud build.',
+                      default=[])
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
