@@ -30,7 +30,7 @@ JCC_DIR = '/usr/local/bin'
 
 def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name, upload_reproducer_path):
+                   experiment_name, upload_reproducer_path, tags):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -279,15 +279,13 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   credentials, _ = google.auth.default()
   # Empirically, 3 hours is more than enough for 30-minute fuzzing cloud builds.
   build_lib.BUILD_TIMEOUT = 3 * 60 * 60
-  build_id = build_project.run_build(project_name,
-                                     steps,
-                                     credentials,
-                                     'experiment',
-                                     experiment=True,
-                                     extra_tags=[
-                                         f'experiment-{experiment_name}',
-                                         f'experiment-{project_name}'
-                                     ])
+  build_id = build_project.run_build(
+      project_name,
+      steps,
+      credentials,
+      'experiment',
+      experiment=True,
+      extra_tags=[experiment_name, project_name] + tags)
 
   print('Waiting for build', build_id)
   try:
@@ -328,12 +326,13 @@ def main():
   parser.add_argument('--experiment_name',
                       required=True,
                       help='Experiment name.')
+  parser.add_argument('--tags', nargs='*', help='Tags for cloud build.')
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_err_log, args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
-                 args.upload_reproducer)
+                 args.upload_reproducer, args.tags)
 
 
 if __name__ == '__main__':
