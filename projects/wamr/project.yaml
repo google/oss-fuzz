@@ -4,7 +4,6 @@ primary_contact: "liang.he@intel.com"
 auto_ccs:
   - "tianlong.liang@intel.com"
   - "wenyong.huang@intel.com"
-  - "yi.y.zhang@intel.com"
 main_repo: "https://github.com/bytecodealliance/wasm-micro-runtime.git"
 sanitizers:
   - address
