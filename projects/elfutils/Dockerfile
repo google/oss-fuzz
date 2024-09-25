@@ -14,7 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:56905c98ae0083d14da0e7371184e694560a74750533f321ac0e9145af0e8d2e
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+# see https://github.com/google/oss-fuzz/pull/12365
+
 RUN apt-get update && \
     apt-get install -y pkg-config make autoconf autopoint zlib1g-dev zlib1g-dev:i386 flex gawk bison
 RUN git clone --depth 1 https://sourceware.org/git/elfutils.git
