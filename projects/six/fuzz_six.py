@@ -55,7 +55,8 @@ def TestOneInput(data):
   except (TypeError, UnicodeDecodeError):
     pass
 
-  six.moves.html_parser.HTMLParser().unescape(
+  if sys.version_info < (3, 9):
+    six.moves.html_parser.HTMLParser().unescape(
       fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 1024)))
 
 
