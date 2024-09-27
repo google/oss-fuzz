@@ -51,5 +51,3 @@ ENV LDSHAREDXX="$CXX -shared"
 
 ENV GEM_HOME="$OUT/fuzz-gem"
 ENV GEM_PATH="/install/ruzzy"
-
-COPY ruzzy-build /usr/bin/ruzzy-build
