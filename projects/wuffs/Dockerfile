@@ -24,6 +24,7 @@ RUN git clone --depth 1 https://github.com/google/wuffs.git
 # Get third-party test corpora.
 
 RUN git clone --depth 1 https://github.com/nst/JSONTestSuite.git
+RUN rm -rf JSONTestSuite/.git
 
 RUN wget -O bmpsuite.zip https://entropymine.com/jason/bmpsuite/releases/bmpsuite-2.6.zip
 RUN mkdir bmpsuite_corpus
@@ -48,6 +49,9 @@ RUN rm rapidjson.zip
 RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
 RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
 RUN rm -rf simdjson-fuzz
+
+RUN git clone --depth 1 https://github.com/webmproject/libwebp-test-data.git webp_corpus
+RUN rm -rf webp_corpus/.git
 
 RUN git clone --depth 1 https://github.com/nigeltao/xz-tests-files
 RUN rm -rf xz-tests-files/.git
