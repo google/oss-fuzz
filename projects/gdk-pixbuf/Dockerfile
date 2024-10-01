@@ -21,7 +21,7 @@ RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 
-RUN pip3 install corpus-replicator
+RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
 RUN corpus-replicator -o corpus image_gif_gif_ffmpeg.yml image_jpg_jpg_ffmpeg.yml image_png_png_ffmpeg.yml image
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git && \
     find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' corpus/ ';' && \

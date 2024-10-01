@@ -5,6 +5,8 @@ auto_ccs:
   - peter@moddable.com
   - ps@moddable.com
   - raphael@agoric.com
+  - kris@agoric.com
+  - gibson@agoric.com
 sanitizers:
   - address
   - memory

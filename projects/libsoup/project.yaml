@@ -1,0 +1,11 @@
+homepage: "https://libsoup.org"
+language: c++
+primary_contact: "tngpng@gmail.com"
+auto_ccs:
+  - "pgriffis@igalia.com"
+  - "mcatanzaro@redhat.com"
+  - "philip.withnall@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://gitlab.gnome.org/GNOME/libsoup.git'

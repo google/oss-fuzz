@@ -18,41 +18,31 @@
 # Clean up potentially persistent build directory.
 [[ -e $SRC/tarantool/build ]] && rm -rf $SRC/tarantool/build
 
-# Build ICU for linking statically.
-mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
-
-[ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
-  $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
-  --disable-tests --disable-samples --with-data-packaging=static ||
-  find $SRC/tarantool -name config.log -exec cat {} +
-make install -j$(nproc)
-
 # For fuzz-introspector, exclude all functions in the tests directory,
 # libprotobuf-mutator and protobuf source code.
 # See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
-icu/
 tarantool/build/test
+tarantool/build/icu-prefix
 EOF
 
 cd $SRC/tarantool
-
-# Avoid compilation issue due to some undefined references. They are defined in
-# libc++ and used by Centipede so -lc++ needs to come after centipede's lib.
-if [[ $FUZZING_ENGINE == centipede ]]
-then
-    sed -i \
-        '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
-        test/fuzz/CMakeLists.txt
-fi
 
 case $SANITIZER in
   address) SANITIZERS_ARGS="-DENABLE_ASAN=ON" ;;
   undefined) SANITIZERS_ARGS="-DENABLE_UB_SANITIZER=ON" ;;
   *) SANITIZERS_ARGS="" ;;
 esac
+
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
+# Workaround for a LeakSanitizer crashes,
+# see https://github.com/google/oss-fuzz/issues/11798.
+if [ "$ARCHITECTURE" = "aarch64" ]; then
+    export ASAN_OPTIONS=detect_leaks=0
+fi
 
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
@@ -83,6 +73,7 @@ cmake_args=(
     -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
 
     # Dependencies
+    -DENABLE_BUNDLED_ICU=ON
     -DENABLE_BUNDLED_LIBUNWIND=OFF
     -DENABLE_BUNDLED_ZSTD=OFF
 )
@@ -92,8 +83,8 @@ git config --global --add safe.directory '*'
 
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
-cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --target fuzzers --parallel
+cmake "${cmake_args[@]}" -S . -B build
+cmake --build build --target fuzzers --parallel --verbose
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 for f in $(find build/test/fuzz/ -name '*_fuzzer' -type f);

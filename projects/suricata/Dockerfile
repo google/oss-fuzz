@@ -29,14 +29,9 @@ RUN git clone --depth=1 https://github.com/catenacyber/fuzzpcap
 
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
-ENV RUSTUP_TOOLCHAIN nightly
-# TODO remove version pinning once https://redmine.openinfosecfoundation.org/issues/7206 is fixed
-RUN cargo install --version 0.26.0 --force cbindgen
-# TODO remove once we have clang with coverage version 9 as rustc
-ENV RUSTUP_TOOLCHAIN nightly-2024-02-12
+RUN cargo install --force cbindgen
 
 RUN git clone --depth 1 https://github.com/OISF/suricata.git suricata
-RUN git clone --depth 1 --branch master-6.0.x https://github.com/OISF/suricata.git suricata6
 RUN git clone --depth 1 --branch main-7.0.x https://github.com/OISF/suricata.git suricata7
 RUN git clone --depth 1 https://github.com/OISF/libhtp.git libhtp
 RUN git clone --depth 1 https://github.com/OISF/suricata-verify suricata-verify

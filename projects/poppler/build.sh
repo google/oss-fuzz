@@ -33,7 +33,7 @@ tar jxf boost_1_83_0.tar.bz2
 cd boost_1_83_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
-cp -R boost/ /usr/include/
+./b2 --with-math install
 
 pushd $SRC/zlib
 CFLAGS=-fPIC ./configure --static --prefix=$PREFIX

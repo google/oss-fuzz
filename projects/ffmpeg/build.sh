@@ -115,14 +115,17 @@ make -j$(nproc) all
 make install
 
 cd $SRC/libvpx
-if [[ "$ARCHITECTURE" == i386 ]]; then
+if [[ "$SANITIZER" == "memory" ]] || [[ "$FUZZING_ENGINE" == "centipede" ]]; then
+      TARGET="--target=generic-gnu"
+elif [[ "$ARCHITECTURE" == i386 ]]; then
       TARGET="--target=x86-linux-gcc"
 else
       TARGET=""
 fi
 
 LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-        --disable-examples --disable-unit-tests \
+        --disable-docs --disable-examples --disable-tools --disable-unit-tests \
+        --enable-vp9-highbitdepth \
         --size-limit=12288x12288 \
         --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
         $TARGET
@@ -285,6 +288,12 @@ fuzzer_name=ffmpeg_SWS_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_sws_fuzzer
 mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
+
+# Build fuzzer for swr
+fuzzer_name=ffmpeg_SWR_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
+make tools/target_swr_fuzzer
+mv tools/target_swr_fuzzer $OUT/${fuzzer_name}
 
 # Build fuzzer for demuxer
 fuzzer_name=ffmpeg_DEMUXER_fuzzer
