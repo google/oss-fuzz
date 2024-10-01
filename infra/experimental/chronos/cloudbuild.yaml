@@ -63,3 +63,6 @@ timeout: 1800s
 serviceAccount: 'projects/oss-fuzz/serviceAccounts/builder@oss-fuzz.iam.gserviceaccount.com'
 options:
   logging: CLOUD_LOGGING_ONLY
+tags:
+- ${_PROJECT}
+- chronos
