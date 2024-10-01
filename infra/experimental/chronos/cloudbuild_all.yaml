@@ -27,7 +27,7 @@ steps:
   - infra/experimental/chronos/build_all.sh
   entrypoint: /bin/bash
 timeout: 1800s
-serviceAccount: 'projects/oss-fuzz/serviceAccounts/builder@oss-fuzz.iam.gserviceaccount.com'
+serviceAccount: 'projects/oss-fuzz/serviceAccounts/llm-eval@oss-fuzz.iam.gserviceaccount.com'
 options:
   logging: CLOUD_LOGGING_ONLY
 tags:
