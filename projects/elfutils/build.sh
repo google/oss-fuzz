@@ -78,6 +78,7 @@ if [[ "$SANITIZER" == memory ]]; then
     CXXFLAGS+=" -U_FORTIFY_SOURCE"
 fi
 
+$CC --version
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --disable-demangler --without-bzlib --without-lzma --without-zstd \
