@@ -81,12 +81,6 @@ export CXXFLAGS="${CXXFLAGS_SAVE}"
 # Compile and copy the fuzz target(s)
 cd "$SRC/librsvg/fuzz"
 
-# Pin serde because it now requires a nightly compiler that is more recent than the one on the
-# OSS-Fuzz image:
-# https://github.com/serde-rs/serde/issues/2770
-# https://github.com/google/oss-fuzz/pull/12077
-cargo update --package serde --precise 1.0.203
-
 cargo fuzz build -O
 cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 
