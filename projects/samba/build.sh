@@ -15,6 +15,6 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS -Wno-error=strict-prototypes"
+export CFLAGS="$CFLAGS -Wno-error=strict-prototypes -Wno-error=format-truncation"
 # The real script is maintained in the Samba repo
 exec lib/fuzzing/oss-fuzz/build_samba.sh
