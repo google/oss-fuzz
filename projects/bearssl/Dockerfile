@@ -24,4 +24,3 @@ RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
