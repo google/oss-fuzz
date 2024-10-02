@@ -1,15 +1,11 @@
 homepage: "https://wasmtime.dev/"
-primary_contact: "jonathan.foote@gmail.com"
+primary_contact: "tsc@bytecodealliance.org"
 auto_ccs:
   - "fitzgen@gmail.com"
   - "alex@alexcrichton.com"
   - "till@tillschneidereit.net"
-  - "ydelendik@mozilla.com"
   - "cfallin@gmail.com"
   - "andrew.s.brown2@gmail.com"
-  - "peterhuene@gmail.com"
-  - "jsharp@fastly.com"
-  - "telliott@fastly.com"
   - "saule.cabrera@gmail.com"
   - "jeff.charles@shopify.com"
 sanitizers:
