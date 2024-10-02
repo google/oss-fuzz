@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+cd $SRC/html5ever/html5ever/fuzz
+cargo update -p serde --precise 1.0.200
+cd ..
 cargo fuzz build -O 
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
 
