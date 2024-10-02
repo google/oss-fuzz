@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +13,6 @@
 # limitations under the License.
 #
 ################################################################################
-PROJECT=$1
-FUZZ_TARGET=$2
-FUZZING_LANGUAGE=$3
+FROM gcr.io/cloud-builders/gcloud
 
-gcloud builds submit "https://github.com/google/oss-fuzz" \
-  --async \
-  --git-source-revision=master \
-  --config=cloudbuild.yaml \
-  --substitutions=_PROJECT=$PROJECT,_FUZZ_TARGET=$FUZZ_TARGET,_FUZZING_LANGUAGE=$FUZZING_LANGUAGE \
-  --project=oss-fuzz
+RUN apt-get update && apt-get install -y jq

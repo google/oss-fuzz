@@ -14,13 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
-PROJECT=$1
-FUZZ_TARGET=$2
-FUZZING_LANGUAGE=$3
 
-gcloud builds submit "https://github.com/google/oss-fuzz" \
-  --async \
-  --git-source-revision=master \
-  --config=cloudbuild.yaml \
-  --substitutions=_PROJECT=$PROJECT,_FUZZ_TARGET=$FUZZ_TARGET,_FUZZING_LANGUAGE=$FUZZING_LANGUAGE \
-  --project=oss-fuzz
+# Build all C/C++ projects.
+c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
+projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+
+cd infra/experimental/chronos
+
+for proj in $projs; do
+    fuzz_target=$(curl -s "https://introspector.oss-fuzz.com/api/harness-source-and-executable?project=$proj" | jq --raw-output '.pairs[0].executable')
+    if [ "$fuzz_target" != null ]; then
+        echo ./build_on_cloudbuild.sh $proj $fuzz_target c
+        ./build_on_cloudbuild.sh $proj $fuzz_target c
+    fi
+done

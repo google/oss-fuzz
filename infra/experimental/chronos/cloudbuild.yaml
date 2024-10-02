@@ -61,5 +61,9 @@ images:
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
 timeout: 1800s
 serviceAccount: 'projects/oss-fuzz/serviceAccounts/builder@oss-fuzz.iam.gserviceaccount.com'
+logsBucket: oss-fuzz-gcb-logs
 options:
-  logging: CLOUD_LOGGING_ONLY
+  logging: GCS_ONLY
+tags:
+- ${_PROJECT}
+- chronos
