@@ -13,7 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:b9a45fecf0d9be6559fca019e90577632242be120ee2d97cec5c2045c1440710
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+# /usr/bin/ld: /src/rust-lexical/fuzz/target/x86_64-unknown-linux-gnu/release/deps/parse_integer_u16-53e4bc89ab30e724.parse_integer_u16.9056e4c0a19617b4-cgu.0.rcgu.o: in function `asan.module_dtor.204':
+#          parse_integer_u16.9056e4c0a19617b4-cgu.0:(.text.asan.module_dtor.204[asan.module_dtor]+0x6): undefined reference to `__sancov_gen_.998'
 
 RUN git clone --depth 1 https://github.com/Alexhuszagh/rust-lexical
 COPY build.sh $SRC/

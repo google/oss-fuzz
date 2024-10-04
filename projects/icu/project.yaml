@@ -17,5 +17,10 @@ sanitizers:
  - undefined 
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+  # - centipede disabled due to https://github.com/google/oss-fuzz/pull/12365 clang 18 update
 
 main_repo: 'https://github.com/unicode-org/icu.git'

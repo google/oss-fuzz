@@ -42,6 +42,7 @@ for fuzzer in fuzz/*.c; do
 		"fuzz/${output}.o" \
 		-include config.h \
 		$LIBISC_CFLAGS $LIBDNS_CFLAGS \
-		$LIBDNS_LIBS $LIBISC_LIBS $LIBTEST_LIBS $LIB_FUZZING_ENGINE
+		-Wl,--start-group $LIBISC_LIBS $LIBDNS_LIBS -Wl,--end-group \
+		$LIBTEST_LIBS $LIB_FUZZING_ENGINE
 	zip -j "${OUT}/${output}_seed_corpus.zip" "fuzz/${output}.in/"*
 done

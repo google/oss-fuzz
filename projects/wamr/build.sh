@@ -14,34 +14,46 @@
 # limitations under the License.
 #
 ################################################################################
-echo "    <| ------- |>    "
-pwd
-echo "    <| ------- |>    "
-ls
-echo "    <| ------- |>    "
-# by default.
-#   - MVP
+
+echo "<| ------ " $(pwd) " ------ |>"
+ls .
+ls -l /usr/lib/libFuzzing*
+echo "<| ------  --------  ------ |>"
+
+
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
+
+cmake_args=(
+  # C compiler
+  -DCMAKE_C_COMPILER="${CC}"
+  -DCMAKE_C_FLAGS="${CFLAGS}"
+
+  # C++ compiler
+  -DCMAKE_CXX_COMPILER="${CXX}"
+  -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+
+  # Linker
+  -DCMAKE_LINKER="${LD}"
+  -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+  -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
+  -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+)
+
+# CORPUS
+(
+  cd tests/fuzz/wasm-mutator-fuzz/
+  ./smith_wasm.sh 10
+)
+
+# loader
 (
   cd tests/fuzz/wasm-mutator-fuzz/
 
-  if [[ "${SANITIZER}" == "address" ]]; then
-    cmake -S . -B build -DWAMR_BUILD_SANITIZER=asan\
-      && cmake --build build
-  elif [[ "${SANITIZER}" == "memory" ]]; then
-    echo "will support msan soon"
-    exit 0
-  elif [[ "${SANITIZER}" == "undefined" ]]; then
-    cmake -S . -B build -DWAMR_BUILD_SANITIZER=ubsan\
-      && cmake --build build
-  elif [[ "${SANITIZER}" == "coverage" ]]; then
-    echo "will support code coverage soon"
-    exit 0
-  else
-    cmake -S . -B build\
-      && cmake --build build
-  fi
+  cmake -S . -B build_loader \
+      "${cmake_args[@]}" \
+    && cmake --build build_loader
 
-  ./smith_wasm.sh 5
-  cp ./build/wasm_mutator_fuzz $OUT/
-  zip -j $OUT/wasm_mutator_fuzz.zip ./build/CORPUS_DIR/*
+  cp ./build_loader/wasm_mutator_fuzz $OUT/wasm_mutator_fuzz_loader
+  zip -j $OUT/wasm_mutator_fuzz_loader_seed_corpus.zip ./build/CORPUS_DIR/test_*.wasm
 )

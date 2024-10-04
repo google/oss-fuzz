@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,9 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/jhump/protoreflect/desc/protoparse FuzzProtoParse fuzz_protoparse
-# compile_go_fuzzer github.com/jhump/protoreflect/proto_decoder Fuzz fuzz_dynamic
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN git clone --depth 1 https://github.com/life4/textdistance.git textdistance \
+        && cp textdistance/fuzzing/build.sh $SRC/
+WORKDIR $SRC/textdistance
 

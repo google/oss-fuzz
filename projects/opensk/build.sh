@@ -29,10 +29,6 @@ build_and_copy() {
 
 cd OpenSK
 
-# Temporary fix to pin serde
-pushd libraries/opensk/fuzz
-cargo update -p serde --precise 1.0.200
-popd
 # CTAP library fuzzing targets
 build_and_copy libraries/opensk
 

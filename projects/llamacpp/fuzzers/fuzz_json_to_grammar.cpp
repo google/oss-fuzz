@@ -10,7 +10,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "grammar-parser.h"
+#include "llama.h"
+#include "llama-grammar.h"
 #include "json-schema-to-grammar.h"
 
 using json = nlohmann::json;

@@ -15,5 +15,5 @@
 #
 ################################################################################
 
-git clone --depth 1 --branch fuzzing --single-branch https://github.com/apache/logging-log4j2
+git clone --depth 1 --branch 2.x --single-branch https://github.com/apache/logging-log4j2
 ./logging-log4j2/oss-fuzz-build.sh "$OUT"
