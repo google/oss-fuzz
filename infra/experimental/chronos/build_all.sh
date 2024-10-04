@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+#!/bin/bash
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,16 @@
 #
 ################################################################################
 
+# Build all C/C++ projects.
+c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
+projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
 
-cargo fuzz build -O
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+cd infra/experimental/chronos
+
+for proj in $projs; do
+    fuzz_target=$(curl -s "https://introspector.oss-fuzz.com/api/harness-source-and-executable?project=$proj" | jq --raw-output '.pairs[0].executable')
+    if [ "$fuzz_target" != null ]; then
+        echo ./build_on_cloudbuild.sh $proj $fuzz_target c
+        ./build_on_cloudbuild.sh $proj $fuzz_target c
+    fi
 done

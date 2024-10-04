@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +13,22 @@
 # limitations under the License.
 #
 ################################################################################
-
-
-cargo fuzz build -O
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-done
+# CloudBuild for generating Chronos-cached images.
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - gcloud
+  - .
+  dir: infra/experimental/chronos
+- name: 'gcloud'
+  args:
+  - infra/experimental/chronos/build_all.sh
+  entrypoint: /bin/bash
+timeout: 1800s
+serviceAccount: 'projects/oss-fuzz/serviceAccounts/llm-eval@oss-fuzz.iam.gserviceaccount.com'
+options:
+  logging: CLOUD_LOGGING_ONLY
+tags:
+- chronos-all
