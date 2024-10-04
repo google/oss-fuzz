@@ -44,26 +44,42 @@ xxd -i models/ggml-vocab-baichuan.gguf > model_header_baichuan.h
 xxd -i models/ggml-vocab-deepseek-coder.gguf > model_header_deepseek_coder.h
 xxd -i models/ggml-vocab-falcon.gguf > model_header_falcon.h
 
-OBJ_FILES="ggml/src/llamafile/sgemm.o ggml/src/ggml.o ggml/src/ggml-alloc.o ggml/src/ggml-backend.o ggml/src/ggml-quants.o ggml/src/ggml-aarch64.o src/llama.o src/llama-vocab.o src/llama-grammar.o src/llama-sampling.o src/unicode.o src/unicode-data.o common/common.o common/console.o common/ngram-cache.o common/sampling.o common/train.o common/grammar-parser.o common/build-info.o common/json-schema-to-grammar.o"
+OBJ_FILES="ggml/src/llamafile/sgemm.o ggml/src/ggml.o ggml/src/ggml-alloc.o ggml/src/ggml-backend.o ggml/src/ggml-quants.o ggml/src/ggml-aarch64.o src/llama.o src/llama-vocab.o src/llama-grammar.o src/llama-sampling.o src/unicode.o src/unicode-data.o common/common.o common/log.o common/console.o common/ngram-cache.o common/sampling.o common/train.o common/build-info.o common/json-schema-to-grammar.o"
 FLAGS="-std=c++11 -Iggml/include -Iggml/src -Iinclude -Isrc -Icommon -I./ -DNDEBUG -DGGML_USE_LLAMAFILE"
-
-cp fuzzers/*.dict $OUT/
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_json_to_grammar.cpp -o $OUT/fuzz_json_to_grammar
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_apply_template.cpp -o $OUT/fuzz_apply_template
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_grammar.cpp -o $OUT/fuzz_grammar
 
-# Create a corpus for load_model_fuzzer
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model
+
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_inference
+
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_structured.cpp -o $OUT/fuzz_structured
+
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
+    -Wl,--wrap,abort fuzzers/fuzz_structurally_created.cpp -o $OUT/fuzz_structurally_created
+
+# Prepare some dicts and seeds
 ./llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
 mv dummy.gguf $SRC/load-model-corpus/
-mv $SRC/llama.cpp/models/ggml-vocab-falcon.gguf $SRC/load-model-corpus/
 zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
-find $SRC/llama.cpp/models/ -name *.gguf -exec cp {} $SRC/load-model-corpus/ \;
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model
+cp $OUT/fuzz_load_model_seed_corpus.zip $OUT/fuzz_inference_seed_corpus.zip
+
 echo "[libfuzzer]" > $OUT/fuzz_load_model.options
 echo "detect_leaks=0" >> $OUT/fuzz_load_model.options
+
+cp $OUT/fuzz_load_model.options $OUT/fuzz_inference.options
+cp $OUT/fuzz_load_model.options $OUT/fuzz_structured.options
+cp fuzzers/llama.dict $OUT/fuzz_load_model.dict
+cp fuzzers/llama.dict $OUT/fuzz_inference.dict
+cp fuzzers/llama.dict $OUT/fuzz_grammar.dict
+cp fuzzers/llama.dict $OUT/fuzz_structured.dict
+cp fuzzers/llama.dict $OUT/fuzz_json_to_grammar.dict
 
 if [ "$FUZZING_ENGINE" != "afl" ]
 then

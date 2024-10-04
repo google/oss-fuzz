@@ -32,7 +32,7 @@ cp $SRC/ccprovider_fuzzer.go ./core/common/ccprovider/
 cp $SRC/persistence_fuzzer.go ./core/chaincode/persistence/mock/
 cp $SRC/policydsl_fuzzer.go $SRC/fabric/common/policydsl/
 cp $SRC/msp_fuzzer.go $SRC/fabric/msp/
-cp $SRC/fabenc_fuzzer.go $SRC/fabric/common/flogging/fabenc/
+cp $SRC/fabenc_fuzzer.go $SRC/fabric-lib-go/common/flogging/fabenc/
 
 cd $SRC/instrumentation
 go run main.go --target_dir=$SRC/fabric --check_io_length=true
@@ -49,6 +49,7 @@ compile_go_fuzzer github.com/hyperledger/fabric/core/chaincode/persistence/mock 
 compile_go_fuzzer github.com/hyperledger/fabric/core/common/ccprovider FuzzExtractFileEntries FuzzExtractFileEntries
 compile_go_fuzzer github.com/hyperledger/fabric/common/policydsl FuzzFromString fuzz_from_string
 compile_go_fuzzer github.com/hyperledger/fabric/msp FuzzDeserializeIdentity fuzz_deserialize_identity
-compile_go_fuzzer github.com/hyperledger/fabric/common/flogging/fabenc FuzzParseFormat fuzz_parse_format
+cd $SRC/fabric-lib-go
+compile_go_fuzzer github.com/hyperledger/fabric-lib-go/common/flogging/fabenc FuzzParseFormat fuzz_parse_format
 
 cp $SRC/*.options $OUT/
