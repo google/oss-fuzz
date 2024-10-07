@@ -7,10 +7,13 @@ auto_ccs:
   - "mboyington@google.com"
   - "szewczyk@google.com"
   - "tennessee@google.com"
+  - "aalami@csa-iot.org"
 sanitizers:
   - address
   - undefined
-  - memory
+# MemorySanitizer is deactivated due to false positives related to Glib
+# For MSan; Glib and all others libs should be compiled with MSan
+#  - memory
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

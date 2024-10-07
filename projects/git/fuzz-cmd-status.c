@@ -43,7 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_1");
 	system("echo \"TEMP1TEMP1TEMP1TEMP1\" > ./TEMP_2");
 
-	initialize_the_repository();
+	initialize_repository(the_repository);
 
 	if (reset_git_folder())
 	{

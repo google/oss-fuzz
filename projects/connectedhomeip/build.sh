@@ -15,12 +15,22 @@
 #
 ################################################################################
 
+
+# workaround to get Fuzz Introspector to build; making it link with lld instead of the environment's gold linker which gives an error
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS=$(echo "$CFLAGS" | sed 's/gold/lld/g')
+  export CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/gold/lld/g')
+fi
+
 cd $SRC/connectedhomeip
 
 # Activate Pigweed environment
 set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
 set -u
+
+#This adds zap-cli to PATH, needed for fuzzing all-clusters-app
+export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
 
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build

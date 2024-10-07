@@ -12,6 +12,16 @@ auto_ccs:
 - wtc@google.com
 vendor_ccs:
 - twsmith@mozilla.com
+- "product-security@apple.com"
+- "dkishore@apple.com"
+- "phan@apple.com"
+- "ebanniettis@apple.com"
+- "jm.park@apple.com"
+- "james_e_kim@apple.com"
+- "rding23@apple.com"
+- "albassam@apple.com"
+- "youenn@apple.com"
+- "ddkilzer@apple.com"
 main_repo: 'https://chromium.googlesource.com/webm/libvpx'
 
 fuzzing_engines:

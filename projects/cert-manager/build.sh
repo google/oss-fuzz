@@ -17,6 +17,18 @@
 
 cp -r $SRC/pki_fuzzer.go $SRC/cert-manager/pkg/util/pki/
 
+cd $SRC
+git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=include-all-test-files
+cd go-118-fuzz-build
+ls $HOME/go/pkg/mod/github.com/
+go build .
+mv go-118-fuzz-build /root/go/bin/
+
+cd $SRC/cert-manager
+go get github.com/AdamKorcz/go-118-fuzz-build/testing@include-all-test-files
+
+compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/vault FuzzVaultCRController FuzzVaultCRController
+compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/venafi FuzzVenafiCRController FuzzVenafiCRController
 compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzUnmarshalSubjectStringToRDNSequence FuzzUnmarshalSubjectStringToRDNSequence
 compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzDecodePrivateKeyBytes FuzzDecodePrivateKeyBytes
 

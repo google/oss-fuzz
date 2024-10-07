@@ -24,7 +24,7 @@ make -j$(nproc) all
 fuzz_harness=$(ls -d "$SRC"/*.cpp)
 for h in $fuzz_harness; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ "$h" \
-    -o "$OUT/$(basename "$h")" $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
+    -o "$OUT/$(basename "$h" .cpp)" $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
 done
 
 cp $SRC/*.dict $SRC/*.options $OUT/

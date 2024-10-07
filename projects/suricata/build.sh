@@ -85,7 +85,6 @@ fi
 fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("6")
     fuzz_branches+=("7")
 fi
 
@@ -161,7 +160,6 @@ cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >>
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
-cp $OUT/fuzz_sigpcap_seed_corpus.zip $OUT/fuzz_sigpcap6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
@@ -171,7 +169,6 @@ echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpu
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
-cp $OUT/fuzz_sigpcap_aware_seed_corpus.zip $OUT/fuzz_sigpcap_aware6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
@@ -181,4 +178,3 @@ python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i
 done
 set -x
 zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus
-cp $OUT/fuzz_predefpcap_aware_seed_corpus.zip $OUT/fuzz_predefpcap_aware6_seed_corpus.zip
