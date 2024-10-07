@@ -9,7 +9,6 @@ auto_ccs:
   - "julians.artifex@gmail.com"
   - "chris.liddell@artifex.com"
   - "ken.sharp@artifex.com"
-  - "kdlee@chromium.org"
   - "david@adalogics.com"
 sanitizers:
   - address
