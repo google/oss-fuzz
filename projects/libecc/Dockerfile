@@ -26,5 +26,3 @@ RUN wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz
 RUN test "$(sha256sum gmp-6.2.1.tar.lz)" = "2c7f4f0d370801b2849c48c9ef3f59553b5f1d3791d070cffb04599f9fc67b41  gmp-6.2.1.tar.lz"
 RUN wget -q https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 COPY build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
