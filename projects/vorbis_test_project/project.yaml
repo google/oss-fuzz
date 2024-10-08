@@ -1,0 +1,11 @@
+homepage: "https://xiph.org/vorbis/"
+language: c++
+primary_contact: "t108590031@ntut.org.tw"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+main_repo: 'https://gitlab.xiph.org/xiph/vorbis.git'
