@@ -66,4 +66,4 @@ tags:
 - chronos
 options:
   pool:
-    name: projects/oss-fuzz/locations/us-central1/workerPools/buildpool
+    name: projects/oss-fuzz/locations/us-central1/workerPools/buildpool-chronos
