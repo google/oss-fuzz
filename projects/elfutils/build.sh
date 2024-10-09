@@ -62,6 +62,16 @@ sed -i 's/^\(NO_UNDEFINED=\).*/\1/' configure.ac
 # https://clang.llvm.org/docs/AddressSanitizer.html#usage
 sed -i 's/^\(ZDEFS_LDFLAGS=\).*/\1/' configure.ac
 
+# srcfiles.cxx started failing to compile with the OSS-Fuzz toolchain
+# when it was switched from clang-18.0.0 to clang-18.1.8 in
+# https://github.com/google/oss-fuzz/pull/12365.
+# https://github.com/google/oss-fuzz/pull/12365#discussion_r1784702452
+# It's probably an OSS-Fuzz toolchain bug but it doesn't matter much
+# because the srcfiles binary isn't relevant in terms of fuzzing and
+# can safely be excluded.
+sed -i 's/^\(srcfiles_\)/#/' src/Makefile.am
+sed -i 's/\bsrcfiles\b//' src/Makefile.am
+
 if [[ "$SANITIZER" == undefined ]]; then
     additional_ubsan_checks=alignment
     UBSAN_FLAGS="-fsanitize=$additional_ubsan_checks -fno-sanitize-recover=$additional_ubsan_checks"
@@ -78,6 +88,7 @@ if [[ "$SANITIZER" == memory ]]; then
     CXXFLAGS+=" -U_FORTIFY_SOURCE"
 fi
 
+$CC --version
 autoreconf -i -f
 if ! ./configure --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod \
             --disable-demangler --without-bzlib --without-lzma --without-zstd \

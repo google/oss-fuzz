@@ -20,6 +20,8 @@ cd cmake-build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_ACTIVERECORD=OFF \
       -DENABLE_ACTIVERECORD_COMPILER=OFF -DENABLE_TESTS=OFF \
       -DENABLE_PAGECOMPILER=OFF -DENABLE_PAGECOMPILER_FILE2PAGE=OFF \
+      -DENABLE_DATA_SQLITE=OFF -DENABLE_REDIS=OFF -DENABLE_MONGODB=OFF \
+      -DENABLE_PROMETHEUS=OFF \
       ..
 make -j$(nproc)
 
@@ -76,5 +78,31 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE jwt_decode_fuzzer.o \
     ./lib/libPocoFoundation.a \
     ./lib/libPocoCrypto.a \
     -o $OUT/jwt_decode_fuzzer -lpthread -ldl -lrt -lssl -lcrypto
+
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/Foundation/include \
+    -I/src/poco/Net/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o http_message_fuzzer.o -c $SRC/http_message_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE http_message_fuzzer.o \
+    ./lib/libPocoNet.a \
+    ./lib/libPocoFoundation.a \
+    -o $OUT/http_message_fuzzer -lpthread -ldl -lrt
+
+$CXX $CXXFLAGS -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE \
+    -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 \
+    -I/src/poco/Foundation/include \
+    -I/src/poco/Net/include \
+    -O2 -g -DNDEBUG -std=c++17 \
+    -o mail_message_fuzzer.o -c $SRC/mail_message_fuzzer.cc
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE mail_message_fuzzer.o \
+    ./lib/libPocoNet.a \
+    ./lib/libPocoFoundation.a \
+    -o $OUT/mail_message_fuzzer -lpthread -ldl -lrt
 
 cp $SRC/xml.dict $OUT/xml_parser_fuzzer.dict

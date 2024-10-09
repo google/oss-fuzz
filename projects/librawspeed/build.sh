@@ -15,4 +15,6 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS -Wno-error=nan-infinity-disabled"
+export CXXFLAGS="$CXXFLAGS -Wno-error=nan-infinity-disabled"
 $SRC/librawspeed/.ci/oss-fuzz.sh

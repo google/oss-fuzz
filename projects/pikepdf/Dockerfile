@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,23 @@
 #
 ################################################################################
 
-make USE_SSL=0 static
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
-$CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC -I./ \
-	fuzzing/format_command_fuzzer.c -o format_command_fuzzer.o
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends\
+        cmake \
+        make \
+        pkg-config \
+        clang \
+        libjpeg-dev \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get purge -y gcc && apt-get autoremove -y && apt-get clean
 
-$CXX $CXXFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE format_command_fuzzer.o \
-	-o $OUT/format_command_fuzzer libhiredis.a
+RUN pip3 install --upgrade pip
+RUN git clone --depth 1 https://github.com/pikepdf/pikepdf.git pikepdf \
+        && cp pikepdf/fuzzing/build.sh $SRC/
+RUN git clone --depth 1 https://github.com/qpdf/qpdf.git qpdf
+
+WORKDIR pikepdf
+

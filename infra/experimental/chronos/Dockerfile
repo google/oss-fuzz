@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +13,6 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/cloud-builders/gcloud
 
-make USE_SSL=0 static
-
-$CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC -I./ \
-	fuzzing/format_command_fuzzer.c -o format_command_fuzzer.o
-
-$CXX $CXXFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE format_command_fuzzer.o \
-	-o $OUT/format_command_fuzzer libhiredis.a
+RUN apt-get update && apt-get install -y jq

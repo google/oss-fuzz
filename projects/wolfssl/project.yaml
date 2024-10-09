@@ -16,6 +16,7 @@ auto_ccs:
   - "anthony.hu.76@gmail.com"
   - "andras@wolfssl.com"
   - "iamfeketeandras@gmail.com"
+  - "kareem@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

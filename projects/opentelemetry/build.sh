@@ -44,9 +44,30 @@ compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/pmetric/pmetricotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/pmetric/pmetricotlp FuzzResponseUnmarshalJSON FuzzResponseUnmarshalJSON_pmetricotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/pmetric/pmetricotlp FuzzRequestUnmarshalProto FuzzRequestUnmarshalProto_pmetricotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/pmetric/pmetricotlp FuzzResponseUnmarshalProto FuzzResponseUnmarshalProto_pmetricotlp
-compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace FuzzUnmarshalTraces FuzzUnmarshalTraces_ptrace
+compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace FuzzUnmarshalPBTraces FuzzUnmarshalPBTraces_ptrace
+compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace FuzzUnmarshalJSONTraces FuzzUnmarshalJSONTraces_ptrace
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace/ptraceotlp FuzzRequestUnmarshalJSON FuzzRequestUnmarshalJSON_ptraceotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace/ptraceotlp FuzzResponseUnmarshalJSON FuzzResponseUnmarshalJSON_ptraceotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace/ptraceotlp FuzzRequestUnmarshalProto FuzzRequestUnmarshalProto_ptraceotlp
 compile_native_go_fuzzer go.opentelemetry.io/collector/pdata/ptrace/ptraceotlp FuzzResponseUnmarshalProto FuzzResponseUnmarshalProto_ptraceotlp
+
+cp $SRC/dict $OUT/FuzzUnmarshalJsonLogs_plogs.dict
+cp $SRC/dict $OUT/FuzzRequestUnmarshalJSON_plogotlp.dict
+cp $SRC/dict $OUT/FuzzResponseUnmarshalJSON_plogotlp.dict
+cp $SRC/dict $OUT/FuzzUnmarshalMetrics_pmetric.dict
+cp $SRC/dict $OUT/FuzzRequestUnmarshalJSON_pmetricotlp.dict
+cp $SRC/dict $OUT/FuzzResponseUnmarshalJSON_pmetricotlp.dict
+cp $SRC/dict $OUT/FuzzUnmarshalJSONTraces_ptrace.dict
+cp $SRC/dict $OUT/FuzzRequestUnmarshalJSON_ptraceotlp.dict
+cp $SRC/dict $OUT/FuzzResponseUnmarshalJSON_ptraceotlp.dict
+
+zip -j $OUT/FuzzUnmarshalJsonLogs_plogs_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzRequestUnmarshalJSON_plogotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzResponseUnmarshalJSON_plogotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzUnmarshalMetrics_pmetric_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzRequestUnmarshalJSON_pmetricotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzResponseUnmarshalJSON_pmetricotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzUnmarshalJSONTraces_ptrace_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzRequestUnmarshalJSON_ptraceotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
+zip -j $OUT/FuzzResponseUnmarshalJSON_ptraceotlp_seed_corpus.zip $SRC/go-fuzz-corpus/json/corpus/*
 
