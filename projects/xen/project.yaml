@@ -4,7 +4,7 @@ main_repo: https://xenbits.xen.org/git-http/xen.git
 auto_ccs:
   - "tamas.k.lengyel@gmail.com"
   - "jbeulich@suse.com"
-  - "andrew.cooper3@citrix.com"
+  - "andrew.cooper@cloud.com"
   - "roger.pau@cloud.com"
   - "sstabellini@kernel.org"
 sanitizers:

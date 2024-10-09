@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/jhump/protoreflect
+compile_go_fuzzer github.com/bufbuild/protocompile FuzzProtoCompile fuzz_protocompile
 
-COPY fuzz_protoparse.go $SRC/protoreflect/desc/protoparse/
-COPY fuzz_dynamic.go $SRC/protoreflect/proto_decoder/
-
-COPY build.sh $SRC/
-WORKDIR $SRC/protoreflect

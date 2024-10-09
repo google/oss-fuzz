@@ -28,9 +28,15 @@ export START_RECORDING="false"
 RECOMPILE_ENV="/usr/local/bin/recompile_env.sh"
 
 
-# Initialize the recompile script.
+# Initialize the recompile script as compile in case Chronos did not trap any
+# command containing the fuzz target.
 initialize_recompile_script() {
     export RECOMPILE_SCRIPT="/usr/local/bin/recompile"
+    cp "/usr/local/bin/compile" "$RECOMPILE_SCRIPT"
+}
+
+reset_recompile_script() {
+    rm "$RECOMPILE_SCRIPT"
     echo "#!/bin/bash" > "$RECOMPILE_SCRIPT"
     echo "source $RECOMPILE_ENV" >> "$RECOMPILE_SCRIPT" 
     chmod +x "$RECOMPILE_SCRIPT" 
@@ -45,11 +51,12 @@ execute_or_record_command() {
     }
 
     # Check if any element in the command array contains the FUZZ_TARGET.
-   if [[ "$BASH_COMMAND" == *"$FUZZ_TARGET"* ]]; then
-       export START_RECORDING="true"
-       # Save all environment variables, excluding read-only ones
-       declare -p | grep -Ev 'declare -[^ ]*r[^ ]*' > "$RECOMPILE_ENV"
-   fi
+    if [[ "$BASH_COMMAND" == *"$FUZZ_TARGET"* ]]; then
+        export START_RECORDING="true"
+        # Save all environment variables, excluding read-only ones
+        reset_recompile_script
+        declare -p | grep -Ev 'declare -[^ ]*r[^ ]*' > "$RECOMPILE_ENV"
+    fi
 
     if [[ "$START_RECORDING" == "true" ]]; then
         record_command "$BASH_COMMAND"
