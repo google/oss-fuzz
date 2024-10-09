@@ -1,9 +1,8 @@
 homepage: https://github.com/jsonpickle/jsonpickle
 main_repo: https://github.com/jsonpickle/jsonpickle
 language: python
+primary_contact: "davvid@gmail.com"
 fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
-vendor_ccs:
-- david@adalogics.com
