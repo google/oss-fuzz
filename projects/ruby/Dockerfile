@@ -19,11 +19,13 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update -y && \
     apt-get install -y libssl-dev libyaml-dev libreadline6-dev \
                        zlib1g-dev libncurses5-dev libffi-dev \
-                       bison autoconf ruby pkg-config
+                       bison autoconf pkg-config
+RUN mkdir $SRC/fuzz
+COPY build_baseruby.sh $SRC/fuzz/
+RUN $SRC/fuzz/build_baseruby.sh
 
 RUN git clone https://github.com/ruby/ruby.git
 WORKDIR ruby
 
 COPY build.sh $SRC/
-RUN mkdir $SRC/fuzz
 COPY *.rb *.c *.options $SRC/fuzz/
