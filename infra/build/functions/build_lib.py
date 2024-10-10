@@ -18,6 +18,7 @@ import base64
 import collections
 import logging
 import os
+import random
 import re
 import six.moves.urllib.parse as urlparse
 import sys
@@ -96,8 +97,10 @@ OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool-experiments')
 
-US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
-    api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
+REGION = random.choice(
+    os.getenv('CLOUD_BUILD_LOCATIONS', 'us-central1').split(','))
+REGIONAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
+    api_endpoint=f'https://{REGION}-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
