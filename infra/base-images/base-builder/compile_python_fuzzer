@@ -32,7 +32,7 @@ if [[ $SANITIZER = *introspector* ]]; then
     # we enter the virtual environment in the following lines because we need
     # to use the same python environment that installed the fuzzer dependencies.
     python3 /fuzz-introspector/frontends/python/prepare_fuzz_imports.py $fuzzer_path isossfuzz
-    
+
     # We must ensure python3.9, this is because we use certain
     # AST logic from there.
     # The below should probably be refined
@@ -84,7 +84,7 @@ then
   if [[ ! -d "/pysecsan" ]];
   then
     pushd /usr/local/lib/sanitizers/pysecsan
-    python3 setup.py install
+    python3 -m pip install .
     popd
   fi
 
