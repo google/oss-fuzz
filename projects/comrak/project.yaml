@@ -1,0 +1,8 @@
+homepage: "https://github.com/kivikakk/comrak"
+main_repo: "https://github.com/kivikakk/comrak.git"
+language: rust
+primary_contact: "ashe@kivikakk.ee"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
