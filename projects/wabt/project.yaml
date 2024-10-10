@@ -5,6 +5,7 @@ auto_ccs:
   - "binji@chromium.org"
   - "winstein@gmail.com"
   - "shravanrn@gmail.com"
+  - "endermoneymod@gmail.com"
 sanitizers:
  - address
  - memory
