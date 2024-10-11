@@ -78,10 +78,6 @@ ENGINE_INFO = {
         EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
                    supported_sanitizers=['address'],
                    supported_architectures=['x86_64']),
-    'wycheproof':
-        EngineInfo(upload_bucket='clusterfuzz-builds-wycheproof',
-                   supported_sanitizers=['none'],
-                   supported_architectures=['x86_64']),
     'centipede':
         EngineInfo(upload_bucket='clusterfuzz-builds-centipede',
                    supported_sanitizers=['address', 'none'],
