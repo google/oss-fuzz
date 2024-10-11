@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/sh
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/mz-automation/libiec61850
-
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fuzz_decode.options $SRC/fuzz_decode.options
-ADD https://clusterfuzz-builds.storage.googleapis.com/tracer $SRC/
-RUN chmod +x $SRC/tracer
-RUN cp $SRC/build.sh $SRC/real_build.sh
-COPY chronos-build.sh $SRC/build.sh
-ENV FUZZ_TARGET="fuzz_mms_decode.c"
-ENV FUZZING_LANGUAGE="c"
+/src/tracer $FUZZ_TARGET /usr/local/bin/recompile $SRC/real_build.sh

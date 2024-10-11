@@ -18,7 +18,7 @@
 cd libiec61850
 mkdir build && cd build
 cmake ../
-make
+make -j
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE ../fuzz/fuzz_mms_decode.c -c \
 	-I../src/iec61850/inc -I../src/mms/inc -I../src/common/inc \
