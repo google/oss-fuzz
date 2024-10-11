@@ -20,9 +20,3 @@ RUN git clone https://github.com/mz-automation/libiec61850
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_decode.options $SRC/fuzz_decode.options
-ADD https://clusterfuzz-builds.storage.googleapis.com/tracer $SRC/
-RUN chmod +x $SRC/tracer
-RUN cp $SRC/build.sh $SRC/real_build.sh
-COPY chronos-build.sh $SRC/build.sh
-ENV FUZZ_TARGET="fuzz_mms_decode.c"
-ENV FUZZING_LANGUAGE="c"
