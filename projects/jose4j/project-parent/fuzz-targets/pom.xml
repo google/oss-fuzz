@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.bitbucket.b_c</groupId>
             <artifactId>jose4j</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>0.9.4</version>
         </dependency>
 
     </dependencies>
