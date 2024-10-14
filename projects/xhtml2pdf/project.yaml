@@ -1,0 +1,11 @@
+homepage: "https://xhtml2pdf.readthedocs.io/en/latest/"
+language: python
+primary_contact: "github@timo.brembeck.email"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/xhtml2pdf/xhtml2pdf.git"
