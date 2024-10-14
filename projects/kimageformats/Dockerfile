@@ -33,6 +33,7 @@ RUN git clone --depth 1 -b v2.5.2 https://github.com/uclouvain/openjpeg.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
 RUN git clone --depth=1 --branch v0.10.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
+RUN git clone --depth 1 https://github.com/4creators/jxrlib.git
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC
 WORKDIR kimageformats
