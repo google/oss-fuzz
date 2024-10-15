@@ -96,7 +96,7 @@ OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool-experiments')
 
-CLOUD_BUILD_LOCATION = os.getenv('CLOUD_BUILD_LOCATIONS', 'us-central1')
+CLOUD_BUILD_LOCATION = os.getenv('CLOUD_BUILD_LOCATION', 'us-central1')
 REGIONAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint=f'https://{CLOUD_BUILD_LOCATION}-cloudbuild.googleapis.com/')
 
