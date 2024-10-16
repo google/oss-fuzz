@@ -207,6 +207,14 @@ if [ "$SANITIZER" = "introspector" ]; then
   ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
   ln -sf /usr/local/bin/llvm-nm /usr/bin/nm
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
+
+  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
+  python3 -m pip install --upgrade pip setuptools
+  python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
+  python3 -m pip install --prefer-binary matplotlib
+
+  python3 /fuzz-introspector/src/main.py light
+  rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
 fi
 
 echo "---------------------------------------------------------------"
@@ -260,10 +268,6 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
-  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
-  python3 -m pip install --upgrade pip setuptools
-  python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
-  python3 -m pip install --prefer-binary matplotlib
 
   if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "GOING jvm route"
@@ -328,6 +332,6 @@ if [ "$SANITIZER" = "introspector" ]; then
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
     python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
 
-    cp -rf $SRC/inspector $OUT/inspector
+    rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   fi
 fi
