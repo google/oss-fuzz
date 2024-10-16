@@ -81,6 +81,6 @@ RUN cd $SRC; touch empty.c; gcc -m32 -c empty.c; ar rs /usr/lib32/libstdc++.a em
 # If a user is mounting their local source directory for debugging
 # then we need to tell git to chill out and just take the repo. If we
 # don't west fails with bogus error messages.
-RUN git config --global --add safe.directory /src/sof_workspace/zephyr
+RUN git config --global --add safe.directory $SRC/sof_workspace/zephyr
 
 COPY build.sh $SRC/
