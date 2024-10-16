@@ -174,6 +174,12 @@ class Project:  # pylint: disable=too-many-instance-attributes
     """Returns the docker image for the project."""
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
+  def cached_image(self, coverage):
+    sanitizer_mapping = {'address': 'asan', 'coverage': 'cov'}
+    san_lookup = sanitizer_mapping[sanitizer]
+    return ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
+            f'{self.name}-ofg-cached-{san_lookup}')
+
 
 def get_last_step_id(steps):
   """Returns the id of the last step in |steps|."""
@@ -308,10 +314,15 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     project_yaml,
     dockerfile,
     config,
-    additional_env=None):
+    additional_env=None,
+    use_caching=False):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
+  if use_caching:
+    project_image = project.cached_image()
+  else:
+    project_image = project.image
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
@@ -320,7 +331,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
   build_steps = build_lib.get_project_image_steps(
       project.name,
-      project.image,
+      project_image,
       project.fuzzing_language,
       config=config,
       architectures=project.architectures,
@@ -357,7 +368,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Report the build failure if it happened.
           build_steps.append({
               'name':
-                  project.image,
+                  project_image,
               'args': [
                   'bash', '-c',
                   f'cat {LOCAL_BUILD_LOG_PATH} && test -f {BUILD_SUCCESS_MARKER}'
