@@ -35,17 +35,33 @@ def should_include_command(ast_tree):
 def is_local_redirection(ast_node, all_scripts):
     """Return the list of scripts corresponding to the command, in case
     the command is an execution of a local script."""
-    #print("Checking")
+    # print("Checking")
+
+    # Capture local script called with ./random/path/build.sh
     if len(ast_node.parts) >= 2:
         if ast_node.parts[0].word == '.':
             suffixes_matching = []
             #print(ast_node.parts[1].word)
             for bash_script in all_scripts:
                 #print("- %s"%(bash_script))
-                if bash_script.endswith(ast_node.parts[1].word):
+                cmd_to_exec = ast_node.parts[1].word.replace('$SRC', 'src')
+                if bash_script.endswith(cmd_to_exec):
                     suffixes_matching.append(bash_script)
             #print(suffixes_matching)
             return suffixes_matching
+    # Capture a local script called with $SRC/random/path/build.sh
+    if len(ast_node.parts) >= 1:
+        if '$SRC' in ast_node.parts[0].word:
+            suffixes_matching = []
+            print(ast_node.parts[0].word)
+            for bash_script in all_scripts:
+                print("- %s"%(bash_script))
+                cmd_to_exec = ast_node.parts[0].word.replace('$SRC', 'src')
+                if bash_script.endswith(cmd_to_exec):
+                    suffixes_matching.append(bash_script)
+            print(suffixes_matching)
+            return suffixes_matching
+
     return []
 
 def parse_script(bash_script, all_scripts) -> str:
@@ -82,3 +98,5 @@ if __name__ == "__main__":
     print("#"*60)
     print(replay_bash_script)
     print("#"*60)
+    with open('/out/replay-build-script.sh', 'w') as f:
+        f.write(replay_bash_script)
