@@ -1,21 +1,9 @@
-import os
 import sys
 import bashlex
 
 from glob import glob
 
-
-s1="""# build project
-autoconf
-autoheader
-./configure
-make -j$(nproc) libhts.a test/fuzz/hts_open_fuzzer.o
-
-# build fuzzers
-$CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread"""
-
 def find_all_bash_scripts_in_src():
-    all_scripts = []
     all_scripts = [y for x in os.walk('/src/') for y in glob(os.path.join(x[0], '*.sh'))]
     scripts_we_care_about = []
     to_ignore = {'aflplusplus', 'honggfuzz', '/fuzztest', '/centipede'}
@@ -23,10 +11,7 @@ def find_all_bash_scripts_in_src():
         if any([x for x in to_ignore if x in s]):
             continue
         scripts_we_care_about.append(s)
-    #for root, subFolder, files in os.walk('/src/'):
-    #    for item in files:
-    #        if item.endswith(".sh") :
-    #            all_scripts.append(item)
+
     print(scripts_we_care_about)
     return scripts_we_care_about
 
@@ -47,6 +32,8 @@ def should_include_command(ast_tree):
 
 
 def is_local_redirection(ast_node, all_scripts):
+    """Return the list of scripts corresponding to the command, in case
+    the command is an execution of a local script."""
     #print("Checking")
     if len(ast_node.parts) >= 2:
         if ast_node.parts[0].word == '.':
@@ -64,7 +51,6 @@ def parse_script(bash_script, all_scripts) -> str:
     new_script = ''
     with open(bash_script, 'r', encoding='utf-8') as f:
         build_script = f.read()
-    #print(build_script)
     parts = bashlex.parse(build_script)
     for part in parts:
         try:
@@ -77,7 +63,8 @@ def parse_script(bash_script, all_scripts) -> str:
         if len(matches) == 1:
             new_script += parse_script(matches[0], all_scripts) + '\n'
             continue
-        #print(part.dump())
+
+        # Extract the command from the script string
         idx_start = part.pos[0]
         idx_end = part.pos[1]
         new_script += build_script[idx_start:idx_end]
