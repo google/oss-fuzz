@@ -316,7 +316,11 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   env.append(f'PROJECT_NAME={project.name}')
 
   build_steps.append(
-      build_project.get_compile_step(project, build, env, config.parallel, allow_failure=True))
+      build_project.get_compile_step(project,
+                                     build,
+                                     env,
+                                     config.parallel,
+                                     allow_failure=True))
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('inspector-report')
