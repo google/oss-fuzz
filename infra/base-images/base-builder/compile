@@ -231,6 +231,10 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   exit 0
 fi
 
+#echo 'export SHELLOPTS' | cat - $SRC/build.sh > temp && mv temp $SRC/build.sh
+python3 -m pip install bashlex
+python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+
 BUILD_CMD="bash -eux $SRC/build.sh"
 
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
@@ -248,6 +252,7 @@ if [ "$FUZZING_LANGUAGE" = "rust" ]; then
   cp -r /rust/rustup/toolchains/$rustdef/lib/rustlib/src/rust/library/ /rustc/$rustch/
 fi
 
+#export SHELLOPTS
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
@@ -263,6 +268,7 @@ else
     $COPY_SOURCES_CMD 2>/dev/null || true
   fi
 fi
+#unset SHELLOPTS
 
 if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
