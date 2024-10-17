@@ -156,20 +156,6 @@ def handle_ast_compound(ast_node, all_scripts_in_fs, raw_script):
 def handle_node(ast_node, all_scripts_in_fs, build_script):
   """Generates a bash script string for a given node"""
   if ast_node.kind == 'command':
-    #if should_discard_command(part):
-    #  continue
-
-    #matches = is_local_redirection(part, all_scripts)
-    #if len(matches) == 1:
-    #  new_script += parse_script(matches[0], all_scripts) + '\n'
-    #  continue
-
-    # Extract the command from the script string
-    #idx_start = part.pos[0]
-    #idx_end = part.pos[1]
-    #new_script += build_script[idx_start:idx_end]
-    #new_script += '\n'
-    #print("[%s]"%(build_script[idx_start:idx_end]))
     return handle_ast_command(ast_node, all_scripts_in_fs, build_script)
   elif ast_node.kind == 'list':
     return handle_ast_list(ast_node, all_scripts_in_fs, build_script)
