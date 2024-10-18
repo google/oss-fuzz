@@ -1,0 +1,8 @@
+homepage: "https://github.com/wooorm/markdown-rs"
+main_repo: "https://github.com/wooorm/markdown-rs.git"
+language: rust
+primary_contact: " tituswormer@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
