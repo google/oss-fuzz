@@ -1,0 +1,10 @@
+homepage: "https://github.com/ia0/data-encoding"
+main_repo: "https://github.com/ia0/data-encoding.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+vendor_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
