@@ -15,15 +15,8 @@
 #
 ################################################################################
 
-# Apply diff for lib/fuzz/Cargo.toml to include v3-preview feature for fuzzing
-git apply $SRC/patch.diff
-
-# Build the fuzzers and project source code
 cd lib
-cargo fuzz build -O
+cargo fuzz build --features=data-encoding/v3-preview
 
-# Copy built fuzzer binaries to $OUT
-cp $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release/encoder $OUT
-cp $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release/encode_write $OUT
-cp $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release/round_trip $OUT
-cp $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release/v3-preview $OUT
+find $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release -maxdepth 1 \
+    -type f -perm -u=x -exec cp {} $OUT \;
