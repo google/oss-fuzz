@@ -1,0 +1,11 @@
+--- a/lib/fuzz/Cargo.toml
++++ b/lib/fuzz/Cargo.toml
+@@ -10,7 +10,7 @@ rust-version = "1.81"
+ cargo-fuzz = true
+ 
+ [dependencies]
+-data-encoding = { path = ".." }
++data-encoding = { path = "..", features = ["v3-preview"] }
+ libfuzzer-sys = "0.4.3"
+ 
+ [[bin]]
