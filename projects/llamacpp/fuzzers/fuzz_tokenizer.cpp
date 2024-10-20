@@ -126,7 +126,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     common_detokenize(ctx, tokens);
 
     if (setjmp(fuzzing_jmp_buf) == 0) {
-      llama_decode(ctx, llama_batch_get_one(tokens.data(), tokens.size()));
+      auto batch = llama_batch_get_one(tokens.data(), tokens.size());
+      if (batch.n_tokens > 0) {
+        llama_decode(ctx, batch);
+      }
     }
   } catch (...) {
   }
