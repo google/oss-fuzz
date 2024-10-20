@@ -1,0 +1,6 @@
+homepage: "https://core.suckless.org/sbase"
+main_repo: "git://git.suckless.org/sbase"
+language: c
+vendor_ccs:
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"
