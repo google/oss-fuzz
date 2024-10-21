@@ -15,13 +15,8 @@
 #
 ################################################################################
 
-# Retrieve zstd submodule
-git submodule init
-git submodule update
-
 # Build the fuzzers and project source code
-cd zstd-safe
-cargo fuzz build -O
+cargo fuzz build
 
 # Copy built fuzzer binaries to $OUT
 cp $SRC/zstd-rs/zstd-safe/fuzz/target/x86_64-unknown-linux-gnu/release/zstd_fuzzer $OUT

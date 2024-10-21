@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
-RUN git clone https://github.com/gyscos/zstd-rs
-WORKDIR $SRC/zstd-rs
+RUN git clone --recursive https://github.com/gyscos/zstd-rs
+WORKDIR $SRC/zstd-rs/zstd-safe
 
 COPY build.sh $SRC/
