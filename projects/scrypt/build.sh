@@ -19,4 +19,5 @@
 cargo fuzz build
 
 # Copy built fuzzer binaries to $OUT
-cp $SRC/password-hashes/target/x86_64-unknown-linux-gnu/release/scrypt_fuzzer $OUT/
+find $SRC/password-hashes/target/x86_64-unknown-linux-gnu/release -maxdepth 1 \
+    -type f -perm -u=x -exec cp {} $OUT \;

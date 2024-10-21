@@ -16,6 +16,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone https://github.com/RustCrypto/password-hashes
-WORKDIR $SRC/password-hashes/scrypt
+WORKDIR $SRC/password-hashes
 
 COPY build.sh $SRC/
