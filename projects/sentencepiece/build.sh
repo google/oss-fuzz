@@ -25,7 +25,9 @@ make install
 # build fuzzers
 for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 -I. \
+  $CXX $CXXFLAGS -std=c++11 -I. -I$SRC/sentencepiece \
+      -I$SRC/sentencepiece/src/builtin_pb/ \
+      -I$SRC/sentencepiece/third_party/protobuf-lite/ \
         $fuzzer $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
         -o $OUT/$fuzz_basename
 done
