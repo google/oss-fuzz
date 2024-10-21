@@ -1,0 +1,10 @@
+homepage: "https://github.com/pyfisch/httpdate"
+main_repo: "https://github.com/pyfisch/httpdate.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
