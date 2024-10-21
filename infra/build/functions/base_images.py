@@ -76,7 +76,8 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
           'machineType': 'E2_HIGHCPU_32'
       },
   }
-  return build_lib.run_build(steps,
+  return build_lib.run_build(''
+                             steps,
                              credentials,
                              BASE_PROJECT,
                              TIMEOUT,
