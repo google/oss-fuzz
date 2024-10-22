@@ -1,0 +1,10 @@
+homepage: "https://github.com/rustless/jsonway"
+main_repo: "https://github.com/rustless/jsonway.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
