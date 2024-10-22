@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-# build project
-mkdir build
-cd build
-cmake -DSPM_ENABLE_SHARED=ON ..
-make -j $(nproc)
-make install
+RUN git clone --recursive https://github.com/gyscos/zstd-rs
+WORKDIR $SRC/zstd-rs/zstd-safe
 
-# build fuzzers
-for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 -I. -I$SRC/sentencepiece \
-      -I$SRC/sentencepiece/src \
-      -I$SRC/sentencepiece/src/builtin_pb/ \
-      -I$SRC/sentencepiece/third_party/protobuf-lite/ \
-        $fuzzer $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
-        -o $OUT/$fuzz_basename
-done
+COPY build.sh $SRC/
