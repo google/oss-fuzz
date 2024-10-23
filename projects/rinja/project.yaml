@@ -1,5 +1,5 @@
 homepage: "https://rinja.readthedocs.io/"
-main_repo: "https://github.com/rinja-rs/rinja.git"
+main_repo: "https://github.com/rinja-rs/rinja"
 language: rust
 primary_contact: "rene.kijewski@fu-berlin.de"
 auto_ccs:
