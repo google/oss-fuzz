@@ -1,0 +1,10 @@
+homepage: "https://deepforest.readthedocs.io/"
+language: python
+primary_contact: 'benweinstein2010@gmail.com'
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: "https://github.com/weecology/deepforest"
