@@ -28,13 +28,14 @@ FUZZ_TARGET=$2
 FUZZING_LANGUAGE=$3
 
 # Step 1: Copy chronos.sh to its project directory.
-cp infra/experimental/chronos/chronos.sh "projects/$PROJECT/"
+cp infra/experimental/chronos/chronos-build.sh "projects/$PROJECT/"
 
 # Step 2: Copy chronos.sh to image and set FUZZ_TARGET and FUZZING_LANGUAGE in its Dockerfile.
 {
-    echo "COPY chronos.sh /src";
+    echo "ADD https://clusterfuzz-builds.storage.googleapis.com/tracer \$SRC/";
+    echo "RUN chmod +x \$SRC/tracer";
+    echo "RUN cp \$SRC/build.sh \$SRC/real_build.sh";
+    echo "COPY chronos-build.sh \$SRC/build.sh";
     echo "ENV FUZZ_TARGET=\"$FUZZ_TARGET\"";
     echo "ENV FUZZING_LANGUAGE=\"$FUZZING_LANGUAGE\"";
-    # Step 3: Source chronos.sh at the beginning of its build.sh.
-    echo "RUN sed -i.bak \"1s|^|source \\\"/src/chronos.sh\\\"\\n|\" \"/src/build.sh\""
 } >> "projects/$PROJECT/Dockerfile"
