@@ -1,0 +1,10 @@
+homepage: "https://core.suckless.org/sbase"
+main_repo: "git://git.suckless.org/sbase"
+language: c
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+vendor_ccs:
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"
