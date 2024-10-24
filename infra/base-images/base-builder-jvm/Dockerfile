@@ -27,7 +27,7 @@ RUN install_java.sh
 
 RUN chmod 777 /usr/local/bin && chmod 777 /usr/local/lib
 
-FROM base as builder
+FROM base AS builder
 RUN useradd -m jazzer_user
 
 USER jazzer_user
@@ -55,7 +55,7 @@ RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazze
     cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH && \
     cp $(bazel cquery --output=files //deploy:jazzer-junit) $JAZZER_JUNIT_PATH
 
-from base as final
+FROM base AS final
 
 USER root
 COPY --from=builder /usr/local/bin/jazzer_agent_deploy.jar /usr/local/bin/jazzer_agent_deploy.jar
