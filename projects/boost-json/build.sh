@@ -15,14 +15,21 @@
 #
 ################################################################################
 
-./bootstrap.sh --with-libraries=json
+./bootstrap.sh --with-toolset=clang
 
 echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$CXXFLAGS\" <linkflags>\"${LIB_FUZZING_ENGINE}\" ;" >user-config.jam
 
-./b2 --user-config=user-config.jam --toolset=clang-ossfuzz --prefix=$WORK/stage --with-json link=static install
+./b2 --user-config=user-config.jam                              \
+     --toolset=clang-ossfuzz                                    \
+     --prefix=$WORK/stage                                       \
+     --with-json                                                \
+     include=/usr/local/include/x86_64-unknown-linux-gnu/c++/v1 \
+     link=static                                                \
+     install
 
 for i in libs/json/fuzzing/*.cpp; do
    fuzzer=$(basename $i .cpp)
    $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $WORK/stage/include/ $WORK/stage/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
+   zip -q -r -j $OUT/${fuzzer}_seed_corpus.zip libs/json/fuzzing/old_crashes
 done
 
