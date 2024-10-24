@@ -1,0 +1,10 @@
+homepage: "https://github.com/steveklabnik/semver-parser"
+main_repo: "https://github.com/steveklabnik/semver-parser.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
