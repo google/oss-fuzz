@@ -5,6 +5,9 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 language: rust
+primary_contact: "github@ia0.eu"
+auto_ccs:
+  - "cretin@google.com"
 vendor_ccs:
   - "arthur.chan@adalogics.com"
   - "david@adalogics.com"
