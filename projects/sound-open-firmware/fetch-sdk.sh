@@ -15,20 +15,13 @@
 #
 ################################################################################
 
-# Zephyr doesn't provide a "latest" link, so clone the source tree
-# that produces the SDK (much smaller than the tarball itself, so
-# minimal overhead) and find the latest version tag as a proxy.  Will
-# likely break if the script is run in the moments between tagging a
-# release and the tarball appearing on github, but the risk is low and
-# it will recover with a retry.
+# use the github API to fetch the latest stable SDK with assets
 
-git clone --filter=tree:0 https://github.com/zephyrproject-rtos/sdk-ng
+RELEASES=$(curl -L  -H "Accept: application/vnd.github+json"  -H "X-GitHub-Api-Version: 2022-11-28"  https://api.github.com/repos/zephyrproject-rtos/sdk-ng/releases)
+SDK=$(jq '[.[] | select(.prerelease == false) | {tag: .tag_name, assets: .assets[] | select(.name | contains("linux-x86_64_minimal.tar.xz"))}] | .[0]' <<< $RELEASES)
 
-VER=$(git -C sdk-ng tag -l 'v*' | sort -rV | head -1 | sed 's/v//')
-URL="https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v$VER/zephyr-sdk-${VER}_linux-x86_64_minimal.tar.xz"
-
-curl -L -o sdk.tar.xz "$URL"
+curl -L -o sdk.tar.xz $(jq -r '.assets.browser_download_url' <<< $SDK)
 tar xf sdk.tar.xz
 rm sdk.tar.xz
 
-zephyr-sdk-$VER/setup.sh -h
+zephyr-sdk-$(jq -r ".tag" <<< $SDK | tr -d 'v')/setup.sh -h
