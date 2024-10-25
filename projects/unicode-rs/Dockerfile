@@ -21,3 +21,4 @@ RUN git clone --depth 1 https://github.com/unicode-rs/unicode-segmentation
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY process.rs $SRC/unicode-normalization/fuzz/fuzz_targets/
