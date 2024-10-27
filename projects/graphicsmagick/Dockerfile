@@ -84,8 +84,10 @@ RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 # Jasper
 RUN git clone --depth 1 https://github.com/jasper-software/jasper
 
-# Libxml2
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+# Libxml2 (fall back to github mirror if gitlab.gnome.org is overloaded)
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git || \
+    git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git || \
+    git clone --depth 1 https://github.com/GNOME/libxml2
 
 # Libjxl
 RUN git clone --depth 1 https://github.com/libjxl/libjxl.git
