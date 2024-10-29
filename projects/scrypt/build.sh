@@ -1,5 +1,5 @@
-#!/bin/bash -ex
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,9 @@
 #
 ################################################################################
 
-if [ "$2" = "fuzzing" ]; then
-  topic=request-build
-elif [ "$2" = "coverage" ]; then
-  topic=request-coverage-build
-elif [ "$2" = "introspector" ]; then
-  topic=request-introspector-build
-else
-  echo "Invalid build type $2."
-  exit 1
-fi
+# Build the fuzzers and project source code
+cargo fuzz build
 
-gcloud pubsub topics publish $topic --message "$1" --project oss-fuzz
+# Copy built fuzzer binaries to $OUT
+find $SRC/password-hashes/fuzz/target/x86_64-unknown-linux-gnu/release -maxdepth 1 -name scrypt* \
+    -type f -perm -u=x -exec cp {} $OUT \;
