@@ -238,6 +238,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = run_fuzzer(args)
   elif args.command == 'coverage':
     result = coverage(args)
+  elif args.command == 'coverage-new':
+    result = coverage_new(args)    
   elif args.command == 'introspector':
     result = introspector(args)
   elif args.command == 'reproduce':
@@ -437,6 +439,43 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                nargs='*')
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
+
+  coverage_new_parser = subparsers.add_parser(
+      'coverage-new', help='Generate code coverage report for the project.')
+  coverage_new_parser.add_argument('--no-corpus-download',
+                               action='store_true',
+                               help='do not download corpus backup from '
+                               'OSS-Fuzz; use corpus located in '
+                               'build/corpus/<project>/<fuzz_target>/')
+  coverage_new_parser.add_argument('--no-serve',
+                               action='store_true',
+                               help='do not serve a local HTTP server.')
+  coverage_new_parser.add_argument('--port',
+                               default='8008',
+                               help='specify port for'
+                               ' a local HTTP server rendering coverage report')
+  coverage_new_parser.add_argument('--fuzz-target',
+                               help='specify name of a fuzz '
+                               'target to be run for generating coverage '
+                               'report')
+  coverage_new_parser.add_argument('--corpus-dir',
+                               help='specify location of corpus'
+                               ' to be used (requires --fuzz-target argument)')
+  coverage_new_parser.add_argument('--public',
+                               action='store_true',
+                               help='if set, will download public '
+                               'corpus using wget')
+  coverage_new_parser.add_argument('project',
+                               help='name of the project or path (external)')
+  coverage_new_parser.add_argument('--seconds',
+                                   help='number of seconds to run fuzzers',
+                                   default=10)                               
+  coverage_new_parser.add_argument('extra_args',
+                               help='additional arguments to '
+                               'pass to llvm-cov utility.',
+                               nargs='*')
+  _add_external_project_args(coverage_new_parser)
+  _add_architecture_args(coverage_new_parser)
 
   introspector_parser = subparsers.add_parser(
       'introspector',
@@ -1301,6 +1340,62 @@ def coverage(args):  # pylint: disable=too-many-branches
     logger.error('Failed to generate clang code coverage report.')
 
   return result
+
+def _coverage_prepare_corpus(args):
+  parser = get_parser()
+  fuzzer_targets = _get_fuzz_targets(args.project)
+  for fuzzer_name in fuzzer_targets:
+    # Make a corpus directory.
+    fuzzer_corpus_dir = args.project.corpus + f'/{fuzzer_name}'
+    if not os.path.isdir(fuzzer_corpus_dir):
+      os.makedirs(fuzzer_corpus_dir)
+    run_fuzzer_command = [
+        'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+        fuzzer_corpus_dir, args.project.name, fuzzer_name
+    ]
+
+    parsed_args = parse_args(parser, run_fuzzer_command)
+    parsed_args.fuzzer_args = [
+        f'-max_total_time={args.seconds}', '-detect_leaks=0'
+    ]
+    # Continue even if run command fails, because we do not have 100%
+    # accuracy in fuzz target detection, i.e. we might try to run something
+    # that is not a target.
+    run_fuzzer(parsed_args)
+  return True
+
+def coverage_new(args):
+  parser = get_parser()
+
+  args_to_append = []
+
+  # Build fuzzers with ASAN.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=address', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logger.error('Failed to build project with ASAN')
+    return False
+
+  if not _coverage_prepare_corpus(args):
+    return False
+
+  # Build code coverage.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=coverage', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logger.error('Failed to build project with coverage instrumentation')
+    return False
+
+  # Collect coverage.
+  coverage_command = [
+      'coverage', '--no-corpus-download', '--port', '', args.project.name
+  ]
+  if not coverage(parse_args(parser, coverage_command)):
+    logger.error('Failed to extract coverage')
+    return False
+  return True
 
 
 def _introspector_prepare_corpus(args):
