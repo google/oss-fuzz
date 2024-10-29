@@ -23,6 +23,9 @@ RUN git clone \
 
 WORKDIR bleach
 
+RUN git fetch --depth=1 origin 4bc1bff36841c04152525b8e57fd3740f34ec796
+RUN git reset --hard 4bc1bff36841c04152525b8e57fd3740f34ec796
+
 RUN git clone --depth 1 https://github.com/google/fuzzing
 
 COPY build.sh sanitize_fuzzer.py linkify_fuzzer.py $SRC/
