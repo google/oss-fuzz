@@ -1,0 +1,6 @@
+homepage: "https://github.com/bytecodealliance/javy"
+language: rust
+main_repo: "https://github.com/bytecodealliance/javy.git"
+primary_contact: "saulecabrera@gmail.com"
+auto_ccs:
+  - "jeff.charles@shopify.com"
