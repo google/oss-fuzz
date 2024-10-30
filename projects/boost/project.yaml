@@ -6,6 +6,7 @@ auto_ccs:
    - "bshas3@gmail.com"
    - "jking@apache.org"
    - "jeremy.william.murphy@gmail.com"
+   - "christian.mazakas@gmail.com"
    - "research@shielder.it"
 main_repo: 'https://github.com/boostorg/boost.git'
 
