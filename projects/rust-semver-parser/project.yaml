@@ -1,5 +1,6 @@
 homepage: "https://github.com/steveklabnik/semver-parser"
 main_repo: "https://github.com/steveklabnik/semver-parser.git"
+primary_contact: "steve@steveklabnik.com"
 sanitizers:
   - address
 fuzzing_engines:
