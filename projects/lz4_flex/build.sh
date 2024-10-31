@@ -1,5 +1,4 @@
-#!/bin/bash -ex
-# Copyright 2020 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +14,12 @@
 #
 ################################################################################
 
-if [ "$2" = "fuzzing" ]; then
-  topic=request-build
-elif [ "$2" = "coverage" ]; then
-  topic=request-coverage-build
-elif [ "$2" = "introspector" ]; then
-  topic=request-introspector-build
-else
-  echo "Invalid build type $2."
-  exit 1
-fi
-
-gcloud pubsub topics publish $topic --message "$1" --project oss-fuzz
+# Note: This project creates Rust fuzz targets exclusively
+cd $SRC/lz4_flex
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_decomp_corrupt_block $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_decomp_corrupt_frame $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_cpp_compress $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_cpp_decompress $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_frame $OUT/

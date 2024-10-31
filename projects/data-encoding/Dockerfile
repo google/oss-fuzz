@@ -1,5 +1,4 @@
-#!/bin/bash -ex
-# Copyright 2020 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && \
+    apt-get install -y make autoconf automake libtool curl cmake python
 
-if [ "$2" = "fuzzing" ]; then
-  topic=request-build
-elif [ "$2" = "coverage" ]; then
-  topic=request-coverage-build
-elif [ "$2" = "introspector" ]; then
-  topic=request-introspector-build
-else
-  echo "Invalid build type $2."
-  exit 1
-fi
+RUN git clone https://github.com/ia0/data-encoding
+WORKDIR $SRC/data-encoding
 
-gcloud pubsub topics publish $topic --message "$1" --project oss-fuzz
+COPY build.sh $SRC/
