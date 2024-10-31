@@ -32,6 +32,8 @@ def should_discard_command(ast_tree) -> bool:
     return True
   if 'autoconf' in first_word:
     return True
+  if 'autoreconf' in first_word:
+      return True
   if 'cmake' in first_word:
     return True
   if 'autogen.sh' in first_word:
@@ -162,6 +164,9 @@ def handle_node(ast_node, all_scripts_in_fs, build_script):
   elif ast_node.kind == 'compound':
     print('todo: handle compound')
     return handle_ast_compound(ast_node, all_scripts_in_fs, build_script)
+  elif ast_node.kind == 'pipeline':
+    # Not supported
+    return ''
   else:
     raise Exception(f'Missing node handling: {ast_node.kind}')
 
@@ -171,7 +176,10 @@ def parse_script(bash_script, all_scripts) -> str:
   new_script = ''
   with open(bash_script, 'r', encoding='utf-8') as f:
     build_script = f.read()
-  parts = bashlex.parse(build_script)
+  try:
+    parts = bashlex.parse(build_script)
+  except:
+    return ''
   for part in parts:
     new_script += handle_node(part, all_scripts, build_script)
     new_script += '\n'
