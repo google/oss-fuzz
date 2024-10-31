@@ -19,5 +19,5 @@ main_repo: 'https://github.com/bytecodealliance/wasmtime'
 # standard library itself.
 coverage_extra_args: >
   -ignore-filename-regex=.*/root/.opam/.*
-  -ignore-filename-regex=.*/registry/src/.*crates.io/.*
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
   -ignore-filename-regex=.*/rustc/.*
