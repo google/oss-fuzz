@@ -184,7 +184,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
   def cached_image(self, sanitizer):
-    return _CACHED_IMAGE.format(self.name, sanitizer)
+    return _CACHED_IMAGE.format(name=self.name, sanitizer=sanitizer)
 
 
 def get_last_step_id(steps):
@@ -335,7 +335,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-  if not use_caching:
+  if use_caching:
+    # Use cached built image.
+    build_steps = []
+  else:
     build_steps = build_lib.get_project_image_steps(
         project.name,
         project.image,
@@ -378,7 +381,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
           # Report the build failure if it happened.
           build_steps.append({
               'name':
-                  project_image,
+                  project.image,
               'args': [
                   'bash', '-c',
                   f'cat {LOCAL_BUILD_LOG_PATH} && test -f {BUILD_SUCCESS_MARKER}'
