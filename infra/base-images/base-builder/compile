@@ -234,8 +234,15 @@ fi
 #echo 'export SHELLOPTS' | cat - $SRC/build.sh > temp && mv temp $SRC/build.sh
 python3 -m pip install bashlex
 python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+#exit 0
 
 BUILD_CMD="bash -eux $SRC/build.sh"
+
+# Check if we should patch self
+if [ "${REPLAY_ENABLED}" = "1" ]; then
+  # Change build.sh to replay_build.sh
+  sed -i 's/\/build\.sh/\/replay_build\.sh/g' /usr/local/bin/compile
+fi
 
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
 set +u
