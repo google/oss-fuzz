@@ -43,7 +43,7 @@ steps:
   - '--change'
   - 'CMD ["/usr/local/bin/recompile"]'
   - '--change'
-  - 'ENTRYPOINT ["/bin/bash"]'
+  - 'ENTRYPOINT ["/bin/sh", "-c"]'
   - ${_PROJECT}-origin-asan
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
 - name: 'gcr.io/cloud-builders/docker'
@@ -61,7 +61,7 @@ steps:
   - '--change'
   - 'CMD ["/usr/local/bin/recompile"]'
   - '--change'
-  - 'ENTRYPOINT ["/bin/bash"]'
+  - 'ENTRYPOINT ["/bin/sh", "-c"]'
   - ${_PROJECT}-origin-cov
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
 images:
