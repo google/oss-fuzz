@@ -5,7 +5,7 @@ import bashlex
 from glob import glob
 
 
-def find_all_bash_scripts_in_src() -> list[str]:
+def find_all_bash_scripts_in_src():
   """Finds all bash scripts that exist in SRC/. This is used to idenfiy scripts
   that may be needed for reading during the AST parsing. This is the case
   when a given build script calls another build script, then we need to
