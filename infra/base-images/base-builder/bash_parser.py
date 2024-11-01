@@ -5,7 +5,11 @@ import bashlex
 from glob import glob
 
 
-def find_all_bash_scripts_in_src():
+def find_all_bash_scripts_in_src() -> list[str]:
+  """Finds all bash scripts that exist in SRC/. This is used to idenfiy scripts
+  that may be needed for reading during the AST parsing. This is the case
+  when a given build script calls another build script, then we need to
+  read those."""
   all_scripts = [
       y for x in os.walk('/src/') for y in glob(os.path.join(x[0], '*.sh'))
   ]
@@ -26,27 +30,24 @@ def should_discard_command(ast_tree) -> bool:
     first_word = ast_tree.parts[0].word
   except:  # pylint: disable=bare-except
     return False
-  if 'configure' in first_word:
-    return True
-  if 'autoheader' in first_word:
-    return True
-  if 'autoconf' in first_word:
-    return True
-  if 'autoreconf' in first_word:
-      return True
-  if 'cmake' in first_word:
-    return True
-  if 'autogen.sh' in first_word:
+
+  cmds_to_avoid_replaying = {
+      'configure', 'autoheader', 'autoconf', 'autoreconf', 'cmake', 'autogen.sh'
+  }
+  if any([cmd for cmd in cmds_to_avoid_replaying if cmd in first_word]):
     return True
 
+  # Avoid all "make clean" calls. We dont want to erase previously build
+  # files.
   try:
     second_word = ast_tree.parts[1].word
   except:  # pylint: disable=bare-except
     return False
-
   if 'make' in first_word and 'clean' in second_word:
     return True
 
+  # No match was found to commands we dont want to build. There is no
+  # indication we shuold avoid.
   return False
 
 
