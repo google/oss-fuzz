@@ -41,7 +41,7 @@ steps:
   args:
   - commit
   - ${_PROJECT}-origin-asan
-  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
@@ -55,10 +55,10 @@ steps:
   args:
   - commit
   - ${_PROJECT}-origin-cov
-  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
 images:
-- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-asan
-- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-cov
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
 timeout: 1800s
 logsBucket: oss-fuzz-gcb-logs
 tags:
