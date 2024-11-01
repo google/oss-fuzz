@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 #
 ################################################################################
 
+# Change to version 0.1.1
+git checkout tags/v0.1.1
+
 # Build fuzzers and project binaries
 cargo fuzz build -O
 
 # Copy fuzzer binaries to $OUT
-cp $SRC/vte/target/x86_64-unknown-linux-gnu/release/parse $OUT/
-
+cp $SRC/vte/utf8parse/fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/
