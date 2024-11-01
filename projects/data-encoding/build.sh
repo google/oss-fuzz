@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 #
 ################################################################################
 
-cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
-cp $fuzz_release/deserialize $OUT/
-cp $fuzz_release/iterate $OUT/
-cp $fuzz_release/raw_deserialize $OUT/
-cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/
+cd lib
+cargo fuzz build --features=data-encoding/v3-preview
+
+find $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release -maxdepth 1 \
+    -type f -perm -u=x -exec cp {} $OUT \;

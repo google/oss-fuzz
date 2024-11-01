@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +14,8 @@
 #
 ################################################################################
 
-cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
-cp $fuzz_release/deserialize $OUT/
-cp $fuzz_release/iterate $OUT/
-cp $fuzz_release/raw_deserialize $OUT/
-cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y cmake ninja-build openssl
+RUN git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git liboqs
+WORKDIR liboqs
+COPY build.sh $SRC/

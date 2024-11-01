@@ -249,7 +249,12 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel, upload_build_logs=None):
+def get_compile_step(project,
+                     build,
+                     env,
+                     parallel,
+                     upload_build_logs=None,
+                     allow_failure=False):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -283,7 +288,7 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
       'id': get_id('compile', build),
   }
 
-  if upload_build_logs:
+  if upload_build_logs or allow_failure:
     # The failure will be reported in a subsequent step.
     compile_step['allowFailure'] = True
 

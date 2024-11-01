@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
-cp $fuzz_release/deserialize $OUT/
-cp $fuzz_release/iterate $OUT/
-cp $fuzz_release/raw_deserialize $OUT/
-cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/
+RUN git clone --recursive https://github.com/gyscos/zstd-rs
+WORKDIR $SRC/zstd-rs/zstd-safe
+
+COPY build.sh $SRC/

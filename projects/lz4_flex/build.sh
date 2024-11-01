@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +14,12 @@
 #
 ################################################################################
 
+# Note: This project creates Rust fuzz targets exclusively
+cd $SRC/lz4_flex
 cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
-cp $fuzz_release/deserialize $OUT/
-cp $fuzz_release/iterate $OUT/
-cp $fuzz_release/raw_deserialize $OUT/
-cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_decomp_corrupt_block $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_decomp_corrupt_frame $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_cpp_compress $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_cpp_decompress $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_roundtrip_frame $OUT/
