@@ -16,12 +16,6 @@
 ################################################################################
 
 cd $SRC/unicode-normalization
-echo "
-[[bin]]
-name = \"process\"
-path = \"fuzz_targets/process.rs\"
-test = false
-doc = false" >> fuzz/Cargo.toml
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/unicode-normalization $OUT/unicode-normalization-normalization
 cp fuzz/target/x86_64-unknown-linux-gnu/release/streaming $OUT/unicode-normalization-streaming
