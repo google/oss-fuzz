@@ -30,7 +30,8 @@ JCC_DIR = '/usr/local/bin'
 
 def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name, upload_reproducer_path, tags, use_cached_image):
+                   experiment_name, upload_reproducer_path, tags,
+                   use_cached_image):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,

@@ -62,7 +62,7 @@ LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
 BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
 
 _CACHED_IMAGE = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
-                '{name}-ofg-cached-{sanitizer}')
+                 '{name}-ofg-cached-{sanitizer}')
 _CACHED_SANITIZERS = ('address', 'coverage')
 
 
