@@ -210,6 +210,9 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   env = build_project.get_env(project_yaml['language'], build)
   env.extend(jcc_env)
 
+  if use_cached_image:
+    project.cached_sanitizer = 'coverage'
+
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
 

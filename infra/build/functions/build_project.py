@@ -61,6 +61,10 @@ DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
 BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
 
+_CACHED_IMAGE = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
+                '{name}-ofg-cached-{sanitizer}')
+_CACHED_SANITIZERS = ('address', 'coverage')
+
 
 @dataclass
 class Config:
@@ -163,6 +167,8 @@ class Project:  # pylint: disable=too-many-instance-attributes
     else:
       self.main_repo = ''
 
+    self.cached_sanitizer = None
+
   @property
   def sanitizers(self):
     """Returns processed sanitizers."""
@@ -172,13 +178,13 @@ class Project:  # pylint: disable=too-many-instance-attributes
   @property
   def image(self):
     """Returns the docker image for the project."""
+    if self.cached_sanitizer:
+      return self.cached_image(self.cached_sanitizer)
+
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
-  def cached_image(self, coverage):
-    sanitizer_mapping = {'address': 'asan', 'coverage': 'cov'}
-    san_lookup = sanitizer_mapping[sanitizer]
-    return ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
-            f'{self.name}-ofg-cached-{san_lookup}')
+  def cached_image(self, sanitizer):
+    return _CACHED_IMAGE.format(self.name, sanitizer)
 
 
 def get_last_step_id(steps):
@@ -324,23 +330,19 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
-  if use_caching:
-    project_image = project.cached_image()
-  else:
-    project_image = project.image
-
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-  build_steps = build_lib.get_project_image_steps(
-      project.name,
-      project_image,
-      project.fuzzing_language,
-      config=config,
-      architectures=project.architectures,
-      experiment=config.experiment)
+  if not use_caching:
+    build_steps = build_lib.get_project_image_steps(
+        project.name,
+        project.image,
+        project.fuzzing_language,
+        config=config,
+        architectures=project.architectures,
+        experiment=config.experiment)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -348,6 +350,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
+      if use_caching and sanitizer in _CACHED_SANITIZERS:
+        project.cached_sanitizer = sanitizer
+
       # Build x86_64 before i386.
       for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)
