@@ -1,0 +1,6 @@
+homepage: "http://tinysparql.org"
+language: c
+primary_contact: "mrgarnacho@gmail.com"
+auto_ccs:
+- ssssam@gmail.com
+main_repo: 'https://gitlab.gnome.org/GNOME/tinysparql'

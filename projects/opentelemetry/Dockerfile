@@ -18,5 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-collector
 RUN git clone --depth=1 --branch=include-all-test-files https://github.com/AdamKorcz/go-118-fuzz-build $SRC/go-118-fuzz-build
 RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
+RUN git clone --depth 1 https://github.com/AdamKorcz/opentelemetry-collector-contrib --branch=fuzz
 WORKDIR opentelemetry-collector
 COPY build.sh dict $SRC/
