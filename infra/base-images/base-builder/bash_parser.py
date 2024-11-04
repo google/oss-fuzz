@@ -218,6 +218,6 @@ if __name__ == "__main__":
   with open('/out/replay-build-script.sh', 'w') as f:
     f.write(replay_bash_script)
 
-  src_dir = os.getenv('SRC','/src')
+  src_dir = os.getenv('SRC', '/src')
   with open(f'{src_dir}/replay_build.sh', 'w') as f:
     f.write(replay_bash_script)
