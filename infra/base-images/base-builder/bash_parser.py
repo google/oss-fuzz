@@ -21,6 +21,7 @@ from glob import glob
 
 import bashlex
 
+
 def find_all_bash_scripts_in_src():
   """Finds all bash scripts that exist in SRC/. This is used to idenfiy scripts
   that may be needed for reading during the AST parsing. This is the case
@@ -222,6 +223,7 @@ def main():
   src_dir = os.getenv('SRC', '/src')
   with open(f'{src_dir}/replay_build.sh', 'w', encoding='utf-8') as f:
     f.write(replay_bash_script)
+
 
 if __name__ == "__main__":
   main()
