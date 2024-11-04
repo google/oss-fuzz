@@ -208,6 +208,7 @@ def parse_script(bash_script, all_scripts) -> str:
 
   return new_script
 
+
 def main():
   """Main function"""
   all_scripts = find_all_bash_scripts_in_src()
