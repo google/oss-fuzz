@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-export LLVM_SYS_150_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
+export LLVM_SYS_180_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 
 # Needed for coverage to work.
 nightly="+$RUSTUP_TOOLCHAIN"
