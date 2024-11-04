@@ -16,22 +16,22 @@
 
 import os
 import sys
-import bashlex
 
 from glob import glob
 
+import bashlex
 
 def find_all_bash_scripts_in_src():
   """Finds all bash scripts that exist in SRC/. This is used to idenfiy scripts
   that may be needed for reading during the AST parsing. This is the case
   when a given build script calls another build script, then we need to
   read those."""
-  all_scripts = [
+  all_local_scripts = [
       y for x in os.walk('/src/') for y in glob(os.path.join(x[0], '*.sh'))
   ]
   scripts_we_care_about = []
   to_ignore = {'aflplusplus', 'honggfuzz', '/fuzztest', '/centipede'}
-  for s in all_scripts:
+  for s in all_local_scripts:
     if any([x for x in to_ignore if x in s]):
       continue
     scripts_we_care_about.append(s)
@@ -67,7 +67,7 @@ def should_discard_command(ast_tree) -> bool:
   return False
 
 
-def is_local_redirection(ast_node, all_scripts):
+def is_local_redirection(ast_node, all_local_scripts):
   """Return the list of scripts corresponding to the command, in case
     the command is an execution of a local script."""
   # print("Checking")
@@ -82,7 +82,7 @@ def is_local_redirection(ast_node, all_scripts):
     if ast_node.parts[0].word == '.':
       suffixes_matching = []
       #print(ast_node.parts[1].word)
-      for bash_script in all_scripts:
+      for bash_script in all_local_scripts:
         #print("- %s"%(bash_script))
         cmd_to_exec = ast_node.parts[1].word.replace('$SRC', 'src')
         if bash_script.endswith(cmd_to_exec):
@@ -94,7 +94,7 @@ def is_local_redirection(ast_node, all_scripts):
     if '$SRC' in ast_node.parts[0].word:
       suffixes_matching = []
       print(ast_node.parts[0].word)
-      for bash_script in all_scripts:
+      for bash_script in all_local_scripts:
         print("- %s" % (bash_script))
         cmd_to_exec = ast_node.parts[0].word.replace('$SRC', 'src')
         if bash_script.endswith(cmd_to_exec):
@@ -130,6 +130,7 @@ def handle_ast_command(ast_node, all_scripts_in_fs, raw_script):
 
 
 def handle_ast_list(ast_node, all_scripts_in_fs, raw_script):
+  """Handles bashlex AST list."""
   new_script = ''
   try_hard = 1
 
@@ -164,8 +165,8 @@ def handle_ast_list(ast_node, all_scripts_in_fs, raw_script):
 
 
 def handle_ast_compound(ast_node, all_scripts_in_fs, raw_script):
+  """Handles bashlex compound AST node."""
   new_script = ''
-  try_hard = 1
   list_start = ast_node.pos[0]
   list_end = ast_node.pos[1]
   new_script += raw_script[list_start:list_end] + '\n'
@@ -195,7 +196,7 @@ def parse_script(bash_script, all_scripts) -> str:
     build_script = f.read()
   try:
     parts = bashlex.parse(build_script)
-  except:
+  except bashlex.error.ParsingError:
     return ''
   for part in parts:
     new_script += handle_node(part, all_scripts, build_script)
@@ -206,8 +207,8 @@ def parse_script(bash_script, all_scripts) -> str:
 
   return new_script
 
-
-if __name__ == "__main__":
+def main():
+  """Main function"""
   all_scripts = find_all_bash_scripts_in_src()
   replay_bash_script = parse_script(sys.argv[1], all_scripts)
 
@@ -215,9 +216,12 @@ if __name__ == "__main__":
   print("#" * 60)
   print(replay_bash_script)
   print("#" * 60)
-  with open('/out/replay-build-script.sh', 'w') as f:
+  with open('/out/replay-build-script.sh', 'w', encoding='utf-8') as f:
     f.write(replay_bash_script)
 
   src_dir = os.getenv('SRC', '/src')
-  with open(f'{src_dir}/replay_build.sh', 'w') as f:
+  with open(f'{src_dir}/replay_build.sh', 'w', encoding='utf-8') as f:
     f.write(replay_bash_script)
+
+if __name__ == "__main__":
+  main()
