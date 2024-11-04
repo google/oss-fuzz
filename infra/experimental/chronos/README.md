@@ -9,12 +9,12 @@ infra/experimental/chronos/prepare-recompile "$PROJECT" "$FUZZ_TARGET" "$FUZZING
 python infra/helper.py build_image "$PROJECT"
 # AddressSanitizer.
 docker run -ti --entrypoint="/bin/sh" --env SANITIZER="address" --name "${PROJECT}-origin-asan" "gcr.io/oss-fuzz/${PROJECT}" -c "compile && rm -rf /out/*"
-docker commit "${PROJECT}-origin-asan" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-asan"
+docker commit --change 'CMD ["compile"] --change 'ENTRYPOINT /bin/sh' "${PROJECT}-origin-asan" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-asan"
 docker run -ti --entrypoint="recompile" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-asan"
 
 # Coverage measurement.
 docker run -ti --entrypoint="/bin/sh" --env SANITIZER="coverage" --name "${PROJECT}-origin-cov" "gcr.io/oss-fuzz/${PROJECT}" -c "compile && rm -rf /out/*"
-docker commit "${PROJECT}-origin-cov" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-cov"
+docker commit --change 'CMD ["compile"] --change 'ENTRYPOINT /bin/sh' "${PROJECT}-origin-cov" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-cov"
 docker run -ti --entrypoint="recompile" "gcr.io/oss-fuzz/${PROJECT}-ofg-cached-cov"
 ```
 
