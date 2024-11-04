@@ -2,7 +2,7 @@ set -x
 
 
 # Sample projects: simd, wt, libheif, htslib
-PROJECT=libheif
+PROJECT=liblouis
 LOG=replay-${PROJECT}.txt
 OUT1=replay-out-${PROJECT}-1
 OUT2=replay-out-${PROJECT}-2
