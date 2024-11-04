@@ -44,3 +44,4 @@ cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
 cp fuzz/ass.dict $OUT/ass.dict
 
 cp $SRC/*.options $OUT/
+find $SRC -name "*.ass" | xargs zip -r -j -q $OUT/libass_fuzzer_seed_corpus.zip
