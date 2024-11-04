@@ -38,3 +38,12 @@ docker run -v $PWD/build/out/${PROJECT}:/out \
 echo "finish" >> ${LOG}
 echo $(date +%Y:%m:%d:%H:%M:%S) >> ${LOG}
 cp -rf $PWD/build/out/${PROJECT} ${OUT2}
+
+# Now match the artifacts
+SUCCESS=$(infra/experimental/chronos/match_artifacts $OUT1 $OUT2)
+
+if [[ $SUCCESS -eq 0 ]]; then
+  echo "SUCCESS REPLAY" >> ${LOG}
+else
+  echo "FAIL REPLAY" >> ${LOG}
+fi
