@@ -57,7 +57,6 @@ RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazze
 
 FROM base AS final
 
-USER root
 COPY --from=builder /usr/local/bin/jazzer_agent_deploy.jar /usr/local/bin/jazzer_agent_deploy.jar
 COPY --from=builder /usr/local/bin/jazzer_driver /usr/local/bin/jazzer_driver
 COPY --from=builder $JAZZER_API_PATH $JAZZER_API_PATH
