@@ -25,8 +25,6 @@ import google.auth
 import build_lib
 import build_project
 
-JCC_DIR = '/usr/local/bin'
-
 
 def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
@@ -62,8 +60,8 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   project_yaml['run_tests'] = False
 
   jcc_env = [
-      f'CC={JCC_DIR}/clang-jcc',
-      f'CXX={JCC_DIR}/clang++-jcc',
+      f'CC=clang-jcc',
+      f'CXX=clang++-jcc',
   ]
   steps = build_project.get_build_steps(project_name,
                                         project_yaml,
