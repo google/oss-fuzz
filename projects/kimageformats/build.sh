@@ -140,7 +140,7 @@ cd $SRC
 cd openexr
 mkdir _build
 cd _build
-cmake  -DBUILD_SHARED_LIBS=OFF .. 
+cmake  -DBUILD_SHARED_LIBS=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 
@@ -184,6 +184,7 @@ HANDLER_TYPES="ANIHandler ani
         RASHandler ras
         RAWHandler raw
         RGBHandler rgb
+        ScitexHandler scitex
         TGAHandler tga
         XCFHandler xcf"
 
