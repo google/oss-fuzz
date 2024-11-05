@@ -231,6 +231,7 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   exit 0
 fi
 
+
 if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
   # Capture a replaying build script which can be used for replaying the build
   # after a vanilla build. This script is meant to be used in a cached
@@ -238,8 +239,8 @@ if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
   python3 -m pip install bashlex
   python3 /usr/local/bin/bash_parser.py $SRC/build.sh
 fi
-#exit 0
 
+# Prepare the build command to run the project's build script.
 if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
   # If this is a replay, then use replay_build.sh. This is expected to be
   # running in a cached container where a build has already happened prior.
@@ -272,7 +273,6 @@ if [ "$FUZZING_LANGUAGE" = "rust" ]; then
   cp -r /rust/rustup/toolchains/$rustdef/lib/rustlib/src/rust/library/ /rustc/$rustch/
 fi
 
-#export SHELLOPTS
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
@@ -288,7 +288,6 @@ else
     $COPY_SOURCES_CMD 2>/dev/null || true
   fi
 fi
-#unset SHELLOPTS
 
 if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
