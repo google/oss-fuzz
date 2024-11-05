@@ -191,7 +191,7 @@ HANDLER_TYPES="ANIHandler ani
         RASHandler ras
         RAWHandler raw
         RGBHandler rgb
-        ScitexHandler scitex
+        ScitexHandler sct
         TGAHandler tga
         XCFHandler xcf"
 
