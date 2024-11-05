@@ -62,17 +62,24 @@ make install -j$(nproc)
 export CFLAGS="${ORIG_CFLAGS}"
 export CXXFLAGS="${ORIG_CXXFLAGS}"
 
-# Build extra-cmake-modules
-cd $SRC
-cd extra-cmake-modules
-cmake .
-make install -j$(nproc)
-
 cd $SRC
 cd qtbase
 ./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-widgets -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
 cmake --build . --parallel $(nproc)
 cmake --install .
+
+cd $SRC
+cd qttools
+git submodule update --init --recursive
+/usr/bin/qt-configure-module .
+cmake --build . --parallel $(nproc)
+cmake --install .
+
+# Build extra-cmake-modules
+cd $SRC
+cd extra-cmake-modules
+cmake .
+make install -j$(nproc)
 
 cd $SRC
 cd karchive
@@ -195,7 +202,7 @@ echo "$HANDLER_TYPES" | while read class format; do
   /usr/libexec/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
   header=`ls $SRC/kimageformats/src/imageformats/$format*.h`
   /usr/libexec/moc $header -o moc_`basename $header .h`.cpp
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -DINITGUID -I $SRC/kimageformats/src/imageformats/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/KF6/KArchive/ -I /usr/local/include/Imath -I $SRC/jxrlib/common/include -I $SRC/jxrlib/jxrgluelib -I $SRC/jxrlib/image/sys -I /usr/include/QtCore/ -I /usr/include/QtGui/ -I . $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt6Gui -lQt6Core -lQt6BundledLibpng -lQt6BundledHarfbuzz -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_2.a /usr/local/lib/libIex-3_2.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_2.a /usr/local/lib/libOpenEXRCore-3_2.a /usr/local/lib/libOpenEXRUtil-3_2.a /usr/local/lib/libopenjp2.a /usr/local/lib/libzstd.a $SRC/jxrlib/build/libjxrglue.a $SRC/jxrlib/build/libjpegxr.a -llzma /usr/local/lib/libbz2.a -lclang_rt.builtins
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -DINITGUID -I $SRC/kimageformats/src/imageformats/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/KF6/KArchive/ -I /usr/local/include/Imath -I $SRC/jxrlib/common/include -I $SRC/jxrlib/jxrgluelib -I $SRC/jxrlib/image/sys -I /usr/include/QtCore/ -I /usr/include/QtGui/ -I . $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt6Gui -lQt6Core -lQt6BundledLibpng -lQt6BundledHarfbuzz -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_3.a /usr/local/lib/libIex-3_3.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_3.a /usr/local/lib/libOpenEXRCore-3_3.a /usr/local/lib/libOpenEXRUtil-3_3.a /usr/local/lib/libopenjp2.a /usr/local/lib/libzstd.a $SRC/jxrlib/build/libjxrglue.a $SRC/jxrlib/build/libjpegxr.a -llzma /usr/local/lib/libbz2.a -lclang_rt.builtins
 
   # -lclang_rt.builtins in the previous line is a temporary workaround to avoid a linker error "undefined reference to __truncsfhf2". Investigate why this is needed here, but not anywhere else, and possibly remove it.
 
