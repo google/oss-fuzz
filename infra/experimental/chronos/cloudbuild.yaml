@@ -14,6 +14,16 @@
 #
 ################################################################################
 # CloudBuild for generating Chronos-cached images.
+# Supports building by way of ccache now.
+# High-level steps:
+# 1) Build image for project
+# 2) Run an ASAN build and store ccache
+# 3) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 4) Build image for project and copy ccache in, storing image as *-ofg-cache-address
+# 5) Run an coverage build and store ccache
+# 6) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 7) Build image for project and copy ccache in, storing image as *-ofg-cache-coverage
+# TODO (David): add support for use of dedicated replay_build.sh
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args:
