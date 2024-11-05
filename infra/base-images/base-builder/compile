@@ -231,14 +231,18 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   exit 0
 fi
 
-#echo 'export SHELLOPTS' | cat - $SRC/build.sh > temp && mv temp $SRC/build.sh
-python3 -m pip install bashlex
-python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
+  python3 -m pip install bashlex
+  python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+fi
 #exit 0
 
 if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
   # If this is a replay, then use replay_build.sh
   BUILD_CMD="bash -eux $SRC/replay_build.sh"
+elif [[ ! -z "${REPLAY_USING_CCACHE-}" ]]; then
+  export PATH=/ccache/bin:$PATH
+  BUILD_CMD="$SRC/build.sh"
 else
   BUILD_CMD="bash -eux $SRC/build.sh"
 fi
