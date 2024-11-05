@@ -84,7 +84,7 @@ make install -j$(nproc)
 cd $SRC
 cd karchive
 rm -rf poqm
-cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
 make install -j$(nproc)
 
 # Build JXRlib
