@@ -196,7 +196,14 @@ COPY bazel.bazelrc /root/.bazelrc
 # To use this, set PATH=/ccache/bin:$PATH.
 RUN mkdir -p /ccache/bin && mkdir -p /ccache/cache && \
     ln -s /usr/local/bin/ccache /ccache/bin/clang && \
-    ln -s /usr/local/bin/ccache /ccache/bin/clang++
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++ && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang-jcc && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++-jcc
 ENV CCACHE_DIR /ccache/cache
+
+# Don't check that the compiler is the same, so we can switch between jcc and
+# clang under the hood and re-use the same build cache.
+ENV CCACHE_COMPILERCHECK none
+ENV CCACHE_COMPILERTYPE clang
 
 CMD ["compile"]
