@@ -232,15 +232,25 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
 fi
 
 if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
+  # Capture a replaying build script which can be used for replaying the build
+  # after a vanilla build. This script is meant to be used in a cached
+  # container.
   python3 -m pip install bashlex
   python3 /usr/local/bin/bash_parser.py $SRC/build.sh
 fi
 #exit 0
 
 if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
-  # If this is a replay, then use replay_build.sh
+  # If this is a replay, then use replay_build.sh. This is expected to be
+  # running in a cached container where a build has already happened prior.
   BUILD_CMD="bash -eux $SRC/replay_build.sh"
 elif [[ ! -z "${REPLAY_USING_CCACHE-}" ]]; then
+  # For ccache builds we run the regular build but with ccache compilers. For
+  # this to be successful, there needs to be a valid ccache in /ccache/cache
+  # and this is expected to be copied into the image/container prior to the
+  # compile script running.
+  # Using ccache expects a vanilla OSS-Fuzz project image (not a cached
+  # container).
   export PATH=/ccache/bin:$PATH
   BUILD_CMD="$SRC/build.sh"
 else
