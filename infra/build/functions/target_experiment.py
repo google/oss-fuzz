@@ -25,12 +25,11 @@ import google.auth
 import build_lib
 import build_project
 
-JCC_DIR = '/usr/local/bin'
-
 
 def run_experiment(project_name, target_name, args, output_path, errlog_path,
                    build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name, upload_reproducer_path, tags):
+                   experiment_name, upload_reproducer_path, tags,
+                   use_cached_image):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -61,14 +60,15 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   project_yaml['run_tests'] = False
 
   jcc_env = [
-      f'CC={JCC_DIR}/clang-jcc',
-      f'CXX={JCC_DIR}/clang++-jcc',
+      f'CC=clang-jcc',
+      f'CXX=clang++-jcc',
   ]
   steps = build_project.get_build_steps(project_name,
                                         project_yaml,
                                         dockerfile_contents,
                                         config,
-                                        additional_env=jcc_env)
+                                        additional_env=jcc_env,
+                                        use_caching=use_cached_image)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
@@ -209,6 +209,9 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   env = build_project.get_env(project_yaml['language'], build)
   env.extend(jcc_env)
 
+  if use_cached_image:
+    project.cached_sanitizer = 'coverage'
+
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
 
@@ -330,12 +333,15 @@ def main():
                       nargs='*',
                       help='Tags for cloud build.',
                       default=[])
+  parser.add_argument('--use_cached_image',
+                      action='store_true',
+                      help='Use cached images post build.')
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_err_log, args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
-                 args.upload_reproducer, args.tags)
+                 args.upload_reproducer, args.tags, args.use_cached_image)
 
 
 if __name__ == '__main__':

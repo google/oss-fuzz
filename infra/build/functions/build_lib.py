@@ -96,8 +96,9 @@ OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool-experiments')
 
-US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
-    api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
+CLOUD_BUILD_LOCATION = os.getenv('CLOUD_BUILD_LOCATION', 'us-central1')
+REGIONAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
+    api_endpoint=f'https://{CLOUD_BUILD_LOCATION}-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
@@ -603,7 +604,7 @@ def run_build(  # pylint: disable=too-many-arguments, too-many-locals
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
 
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
@@ -621,7 +622,7 @@ def wait_for_build(build_id, credentials, cloud_project):
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
 
   while True:
     try:
@@ -643,6 +644,6 @@ def cancel_build(build_id, credentials, cloud_project):
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
   cloudbuild.projects().builds().cancel(projectId=cloud_project,
                                         id=build_id).execute()

@@ -75,6 +75,7 @@ echo "detect_leaks=0" >> $OUT/fuzz_load_model.options
 
 cp $OUT/fuzz_load_model.options $OUT/fuzz_inference.options
 cp $OUT/fuzz_load_model.options $OUT/fuzz_structured.options
+cp $OUT/fuzz_load_model.options $OUT/fuzz_structurally_created.options
 cp fuzzers/llama.dict $OUT/fuzz_load_model.dict
 cp fuzzers/llama.dict $OUT/fuzz_inference.dict
 cp fuzzers/llama.dict $OUT/fuzz_grammar.dict
