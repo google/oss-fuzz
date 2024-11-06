@@ -185,9 +185,6 @@ class Project:  # pylint: disable=too-many-instance-attributes
   @property
   def image(self):
     """Returns the docker image for the project."""
-    if self.cached_sanitizer:
-      return self.cached_image(self.cached_sanitizer)
-
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
   @property
