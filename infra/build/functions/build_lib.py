@@ -406,7 +406,7 @@ def get_docker_build_step(image_names,
         for image_name in image_names
     ]
   if cache_name:
-    args.extend(['-build-arg', f'CACHE_IMAGE={cache_name}'])
+    args.extend(['--build-arg', f'CACHE_IMAGE={cache_name}'])
 
   for image_name in image_names:
     args.extend(['--tag', image_name])
