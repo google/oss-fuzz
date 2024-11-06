@@ -34,6 +34,8 @@ import tempfile
 import constants
 import templates
 
+import signal
+
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
@@ -1362,7 +1364,62 @@ def _coverage_prepare_corpus(args):
     # accuracy in fuzz target detection, i.e. we might try to run something
     # that is not a target.
     run_fuzzer(parsed_args)
+    
+
   return True
+
+def _prepare_corpus_snapshot(args):
+    parser = get_parser()
+    fuzzer_targets = _get_fuzz_targets(args.project)
+
+    for fuzzer_name in fuzzer_targets:
+        # Make a corpus directory.
+        fuzzer_corpus_dir = os.path.join(args.project.corpus, fuzzer_name)
+        if not os.path.isdir(fuzzer_corpus_dir):
+            os.makedirs(fuzzer_corpus_dir)
+
+        # Define backup base directory for this fuzzer.
+        backup_base_dir = os.path.join(args.project.corpus, fuzzer_name + '_backup')
+        if not os.path.isdir(backup_base_dir):
+            os.makedirs(backup_base_dir)
+
+        # Path to the backup script.
+        backup_script_path = os.path.join(OSS_FUZZ_DIR, 'infra', 'corpus_snapshot.sh')  # Replace with the actual path
+
+        logger.info(f"Backing up {fuzzer_name} corpus to {backup_base_dir}, Using {backup_script_path}")
+
+        # Ensure the backup script is executable.
+        os.chmod(backup_script_path, 0o755)
+
+        # Start the backup script.
+        backup_process = subprocess.Popen(
+            [backup_script_path, fuzzer_corpus_dir, backup_base_dir],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        try:
+            # Build the run_fuzzer command.
+            run_fuzzer_command = [
+                'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
+                fuzzer_corpus_dir, args.project.name, fuzzer_name
+            ]
+
+            parsed_args = parse_args(parser, run_fuzzer_command)
+            parsed_args.fuzzer_args = [
+                f'-max_total_time={args.seconds}', '-detect_leaks=0'
+            ]
+
+            # Run the fuzzer.
+            run_fuzzer(parsed_args)
+
+        finally:
+            # Terminate the backup script after the fuzzer completes.
+            backup_process.send_signal(signal.SIGTERM)
+            backup_process.wait()
+
+    return True
+
 
 def coverage_new(args):
   parser = get_parser()
@@ -1377,24 +1434,24 @@ def coverage_new(args):
     logger.error('Failed to build project with ASAN')
     return False
 
-  if not _coverage_prepare_corpus(args):
+  if not _prepare_corpus_snapshot(args):
     return False
 
-  # Build code coverage.
-  build_fuzzers_command = [
-      'build_fuzzers', '--sanitizer=coverage', args.project.name
-  ] + args_to_append
-  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
-    logger.error('Failed to build project with coverage instrumentation')
-    return False
+  # # Build code coverage.
+  # build_fuzzers_command = [
+  #     'build_fuzzers', '--sanitizer=coverage', args.project.name
+  # ] + args_to_append
+  # if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+  #   logger.error('Failed to build project with coverage instrumentation')
+  #   return False
 
-  # Collect coverage.
-  coverage_command = [
-      'coverage', '--no-corpus-download', '--port', '', args.project.name
-  ]
-  if not coverage(parse_args(parser, coverage_command)):
-    logger.error('Failed to extract coverage')
-    return False
+  # # Collect coverage.
+  # coverage_command = [
+  #     'coverage', '--no-corpus-download', '--port', '', args.project.name
+  # ]
+  # if not coverage(parse_args(parser, coverage_command)):
+  #   logger.error('Failed to extract coverage')
+  #   return False
   return True
 
 
