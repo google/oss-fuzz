@@ -358,8 +358,8 @@ def get_build_steps_for_project(project,
   # if we use caching, then we need to use the right name. We assume that
   # there is only a single sanitizer.
   if use_caching:
-    cache_image = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
-                   f'{project.name}-ofg-cached-{project.sanitizers[0]}')
+    project.cached_sanitizer=project.sanitizers[0]
+    cache_image = project.cached_image()
   else:
     cache_image = ''
   build_steps = build_lib.get_project_image_steps(
