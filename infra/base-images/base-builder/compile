@@ -245,15 +245,6 @@ if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
   # If this is a replay, then use replay_build.sh. This is expected to be
   # running in a cached container where a build has already happened prior.
   BUILD_CMD="bash -eux $SRC/replay_build.sh"
-elif [[ ! -z "${COMPILE_USING_CCACHE-}" ]]; then
-  # For ccache builds we run the regular build but with ccache compilers. For
-  # this to be successful, there needs to be a valid ccache in /ccache/cache
-  # and this is expected to be copied into the image/container prior to the
-  # compile script running.
-  # Using ccache expects a vanilla OSS-Fuzz project image (not a cached
-  # container).
-  export PATH=/ccache/bin:$PATH
-  BUILD_CMD="$SRC/build.sh"
 else
   BUILD_CMD="bash -eux $SRC/build.sh"
 fi

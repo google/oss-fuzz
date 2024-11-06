@@ -18,5 +18,5 @@
 PROJECT=$1
 {
     echo "COPY ccache-cache/ /ccache/cache";
-    echo "ENV COMPILE_USING_CCACHE=1"
+    echo "ENV PATH=/ccache/bin:$PATH"
 } >> "projects/$PROJECT/Dockerfile"
