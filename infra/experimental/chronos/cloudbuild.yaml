@@ -32,17 +32,22 @@ steps:
   - gcr.io/oss-fuzz/${_PROJECT}
   - .
   dir: projects/${_PROJECT}
+- name: ubuntu
+  args:
+    - mkdir
+    - /workspace/ccache
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
   - --entrypoint=/bin/sh
   - --env=SANITIZER=address
-  - --env=STORE_CCACHE=1
-  - --env=COMPILE_USING_CCACHE=1
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
   - --name=${_PROJECT}-origin-asan
+  - --volume=/workspace/ccache:/workspace/ccache
   - gcr.io/oss-fuzz/${_PROJECT}
   - -c
-  - "compile && rm -rf /out/*"
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
 - name: ubuntu
   args:
     - cp
@@ -52,7 +57,7 @@ steps:
 # Prepare for ccache environment
 - name: ubuntu
   args:
-  - infra/experimental/chronos/prepare-ccache
+  - /workspace/infra/experimental/chronos/prepare-ccache
   - ${_PROJECT}
 # Build the ccached instance
 - name: 'gcr.io/cloud-builders/docker'
@@ -67,19 +72,21 @@ steps:
   args:
     - rm
     - -rf
-    - projects/${_PROJECT}/ccache
+    - projects/${_PROJECT}/ccache-cache
+    - /workspace/ccache
 # Build coverage image
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
   - --entrypoint=/bin/sh
   - --env=SANITIZER=coverage
-  - --env=STORE_CCACHE=1
-  - --env=COMPILE_USING_CCACHE=1
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
   - --name=${_PROJECT}-origin-cov
+  - --volume=/workspace/ccache:/workspace/ccache
   - gcr.io/oss-fuzz/${_PROJECT}
   - -c
-  - "compile && rm -rf /out/*"
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
 - name: ubuntu
   args:
     - cp
@@ -89,7 +96,7 @@ steps:
 # Prepare for ccache environment
 - name: ubuntu
   args:
-  - infra/experimental/chronos/prepare-ccache
+  - /workspace/infra/experimental/chronos/prepare-ccache
   - ${_PROJECT}
 # Build the ccached instance
 - name: 'gcr.io/cloud-builders/docker'

@@ -280,12 +280,6 @@ else
   fi
 fi
 
-if [[ ! -z "${STORE_CCACHE-}" ]]; then
-  # Cleanup existing cache.
-  rm -rf $WORK/ccache
-  cp -rf /ccache/cache $WORK/ccache
-fi
-
 if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
