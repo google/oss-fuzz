@@ -167,7 +167,14 @@ class Project:  # pylint: disable=too-many-instance-attributes
     else:
       self.main_repo = ''
 
+    # This is set to enable build infra to use cached images (which are
+    # specific to a sanitizer).
+    # TODO: find a better way to handle this.
     self.cached_sanitizer = None
+
+    # This is used by OSS-Fuzz-Gen, which generates fake project names for each
+    # benchmark. We still need access to the real project name in some cases.
+    self.real_name = self.name
 
   @property
   def sanitizers(self):
@@ -184,7 +191,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
   def cached_image(self, sanitizer):
-    return _CACHED_IMAGE.format(name=self.name, sanitizer=sanitizer)
+    return _CACHED_IMAGE.format(name=self.real_name, sanitizer=sanitizer)
 
 
 def get_last_step_id(steps):
