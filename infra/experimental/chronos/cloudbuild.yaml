@@ -47,7 +47,7 @@ steps:
   args:
     - cp
     - -rf
-    - /workspace/ccache-cache
+    - /workspace/ccache
     - projects/${_PROJECT}/ccache-cache
 # Prepare for ccache environment
 - name: ubuntu
@@ -67,7 +67,7 @@ steps:
   args:
     - rm
     - -rf
-    - projects/${_PROJECT}/ccache-cache
+    - projects/${_PROJECT}/ccache
 # Build coverage image
 - name: 'gcr.io/cloud-builders/docker'
   args:
@@ -84,7 +84,7 @@ steps:
   args:
     - cp
     - -rf
-    - /workspace/ccache-cache
+    - /workspace/ccache
     - projects/${_PROJECT}/ccache-cache
 # Prepare for ccache environment
 - name: ubuntu
