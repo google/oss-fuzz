@@ -190,8 +190,10 @@ class Project:  # pylint: disable=too-many-instance-attributes
 
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
-  def cached_image(self, sanitizer):
-    return _CACHED_IMAGE.format(name=self.real_name, sanitizer=sanitizer)
+  @property
+  def cached_image(self):
+    return _CACHED_IMAGE.format(
+        name=self.real_name, sanitizer=self.cached_sanitizer)
 
 
 def get_last_step_id(steps):
@@ -355,13 +357,14 @@ def get_build_steps_for_project(project,
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
 
-  # if we use caching, then we need to use the right name. We assume that
+  # If we use caching, then we need to use the right name. We assume that
   # there is only a single sanitizer.
   if use_caching:
-    project.cached_sanitizer=project.sanitizers[0]
-    cache_image = project.cached_image()
+    project.cached_sanitizer = project.sanitizers[0]
+    cache_image = project.cached_image
   else:
-    cache_image = ''
+    cache_image = None
+
   build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,

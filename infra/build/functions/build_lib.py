@@ -442,7 +442,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     config,
     architectures=None,
     experiment=False,
-    cache_image=''):
+    cache_image=None):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
