@@ -443,7 +443,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_architecture_args(coverage_parser)
 
   coverage_new_parser = subparsers.add_parser(
-      'coverage-new', help='Generate code coverage report for the project.')
+      'coverage-new', help='Collect the coverage at each 10-minute fuzzing itervals.')
   coverage_new_parser.add_argument('--no-corpus-download',
                                action='store_true',
                                help='do not download corpus backup from '
@@ -1269,7 +1269,7 @@ def download_corpora(args):
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
-def coverage(args):  # pylint: disable=too-many-branches
+def coverage(args, snapshot=False):  # pylint: disable=too-many-branches
   """Generates code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
     logger.error(
@@ -1331,7 +1331,7 @@ def coverage(args):  # pylint: disable=too-many-branches
       BASE_RUNNER_IMAGE,
   ])
 
-  run_args.append('coverage')
+  run_args.append('coverage' if not snapshot else 'coverage_snapshot')
   if args.fuzz_target:
     run_args.append(args.fuzz_target)
 
@@ -1407,7 +1407,7 @@ def _prepare_corpus_snapshot(args):
 
             parsed_args = parse_args(parser, run_fuzzer_command)
             parsed_args.fuzzer_args = [
-                f'-max_total_time={args.seconds}', '-detect_leaks=0'
+                f'-max_total_time={args.seconds}', '-detect_leaks=0', '-reduce_inputs=1'
             ]
 
             # Run the fuzzer.
@@ -1417,6 +1417,9 @@ def _prepare_corpus_snapshot(args):
             # Terminate the backup script after the fuzzer completes.
             backup_process.send_signal(signal.SIGTERM)
             backup_process.wait()
+
+            # remove the fuzzer_corpus_dir
+            shutil.rmtree(fuzzer_corpus_dir)
 
     return True
 
@@ -1437,21 +1440,21 @@ def coverage_new(args):
   if not _prepare_corpus_snapshot(args):
     return False
 
-  # # Build code coverage.
-  # build_fuzzers_command = [
-  #     'build_fuzzers', '--sanitizer=coverage', args.project.name
-  # ] + args_to_append
-  # if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
-  #   logger.error('Failed to build project with coverage instrumentation')
-  #   return False
+  # Build code coverage.
+  build_fuzzers_command = [
+      'build_fuzzers', '--sanitizer=coverage', args.project.name
+  ] + args_to_append
+  if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
+    logger.error('Failed to build project with coverage instrumentation')
+    return False
 
-  # # Collect coverage.
-  # coverage_command = [
-  #     'coverage', '--no-corpus-download', '--port', '', args.project.name
-  # ]
-  # if not coverage(parse_args(parser, coverage_command)):
-  #   logger.error('Failed to extract coverage')
-  #   return False
+  # Collect coverage.
+  coverage_command = [
+      'coverage', '--no-corpus-download', '--port', '', args.project.name
+  ]
+  if not coverage(parse_args(parser, coverage_command), snapshot=True):
+    logger.error('Failed to extract coverage')
+    return False
   return True
 
 

@@ -102,6 +102,7 @@ ENV GEM_PATH="/install/ruzzy"
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     coverage \
+    coverage_snapshot \
     coverage_helper \
     download_corpus \
     jacoco_report_converter.py \
