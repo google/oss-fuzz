@@ -55,14 +55,6 @@ def run_experiment(project_name,
     logging.error('Couldn\'t get project data. Skipping %s.', project_name)
     return
 
-  project = build_project.Project(project_name, project_yaml,
-                                  dockerfile_contents)
-
-  if real_project_name:
-    # If the passed project name is not the actual OSS-Fuzz project name (e.g.
-    # OSS-Fuzz-Gen generated benchmark), record the real one here.
-    project.real_name = real_project_name
-
   # Override sanitizers and engine because we only care about libFuzzer+ASan
   # for benchmarking purposes.
   build_project.set_yaml_defaults(project_yaml)
@@ -72,17 +64,20 @@ def run_experiment(project_name,
 
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
+  project = build_project.Project(project_name, project_yaml,
+                                  dockerfile_contents)
+
+  if real_project_name:
+    # If the passed project name is not the actual OSS-Fuzz project name (e.g.
+    # OSS-Fuzz-Gen generated benchmark), record the real one here.
+    project.real_name = real_project_name
 
   jcc_env = [
       f'CC=clang-jcc',
       f'CXX=clang++-jcc',
   ]
-  steps = build_project.get_build_steps(project_name,
-                                        project_yaml,
-                                        dockerfile_contents,
-                                        config,
-                                        additional_env=jcc_env,
-                                        use_caching=use_cached_image)
+  steps = build_project.get_build_steps_for_project(
+      project, config, additional_env=jcc_env, use_caching=use_cached_image)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
