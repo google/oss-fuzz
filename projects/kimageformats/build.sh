@@ -68,13 +68,6 @@ cd qtbase
 cmake --build . --parallel $(nproc)
 cmake --install .
 
-cd $SRC
-cd qttools
-git submodule update --init --recursive
-/usr/bin/qt-configure-module .
-cmake --build . --parallel $(nproc)
-cmake --install .
-
 # Build extra-cmake-modules
 cd $SRC
 cd extra-cmake-modules
