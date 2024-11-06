@@ -78,7 +78,7 @@ cmake --install .
 # Build extra-cmake-modules
 cd $SRC
 cd extra-cmake-modules
-cmake .
+cmake . -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
 cd $SRC
