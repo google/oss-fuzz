@@ -358,10 +358,10 @@ def get_build_steps_for_project(project,
   # if we use caching, then we need to use the right name. We assume that
   # there is only a single sanitizer.
   if use_caching:
-    cache_name = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
-                  f'{project.name}-ofg-cached-{project.sanitizers[0]}')
+    cache_image = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
+                   f'{project.name}-ofg-cached-{project.sanitizers[0]}')
   else:
-    cache_name = ''
+    cache_image = ''
   build_steps = build_lib.get_project_image_steps(
       project.name,
       project.image,
@@ -369,7 +369,7 @@ def get_build_steps_for_project(project,
       config=config,
       architectures=project.architectures,
       experiment=config.experiment,
-      cache_name=cache_name)
+      cache_image=cache_image)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.

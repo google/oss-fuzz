@@ -388,7 +388,7 @@ def get_docker_build_step(image_names,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64',
-                          cache_name=''):
+                          cache_image=''):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -405,7 +405,7 @@ def get_docker_build_step(image_names,
         _make_image_name_architecture_specific(image_name, architecture)
         for image_name in image_names
     ]
-  if cache_name:
+  if cache_image:
     args.extend(['--build-arg', f'CACHE_IMAGE={cache_name}'])
 
   for image_name in image_names:
@@ -442,7 +442,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     config,
     architectures=None,
     experiment=False,
-    cache_name=''):
+    cache_image=''):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
@@ -462,7 +462,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name),
                                             src_root=src_root,
-                                            cache_name=cache_name)
+                                            cache_image=cache_image)
   steps.append(docker_build_step)
   srcmap_step_id = get_srcmap_step_id()
   steps.extend([{
