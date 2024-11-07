@@ -354,22 +354,19 @@ def get_build_steps_for_project(project,
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
 
-  # If we use caching, then we need to use the right name. We assume that
-  # there is only a single sanitizer.
   if use_caching:
-    project.cached_sanitizer = project.sanitizers[0]
-    cache_image = project.cached_image
+    # For cached builds: the cache images are sanitizer-specific, so we need to
+    # do a rebuild prior to each compile.
+    build_steps = []
   else:
-    cache_image = None
-
-  build_steps = build_lib.get_project_image_steps(
-      project.name,
-      project.image,
-      project.fuzzing_language,
-      config=config,
-      architectures=project.architectures,
-      experiment=config.experiment,
-      cache_image=cache_image)
+    # Non-cached builds just use a single builder image to build all sanitizers.
+    build_steps = build_lib.get_project_image_steps(
+        project.name,
+        project.image,
+        project.fuzzing_language,
+        config=config,
+        architectures=project.architectures,
+        experiment=config.experiment)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -379,6 +376,15 @@ def get_build_steps_for_project(project,
     for sanitizer in sorted(project.sanitizers):
       if use_caching and sanitizer in _CACHED_SANITIZERS:
         project.cached_sanitizer = sanitizer
+        build_steps.append(
+            build_lib.get_project_image_steps(
+                project.name,
+                project.image,
+                project.fuzzing_language,
+                config=config,
+                architectures=project.architectures,
+                experiment=config.experiment,
+                cache_image=project.cached_image))
 
       # Build x86_64 before i386.
       for architecture in reversed(sorted(project.architectures)):
