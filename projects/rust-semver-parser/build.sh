@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,7 @@
 #
 ################################################################################
 
-# Build all C/C++ projects.
-c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
-projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+cargo fuzz build
 
-cd infra/experimental/chronos
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/
 
-for proj in $projs; do
-  echo ./build_on_cloudbuild.sh $proj c
-  ./build_on_cloudbuild.sh $proj c
-done

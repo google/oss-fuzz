@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-# Build all C/C++ projects.
-c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
-projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+RUN git clone https://github.com/steveklabnik/semver-parser
+WORKDIR $SRC/semver-parser
 
-cd infra/experimental/chronos
-
-for proj in $projs; do
-  echo ./build_on_cloudbuild.sh $proj c
-  ./build_on_cloudbuild.sh $proj c
-done
+COPY build.sh $SRC/

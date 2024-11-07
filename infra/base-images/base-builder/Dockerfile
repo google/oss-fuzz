@@ -47,6 +47,16 @@ RUN export PYTHON_DEPS="\
     rm -rf /usr/local/lib/python3.8/test && \
     apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
+
+ENV CCACHE_VERSION 4.10.2
+RUN cd /tmp && curl -OL https://github.com/ccache/ccache/releases/download/v$CCACHE_VERSION/ccache-$CCACHE_VERSION.tar.xz && \
+    tar -xvf ccache-$CCACHE_VERSION.tar.xz && cd ccache-$CCACHE_VERSION && \
+    mkdir build && cd build && \
+    export LDFLAGS='-lpthread' && \
+    cmake -D CMAKE_BUILD_TYPE=Release .. && \
+    make -j && make install && \
+    rm -rf /tmp/ccache-$CCACHE_VERSION /tmp/ccache-$CCACHE_VERSION.tar.xz
+
 # Install six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
     six==1.15.0 && rm -rf /tmp/*
@@ -165,6 +175,7 @@ COPY bazel_build_fuzz_tests \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \
+    bash_parser.py \
     srcmap \
     write_labels.py \
     /usr/local/bin/
@@ -179,5 +190,21 @@ RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc
+
+# Set up ccache binary and cache directory.
+# /ccache/bin will contain the compiler wrappers, and /ccache/cache will
+# contain the actual cache, which can be saved.
+# To use this, set PATH=/ccache/bin:$PATH.
+RUN mkdir -p /ccache/bin && mkdir -p /ccache/cache && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++ && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang-jcc && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++-jcc
+ENV CCACHE_DIR /ccache/cache
+
+# Don't check that the compiler is the same, so we can switch between jcc and
+# clang under the hood and re-use the same build cache.
+ENV CCACHE_COMPILERCHECK none
+ENV CCACHE_COMPILERTYPE clang
 
 CMD ["compile"]
