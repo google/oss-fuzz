@@ -461,10 +461,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
 
   steps.append({
       'name': 'ubuntu',
-      'args': [
-          'bash', '-c',
-          f'cat {src_root}/projects/{name}/Dockerfile'
-      ],
+      'args': ['bash', '-c', f'cat {src_root}/projects/{name}/Dockerfile'],
   })
 
   docker_build_step = get_docker_build_step([image],

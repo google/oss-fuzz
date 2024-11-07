@@ -189,8 +189,8 @@ class Project:  # pylint: disable=too-many-instance-attributes
 
   @property
   def cached_image(self):
-    return _CACHED_IMAGE.format(
-        name=self.real_name, sanitizer=self.cached_sanitizer)
+    return _CACHED_IMAGE.format(name=self.real_name,
+                                sanitizer=self.cached_sanitizer)
 
 
 def get_last_step_id(steps):
