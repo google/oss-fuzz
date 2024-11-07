@@ -438,50 +438,22 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   classes_dir=$DUMPS_DIR/classes
   mkdir $classes_dir
 
-  # Copy fuzzers classes
-  cp $OUT/*.class $classes_dir
+  # Only copy class files found in $OUT/$SRC to ensure they are
+  # lively compiled from the project, avoiding inclusion of
+  # dependency classes. This also includes the fuzzer classes.
+  find "$OUT/$SRC" -type f -name "*.class" | while read -r class_file; do
+    # Skip module-info.class
+    if [[ "$(basename "$class_file")" == "module-info.class" ]]; then
+        continue
+    fi
 
-  # Dump classes in jar file to dump directory. This action includes all
-  # the classes of the project that are not executed by the fuzzers to
-  # the dump directory. Duplicate classes in the dump directory will be
-  # overwritten. We need to do this to include all possible classes in
-  # the coverage report and avoid duplicate classes from different jar
-  # files which jacoco fails to handle.
-  for jar_file in $(ls $OUT/*.jar)
-  do
-    if [[ $jar_file != $OUT/jazzer* ]]
-    then
-      tempdir=$(mktemp -d)
-      pushd $tempdir
-      jar xvf $jar_file
-
-      # Only copy class files found in $OUT/$SRC to ensure they are
-      # lively compiled from the project, avoiding inclusion of
-      # dependency classes. This also includes the fuzzer classes.
-      find . -type f -name "*.class" | while read -r class_file; do
-        if find $OUT$SRC -type f -name $(basename $class_file) | grep -q $class_file
-        then
-          echo "Including: $class_file"
-          rsync --relative $class_file $classes_dir
-        fi
-      done
-
-      popd
-      rm -r $tempdir
+    # Use javap to extract the fully qualified name of the class and copy it to $classes_dir
+    fqn=$(javap -verbose "$class_file" 2>/dev/null | grep "this_class:" | grep -oP '(?<=// ).*')
+    if [ -n "$fqn" ]; then
+      mkdir -p $classes_dir/$(dirname $fqn)
+      cp $class_file $classes_dir/$fqn.class
     fi
   done
-
-  # Clean up files that can create duplicate class names which breaks Jacoco.
-  # Remove META-INF folder because some jar may store duplications of the same
-  # class file in the META-INF for other java versions.
-  find $classes_dir -name "META-INF" | xargs rm -rf
-  # Remove all files that are not a java class because some jar may contain
-  # Kotlin class which has the same name as a java class and Jacoco fail to
-  # distinguish them.
-  find $classes_dir -type f -not -name "*.class" | xargs rm -f
-  # Remove all class files which have a dot in their file name which are normally
-  # used to name a duplication of the legitimate class file.
-  find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.
