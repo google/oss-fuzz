@@ -220,7 +220,7 @@ def run_experiment(project_name,
 
   if use_cached_image:
     project.cached_sanitizer = 'coverage'
-    steps.append(
+    steps.extend(
         build_lib.get_project_image_steps(project.name,
                                           project.image,
                                           project.fuzzing_language,

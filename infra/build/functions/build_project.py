@@ -376,7 +376,7 @@ def get_build_steps_for_project(project,
     for sanitizer in sorted(project.sanitizers):
       if use_caching and sanitizer in _CACHED_SANITIZERS:
         project.cached_sanitizer = sanitizer
-        build_steps.append(
+        build_steps.extend(
             build_lib.get_project_image_steps(
                 project.name,
                 project.image,
