@@ -1407,7 +1407,7 @@ def _prepare_corpus_snapshot(args):
 
             parsed_args = parse_args(parser, run_fuzzer_command)
             parsed_args.fuzzer_args = [
-                f'-max_total_time={args.seconds}', '-detect_leaks=0', '-reduce_inputs=1'
+                f'-max_total_time={args.seconds}', '-detect_leaks=0', '-reduce_inputs=1', '-fork=4', '-ignore_crashes=1'
             ]
 
             # Run the fuzzer.
