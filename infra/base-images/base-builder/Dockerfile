@@ -175,6 +175,7 @@ COPY bazel_build_fuzz_tests \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \
+    bash_parser.py \
     srcmap \
     write_labels.py \
     /usr/local/bin/

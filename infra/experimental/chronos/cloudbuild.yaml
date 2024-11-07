@@ -14,13 +14,17 @@
 #
 ################################################################################
 # CloudBuild for generating Chronos-cached images.
+# Supports building by way of ccache now.
+# High-level steps:
+# 1) Build image for project
+# 2) Run an ASAN build and store ccache
+# 3) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 4) Build image for project and copy ccache in, storing image as *-ofg-cache-address
+# 5) Run an coverage build and store ccache
+# 6) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 7) Build image for project and copy ccache in, storing image as *-ofg-cache-coverage
+# TODO (David): add support for use of dedicated replay_build.sh
 steps:
-- name: ubuntu
-  args:
-  - infra/experimental/chronos/prepare-recompile
-  - ${_PROJECT}
-  - ${_FUZZ_TARGET}
-  - ${_FUZZING_LANGUAGE}
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - build
@@ -28,42 +32,80 @@ steps:
   - gcr.io/oss-fuzz/${_PROJECT}
   - .
   dir: projects/${_PROJECT}
+- name: ubuntu
+  args:
+    - mkdir
+    - /workspace/ccache
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
   - --entrypoint=/bin/sh
   - --env=SANITIZER=address
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
   - --name=${_PROJECT}-origin-asan
+  - --volume=/workspace/ccache:/workspace/ccache
   - gcr.io/oss-fuzz/${_PROJECT}
   - -c
-  - "compile && rm -rf /out/*"
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
+- name: ubuntu
+  args:
+    - cp
+    - -rf
+    - /workspace/ccache
+    - projects/${_PROJECT}/ccache-cache
+# Prepare for ccache environment
+- name: ubuntu
+  args:
+  - /workspace/infra/experimental/chronos/prepare-ccache
+  - ${_PROJECT}
+# Build the ccached instance
 - name: 'gcr.io/cloud-builders/docker'
   args:
-  - commit
-  - '--change'
-  - 'CMD ["/usr/local/bin/recompile"]'
-  - '--change'
-  - 'ENTRYPOINT ["/bin/sh", "-c"]'
-  - ${_PROJECT}-origin-asan
+  - build
+  - -t
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+  - .
+  dir: projects/${_PROJECT}
+# Cleanup the ccache stored in the project folder
+- name: ubuntu
+  args:
+    - rm
+    - -rf
+    - projects/${_PROJECT}/ccache-cache
+    - /workspace/ccache
+# Build coverage image
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - run
   - --entrypoint=/bin/sh
   - --env=SANITIZER=coverage
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
   - --name=${_PROJECT}-origin-cov
+  - --volume=/workspace/ccache:/workspace/ccache
   - gcr.io/oss-fuzz/${_PROJECT}
   - -c
-  - "compile && rm -rf /out/*"
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
+- name: ubuntu
+  args:
+    - cp
+    - -rf
+    - /workspace/ccache
+    - projects/${_PROJECT}/ccache-cache
+# Prepare for ccache environment
+- name: ubuntu
+  args:
+  - /workspace/infra/experimental/chronos/prepare-ccache
+  - ${_PROJECT}
+# Build the ccached instance
 - name: 'gcr.io/cloud-builders/docker'
   args:
-  - commit
-  - '--change'
-  - 'CMD ["/usr/local/bin/recompile"]'
-  - '--change'
-  - 'ENTRYPOINT ["/bin/sh", "-c"]'
-  - ${_PROJECT}-origin-cov
+  - build
+  - -t
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
+  - .
+  dir: projects/${_PROJECT}
 images:
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
