@@ -28,7 +28,6 @@ using iter::compress;
 using iter::cycle;
 using iter::groupby;
 
-
 void FuzzChained(const uint8_t *data, size_t size) {
   FuzzedDataProvider fdp(data, size);
   std::vector<char> v;
