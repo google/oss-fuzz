@@ -185,13 +185,12 @@ class Project:  # pylint: disable=too-many-instance-attributes
   @property
   def image(self):
     """Returns the docker image for the project."""
-    if self.cached_sanitizer:
-      return self.cached_image(self.cached_sanitizer)
-
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
 
-  def cached_image(self, sanitizer):
-    return _CACHED_IMAGE.format(name=self.real_name, sanitizer=sanitizer)
+  @property
+  def cached_image(self):
+    return _CACHED_IMAGE.format(name=self.real_name,
+                                sanitizer=self.cached_sanitizer)
 
 
 def get_last_step_id(steps):
@@ -354,17 +353,23 @@ def get_build_steps_for_project(project,
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
+
+  # If we use caching, then we need to use the right name. We assume that
+  # there is only a single sanitizer.
   if use_caching:
-    # Use cached built image.
-    build_steps = []
+    project.cached_sanitizer = project.sanitizers[0]
+    cache_image = project.cached_image
   else:
-    build_steps = build_lib.get_project_image_steps(
-        project.name,
-        project.image,
-        project.fuzzing_language,
-        config=config,
-        architectures=project.architectures,
-        experiment=config.experiment)
+    cache_image = None
+
+  build_steps = build_lib.get_project_image_steps(
+      project.name,
+      project.image,
+      project.fuzzing_language,
+      config=config,
+      architectures=project.architectures,
+      experiment=config.experiment,
+      cache_image=cache_image)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
