@@ -17,6 +17,10 @@ while true; do
     # Wait for 10 seconds before the next backup
     sleep 10
 
+    if [ -z "$(ls -A $CORPUS_DIR)" ]; then
+        continue
+    fi
+
     # Get the current timestamp
     TIMESTAMP=$(date +"%Y%m%d%H%M%S")
 
