@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash -eux
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,21 @@
 #
 ################################################################################
 
-# Build all C/C++ projects.
-c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
-projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+CMP1=$1
+CMP2=$2
 
-cd infra/experimental/chronos
+for exec1 in $(find $CMP1/ -type f -executable); do
+  base=$(basename $exec1)
 
-for proj in $projs; do
-  echo ./build_on_cloudbuild.sh $proj c
-  ./build_on_cloudbuild.sh $proj c
+  exec2=$CMP2/${base}
+  if [ ! -f ${exec2} ]; then
+    exit 1
+  fi
+
+  comparison=$(cmp --silent $exec1 $exec2; echo $?)
+  if [[ $comparison -ne 0 ]]; then
+    exit 1
+  fi
 done
+
+exit 0

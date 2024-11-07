@@ -231,7 +231,23 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   exit 0
 fi
 
-BUILD_CMD="bash -eux $SRC/build.sh"
+
+if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
+  # Capture a replaying build script which can be used for replaying the build
+  # after a vanilla build. This script is meant to be used in a cached
+  # container.
+  python3 -m pip install bashlex
+  python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+fi
+
+# Prepare the build command to run the project's build script.
+if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
+  # If this is a replay, then use replay_build.sh. This is expected to be
+  # running in a cached container where a build has already happened prior.
+  BUILD_CMD="bash -eux $SRC/replay_build.sh"
+else
+  BUILD_CMD="bash -eux $SRC/build.sh"
+fi
 
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
 set +u
