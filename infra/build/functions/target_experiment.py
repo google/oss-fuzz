@@ -220,6 +220,15 @@ def run_experiment(project_name,
 
   if use_cached_image:
     project.cached_sanitizer = 'coverage'
+    steps.extend(
+        build_lib.get_project_image_steps(project.name,
+                                          project.image,
+                                          project.fuzzing_language,
+                                          config=config,
+                                          architectures=project.architectures,
+                                          experiment=config.experiment,
+                                          cache_image=project.cached_image,
+                                          srcmap=False))
 
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))

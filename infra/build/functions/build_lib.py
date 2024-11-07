@@ -442,7 +442,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     config,
     architectures=None,
     experiment=False,
-    cache_image=None):
+    cache_image=None,
+    srcmap=True):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
@@ -459,29 +460,25 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
 
-  steps.append({
-      'name': 'ubuntu',
-      'args': ['bash', '-c', f'cat {src_root}/projects/{name}/Dockerfile'],
-  })
-
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name),
                                             src_root=src_root,
                                             cache_image=cache_image)
   steps.append(docker_build_step)
-  srcmap_step_id = get_srcmap_step_id()
-  steps.extend([{
-      'name': image,
-      'args': [
-          'bash', '-c',
-          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-      ],
-      'env': [
-          'OSSFUZZ_REVISION=$REVISION_ID',
-          'FUZZING_LANGUAGE=%s' % language,
-      ],
-      'id': srcmap_step_id
-  }])
+  if srcmap:
+    srcmap_step_id = get_srcmap_step_id()
+    steps.extend([{
+        'name': image,
+        'args': [
+            'bash', '-c',
+            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+        ],
+        'env': [
+            'OSSFUZZ_REVISION=$REVISION_ID',
+            'FUZZING_LANGUAGE=%s' % language,
+        ],
+        'id': srcmap_step_id
+    }])
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
