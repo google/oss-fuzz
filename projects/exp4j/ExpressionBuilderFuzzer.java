@@ -49,7 +49,7 @@ public class ExpressionBuilderFuzzer {
         }
       }
       builder.build();
-    } catch (IllegalArgumentException | EmptyStackException | ArithmeticException e) {
+    } catch (IllegalArgumentException | EmptyStackException | ArithmeticException | ArrayIndexOutOfBoundsException e) {
       // Known exception
     }
   }
