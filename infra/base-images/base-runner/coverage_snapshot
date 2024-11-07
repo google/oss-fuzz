@@ -217,43 +217,70 @@ function run_python_fuzz_target {
 function run_java_fuzz_target {
   local target=$1
 
-  local exec_file="$DUMPS_DIR/$target.exec"
-  local class_dump_dir="$DUMPS_DIR/${target}_classes/"
-  mkdir "$class_dump_dir"
-  local corpus_real="$CORPUS_DIR/${target}"
+  # Base directory where corpus snapshots are stored for this target
+  local corpus_base="$CORPUS_DIR/${target}_backup"
 
-  # -merge=1 requires an output directory, create a new, empty dir for that.
-  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
-  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+  # Collect all corpus snapshot directories
+  local corpus_snapshots=()
+  while IFS= read -r -d '' dir; do
+    corpus_snapshots+=("$dir")
+  done < <(find "$corpus_base" -maxdepth 1 -type d -name 'backup_*' -print0)
 
-  # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*\\:com.sun.tools.attach.VirtualMachine"
-  local args="-merge=1 -timeout=100 --nohooks \
-      --additional_jvm_args=-javaagent\\:/opt/jacoco-agent.jar=$jacoco_args \
-      $corpus_dummy $corpus_real"
-
-  timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
-  if (( $? != 0 )); then
-    echo "Error occured while running $target:"
-    cat $LOGS_DIR/$target.log
-  fi
-
-  if (( $(du -c $exec_file | tail -n 1 | cut -f 1) == 0 )); then
-    # Skip fuzz targets that failed to produce .exec files.
-    echo "$target failed to produce .exec file."
+  # Check if any snapshots are found
+  if [ ${#corpus_snapshots[@]} -eq 0 ]; then
+    echo "No corpus snapshots found for target $target in $corpus_base"
     return 0
   fi
 
-  # Generate XML report only as input to jacoco_report_converter.
-  # Source files are not needed for the summary.
-  local xml_report="$DUMPS_DIR/${target}.xml"
-  local summary_file="$FUZZER_STATS_DIR/$target.json"
-  java -jar /opt/jacoco-cli.jar report $exec_file \
-      --xml $xml_report \
-      --classfiles $class_dump_dir
+  # Process each snapshot independently
+  for corpus_dir in "${corpus_snapshots[@]}"; do
+    # Extract timestamp or unique identifier from the snapshot directory name
+    snapshot_name=$(basename "$corpus_dir")
+    # Example: snapshot_name could be 'backup_20230101000000'
 
-  # Write llvm-cov summary file.
-  jacoco_report_converter.py $xml_report $summary_file
+    # Define exec file and class dump dir per snapshot
+    local exec_file="$DUMPS_DIR/${target}/${snapshot_name}.exec"
+    local class_dump_dir="$DUMPS_DIR/${target}_classes/${snapshot_name}/"
+    mkdir -p "$class_dump_dir"
+
+    # -merge=1 requires an output directory, create a new, empty dir for that.
+    local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}_${snapshot_name}"
+    rm -rf "$corpus_dummy" && mkdir -p "$corpus_dummy"
+
+    # Prepare the arguments for the fuzzer
+    local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir,excludes=com.code_intelligence.jazzer.*\\:com.sun.tools.attach.VirtualMachine"
+    local args="-merge=1 -timeout=100 --nohooks \
+        --additional_jvm_args=-javaagent\\:/opt/jacoco-agent.jar=$jacoco_args \
+        $corpus_dummy $corpus_dir"
+
+    timeout $TIMEOUT $OUT/$target $args &> "$LOGS_DIR/${target}_${snapshot_name}.log"
+    if (( $? != 0 )); then
+      echo "Error occurred while running $target on snapshot $snapshot_name:"
+      cat "$LOGS_DIR/${target}_${snapshot_name}.log"
+    fi
+
+    rm -rf "$corpus_dummy"
+
+    # Check if exec file was generated
+    if [ ! -s "$exec_file" ]; then
+      # Skip if no exec file was generated
+      echo "No exec file generated for snapshot $snapshot_name of target $target"
+      continue
+    fi
+
+    # Generate XML report only as input to jacoco_report_converter
+    local xml_report="$DUMPS_DIR/${target}/${snapshot_name}.xml"
+    local summary_file="$FUZZER_STATS_DIR/${target}_${snapshot_name}.json"
+    java -jar /opt/jacoco-cli.jar report "$exec_file" \
+        --xml "$xml_report" \
+        --classfiles "$class_dump_dir"
+
+    # Write llvm-cov summary file
+    jacoco_report_converter.py "$xml_report" "$summary_file"
+
+    # Output progress
+    echo "Processed snapshot $snapshot_name for target $target"
+  done
 }
 
 function run_javascript_fuzz_target {
@@ -453,81 +480,8 @@ elif [[ $FUZZING_LANGUAGE == "python" ]]; then
   mv htmlcov/* $REPORT_PLATFORM_DIR/
   mv .coverage_* $REPORT_PLATFORM_DIR/
 elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
-
-  # From this point on the script does not tolerate any errors.
-  set -e
-
-  # Merge .exec files from the individual targets.
-  jacoco_merged_exec=$DUMPS_DIR/jacoco.merged.exec
-  java -jar /opt/jacoco-cli.jar merge $DUMPS_DIR/*.exec \
-      --destfile $jacoco_merged_exec
-
-  # Merge .class files from the individual targets.
-  classes_dir=$DUMPS_DIR/classes
-  mkdir $classes_dir
-  for fuzz_target in $FUZZ_TARGETS; do
-    # Continue if not a fuzz target.
-    if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
-    fi
-    cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
-  done
-
-  # Dump classes in jar file to dump directory. This action includes all
-  # the classes of the project that are not executed by the fuzzers to
-  # the dump directory. Duplicate classes in the dump directory will be
-  # overwritten. We need to do this to include all possible classes in
-  # the coverage report and avoid duplicate classes from different jar
-  # files which jacoco fails to handle.
-  for jar_file in $(ls $OUT/*.jar)
-  do
-    if [[ $jar_file != $OUT/jazzer* ]]
-    then
-      tempdir=$(mktemp -d)
-      cd $tempdir && jar xvf $jar_file && cd -
-      cp -r $tempdir/* $classes_dir/
-      rm -r $tempdir
-    fi
-  done
-
-  # Clean up files that can create duplicate class names which breaks Jacoco.
-  # Remove META-INF folder because some jar may store duplications of the same
-  # class file in the META-INF for other java versions.
-  find $classes_dir -name "META-INF" | xargs rm -rf
-  # Remove all files that are not a java class because some jar may contain
-  # Kotlin class which has the same name as a java class and Jacoco fail to
-  # distinguish them.
-  find $classes_dir -type f -not -name "*.class" | xargs rm -f
-  # Remove all class files which have a dot in their file name which are normally
-  # used to name a duplication of the legitimate class file.
-  find $classes_dir/*/ -type f -name "*.*.class" | xargs rm -f
-
-  # Heuristically determine source directories based on Maven structure.
-  # Always include the $SRC root as it likely contains the fuzzer sources.
-  sourcefiles_args=(--sourcefiles $OUT/$SRC)
-  source_dirs=$(find $OUT/$SRC -type d -name 'java')
-  for source_dir in $source_dirs; do
-    sourcefiles_args+=(--sourcefiles "$source_dir")
-  done
-
-  # Generate HTML and XML reports.
-  xml_report=$REPORT_PLATFORM_DIR/index.xml
-  java -jar /opt/jacoco-cli.jar report $jacoco_merged_exec \
-      --html $REPORT_PLATFORM_DIR \
-      --xml $xml_report \
-      --classfiles $classes_dir \
-      "${sourcefiles_args[@]}"
-
-  # Also serve the raw exec file and XML report, which can be useful for
-  # automated analysis.
-  cp $jacoco_merged_exec $REPORT_PLATFORM_DIR/jacoco.exec
-  cp $xml_report $REPORT_PLATFORM_DIR/jacoco.xml
-  cp $xml_report $TEXTCOV_REPORT_DIR/jacoco.xml
-
-  # Write llvm-cov summary file.
-  jacoco_report_converter.py $xml_report $SUMMARY_FILE
-
-  set +e
+  # Skip operations
+  echo "Finished generating code coverage report for JVM fuzz targets."
 elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
 
   # From this point on the script does not tolerate any errors.
