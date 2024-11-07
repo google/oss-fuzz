@@ -22,9 +22,6 @@ projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
 cd infra/experimental/chronos
 
 for proj in $projs; do
-    fuzz_target=$(curl -s "https://introspector.oss-fuzz.com/api/harness-source-and-executable?project=$proj" | jq --raw-output '.pairs[0].executable')
-    if [ "$fuzz_target" != null ]; then
-        echo ./build_on_cloudbuild.sh $proj $fuzz_target c
-        ./build_on_cloudbuild.sh $proj $fuzz_target c
-    fi
+  echo ./build_on_cloudbuild.sh $proj c
+  ./build_on_cloudbuild.sh $proj c
 done

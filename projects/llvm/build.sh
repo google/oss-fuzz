@@ -39,7 +39,6 @@ else
       llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
-      clang-pseudo-fuzzer \
       clang-fuzzer \
       llvm-parse-assembly-fuzzer \
       llvm-symbol-reader-fuzzer \
@@ -61,7 +60,6 @@ else
       llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
-      clang-pseudo-fuzzer \
       clang-fuzzer \
       clangd-fuzzer \
       llvm-parse-assembly-fuzzer \
@@ -75,7 +73,6 @@ readonly CLANG_DICT_FUZZERS=( \
   clang-fuzzer \
   clang-format-fuzzer \
   clang-objc-fuzzer \
-  clang-pseudo-fuzzer \
 )
 
 case $SANITIZER in

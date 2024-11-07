@@ -17,13 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y openssl libssl-dev git make cmake libssl-dev 
 RUN git clone --depth 1 https://github.com/pocoproject/poco
+RUN cp $SRC/poco/build/script/oss-fuzz-build.sh $SRC/build.sh
 WORKDIR $SRC/poco
-COPY build.sh \
-     json_parse_fuzzer.cc \
-     xml_parse_fuzzer.cc \
-     date_time_fuzzer.cc \
-     jwt_decode_fuzzer.cc \
-     http_message_fuzzer.cc \
-     mail_message_fuzzer.cc \
-     xml.dict \
-     $SRC/
