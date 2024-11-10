@@ -44,7 +44,6 @@ xxd -i models/ggml-vocab-baichuan.gguf > model_header_baichuan.h
 xxd -i models/ggml-vocab-deepseek-coder.gguf > model_header_deepseek_coder.h
 xxd -i models/ggml-vocab-falcon.gguf > model_header_falcon.h
 
-OBJ_FILES="ggml/src/llamafile/sgemm.o ggml/src/ggml.o ggml/src/ggml-alloc.o ggml/src/ggml-backend.o ggml/src/ggml-quants.o ggml/src/ggml-aarch64.o src/llama.o src/llama-vocab.o src/llama-grammar.o src/llama-sampling.o src/unicode.o src/unicode-data.o common/common.o common/log.o common/console.o common/ngram-cache.o common/sampling.o common/build-info.o common/json-schema-to-grammar.o"
 OBJ_FILES="ggml/src/llamafile/sgemm.o ggml/src/ggml-amx.o ggml/src/ggml-amx/mmq.o ggml/src/ggml.o ggml/src/ggml-cpu.o ggml/src/ggml-alloc.o ggml/src/ggml-backend.o ggml/src/ggml-quants.o ggml/src/ggml-aarch64.o src/llama.o src/llama-vocab.o src/llama-grammar.o src/llama-sampling.o src/unicode.o src/unicode-data.o common/common.o common/arg.o common/log.o common/console.o common/ngram-cache.o common/sampling.o common/build-info.o common/json-schema-to-grammar.o"
 FLAGS="-std=c++11 -Iggml/include -Iggml/src -Iinclude -Isrc -Icommon -I./ -DNDEBUG -DGGML_USE_LLAMAFILE"
 
