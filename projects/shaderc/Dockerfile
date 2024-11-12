@@ -1,6 +1,4 @@
-#!/bin/bash -eux
-#
-# Copyright 2016 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +13,15 @@
 # limitations under the License.
 #
 ################################################################################
-$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp src/abort_message.cpp \
-  -Iinclude fuzz/cxa_demangle_fuzzer.cpp -o $OUT/cxa_demangle_fuzzer \
-  $LIB_FUZZING_ENGINE
+
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y build-essential make cmake ninja-build
+
+
+RUN git clone https://github.com/KhronosGroup/glslang && \
+    mkdir -p $SRC/glsl_seed && \
+    cp $SRC/glslang/Test/*.frag $SRC/glsl_seed
+RUN git clone https://github.com/google/shaderc shaderc
+WORKDIR $SRC/shaderc
+
+COPY glslc_fuzzer.cc *.sh $SRC/

@@ -1,6 +1,5 @@
-#!/bin/bash -eux
-#
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp src/abort_message.cpp \
-  -Iinclude fuzz/cxa_demangle_fuzzer.cpp -o $OUT/cxa_demangle_fuzzer \
-  $LIB_FUZZING_ENGINE
+
+chmod +x $SRC/KubeArmor/KubeArmor/fuzz/build.sh
+$SRC/KubeArmor/KubeArmor/fuzz/build.sh

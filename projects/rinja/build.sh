@@ -1,6 +1,5 @@
-#!/bin/bash -eux
-#
-# Copyright 2016 Google Inc.
+#!/bin/bash
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
-$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp src/abort_message.cpp \
-  -Iinclude fuzz/cxa_demangle_fuzzer.cpp -o $OUT/cxa_demangle_fuzzer \
-  $LIB_FUZZING_ENGINE
+
+set -euxo pipefail
+
+target_out_dir=target/x86_64-unknown-linux-gnu/release
+cargo fuzz build --release
+cargo fuzz list | while read i; do
+    zip --recurse-paths --junk-paths --quiet "${OUT}/${i}_seed_corpus.zip" "./fuzz/corpus/${i}/"
+    mv -t "${OUT}/" "$target_out_dir/${i}"
+done
