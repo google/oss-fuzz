@@ -1,6 +1,4 @@
-#!/bin/bash -eux
-#
-# Copyright 2016 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp src/abort_message.cpp \
-  -Iinclude fuzz/cxa_demangle_fuzzer.cpp -o $OUT/cxa_demangle_fuzzer \
-  $LIB_FUZZING_ENGINE
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN git clone https://github.com/alacritty/vte vte
+WORKDIR $SRC/vte/utf8parse
+
+COPY build.sh $SRC/
+COPY fuzz $SRC/vte/utf8parse/fuzz
