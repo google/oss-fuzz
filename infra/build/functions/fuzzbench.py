@@ -17,6 +17,7 @@
 ################################################################################
 """Does fuzzbench runs on Google Cloud Build."""
 
+import argparse
 import logging
 import os
 import sys
@@ -99,7 +100,7 @@ def get_build_fuzzers_step(fuzzing_engine, project, env, build):
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, image_project,
-    base_images_project, config):
+    base_images_project, config, fuzzing_engine):
   """Returns build steps for project."""
   del base_images_project
   project = build_project.Project(project_name, project_yaml, dockerfile_lines,
@@ -110,9 +111,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   config = build_project.Config(config.testing, None, config.repo,
                                 config.branch, config.parallel, config.upload)
-
-  # TODO(metzman): Make this a command line argument
-  fuzzing_engine = 'libfuzzer'
 
   steps = [
       {
@@ -185,8 +183,16 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
 def main():
   """Build and run fuzzbench for OSS-Fuzz projects."""
-  return build_project.build_script_main('Does a FuzzBench run.',
-                                         get_build_steps, FUZZBENCH_BUILD_TYPE)
+  parser = argparse.ArgumentParser(description='Run FuzzBench on Google Cloud Build.')
+  parser.add_argument('--fuzzing_engine', default='libfuzzer',
+                      help='The fuzzing engine to use for the build (e.g., libfuzzer, afl, honggfuzz).')
+  args = parser.parse_args()
+
+  return build_project.build_script_main(
+      'Does a FuzzBench run.',
+      lambda *args_: get_build_steps(*args_, args.fuzzing_engine),
+      FUZZBENCH_BUILD_TYPE
+  )
 
 
 if __name__ == '__main__':
