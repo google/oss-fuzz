@@ -19,9 +19,6 @@
 
 export CXXFLAGS="-fsanitize=fuzzer"
 export CXX="clang++"
-# Compile the fuzz target (assuming it's named `fuzz_parser.cpp`)
 $CXX $CXXFLAGS -I $SRC/cjsonobject/ -o $SRC/fuzz_target $SRC/cjsonobject/demo/fuzz_target.cc $SRC/cjsonobject/CJsonObject.cpp $SRC/cjsonobject/cJSON.c
-
-# Move the fuzzer executable to the output directory
 cp $SRC/fuzz_target $OUT/
 
