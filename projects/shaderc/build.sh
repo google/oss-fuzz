@@ -46,6 +46,6 @@ for fuzzer in $(find $SRC -maxdepth 1 -name '*_fuzzer.cc'); do
       $SRC/shaderc/build/libshaderc_util/libshaderc_util.a \
       $SRC/shaderc/build/glslc/libglslc.a \
       -Wl,--end-group
+  zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/glsl_seed/*
 done
 
-zip -q $OUT/glslc_fuzzer_seed_corpus.zip $SRC/glsl_seed/*

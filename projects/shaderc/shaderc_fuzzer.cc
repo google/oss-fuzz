@@ -14,13 +14,11 @@
 
 #include <cstring>
 #include <iostream>
-#include <regex>
 #include <string>
 #include <vector>
 
 #include <shaderc/shaderc.h>
 #include <shaderc/shaderc.hpp>
-
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Skip iteration if data not enough
@@ -34,8 +32,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Prepare Compiler and options
   shaderc::Compiler compiler;
   shaderc::CompileOptions options;
-  options.SetOptimizationLevel(
-      static_cast<shaderc_optimization_level>(data[0] % 3));
+  options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
   // Preprocessing
   shaderc::PreprocessedSourceCompilationResult preprocess_result =
