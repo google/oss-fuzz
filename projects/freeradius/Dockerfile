@@ -25,7 +25,7 @@ RUN apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
 ARG OPENSSL_VERSION=3.2.3
 ARG OPENSSL_HASH=52b5f1c6b8022bc5868c308c54fb77705e702d6c6f4594f99a0df216acf46239
 RUN set -ex \
-    && curl -s -O https://github.com/openssl/openssl/releases/download/openssl-3.2.3/openssl-3.2.3.tar.gz \
+    && curl -s -O https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
     && cd openssl-${OPENSSL_VERSION} \
