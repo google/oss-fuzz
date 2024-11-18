@@ -15,10 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
+
+# Run update a first time to get latest package definitions
 RUN apt-get update
+RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
 RUN apt-get install -y gnupg
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41382202
+
+# Run update again to update the NR respository
+RUN apt-get update
 RUN apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
 
 # OpenSSL 3.2
