@@ -1,0 +1,119 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+# CloudBuild for generating Chronos-cached images.
+# Supports building by way of ccache now.
+# High-level steps:
+# 1) Build image for project
+# 2) Run an ASAN build and store ccache
+# 3) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 4) Build image for project and copy ccache in, storing image as *-ofg-cache-address
+# 5) Run an coverage build and store ccache
+# 6) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 7) Build image for project and copy ccache in, storing image as *-ofg-cache-coverage
+# TODO (David): add support for use of dedicated replay_build.sh
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - .
+  dir: projects/${_PROJECT}
+- name: ubuntu
+  args:
+    - mkdir
+    - /workspace/ccache
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint=/bin/sh
+  - --env=SANITIZER=address
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
+  - --name=${_PROJECT}-origin-asan
+  - --volume=/workspace/ccache:/workspace/ccache
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
+- name: ubuntu
+  args:
+    - cp
+    - -rf
+    - /workspace/ccache
+    - projects/${_PROJECT}/ccache-cache
+# Prepare for ccache environment
+- name: ubuntu
+  args:
+  - /workspace/infra/experimental/chronos/prepare-ccache
+  - ${_PROJECT}
+# Build the ccached instance
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+  - .
+  dir: projects/${_PROJECT}
+# Cleanup the ccache stored in the project folder
+- name: ubuntu
+  args:
+    - rm
+    - -rf
+    - projects/${_PROJECT}/ccache-cache
+    - /workspace/ccache
+# Build coverage image
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - run
+  - --entrypoint=/bin/sh
+  - --env=SANITIZER=coverage
+  - --env=CCACHE_DIR=/workspace/ccache
+  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
+  - --name=${_PROJECT}-origin-cov
+  - --volume=/workspace/ccache:/workspace/ccache
+  - gcr.io/oss-fuzz/${_PROJECT}
+  - -c
+  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
+- name: ubuntu
+  args:
+    - cp
+    - -rf
+    - /workspace/ccache
+    - projects/${_PROJECT}/ccache-cache
+# Prepare for ccache environment
+- name: ubuntu
+  args:
+  - /workspace/infra/experimental/chronos/prepare-ccache
+  - ${_PROJECT}
+# Build the ccached instance
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - -t
+  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
+  - .
+  dir: projects/${_PROJECT}
+images:
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
+timeout: 1800s
+logsBucket: oss-fuzz-gcb-logs
+tags:
+- ${_PROJECT}
+- chronos
+options:
+  pool:
+    name: projects/oss-fuzz/locations/us-central1/workerPools/buildpool-chronos

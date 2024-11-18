@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/AdamKorcz/sigstore-go --branch=fuzz-1
-
-COPY build.sh *.dict $SRC
+RUN git clone --depth 1 https://github.com/sigstore/sigstore-go
+COPY build.sh $SRC/
 WORKDIR $SRC/sigstore-go

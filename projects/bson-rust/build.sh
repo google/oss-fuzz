@@ -15,12 +15,9 @@
 #
 ################################################################################
 
-pushd $SRC/bson-rust/fuzz
-cargo update -p serde --precise 1.0.200
-popd
-
 cargo fuzz build -O
 fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
 cp $fuzz_release/deserialize $OUT/
 cp $fuzz_release/iterate $OUT/
 cp $fuzz_release/raw_deserialize $OUT/
+cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/

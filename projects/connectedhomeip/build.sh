@@ -29,6 +29,9 @@ set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
 set -u
 
+#This adds zap-cli to PATH, needed for fuzzing all-clusters-app
+export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
+
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
 # - `is_clang` selects clang toolchains (does not support AFL fuzzing engine)

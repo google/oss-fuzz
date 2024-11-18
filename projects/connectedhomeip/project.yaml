@@ -11,7 +11,9 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  - memory
+# MemorySanitizer is deactivated due to false positives related to Glib
+# For MSan; Glib and all others libs should be compiled with MSan
+#  - memory
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
