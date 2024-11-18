@@ -21,9 +21,9 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41
 RUN apt-get update
 RUN apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
 
-# OpenSSL 1.1
-ARG OPENSSL_VERSION=1.1.1g
-ARG OPENSSL_HASH=ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46
+# OpenSSL 3.2
+ARG OPENSSL_VERSION=3.2.3
+ARG OPENSSL_HASH=52b5f1c6b8022bc5868c308c54fb77705e702d6c6f4594f99a0df216acf46239
 RUN set -ex \
     && curl -s -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
