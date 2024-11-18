@@ -699,9 +699,9 @@ then
     cd build
     if [[ $CFLAGS = *-m32* ]]
     then
-        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS -fno-sanitize=vptr" -DCMAKE_C_FLAGS="$CFLAGS -fno-sanitize=vptr" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
     else
-        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+        GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS -fno-sanitize=vptr" -DCMAKE_C_FLAGS="$CFLAGS -fno-sanitize=vptr" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
     make -j$(nproc) crypto
 
@@ -734,14 +734,14 @@ cd $SRC/cryptofuzz/modules/libgmp
 make -B -f Makefile-mini-gmp
 
 ##############################################################################
-# Compile BoringSSL (with assembly)
+# Compile BoringSSL (without assembly)
 cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
-GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
+GOROOT="$GOROOT_DEV" GOPATH="$GOPATH_DEV" PATH="$PATH_GO_DEV" cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS -fno-sanitize=vptr" -DCMAKE_C_FLAGS="$CFLAGS -fno-sanitize=vptr" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
 make -j$(nproc) crypto
 
-# Compile Cryptofuzz BoringSSL (with assembly) module
+# Compile Cryptofuzz BoringSSL (without assembly) module
 cd $SRC/cryptofuzz/modules/openssl
 OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
 
