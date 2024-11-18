@@ -60,11 +60,11 @@ cmake_args=(
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fuse-ld=lld"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument"
 
     # Linker
     -DCMAKE_LINKER="${LD}"
