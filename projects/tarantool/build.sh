@@ -99,6 +99,6 @@ do
     cp $dict_path $OUT/
   fi
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
+    zip --quiet -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done
