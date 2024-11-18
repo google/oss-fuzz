@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-##########################################################################
-pip3 install .
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=simplejson
-done
+################################################################################
+
+. "$SRC/jsonpickle/fuzzing/oss-fuzz-scripts/build.sh"

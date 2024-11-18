@@ -3,7 +3,6 @@ main_repo: "https://git.samba.org/samba.git"
 language: c
 primary_contact: "douglas.bagnall@catalyst.net.nz"
 auto_ccs:
-  - "abartlet+google@catalyst.net.nz"
   - "abartlet@samba.org"
   - "cryptomilk@gmail.com"
   - "lockyergw@gmail.com"

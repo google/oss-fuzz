@@ -51,7 +51,7 @@ def TestOneInput(data):
   except:
     d1 = None
     d2 = None
-  if isinstance(d1, dict) and isinsance(d2, dict):
+  if isinstance(d1, dict) and isinstance(d2, dict):
     if d1 != d2:
       assert TypedDict('D1', d1) != TypedDict('D2', d2)
     else:

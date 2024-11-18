@@ -207,6 +207,14 @@ if [ "$SANITIZER" = "introspector" ]; then
   ln -sf /usr/local/bin/llvm-ar /usr/bin/ar
   ln -sf /usr/local/bin/llvm-nm /usr/bin/nm
   ln -sf /usr/local/bin/llvm-ranlib /usr/bin/ranlib
+
+  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
+  python3 -m pip install --upgrade pip setuptools
+  python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
+  python3 -m pip install --prefer-binary matplotlib
+
+  python3 /fuzz-introspector/src/main.py light
+  rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
 fi
 
 echo "---------------------------------------------------------------"
@@ -223,7 +231,23 @@ if [ "${OSS_FUZZ_ON_DEMAND}" != "0" ]; then
   exit 0
 fi
 
-BUILD_CMD="bash -eux $SRC/build.sh"
+
+if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
+  # Capture a replaying build script which can be used for replaying the build
+  # after a vanilla build. This script is meant to be used in a cached
+  # container.
+  python3 -m pip install bashlex
+  python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+fi
+
+# Prepare the build command to run the project's build script.
+if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
+  # If this is a replay, then use replay_build.sh. This is expected to be
+  # running in a cached container where a build has already happened prior.
+  BUILD_CMD="bash -eux $SRC/replay_build.sh"
+else
+  BUILD_CMD="bash -eux $SRC/build.sh"
+fi
 
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
 set +u
@@ -260,10 +284,6 @@ if [ "$SANITIZER" = "introspector" ]; then
   unset CXXFLAGS
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
-  apt-get install -y libjpeg-dev zlib1g-dev libyaml-dev
-  python3 -m pip install --upgrade pip setuptools
-  python3 -m pip install cxxfilt pyyaml beautifulsoup4 lxml soupsieve
-  python3 -m pip install --prefer-binary matplotlib
 
   if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "GOING jvm route"
@@ -328,6 +348,6 @@ if [ "$SANITIZER" = "introspector" ]; then
     REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
     python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
 
-    cp -rf $SRC/inspector $OUT/inspector
+    rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   fi
 fi
