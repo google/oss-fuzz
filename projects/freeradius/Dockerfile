@@ -22,7 +22,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41
 RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
 
 # Run update again to update the NR respository
-RUN apt-get update && pt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
+RUN apt-get update && apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
 
 # OpenSSL 3.2
 ARG OPENSSL_VERSION=3.2.3
