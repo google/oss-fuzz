@@ -14,6 +14,5 @@ sanitizers:
   - address
   - undefined
 architectures:
-  - aarch64
   - x86_64
 main_repo: "https://github.com/tarantool/tarantool"
