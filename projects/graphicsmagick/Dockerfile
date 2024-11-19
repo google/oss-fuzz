@@ -53,6 +53,12 @@ RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/
 RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
 
+# AVC (OpenH264) Codec Library needed by libheif
+RUN git clone --depth 1 https://github.com/cisco/openh264 openh264
+
+# JPEG 2000 (OpenJPEG) Library needed by libheif
+RUN git clone --depth 1 https://github.com/uclouvain/openjpeg openjpeg
+
 # Libheif
 RUN git clone --depth 1 https://github.com/strukturag/libheif
 
