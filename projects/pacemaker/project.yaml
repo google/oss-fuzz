@@ -1,6 +1,6 @@
 homepage: "https://www.clusterlabs.org/pacemaker/"
 language: c
-primary_contact: "kgaillot@redhat.com"
+primary_contact: "clumens@redhat.com"
 auto_ccs:
 - "david@adalogics.com"
 - "adam@adalogics.com"

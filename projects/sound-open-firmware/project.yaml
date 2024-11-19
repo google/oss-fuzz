@@ -1,8 +1,9 @@
 homepage: "https://thesofproject.github.io"
-primary_contact: "andyross@google.com"
+primary_contact: "johnylin@google.com"
 language: c
 auto_ccs:
   - "cujomalainey@chromium.org"
+  - "andyross@google.com"
   - "ranjani.sridharan@intel.corp-partner.google.com"
   - "lgirdwood@gmail.com"
   - "sathyanarayana.nujella@intel.corp-partner.google.com"
