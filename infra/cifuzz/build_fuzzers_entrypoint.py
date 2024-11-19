@@ -53,6 +53,7 @@ def main():
   Returns:
     0 on success or nonzero on failure.
   """
+  print('PYTHON VERSION', sys.version)
   return build_fuzzers_entrypoint()
 
 

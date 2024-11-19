@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner
+FROM gcr.io/oss-fuzz-base/base-runner-testing-upgrade-python-to-3-10-14
 
 RUN apt-get update && \
     apt-get install -y systemd && \
