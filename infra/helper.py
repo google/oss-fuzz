@@ -667,6 +667,8 @@ def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
         'plain',
         '--load',
     ]
+  else:
+    build_args += ['--platform','linux/amd64',]
   if not cache:
     build_args.append('--no-cache')
 
