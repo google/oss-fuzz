@@ -8,7 +8,7 @@ auto_ccs:
   - "andrea.cappa@aptoslabs.com"
   - "marco.ilardi@aptoslabs.com"
 sanitizers:
-  - none
+  - address
 fuzzing_engines:
   - libfuzzer
 coverage_extra_args: -ignore-filename-regex=.*/rustc/.*
