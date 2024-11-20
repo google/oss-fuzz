@@ -32,9 +32,9 @@ RUN apt-get update && \
     yasm
 
 # GraphicsMagick
-RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
-    hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
-    hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick
+RUN hg clone --time --stream https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
+    hg clone --time --stream https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
+    hg clone --time --stream https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick
 
 # Libtiff
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
