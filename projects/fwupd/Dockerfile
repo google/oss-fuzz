@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-RUN apt-get install -y pkg-config zlib1g-dev libffi-dev liblzma-dev libcbor-dev
+RUN apt-get update && apt-get install -y pkg-config zlib1g-dev libffi-dev liblzma-dev libcbor-dev
 RUN python3 -m pip install -U jinja2 packaging meson ninja
 RUN git clone --depth 1 https://github.com/fwupd/fwupd.git fwupd
 WORKDIR .
