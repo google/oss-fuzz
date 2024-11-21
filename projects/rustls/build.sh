@@ -27,11 +27,6 @@ for f in $SRC/rustls/fuzz/fuzzers/*.rs
 do
   FUZZ_TARGET=$(basename ${f%.*})
   cp fuzz/target/x86_64-unknown-linux-gnu/release/${FUZZ_TARGET} $OUT/
-  if [[ -d $SRC/rustls-fuzzing-corpora/$FUZZ_TARGET/ ]]; then
-      zip -jr \
-          $OUT/${FUZZ_TARGET}_seed_corpus.zip \
-          $SRC/rustls-fuzzing-corpora/$FUZZ_TARGET/
-  fi
 done
 
 if [ "$SANITIZER" == "coverage" ]

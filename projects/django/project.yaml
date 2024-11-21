@@ -1,6 +1,5 @@
 auto_ccs:
 - jammamarkus@gmail.com
-- guidovranken@gmail.com
 - info+django+security@markusholtermann.eu
 fuzzing_engines:
 - libfuzzer

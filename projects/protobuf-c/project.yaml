@@ -1,8 +1,6 @@
 homepage: "https://github.com/protobuf-c/protobuf-c"
 language: c
-primary_contact: "guidovranken@gmail.com"
-auto_ccs:
-  - "ilya.lipnitskiy@gmail.com"
+primary_contact: "ilya.lipnitskiy@gmail.com"
 sanitizers:
  - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
