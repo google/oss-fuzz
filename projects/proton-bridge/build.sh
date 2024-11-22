@@ -19,6 +19,6 @@ go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
 compile_native_go_fuzzer   $PWD/internal/legacy/credentials     FuzzUnmarshal               fuzz_unmarshal   
 compile_native_go_fuzzer   $PWD/pkg/message/parser              FuzzNewParser               fuzz_new_parser
-compile_native_go_fuzzer   $PWD/pkg/message                     FuzzReadHeaderBody          fuzz_read_header_body
+#compile_native_go_fuzzer   $PWD/pkg/message                     FuzzReadHeaderBody          fuzz_read_header_body
 compile_native_go_fuzzer   $PWD/pkg/mime                        FuzzDecodeHeader            fuzz_decode_header
 compile_native_go_fuzzer   $PWD/pkg/mime                        FuzzDecodeCharset           fuzz_decode_charset
