@@ -24,7 +24,7 @@ export RUSTFLAGS="$RUSTFLAGS --cfg surrealdb_unstable"
 
 cargo fuzz build -O --debug-assertions --target-dir sdk --fuzz-dir fuzz
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+FUZZ_TARGET_OUTPUT_DIR=sdk/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
