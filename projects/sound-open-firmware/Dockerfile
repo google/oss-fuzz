@@ -23,7 +23,20 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Base packages
 RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
-      libtool ninja-build python3-pip
+      libtool ninja-build software-properties-common
+
+# Installing Python3.10 and using it instead of the default Python taken from the base-builder image
+# as Zephyr requires >=3.10 and base has 3.8
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.10 python3.10-distutils python3.10-venv && \
+    ln --force -s /usr/bin/python3.10 /usr/bin/python3
+
+# Ensure python that was just installed gets precedence over
+# the one already installed in /usr/local/bin
+ENV PATH="/usr/bin/:${PATH}"
+
+RUN python3 -m ensurepip --upgrade
 RUN python3 -m pip install --upgrade pip
 RUN pip3 install west
 
@@ -68,6 +81,6 @@ RUN cd $SRC; touch empty.c; gcc -m32 -c empty.c; ar rs /usr/lib32/libstdc++.a em
 # If a user is mounting their local source directory for debugging
 # then we need to tell git to chill out and just take the repo. If we
 # don't west fails with bogus error messages.
-RUN git config --global --add safe.directory /src/sof_workspace/zephyr
+RUN git config --global --add safe.directory $SRC/sof_workspace/zephyr
 
 COPY build.sh $SRC/

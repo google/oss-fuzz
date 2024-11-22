@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-cd lib
+cd crates
 
 # Copy dictionaries, but don't fail if there aren't any.
 cp fuzz/fuzz_targets/*.dict $OUT/ || true
@@ -22,9 +22,17 @@ cp fuzz/fuzz_targets/*.dict $OUT/ || true
 # Add additional compiler flags required for a successful build.
 export RUSTFLAGS="$RUSTFLAGS --cfg surrealdb_unstable"
 
-cargo fuzz build -O --debug-assertions
+cargo fuzz build -O --debug-assertions --target-dir fuzz --fuzz-dir fuzz
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+if [ -d "fuzz/target/x86_64-unknown-linux-gnu/release" ]; then
+    FUZZ_TARGET_OUTPUT_DIR="fuzz/target/x86_64-unknown-linux-gnu/release"
+elif [ -d "fuzz/x86_64-unknown-linux-gnu/release" ]; then
+    FUZZ_TARGET_OUTPUT_DIR="fuzz/x86_64-unknown-linux-gnu/release"
+else
+    echo "Fuzz targets could not be found."
+    exit 1
+fi
+
 for f in fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
