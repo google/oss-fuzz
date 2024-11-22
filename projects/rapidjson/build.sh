@@ -25,9 +25,5 @@ then
     export CXXFLAGS="$CXXFLAGS -DASAN"
 fi
 
-$CXX $CXXFLAGS -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include fuzzer.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer
-cp fuzzer_seed_corpus.zip $OUT
+$CXX $CXXFLAGS -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include $SRC/fuzzer.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer
 
-$CXX $CXXFLAGS -std=c++20 -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include -I $SRC/fuzzing-headers/include \
-               $SRC/fuzzing-headers/tests/rapidjson.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer-extended
-cp fuzzer_seed_corpus.zip $OUT/fuzzer-extended_seed_corpus.zip
