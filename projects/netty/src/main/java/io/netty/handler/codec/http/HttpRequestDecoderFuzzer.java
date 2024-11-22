@@ -17,9 +17,9 @@
 package io.netty.handler.codec.http;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import io.netty.handler.BaseHandlerFuzzer;
+import io.netty.handler.HandlerFuzzerBase;
 
-public class HttpRequestDecoderFuzzer extends BaseHandlerFuzzer {
+public class HttpRequestDecoderFuzzer extends HandlerFuzzerBase {
     {
         channel.pipeline().addLast(new HttpRequestDecoder());
     }

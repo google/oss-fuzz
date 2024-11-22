@@ -23,7 +23,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 /**
  * Base class for fuzzing the input of an inbound handler. Will report exceptions thrown by the handler.
  */
-public abstract class BaseHandlerFuzzer {
+public abstract class HandlerFuzzerBase {
     protected final EmbeddedChannel channel = new EmbeddedChannel();
 
     public void test(FuzzedDataProvider provider) {
