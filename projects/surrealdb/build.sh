@@ -22,7 +22,9 @@ cp fuzz/fuzz_targets/*.dict $OUT/ || true
 # Add additional compiler flags required for a successful build.
 export RUSTFLAGS="$RUSTFLAGS --cfg surrealdb_unstable"
 
-cargo fuzz build -O --debug-assertions
+cd sdk
+cargo fuzz build -O --debug-assertions --fuzz-dir ../fuzz
+cd ..
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
