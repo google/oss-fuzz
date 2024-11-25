@@ -18,11 +18,6 @@
 # Print date to embed it into build logs
 date
 
-if [ "$SANITIZER" != "introspector" ]; then
-  # Temporarily skip this under introspector
-  $SRC/build_cryptofuzz.sh
-fi
-
 cd $SRC/bitcoin-core/
 
 # Build dependencies
