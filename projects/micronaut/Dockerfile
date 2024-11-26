@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 WORKDIR $SRC
+RUN apt-get update
 RUN apt-get install -y locales
 RUN locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
