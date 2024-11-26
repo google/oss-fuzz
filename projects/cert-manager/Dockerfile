@@ -17,6 +17,13 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/cert-manager/cert-manager --depth=1
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
+# The following two repositories contain fuzzers that are currently in PRs upstream
+# We add the forks until they are merged upstream.
+# Refs:
+# 1. https://github.com/cert-manager/cert-manager/pull/7284
+# 2. https://github.com/cert-manager/cert-manager/pull/7405
+RUN git clone --depth=1 https://github.com/AdamKorcz/cert-manager --branch=process-item-fuzzer $SRC/process-item-fuzzers
+RUN git clone --depth=1 https://github.com/AdamKorcz/cert-manager --branch=add-validation-fuzzers $SRC/validation-fuzzers
 RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz \
     && mkdir temp-go \
     && rm -rf /root/.go/* \
