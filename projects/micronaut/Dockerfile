@@ -17,8 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 WORKDIR $SRC
-RUN apt-get update
-RUN apt-get install -y locales
+RUN apt-get update && apt-get install -y locales
 RUN locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 RUN git clone --depth=1 https://github.com/micronaut-projects/micronaut-fuzzing.git
