@@ -16,9 +16,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y \
-        cmake
+RUN apt-get update
+RUN apt-get install -y cmake
 
 # Ensure we work from right python version
 RUN apt-get install -y python3.9 python3.9-dev && \
