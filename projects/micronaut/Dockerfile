@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-WORKDIR $SRC
 RUN apt-get update && apt-get install -y locales
 RUN locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
