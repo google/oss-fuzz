@@ -16,9 +16,6 @@
 ################################################################################
 
 # Set up environment for OSS-Fuzz with compiler and linker flags
-
-export CXXFLAGS="-fsanitize=fuzzer"
-export CXX="clang++"
 $CXX $CXXFLAGS -I $SRC/cjsonobject/ -o $SRC/fuzz_target $SRC/cjsonobject/demo/fuzz_target.cc $SRC/cjsonobject/CJsonObject.cpp $SRC/cjsonobject/cJSON.c
 cp $SRC/fuzz_target $OUT/
 
