@@ -15,8 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 #RUN apt-get update && apt-get install -y cmake docbook2x make
-ENV FUZZING_LANGUAGE="c++"
-ENV LIB_FUZZING_ENGINE="libfuzzer"
 RUN git clone --depth 1 https://github.com/Bwar/CJsonObject.git cjsonobject
 WORKDIR cjsonobject
 COPY build.sh  $SRC/
