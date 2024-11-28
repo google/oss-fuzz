@@ -1,0 +1,10 @@
+homepage: "https://cs.opensource.google/fuchsia/fuchsia/+/main:src/starnix/lib/third_party/rust_netlink"
+main_repo: "https://fuchsia.googlesource.com/fuchsia"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
