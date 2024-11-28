@@ -23,8 +23,4 @@ cargo fuzz build
 
 # Copy built fuzzer binaries to $OUT
 cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/core_fuzzer $OUT/
-#cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/generic_fuzzer $OUT/
-#cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/route_fuzzer $OUT/
-#cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/route_tc_fuzzer $OUT/
-#cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/sock_diag_fuzzer $OUT/
 cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/utils_fuzzer $OUT/

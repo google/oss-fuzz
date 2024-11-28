@@ -25,34 +25,6 @@ doc = false
 bench = false
 
 [[bin]]
-name = "generic_fuzzer"
-path = "fuzz_targets/generic_fuzzer.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "route_fuzzer"
-path = "fuzz_targets/route_fuzzer.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "route_tc_fuzzer"
-path = "fuzz_targets/route_tc_fuzzer.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "sock_diag_fuzzer"
-path = "fuzz_targets/sock_diag_fuzzer.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
 name = "utils_fuzzer"
 path = "fuzz_targets/utils_fuzzer.rs"
 test = false
