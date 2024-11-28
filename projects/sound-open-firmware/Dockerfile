@@ -23,18 +23,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Base packages
 RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
-      libtool ninja-build software-properties-common
-
-# Installing Python3.10 and using it instead of the default Python taken from the base-builder image
-# as Zephyr requires >=3.10 and base has 3.8
-RUN add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y python3.10 python3.10-distutils python3.10-venv && \
-    ln --force -s /usr/bin/python3.10 /usr/bin/python3
-
-# Ensure python that was just installed gets precedence over
-# the one already installed in /usr/local/bin
-ENV PATH="/usr/bin/:${PATH}"
+      libtool ninja-build software-properties-common python3 python3-pip
 
 RUN python3 -m ensurepip --upgrade
 RUN python3 -m pip install --upgrade pip

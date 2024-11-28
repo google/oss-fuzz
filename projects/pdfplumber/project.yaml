@@ -1,0 +1,11 @@
+homepage: "https://github.com/jsvine/pdfplumber"
+language: python
+primary_contact: "jsvine@gmail.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/jsvine/pdfplumber.git"

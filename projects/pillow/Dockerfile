@@ -21,9 +21,6 @@ RUN apt-get update && \
     apt-get install -y \
       libxau-dev \
       pkg-config \
-      python3-pip \
-      python3.9-dev \
-      python3.9-distutils \
       rsync
 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
@@ -32,8 +29,7 @@ RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
 
 COPY build_depends.sh $SRC
 
-RUN ln -sf /usr/bin/python3.9 /usr/local/bin/python3 \
-    && ln -s /bin/true /usr/local/bin/yum_install \
+RUN ln -s /bin/true /usr/local/bin/yum_install \
     && ln -s /bin/true /usr/local/bin/yum \
     && cd $SRC/Pillow \
     && git submodule update --init wheels/multibuild \
@@ -42,7 +38,7 @@ RUN ln -sf /usr/bin/python3.9 /usr/local/bin/python3 \
 # install extra test images for a better starting corpus
 RUN cd Pillow/depends && ./install_extra_test_images.sh
 
-RUN python3 -m pip install --upgrade atheris pyinstaller
+RUN python3 -m pip install --upgrade pip
 
 COPY build.sh $SRC/
 

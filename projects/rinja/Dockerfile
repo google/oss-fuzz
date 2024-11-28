@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update -y && \
-    apt-get install -y libssl-dev libyaml-dev libreadline6-dev \
-                       zlib1g-dev libncurses5-dev libffi-dev \
-                       bison autoconf ruby pkg-config
-
-RUN git clone https://github.com/ruby/ruby.git
-WORKDIR ruby
-
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rinja-rs/rinja.git rinja
+WORKDIR rinja/fuzzing
 COPY build.sh $SRC/
-RUN mkdir $SRC/fuzz
-COPY *.rb *.c *.options $SRC/fuzz/
