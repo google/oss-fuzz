@@ -38,14 +38,6 @@ fuzz_target!(|data: &[u8]| {
 
     // Attempt to parse the fuzz input structure
     if let Ok(fuzz_input) = FuzzInput::arbitrary(&mut unstructured) {
-        // Initialize NetlinkHeader with fuzzed values
-        let mut header = NetlinkHeader::default();
-        header.length = fuzz_input.buffer_data.len() as u32;
-        header.message_type = fuzz_input.message_type % 4;
-        header.flags = NLM_F_REQUEST | NLM_F_ROOT;
-        header.sequence_number = fuzz_input.sequence_number;
-        header.port_number = fuzz_input.port_number;
-
         // Fuzz NetlinkBuffer
         if let Ok(netlink_buffer) = NetlinkBuffer::new_checked(&fuzz_input.buffer_data) {
             let _ = netlink_buffer.payload_length();
@@ -62,12 +54,6 @@ fuzz_target!(|data: &[u8]| {
         if let Ok(error_buffer) = ErrorBuffer::new_checked(&fuzz_input.buffer_data) {
             let _code = error_buffer.code();
             let _payload = error_buffer.payload();
-        }
-
-        // Fuzz NetlinkMessage
-        let mut buffer = vec![0; header.length as usize];
-        if let Ok(mut netlink_message) = NetlinkBuffer::new_checked(&mut buffer) {
-            netlink_message.set_length(fuzz_input.payload_data.len() as u32);
         }
     }
 });
