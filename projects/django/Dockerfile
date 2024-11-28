@@ -16,15 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update -y \
-    && apt-get install -y libgdal26 software-properties-common \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get install -y python3.10 python3.10-dev \
-    && ln --force -s /usr/bin/python3.10 /usr/local/bin/python3 \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3 \
-    && python3 -m pip install -v --no-cache-dir "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2" \
-    && rm -rf /var/lib/apt/lists/*
-
+RUN python3 -m pip install cython
 RUN git clone --depth 1 https://github.com/django/django.git
 RUN git clone --depth 1 https://github.com/django/django-fuzzers.git
 

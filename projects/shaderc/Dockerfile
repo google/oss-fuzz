@@ -24,4 +24,4 @@ RUN git clone https://github.com/KhronosGroup/glslang && \
 RUN git clone https://github.com/google/shaderc shaderc
 WORKDIR $SRC/shaderc
 
-COPY glslc_fuzzer.cc *.sh $SRC/
+COPY *.cc *.sh $SRC/
