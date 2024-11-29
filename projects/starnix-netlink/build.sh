@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner
+# Update local crate.io vendors
+cargo vendor -- /src/fuchsia/third_party/rust_crates/vendor/
 
-RUN mkdir -p /opt/oss-fuzz/infra/build_status
-COPY infra/build/functions/* /opt/oss-fuzz/infra/build_status/
-COPY infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
-RUN pip3 install -r /opt/oss-fuzz/infra/build_status/requirements.txt
+# Build the fuzzers and project source code
+cargo fuzz build
 
-ENTRYPOINT [ "python3", "/opt/oss-fuzz/infra/build_status/update_build_status.py" ]
+# Copy built fuzzer binaries to $OUT
+cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/core_fuzzer $OUT/
+cp /src/fuchsia/out/cargo_target/x86_64-unknown-linux-gnu/release/utils_fuzzer $OUT/
