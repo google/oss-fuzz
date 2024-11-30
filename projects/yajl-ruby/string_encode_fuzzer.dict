@@ -1,0 +1,40 @@
+# ASCII Special Characters
+"\\"
+"\""
+"\\n"
+"\\r"
+"\\t"
+"\\b"
+"\\f"
+"/"
+
+# HTML Special Characters
+"<"
+">"
+"&"
+"/"
+
+# Unicode Characters
+"\\u0000"
+"\\u001F"
+"\\u0020"
+"\\u007F"
+"\\u0080"
+"\\u00FF"
+"\\uD800"
+"\\uDBFF"
+"\\uDC00"
+"\\uDFFF"
+"\\uE000"
+
+# Special Sequences
+"\\u2028"
+"\\u2029"
+"\\u"
+
+# Common string patterns
+"hello"
+"test"
+"{"
+"}"
+"[]"
