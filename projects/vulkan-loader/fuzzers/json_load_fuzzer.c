@@ -14,7 +14,7 @@ limitations under the License.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cJSON.h"
+#include "loader_json.h"
 #include "loader.h"
 
 /*
