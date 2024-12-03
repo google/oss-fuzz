@@ -37,8 +37,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (json == NULL) {
     goto out;
   }
-
-  char *json_data = loader_cJSON_Print(json);
+  bool out_of_mem = false;
+  char *json_data = loader_cJSON_Print(json, &out_of_mem);
 
   if (json_data != NULL) {
     free(json_data);
