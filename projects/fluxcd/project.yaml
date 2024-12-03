@@ -8,6 +8,7 @@ auto_ccs :
   - "david@adalogics.com"
   - "adam@adalogics.com"
   - "max@weave.works"
+  - "matheuscscp@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer
