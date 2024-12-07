@@ -2,9 +2,9 @@ homepage: "https://libgd.org"
 language: c++
 primary_contact: "security@libgd.org"
 auto_ccs:
-  - vapier@gmail.com
-  - tim@tim-smith.us
-  - cmbecker69@gmx.de
+  - "vapier@gmail.com"
+  - "tim@tim-smith.us"
+  - "cmbecker69@gmx.de"
 main_repo: 'https://github.com/libgd/libgd'
 
 fuzzing_engines:
