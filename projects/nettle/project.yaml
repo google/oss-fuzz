@@ -1,6 +1,6 @@
 homepage: "https://www.lysator.liu.se/~nisse/nettle/"
 language: c++
-primary_contact: guidovranken@gmail.com
+primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "nisse@lysator.liu.se"
 sanitizers:
