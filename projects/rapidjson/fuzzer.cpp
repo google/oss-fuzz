@@ -12,7 +12,7 @@ limitations under the License.
 
 #include <cstdint>
 #include <cstddef>
-#include <string_view>
+#include <string>
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 
@@ -23,9 +23,9 @@ extern "C" {
 #endif
 
 template<unsigned parseFlags>
-void fuzzWithFlags(const std::string_view &s) {
+void fuzzWithFlags(const std::string &s) {
     rapidjson::Document document;
-    rapidjson::ParseResult pr = document.Parse<parseFlags>(s.data());
+    rapidjson::ParseResult pr = document.Parse<parseFlags>(s.c_str());
     if (!pr) {
         return;
     }
@@ -47,7 +47,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    std::string_view s(reinterpret_cast<const char*>(data), size);
+    // Ensure the input is null-terminated by copying it into a std::string
+    std::string s(reinterpret_cast<const char*>(data), size);
 
     fuzzWithFlags<rapidjson::kParseDefaultFlags>(s);
     fuzzWithFlags<rapidjson::kParseFullPrecisionFlag>(s);
