@@ -7,5 +7,5 @@ fuzzing_engines:
   - libfuzzer
 primary_contact: "mgeisler@google.com"
 auto_ccs:
-  - "kdark@google.com"
+  - "comprehensive-rust@google.com"
   - "darkhanu@gmail.com"
