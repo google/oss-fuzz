@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt update && apt install -y qemu-kvm libvirt-daemon-system
 RUN git clone --depth 1 https://github.com/kubevirt/kubevirt
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=include-all-test-files
-COPY build.sh fuzz_test.go $SRC/
+COPY build.sh fuzz*test.go $SRC/
 WORKDIR $SRC/kubevirt

@@ -29,3 +29,6 @@ go mod vendor
 
 mv $SRC/fuzz_test.go ./pkg/certificates/triple/cert/
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/certificates/triple/cert FuzzKeyParsers FuzzKeyParsers
+
+mv $SRC/fuzz_loadInstallStrategyFromBytes_test.go ./pkg/virt-operator/resource/generate/install/
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/generate/install FuzzLoadInstallStrategyFromBytes FuzzLoadInstallStrategyFromBytes
