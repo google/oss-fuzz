@@ -16,6 +16,18 @@
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>apache-staging</id>
+			<name>Apache Staging</name>
+			<url>https://repository.apache.org/content/repositories/staging</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<!--
@@ -38,26 +50,59 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+			<!-- these exclusions can be removed again when XmlBeans 5.3.0 is released with fixed bom-dependency
+				 See https://lists.apache.org/thread/tn9j8h94vtftr1r4xg28c43r8okp4hoj -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-bom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-bom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-bom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-examples</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-bom</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.24.1</version>
+			<version>2.24.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-bom</artifactId>
+			<version>2.24.2</version>
+			<type>pom</type>
+			<scope>import</scope>
 		</dependency>
 	</dependencies>
 
