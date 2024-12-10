@@ -39,3 +39,8 @@ for fuzzers in $(find $SRC -maxdepth 1 -name '*_fuzzer.cpp'); do
         $SRC/spirv-cross/external/glslang-build/output/lib/*.a \
         -Wl,--end-group
 done
+
+cd $SRC/
+mkdir -p spirv-corpus
+find $SRC/spirv-cross -name "*.spv" -exec cp {} $SRC/spirv-corpus \;
+zip -q -r -j $OUT/parser_fuzzer_seed_corpus.zip $SRC/spirv-corpus/*
