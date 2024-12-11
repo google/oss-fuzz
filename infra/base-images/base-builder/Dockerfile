@@ -65,6 +65,7 @@ RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.9.0
+ENV USE_BAZEL_VERSION 7.4.0
 RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
     chmod +x /usr/local/bin/bazel
 
