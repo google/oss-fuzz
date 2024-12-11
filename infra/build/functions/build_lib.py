@@ -415,6 +415,7 @@ def get_docker_build_step(image_names,
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
       'dir': directory,
+      'id': f'build-{architecture}',
   }
   # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
