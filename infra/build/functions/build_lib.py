@@ -502,6 +502,17 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
                                                   architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
+  if language in ('c', 'c++'):
+    # Push so that historical bugs are reproducible.
+    push_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['push', f'us-central1-docker.pkg.dev/oss-fuzz/archive/{name}'],
+      'id': 'push-image',
+      'waitFor': [docker_build_step['id']],
+      'allowFailure': True
+    }
+    steps.append(push_step)
+
   return steps
 
 
