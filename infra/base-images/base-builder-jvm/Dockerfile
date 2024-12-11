@@ -36,7 +36,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/CodeIntelligenceTesting/jazzer && \
     cd jazzer && \
-    git checkout aa376ca3c0255b9cf04e1fc79fcf1fe5c63b2376
+    git checkout d9c1a09d9c57de438a2656447f2f3e9f9aac60f9
 
 WORKDIR $SRC/jazzer
 
