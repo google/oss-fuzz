@@ -168,6 +168,7 @@ cd $SRC
 cd kimageformats
 HANDLER_TYPES="ANIHandler ani
         QAVIFHandler avif
+        QDDSHandler dds
         EXRHandler exr
         HDRHandler hdr
         HEIFHandler heif
