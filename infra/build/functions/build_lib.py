@@ -462,7 +462,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   src_root = 'oss-fuzz' if not experiment else '.'
 
   docker_build_step = get_docker_build_step(
-      [image, get_unsafe_name(name)],
+      [image, _get_unsafe_name(name)],
       os.path.join('projects', name),
       src_root=src_root,
       cache_image=cache_image)
@@ -499,12 +499,13 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
         },
     ])
     docker_build_arm_step = get_docker_build_step(
-        [image, get_unsafe_name(name)],
+        [image, _get_unsafe_name(name)],
         os.path.join('projects', name),
         architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
-  if language in ('c', 'c++'):
+  if (not experiment and not config.testing and
+      config.build_type == 'fuzzing' and language in ('c', 'c++')):
     # Push so that historical bugs are reproducible.
     push_step = {
         'name': 'gcr.io/cloud-builders/docker',
@@ -518,7 +519,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   return steps
 
 
-def get_unsafe_name(name):
+def _get_unsafe_name(name):
   return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/{name}'
 
 
