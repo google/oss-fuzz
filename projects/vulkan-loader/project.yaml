@@ -5,3 +5,4 @@ language: c
 vendor_ccs:
 - "david@adalogics.com"
 - "arthur.chan@adalogics.com"
+- "fuzzing@fuchsia.dev"
