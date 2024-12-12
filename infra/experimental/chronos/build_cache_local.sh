@@ -23,7 +23,6 @@ BASE=$PWD
 cd projects/${_PROJECT}
 docker build -t gcr.io/oss-fuzz/${_PROJECT} .
 
-#mkdir -p /workspace/ccache
 mkdir -p ccaches/${_PROJECT}
 cd ${BASE}
 B_START=$SECONDS
