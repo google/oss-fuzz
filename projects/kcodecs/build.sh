@@ -31,19 +31,19 @@ export CXXFLAGS="${FUZZ_CXXFLAGS}"
 
 cd $SRC
 cd extra-cmake-modules
-cmake .
+cmake -DBUILD_TESTING=OFF .
 make install
 
 cd $SRC
 cd qtbase
-./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-gui -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
+./configure -no-glib -qt-libpng -qt-pcre -qt-zlib -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-gui -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
 cmake --build . --parallel $(nproc)
 cmake --install .
 
 cd $SRC
 cd kcodecs
 rm -rf poqm
-cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug
+cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug
 make -j$(nproc) VERBOSE=1
 
 $CXX $CXXFLAGS -fPIC -std=c++17 $SRC/kcodecs_fuzzer.cc -o $OUT/kcodecs_fuzzer \

@@ -19,9 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-clang
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
-# Build and install latest Python 3 (3.8.3).
-ENV PYTHON_VERSION 3.8.3
-RUN export PYTHON_DEPS="\
+# Build and install latest Python 3.10.
+ENV PYTHON_VERSION 3.10.14
+RUN PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
         libgdbm-dev \
@@ -39,13 +39,25 @@ RUN export PYTHON_DEPS="\
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j install && \
+    make -j$(nproc) install && \
     ldconfig && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    rm -rf /usr/local/lib/python3.8/test && \
+    rm -rf /usr/local/lib/python${PYTHON_VERSION%.*}/test && \
+    python3 -m ensurepip && \
+    python3 -m pip install --upgrade pip && \
     apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
+
+
+ENV CCACHE_VERSION 4.10.2
+RUN cd /tmp && curl -OL https://github.com/ccache/ccache/releases/download/v$CCACHE_VERSION/ccache-$CCACHE_VERSION.tar.xz && \
+    tar -xvf ccache-$CCACHE_VERSION.tar.xz && cd ccache-$CCACHE_VERSION && \
+    mkdir build && cd build && \
+    export LDFLAGS='-lpthread' && \
+    cmake -D CMAKE_BUILD_TYPE=Release .. && \
+    make -j && make install && \
+    rm -rf /tmp/ccache-$CCACHE_VERSION /tmp/ccache-$CCACHE_VERSION.tar.xz
 
 # Install six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
@@ -165,6 +177,7 @@ COPY bazel_build_fuzz_tests \
     install_rust.sh \
     install_swift.sh \
     python_coverage_helper.py \
+    bash_parser.py \
     srcmap \
     write_labels.py \
     /usr/local/bin/
@@ -179,5 +192,21 @@ RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc
+
+# Set up ccache binary and cache directory.
+# /ccache/bin will contain the compiler wrappers, and /ccache/cache will
+# contain the actual cache, which can be saved.
+# To use this, set PATH=/ccache/bin:$PATH.
+RUN mkdir -p /ccache/bin && mkdir -p /ccache/cache && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++ && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang-jcc && \
+    ln -s /usr/local/bin/ccache /ccache/bin/clang++-jcc
+ENV CCACHE_DIR /ccache/cache
+
+# Don't check that the compiler is the same, so we can switch between jcc and
+# clang under the hood and re-use the same build cache.
+ENV CCACHE_COMPILERCHECK none
+ENV CCACHE_COMPILERTYPE clang
 
 CMD ["compile"]

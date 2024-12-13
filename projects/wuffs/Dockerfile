@@ -41,11 +41,6 @@ RUN mkdir pngsuite_corpus && \
     mv ./mozsec-fuzzdata/samples/png/common/*.png ./pngsuite_corpus && \
     rm -rf mozsec-fuzzdata
 
-RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
-RUN mkdir rapidjson_corpus
-RUN unzip -j rapidjson.zip -d rapidjson_corpus
-RUN rm rapidjson.zip
-
 RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
 RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
 RUN rm -rf simdjson-fuzz

@@ -20,12 +20,10 @@
 apt-get update && apt-get install -y \
     binutils \
     file \
+    ca-certificates \
     fonts-dejavu \
     git \
     libcap2 \
-    python3 \
-    python3-pip \
-    python3-setuptools \
     rsync \
     unzip \
     wget \
