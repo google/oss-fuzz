@@ -51,7 +51,6 @@ A_START=$SECONDS
 docker run \
   --entrypoint=/bin/bash \
   --env=SANITIZER=address \
-  --env=CCACHE_DIR=/workspace/ccache \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --name=${_PROJECT}-origin-asan-recached \
   us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address \
