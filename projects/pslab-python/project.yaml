@@ -1,0 +1,16 @@
+project:
+  name: "pslab-python"
+  description: "PSLab is an open-source hardware and software platform for building science experiments and learning tools."
+  language: "python"
+  main_repo: "https://github.com/fossasia/pslab-python"
+  issue_tracker: "https://github.com/fossasia/pslab-python/issues"
+  contacts:
+    - "alexander.bessman@gmail.com"
+  fuzzing_engines:
+    - "libfuzzer"
+  sanitizers:
+    - "address"
+    - "undefined"
+    - "memory"
+    - "thread"
+  architecture: "x86_64"
