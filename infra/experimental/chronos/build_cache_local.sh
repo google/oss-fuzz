@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eux
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,7 +93,7 @@ then
   echo "Replay compile time:"
   echo ${R_TIME}
 
-  if [[ -z "${RUN_ALL}" ]]; then
+  if [ -n "${RUN_ALL+1}" ]; then
     exit 0
   fi
 else
