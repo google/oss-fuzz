@@ -24,11 +24,12 @@ BASE=$PWD
 cd projects/${_PROJECT}
 docker build -t gcr.io/oss-fuzz/${_PROJECT} .
 
+
 # Step 2: create a container where `compile` has run which enables ccaching
 #         and also generates a replay build script.
+cd ${BASE}
 mkdir -p ccaches/${_PROJECT}
 mkdir -p build/out/${_PROJECT}
-cd ${BASE}
 B_START=$SECONDS
 docker run \
   --entrypoint=/bin/bash \
@@ -109,6 +110,8 @@ cd projects/${_PROJECT}
 # Step 9: Build an image with CCache's new items (modifications are done on the
 #         dockerfile)
 docker build -t us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address .      
+
+cd ${BASE}
 
 # Step 10: Run a `compile` with ccache's image.
 # Run the ccache build
