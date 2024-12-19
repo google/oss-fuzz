@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>1.8.16</version>
         </dependency>
 
     </dependencies>

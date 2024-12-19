@@ -33,13 +33,13 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>12.0.12</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>9.4.55.v20240627</version>
         </dependency>
 
         <dependency>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
             <artifactId>http2-server</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>9.4.47.v20220610</version>
             <scope>test</scope>
         </dependency>
 
