@@ -275,11 +275,13 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
   bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
   steps.append({
       'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path],
+      'allowFailure': True
   })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
+      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports'],
+      'allowFailure': True
   })
 
   return steps
@@ -415,6 +417,7 @@ def get_docker_build_step(image_names,
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
       'dir': directory,
+      'id': f'build-{architecture}',
   }
   # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
@@ -460,10 +463,11 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
 
-  docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name),
-                                            src_root=src_root,
-                                            cache_image=cache_image)
+  docker_build_step = get_docker_build_step(
+      [image, _get_unsafe_name(name)],
+      os.path.join('projects', name),
+      src_root=src_root,
+      cache_image=cache_image)
   steps.append(docker_build_step)
   if srcmap:
     srcmap_step_id = get_srcmap_step_id()
@@ -475,7 +479,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
         ],
         'env': [
             'OSSFUZZ_REVISION=$REVISION_ID',
-            'FUZZING_LANGUAGE=%s' % language,
+            f'FUZZING_LANGUAGE={language}',
         ],
         'id': srcmap_step_id
     }])
@@ -496,13 +500,29 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
             'args': ['buildx', 'use', builder_name]
         },
     ])
-    docker_build_arm_step = get_docker_build_step([image],
-                                                  os.path.join(
-                                                      'projects', name),
-                                                  architecture=_ARM64)
+    docker_build_arm_step = get_docker_build_step(
+        [image, _get_unsafe_name(name)],
+        os.path.join('projects', name),
+        architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
+  if (not experiment and not config.testing and
+      config.build_type == 'fuzzing' and language in ('c', 'c++')):
+    # Push so that historical bugs are reproducible.
+    push_step = {
+        'name': 'gcr.io/cloud-builders/docker',
+        'args': ['push', _get_unsafe_name(name)],
+        'id': 'push-image',
+        'waitFor': [docker_build_step['id']],
+        'allowFailure': True
+    }
+    steps.append(push_step)
+
   return steps
+
+
+def _get_unsafe_name(name):
+  return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/{name}'
 
 
 def get_logs_url(build_id):

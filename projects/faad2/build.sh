@@ -14,4 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
+
+export USE_BAZEL_VERSION=7.4.0
 bazel_build_fuzz_tests
