@@ -13,13 +13,10 @@
     "args": [
       "build",
       "--tag",
-	"gcr.io/oss-fuzz/test-project",
-      "--tag",
-	"us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project",
+      "gcr.io/oss-fuzz/test-project",
       "."
     ],
-    "dir": "oss-fuzz/projects/test-project",
-    "id": "build-x86_64"
+    "dir": "oss-fuzz/projects/test-project"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",

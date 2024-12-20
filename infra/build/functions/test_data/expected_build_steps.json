@@ -14,12 +14,9 @@
       "build",
       "--tag",
       "gcr.io/oss-fuzz/test-project",
-      "--tag",
-      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project",
       "."
     ],
-    "dir": "oss-fuzz/projects/test-project",
-    "id": "build-x86_64"
+    "dir": "oss-fuzz/projects/test-project"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
@@ -71,12 +68,9 @@
       "--load",
       "--tag",
       "gcr.io/oss-fuzz/test-project-aarch64",
-      "--tag",
-      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project-aarch64",
       "."
     ],
-    "dir": "oss-fuzz/projects/test-project",
-    "id": "build-aarch64"
+    "dir": "oss-fuzz/projects/test-project"
   },
   {
     "name": "gcr.io/cloud-builders/docker",
