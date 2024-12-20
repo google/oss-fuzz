@@ -19,6 +19,8 @@
 Usage: build_project.py <project_dir>
 """
 
+from __future__ import print_function
+
 import argparse
 from dataclasses import dataclass
 import datetime
@@ -75,7 +77,6 @@ class Config:
   experiment: bool = False
   # TODO(ochang): This should be different per engine+sanitizer combination.
   upload_build_logs: str = None
-  build_type: str = None
 
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
@@ -475,6 +476,7 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
+
   return build_steps
 
 
@@ -627,7 +629,7 @@ def get_args(description):
   return parser.parse_args()
 
 
-def create_config(args, build_type):
+def create_config_from_commandline(args):
   """Create a Config object from parsed command line |args|."""
   upload = not args.experiment
   return Config(testing=args.testing,
@@ -635,8 +637,7 @@ def create_config(args, build_type):
                 branch=args.branch,
                 parallel=args.parallel,
                 upload=upload,
-                experiment=args.experiment,
-                build_type=build_type)
+                experiment=args.experiment)
 
 
 def build_script_main(script_description, get_build_steps_func, build_type):
@@ -649,7 +650,7 @@ def build_script_main(script_description, get_build_steps_func, build_type):
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = create_config(args, build_type)
+  config = create_config_from_commandline(args)
   for project_name in args.projects:
     logging.info('Getting steps for: "%s".', project_name)
     try:
