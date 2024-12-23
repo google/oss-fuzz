@@ -24,15 +24,6 @@ extern "C" {
 #include <cstdlib>
 #include <vector>
 
-static int dummy_callback(struct lws *wsi, enum lws_callback_reasons reason,
-        void *user, void *in, size_t len) {
-    for (size_t i = 0; i < len; i++) {
-        ((char *)in)[i] = ((char *)in)[i] ^ 0xFF;
-    }
-
-    return (0);
-}
-
 static struct lws_protocols protocols[] = {
     { "http", &lws_callback_http_dummy, 0, 0 },
     { NULL, NULL, 0, 0 }
@@ -78,13 +69,12 @@ static int parse_http_header(struct lws *wsi, const uint8_t *data, size_t size) 
         fragment.insert(fragment.end(), recved.begin(), recved.end());
         mutable_fragment = fragment.data();
         mutable_len = fragment.size();
-        lws_parse(wsi, mutable_fragment, &mutable_len);
-        // if (lws_parse(&wsi, mutable_fragment, &len))
-        //  lws_header_table_reset(&wsi, 0);
+        if (lws_parse(wsi, mutable_fragment, &mutable_len) < 0)
+		return (-1);
         assert(mutable_len <= fragment.size() && mutable_len >= 0);
         fragment.erase(fragment.begin(), fragment.end() - mutable_len);
-        //if (wsi.http.ah->parser_state == WSI_PARSING_COMPLETE)
-        //  lws_header_table_reset(&wsi, 0);
+        if (wsi->http.ah->parser_state == WSI_PARSING_COMPLETE)
+		break ;
     }
 
     return (0);
