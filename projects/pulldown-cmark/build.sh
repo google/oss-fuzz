@@ -17,5 +17,5 @@
 # Note: This project creates Rust fuzz targets exclusively
 cd $SRC/pulldown-cmark
 CARGO_PROFILE_RELEASE_LTO=thin cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/commonmark_js $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/
+cp target/x86_64-unknown-linux-gnu/release/commonmark_js $OUT/
+cp target/x86_64-unknown-linux-gnu/release/parse $OUT/
