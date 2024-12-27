@@ -4,6 +4,7 @@ primary_contact: "daniel.marjamaki@gmail.com"
 auto_ccs:
   - "daniel.marjamaki@gmail.com"
   - "ettl.martin78@gmail.com"
+  - "firewave0000@gmail.com"
 sanitizers:
   - address
   - undefined
