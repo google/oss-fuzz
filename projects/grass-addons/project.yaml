@@ -5,4 +5,7 @@ language: c++
 primary_contact: "neteler@gmail.com"
 fuzzing_engines:
   - libfuzzer
+sanitizers:
+  - address
+  - undefined
 main_repo: 'https://github.com/OSGeo/grass-addons'
