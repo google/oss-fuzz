@@ -1,0 +1,8 @@
+name: grass-addons
+path: OSGeo/grass-addons
+homepage: "https://grass.osgeo.org/grass-stable/manuals/addons/"
+language: c++
+primary_contact: "neteler@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/OSGeo/grass-addons'
