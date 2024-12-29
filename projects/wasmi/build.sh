@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-cargo fuzz build translate --release --debug-assertions
-cargo fuzz build execute --release --debug-assertions
-cargo fuzz build differential --release --debug-assertions --features=differential
+cargo fuzz build translate -O
+cargo fuzz build execute -O
+cargo fuzz build differential --features=differential -O
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
