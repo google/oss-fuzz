@@ -1,6 +1,6 @@
 homepage: "http://www.pcre.org/"
 language: c++
-primary_contact: "philip.hazel@gmail.com"
+primary_contact: "nicholas@nickcwilson.co.uk"
 main_repo: "https://github.com/PCRE2Project/pcre2"
 fuzzing_engines:
   - libfuzzer
@@ -14,3 +14,4 @@ architectures:
   - i386
 auto_ccs:
   - "me@addisoncrump.info"
+  - "philip.hazel@gmail.com"
