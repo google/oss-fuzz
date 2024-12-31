@@ -262,7 +262,7 @@ def _check_one_apt_update(path):
     if 'RUN apt install' in dockerfile or 'RUN apt-get install' in dockerfile:
       print('Please add an "apt-get update" before "apt-get install". '
             'Otherwise, a cached and outdated RUN layer may lead to install '
-            'failures.')
+            'failures in file %s.' % str(path))
       return False
 
   return True
