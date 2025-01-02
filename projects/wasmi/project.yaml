@@ -6,3 +6,7 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 language: rust
+# Ignore dependencies on crates.io, and the Rust standard library itself.
+coverage_extra_args: >
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*
