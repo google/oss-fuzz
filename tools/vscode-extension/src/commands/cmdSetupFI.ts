@@ -48,7 +48,7 @@ export async function setUpFuzzIntrospectorHandler() {
     '-m',
     'pip',
     'install',
-    'fuzz-introspector==0.1.4',
+    'fuzz-introspector==0.1.5',
   ];
   const [res2, output2] = await systemSync(cmdToExec2, args2);
   if (res2 === false) {
