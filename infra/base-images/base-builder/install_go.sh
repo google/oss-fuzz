@@ -16,9 +16,9 @@
 ################################################################################
 
 cd /tmp
-wget https://go.dev/dl/go1.22.1.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.22.9.linux-amd64.tar.gz
 mkdir temp-go
-tar -C temp-go/ -xzf go1.22.1.linux-amd64.tar.gz
+tar -C temp-go/ -xzf go1.22.9.linux-amd64.tar.gz
 mkdir /root/.go/
 mv temp-go/go/* /root/.go/
 rm -rf temp-go
