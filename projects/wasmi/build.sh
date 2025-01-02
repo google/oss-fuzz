@@ -15,9 +15,12 @@
 #
 ################################################################################
 
-cargo fuzz build translate -O
-cargo fuzz build execute -O
-cargo fuzz build differential --features=differential -O
+# Needed for coverage to work.
+nightly="+$RUSTUP_TOOLCHAIN"
+
+cargo $nightly fuzz build translate -O
+cargo $nightly fuzz build execute -O
+cargo $nightly fuzz build differential --features=differential -O
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
