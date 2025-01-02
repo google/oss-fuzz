@@ -5,6 +5,7 @@ auto_ccs :
   - "barun.acharya@accuknox.com"
   - "rudraksh@accuknox.com"
   - "ramakant@accuknox.com"
+  - "rickprimeranjan@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer

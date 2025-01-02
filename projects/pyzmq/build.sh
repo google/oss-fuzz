@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
+python -m pip install .
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+    compile_python_fuzzer $fuzzer --collect-all="pyzmq"
 done

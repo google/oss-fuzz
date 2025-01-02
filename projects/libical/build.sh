@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cmake . -DSTATIC_ONLY=ON -DICAL_GLIB=False
+cmake . -DSTATIC_ONLY=ON -DICAL_GLIB=False -DICAL_GLIB_BUILD_DOCS=False -DGOBJECT_INTROSPECTION=False
 make install -j$(nproc)
 
 

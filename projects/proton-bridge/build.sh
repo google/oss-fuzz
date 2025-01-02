@@ -15,10 +15,20 @@
 #
 ################################################################################
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
+cd "$SRC"
+cd go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
+cd "$SRC"/proton-bridge
 
-compile_native_go_fuzzer   $PWD/internal/legacy/credentials     FuzzUnmarshal               fuzz_unmarshal   
-compile_native_go_fuzzer   $PWD/pkg/message/parser              FuzzNewParser               fuzz_new_parser
-compile_native_go_fuzzer   $PWD/pkg/message                     FuzzReadHeaderBody          fuzz_read_header_body
-compile_native_go_fuzzer   $PWD/pkg/mime                        FuzzDecodeHeader            fuzz_decode_header
-compile_native_go_fuzzer   $PWD/pkg/mime                        FuzzDecodeCharset           fuzz_decode_charset
+mkdir pkg/fuzzing
+printf "package fuzzing\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/fuzzing/register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+go mod tidy
+
+export PROJ="github.com/ProtonMail/proton-bridge/v3"
+compile_native_go_fuzzer   $PROJ/internal/legacy/credentials     FuzzUnmarshal               fuzz_unmarshal   
+compile_native_go_fuzzer   $PROJ/pkg/message/parser              FuzzNewParser               fuzz_new_parser
+compile_native_go_fuzzer   $PROJ/pkg/message                     FuzzReadHeaderBody          fuzz_read_header_body
+compile_native_go_fuzzer   $PROJ/pkg/mime                        FuzzDecodeHeader            fuzz_decode_header
+compile_native_go_fuzzer   $PROJ/pkg/mime                        FuzzDecodeCharset           fuzz_decode_charset

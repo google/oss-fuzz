@@ -19,6 +19,6 @@ FROM gcr.io/oss-fuzz-base/base-runner
 RUN mkdir -p /opt/oss-fuzz/infra/build_status
 COPY infra/build/functions/* /opt/oss-fuzz/infra/build_status/
 COPY infra/build/build_status/* /opt/oss-fuzz/infra/build_status/
-RUN pip install -r /opt/oss-fuzz/infra/build_status/requirements.txt
+RUN pip3 install -r /opt/oss-fuzz/infra/build_status/requirements.txt
 
 ENTRYPOINT [ "python3", "/opt/oss-fuzz/infra/build_status/update_build_status.py" ]
