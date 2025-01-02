@@ -33,6 +33,8 @@ import {runEndToEndAndGetCoverage} from './commands/cmdEndToEndCoverage';
 import {listFuzzersHandler} from './commands/cmdListFuzzers';
 import {cmdInputCollectorReproduceTestcase} from './commands/cmdReproduceTestcase';
 import {cmdDispatcherTemplate} from './commands/cmdTemplate';
+import {setUpFuzzIntrospectorHandler} from './commands/cmdSetupFI';
+import {runFuzzIntrospectorHandler} from './commands/cmdRunFI';
 import {cmdDispatcherGenerateClusterfuzzLite} from './commands/cmdDispatcherGenerateClusterfuzzLite';
 import {setUpOssFuzzHandler} from './commands/cmdSetupOSSFuzz';
 import {setOssFuzzPath} from './commands/cmdSetOSSFuzzPath';
@@ -188,6 +190,26 @@ export function activate(context: vscode.ExtensionContext) {
       await cmdInputCollectorTestFuzzerCFLite();
       println('CMD end: testFuzzerCFLite');
     })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'oss-fuzz.setupFuzzIntrospector',
+      async () => {
+        println('CMD start: setup FI');
+        await setUpFuzzIntrospectorHandler();
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'oss-fuzz.runFuzzIntrospector',
+      async () => {
+        println('CMD start: run Fuzz Introspector');
+        await runFuzzIntrospectorHandler();
+      }
+    )
   );
 }
 

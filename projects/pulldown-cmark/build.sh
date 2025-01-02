@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +14,8 @@
 #
 ################################################################################
 
-mv $SRC/fuzz_parser_test.go $SRC/dgraph/dql/
-printf "package dql\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > dql/register.go
-go mod tidy
-compile_native_go_fuzzer github.com/dgraph-io/dgraph/v24/dql FuzzParserTest parser_fuzzer
+# Note: This project creates Rust fuzz targets exclusively
+cd $SRC/pulldown-cmark
+CARGO_PROFILE_RELEASE_LTO=thin cargo fuzz build -O
+cp target/x86_64-unknown-linux-gnu/release/commonmark_js $OUT/
+cp target/x86_64-unknown-linux-gnu/release/parse $OUT/
