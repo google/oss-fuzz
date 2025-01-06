@@ -1,6 +1,6 @@
 homepage: "https://github.com/cloud-hypervisor/cloud-hypervisor"
 language: rust
-primary_contact: "chen.bo@intel.com"
+primary_contact: "bo.arvin.chen@gmail.com"
 auto_ccs:
   - "michael2012zhao@hotmail.com"
   - "Henry.Wang@arm.com"

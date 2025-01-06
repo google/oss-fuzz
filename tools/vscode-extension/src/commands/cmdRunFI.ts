@@ -44,11 +44,7 @@ export async function runFuzzIntrospectorHandler() {
   }
 
   const cmdToExec = '/tmp/fi-tmp-env/bin/fuzz-introspector';
-  const args: Array<string> = [
-    'full',
-    '--target_dir=${pathOfLocal}',
-    '--language=c',
-  ];
+  const args: Array<string> = ['full', '--target_dir=' + pathOfLocal];
   const [res, output] = await systemSync(cmdToExec, args);
   if (res === false) {
     println('Failed run FI');
