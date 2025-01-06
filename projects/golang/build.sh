@@ -134,7 +134,7 @@ compile_go_fuzzer regexpPackage FuzzFindMatchApis fuzz_find_match_apis
 cp $SRC/h2c_fuzzer.go $SRC/net/http2/h2c/
 cd $SRC/net/http2/h2c
 cd $SRC/instrumentation && go run main.go --target_dir=$SRC/net --check_io_length=true && cd -
-go mod tidy -e -go=1.16 && go mod tidy -e -go=1.17
+go mod tidy
 compile_go_fuzzer . FuzzH2c fuzz_x_h2c
 mv $SRC/fuzz_x_h2c.options $OUT/
 
