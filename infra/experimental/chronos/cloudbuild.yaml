@@ -109,7 +109,7 @@ steps:
 images:
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
-timeout: 1800s
+timeout: 72000s  # 20 hours, same as build_lib.py
 logsBucket: oss-fuzz-gcb-logs
 tags:
 - ${_PROJECT}

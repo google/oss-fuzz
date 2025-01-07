@@ -45,7 +45,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   if (json != NULL) {
-    free(json);
+    loader_cJSON_Delete(json);
   }
 
 out:
