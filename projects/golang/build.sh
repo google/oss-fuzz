@@ -26,6 +26,10 @@ export GOTOOLCHAIN="local"
 
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
 
+cd $SRC/go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
+
 cd $SRC/text
 cp $SRC/unicode_fuzzer.go ./encoding/unicode/
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
@@ -62,6 +66,10 @@ function setup_golang_fuzzers() {
 	mkdir $SRC/golang/encoding && cp $SRC/encoding_fuzzer.go $SRC/golang/encoding/
 
 	go mod init "github.com/dvyukov/go-fuzz-corpus"
+	mkdir fuzzingdep
+	printf "package fuzzingdep\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > fuzzingdep/register.go
+	go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+	go mod tidy
 }
 
 function compile_fuzzers() {
@@ -70,11 +78,15 @@ function compile_fuzzers() {
 	compile_go_fuzzer $FUZZ_ROOT/encoding FuzzEncoding fuzz_encoding$version
 	compile_go_fuzzer $FUZZ_ROOT/strings FuzzStringsSplit fuzz_strings_split$version
 	compile_go_fuzzer $FUZZ_ROOT/fp FuzzFpGlob glob_fuzzer$version
+	if [ "${version}" != '_latest_master' ]
+        then
+		compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign$version
+		compile_native_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaVerify FuzzEcdsaVerify$version
+        fi
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherDecrypt fuzz_aes_cipher_decrypt$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/aes FuzzAesCipherEncrypt fuzz_aes_cipher_encrypt$version
-	compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzMultipleParsers fuzz_multiple_parsers$version
 	compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer$version
@@ -183,6 +195,7 @@ go mod tidy
 cd $SRC/go/src/image/png
 go mod init pngPackage
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 compile_native_go_fuzzer pngPackage FuzzDecode fuzz_png_decode
 zip $OUT/fuzz_png_decode_seed_corpus.zip ./testdata/*.png
 
@@ -191,6 +204,7 @@ go mod init gzipPackage
 go mod tidy
 find . -name "*_test.go" ! -name 'fuzz_test.go' -type f -exec rm -f {} +
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 compile_native_go_fuzzer gzipPackage FuzzReader fuzz_std_lib_gzip_reader
 zip $OUT/fuzz_std_lib_gzip_reader_seed_corpus.zip $SRC/go/src/compress/gzip/testdata/*
 
@@ -200,6 +214,7 @@ cd $SRC/go/src/html
 go mod init htmlPackage
 go mod tidy
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 compile_native_go_fuzzer htmlPackage FuzzEscapeUnescape fuzz_html_escape_unescape
 
 # Install latest Go from master branch and build fuzzers again
