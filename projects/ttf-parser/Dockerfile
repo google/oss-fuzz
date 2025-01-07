@@ -21,3 +21,4 @@ RUN git clone https://github.com/RazrFalcon/ttf-parser ttf-parser
 WORKDIR $SRC/ttf-parser
 
 COPY build.sh $SRC/
+COPY fuzz $SRC/ttf-parser/fuzz
