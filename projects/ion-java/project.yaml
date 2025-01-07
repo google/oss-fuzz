@@ -5,5 +5,5 @@ fuzzing_engines:
 main_repo: "https://github.com/amazon-ion/ion-java/"
 sanitizers:
   - address
-vendor_ccs:
+auto_ccs:
   - "ion-team@amazon.com"
