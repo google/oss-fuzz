@@ -38,7 +38,10 @@ func FuzzEcdsaSign(data []byte) int {
 		return 0
 	}
 	randReader := bytes.NewReader(data[:firstRandReaderLen])
-	priv, _ := ecdsa.GenerateKey(c[cIndex], randReader)
+	priv, err := ecdsa.GenerateKey(c[cIndex], randReader)
+	if err != nil {
+		return 0
+	}
 	_, _, _ = ecdsa.Sign(randReader, priv, data[firstRandReaderLen+1:])
 	return 1
 }
