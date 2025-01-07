@@ -95,6 +95,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;compiler-rt" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
+    -DLLVM_USE_LINKER=lld \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \

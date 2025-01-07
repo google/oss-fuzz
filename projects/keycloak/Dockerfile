@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt install openjdk-17-jdk -y
+RUN apt update && apt install openjdk-17-jdk libxext6 libxrender1 libxtst6 -y
 
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \

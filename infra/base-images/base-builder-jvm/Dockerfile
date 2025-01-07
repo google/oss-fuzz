@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder AS base
 
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 ENV JAVA_15_HOME /usr/lib/jvm/java-15-openjdk-amd64
@@ -27,6 +27,7 @@ RUN install_java.sh
 
 RUN chmod 777 /usr/local/bin && chmod 777 /usr/local/lib
 
+FROM base AS builder
 RUN useradd -m jazzer_user
 
 USER jazzer_user
@@ -35,7 +36,7 @@ WORKDIR $SRC
 
 RUN git clone https://github.com/CodeIntelligenceTesting/jazzer && \
     cd jazzer && \
-    git checkout aa376ca3c0255b9cf04e1fc79fcf1fe5c63b2376
+    git checkout 11b42852df4344737df54a380c2f522025bb4e84
 
 WORKDIR $SRC/jazzer
 
@@ -54,10 +55,12 @@ RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazze
     cp $(bazel cquery --output=files //deploy:jazzer-api) $JAZZER_API_PATH && \
     cp $(bazel cquery --output=files //deploy:jazzer-junit) $JAZZER_JUNIT_PATH
 
-USER root
+FROM base AS final
 
-RUN rm -rf /home/jazzer_user/.cache/bazel /home/jazzer_user/.cache/bazelisk && \
-    rm -rf $SRC/jazzer
+COPY --from=builder /usr/local/bin/jazzer_agent_deploy.jar /usr/local/bin/jazzer_agent_deploy.jar
+COPY --from=builder /usr/local/bin/jazzer_driver /usr/local/bin/jazzer_driver
+COPY --from=builder $JAZZER_API_PATH $JAZZER_API_PATH
+COPY --from=builder $JAZZER_JUNIT_PATH $JAZZER_JUNIT_PATH
 
 RUN chmod 755 /usr/local/bin && chmod 755 /usr/local/lib
 

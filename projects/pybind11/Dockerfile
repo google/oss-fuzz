@@ -16,8 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
-    apt-get install -y python-is-python3 build-essential pip python3-dev
-RUN python3 -m pip install --upgrade pip
+    apt-get install -y build-essential
 
 RUN git clone https://github.com/pybind/pybind11
 COPY build.sh *_fuzzer.cc $SRC/

@@ -55,9 +55,6 @@ def TestOneInput(data):
   except (TypeError, UnicodeDecodeError):
     pass
 
-  six.moves.html_parser.HTMLParser().unescape(
-      fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 1024)))
-
 
 def main():
   atheris.instrument_all()

@@ -16,4 +16,3 @@ fuzzing_engines:
   - centipede
 architectures:
   - x86_64
-  - aarch64

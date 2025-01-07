@@ -275,11 +275,13 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
   bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
   steps.append({
       'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path],
+      'allowFailure': True
   })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
+      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports'],
+      'allowFailure': True
   })
 
   return steps
@@ -387,7 +389,8 @@ def get_docker_build_step(image_names,
                           directory,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
-                          architecture='x86_64'):
+                          architecture='x86_64',
+                          cache_image=''):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -404,6 +407,9 @@ def get_docker_build_step(image_names,
         _make_image_name_architecture_specific(image_name, architecture)
         for image_name in image_names
     ]
+  if cache_image:
+    args.extend(['--build-arg', f'CACHE_IMAGE={cache_image}'])
+
   for image_name in image_names:
     args.extend(['--tag', image_name])
 
@@ -437,7 +443,9 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     language,
     config,
     architectures=None,
-    experiment=False):
+    experiment=False,
+    cache_image=None,
+    srcmap=True):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
@@ -453,23 +461,26 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
+
   docker_build_step = get_docker_build_step([image],
                                             os.path.join('projects', name),
-                                            src_root=src_root)
+                                            src_root=src_root,
+                                            cache_image=cache_image)
   steps.append(docker_build_step)
-  srcmap_step_id = get_srcmap_step_id()
-  steps.extend([{
-      'name': image,
-      'args': [
-          'bash', '-c',
-          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-      ],
-      'env': [
-          'OSSFUZZ_REVISION=$REVISION_ID',
-          'FUZZING_LANGUAGE=%s' % language,
-      ],
-      'id': srcmap_step_id
-  }])
+  if srcmap:
+    srcmap_step_id = get_srcmap_step_id()
+    steps.extend([{
+        'name': image,
+        'args': [
+            'bash', '-c',
+            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+        ],
+        'env': [
+            'OSSFUZZ_REVISION=$REVISION_ID',
+            'FUZZING_LANGUAGE=%s' % language,
+        ],
+        'id': srcmap_step_id
+    }])
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
