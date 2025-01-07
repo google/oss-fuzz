@@ -38,6 +38,10 @@ import org.apache.poi.util.IOUtils;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 public class EncryptDecryptFuzzer {
+	public static void fuzzerInitialize() {
+		POIFuzzer.adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(FuzzedDataProvider data) throws IOException, GeneralSecurityException {
 		try {
 			EncryptionMode encryptionMode = EncryptionMode.values()[(data.consumeInt(0, EncryptionMode.values().length - 1))];

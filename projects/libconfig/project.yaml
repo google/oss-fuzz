@@ -1,0 +1,6 @@
+homepage: "https://hyperrealm.github.io/libconfig/"
+language: c
+primary_contact: "hyperrealm@gmail.com"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/hyperrealm/libconfig.git"

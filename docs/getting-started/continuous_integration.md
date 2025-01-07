@@ -135,6 +135,10 @@ and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of
 a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
+`report-timeouts`: Determines whether to report fails due to timeouts.
+
+`report-ooms`: Determines whether to report fails due to OOM.
+
 ```yaml
 {% raw %}
 name: CIFuzz
@@ -259,8 +263,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-summary]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-summary.png
-[github-actions-download-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-download-crash.png
+[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
+[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

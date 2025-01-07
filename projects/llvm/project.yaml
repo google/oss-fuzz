@@ -1,15 +1,11 @@
 homepage: "http://llvm.org/"
 language: c++
-primary_contact: "kcc@google.com"
+primary_contact: "rnk@google.com"
 auto_ccs:
-  - "mascasa@google.com"
   - "jonas@devlieghere.com"
   - "vsk@apple.com"
   - "akilsrin@apple.com"
-  - "llvm-bugs@lists.llvm.org"
   - "igmyrj@gmail.com"
-  - "mitchphillips@outlook.com"
-  - "mitchp@google.com"
   - "xpl0re@gmail.com"
   - "jfb@chromium.org"
   - "eneyman@google.com"
@@ -20,7 +16,7 @@ auto_ccs:
 
 sanitizers:
   - address
-#  - memory ## msan disabled after a clang bump. Please re-enable it, Try to fix any build warnings and build errors, as well as msan runtime warnings and errors. msan failure log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-a3d59d5e-8ae4-4294-9a84-bed1f85c2923.txt
+  - memory
 
 fuzzing_engines:
   - libfuzzer

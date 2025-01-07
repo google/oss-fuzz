@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+export USE_BAZEL_VERSION=7.4.0
 # Disable `layering_check` feature.
 # As per https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=63223, it breaks
 # the build. Someone could figure out exactly why it breaks the build, but just

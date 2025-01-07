@@ -20,7 +20,7 @@ cd tests/fuzz
 # Typst has a large API and as a result, will often fail to build on nightly,
 # due to bugs in rustc. Because of this we are pinning the nightly version
 # to a specific version.
-cargo +nightly-2023-09-13 fuzz build -O --debug-assertions
+cargo +nightly-2024-10-29 fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=$SRC/typst/target/x86_64-unknown-linux-gnu/release 
 for f in src/*.rs

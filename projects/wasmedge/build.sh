@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS -fuse-ld=lld"
-export CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
-
 cd "$SRC/WasmEdge"
 sed -ie 's@core lto native@core native@' cmake/Helper.cmake
 cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo \

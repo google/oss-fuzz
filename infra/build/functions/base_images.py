@@ -29,7 +29,9 @@ BASE_IMAGES = [
     'base-builder-javascript',
     'base-builder-jvm',
     'base-builder-python',
+    'base-builder-ruby',
     'base-builder-rust',
+    'base-builder-ruby',
     'base-builder-swift',
     'base-runner',
     'base-runner-debug',
@@ -74,7 +76,8 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
           'machineType': 'E2_HIGHCPU_32'
       },
   }
-  return build_lib.run_build(steps,
+  return build_lib.run_build('',
+                             steps,
                              credentials,
                              BASE_PROJECT,
                              TIMEOUT,

@@ -19,10 +19,7 @@ RUN apt-get update && apt-get install -y make mercurial zlib1g-dev gyp ninja-bui
 
 RUN hg clone https://hg.mozilla.org/projects/nspr nspr
 RUN hg clone https://hg.mozilla.org/projects/nss nss
-RUN git clone --depth 1 https://github.com/mozilla/nss-fuzzing-corpus.git nss-corpus
+RUN git clone --depth 1 https://github.com/MozillaSecurity/nss-fuzzing-corpus.git nss-corpus
 
 WORKDIR nss
 COPY build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

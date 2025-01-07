@@ -26,12 +26,6 @@ RUN apt-get update && apt-get install -y \
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets && \
   rm -rf bitcoin-core/assets/.git  # Remove git history to save storage
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
-RUN git clone --depth 1 https://github.com/randombit/botan.git
-RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
-RUN git clone --depth 1 https://github.com/google/wycheproof.git
-RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 WORKDIR bitcoin-core
 COPY build.sh $SRC/
-COPY build_cryptofuzz.sh $SRC/

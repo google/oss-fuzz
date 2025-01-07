@@ -18,11 +18,17 @@
 # Keeping the rust toolchain in the image wastes 1 GB.
 FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-RUN apt-get update && apt-get install -y cargo
+RUN apt-get update && apt-get install -y cargo libyaml-dev
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
+FROM gcr.io/oss-fuzz-base/base-builder-ruby AS base-ruby
+
+# The base builder image compiles a specific Python version. Using a multi-stage build
+# to copy that same Python interpreter into the runner image saves build time and keeps
+# the Python versions in sync.
+FROM gcr.io/oss-fuzz-base/base-builder AS base-builder
 
 # Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
@@ -35,17 +41,34 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
+# Copy the pre-compiled Python binaries and libraries
+COPY --from=base-builder /usr/local/bin/python3.10 /usr/local/bin/python3.10
+COPY --from=base-builder /usr/local/lib/libpython3.10.so.1.0 /usr/local/lib/libpython3.10.so.1.0
+COPY --from=base-builder /usr/local/include/python3.10 /usr/local/include/python3.10
+COPY --from=base-builder /usr/local/lib/python3.10 /usr/local/lib/python3.10
+COPY --from=base-builder /usr/local/bin/pip3 /usr/local/bin/pip3
+
+# Create symbolic links to ensure compatibility
+RUN ldconfig && \
+    ln -s /usr/local/bin/python3.10 /usr/local/bin/python3 && \
+    ln -s /usr/local/bin/python3.10 /usr/local/bin/python
+
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
+# Pin coverage to the same as in the base builder:
+# https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/install_python.sh#L22
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage $CODE_COVERAGE_SRC && \
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
+    # If version "Jinja2==2.10" is in requirements.txt, bump it to a patch version that
+    # supports upgrading its MarkupSafe dependency to a Python 3.10 compatible release:
+    sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt && \
     pip3 install -r requirements.txt && \
-    pip3 install MarkupSafe==0.23 && \
-    pip3 install coverage
+    pip3 install MarkupSafe==2.0.1 && \
+    pip3 install coverage==6.3.2
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and
@@ -69,7 +92,8 @@ COPY install_go.sh /
 RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 
 # Install OpenJDK 15 and trim its size by removing unused components.
-ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_15_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 
@@ -84,6 +108,15 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
+
+# Copy built ruby and ruzzy from builder
+COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
+COPY --from=base-ruby /install/ruzzy /install/ruzzy
+COPY ruzzy /usr/bin/ruzzy
+ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
+# RubyGems installation directory
+ENV GEM_HOME="$OUT/fuzz-gem"
+ENV GEM_PATH="/install/ruzzy"
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \

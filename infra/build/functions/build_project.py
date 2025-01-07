@@ -22,7 +22,6 @@ Usage: build_project.py <project_dir>
 from __future__ import print_function
 
 import argparse
-import collections
 from dataclasses import dataclass
 import datetime
 import json
@@ -61,6 +60,10 @@ DEFAULT_OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz.git'
 # Used if build logs are uploaded to a separate place.
 LOCAL_BUILD_LOG_PATH = '/workspace/build.log'
 BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
+
+_CACHED_IMAGE = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
+                 '{name}-ofg-cached-{sanitizer}')
+_CACHED_SANITIZERS = ('address', 'coverage')
 
 
 @dataclass
@@ -164,6 +167,15 @@ class Project:  # pylint: disable=too-many-instance-attributes
     else:
       self.main_repo = ''
 
+    # This is set to enable build infra to use cached images (which are
+    # specific to a sanitizer).
+    # TODO: find a better way to handle this.
+    self.cached_sanitizer = None
+
+    # This is used by OSS-Fuzz-Gen, which generates fake project names for each
+    # benchmark. We still need access to the real project name in some cases.
+    self.real_name = self.name
+
   @property
   def sanitizers(self):
     """Returns processed sanitizers."""
@@ -174,6 +186,11 @@ class Project:  # pylint: disable=too-many-instance-attributes
   def image(self):
     """Returns the docker image for the project."""
     return f'gcr.io/{build_lib.IMAGE_PROJECT}/{self.name}'
+
+  @property
+  def cached_image(self):
+    return _CACHED_IMAGE.format(name=self.real_name,
+                                sanitizer=self.cached_sanitizer)
 
 
 def get_last_step_id(steps):
@@ -244,7 +261,12 @@ def get_env(fuzzing_language, build):
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
-def get_compile_step(project, build, env, parallel, upload_build_logs=None):
+def get_compile_step(project,
+                     build,
+                     env,
+                     parallel,
+                     upload_build_logs=None,
+                     allow_failure=False):
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
@@ -278,7 +300,7 @@ def get_compile_step(project, build, env, parallel, upload_build_logs=None):
       'id': get_id('compile', build),
   }
 
-  if upload_build_logs:
+  if upload_build_logs or allow_failure:
     # The failure will be reported in a subsequent step.
     compile_step['allowFailure'] = True
 
@@ -309,23 +331,42 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     project_yaml,
     dockerfile,
     config,
-    additional_env=None):
+    additional_env=None,
+    use_caching=False):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
+  return get_build_steps_for_project(project,
+                                     config,
+                                     additional_env=additional_env,
+                                     use_caching=use_caching)
+
+
+def get_build_steps_for_project(project,
+                                config,
+                                additional_env=None,
+                                use_caching=False):
+  """Returns build steps for project."""
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
   timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
-  build_steps = build_lib.get_project_image_steps(
-      project.name,
-      project.image,
-      project.fuzzing_language,
-      config=config,
-      architectures=project.architectures,
-      experiment=config.experiment)
+
+  if use_caching:
+    # For cached builds: the cache images are sanitizer-specific, so we need to
+    # do a rebuild prior to each compile.
+    build_steps = []
+  else:
+    # Non-cached builds just use a single builder image to build all sanitizers.
+    build_steps = build_lib.get_project_image_steps(
+        project.name,
+        project.image,
+        project.fuzzing_language,
+        config=config,
+        architectures=project.architectures,
+        experiment=config.experiment)
 
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
@@ -333,6 +374,18 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
+      if use_caching and sanitizer in _CACHED_SANITIZERS:
+        project.cached_sanitizer = sanitizer
+        build_steps.extend(
+            build_lib.get_project_image_steps(
+                project.name,
+                project.image,
+                project.fuzzing_language,
+                config=config,
+                architectures=project.architectures,
+                experiment=config.experiment,
+                cache_image=project.cached_image))
+
       # Build x86_64 before i386.
       for architecture in reversed(sorted(project.architectures)):
         build = Build(fuzzing_engine, sanitizer, architecture)

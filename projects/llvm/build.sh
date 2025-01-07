@@ -39,7 +39,6 @@ else
       llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
-      clang-pseudo-fuzzer \
       clang-fuzzer \
       llvm-parse-assembly-fuzzer \
       llvm-symbol-reader-fuzzer \
@@ -61,7 +60,6 @@ else
       llvm-special-case-list-fuzzer \
       clang-objc-fuzzer \
       clang-format-fuzzer \
-      clang-pseudo-fuzzer \
       clang-fuzzer \
       clangd-fuzzer \
       llvm-parse-assembly-fuzzer \
@@ -75,7 +73,6 @@ readonly CLANG_DICT_FUZZERS=( \
   clang-fuzzer \
   clang-format-fuzzer \
   clang-objc-fuzzer \
-  clang-pseudo-fuzzer \
 )
 
 case $SANITIZER in
@@ -98,6 +95,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;compiler-rt" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
+    -DLLVM_USE_LINKER=lld \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
@@ -179,14 +177,10 @@ cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sroa
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 
-
-# 10th August 2022: The lines for building the dictionaries
-# broke the whole build. They are left as a reminder to re-enable
-# them once they have been fixed upstream.
-#ninja clang-fuzzer-dictionary
-#for fuzzer in "${CLANG_DICT_FUZZERS[@]}"; do
-#  bin/clang-fuzzer-dictionary > $OUT/$fuzzer.dict
-#done
+ninja clang-fuzzer-dictionary
+for fuzzer in "${CLANG_DICT_FUZZERS[@]}"; do
+  bin/clang-fuzzer-dictionary > $OUT/$fuzzer.dict
+done
 
 zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang/tools/clang-fuzzer/corpus_examples/objc/*
 zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang-tools-extra/clangd/test/*

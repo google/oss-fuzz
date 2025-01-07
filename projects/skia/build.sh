@@ -155,6 +155,7 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
 
 $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   cubic_roots \
+  parse_path \
   quad_roots \
   skmeshspecification \
   skruntimeblender \
@@ -321,6 +322,9 @@ mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
 
 mv out/FuzzDebug/skcolorspace $OUT/skcolorspace
 mv ../skia_data/skcolorspace_seed_corpus.zip $OUT/skcolorspace_seed_corpus.zip
+
+mv out/FuzzDebug/parse_path $OUT/parse_path
+mv ../skia_data/parse_path_seed_corpus.zip $OUT/parse_path_seed_corpus.zip
 
 # These only take a few floats - no seed corpus necessary
 mv out/FuzzDebug/quad_roots $OUT/quad_roots

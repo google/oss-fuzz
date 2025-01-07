@@ -7,6 +7,7 @@ auto_ccs:
   - "felipekde@gmail.com"
   - "fsaintjacques@gmail.com"
   - "jinpengz@google.com"
+  - "maplewish117@gmail.com"
   - "micahk@google.com"
   - "muraken@gmail.com"
   - "panahi@google.com"
@@ -14,4 +15,5 @@ auto_ccs:
   - "wesmckinn@gmail.com"
   - "xhochy@gmail.com"
   - "will.jones127@gmail.com"
+  - "zotthewizard@gmail.com"
 main_repo: 'https://github.com/apache/arrow.git'

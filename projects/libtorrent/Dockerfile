@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget libssl-dev
-
-RUN git clone --depth 1 --single-branch --branch boost-1.73.0 --recurse-submodules https://github.com/boostorg/boost.git
+RUN apt-get update && apt-get install -y wget libssl-dev libboost-tools-dev libboost-dev libboost-system-dev
 
 RUN git clone --depth 1 --single-branch --branch RC_2_0 --recurse-submodules https://github.com/arvidn/libtorrent.git
 WORKDIR libtorrent

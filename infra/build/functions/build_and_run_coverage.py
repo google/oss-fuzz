@@ -46,7 +46,7 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = [
     'c', 'c++', 'go', 'jvm', 'rust', 'swift', 'python'
 ]
 
-LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python', 'jvm']
+LANGUAGES_WITH_INTROSPECTOR_SUPPORT = ['c', 'c++', 'python', 'jvm', 'rust']
 
 
 class Bucket:  # pylint: disable=too-few-public-methods
@@ -316,7 +316,11 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   env.append(f'PROJECT_NAME={project.name}')
 
   build_steps.append(
-      build_project.get_compile_step(project, build, env, config.parallel))
+      build_project.get_compile_step(project,
+                                     build,
+                                     env,
+                                     config.parallel,
+                                     allow_failure=True))
 
   # Upload the report.
   upload_report_url = bucket.get_upload_url('inspector-report')
