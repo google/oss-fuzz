@@ -38,6 +38,7 @@ COPY build.sh text_fuzzer.go \
      unicode_fuzzer.go \
      x509_fuzzer.go \
      ecdsa_fuzzer.go \
+     dsa_fuzzer.go \
      aes_fuzzer.go \
      h2c_fuzzer.go \
      fuzz_x_h2c.options \

@@ -53,6 +53,9 @@ function setup_golang_fuzzers() {
 	mkdir -p $SRC/golang/crypto/ecdsa
 	cp $SRC/ecdsa_fuzzer.go ./crypto/ecdsa/
 
+	mkdir -p $SRC/golang/crypto/dsa
+	cp $SRC/dsa_fuzzer.go ./crypto/dsa/
+
 	mkdir -p $SRC/golang/crypto/aes
 	cp $SRC/aes_fuzzer.go ./crypto/aes/
 
@@ -82,6 +85,8 @@ function compile_fuzzers() {
         then
 		compile_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaSign FuzzEcdsaSign$version
 		compile_native_go_fuzzer $FUZZ_ROOT/crypto/ecdsa FuzzEcdsaVerify FuzzEcdsaVerify$version
+		compile_native_go_fuzzer $FUZZ_ROOT/crypto/dsa FuzzDsaSign FuzzDsaSign$version
+		compile_native_go_fuzzer $FUZZ_ROOT/crypto/dsa FuzzDsaVerify FuzzDsaVerify$version
         fi
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzParseCert fuzz_parse_cert$version
 	compile_go_fuzzer $FUZZ_ROOT/crypto/x509 FuzzPemDecrypt fuzz_pem_decrypt$version
