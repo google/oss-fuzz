@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
+set -eox pipefail
 
+target_out_dir=fuzz/target/x86_64-unknown-linux-gnu/release
 cargo fuzz build -O
-fuzz_release=fuzz/target/x86_64-unknown-linux-gnu/release
-cp $fuzz_release/deserialize $OUT/
-cp $fuzz_release/iterate $OUT/
-cp $fuzz_release/raw_deserialize $OUT/
-cp $fuzz_release/raw_deserialize_utf8_lossy $OUT/
+cargo fuzz list | while read i; do
+  [[ "$i" == "generate_corpus" ]] && continue
+  cp $target_out_dir/$i $OUT/
+done
