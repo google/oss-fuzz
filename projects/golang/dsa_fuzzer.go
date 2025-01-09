@@ -26,7 +26,7 @@ func FuzzDsaVerify(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data1, data2, data3 []byte, s1, s2 string, s uint8) {
 		bi1, ok := new(big.Int).SetString(s1, 16)
 		bi2, ok2 := new(big.Int).SetString(s2, 16)
-		if !ok && !ok2 {
+		if !ok || !ok2 {
 			return
 		}
 		var priv dsa.PrivateKey
