@@ -40,7 +40,7 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.cc -std=c++11 \
 -lopencv_dnn -lopencv_objdetect -lopencv_photo -lopencv_ml -lopencv_gapi \
 -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d \
 -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc \
--lopencv_flann -lopencv_core -lgif -llibjpeg-turbo -llibwebp -llibpng -llibtiff \
+-lopencv_flann -lopencv_core -llibjpeg-turbo -llibwebp -llibpng -llibtiff \
 -llibopenjp2 -lIlmImf -llibprotobuf -lzlib -littnotify -lippiw \
 -lippicv -lade -ldl -lm -lpthread -lrt \
 -o $OUT/$fuzzer
