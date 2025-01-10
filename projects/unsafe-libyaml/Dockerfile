@@ -13,14 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/cockroachdb/cockroach.git cockroach
-RUN wget https://go.dev/dl/go1.22.9.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.22.9.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
-WORKDIR cockroach
+RUN git clone https://github.com/dtolnay/unsafe-libyaml
+WORKDIR $SRC/unsafe-libyaml
+
 COPY build.sh $SRC/

@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +15,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/cockroachdb/cockroach.git cockroach
-RUN wget https://go.dev/dl/go1.22.9.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.22.9.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
-WORKDIR cockroach
-COPY build.sh $SRC/
+cargo fuzz build -O
+
+cp fuzz/target/x86_64-unknown-linux-gnu/release/load $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/scan $OUT/
+
