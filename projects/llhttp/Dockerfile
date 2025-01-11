@@ -15,10 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN apt install -y nodejs
-RUN git clone --depth 1 https://github.com/nodejs/llhttp llhttp
-WORKDIR llhttp
+RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh \
+    && bash nodesource_setup.sh
+RUN apt-get update \
+    && apt-get install -y nodejs make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/nodejs/llhttp $SRC/llhttp
 COPY build.sh $SRC/
+WORKDIR $SRC/llhttp
