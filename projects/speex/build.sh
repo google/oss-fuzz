@@ -25,12 +25,22 @@ popd
 
 ./autogen.sh
 export CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS -DDISABLE_WARNINGS"
-# Build fixed-point fuzzer
+# Build fixed-point encoder fuzzer
+PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared --enable-fixed-point
+make -j$(nproc)
+make install
+$CXX $CXXFLAGS contrib/oss-fuzz/speexenc_fuzzer.cc -o $OUT/speex_encode_fuzzer_fixed -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex
+# Build floating-point encoder fuzzer
+PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared
+make -j$(nproc)
+make install
+$CXX $CXXFLAGS contrib/oss-fuzz/speexenc_fuzzer.cc -o $OUT/speex_encode_fuzzer_float -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex
+# Build fixed-point decoder fuzzer
 PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared --enable-fixed-point
 make -j$(nproc)
 make install
 $CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_fixed -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex -logg
-# Build floating-point fuzzer
+# Build floating-point decoder fuzzer
 PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared
 make -j$(nproc)
 make install
