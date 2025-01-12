@@ -21,8 +21,8 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev \
   libjpeg-dev \
   libpng-dev \
-  npm \
   libffi-dev
+RUN install_javascript.sh
 RUN python3 -m pip install --upgrade pip
 RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/

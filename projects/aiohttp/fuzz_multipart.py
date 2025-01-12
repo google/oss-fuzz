@@ -44,7 +44,7 @@ class FuzzStream:
 
 @atheris.instrument_func
 async def fuzz_bodypart_reader(data):
-    newline=b'\n'
+    data = data.replace(b'\n', b'\r\n')
     fdp = atheris.FuzzedDataProvider(data)
     obj = aiohttp.BodyPartReader(
         b"--:",
@@ -52,7 +52,6 @@ async def fuzz_bodypart_reader(data):
             CONTENT_TYPE: fdp.ConsumeUnicode(30)
         },
         FuzzStream(fdp.ConsumeBytes(atheris.ALL_REMAINING)),
-        _newline=newline
     )
     if not obj.at_eof():
         await obj.form()
