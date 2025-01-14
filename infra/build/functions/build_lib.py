@@ -385,6 +385,10 @@ def _make_image_name_architecture_specific(image_name, architecture):
   return f'{image_name}-{architecture.lower()}'
 
 
+def get_unique_build_step_image_id():
+  return uuid.uuid4()
+
+
 def get_docker_build_step(image_names,
                           directory,
                           use_buildkit_cache=False,
@@ -410,14 +414,14 @@ def get_docker_build_step(image_names,
   if cache_image:
     args.extend(['--build-arg', f'CACHE_IMAGE={cache_image}'])
 
-  for image_name in image_names:
+  for image_name in sorted(image_names):
     args.extend(['--tag', image_name])
 
   step = {
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
       'dir': directory,
-      'id': f'build-image-{architecture}',
+      'id': f'build-{get_unique_build_step_image_id()}',
   }
   # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.

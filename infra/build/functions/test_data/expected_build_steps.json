@@ -19,7 +19,7 @@
       "."
     ],
     "dir": "oss-fuzz/projects/test-project",
-    "id": "build-image-x86_64"
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
@@ -76,7 +76,7 @@
       "."
     ],
     "dir": "oss-fuzz/projects/test-project",
-    "id": "build-image-aarch64"
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/cloud-builders/docker",
