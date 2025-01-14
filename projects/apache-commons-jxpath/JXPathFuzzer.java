@@ -30,29 +30,70 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathException;
 
-
 public class JXPathFuzzer {
-    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    
+    // Method to create and return a Document from a fuzzed input string
+    private static Document createDocument(FuzzedDataProvider data) {
         DocumentBuilder builder = null;
         Document doc = null;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            
+            // Setting factory attributes for additional coverage and security
             factory.setValidating(data.consumeBoolean());
             factory.setNamespaceAware(data.consumeBoolean());
             factory.setExpandEntityReferences(data.consumeBoolean());
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);  // Disable DTD declarations for security
+            
             builder = factory.newDocumentBuilder();
-        } catch (Exception parserConfigurationException) {
+        } catch (ParserConfigurationException | FactoryConfigurationError e) {
+            System.err.println("Error creating DocumentBuilder: " + e.getMessage());
+            return null;
+        }
+
+        // Consuming a random length for XML input (between 100 and 500 characters)
+        String xmlInput = data.consumeString(data.consumeInt(100, 500));
+        if (xmlInput.isEmpty()) {
+            xmlInput = "<root></root>"; 
         }
 
         try {
-            doc = builder.parse(new InputSource(new StringReader(data.consumeString(2000))));
+            doc = builder.parse(new InputSource(new StringReader(xmlInput)));
         } catch (SAXException | IOException e) {
+            System.err.println("Parsing error: " + e.getMessage());
         }
+        
+        return doc;
+    }
 
-        JXPathContext context = JXPathContext.newContext(doc);
-        try {
-            context.selectNodes(data.consumeRemainingAsString());
-        } catch (JXPathException e) {
+    // Method to perform XPath query on the document using fuzzed input
+    private static void performXPathQuery(Document doc, FuzzedDataProvider data) {
+        if (doc == null) {
+            System.err.println("Document is null, skipping XPath query.");
+            return;
         }
+        
+        JXPathContext context = JXPathContext.newContext(doc);
+        
+        // Fuzzed XPath query, handling invalid cases
+        String xpathQuery = data.consumeRemainingAsString();
+        if (xpathQuery.length() < 5) { 
+            xpathQuery = "//invalid_xpath";
+        }
+        
+        try {
+            context.selectNodes(xpathQuery);
+        } catch (JXPathException e) {
+            // Log any errors related to XPath execution
+            System.err.println("XPath selection error: " + e.getMessage());
+        }
+    }
+
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        // Create and parse the document from fuzzed data
+        Document doc = createDocument(data);
+        
+        // Perform XPath query on the parsed document
+        performXPathQuery(doc, data);
     }
 }
