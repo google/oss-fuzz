@@ -63,7 +63,7 @@ ARG BOOST_VERSION=1_84_0
 ARG BOOST_VERSION_DOT=1.84.0
 ARG BOOST_HASH=a5800f405508f5df8114558ca9855d2640a2de8f0445f051fa1c7c3383045724
 RUN set -ex \
-    && curl -s -L -o  boost_${BOOST_VERSION}.tar.gz https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION_DOT}/source/boost_${BOOST_VERSION}.tar.gz \
+    && curl -s -L -o  boost_${BOOST_VERSION}.tar.gz https://archives.boost.io/release/${BOOST_VERSION_DOT}/source/boost_${BOOST_VERSION}.tar.gz \
     && echo "${BOOST_HASH}  boost_${BOOST_VERSION}.tar.gz" | sha256sum -c \
     && tar -xf boost_${BOOST_VERSION}.tar.gz \
     && cd boost_${BOOST_VERSION} \
