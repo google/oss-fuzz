@@ -19,7 +19,7 @@
       "."
     ],
     "dir": "oss-fuzz/projects/test-project",
-    "id": "build-x86_64"
+    "id": "build-image-x86_64"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",

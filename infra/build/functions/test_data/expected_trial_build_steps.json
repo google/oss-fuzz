@@ -172,7 +172,7 @@
       "."
     ],
     "dir": "oss-fuzz/projects/skcms",
-    "id": "build-x86_64"
+    "id": "build-image-x86_64"
   },
   {
     "name": "gcr.io/oss-fuzz/skcms",
