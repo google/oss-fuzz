@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN rustup toolchain install nightly-2023-09-13
+RUN rustup toolchain install nightly-2024-10-29
 RUN git clone --depth 1 https://github.com/typst/typst.git typst
 WORKDIR typst
 COPY build.sh $SRC/

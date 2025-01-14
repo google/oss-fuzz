@@ -17,5 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/distribution/distribution
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
 COPY build.sh $SRC/
 WORKDIR $SRC/distribution

@@ -1,0 +1,11 @@
+homepage: "https://github.com/dtolnay/unsafe-libyaml"
+main_repo: "https://github.com/dtolnay/unsafe-libyaml.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+vendor_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "fuzzing@fuchsia.dev"

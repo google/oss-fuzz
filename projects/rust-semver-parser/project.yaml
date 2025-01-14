@@ -9,3 +9,4 @@ language: rust
 auto_ccs:
   - "arthur.chan@adalogics.com"
   - "david@adalogics.com"
+  - "fuzzing@fuchsia.dev"

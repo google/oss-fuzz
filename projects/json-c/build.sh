@@ -20,11 +20,11 @@ cmake -DBUILD_SHARED_LIBS=OFF ..
 make -j$(nproc)
 cd ..
 
-cp $SRC/*.dict $OUT/
+cp $SRC/json-c/fuzz/*.dict $OUT/
 
-for f in $SRC/*_fuzzer.cc; do
+for f in $SRC/json-c/fuzz/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
     $CXX $CXXFLAGS -std=c++11 -I$SRC/json-c -I$SRC/json-c/json-c-build\
-         $SRC/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
+         $SRC/json-c/fuzz/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
          $LIB_FUZZING_ENGINE $SRC/json-c/json-c-build/libjson-c.a
 done

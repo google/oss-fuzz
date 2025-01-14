@@ -71,6 +71,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   bool should_search_for_other_layers = true;
   get_settings_layers(NULL, &settings_layers, &should_search_for_other_layers);
+  // Free allocated memory
+  loader_delete_layer_list_and_properties(NULL, &settings_layers);
   should_skip_logging_global_messages(0);
   update_global_loader_settings();
   teardown_global_loader_settings();
