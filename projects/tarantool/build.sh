@@ -87,10 +87,10 @@ cmake "${cmake_args[@]}" -S . -B build
 cmake --build build --target fuzzers --parallel --verbose
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-for f in $(find build/test/fuzz/ -name '*_fuzzer' -type f);
+for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
   name=$(basename $f);
-  module=$(echo $name | sed 's/_fuzzer//')
+  module=$(echo $name | sed 's/_fuzzer//' | sed 's/_test//' )
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
