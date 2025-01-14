@@ -1,5 +1,4 @@
-#!/bin/bash -euo
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,11 @@
 #
 ################################################################################
 
-rm -rf "${WORK:?}/"*
-make clean
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-npm ci
-make build/libllhttp.a
+# Clone ttf-parser project
+RUN git clone https://github.com/RazrFalcon/ttf-parser ttf-parser
+WORKDIR $SRC/ttf-parser
 
-$CC $CFLAGS -c ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $WORK/fuzz_parser.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -fuse-ld=lld -I./build/ ./build/libllhttp.a $WORK/fuzz_parser.o -o $OUT/fuzz_parser
+COPY build.sh $SRC/
+COPY fuzz $SRC/ttf-parser/fuzz

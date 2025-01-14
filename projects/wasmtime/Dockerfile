@@ -36,4 +36,8 @@ WORKDIR wasmtime
 
 #RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
+# The default toolchain used by OSS-Fuzz is too old to build Wasmtime at this
+# time.
+ENV RUSTUP_TOOLCHAIN nightly-2025-01-10
+
 COPY build.sh *.options $SRC/

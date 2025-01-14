@@ -21,9 +21,13 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev \
   libjpeg-dev \
   libpng-dev \
-  npm \
-  libffi-dev
+  libffi-dev \
+  make \
+  autoconf \
+  libtool
 RUN python3 -m pip install --upgrade pip
+RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh && apt-get install -y nodejs
 RUN git clone --recurse-submodules https://github.com/aio-libs/aiohttp
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/aiohttp/
