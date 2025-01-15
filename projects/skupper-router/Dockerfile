@@ -28,4 +28,6 @@ RUN git clone https://github.com/warmcat/libwebsockets.git --branch v4.2-stable 
 # Install qpid-proton library
 RUN git clone https://github.com/apache/qpid-proton.git && mkdir qpid-proton/build && cd qpid-proton/build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DENABLE_LINKTIME_OPTIMIZATION=OFF -DBUILD_TLS=ON -DSSL_IMPL=openssl -DBUILD_TOOLS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF && make install
 
-RUN git clone https://github.com/skupperproject/skupper-router.git && cp skupper-router/tests/fuzz/build.sh $SRC/
+RUN git clone https://github.com/skupperproject/skupper-router.git
+WORKDIR skupper-router
+RUN cp tests/fuzz/build.sh $SRC/
