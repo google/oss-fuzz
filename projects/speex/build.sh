@@ -26,7 +26,7 @@ popd
 ./autogen.sh
 export CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS -DDISABLE_WARNINGS"
 # Build fixed-point fuzzer
-PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared --enable-fixed
+PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared --enable-fixed-point
 make -j$(nproc)
 make install
 $CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_fixed -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex -logg

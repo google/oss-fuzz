@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && apt-get install -y m4 libglu1-mesa-dev mesa-common-dev \
-  libxmu-dev libxi-dev pkg-config libxxf86vm-dev patchelf
-
-ADD https://github.com/google/orbit/archive/main.tar.gz $SRC/
-RUN mkdir -p $SRC/orbit && tar -xzf $SRC/main.tar.gz \
-  -C $SRC/orbit/ --strip-components 1; rm -f $SRC/main.tar.gz
-WORKDIR $SRC/orbit
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth=1 https://github.com/wasmi-labs/wasmi wasmi
+WORKDIR wasmi
 COPY build.sh $SRC/
-COPY default.options $SRC/

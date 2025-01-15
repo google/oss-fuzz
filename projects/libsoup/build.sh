@@ -1,5 +1,5 @@
-#!/bin/bash -euo
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
 #
 ################################################################################
 
-rm -rf "${WORK:?}/"*
-make clean
+MESON_SANITIZER_ARG=
 
-npm ci
-make build/libllhttp.a
+if [ "$SANITIZER" = "address" ] || [ "$SANITIZER" = "undefined" ]; then
+    MESON_SANITIZER_ARG="-Db_sanitize=$SANITIZER"
+fi
 
-$CC $CFLAGS -c ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $WORK/fuzz_parser.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -fuse-ld=lld -I./build/ ./build/libllhttp.a $WORK/fuzz_parser.o -o $OUT/fuzz_parser
+meson setup "$WORK" --wipe --buildtype=debug -Db_lundef=false -Dtls_check=false -Dsysprof=disabled -Dfuzzing=enabled -Dprefer_static=true -Ddefault_library=static -Dintrospection=disabled -Ddocs=disabled -Dtests=false $MESON_SANITIZER_ARG
+meson compile -C "$WORK"
+
+find "$WORK/fuzzing" -perm /a+x -type f -exec cp {} "$OUT" \;
+find "$SRC/libsoup/fuzzing" -name '*.dict' -exec cp {} "$OUT" \;
