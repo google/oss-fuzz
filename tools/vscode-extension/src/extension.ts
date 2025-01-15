@@ -33,6 +33,7 @@ import {runEndToEndAndGetCoverage} from './commands/cmdEndToEndCoverage';
 import {listFuzzersHandler} from './commands/cmdListFuzzers';
 import {cmdInputCollectorReproduceTestcase} from './commands/cmdReproduceTestcase';
 import {cmdDispatcherTemplate} from './commands/cmdTemplate';
+import {runGetOptimalTargetsHandler} from './commands/cmdFIGetOptimalTargets';
 import {setUpFuzzIntrospectorHandler} from './commands/cmdSetupFI';
 import {runFuzzIntrospectorHandler} from './commands/cmdRunFI';
 import {cmdDispatcherGenerateClusterfuzzLite} from './commands/cmdDispatcherGenerateClusterfuzzLite';
@@ -210,6 +211,13 @@ export function activate(context: vscode.ExtensionContext) {
         await runFuzzIntrospectorHandler();
       }
     )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('oss-fuzz.GetOptimalTargets', async () => {
+      println('CMD start: run GetOptimalTargets');
+      await runGetOptimalTargetsHandler();
+    })
   );
 }
 
