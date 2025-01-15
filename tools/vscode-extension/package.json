@@ -120,6 +120,11 @@
         "command": "oss-fuzz.runFuzzIntrospector",
         "title": "OSS-Fuzz: Run Full Fuzz Introspector",
         "description": "Runs a full Fuzz Introspector"
+      },
+      {
+        "command": "oss-fuzz.GetOptimalTargets",
+        "title": "OSS-Fuzz: Get optimal targets",
+        "description": "Gets the optimal targets of this project"
       }
     ],
     "walkthroughs":[
