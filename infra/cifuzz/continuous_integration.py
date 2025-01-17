@@ -196,9 +196,8 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, git_sha):
     else:
       repo_manager_obj.checkout_commit(git_sha)
   except (RuntimeError, ValueError):
-    logging.error(
-        'Can not check out requested state %s. '
-        'Using current repo state.', pr_ref or git_sha)
+    logging.error('Could not check out requested state %s.', pr_ref or git_sha)
+    raise
 
 
 class GithubCiMixin:
@@ -261,8 +260,12 @@ class InternalGithub(GithubCiMixin, BaseCi):
 
     # Use the same name used in the docker image so we can overwrite it.
     manager = self._copy_repo_from_image(image_repo_path)
-    self._checkout_specified_commit(manager)
-    return BuildPreparationResult(success=True,
+    try:
+      self._checkout_specified_commit(manager)
+      success = True
+    except (RuntimeError, ValueError):
+      success = False
+    return BuildPreparationResult(success=success,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
 
@@ -365,8 +368,12 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     # Checkout before building, so we don't need to rely on copying the source
     # from the image.
     # TODO(metzman): Figure out if we want second copy at all.
-    manager = self._clone_repo_and_checkout(self.config.git_url,
-                                            self.config.project_repo_name)
+    try:
+      manager = self._clone_repo_and_checkout(self.config.git_url,
+                                              self.config.project_repo_name)
+    except (RuntimeError, ValueError):
+      return get_build_preparation_failure()
+
     return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
