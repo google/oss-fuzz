@@ -40,7 +40,7 @@ build() {
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
-  cd $PROJECT_DIR/fuzz && cargo fuzz build --strip-dead-code -O --debug-assertions "$@"
+  cd $PROJECT_DIR/fuzz && cargo fuzz build --sanitizer none --strip-dead-code -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/$fuzz_target_path/x86_64-unknown-linux-gnu/release
 
