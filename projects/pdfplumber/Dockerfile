@@ -23,7 +23,7 @@ RUN git clone --depth 1 https://github.com/ennamarie19/pdfplumber.git pdfplumber
 
 RUN git clone --depth 1 https://github.com/jsvine/pdfplumber.git pdfplumber \
         && rm -rf pdfplumber/fuzz  # Remove the directory, if it exists
-        && cp -r pdfplumber_fuzzer/fuzz pdfplumber
+RUN cp -r pdfplumber_fuzzer/fuzz pdfplumber \
         && cp pdfplumber/fuzz/build.sh $SRC/
 WORKDIR $SRC/pdfplumber
 
