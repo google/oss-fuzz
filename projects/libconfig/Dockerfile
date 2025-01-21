@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake make
 
-RUN git clone --depth 1 https://github.com/capuanob/libconfig.git libconfig \
+RUN git clone --depth 1 https://github.com/hyperrealm/libconfig.git libconfig \
         && cp libconfig/fuzz/build.sh $SRC/
 WORKDIR libconfig
