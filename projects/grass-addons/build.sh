@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ mkdir build
 cd build
 
 SRC_DIR=/src/grass-addons
-FUZZ_TARGET=https://github.com/OSGeo/grass-addons/blob/grass8/Fuzz/fuzz_target.c
+FUZZ_TARGET=$SRC_DIR/Fuzz/fuzz_target.c
 
 $CXX $CXXFLAGS -I $SRC_DIR/include $FUZZ_TARGET -o $OUT/fuzz_target \
     $LIB_FUZZING_ENGINE $SRC_DIR/src/*.o
