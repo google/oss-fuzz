@@ -15,10 +15,12 @@
 #
 ################################################################################
 
+# Create build directory
 mkdir build
 cd build
-cmake ..
-make -j$(nproc)
 
-$CXX $CXXFLAGS -I /src/grass-addons/include /src/grass-addons/fuzz_target.c -o $OUT/fuzz_target \
-    $LIB_FUZZING_ENGINE /src/grass-addons/src/*.o
+SRC_DIR=/src/grass-addons
+FUZZ_TARGET=https://github.com/OSGeo/grass-addons/blob/grass8/Fuzz/fuzz_target.c
+
+$CXX $CXXFLAGS -I $SRC_DIR/include $FUZZ_TARGET -o $OUT/fuzz_target \
+    $LIB_FUZZING_ENGINE $SRC_DIR/src/*.o
