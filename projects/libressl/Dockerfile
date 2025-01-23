@@ -20,8 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30
 RUN apt-get update && apt-get install -y make cmake wget autoconf automake libtool bison flex texinfo lzip
 RUN git clone --depth 1 https://github.com/libressl/portable.git libressl
 RUN git clone --depth 1 https://github.com/libressl/fuzz.git libressl.fuzzers
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN wget https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz
