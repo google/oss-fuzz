@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-RUN apt-get update && apt-get install -y m4 libglu1-mesa-dev mesa-common-dev \
-  libxmu-dev libxi-dev pkg-config libxxf86vm-dev patchelf
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-ADD https://github.com/google/orbit/archive/main.tar.gz $SRC/
-RUN mkdir -p $SRC/orbit && tar -xzf $SRC/main.tar.gz \
-  -C $SRC/orbit/ --strip-components 1; rm -f $SRC/main.tar.gz
-WORKDIR $SRC/orbit
+# Clone ttf-parser project
+RUN git clone https://github.com/RazrFalcon/ttf-parser ttf-parser
+WORKDIR $SRC/ttf-parser
+
 COPY build.sh $SRC/
-COPY default.options $SRC/
+COPY fuzz $SRC/ttf-parser/fuzz

@@ -23,6 +23,12 @@ RUN git clone --depth 1 https://github.com/golang/image
 RUN git clone --depth 1 https://github.com/golang/crypto
 RUN git clone --depth 1 https://github.com/golang/text
 RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
+RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
+RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.23.4.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
 COPY build.sh text_fuzzer.go \
      math_big_fuzzer.go \
      fuzz_tar_reader.go \
@@ -32,6 +38,7 @@ COPY build.sh text_fuzzer.go \
      unicode_fuzzer.go \
      x509_fuzzer.go \
      ecdsa_fuzzer.go \
+     dsa_fuzzer.go \
      aes_fuzzer.go \
      h2c_fuzzer.go \
      fuzz_x_h2c.options \

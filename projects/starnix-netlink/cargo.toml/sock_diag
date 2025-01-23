@@ -7,7 +7,7 @@ edition = "2018"
 anyhow = { path = "/src/fuchsia/third_party/rust_crates/vendor/anyhow-1.0.86" }
 bitflags = { path = "/src/fuchsia/third_party/rust_crates/vendor/bitflags-2.4.1" }
 byteorder = "1.5"
-libc = { path = "/src/fuchsia/third_party/rust_crates/vendor/libc-0.2.158" }
+libc = "0.2.158"
 smallvec = { path = "/src/fuchsia/third_party/rust_crates/vendor/smallvec-1.13.1" }
 netlink_packet_core = { path = "../netlink_packet_core" }
 netlink_packet_utils = { path = "../netlink_packet_utils" }

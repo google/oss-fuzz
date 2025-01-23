@@ -54,7 +54,7 @@ else
   popd
 
   #install
-  (cd $PROJECT && ./gradlew publishToMavenLocal -x javadoc -Dmaven.repo.local=$OUT/m2)
+  (cd $PROJECT && ./gradlew publishToMavenLocal --info --stacktrace -x javadoc -Dmaven.repo.local=$OUT/m2)
   $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath
