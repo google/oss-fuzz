@@ -49,8 +49,14 @@ import org.apache.poi.util.RecordFormatException;
  * It catches all exceptions that are currently expected.
  */
 public class POIFuzzer {
+	public static void fuzzerInitialize() {
+		adjustLimits();
+	}
+
 	public static void fuzzerTestOneInput(byte[] input) {
 		// try to invoke various methods which parse documents/workbooks/slide-shows/...
+		// all of these catch expected exceptions and thus any failure indicates something
+		// that we should take a look at
 
 		fuzzAny(input);
 

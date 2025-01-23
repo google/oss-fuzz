@@ -39,6 +39,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.maxDiff = None  # pylint: disable=invalid-name
     self.setUpPyfakefs()
+    self.patcher = mock.patch('build_lib.get_unique_build_step_image_id',
+                              return_value='UNIQUE_ID')
+    self.mock_function = self.patcher.start()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_lib.download_corpora_steps',
