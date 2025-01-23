@@ -21,7 +21,11 @@ _SANITIZER=${3:-address}
 
 BASE=$PWD
 
+# Final image is either ccache or replay script, depending on which worked.
 FINAL_IMAGE_NAME=us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-${_SANITIZER}
+
+# Always build an image with ccache.
+CCACHE_IMAGE_NAME=us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER}
 
 # Step 1: build the base image
 cd projects/${_PROJECT}
@@ -115,7 +119,7 @@ cd projects/${_PROJECT}
 
 # Step 9: Build an image with CCache's new items (modifications are done on the
 #         dockerfile)
-docker build -t $FINAL_IMAGE_NAME .
+docker build -t $CCACHE_IMAGE_NAME .
 
 cd ${BASE}
 
@@ -129,7 +133,7 @@ docker run \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --name=${_PROJECT}-origin-${_SANITIZER}-recached \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
-  us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER} \
+  $CCACHE_IMAGE_NAME \
   -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 A_TIME=$(($SECONDS - $A_START))
@@ -153,8 +157,8 @@ then
   if [ -z "${REPLAY_WORKED}" ]; then
     # Replay didn't work, so make the default "cached" image use the ccache one.
     docker image tag \
-        us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER} \
-        us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-${_SANITIZER} \
+      $CCACHE_IMAGE_NAME \
+      $FINAL_IMAGE_NAME
   fi
 
   exit 0
