@@ -26,89 +26,11 @@
 # TODO (David): add support for use of dedicated replay_build.sh
 steps:
 - name: 'gcr.io/cloud-builders/docker'
+  entrypoint: /bin/bash
   args:
-  - build
-  - -t
-  - gcr.io/oss-fuzz/${_PROJECT}
-  - .
-  dir: projects/${_PROJECT}
-- name: ubuntu
-  args:
-    - mkdir
-    - /workspace/ccache
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - run
-  - --entrypoint=/bin/sh
-  - --env=SANITIZER=address
-  - --env=CCACHE_DIR=/workspace/ccache
-  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
-  - --name=${_PROJECT}-origin-asan
-  - --volume=/workspace/ccache:/workspace/ccache
-  - gcr.io/oss-fuzz/${_PROJECT}
-  - -c
-  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
-- name: ubuntu
-  args:
-    - cp
-    - -rf
-    - /workspace/ccache
-    - projects/${_PROJECT}/ccache-cache
-# Prepare for ccache environment
-- name: ubuntu
-  args:
-  - /workspace/infra/experimental/chronos/prepare-ccache
-  - ${_PROJECT}
-# Build the ccached instance
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - build
-  - -t
-  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
-  - .
-  dir: projects/${_PROJECT}
-# Cleanup the ccache stored in the project folder
-- name: ubuntu
-  args:
-    - rm
-    - -rf
-    - projects/${_PROJECT}/ccache-cache
-    - /workspace/ccache
-# Build coverage image
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - run
-  - --entrypoint=/bin/sh
-  - --env=SANITIZER=coverage
-  - --env=CCACHE_DIR=/workspace/ccache
-  - --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE}
-  - --name=${_PROJECT}-origin-cov
-  - --volume=/workspace/ccache:/workspace/ccache
-  - gcr.io/oss-fuzz/${_PROJECT}
-  - -c
-  - "export PATH=/ccache/bin:$$PATH && compile && rm -rf /out/*"
-- name: ubuntu
-  args:
-    - cp
-    - -rf
-    - /workspace/ccache
-    - projects/${_PROJECT}/ccache-cache
-# Prepare for ccache environment
-- name: ubuntu
-  args:
-  - /workspace/infra/experimental/chronos/prepare-ccache
-  - ${_PROJECT}
-# Build the ccached instance
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-  - build
-  - -t
-  - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
-  - .
-  dir: projects/${_PROJECT}
+  - /workspace/infra/experimental/chronos/build_cache_local.sh ${_PROJECT} ${_FUZZING_LANGUAGE}
 images:
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
-- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
 timeout: 72000s  # 20 hours, same as build_lib.py
 logsBucket: oss-fuzz-gcb-logs
 tags:

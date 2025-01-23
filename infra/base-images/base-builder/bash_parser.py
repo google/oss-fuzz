@@ -196,7 +196,7 @@ def parse_script(bash_script, all_scripts) -> str:
     build_script = f.read()
   try:
     parts = bashlex.parse(build_script)
-  except bashlex.error.ParsingError:
+  except bashlex.errors.ParsingError:
     return ''
   for part in parts:
     new_script += handle_node(part, all_scripts, build_script)
