@@ -7,7 +7,7 @@
 From the OSS-Fuzz root
 
 ```sh
-$ RUN_ALL=1 ./infra/experimental/chronos/build_cache_local.sh htslib c
+$ RUN_ALL=1 ./infra/experimental/chronos/build_cache_local.sh htslib c address
 ...
 ...
 Vanilla compile time:
