@@ -22,5 +22,12 @@ cd build
 SRC_DIR=/src/grass-addons
 FUZZ_TARGET=$SRC_DIR/Fuzz/fuzz_target.c
 
+# Compile source files into object files
+for src_file in $SRC_DIR/src/*.c; do
+    obj_file=$(basename "$src_file" .c).o
+    $CC $CFLAGS -c "$src_file" -o "$SRC_DIR/src/$obj_file"
+done
+
+# Link the object files
 $CXX $CXXFLAGS -I $SRC_DIR/include $FUZZ_TARGET -o $OUT/fuzz_target \
     $LIB_FUZZING_ENGINE $SRC_DIR/src/*.o
