@@ -28,9 +28,26 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: /bin/bash
   args:
-  - /workspace/infra/experimental/chronos/build_cache_local.sh ${_PROJECT} ${_FUZZING_LANGUAGE}
+  - /workspace/infra/experimental/chronos/build_cache_local.sh
+  - ${_PROJECT}
+  - ${_FUZZING_LANGUAGE}
+  - address
+  env:
+  - RUN_ALL=1
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: /bin/bash
+  args:
+  - /workspace/infra/experimental/chronos/build_cache_local.sh
+  - ${_PROJECT}
+  - ${_FUZZING_LANGUAGE}
+  - coverage
+  env:
+  - RUN_ALL=1
 images:
 - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-coverage
 timeout: 72000s  # 20 hours, same as build_lib.py
 logsBucket: oss-fuzz-gcb-logs
 tags:

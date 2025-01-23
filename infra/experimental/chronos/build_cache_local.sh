@@ -87,6 +87,8 @@ echo "------------------------------------------------------"
 echo "Executables replay: "
 echo ${executables_replay}
 
+REPLAY_WORKED=
+
 # Step 7: match executables from vanilla builds and replay builds.
 #         If this step is successful, then the process can exit as it's ready.
 if [[ "$executables_replay" == "$executables_vanilla" ]]
@@ -94,6 +96,8 @@ then
   echo "Replay worked"
   echo "Vanilla compile time: ${B_TIME}"
   echo "Replay compile time: ${R_TIME}"
+
+  REPLAY_WORKED=1
 
   if [ -z "${RUN_ALL+1}" ]; then
     exit 0
@@ -125,7 +129,7 @@ docker run \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --name=${_PROJECT}-origin-${_SANITIZER}-recached \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
-  us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-${_SANITIZER} \
+  us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER} \
   -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 A_TIME=$(($SECONDS - $A_START))
@@ -145,6 +149,13 @@ then
   fi
 
   echo "Ccache compile time: ${A_TIME}"
+
+  if [ -z "${REPLAY_WORKED}" ]; then
+    # Replay didn't work, so make the default "cached" image use the ccache one.
+    docker image tag \
+        us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER} \
+        us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-${_SANITIZER} \
+  fi
 
   exit 0
 else
