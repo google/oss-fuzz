@@ -22,6 +22,12 @@ projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
 cd infra/experimental/chronos
 
 for proj in $projs; do
+  if [ ! -f ../../../projects/$proj/Dockerfile ]; then
+    # Incomplete integration.
+    echo "Skipping $proj as it's incomplete."
+    continue
+  fi
+
   echo ./build_on_cloudbuild.sh $proj c
   ./build_on_cloudbuild.sh $proj c
 done
