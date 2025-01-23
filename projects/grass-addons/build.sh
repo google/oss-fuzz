@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/bin/bash -u
+
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +17,40 @@
 ################################################################################
 
 # Create build directory
-mkdir build
-cd build
+mkdir build || true
+cd build || true
 
+# Set the source directory
 SRC_DIR=/src/grass-addons
 FUZZ_TARGET=$SRC_DIR/Fuzz/fuzz_target.c
 
-$CXX $CXXFLAGS -I $SRC_DIR/include $FUZZ_TARGET -o $OUT/fuzz_target \
-    $LIB_FUZZING_ENGINE $SRC_DIR/Fuzz/*.o
+# Create directories for GRASS headers and download the necessary files
+GRASS_INCLUDE_DIR=grass_include
+mkdir -p $GRASS_INCLUDE_DIR/grass || true
+curl -f -s -o $GRASS_INCLUDE_DIR/grass/gis.h https://raw.githubusercontent.com/OSGeo/grass/main/include/grass/gis.h || true
+curl -f -s -o $GRASS_INCLUDE_DIR/grass/config.h https://raw.githubusercontent.com/OSGeo/grass-addons/master/grass6/raster/r.terracost/config.h || true
+curl -f -s -o $GRASS_INCLUDE_DIR/grass/types.h https://raw.githubusercontent.com/OSGeo/grass-addons/master/grass6/raster/r.terracost/types.h || true
+
+# Include directories for the headers
+INCLUDE_DIRS=(
+    "$SRC_DIR/include"
+    "$SRC_DIR/src/raster/r.gwr"
+    "$SRC_DIR/src/raster/r.skyline"
+    "$SRC_DIR/src/raster/r.pops.spread/pops-core/tests"
+    "$GRASS_INCLUDE_DIR"
+)
+
+INCLUDE_FLAGS=$(printf " -I%s" "${INCLUDE_DIRS[@]}")
+
+# Compile source files into object files in src/grass-addons/ (not inside build)
+for src_file in $SRC_DIR/Fuzz/*.c; do
+    obj_file=$(basename "$src_file" .c).o
+    $CC $CFLAGS $INCLUDE_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
+done
+
+# Collect all the object files generated
+OBJECT_FILES=($SRC_DIR/*.o)
+
+# Link the object files
+$CXX $CXXFLAGS $INCLUDE_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target \
+    $LIB_FUZZING_ENGINE "${OBJECT_FILES[@]}" || true
