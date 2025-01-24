@@ -42,15 +42,39 @@ INCLUDE_DIRS=(
 
 INCLUDE_FLAGS=$(printf " -I%s" "${INCLUDE_DIRS[@]}")
 
-# Compile source files into object files in src/grass-addons/ (not inside build)
+# Define sanitizer flags based on the input
+if [ "$SANITIZER" = "address" ]; then
+    SANITIZER_FLAGS="-fsanitize=address"
+elif [ "$SANITIZER" = "undefined" ]; then
+    SANITIZER_FLAGS="-fsanitize=undefined"
+elif [ "$SANITIZER" = "memory" ]; then
+    SANITIZER_FLAGS="-fsanitize=memory"
+fi
+
+# Architecture setup
+if [ "$ARCH" = "x86_64" ]; then
+    ARCH_FLAGS="-m64"
+elif [ "$ARCH" = "i386" ]; then
+    ARCH_FLAGS="-m32"
+else
+    exit 1
+fi
+
 for src_file in $SRC_DIR/Fuzz/*.c; do
     obj_file=$(basename "$src_file" .c).o
-    $CC $CFLAGS $INCLUDE_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
+    clang $CFLAGS $INCLUDE_FLAGS $SANITIZER_FLAGS $ARCH_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
 done
 
 # Collect all the object files generated
 OBJECT_FILES=($SRC_DIR/*.o)
 
-# Link the object files
-$CXX $CXXFLAGS $INCLUDE_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target \
+# Check for fuzzing engine and set up libfuzzer
+if [ "$FUZZ_ENGINE" = "libfuzzer" ]; then
+    LIB_FUZZING_ENGINE="-lFuzzer"
+else
+    exit 1
+fi
+
+# Link the object files with sanitizer flags and fuzzing engine
+clang++ $CXXFLAGS $INCLUDE_FLAGS $SANITIZER_FLAGS $ARCH_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target \
     $LIB_FUZZING_ENGINE "${OBJECT_FILES[@]}" || true

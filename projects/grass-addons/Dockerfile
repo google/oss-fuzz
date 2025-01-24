@@ -15,6 +15,25 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    clang \
+    llvm \
+    libclang-dev \
+    python3 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN git clone --depth 1 https://github.com/OSGeo/grass-addons.git /src/grass-addons
+
 WORKDIR /src/grass-addons
+
 COPY build.sh $SRC/
+
+
+ENV FUZZING_ENGINE=libfuzzer
+ENV SANITIZER=address
+ENV ARCH=x86_64
+
+ENTRYPOINT ["/src/build.sh"]
