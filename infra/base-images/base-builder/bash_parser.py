@@ -49,7 +49,7 @@ def should_discard_command(ast_tree) -> bool:
 
   if ('cmake' in first_word and
       any('--build' in part.word for part in ast_tree.parts)):
-    return True
+    return False
 
   cmds_to_avoid_replaying = {
       'configure', 'autoheader', 'autoconf', 'autoreconf', 'cmake', 'autogen.sh'
