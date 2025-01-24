@@ -31,9 +31,10 @@ WORKDIR /src/grass-addons
 
 COPY build.sh $SRC/
 
+RUN chmod +x $SRC/build.sh
 
 ENV FUZZING_ENGINE=libfuzzer
-ENV SANITIZER=address
-ENV ARCH=x86_64
+ENV SANITIZER=address  # or undefined, memory based on what you need
+ENV ARCH=x86_64       # or i386 depending on your build requirements
 
 ENTRYPOINT ["/src/build.sh"]
