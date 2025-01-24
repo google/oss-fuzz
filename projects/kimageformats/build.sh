@@ -152,7 +152,7 @@ sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_W
 sed -i "s/static const int MAX_IMAGE_HEIGHT = 32768;/static const int MAX_IMAGE_HEIGHT = 8192;/g" libheif/security_limits.h
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_RAV1E_PLUGIN=OFF -DWITH_SvtEnc=OFF -DWITH_SvtEnc_PLUGIN=OFF -DWITH_X265=OFF -DWITH_OpenJPEG_DECODER=ON ..
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGIN_LOADING=OFF -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_RAV1E_PLUGIN=OFF -DWITH_SvtEnc=OFF -DWITH_SvtEnc_PLUGIN=OFF -DWITH_X265=OFF -DWITH_OpenJPEG_DECODER=ON -DWITH_OpenH264_DECODER=OFF ..
 make -j$(nproc)
 make install -j$(nproc)
 
@@ -172,6 +172,7 @@ HANDLER_TYPES="ANIHandler ani
         EXRHandler exr
         HDRHandler hdr
         HEIFHandler heif
+        JP2Handler jp2
         QJpegXLHandler jxl
         JXRHandler jxr
         KraHandler kra
@@ -196,7 +197,7 @@ echo "$HANDLER_TYPES" | while read class format; do
   /usr/libexec/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
   header=`ls $SRC/kimageformats/src/imageformats/$format*.h`
   /usr/libexec/moc $header -o moc_`basename $header .h`.cpp
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -DINITGUID -I $SRC/kimageformats/src/imageformats/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/KF6/KArchive/ -I /usr/local/include/Imath -I $SRC/jxrlib/common/include -I $SRC/jxrlib/jxrgluelib -I $SRC/jxrlib/image/sys -I /usr/include/QtCore/ -I /usr/include/QtGui/ -I . $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt6Gui -lQt6Core -lQt6BundledLibpng -lQt6BundledHarfbuzz -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_3.a /usr/local/lib/libIex-3_3.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_3.a /usr/local/lib/libOpenEXRCore-3_3.a /usr/local/lib/libOpenEXRUtil-3_3.a /usr/local/lib/libopenjp2.a /usr/local/lib/libzstd.a $SRC/jxrlib/build/libjxrglue.a $SRC/jxrlib/build/libjpegxr.a -llzma /usr/local/lib/libbz2.a -lclang_rt.builtins
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++17 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp $SRC/kimageformats/src/imageformats/scanlineconverter.cpp $SRC/kimageformats/src/imageformats/microexif.cpp -o $OUT/$fuzz_target_name -DJXL_STATIC_DEFINE -DJXL_THREADS_STATIC_DEFINE -DJXL_CMS_STATIC_DEFINE -DINITGUID -I $SRC/kimageformats/src/imageformats/ -I $SRC/libavif/include/ -I $SRC/libjxl/build/lib/include/ -I $SRC/libjxl/lib/include/ -I /usr/local/include/OpenEXR/ -I /usr/local/include/KF6/KArchive/ -I /usr/local/include/openjpeg-2.5 -I /usr/local/include/Imath -I $SRC/jxrlib/common/include -I $SRC/jxrlib/jxrgluelib -I $SRC/jxrlib/image/sys -I /usr/include/QtCore/ -I /usr/include/QtGui/ -I . $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/libde265.a $SRC/aom/build.libavif/libaom.a $SRC/libjxl/build/lib/libjxl_threads.a $SRC/libjxl/build/lib/libjxl.a $SRC/libjxl/build/lib/libjxl_cms.a $SRC/libjxl/build/third_party/highway/libhwy.a $SRC/libjxl/build/third_party/brotli/libbrotlidec.a $SRC/libjxl/build/third_party/brotli/libbrotlienc.a $SRC/libjxl/build/third_party/brotli/libbrotlicommon.a -lQt6Gui -lQt6Core -lQt6BundledLibpng -lQt6BundledHarfbuzz -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libz.a /usr/local/lib/libraw.a /usr/local/lib/libOpenEXR-3_3.a /usr/local/lib/libIex-3_3.a /usr/local/lib/libImath-3_1.a /usr/local/lib/libIlmThread-3_3.a /usr/local/lib/libOpenEXRCore-3_3.a /usr/local/lib/libOpenEXRUtil-3_3.a /usr/local/lib/libopenjp2.a /usr/local/lib/libzstd.a $SRC/jxrlib/build/libjxrglue.a $SRC/jxrlib/build/libjpegxr.a -llzma /usr/local/lib/libbz2.a -lclang_rt.builtins
 
   # -lclang_rt.builtins in the previous line is a temporary workaround to avoid a linker error "undefined reference to __truncsfhf2". Investigate why this is needed here, but not anywhere else, and possibly remove it.
 

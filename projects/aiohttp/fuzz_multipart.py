@@ -44,15 +44,13 @@ class FuzzStream:
 
 @atheris.instrument_func
 async def fuzz_bodypart_reader(data):
-    newline=b'\n'
     fdp = atheris.FuzzedDataProvider(data)
     obj = aiohttp.BodyPartReader(
         b"--:",
         {
-            CONTENT_TYPE: fdp.ConsumeUnicode(30)
+            CONTENT_TYPE: fdp.ConsumeUnicode(30),
         },
         FuzzStream(fdp.ConsumeBytes(atheris.ALL_REMAINING)),
-        _newline=newline
     )
     if not obj.at_eof():
         await obj.form()
@@ -65,7 +63,7 @@ def TestOneInput(data):
         return
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     atheris.Fuzz()

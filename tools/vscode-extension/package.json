@@ -110,6 +110,21 @@
         "command": "oss-fuzz.testFuzzerCFLite",
         "title": "OSS-Fuzz: [CFLite] Test running a specific fuzzer.",
         "description": "Builds the CFLite setup and runs a fuzzer for a short period of time."
+      },
+      {
+        "command": "oss-fuzz.setupFuzzIntrospector",
+        "title": "OSS-Fuzz: Set up Fuzz Introspector",
+        "description": "Install fuzz introspector on the system"
+      },
+      {
+        "command": "oss-fuzz.runFuzzIntrospector",
+        "title": "OSS-Fuzz: Run Full Fuzz Introspector",
+        "description": "Runs a full Fuzz Introspector"
+      },
+      {
+        "command": "oss-fuzz.GetOptimalTargets",
+        "title": "OSS-Fuzz: Get optimal targets",
+        "description": "Gets the optimal targets of this project"
       }
     ],
     "walkthroughs":[

@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Overcome missing dependency declaration with path mapping issue. This is
+# similar to the current abseil build (see
+# https://github.com/google/oss-fuzz/pull/12858), to overcome the issue
+# mentioned in https://github.com/bazelbuild/bazel/issues/23681.
+export USE_BAZEL_VERSION=7.4.0
+
 declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "test/...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
@@ -57,7 +63,7 @@ fi
 export FUZZING_CFLAGS="$CFLAGS"
 export FUZZING_CXXFLAGS="$CXXFLAGS"
 
-# Disable instrumentation in various external libraries. These 
+# Disable instrumentation in various external libraries. These
 # are fuzzed elsewhere.
 # The following disables both coverage-instrumentation and other sanitizer instrumentation.
 # We disable instrumentation in:

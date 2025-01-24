@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,49 +17,71 @@
 
 _PROJECT=$1
 _FUZZING_LANGUAGE=$2
+_SANITIZER=${3:-address}
 
 BASE=$PWD
 
+# Final image is either ccache or replay script, depending on which worked.
+FINAL_IMAGE_NAME=us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-${_SANITIZER}
+
+# Always build an image with ccache.
+CCACHE_IMAGE_NAME=us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-${_SANITIZER}
+
+# Step 1: build the base image
 cd projects/${_PROJECT}
 docker build -t gcr.io/oss-fuzz/${_PROJECT} .
 
+
+# Step 2: create a container where `compile` has run which enables ccaching
+#         and also generates a replay build script.
+cd ${BASE}
 mkdir -p ccaches/${_PROJECT}
 mkdir -p build/out/${_PROJECT}
-cd ${BASE}
 B_START=$SECONDS
+
+docker container rm -f ${_PROJECT}-origin-${_SANITIZER}
+
 docker run \
   --entrypoint=/bin/bash \
-  --env=SANITIZER=address \
+  --env=SANITIZER=${_SANITIZER} \
   --env=CCACHE_DIR=/workspace/ccache \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --env=CAPTURE_REPLAY_SCRIPT=1 \
-  --name=${_PROJECT}-origin-asan \
+  --name=${_PROJECT}-origin-${_SANITIZER} \
   -v=$PWD/ccaches/${_PROJECT}/ccache:/workspace/ccache \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   gcr.io/oss-fuzz/${_PROJECT} \
   -c \
   "export PATH=/ccache/bin:\$PATH && compile"
 B_TIME=$(($SECONDS - $B_START))
-docker container commit ${_PROJECT}-origin-asan local/ossfuzz/${_PROJECT}-origin-asan
-# Run the container with e.g.
-# docker run --entrypoint /bin/bash  -it local/ossfuzz/htslib-origin-asan
+
+# Step 3: save (commit, locally) the cached container as an image
+docker container commit -c "ENV ENTRYPOINT=/bin/sh" -c "ENV REPLAY_ENABLED=1" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
+
+# Step 4: save the list of executables created from a vanilla build. This is
+#         needed for validating if replay and ccaching works.
+# notes: run a shell the container with e.g.
+# `docker run --entrypoint /bin/bash  -it local/ossfuzz/htslib-origin-address`
 executables_vanilla="$(find ./build/out/${_PROJECT} -executable -type f | sort)"
 
-# Build with replay enabled, and validate the executables are the same
+
+# Step 5: Build with replay enabled, and validate the executables are the same
 # in terms of naming.
+# Note that an important step is removing everything in $OUT/ which is done
+# in the docker command.
 R_START=$SECONDS
 docker run \
-  --entrypoint=/bin/bash \
-  --env=SANITIZER=address \
-  --env=REPLAY_ENABLED=1 \
+  --rm \
+  --env=SANITIZER=${_SANITIZER} \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
-  --name=${_PROJECT}-origin-asan-replay-recached \
-  local/ossfuzz/${_PROJECT}-origin-asan \
+  --name=${_PROJECT}-origin-${_SANITIZER}-replay-recached \
+  $FINAL_IMAGE_NAME \
   -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 R_TIME=$(($SECONDS - $R_START))
 
+# Step 6: Extract the newly build executables
 executables_replay="$(find ./build/out/${_PROJECT}/ -executable -type f | sort)"
 
 echo "Executables vanilla: "
@@ -69,54 +91,79 @@ echo "------------------------------------------------------"
 echo "Executables replay: "
 echo ${executables_replay}
 
+REPLAY_WORKED=
 
+# Step 7: match executables from vanilla builds and replay builds.
+#         If this step is successful, then the process can exit as it's ready.
 if [[ "$executables_replay" == "$executables_vanilla" ]]
 then
   echo "Replay worked"
-  echo "Vanilla compile time:"
-  echo ${B_TIME}
-  echo "Replay compile time:"
-  echo ${R_TIME}
-  exit 0
+  echo "Vanilla compile time: ${B_TIME}"
+  echo "Replay compile time: ${R_TIME}"
+
+  REPLAY_WORKED=1
+
+  if [ -z "${RUN_ALL+1}" ]; then
+    exit 0
+  fi
 else
   echo "Replay did not work"
 fi
 
-# Prepare Dockerfile for ccache
+# Step 8: prepare Dockerfile for ccache
 cp -rf ccaches/${_PROJECT}/ccache ./projects/${_PROJECT}/ccache-cache
 
 infra/experimental/chronos/prepare-ccache ${_PROJECT}
 
 cd projects/${_PROJECT}
-docker build -t us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address .      
 
+# Step 9: Build an image with CCache's new items (modifications are done on the
+#         dockerfile)
+docker build -t $CCACHE_IMAGE_NAME .
+
+cd ${BASE}
+
+# Step 10: Run a `compile` with ccache's image.
 # Run the ccache build
 A_START=$SECONDS
 docker run \
+  --rm \
   --entrypoint=/bin/bash \
-  --env=SANITIZER=address \
+  --env=SANITIZER=${_SANITIZER} \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
-  --name=${_PROJECT}-origin-asan-recached \
+  --name=${_PROJECT}-origin-${_SANITIZER}-recached \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
-  us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address \
+  $CCACHE_IMAGE_NAME \
   -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 A_TIME=$(($SECONDS - $A_START))
 
+# Step 11: extract the executables from the ccache build
 executables_ccache="$(find ./build/out/${_PROJECT}/ -executable -type f | sort)"
 
+
+# Step 12: validate the ccache builds are successful
 if [[ "$executables_ccache" == "$executables_vanilla" ]]
 then
-  echo "Replaying failed, but ccache is working."
-  echo "No cache: "
-  echo ${B_TIME}
+  echo "Vanilla compile time: ${B_TIME}"
+  if [[ "$executables_replay" == "$executables_vanilla" ]]
+  then
+    echo "Replay worked"
+    echo "Replay compile time: ${R_TIME}"
+  fi
 
-  echo "After cache: "
-  echo ${A_TIME}
+  echo "Ccache compile time: ${A_TIME}"
+
+  if [ -z "${REPLAY_WORKED}" ]; then
+    # Replay didn't work, so make the default "cached" image use the ccache one.
+    docker image tag \
+      $CCACHE_IMAGE_NAME \
+      $FINAL_IMAGE_NAME
+  fi
 
   exit 0
 else
   echo "Replay and ccaching did not work."
+  exit 1
 fi
-
 
