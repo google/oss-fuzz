@@ -167,9 +167,12 @@
       "build",
       "--tag",
       "gcr.io/oss-fuzz/skcms",
+      "--tag",
+      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/skcms",
       "."
     ],
-    "dir": "oss-fuzz/projects/skcms"
+    "dir": "oss-fuzz/projects/skcms",
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/oss-fuzz/skcms",

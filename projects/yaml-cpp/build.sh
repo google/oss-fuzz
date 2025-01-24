@@ -1,5 +1,6 @@
-#!/bin/bash
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +16,23 @@
 #
 ################################################################################
 
-# Build all C/C++ projects.
-c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
-projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+mkdir build
+cd build
 
-cd infra/experimental/chronos
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
 
-for proj in $projs; do
-  if [ ! -f ../../../projects/$proj/Dockerfile ]; then
-    # Incomplete integration.
-    echo "Skipping $proj as it's incomplete."
-    continue
-  fi
+cp $SRC/yaml-cpp-fuzzer/*.dict $OUT/
+cp $SRC/yaml-cpp-fuzzer/*.options $OUT/
 
-  echo ./build_on_cloudbuild.sh $proj c
-  ./build_on_cloudbuild.sh $proj c
+for fuzzer in $(find $SRC/yaml-cpp-fuzzer/ -name "*_fuzzer.cpp"); do
+    fuzzer_basename=$(basename -s .cpp $fuzzer)
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+        -I$SRC/yaml-cpp/include \
+        $fuzzer \
+        -o $OUT/$fuzzer_basename \
+        libyaml-cpp.a
+
+    zip -q $OUT/${fuzzer_basename}_seed_corpus.zip $SRC/yaml-cpp-fuzzer/${fuzzer_basename}_seed_corpus/*
 done
+

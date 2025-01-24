@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,16 @@
 #
 ################################################################################
 
-# Build all C/C++ projects.
-c_project_yaml=$(find projects/ -name project.yaml -exec grep -l 'language: c' {} \;)
-projs=$(echo $c_project_yaml | xargs dirname | xargs basename -a | sort)
+FROM gcr.io/oss-fuzz-base/base-builder
 
-cd infra/experimental/chronos
+RUN apt-get update && \
+    apt-get install -y \
+    make \
+    cmake
 
-for proj in $projs; do
-  if [ ! -f ../../../projects/$proj/Dockerfile ]; then
-    # Incomplete integration.
-    echo "Skipping $proj as it's incomplete."
-    continue
-  fi
+RUN git clone --depth 1 https://github.com/jbeder/yaml-cpp.git $SRC/yaml-cpp/
+RUN git clone --depth 1 https://github.com/initializedd/yaml-cpp-fuzzer.git $SRC/yaml-cpp-fuzzer/
 
-  echo ./build_on_cloudbuild.sh $proj c
-  ./build_on_cloudbuild.sh $proj c
-done
+COPY build.sh $SRC/
+WORKDIR $SRC/yaml-cpp/
+
