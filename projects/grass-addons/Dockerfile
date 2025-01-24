@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y \
     build-essential \
