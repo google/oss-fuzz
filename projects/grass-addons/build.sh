@@ -1,5 +1,5 @@
 #!/bin/bash -u
-
+#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +20,9 @@
 mkdir build || true
 cd build || true
 
-# Set the source directory
 SRC_DIR=/src/grass-addons
 FUZZ_TARGET=$SRC_DIR/Fuzz/fuzz_target.c
 
-# Create directories for GRASS headers and download the necessary files
 GRASS_INCLUDE_DIR=grass_include
 mkdir -p $GRASS_INCLUDE_DIR/grass || true
 curl -f -s -o $GRASS_INCLUDE_DIR/grass/gis.h https://raw.githubusercontent.com/OSGeo/grass/main/include/grass/gis.h || true
@@ -42,39 +40,11 @@ INCLUDE_DIRS=(
 
 INCLUDE_FLAGS=$(printf " -I%s" "${INCLUDE_DIRS[@]}")
 
-# Define sanitizer flags based on the input
-if [ "$SANITIZER" = "address" ]; then
-    SANITIZER_FLAGS="-fsanitize=address"
-elif [ "$SANITIZER" = "undefined" ]; then
-    SANITIZER_FLAGS="-fsanitize=undefined"
-elif [ "$SANITIZER" = "memory" ]; then
-    SANITIZER_FLAGS="-fsanitize=memory"
-fi
-
-# Architecture setup
-if [ "$ARCH" = "x86_64" ]; then
-    ARCH_FLAGS="-m64"
-elif [ "$ARCH" = "i386" ]; then
-    ARCH_FLAGS="-m32"
-else
-    exit 1
-fi
-
 for src_file in $SRC_DIR/Fuzz/*.c; do
     obj_file=$(basename "$src_file" .c).o
-    clang $CFLAGS $INCLUDE_FLAGS $SANITIZER_FLAGS $ARCH_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
+    clang $CFLAGS $INCLUDE_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error -I/usr/include/c++/10 || true
 done
 
-# Collect all the object files generated
 OBJECT_FILES=($SRC_DIR/*.o)
 
-# Check for fuzzing engine and set up libfuzzer
-if [ "$FUZZ_ENGINE" = "libfuzzer" ]; then
-    LIB_FUZZING_ENGINE="-lFuzzer"
-else
-    exit 1
-fi
-
-# Link the object files with sanitizer flags and fuzzing engine
-clang++ $CXXFLAGS $INCLUDE_FLAGS $SANITIZER_FLAGS $ARCH_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target \
-    $LIB_FUZZING_ENGINE "${OBJECT_FILES[@]}" || true
+clang $CXXFLAGS $INCLUDE_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target "${OBJECT_FILES[@]}" || true
