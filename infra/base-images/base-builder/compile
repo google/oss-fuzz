@@ -229,7 +229,7 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
 
   # Install Fuzz-Introspector
   pushd /fuzz-introspector/src
-  python3 -m pip install .
+  python3 -m pip install -e .
   popd
 
   if [ "$FUZZING_LANGUAGE" = "python" ]; then
@@ -241,6 +241,33 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
   else
     python3 /fuzz-introspector/src/main.py light
   fi
+
+  # Make a copy of the light. This is needed because we run two versions of
+  # introspector: one based on pure statis analysis and one based on
+  # regular LTO.
+  cp -rf $SRC/inspector/ /tmp/inspector-saved
+
+
+  # Move coverage report.
+  if [ -d "$OUT/textcov_reports" ]
+  then
+    find $OUT/textcov_reports/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
+    find $OUT/textcov_reports/ -name "*.json" -exec cp {} $SRC/inspector/ \;
+  fi
+
+  # Make fuzz-introspector HTML report using light approach.
+  REPORT_ARGS="--name=$PROJECT_NAME"
+
+  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+    REPORT_ARGS="$REPORT_ARGS --coverage-url=${COVERAGE_URL}"
+  fi
+
+  # Run pure static analysis fuzz introspector
+  fuzz-introspector full --target-dir=$SRC \
+      --language=${FUZZING_LANGUAGE} \
+      --out-dir=$SRC/inspector \
+      ${REPORT_ARGS}
 
   rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
 fi
@@ -313,28 +340,37 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
   unset CFLAGS
   export G_ANALYTICS_TAG="G-8WTFM1Y62J"
 
+  # If we get to here, it means the e.g. LTO had no problems and succeeded.
+  # TO this end, we wlil restore the original light analysis and used the
+  # LTO processing itself.
+  rm -rf $SRC/inspector
+  cp -rf /tmp/inspector-saved $SRC/inspector
+
+  cd /fuzz-introspector/src
+  python3 -m pip install -e .
+  cd /src/
+
   if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "GOING jvm route"
 
     set -x
     # Output will be put in /out/
-    python3 /fuzz-introspector/frontends/java/oss-fuzz-main.py
+    python3 -m fuzz_introspector.frontends.oss_fuzz --language jvm --target-dir $SRC --entrypoint fuzzerTestOneInput
+
     # Move files temporarily to fit workflow of other languages.
     mkdir -p $SRC/my-fi-data
-    find $OUT/ -name *.data -exec mv {} $SRC/my-fi-data/ \;
-    find $OUT/ -name *.data.yaml -exec mv {} $SRC/my-fi-data/ \;
+    find ./ -name *.data -exec mv {} $SRC/my-fi-data/ \;
+    find ./ -name *.data.yaml -exec mv {} $SRC/my-fi-data/ \;
   elif [ "$FUZZING_LANGUAGE" = "rust" ]; then
     echo "GOING rust route"
 
     # Run the rust frontend
-    pushd /fuzz-introspector/frontends/rust/rust_function_analyser
-    cargo run -- $SRC
+    python3 -m fuzz_introspector.frontends.oss_fuzz --language rust --target-dir $SRC
 
     # Move files temporarily to fix workflow of other languages.
     mkdir -p $SRC/my-fi-data
     find ./ -name "*.data" -exec mv {} $SRC/my-fi-data/ \;
     find ./ -name "*.data.yaml" -exec mv {} $SRC/my-fi-data/ \;
-    popd
 
     # Restore the sanitizer flag for rust
     export SANITIZER="introspector"
@@ -359,43 +395,43 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
   REPORT_ARGS="--name=$PROJECT_NAME"
   # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
   if [[ ! -z "${COVERAGE_URL+x}" ]]; then
-    REPORT_ARGS="$REPORT_ARGS --coverage_url=${COVERAGE_URL}"
+    REPORT_ARGS="$REPORT_ARGS --coverage-url=${COVERAGE_URL}"
   fi
 
   # Do different things depending on languages
   if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "GOING python route"
     set -x
-    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=python"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    fuzz-introspector report $REPORT_ARGS
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   elif [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "GOING jvm route"
     set -x
     find $OUT/ -name "jacoco.xml" -exec cp {} $SRC/inspector/ \;
-    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=jvm"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    fuzz-introspector report $REPORT_ARGS
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   elif [ "$FUZZING_LANGUAGE" = "rust" ]; then
     echo "GOING rust route"
-    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=rust"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    fuzz-introspector report $REPORT_ARGS
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   else
     # C/C++
-
+    mkdir -p $SRC/inspector
     # Correlate fuzzer binaries to fuzz-introspector's raw data
-    python3 /fuzz-introspector/src/main.py correlate --binaries_dir=$OUT/
+    fuzz-introspector correlate --binaries-dir=$OUT/
 
     # Generate fuzz-introspector HTML report, this generates
     # the file exe_to_fuzz_introspector_logs.yaml
-    REPORT_ARGS="$REPORT_ARGS --target_dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
     # Use the just-generated correlation file
-    REPORT_ARGS="$REPORT_ARGS --correlation_file=exe_to_fuzz_introspector_logs.yaml"
-    python3 /fuzz-introspector/src/main.py report $REPORT_ARGS
+    REPORT_ARGS="$REPORT_ARGS --correlation-file=exe_to_fuzz_introspector_logs.yaml"
+    fuzz-introspector report $REPORT_ARGS
 
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   fi
