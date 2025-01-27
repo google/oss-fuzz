@@ -234,40 +234,43 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
 
   if [ "$FUZZING_LANGUAGE" = "python" ]; then
     python3 /fuzz-introspector/src/main.py light --language=python
+    cp -rf $SRC/inspector/ /tmp/inspector-saved
   elif [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     python3 /fuzz-introspector/src/main.py light --language=jvm
+    cp -rf $SRC/inspector/ /tmp/inspector-saved
   elif [ "$FUZZING_LANGUAGE" = "rust" ]; then
     python3 /fuzz-introspector/src/main.py light --language=rust
+    cp -rf $SRC/inspector/ /tmp/inspector-saved
   else
     python3 /fuzz-introspector/src/main.py light
+
+    # Make a copy of the light. This is needed because we run two versions of
+    # introspector: one based on pure statis analysis and one based on
+    # regular LTO.
+    cp -rf $SRC/inspector/ /tmp/inspector-saved
+
+
+    # Move coverage report.
+    if [ -d "$OUT/textcov_reports" ]
+    then
+      find $OUT/textcov_reports/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
+      find $OUT/textcov_reports/ -name "*.json" -exec cp {} $SRC/inspector/ \;
+    fi
+
+    # Make fuzz-introspector HTML report using light approach.
+    REPORT_ARGS="--name=$PROJECT_NAME"
+
+    # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
+    if [[ ! -z "${COVERAGE_URL+x}" ]]; then
+      REPORT_ARGS="$REPORT_ARGS --coverage-url=${COVERAGE_URL}"
+    fi
+
+    # Run pure static analysis fuzz introspector
+    fuzz-introspector full --target-dir=$SRC \
+        --language=${FUZZING_LANGUAGE} \
+        --out-dir=$SRC/inspector \
+        ${REPORT_ARGS}
   fi
-
-  # Make a copy of the light. This is needed because we run two versions of
-  # introspector: one based on pure statis analysis and one based on
-  # regular LTO.
-  cp -rf $SRC/inspector/ /tmp/inspector-saved
-
-
-  # Move coverage report.
-  if [ -d "$OUT/textcov_reports" ]
-  then
-    find $OUT/textcov_reports/ -name "*.covreport" -exec cp {} $SRC/inspector/ \;
-    find $OUT/textcov_reports/ -name "*.json" -exec cp {} $SRC/inspector/ \;
-  fi
-
-  # Make fuzz-introspector HTML report using light approach.
-  REPORT_ARGS="--name=$PROJECT_NAME"
-
-  # Only pass coverage_url when COVERAGE_URL is set (in cloud builds)
-  if [[ ! -z "${COVERAGE_URL+x}" ]]; then
-    REPORT_ARGS="$REPORT_ARGS --coverage-url=${COVERAGE_URL}"
-  fi
-
-  # Run pure static analysis fuzz introspector
-  fuzz-introspector full --target-dir=$SRC \
-      --language=${FUZZING_LANGUAGE} \
-      --out-dir=$SRC/inspector \
-      ${REPORT_ARGS}
 
   rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
 fi
