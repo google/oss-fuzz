@@ -50,11 +50,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case 4:
       hostname_randomize(tmp1, &gc);
       break;
-    case 5:
-      if (strlen(tmp1) > 0) {
-        get_auth_challenge(tmp1, &gc);
-      }
-      break;
     default:
       sanitize_control_message(tmp1, &gc);
     }

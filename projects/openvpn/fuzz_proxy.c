@@ -14,6 +14,7 @@ limitations under the License.
 #include <sys/time.h>
 #include "syshead.h"
 #include "interval.h"
+#include "sig.h"
 #include "proxy.h"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -48,7 +49,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   struct gc_arena gc = gc_new();
   struct http_proxy_info pi;
   ssize_t generic_ssizet;
-  int signal_received = 0;
+  struct signal_info signal_received;
   struct buffer lookahead = alloc_buf(1024);
   struct event_timeout evt;
 
@@ -91,9 +92,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     pi.auth_method = HTTP_AUTH_DIGEST;
     break;
   case 3:
-    pi.auth_method = HTTP_AUTH_NTLM;
-    break;
-  case 4:
     pi.auth_method = HTTP_AUTH_NTLM2;
     break;
   }
