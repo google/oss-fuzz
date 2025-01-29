@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,16 @@
 #
 ################################################################################
 
-cd lib
-cargo fuzz build
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN pip3 install --upgrade pip
+RUN mkdir $SRC/corpus
 
-find $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release -maxdepth 1 \
-    -type f -perm -u=x -exec cp {} $OUT \;
+# Upstream wants fuzzers hosted elsewhere, so pull them from fork (https://github.com/jsvine/pdfplumber/pull/1245#issuecomment-2581682100)
+RUN git clone --depth 1 https://github.com/ennamarie19/pdfplumber.git pdfplumber_fuzzer
+
+RUN git clone --depth 1 https://github.com/jsvine/pdfplumber.git pdfplumber \
+        && rm -rf pdfplumber/fuzz  # Remove the directory, if it exists
+RUN cp -r pdfplumber_fuzzer/fuzz pdfplumber \
+        && cp pdfplumber/fuzz/build.sh $SRC/
+WORKDIR $SRC/pdfplumber
+

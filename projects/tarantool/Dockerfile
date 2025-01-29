@@ -25,4 +25,8 @@ RUN apt-get update && apt-get install -y \
 RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
 WORKDIR $SRC/tarantool
 
+# Download a seed corpus.
+RUN rm -rf test/static
+RUN git clone https://github.com/ligurio/tarantool-corpus test/static
+
 COPY build.sh $SRC/

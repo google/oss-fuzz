@@ -22,7 +22,7 @@ RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
 RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
 RUN git clone --depth 1 https://github.com/guidovranken/wolf-ssl-ssh-fuzzers
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
 RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
@@ -39,13 +39,6 @@ RUN gsutil cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzze
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz-openssl.zip
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip $SRC/corpus_cryptofuzz-boringssl.zip
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip $SRC/corpus_cryptofuzz-nss.zip
-RUN gsutil cp gs://bitcoin-core-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bitcoin-core_cryptofuzz-bitcoin-cryptography-w2-p2/public.zip $SRC/corpus_bitcoin-core-w2-p2.zip
-RUN gsutil cp gs://bitcoin-core-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bitcoin-core_cryptofuzz-bitcoin-cryptography-w15-p4/public.zip $SRC/corpus_bitcoin-core-w15-p4.zip
-RUN gsutil cp gs://bitcoin-core-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bitcoin-core_cryptofuzz-bitcoin-cryptography-w20-p8/public.zip $SRC/corpus_bitcoin-core-w20-p8.zip
-RUN gsutil cp gs://num-bigint-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/num-bigint_cryptofuzz/public.zip $SRC/corpus_num-bigint.zip
-RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all/public.zip $SRC/corpus_wolfssl_sp-math-all.zip
-RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math-all-8bit/public.zip $SRC/corpus_wolfssl_sp-math-all-8bit.zip
-RUN gsutil cp gs://wolfssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/wolfssl_cryptofuzz-sp-math/public.zip $SRC/corpus_wolfssl_sp-math.zip
 
 # Botan corpora, which require a special import procedure
 RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p256/public.zip $SRC/corpus_botan_ecc_p256.zip
