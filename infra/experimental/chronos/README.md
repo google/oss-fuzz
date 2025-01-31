@@ -2,7 +2,7 @@
 
 ## Pre-built images.
 
-Pre-built images are available at:
+Daily pre-built images are available at:
 
 - `us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/<PROJECT>-ofg-cached-address`
 - `us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/<PROJECT>-ofg-cached-coverage`
