@@ -15,10 +15,11 @@ These images are generated in 2 ways:
   leveraging existing build system mechanisms to avoid rebuilding (e.g. running
   `make` twice should not actually rebuild everything). This is error-prone, so
   we validate the script works by running it.
-- (Fallback, if the replay build script didn't work). We leverage <ccache.dev>
-  to provide a compiler cache. This is often not as fast as the replay build
-  script, because some project builds spend significant time doing non-compiler
-  tasks (e.g. checking out submodules, running configure scripts).
+- (Fallback, if the replay build script didn't work). We leverage
+  [ccache](https://ccache.dev/), to provide a compiler cache. This is often not
+  as fast as the replay build script, because some project builds spend
+  significant time doing non-compiler tasks (e.g. checking out submodules,
+  running configure scripts).
 
 Note: this mechanism does not work for every single OSS-Fuzz project today. The
 resulting image may either:
