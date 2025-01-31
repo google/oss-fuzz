@@ -97,17 +97,16 @@ REPLAY_WORKED=
 #         If this step is successful, then the process can exit as it's ready.
 if [[ "$executables_replay" == "$executables_vanilla" ]]
 then
-  echo "Replay worked"
-  echo "Vanilla compile time: ${B_TIME}"
-  echo "Replay compile time: ${R_TIME}"
-
   REPLAY_WORKED=1
 
   if [ -z "${RUN_ALL+1}" ]; then
+    echo "${_PROJECT}: Replay worked."
+    echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME};"
     exit 0
   fi
 else
-  echo "Replay did not work"
+  echo "${_PROJECT}: Replay did not work"
+  R_TIME="N/A"
 fi
 
 # Step 8: prepare Dockerfile for ccache
@@ -145,17 +144,14 @@ executables_ccache="$(find ./build/out/${_PROJECT}/ -executable -type f | sort)"
 # Step 12: validate the ccache builds are successful
 if [[ "$executables_ccache" == "$executables_vanilla" ]]
 then
-  echo "Vanilla compile time: ${B_TIME}"
-  if [[ "$executables_replay" == "$executables_vanilla" ]]
-  then
-    echo "Replay worked"
-    echo "Replay compile time: ${R_TIME}"
-  fi
+  echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME}; CCache=${A_TIME};"
 
-  echo "Ccache compile time: ${A_TIME}"
+  if [[ -z "${REPLAY_WORKED}" || ${R_TIME} -gt ${A_TIME} ]]; then
+    if [ ${R_TIME} -gt ${A_TIME} ]; then
+      echo "Replay was slower than ccache."
+    fi
 
-  if [ -z "${REPLAY_WORKED}" ]; then
-    # Replay didn't work, so make the default "cached" image use the ccache one.
+    # Replay didn't work or was slower, so make the default "cached" image use the ccache one.
     docker image tag \
       $CCACHE_IMAGE_NAME \
       $FINAL_IMAGE_NAME
@@ -163,7 +159,7 @@ then
 
   exit 0
 else
-  echo "Replay and ccaching did not work."
+  echo "${_PROJECT}: Replay and ccaching did not work."
   exit 1
 fi
 
