@@ -16,25 +16,30 @@
 #
 ################################################################################
 
-# Create build directory
-mkdir -p build || true
-cd build || true
+set -eux
 
 SRC_DIR=/src/grass-addons
+BUILD_DIR=/out
+INSTALL_PREFIX=/usr/local
 FUZZ_TARGET=$SRC_DIR/Fuzz/fuzz_target.c
+OUT=$BUILD_DIR
+
+mkdir -p build
+cd build
+
+apt-get update && apt-get install -y --no-install-recommends \
+    cmake \
+    libstdc++-10-dev \
+    clang \
+    make \
+    || true
 
 GRASS_INCLUDE_DIR=grass_include
-mkdir -p $GRASS_INCLUDE_DIR/grass || true
+mkdir -p $GRASS_INCLUDE_DIR/grass
 
 curl -f -s -o $GRASS_INCLUDE_DIR/grass/gis.h https://raw.githubusercontent.com/OSGeo/grass/main/include/grass/gis.h || true
-curl -f -s -o $GRASS_INCLUDE_DIR/grass/config.h https://raw.githubusercontent.com/OSGeo/grass-addons/master/grass6/raster/r.terracost/config.h || true
-curl -f -s -o $GRASS_INCLUDE_DIR/grass/types.h https://raw.githubusercontent.com/OSGeo/grass-addons/master/grass6/raster/r.terracost/types.h || true
-
-# Install necessary C++ libraries
-apt-get update && apt-get install -y --no-install-recommends \
-    g++-10 \
-    libstdc++-10-dev \
-    || true
+curl -f -s -o $GRASS_INCLUDE_DIR/grass/config.h https://raw.githubusercontent.com/OSGeo/grass-addons/grass8/Fuzz/fuzz_target.c || true
+curl -f -s -o $GRASS_INCLUDE_DIR/grass/types.h https://raw.githubusercontent.com/OSGeo/grass-addons/grass8/Fuzz/fuzz_target.c || true
 
 INCLUDE_DIRS=(
     "$SRC_DIR/include"
@@ -48,25 +53,24 @@ INCLUDE_DIRS=(
 
 INCLUDE_FLAGS=$(printf " -I%s" "${INCLUDE_DIRS[@]}")
 
-# Compile each fuzz target source file
+OBJECT_FILES=()
 for src_file in $SRC_DIR/Fuzz/*.c; do
-    obj_file=$(basename "$src_file" .c).o
-    if grep -q "namespace" "$src_file"; then
-        clang++ $CXXFLAGS $INCLUDE_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
-    else
-        clang $CFLAGS $INCLUDE_FLAGS -c "$src_file" -o "$SRC_DIR/$obj_file" -Wno-error || true
+    if [[ -f "$src_file" ]]; then
+        obj_file=$(basename "$src_file" .c).o
+        clang $CFLAGS $INCLUDE_FLAGS -c "$src_file" -o "build/$obj_file" -Wno-error
+        OBJECT_FILES+=("build/$obj_file")
     fi
 done
 
-OBJECT_FILES=($SRC_DIR/*.o)
+mkdir -p $OUT
 
-mkdir -p $OUT || true
-
-clang $CXXFLAGS $INCLUDE_FLAGS $FUZZ_TARGET -o $OUT/fuzz_target "${OBJECT_FILES[@]}" || true
-
-# Verify the fuzz target exists
-if [[ ! -f "$OUT/fuzz_target" ]]; then
-    echo "Warning: fuzz_target binary was not created."
+if [[ ${#OBJECT_FILES[@]} -gt 0 ]]; then
+    clang $CXXFLAGS $INCLUDE_FLAGS build/*.o -o $OUT/fuzz_target
+    exit 0
 else
-    echo "Build completed successfully. Fuzz target is in $OUT/fuzz_target."
+    exit 1
+fi
+
+if [[ ! -f "$OUT/fuzz_target" ]]; then
+    exit 1
 fi
