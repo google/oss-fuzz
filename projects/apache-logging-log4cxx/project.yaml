@@ -3,10 +3,14 @@ main_repo: "https://github.com/apache/logging-log4cxx"
 language: c++
 
 fuzzing_engines:
+  - afl
+  - honggfuzz
   - libfuzzer
+  - centipede
 
 sanitizers:
   - address
+  - undefined
 
 # Apache Logging Services PMC members[1] that contribute the fuzz tests.
 # We cannot share `security@logging.apache.org` here, since it must be associated with a Google account[2].
