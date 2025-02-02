@@ -27,4 +27,4 @@ RUN curl -LO https://bootstrap.pypa.io/get-pip.py && \
     python3 -m pip install --root-user-action=ignore atheris pyinstaller
 RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
 WORKDIR $SRC
-COPY *.py build.sh $SRC/
+COPY *.options *.py build.sh $SRC/
