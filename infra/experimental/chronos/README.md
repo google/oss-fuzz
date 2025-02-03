@@ -26,7 +26,8 @@ resulting image may either:
 - Not provide much performance improvement compared with a normal image, or
 - Not exist at all (if neither approach worked).
 
-TODO: Aggregate stats on expected performance improvements.
+Stats from a recent run: <https://gist.github.com/oliverchang/abaf3a1106a2b923c0ac3a577410aaaa>
+(Feb 3 2025).
 
 ## Usage locally
 
