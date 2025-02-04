@@ -17,3 +17,6 @@
 
 git clone --quiet --depth 1 --branch master --single-branch https://github.com/apache/logging-log4cxx
 ./logging-log4cxx/src/fuzzers/bash/oss-fuzz-build.sh "$OUT"
+
+# Add seed corpus
+zip $OUT/DOMConfiguratorFuzzer_seed_corpus.zip $SRC/logging-log4cxx/src/test/resources/input/xml/*.xml
