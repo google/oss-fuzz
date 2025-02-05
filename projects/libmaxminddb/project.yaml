@@ -1,0 +1,15 @@
+homepage: "https://www.maxmind.com"
+language: c
+primary_contact: "wstorey@maxmind.com"
+auto_ccs:
+  - "goschwald@maxmind.com"
+  - "pkillarjun@protonmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/maxmind/libmaxminddb.git'
