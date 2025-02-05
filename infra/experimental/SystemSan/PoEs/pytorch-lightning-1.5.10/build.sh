@@ -16,7 +16,45 @@
 ################################################################################
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
-cd pytorch-lightning
+cd lightning
+git apply <<EOF
+diff --git a/requirements.txt b/requirements.txt
+index dd34e9273..36f55e683 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,7 +1,7 @@
+ # the default package dependencies
+
+ numpy>=1.17.2
+-torch>=1.7.*
++torch>=1.7.1
+ future>=0.17.1  # required for builtins in setup.py
+ tqdm>=4.41.0
+ PyYAML>=5.1
+diff --git a/requirements/examples.txt b/requirements/examples.txt
+index 8591f9bd5..8c0d96bd1 100644
+--- a/requirements/examples.txt
++++ b/requirements/examples.txt
+@@ -1,3 +1,3 @@
+-torchvision>=0.8.*
++torchvision>=0.8.2
+ gym>=0.17.0
+ ipython[all]
+diff --git a/requirements/extra.txt b/requirements/extra.txt
+index 74743185e..52580b475 100644
+--- a/requirements/extra.txt
++++ b/requirements/extra.txt
+@@ -2,7 +2,7 @@
+
+ matplotlib>3.1
+ horovod>=0.21.2  # no need to install with [pytorch] as pytorch is already installed
+-torchtext>=0.8.*
++torchtext>=0.8.1
+ omegaconf>=2.0.5
+ hydra-core>=1.0.5
+ jsonargparse[signatures]>=4.0.4,<5.0.0
+EOF
+pip3 install --upgrade pip
 pip3 install .
 
 # Build fuzzers in $OUT.
