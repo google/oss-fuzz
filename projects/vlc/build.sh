@@ -50,4 +50,3 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --with-libfuzzer
 make V=1 -j$(nproc)
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
-cp ./test/vlc-demux-libfuzzer $OUT/
