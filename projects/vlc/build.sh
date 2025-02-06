@@ -50,3 +50,30 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --with-libfuzzer
 make V=1 -j$(nproc)
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
+
+for i in fuzz-corpus/seeds/* fuzz-corpus/dictionaries/*.dict
+do
+    target=`basename "$i" .dict`
+    outfile="$OUT/vlc-demux-dec-$target-libfuzzer"
+
+    # Copy dict or seeds
+    if [ -f "$i" ]; then
+        cp "$i" "${outfile}.dict"
+    else
+        zip -jr "${outfile}_seed_corpus.zip" "$i"/*
+    fi
+
+    # may be already created by seeds
+    if [ -f "$outfile" ];then
+        continue;
+    fi
+
+    # Create a binary wrapper with correct env variables
+    cat <<EOF > "$outfile"
+#!/bin/sh
+export VLC_TARGET=$target
+exec ./vlc-demux-dec-libfuzzer "\$@"
+EOF
+
+    chmod +x "$outfile"
+done
