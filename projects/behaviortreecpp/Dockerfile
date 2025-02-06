@@ -16,8 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config wget libsodium-dev
-# RUN git clone --depth 1 https://github.com/BehaviorTree/BehaviorTree.CPP.git behaviortreecpp
-RUN git clone https://github.com/cktii/BehaviorTree.CPP.git behaviortreecpp
+RUN git clone --depth 1 https://github.com/BehaviorTree/BehaviorTree.CPP.git behaviortreecpp
 WORKDIR behaviortreecpp
-RUN git checkout fuzzing
 COPY build.sh $SRC/
