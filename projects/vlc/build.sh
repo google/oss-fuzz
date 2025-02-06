@@ -80,6 +80,7 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
 ./bootstrap
 
 ./configure --disable-lua \
+            --disable-nls \
             --disable-shared \
             --enable-static \
             --enable-vlc=no \
