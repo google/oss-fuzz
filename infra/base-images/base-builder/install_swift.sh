@@ -24,7 +24,6 @@ SWIFT_PACKAGES="wget \
           libcurl4 \
           libedit2 \
           libgcc-9-dev \
-          libpython2.7 \
           libsqlite3-0 \
           libstdc++-9-dev \
           libxml2 \
