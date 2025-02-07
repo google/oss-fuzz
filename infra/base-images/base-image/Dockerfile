@@ -16,7 +16,8 @@
 
 # Base image for all other images.
 
-ARG parent_image=ubuntu:20.04@sha256:4a45212e9518f35983a976eead0de5eecc555a2f047134e9dd2cfc589076a00d
+# Pin to a hash to keep stable and re-usable caches
+ARG parent_image=ubuntu:24.04@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782
 
 FROM $parent_image
 

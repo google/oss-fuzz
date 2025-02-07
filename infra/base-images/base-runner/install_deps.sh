@@ -32,6 +32,6 @@ apt-get update && apt-get install -y \
 case $(uname -m) in
   x86_64)
     # We only need to worry about i386 if we are on x86_64.
-    apt-get install -y lib32gcc1 libc6-i386
+    apt-get install -y lib32gcc-s1 libc6-i386
     ;;
 esac
