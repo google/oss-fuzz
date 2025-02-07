@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 
-RUN git clone https://gitlab.xiph.org/xiph/opus.git
+RUN git clone --single-branch --branch ossfuzz https://gitlab.xiph.org/xiph/opus.git
 RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
 COPY build.sh $SRC/
