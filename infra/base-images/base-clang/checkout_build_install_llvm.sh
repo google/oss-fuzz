@@ -45,7 +45,7 @@ esac
 
 INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
-LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS $INTROSPECTOR_DEP_PACKAGES"
+LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 binutils-dev zlib1g-dev $ARCHITECTURE_DEPS $INTROSPECTOR_DEP_PACKAGES"
 
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
