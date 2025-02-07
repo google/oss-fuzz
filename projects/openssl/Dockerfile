@@ -21,6 +21,8 @@ RUN cd $SRC/openssl/ && git submodule update --init fuzz/corpora
 RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl.git openssl30
 RUN git clone --depth 1 --branch openssl-3.1 https://github.com/openssl/openssl.git openssl31
 RUN git clone --depth 1 --branch openssl-3.2 https://github.com/openssl/openssl.git openssl32
+RUN git clone --depth 1 --branch feature/ml-kem https://github.com/openssl/openssl.git openssl-ml-kem
+RUN git clone --depth 1 --branch feature/quic-server https://github.com/openssl/openssl.git openssl-quic-server
 RUN cd $SRC/openssl32/ && git submodule update --init fuzz/corpora
 WORKDIR openssl
 COPY build.sh *.options $SRC/
