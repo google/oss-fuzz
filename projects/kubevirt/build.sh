@@ -34,7 +34,6 @@ go mod tidy
 go mod vendor
 
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/node FuzzExecute FuzzNodeWatchExecute
-exit 0
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vm FuzzExecute FuzzVMWatchExecute
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vmi FuzzExecute FuzzVMIWatchExecute
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/clone FuzzVMCloneController FuzzVMCloneController
