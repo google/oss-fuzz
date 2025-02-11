@@ -28,6 +28,7 @@ cp $SRC/kubevirt-fuzz4/pkg/virt-controller/watch/node/fuzz_test.go $SRC/kubevirt
 cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/drain/disruptionbudget/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/drain/disruptionbudget/
 cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/migration/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/migration/
 cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/pool/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/pool/
+cp $SRC/kubevirt-fuzz6/pkg/virt-operator/resource/generate/install/fuzz_test.go $SRC/kubevirt/pkg/virt-operator/resource/generate/install/
 
 printf "package webhooks\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/util/webhooks/register_fuzz_dep.go
 go mod tidy
@@ -36,6 +37,7 @@ go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-b
 go mod tidy
 go mod vendor
 
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/generate/install FuzzLoadInstallStrategyFromCache FuzzLoadInstallStrategyFromCache
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/node FuzzExecute FuzzNodeWatchExecute
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vm FuzzExecute FuzzVMWatchExecute
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vmi FuzzExecute FuzzVMIWatchExecute
