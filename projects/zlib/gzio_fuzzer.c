@@ -30,7 +30,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     gzFile file;
     char fname[] = "gzio.XXXXXX";
     close(mkstemp(fname));
-    unsigned mode_sz = dataLen ? (--dataLen, *data++)|2 : 8;
+    unsigned mode_sz = (dataLen ? (--dataLen, *data++) | 2 : 8) & 0xF;
     char mode[mode_sz];
     memcpy(mode, data, dataLen >= mode_sz ? mode_sz - 1: dataLen);
     mode[mode_sz - 1] = 0;
