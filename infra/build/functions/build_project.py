@@ -285,8 +285,7 @@ def get_compile_step(project,
   compile_step = {
       'name': project.image,
       'env': env,
-      'entrypoint':
-          '/bin/bash',
+      'entrypoint': '/bin/bash',
       'args': [
           '-c',
           # Remove /out to make sure there are non instrumented binaries.
