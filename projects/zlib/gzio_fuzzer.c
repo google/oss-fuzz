@@ -41,7 +41,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
      */
     int op_count = 2; //< Number of operations chained.
     while(op_count--) {
-      switch((--dataLen, (*data)%12)) {
+      switch((--dataLen, (*data)%19)) {
         case 0: {
           char c = dataLen ? (--dataLen, (char)*data++) : 'c';
           if(gzputc(file, c) < 0) {
@@ -151,6 +151,37 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
              break;
             }
           };
+          break;
+        }
+        case 12: {
+          gzoffset(file);
+          break;
+        }
+        case 13: {
+          gzrewind(file);
+          break;
+        }
+        case 14: {
+          gzeof(file);
+          break;
+        }
+        case 15: {
+          gzdirect(file);
+          break;
+        }
+        case 16: {
+          unsigned sz = dataLen ? ((--dataLen, *data++))|1 : 128;
+          if(gzbuffer(file, sz) <0)
+            goto exit;
+          break;
+        }
+        case 17: {
+          int errnum;
+          gzerror(file, &errnum);
+          break;
+        }
+        case 18: {
+          gzclearerr(file);
           break;
         }
       }
