@@ -21,10 +21,10 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-
     rm -rf maven.zip
 ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
-RUN apt install autoconf automake libtool build-essential xutils-dev libapr1-dev libapr1 ninja-build golang pkg-config -y
+RUN apt install autoconf automake libtool libtool-bin build-essential xutils-dev libapr1-dev libapr1 ninja-build golang pkg-config -y
 
 RUN git clone https://github.com/netty/netty-tcnative netty-tcnative
 
 COPY build.sh $SRC/
-COPY *Fuzzer.java *.diff $SRC/
+COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/netty-tcnative
