@@ -21,7 +21,7 @@ RUN mkdir $SRC/corpus
 # Upstream wants fuzzers hosted elsewhere, so pull them from fork (https://github.com/jsvine/pdfplumber/pull/1245#issuecomment-2581682100)
 RUN git clone --depth 1 https://github.com/ennamarie19/pdfplumber.git pdfplumber_fuzzer
 
-RUN git clone --depth 1 https://github.com/jsvine/pdfplumber.git pdfplumber \
+RUN git clone --depth 1 --branch develop https://github.com/jsvine/pdfplumber.git pdfplumber \
         && rm -rf pdfplumber/fuzz  # Remove the directory, if it exists
 RUN cp -r pdfplumber_fuzzer/fuzz pdfplumber \
         && cp pdfplumber/fuzz/build.sh $SRC/
