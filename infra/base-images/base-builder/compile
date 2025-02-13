@@ -353,28 +353,7 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
   python3 -m pip install -e .
   cd /src/
 
-  if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-    echo "GOING jvm route"
-
-    set -x
-    # Output will be put in /out/
-    python3 -m fuzz_introspector.frontends.oss_fuzz --language jvm --target-dir $SRC --entrypoint fuzzerTestOneInput
-
-    # Move files temporarily to fit workflow of other languages.
-    mkdir -p $SRC/my-fi-data
-    find ./ -name *.data -exec mv {} $SRC/my-fi-data/ \;
-    find ./ -name *.data.yaml -exec mv {} $SRC/my-fi-data/ \;
-  elif [ "$FUZZING_LANGUAGE" = "rust" ]; then
-    echo "GOING rust route"
-
-    # Run the rust frontend
-    python3 -m fuzz_introspector.frontends.oss_fuzz --language rust --target-dir $SRC
-
-    # Move files temporarily to fix workflow of other languages.
-    mkdir -p $SRC/my-fi-data
-    find ./ -name "*.data" -exec mv {} $SRC/my-fi-data/ \;
-    find ./ -name "*.data.yaml" -exec mv {} $SRC/my-fi-data/ \;
-
+  if [ "$FUZZING_LANGUAGE" = "rust" ]; then
     # Restore the sanitizer flag for rust
     export SANITIZER="introspector"
   fi
@@ -413,15 +392,15 @@ if [ "$SANITIZER" = "introspector" ] || [ "$RUST_SANITIZER" = "introspector" ]; 
     echo "GOING jvm route"
     set -x
     find $OUT/ -name "jacoco.xml" -exec cp {} $SRC/inspector/ \;
-    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC --out-dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=jvm"
-    fuzz-introspector report $REPORT_ARGS
+    fuzz-introspector full $REPORT_ARGS
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   elif [ "$FUZZING_LANGUAGE" = "rust" ]; then
     echo "GOING rust route"
-    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC/inspector"
+    REPORT_ARGS="$REPORT_ARGS --target-dir=$SRC --out-dir=$SRC/inspector"
     REPORT_ARGS="$REPORT_ARGS --language=rust"
-    fuzz-introspector report $REPORT_ARGS
+    fuzz-introspector full $REPORT_ARGS
     rsync -avu --delete "$SRC/inspector/" "$OUT/inspector"
   else
     # C/C++
