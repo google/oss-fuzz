@@ -21,7 +21,9 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-
     rm -rf maven.zip
 ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
 
-RUN apt install autoconf automake libtool libtool-bin build-essential xutils-dev libapr1-dev libapr1 ninja-build golang pkg-config -y
+RUN apt update && apt install autoconf automake libtool \
+    libtool-bin build-essential xutils-dev libapr1-dev libapr1 \
+    ninja-build golang pkg-config -y
 
 RUN git clone https://github.com/netty/netty-tcnative netty-tcnative
 
