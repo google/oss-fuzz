@@ -14,6 +14,13 @@
 # limitations under the License.
 #
 ##########################################################################
+# Configure toolchain
+mkdir -p ~/.m2
+echo "<toolchains>" > ~/.m2/toolchains.xml
+echo "<toolchain><type>jdk</type><provides><version>17</version></provides>" >> ~/.m2/toolchains.xml
+echo "<configuration><jdkHome>\${env.JAVA_HOME}</jdkHome></configuration></toolchain>" >> ~/.m2/toolchains.xml
+echo "</toolchains>" >> ~/.m2/toolchains.xml
+
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
     -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
     -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
@@ -33,7 +40,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 cp -r $JAVA_HOME $OUT/
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   $JAVA_HOME/bin/javac -cp $BUILD_CLASSPATH $fuzzer
