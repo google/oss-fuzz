@@ -20,12 +20,32 @@ go build .
 mv go-118-fuzz-build /root/go/bin/
 cd "$SRC"/kubevirt
 
+cp $SRC/kubevirt-fuzz1/pkg/virt-operator/resource/apply/fuzz_test.go $SRC/kubevirt/pkg/virt-operator/resource/apply/
+cp $SRC/kubevirt-fuzz2/pkg/virt-controller/watch/clone/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/clone/
+cp $SRC/kubevirt-fuzz3/pkg/virt-controller/watch/vm/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/vm/
+cp $SRC/kubevirt-fuzz3/pkg/virt-controller/watch/vmi/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/vmi/
+cp $SRC/kubevirt-fuzz4/pkg/virt-controller/watch/node/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/node/
+cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/drain/disruptionbudget/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/drain/disruptionbudget/
+cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/migration/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/migration/
+cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/pool/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/pool/
+cp $SRC/kubevirt-fuzz6/pkg/virt-operator/resource/generate/install/fuzz_test.go $SRC/kubevirt/pkg/virt-operator/resource/generate/install/
+
 printf "package webhooks\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/util/webhooks/register_fuzz_dep.go
 go mod tidy
 go mod vendor
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 go mod tidy
 go mod vendor
+
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/generate/install FuzzLoadInstallStrategyFromCache FuzzLoadInstallStrategyFromCache
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/node FuzzExecute FuzzNodeWatchExecute
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vm FuzzExecute FuzzVMWatchExecute
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vmi FuzzExecute FuzzVMIWatchExecute
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/clone FuzzVMCloneController FuzzVMCloneController
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/apply FuzzReconciler FuzzVirtOperatorResApplyReconciler
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/drain/disruptionbudget FuzzExecute FuzzWatchDrainDisruptionBudgetExecute
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/migration FuzzExecute FuzzWatchMigrationExecute
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/pool FuzzExecute FuzzWatchPoolExecute
 
 mv $SRC/fuzz_test.go ./pkg/certificates/triple/cert/
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/certificates/triple/cert FuzzKeyParsers FuzzKeyParsers

@@ -42,7 +42,6 @@ B_START=$SECONDS
 docker container rm -f ${_PROJECT}-origin-${_SANITIZER}
 
 docker run \
-  --entrypoint=/bin/bash \
   --env=SANITIZER=${_SANITIZER} \
   --env=CCACHE_DIR=/workspace/ccache \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
@@ -51,12 +50,12 @@ docker run \
   -v=$PWD/ccaches/${_PROJECT}/ccache:/workspace/ccache \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   gcr.io/oss-fuzz/${_PROJECT} \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && compile"
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
-docker container commit -c "ENV ENTRYPOINT=/bin/sh" -c "ENV REPLAY_ENABLED=1" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
+docker container commit -c "ENV REPLAY_ENABLED=1" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
 
 # Step 4: save the list of executables created from a vanilla build. This is
 #         needed for validating if replay and ccaching works.
@@ -77,7 +76,7 @@ docker run \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   --name=${_PROJECT}-origin-${_SANITIZER}-replay-recached \
   $FINAL_IMAGE_NAME \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 R_TIME=$(($SECONDS - $R_START))
 
@@ -127,13 +126,12 @@ cd ${BASE}
 A_START=$SECONDS
 docker run \
   --rm \
-  --entrypoint=/bin/bash \
   --env=SANITIZER=${_SANITIZER} \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --name=${_PROJECT}-origin-${_SANITIZER}-recached \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   $CCACHE_IMAGE_NAME \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 A_TIME=$(($SECONDS - $A_START))
 
