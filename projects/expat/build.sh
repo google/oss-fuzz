@@ -20,7 +20,11 @@
 
 cmake_args=(
     # Specific to Expat
+    -DEXPAT_BUILD_DOCS=OFF
+    -DEXPAT_BUILD_EXAMPLES=OFF
     -DEXPAT_BUILD_FUZZERS=ON
+    -DEXPAT_BUILD_TESTS=OFF
+    -DEXPAT_BUILD_TOOLS=OFF
     -DEXPAT_OSSFUZZ_BUILD=ON
     -DEXPAT_SHARED_LIBS=OFF
 
@@ -48,14 +52,11 @@ for fuzzer in fuzz/*;
 do
   cp $fuzzer $OUT
   fuzzer_name=$(basename $fuzzer)
-  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]];
-  then
+  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]]; then
     cp $SRC/xml_UTF_16.dict $OUT/${fuzzer_name}.dict
-  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]];
-  then
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]]; then
     cp $SRC/xml_UTF_16LE.dict $OUT/${fuzzer_name}.dict
-  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]];
-  then
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]]; then
     cp $SRC/xml_UTF_16BE.dict $OUT/${fuzzer_name}.dict
   else
     cp $SRC/xml.dict $OUT/${fuzzer_name}.dict
