@@ -14,6 +14,13 @@
 # limitations under the License.
 #
 ##########################################################################
+# Configure toolchain
+mkdir -p ~/.m2
+echo "<toolchains>" > ~/.m2/toolchains.xml
+echo "<toolchain><type>jdk</type><provides><version>17</version></provides>" >> ~/.m2/toolchains.xml
+echo "<configuration><jdkHome>\${env.JAVA_HOME}</jdkHome></configuration></toolchain>" >> ~/.m2/toolchains.xml
+echo "</toolchains>" >> ~/.m2/toolchains.xml
+
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
     -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
     -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
@@ -22,7 +29,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
 
 cp "./target/datasketches-java-$CURRENT_VERSION.jar" $OUT/sketches-core.jar
 
-ALL_JARS='sketches-core.jar'
+ALL_JARS='sketches-core.jar datasketches-memory.jar'
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -33,7 +40,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 cp -r $JAVA_HOME $OUT/
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   $JAVA_HOME/bin/javac -cp $BUILD_CLASSPATH $fuzzer
@@ -49,6 +56,7 @@ do
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
+  settings=\$mem_settings:--add-modules=jdk.incubator.foreign
   export JAVA_HOME=\$this_dir/$(basename $JAVA_HOME)
   export LD_LIBRARY_PATH="\$JAVA_HOME/lib/server":\$this_dir
   export PATH=\$JAVA_HOME/bin:\$PATH
@@ -57,7 +65,7 @@ do
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \
     --cp=$RUNTIME_CLASSPATH                         \
     --target_class=$fuzzer_basename                 \
-    --jvm_args="\$mem_settings"                     \
+    --jvm_args=\$settings                           \
     \$@" > $OUT/$fuzzer_basename
 
     chmod u+x $OUT/$fuzzer_basename
