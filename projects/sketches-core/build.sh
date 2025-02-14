@@ -29,7 +29,7 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
 
 cp "./target/datasketches-java-$CURRENT_VERSION.jar" $OUT/sketches-core.jar
 
-ALL_JARS='sketches-core.jar'
+ALL_JARS='sketches-core.jar datasketches-memory.jar'
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -56,6 +56,7 @@ do
   else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
+  settings=\$mem_settings:--add-modules=jdk.incubator.foreign
   export JAVA_HOME=\$this_dir/$(basename $JAVA_HOME)
   export LD_LIBRARY_PATH="\$JAVA_HOME/lib/server":\$this_dir
   export PATH=\$JAVA_HOME/bin:\$PATH
@@ -64,7 +65,7 @@ do
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \
     --cp=$RUNTIME_CLASSPATH                         \
     --target_class=$fuzzer_basename                 \
-    --jvm_args="\$mem_settings"                     \
+    --jvm_args=\$settings                           \
     \$@" > $OUT/$fuzzer_basename
 
     chmod u+x $OUT/$fuzzer_basename

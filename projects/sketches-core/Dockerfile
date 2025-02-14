@@ -19,6 +19,8 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
+RUN curl -L https://repo1.maven.org/maven2/org/apache/datasketches/datasketches-memory/4.1.0/datasketches-memory-4.1.0.jar -o $OUT/datasketches-memory.jar
+
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 RUN git clone --depth 1 https://github.com/DataSketches/sketches-core sketches-core
 COPY *.sh *.java $SRC/
