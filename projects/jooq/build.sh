@@ -56,7 +56,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 cp -r $JAVA_HOME $OUT/
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   $JAVA_HOME/bin/javac -cp $BUILD_CLASSPATH $fuzzer
