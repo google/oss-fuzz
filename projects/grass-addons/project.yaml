@@ -1,0 +1,4 @@
+homepage: "https://grass.osgeo.org/grass-stable/manuals/addons/"
+language: c++
+primary_contact: "neteler@gmail.com"
+main_repo: 'https://github.com/OSGeo/grass-addons'
