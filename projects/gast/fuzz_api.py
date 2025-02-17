@@ -18,8 +18,9 @@ import ast, gast
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
+  source = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
   try:
-    tree = gast.parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
+    tree = gast.parse(source)
   except:  # catch it all
     return
 
@@ -31,15 +32,32 @@ def TestOneInput(data):
   gast.dump(gtree)
   for node in gast.walk(gtree):
       if isinstance(node, gast.AST):
+          node_copy = type(node)(**dict(gast.iter_fields(node)))
+          gast.copy_location(node_copy, node)
+          gast.fix_missing_locations(node_copy)
           if isinstance(node, (gast.AsyncFunctionDef, gast.FunctionDef, gast.ClassDef, gast.Module)):
             gast.get_docstring(node)
-          gast.fix_missing_locations(node)
-          gast.increment_lineno(node)
+          gast.get_source_segment(source, node)
+          list(gast.iter_child_nodes(node))
+          list(gast.iter_fields(node))
+          try:
+            gast.literal_eval(node)
+          except ValueError:
+            ...
+  gast.increment_lineno(gtree)
+
   gcode = gast.unparse(gtree)
   gtree2 = gast.parse(gcode)
   gcode2 = gast.unparse(gtree2)
   if gcode != gcode2:
       raise RuntimeError(gcode, gcode2)
+
+  tree2 = gast.gast_to_ast(gtree)
+  gtree3 = gast.ast_to_gast(tree2)
+  gcode3 = gast.unparse(gtree3)
+  if gcode2 != gcode3:
+      raise RuntimeError(gcode2, gcode3)
+  gast.dump(gtree3, indent=4, include_attributes=True)
 
 
 
