@@ -1,0 +1,6 @@
+homepage: "https://github.com/Q5EbA7Vdyw84efER/nextjs-dashboard"
+main_repo: 'https://github.com/Q5EbA7Vdyw84efER/nextjs-dashboard.git'
+language: javascript
+primary_contact: "jackli3@shein.com"
+sanitizers:
+  - none
