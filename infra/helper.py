@@ -1267,7 +1267,7 @@ def coverage(args):  # pylint: disable=too-many-branches
 
   run_args = _env_to_docker_args(env)
 
-  if args.port:
+  if args.port and not args.no_serve:
     run_args.extend([
         '-p',
         '%s:%s' % (args.port, args.port),
