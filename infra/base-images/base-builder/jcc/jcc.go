@@ -335,7 +335,7 @@ func main() {
 	var bin string
 	if isCPP {
 		bin = "clang++"
-		newArgs = append(args, "-stdlib=libc++")
+		newArgs = append(newArgs, "-stdlib=libc++")
 	} else {
 		bin = "clang"
 	}
