@@ -35,7 +35,7 @@ void FuzzExtractTheAddress(const uint8_t **data2, size_t *size2) {
     
     time_t now; 
     int doctored = 0;
-    extract_addresses((struct dns_header *)new_data, size, new_name, now, NULL, NULL, is_sign, check_rebind, 0, secure, &doctored);
+    extract_addresses((struct dns_header *)new_data, size, new_name, now, NULL, is_sign, check_rebind, 0, secure, &doctored);
   }
 }
 
@@ -60,8 +60,11 @@ void FuzzAnswerTheRequest(const uint8_t **data2, size_t *size2) {
     memset(new_data, 0, size);
     memcpy(new_data, data, size);
     pointer_arr[pointer_idx++] = (void*)new_data;
-
-    answer_request((struct dns_header *)new_data, new_data+size, size, local_addr, local_netmask, now, i1, i2, i3);
+    int *stale;
+    *stale = 0;
+    int *filtered;
+    *filtered = 0;
+    answer_request((struct dns_header *)new_data, new_data+size, size, local_addr, local_netmask, now, i1, i2, i3, stale, filtered);
   }
 
 }
