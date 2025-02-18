@@ -14,25 +14,19 @@
 //
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import org.jxls.common.Context;
-import org.jxls.common.JxlsException;
-import org.jxls.util.CannotOpenWorkbookException;
-import org.jxls.util.JxlsHelper;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.RichTextString;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.Drawing;
+import org.jxls.builder.JxlsOutputFile;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProcessTemplateFuzzer {
     private static Path templatePath;
@@ -84,35 +78,23 @@ public class ProcessTemplateFuzzer {
         return templatePath;
     }
 
-    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-        Path templatePath = null;
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) throws FileNotFoundException {
+        Path templatePath;
         try {
             templatePath = ProcessTemplateFuzzer.createDocument(data);
         } catch (IOException | IllegalArgumentException e) {
             return;
         }
 
-        Context context = new Context(ProcessTemplateFuzzer.generateHashMap(data));
-        OutputStream os = new ByteArrayOutputStream();
-        InputStream in = null;
-        try {
-            in = Files.newInputStream(templatePath.toFile().toPath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        try {
-            if (data.consumeBoolean()) {
-                JxlsHelper.getInstance().processTemplate(in, os, context);
-            } else {
-                JxlsHelper.getInstance().processGridTemplateAtCell(
-                    in,
-                    os,
-                    context,
-                    data.consumeString(50),
-                    data.consumeString(50)
-                );
-            }
-        } catch (IOException | JxlsException e) {}
+        Map<String, Object> dataMap = ProcessTemplateFuzzer.generateHashMap(data);
+
+        File output = new File("report.xlsx");
+
+        JxlsPoiTemplateFillerBuilder.newInstance()
+                .withTemplate(templatePath.toFile())
+                .build()
+                .fill(dataMap, new JxlsOutputFile(output));
+
     }
 }
