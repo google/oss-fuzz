@@ -207,6 +207,11 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       logging.error('Couldn\'t get project data. Skipping %s.', project_name)
       continue
 
+    # TODO(metzman): Support aarch64 builds.
+    architectures = project_yaml['architectures']
+    if 'aarch64' in architectures:
+      architectures.pop(architectures.index('aarch64'))
+
     build_project.set_yaml_defaults(project_yaml)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
         project_yaml['sanitizers']) + ['coverage', 'introspector']
