@@ -1,0 +1,40 @@
+--- a/src/array_serializer.rs
++++ b/src/array_serializer.rs
+@@ -4,7 +4,7 @@ use object_builder;
+ use array_builder;
+ 
+ pub trait ArraySerializer {
+-    fn build(&self, &mut array_builder::ArrayBuilder);
++    fn build(&self, _: &mut array_builder::ArrayBuilder);
+ 
+     #[inline]
+     fn root(&self) -> Option<&str> {
+--- a/src/serializer.rs
++++ b/src/serializer.rs
+@@ -33,7 +33,7 @@ use object_builder;
+ /// ```
+ pub trait Serializer {
+ 
+-    fn build(&self, &mut object_builder::ObjectBuilder);
++    fn build(&self, _: &mut object_builder::ObjectBuilder);
+ 
+     #[inline]
+     fn root(&self) -> Option<&str> {
+@@ -82,7 +82,7 @@ pub trait Serializer {
+ /// ```
+ pub trait ObjectSerializer<T> {
+ 
+-    fn build(&self, &T, &mut object_builder::ObjectBuilder);
++    fn build(&self, _: &T, _: &mut object_builder::ObjectBuilder);
+ 
+     #[inline]
+     fn root(&self) -> Option<&str> {
+@@ -151,7 +151,7 @@ pub trait ObjectSerializer<T> {
+ /// ```
+ pub trait ObjectScopeSerializer<T, S> {
+ 
+-    fn build(&self, &T, &S, &mut object_builder::ObjectBuilder);
++    fn build(&self, _: &T, _: &S, _: &mut object_builder::ObjectBuilder);
+ 
+     #[inline]
+     fn root(&self) -> Option<&str> {
