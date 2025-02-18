@@ -3,4 +3,12 @@ language: c++
 primary_contact: "rucombs@cisco.com"
 auto_ccs:
   - "capuanobailey@gmail.com"
+  - "p.antoine@catenacyber.fr"
 main_repo: "https://github.com/snort3/snort3.git"
+sanitizers:
+- address
+# ubsan is failing undefined reference to typeinfo
+fuzzing_engines:
+# centipede is not working because of rpl_malloc link failure
+- libfuzzer
+- afl
