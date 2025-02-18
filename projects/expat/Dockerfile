@@ -24,6 +24,6 @@ RUN apt-get update && apt-get install -y \
             make \
             protobuf-compiler
 
-RUN git clone --depth 1 https://github.com/libexpat/libexpat expat
+RUN git clone --depth 1 --branch fuzzers-re-enable-xml-lpm-fuzzer-for-oss-fuzz https://github.com/libexpat/libexpat expat
 WORKDIR expat
 COPY build.sh *.dict $SRC/
