@@ -80,7 +80,6 @@ sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/
 
 # Special handling of dlltool
 sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' dlltool.c > fuzz_dlltool.h
-sed -i 's/copy_mian/copy_main/g' fuzz_dlltool.h
 
 # Patch the rest
 for i in objdump nm objcopy windres strings addr2line; do
@@ -89,6 +88,11 @@ for i in objdump nm objcopy windres strings addr2line; do
     sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' $i.c > fuzz_$i.h
     sed -i 's/copy_mian/copy_main/g' fuzz_$i.h
 done
+
+# Fix a dlltool leak, which won't be fixed upstream because it uses a
+# non-posix yacc feature.  It also isn't seen as a direct leak when
+# running dlltool stand-alone.
+sed -i '/^%%$/i%destructor { free (\$\$); } ID' defparse.y
 
 #
 # Compile fuzzers
