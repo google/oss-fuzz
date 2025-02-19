@@ -29,6 +29,8 @@ cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/drain/disruptionbudget/fuzz_tes
 cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/migration/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/migration/
 cp $SRC/kubevirt-fuzz5/pkg/virt-controller/watch/pool/fuzz_test.go $SRC/kubevirt/pkg/virt-controller/watch/pool/
 cp $SRC/kubevirt-fuzz6/pkg/virt-operator/resource/generate/install/fuzz_test.go $SRC/kubevirt/pkg/virt-operator/resource/generate/install/
+cp $SRC/kubevirt-fuzz7/pkg/virt-api/webhooks/mutating-webhook/fuzz_test.go $SRC/kubevirt/pkg/virt-api/webhooks/mutating-webhook/
+cp $SRC/kubevirt-fuzz7/pkg/virt-api/webhooks/validating-webhook/fuzz_test.go $SRC/kubevirt/pkg/virt-api/webhooks/validating-webhook/
 
 printf "package webhooks\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > pkg/util/webhooks/register_fuzz_dep.go
 go mod tidy
@@ -37,6 +39,9 @@ go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-b
 go mod tidy
 go mod vendor
 
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-api/webhooks/mutating-webhook FuzzWebhookMutators FuzzWebhookMutators
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-api/webhooks/validating-webhook FuzzWebhookAdmitters FuzzWebhookAdmitters
+compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-api/webhooks/fuzz FuzzAdmitter FuzzAdmitter
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/generate/install FuzzLoadInstallStrategyFromCache FuzzLoadInstallStrategyFromCache
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/node FuzzExecute FuzzNodeWatchExecute
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-controller/watch/vm FuzzExecute FuzzVMWatchExecute
@@ -52,3 +57,5 @@ compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/certificates/triple/cert FuzzK
 
 mv $SRC/fuzz_loadInstallStrategyFromBytes_test.go ./pkg/virt-operator/resource/generate/install/
 compile_native_go_fuzzer kubevirt.io/kubevirt/pkg/virt-operator/resource/generate/install FuzzLoadInstallStrategyFromBytes FuzzLoadInstallStrategyFromBytes
+
+cp $SRC/*.options $OUT/
