@@ -83,8 +83,6 @@ func main() {
 	}
 	fullCmdArgs := append([]string{bin}, newArgs...)
 	retcode, out, errstr := Compile(bin, newArgs)
-	if retcode == 0 {
-		WriteStdErrOut(fullCmdArgs, out, errstr)
-		os.Exit(0)
-	}
+	WriteStdErrOut(fullCmdArgs, out, errstr)
+	os.Exit(0)
 }
