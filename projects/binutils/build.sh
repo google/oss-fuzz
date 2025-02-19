@@ -27,6 +27,12 @@ cd binutils-gdb
 cd binutils
 sed -i 's/vfprintf (stderr/\/\//' elfcomm.c
 sed -i 's/fprintf (stderr/\/\//' elfcomm.c
+
+# Fix a dlltool leak, which won't be fixed upstream because it uses a
+# non-posix yacc feature.  It also isn't seen as a direct leak when
+# running dlltool stand-alone.
+sed -i '/^%%$/i%destructor { free (\$\$); } ID' defparse.y
+
 cd ../
 
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
@@ -80,7 +86,6 @@ sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/
 
 # Special handling of dlltool
 sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' dlltool.c > fuzz_dlltool.h
-sed -i 's/copy_mian/copy_main/g' fuzz_dlltool.h
 
 # Patch the rest
 for i in objdump nm objcopy windres strings addr2line; do
