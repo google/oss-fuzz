@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 # Copyright 2016 Google Inc.
+# Copyright 2025 Sebastian Pipping <sebastian@pipping.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,11 @@
 # limitations under the License.
 #
 ################################################################################
+
+# NOTE: We need to drop -stdlib=libc++ to not get (pages of) link errors when
+#       linking against system Protobuf that is linked against GCC's libstdc++
+#       rather than Clang's own libstdc++
+CXXFLAGS="${CXXFLAGS/-stdlib=libc++/ }"
 
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
