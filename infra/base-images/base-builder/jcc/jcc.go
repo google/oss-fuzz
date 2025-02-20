@@ -84,5 +84,5 @@ func main() {
 	fullCmdArgs := append([]string{bin}, newArgs...)
 	retcode, out, errstr := Compile(bin, newArgs)
 	WriteStdErrOut(fullCmdArgs, out, errstr)
-	os.Exit(0)
+	os.Exit(retcode)
 }
