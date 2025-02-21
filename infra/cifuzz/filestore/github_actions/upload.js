@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // Script for uploading an artifact. Returns 0 on success.
-// Usage: upload.js <aritfactName> <rootDirectory> <file 1>...<file N>
+// Usage: upload.js <artifactName> <rootDirectory> <file 1>...<file N>
 
 const fs = require('fs');
 const artifact = require('@actions/artifact');
+
 const artifactClient = artifact.create()
 const artifactName = process.argv[2];
 const rootDirectory = process.argv[3]
@@ -25,9 +26,20 @@ const options = {
     continueOnError: true
 }
 
-const uploadResult = artifactClient.uploadArtifact(artifactName, files, rootDirectory, options)
-console.log(uploadResult);
-if (uploadResult['failedItems']) {
-  return 1;
+async function uploadArtifact() {
+    try {
+        const uploadResult = await artifactClient.uploadArtifact(artifactName, files, rootDirectory, options);
+        console.log(uploadResult);
+        if (uploadResult.failedItems.length > 0) {
+            return 1;
+        }
+        return 0;
+    } catch (error) {
+        console.error('Error uploading artifact:', error);
+        return 1;
+    }
 }
-return 0;
+
+uploadArtifact().then(exitCode => {
+    process.exit(exitCode);
+});
