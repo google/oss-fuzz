@@ -21,6 +21,14 @@
 #       rather than Clang's own libstdc++
 CXXFLAGS="${CXXFLAGS/-stdlib=libc++/ }"
 
+# NOTE: Without -static-libstdc++, the bad build checker in base-runner
+#       will fail with output:
+#       > error while loading shared libraries: libstdc++.so.6:
+#       > cannot open shared object file: No such file or directory
+#       The addition of -Wno-unused-command-line-argument silences Clang's
+#       misleading output on argument -static-libstdc++ appearing as unused.
+CXXFLAGS="${CXXFLAGS} -static-libstdc++ -Wno-unused-command-line-argument"
+
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
@@ -33,6 +41,7 @@ cmake_args=(
     -DEXPAT_BUILD_TOOLS=OFF
     -DEXPAT_OSSFUZZ_BUILD=ON
     -DEXPAT_SHARED_LIBS=OFF
+    -DProtobuf_USE_STATIC_LIBS=ON
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
