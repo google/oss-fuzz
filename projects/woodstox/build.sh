@@ -18,28 +18,6 @@
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-
-cat > patch.diff <<- EOM
-diff --git a/pom.xml b/pom.xml
-index 3e29db9..c79e086 100644
---- a/pom.xml
-+++ b/pom.xml
-@@ -206,8 +206,8 @@ SAX2 and Stax2 APIs
-             <plugin>
-                 <artifactId>maven-compiler-plugin</artifactId>
-                 <configuration>
--                    <source>1.6</source>
--                    <target>1.6</target>
-+                    <source>15</source>
-+                    <target>15</target>
- <!--
-                     <excludes>
-                         <exclude>test/**</exclude>
-EOM
-
-git apply patch.diff
-
-
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
 $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
@@ -55,7 +33,7 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
