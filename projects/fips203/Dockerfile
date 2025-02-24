@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
-RUN python3 -m pip install --upgrade pip
-WORKDIR python-multipart
-COPY build.sh *.options $SRC/
+RUN git clone --depth 1 https://github.com/integritychain/fips203     # or use other version control
+WORKDIR fips203
+ENV FUZZING_LANGUAGE=rust
+COPY build.sh $SRC/
