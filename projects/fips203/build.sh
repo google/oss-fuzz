@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
-RUN python3 -m pip install --upgrade pip
-WORKDIR python-multipart
-COPY build.sh *.options $SRC/
+# build fuzzers, zip corpus
+
+cd $SRC/fips203
+cargo fuzz build -O --debug-assertions
+cp fuzz/target/x86_64-unknown-linux-gnu/release/ml_kem_fuzz $OUT/
+zip -q $OUT/ml_kem_fuzz_seed_corpus.zip fuzz/corpus/ml_kem_fuzz/*
+
+

@@ -27,6 +27,7 @@ import time
 import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
+from googleapiclient.errors import HttpError
 import oauth2client.client
 import yaml
 
@@ -252,8 +253,13 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
                    build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
-  build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
-                                           build_id)
+
+  try:
+    build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
+                                             build_id)
+  except HttpError:
+    logging.debug('build: HttpError when getting build status from gcb')
+    return False
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
