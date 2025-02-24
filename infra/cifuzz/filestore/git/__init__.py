@@ -33,7 +33,7 @@ import retry
 _PUSH_RETRIES = 3
 _PUSH_BACKOFF = 1
 _CLONE_RETRIES = 5
-_CLONE_DELAY   = 1
+_CLONE_DELAY = 1
 _CLONE_BACKOFF = 2
 _GIT_EMAIL = 'cifuzz@clusterfuzz.com'
 _GIT_NAME = 'CIFuzz'
