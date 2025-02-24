@@ -26,4 +26,6 @@ RUN git clone --depth 1 https://github.com/jboss-javassist/javassist.git
 
 COPY build.sh $SRC/
 COPY ClassFuzzer.java $SRC/
+COPY ClassFuzzer.java $SRC/
+COPY pom.xml.diff $SRC/javassist
 WORKDIR $SRC/javassist

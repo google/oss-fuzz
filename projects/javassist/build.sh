@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+git apply pom.xml.diff
+
+mv ./src/main ./src/java
+mkdir ./src/main
+mv ./src/java ./src/main/java
+mv ./src/test ./src/java
+mkdir ./src/test
+mv ./src/java ./src/test/java
+
 $MVN clean package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade -DskipTests
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
