@@ -16,15 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
 
 RUN git clone --depth 1 https://github.com/jboss-javassist/javassist.git
 
 COPY build.sh $SRC/
 COPY ClassFuzzer.java $SRC/
-COPY pom.xml.diff $SRC/javassist
 WORKDIR $SRC/javassist
