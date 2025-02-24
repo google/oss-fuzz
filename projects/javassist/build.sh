@@ -16,7 +16,6 @@
 ################################################################################
 
 git apply pom.xml.diff
-
 mv ./src/main ./src/java
 mkdir ./src/main
 mv ./src/java ./src/main/java
