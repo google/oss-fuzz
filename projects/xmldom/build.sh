@@ -17,10 +17,13 @@
 
 # build project
 npm ci
-unzip node_modules/xmltest/xmltest.zip
+# no longer part of xmldom dev dependencies since it can no longer be installed reliably
+npm i -D @jazzer.js/core
 
-# Copy corpus out
-cp -rf $SRC/xmldom/xmltest $OUT/xmltest
+# extract all *.xml files without a folder structure,
+# renaming duplicate filenames with ~, ~1, ~2, ...
+# into the target directory
+unzip -Bj node_modules/xmltest/xmltest.zip $OUT/xmltest '*.xml'
 
 # build fuzzers
 compile_javascript_fuzzer xmldom fuzz/dom-parser.xml.target.js --sync --timeout=10 xmltest
