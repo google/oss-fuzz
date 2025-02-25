@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y zlib1g-dev
-RUN git clone https://github.com/civetweb/civetweb
+RUN git clone -b update_fuzz https://github.com/phi-go/civetweb
 
 WORKDIR $SRC/civetweb
 COPY build.sh $SRC/

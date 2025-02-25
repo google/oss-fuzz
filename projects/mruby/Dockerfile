@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y build-essential ruby bison ninja-build \
     cmake zlib1g-dev libbz2-dev liblzma-dev
-RUN git clone --depth 1 https://github.com/mruby/mruby mruby
+RUN git clone --depth 1 -b update_fuzz https://github.com/phi-go/mruby mruby
 RUN git clone --depth 1 https://github.com/bshastry/mruby_seeds.git mruby_seeds
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN mkdir LPM; \

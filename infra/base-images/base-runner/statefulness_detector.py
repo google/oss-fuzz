@@ -19,13 +19,13 @@
 import subprocess
 import argparse
 import tempfile
-import random
 import shutil
 import shlex
 import sys
 import os
 import json
 import functools
+import traceback
 from pathlib import Path
 from glob import glob
 
@@ -87,14 +87,12 @@ def gather_coverage(
             dummy_out_dir,
             corpus_dir,
         ]
-        print(cmd)
+        print("gather coverage cmd:", cmd)
         print(exec_cmd(cmd, timeout=100, env=env).stdout[-1000:])
-        print(subprocess.call(["ls", "-la", dummy_out_dir]))
         dummy_out_files = list(glob(f"{dummy_out_dir}/*"))
         print("minimized corpus files:", len(dummy_out_files))
 
         profraw_files = list(glob(profraw_file_mask))
-        print("profraw files:", profraw_files)
 
         if len(profraw_files) == 0:  # no profile dumps created
             print(f"no profile dumps created, searched: {profraw_file_mask}")
@@ -143,7 +141,8 @@ def copy_files_indexed(to_dir, files):
 
 def merge_coverage(cov):
     merged = {}
-    for ff in cov["data"][0]["files"]:
+    while len(cov["data"][0]["files"]) > 0:
+        ff = cov["data"][0]["files"].pop()
         filename = ff["filename"]
         assert filename not in merged
         merged[filename] = {
@@ -158,7 +157,8 @@ def merge_coverage(cov):
 
 def merge_coverage_detailed(cov):
     merged = {}
-    for ff in cov["data"][0]["files"]:
+    while len(cov["data"][0]["files"]) > 0:
+        ff = cov["data"][0]["files"].pop()
         # only continue with this file if there are executable segments
         # (code regions that get a execution count in the coverage report)
         if ff["summary"]["branches"]["count"] == 0:
@@ -181,37 +181,14 @@ def merge_coverage_detailed(cov):
     return merged
 
 
-def cmp_coverages(cov1, cov2):
-    if cov1["version"] != cov2["version"]:
-        raise CoverageReportMismatch(
-            "Version mismatch: {cov1['version']} != {cov2['version']}"
-        )
-
-    if cov1["type"] != cov2["type"]:
-        raise CoverageReportMismatch("Type mismatch: {cov1['type']} != {cov2['type']}")
-
-    # TODO can that data be longer?
-    assert len(cov1["data"]) == 1
-    assert len(cov2["data"]) == 1
-
-    merged1 = merge_coverage(cov1)
-    merged2 = merge_coverage(cov2)
-
-    if len(merged1.keys() ^ merged2.keys()) > 0:
-        print(f"files mismatch: {merged1.keys() ^ merged2.keys()}")
-        return False
-
-    mismatched = True
-
-    for kk in merged1.keys():
-        if merged1[kk] != merged2[kk]:
-            print(f"Mismatched coverage for {kk}:\n{merged1[kk]}\n{merged2[kk]}")
-            mismatched = False
-
-    return mismatched
+def add_nested(data, keys, value):
+    dd = data
+    for kk in keys[:-1]:
+        dd = dd.setdefault(kk, {})
+    dd[keys[-1]] = value
 
 
-def cmp_coverages_detailed(cov1, cov2):
+def cmp_coverages(cov1, cov2, detailed):
     is_stateful = False
     if cov1["version"] != cov2["version"]:
         raise CoverageReportMismatch(
@@ -225,29 +202,60 @@ def cmp_coverages_detailed(cov1, cov2):
     assert len(cov1["data"]) == 1
     assert len(cov2["data"]) == 1
 
-    merged1 = merge_coverage_detailed(cov1)
-    merged2 = merge_coverage_detailed(cov2)
+    mismatches = {"detailed": detailed}
+
+    if detailed:
+        merged1 = merge_coverage_detailed(cov1)
+        merged2 = merge_coverage_detailed(cov2)
+    else:
+        merged1 = merge_coverage(cov1)
+        merged2 = merge_coverage(cov2)
 
     if len(merged1.keys() ^ merged2.keys()) > 0:
         print(f"files mismatch: {merged1.keys() ^ merged2.keys()}")
+        mismatches = {
+            "files": {
+                "only_in_cov_1": merged1.keys() - merged2.keys(),
+                "only_in_cov_2": merged2.keys() - merged1.keys(),
+            }
+        }
         is_stateful = True
 
-    for kk in merged1.keys():
-        m1 = merged1[kk]
-        m2 = merged2[kk]
-        # print(f"Mismatched coverage for {kk}:")
-        # print(f"left: {m1['covered_branches']}/{m1['count_branches']} right: {m2['covered_branches']}/{m2['count_branches']}")
-        # if merged1[kk]['covered_branches'] > 0 and merged2[kk]['covered_branches'] > 0:
-        (sm1, sm2) = (m1["segments"], m2["segments"])
-        sm_locs = sm1.keys() | sm2.keys()
-        for loc in sorted(sm_locs):
-            count1 = sm1.get(loc, "miss")
-            count2 = sm2.get(loc, "miss")
-            if count1 != count2:
-                # if count1 == 'miss' and count2 == 'miss':
+    for kk in list(merged1.keys() & merged2.keys()):
+        m1 = merged1.pop(kk)
+        m2 = merged2.pop(kk)
+
+        if detailed:
+            (sm1, sm2) = (m1["segments"], m2["segments"])
+            sm_locs = sm1.keys() | sm2.keys()
+            for loc in sorted(sm_locs):
+                count1 = sm1.get(loc, "miss")
+                count2 = sm2.get(loc, "miss")
+                if count1 != count2:
+                    # if count1 == 'miss' and count2 == 'miss':
+                    print(f"{kk}:{loc[0]:5}:{loc[1]:<3} - {count1:5} != {count2:<5}")
+                    add_nested(
+                        mismatches,
+                        ["segments", kk, loc[0], loc[1]],
+                        (
+                            count1,
+                            count2,
+                        ),
+                    )
+                    is_stateful = True
+        else:
+            if m1 != m2:
+                print(f"Mismatched coverage for {kk}:\n{m1}\n{m2}")
+                add_nested(
+                    mismatches,
+                    ["lines", kk],
+                    {"cov1": m1, "cov2": m2},
+                )
                 is_stateful = True
-                print(f"{kk}:{loc[0]:5}:{loc[1]:<3} - {count1:5} != {count2:<5}")
-    return is_stateful
+
+    mismatches["is_stateful"] = is_stateful
+
+    return is_stateful, mismatches
 
 
 def main():
@@ -260,33 +268,17 @@ def main():
     parser.add_argument("--fuzztest-binary-name", required=True)
     parser.add_argument("--shared-libs", required=True)
     parser.add_argument("--common-cov-args", required=True)
+    parser.add_argument("--data-path", required=True)
+    parser.add_argument(
+        "--detailed", action="store_true", help="Enable detailed coverage analysis"
+    )
 
     args = parser.parse_args()
 
-    print(args)
-
     print("Statefulness Detector")
-    dir_cov = functools.partial(
-        gather_coverage,
-        args.out_dir,
-        args.dumps_dir,
-        args.target,
-        args.fuzztest_binary_name,
-        shlex.split(args.shared_libs),
-        shlex.split(args.common_cov_args),
-        True,
-    )
 
-    dir_cov_detailed = functools.partial(
-        gather_coverage,
-        args.out_dir,
-        args.dumps_dir,
-        args.target,
-        args.fuzztest_binary_name,
-        shlex.split(args.shared_libs),
-        shlex.split(args.common_cov_args),
-        False,
-    )
+    print("args:", args)
+    print()
 
     corpus_dir = Path(args.corpus_dir)
     corpus_files = [
@@ -296,39 +288,52 @@ def main():
     ]
     print(f"Number of corpus files: {len(corpus_files)} in: {corpus_dir}")
 
+    if args.detailed:
+        print("Comparing by execution count per segment")
+    else:
+        print("Comparing by the summary results")
+
     # chosen_files = random.sample(corpus_files, 10)
     chosen_files = corpus_files
+    dir_cov = functools.partial(
+        gather_coverage,
+        args.out_dir,
+        args.dumps_dir,
+        args.target,
+        args.fuzztest_binary_name,
+        shlex.split(args.shared_libs),
+        shlex.split(args.common_cov_args),
+        not args.detailed,
+    )
 
-    # # Compare by the number of lines covered
-    # with tempfile.TemporaryDirectory() as partial_corpus_dir:
-    #     copy_files_indexed(partial_corpus_dir, chosen_files)
-    #     cov1 = dir_cov(partial_corpus_dir)
-    #
-    # with tempfile.TemporaryDirectory() as partial_corpus_dir:
-    #     copy_files_indexed(partial_corpus_dir, reversed(chosen_files))
-    #     # copy_files_indexed(partial_corpus_dir, random.sample(corpus_files, 10))
-    #     cov2 = dir_cov(partial_corpus_dir)
-    #
-    # if not cmp_coverages(cov1, cov2):
-
-    # # Compare by the execution count per line
     with tempfile.TemporaryDirectory() as partial_corpus_dir:
         copy_files_indexed(partial_corpus_dir, chosen_files)
         with tempfile.TemporaryDirectory() as merged_out_dir:
-            cov1 = dir_cov_detailed(merged_out_dir, partial_corpus_dir)
+            cov1 = dir_cov(merged_out_dir, partial_corpus_dir)
 
     with tempfile.TemporaryDirectory() as partial_corpus_dir:
         copy_files_indexed(partial_corpus_dir, reversed(chosen_files))
         with tempfile.TemporaryDirectory() as merged_out_dir:
-            cov2 = dir_cov_detailed(merged_out_dir, partial_corpus_dir)
+            cov2 = dir_cov(merged_out_dir, partial_corpus_dir)
 
-    if cmp_coverages_detailed(cov1, cov2):
+    (is_stateful, data) = cmp_coverages(cov1, cov2, args.detailed)
+    if is_stateful:
         print("Target IS stateful.")
+        out_path = Path(args.data_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "wt") as f:
+            json.dump(data, f)
+        return 1
     else:
         print("Target is not stateful.")
-
-    return 0
+        return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as e:
+        print(f"Exception: {e}")
+        print("Full traceback:")
+        print(traceback.format_exc())
+        sys.exit(2)
