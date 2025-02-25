@@ -36,7 +36,8 @@ CFLAGS="" CXXFLAGS="" ./b2 headers
 ./b2 --with-math install
 
 pushd $SRC/zlib
-CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
+mkdir build && cd build
+CFLAGS=-fPIC ../configure --static --prefix=$PREFIX
 make install -j$(nproc)
 
 pushd $SRC

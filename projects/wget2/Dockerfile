@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y \
  pkg-config \
  autogen \
  autopoint \
- autoconf \
  automake \
  libtool \
  texinfo \
@@ -38,6 +37,14 @@ RUN apt-get update && apt-get install -y \
  gtk-doc-tools \
  libtasn1-bin \
  libz-dev
+
+
+RUN cd /usr/src && \
+        curl -oautoconf-2.71.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz && \
+    tar xf autoconf-2.71.tar.gz && \
+    cd autoconf-2.71 && \
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
+    make install
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib

@@ -291,13 +291,6 @@ then
     unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
 
     # Import Botan corpora
     mkdir $SRC/botan-p256-corpus/

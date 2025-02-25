@@ -18,7 +18,6 @@
 # Commands migrated from Dockerfile to make CIFuzz work
 # REF: https://github.com/google/oss-fuzz/issues/6755
 git submodule update --init --recursive
-git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
 # Note: This project creates Rust fuzz targets exclusively
 
@@ -40,7 +39,7 @@ build() {
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
-  cd $PROJECT_DIR/fuzz && cargo fuzz build --strip-dead-code -O --debug-assertions "$@"
+  cd $PROJECT_DIR/fuzz && cargo fuzz build --sanitizer none --strip-dead-code -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/$fuzz_target_path/x86_64-unknown-linux-gnu/release
 
@@ -52,12 +51,6 @@ build() {
       src_name=$(basename ${f%.*})
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
-
-      if [[ -d $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/ ]]; then
-          zip -jr \
-              $OUT/${dst_name}_seed_corpus.zip \
-              $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
-      fi
 
       if [[ -f $SRC/$dst_name.options ]]; then
         cp $SRC/$dst_name.options $OUT/$dst_name.options

@@ -87,17 +87,18 @@ cmake "${cmake_args[@]}" -S . -B build
 cmake --build build --target fuzzers --parallel --verbose
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-for f in $(find build/test/fuzz/ -name '*_fuzzer' -type f);
+# Postfix `_fuzzer` is used in Tarantool, postfix `_test` is
+# used in Lua C API tests [1].
+#
+# 1. https://github.com/ligurio/lua-c-api-tests/
+cp test/static/*.dict test/static/*.options $OUT/
+for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
   name=$(basename $f);
-  module=$(echo $name | sed 's/_fuzzer//')
+  module=$(echo $name | sed 's/_fuzzer//' | sed 's/_test//' )
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  dict_path="test/static/$name.dict"
-  if [ -e "$dict_path" ]; then
-    cp $dict_path $OUT/
-  fi
   if [ -e "$corpus_dir" ]; then
     zip --quiet -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi

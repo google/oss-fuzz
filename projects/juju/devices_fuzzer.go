@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package storage
+package devices
 
 func Fuzz(data []byte) int {
 	_, err := ParseConstraints(string(data))
