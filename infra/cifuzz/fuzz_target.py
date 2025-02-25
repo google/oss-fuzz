@@ -60,7 +60,8 @@ FuzzResult = collections.namedtuple('FuzzResult',
 def get_libfuzzer_parallel_options():
   """Returns a list containing options to pass to libFuzzer to fuzz using all
   available cores."""
-  return ['-jobs=' + str(multiprocessing.cpu_count())]
+  cpu_count = str(multiprocessing.cpu_count())
+  return [f'-jobs={cpu_count}', f'-workers={cpu_count}']
 
 
 class ReproduceError(Exception):
