@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-go
+RUN git clone --depth=1 https://github.com/open-telemetry/opentelemetry-go
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 COPY build.sh $SRC/
