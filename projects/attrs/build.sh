@@ -1,4 +1,6 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
-RUN python3 -m pip install --upgrade pip
-WORKDIR python-multipart
-COPY build.sh *.options $SRC/
+##########################################################################
+pip3 install .
+for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer --hidden-import=html.parser
+done
