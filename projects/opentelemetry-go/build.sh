@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+cd $SRC/go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
+
 cd $SRC/opentelemetry-go
 
 pushd sdk/metric/internal/aggregate
