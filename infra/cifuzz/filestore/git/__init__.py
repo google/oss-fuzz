@@ -34,7 +34,6 @@ _PUSH_RETRIES = 3
 _PUSH_BACKOFF = 1
 _CLONE_RETRIES = 5
 _CLONE_DELAY = 1
-_CLONE_BACKOFF = 2
 _GIT_EMAIL = 'cifuzz@clusterfuzz.com'
 _GIT_NAME = 'CIFuzz'
 _CORPUS_DIR = 'corpus'
@@ -67,7 +66,7 @@ class GitFilestore(filestore.BaseFilestore):
   def __del__(self):
     shutil.rmtree(self.repo_path)
 
-  @retry.wrap(_CLONE_RETRIES, _CLONE_DELAY, _CLONE_BACKOFF)
+  @retry.wrap(_CLONE_RETRIES, _CLONE_DELAY)
   def _clone(self, repo_url):
     """Clones repo URL."""
     self._git('clone', repo_url, '.')
