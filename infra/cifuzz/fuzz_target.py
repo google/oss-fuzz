@@ -57,10 +57,13 @@ FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
 
 
-def get_libfuzzer_parallel_options():
+def get_libfuzzer_parallel_options(option):
   """Returns a list containing options to pass to libFuzzer to fuzz using all
-  available cores."""
-  cpu_count = str(multiprocessing.cpu_count())
+  available or the specified number of cores."""
+  if option == 'true' or (isinstance(option, bool) and option == True):
+    cpu_count = str(multiprocessing.cpu_count())
+  else:
+    cpu_count = option
   return [f'-jobs={cpu_count}', f'-workers={cpu_count}']
 
 
@@ -190,13 +193,18 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
         if not self.config.report_ooms:
           options.arguments.extend(LIBFUZZER_OPTIONS_NO_REPORT_OOM)
 
-        if self.config.parallel_fuzzing:
+        if (self.config.parallel_fuzzing == 'true' or
+            (isinstance(self.config.parallel_fuzzing, int) and
+             not isinstance(self.config.parallel_fuzzing, bool)) or
+            (isinstance(self.config.parallel_fuzzing, bool) and
+             self.config.parallel_fuzzing == True)):
           if self.config.sanitizer == 'memory':
             # TODO(https://github.com/google/oss-fuzz/issues/11915): Don't gate
             # this after jobs is fixed for MSAN.
             logging.info('Not using jobs because it breaks MSAN.')
           else:
-            options.arguments.extend(get_libfuzzer_parallel_options())
+            options.arguments.extend(
+                get_libfuzzer_parallel_options(self.config.parallel_fuzzing))
 
         result = engine_impl.fuzz(self.target_path, options, artifacts_dir,
                                   self.duration)
