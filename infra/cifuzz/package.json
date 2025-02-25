@@ -5,6 +5,6 @@
   "author": "Google",
   "license": "Apache2",
   "dependencies": {
-    "@actions/artifact": "^3.1.0"
+    "@actions/artifact": "^2.2.0"
   }
 }
