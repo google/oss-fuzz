@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,9 @@
 #
 ################################################################################
 
-go mod download
-# A fuzzer in this dependency is broken:
-find /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2 -name "*fuzz.go" -exec rm -rf {} \;
-
-# Compile fuzzer:
-mv $SRC/devices_fuzzer.go $SRC/juju/core/devices/
-compile_go_fuzzer github.com/juju/juju/core/devices Fuzz devices_fuzzer
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/integritychain/fips203     # or use other version control
+WORKDIR fips203
+ENV FUZZING_LANGUAGE=rust
+COPY build.sh $SRC/

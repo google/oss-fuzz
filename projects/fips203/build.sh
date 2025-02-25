@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 #
 ################################################################################
 
-go mod download
-# A fuzzer in this dependency is broken:
-find /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2 -name "*fuzz.go" -exec rm -rf {} \;
+# build fuzzers, zip corpus
 
-# Compile fuzzer:
-mv $SRC/devices_fuzzer.go $SRC/juju/core/devices/
-compile_go_fuzzer github.com/juju/juju/core/devices Fuzz devices_fuzzer
+cd $SRC/fips203
+cargo fuzz build -O --debug-assertions
+cp fuzz/target/x86_64-unknown-linux-gnu/release/ml_kem_fuzz $OUT/
+zip -q $OUT/ml_kem_fuzz_seed_corpus.zip fuzz/corpus/ml_kem_fuzz/*
+
+
