@@ -16,15 +16,15 @@
 // Usage: upload.js <artifactName> <rootDirectory> <file 1>...<file N>
 
 const fs = require('fs');
-const artifact = require('@actions/artifact');
+const { DefaultArtifactClient } = require('@actions/artifact');
 
-const artifactClient = artifact.create()
+const artifactClient = new DefaultArtifactClient()
 const artifactName = process.argv[2];
 const rootDirectory = process.argv[3]
 const files = process.argv.slice(4);
 const options = {
     continueOnError: true
-}
+};
 
 async function uploadArtifact() {
     try {
