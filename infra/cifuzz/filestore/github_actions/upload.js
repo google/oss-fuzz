@@ -18,7 +18,7 @@
 const fs = require('fs');
 const { DefaultArtifactClient } = require('@actions/artifact');
 
-const artifactClient = new DefaultArtifactClient()
+const artifactClient = new DefaultArtifactClient();
 const artifactName = process.argv[2];
 const rootDirectory = process.argv[3]
 const files = process.argv.slice(4);
