@@ -26,7 +26,7 @@ mkdir -p $XMLTEST_CORPUS
 # extract all *.xml files without a folder structure,
 # renaming duplicate filenames with ~, ~1, ~2, ...
 # into the target directory
-unzip -Bj node_modules/xmltest/xmltest.zip $XMLTEST_CORPUS '*.xml'
+unzip -Bj node_modules/xmltest/xmltest.zip '*.xml' -d $XMLTEST_CORPUS
 
 # build fuzzers
 compile_javascript_fuzzer xmldom fuzz/dom-parser.xml.target.js --sync --timeout=10 $XMLTEST_CORPUS
