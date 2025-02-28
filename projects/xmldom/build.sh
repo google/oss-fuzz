@@ -20,10 +20,12 @@ npm ci
 # no longer part of xmldom dev dependencies since it can no longer be installed reliably
 npm i -D @jazzer.js/core
 
+
+mkdir "$OUT/xmltest"
 # extract all *.xml files without a folder structure,
 # renaming duplicate filenames with ~, ~1, ~2, ...
 # into the target directory
-unzip -Bj node_modules/xmltest/xmltest.zip $OUT/xmltest '*.xml'
+unzip -Bj node_modules/xmltest/xmltest.zip "$OUT/xmltest" '*.xml'
 
 # build fuzzers
 compile_javascript_fuzzer xmldom fuzz/dom-parser.xml.target.js --sync --timeout=10 xmltest
