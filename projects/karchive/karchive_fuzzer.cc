@@ -27,12 +27,36 @@
 #include <QBuffer>
 #include <QCoreApplication>
 #include <QVector>
+#include <iostream>
 
 #include <KF6/KArchive/k7zip.h>
 #include <KF6/KArchive/ktar.h>
 #include <KF6/KArchive/kzip.h>
 #include <KF6/KArchive/kar.h>
 #include <KF6/KArchive/kcompressiondevice.h>
+
+void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString()) {
+    const auto allEntries = dir->entries();
+
+    for (const auto& entryName : allEntries) {
+        auto entry = dir->entry(entryName);
+        const QString fullPath = path + QString::fromUtf8("/") + entryName;
+
+        if (entry->isFile()) {
+            auto file = static_cast<const KArchiveFile*>(entry);
+            std::cout << "fullpath: " << fullPath.toStdString()
+                      << ", size: " << file->size()
+                      << ", date: " << file->date().toString().toStdString()
+                      << ", name: " << file->name().toStdString()
+                      << ", user: " << file->user().toStdString()
+                      << ", group: " << file->group().toStdString()
+                      << std::endl;
+        } else if (entry->isDirectory()) {
+            auto subDir = static_cast<const KArchiveDirectory*>(entry);
+            traverseArchive(subDir, fullPath);
+        }
+    }
+}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -41,6 +65,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     QBuffer b;
     b.setData(QByteArray((const char *)data, size));
+    std::cout << "size: " << size << std::endl;
 
     std::unique_ptr<KCompressionDevice> gzipKD(new KCompressionDevice(&b, false, KCompressionDevice::GZip));
     std::unique_ptr<KCompressionDevice> bzipKD(new KCompressionDevice(&b, false, KCompressionDevice::BZip2));
@@ -60,8 +85,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     for (KArchive *h : handlers) {
         b.reset();
-        h->open(QIODevice::ReadOnly);
-        h->close();
+        if (h->open(QIODevice::ReadOnly)) {
+            const KArchiveDirectory *rootDir = h->directory();
+            traverseArchive(rootDir); 
+            h->close();
+        }
     }
 
     qDeleteAll(handlers);
