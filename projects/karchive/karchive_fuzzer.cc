@@ -46,6 +46,7 @@ void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString
             auto file = static_cast<const KArchiveFile*>(entry);
             std::cout << "fullpath: " << fullPath.toStdString()
                       << ", size: " << file->size()
+                      << ", datasize: " << file->data().size()
                       << ", date: " << file->date().toString().toStdString()
                       << ", name: " << file->name().toStdString()
                       << ", user: " << file->user().toStdString()
