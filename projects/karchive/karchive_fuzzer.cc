@@ -44,14 +44,13 @@ void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString
 
         if (entry->isFile()) {
             auto file = static_cast<const KArchiveFile*>(entry);
-            std::cout << "fullpath: " << fullPath.toStdString()
-                      << ", size: " << file->size()
-                      << ", datasize: " << file->data().size()
-                      << ", date: " << file->date().toString().toStdString()
-                      << ", name: " << file->name().toStdString()
-                      << ", user: " << file->user().toStdString()
-                      << ", group: " << file->group().toStdString()
-                      << std::endl;
+            auto fullpath = fullPath.toStdString();
+            auto filesize =  file->size();
+            auto datasize = file->data().size();
+            auto date =  file->date().toString().toStdString();
+            auto filename = file->name().toStdString();
+            auto user = file->user().toStdString();
+            auto group = file->group().toStdString();
         } else if (entry->isDirectory()) {
             auto subDir = static_cast<const KArchiveDirectory*>(entry);
             traverseArchive(subDir, fullPath);
