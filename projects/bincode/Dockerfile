@@ -14,6 +14,9 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
+RUN rustup toolchain install 1.85.0
+RUN rustup +1.85.0 component add rust-src
+RUN rustup default 1.85.0
 RUN apt-get update
 RUN git clone --depth 1 https://github.com/bincode-org/bincode.git
 COPY build.sh $SRC/
