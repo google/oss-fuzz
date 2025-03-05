@@ -20,9 +20,23 @@ RUN rustup default nightly
 RUN rustup component add --toolchain nightly rust-src
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libnss3-dev pkg-config \
+        libclang-dev gyp ninja-build python-is-python3 \
         && apt-get autoremove -y && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/*
+
+# We unfortunately need to build NSS from source, because the Debian package
+# in the base distribution is too old.
+ENV NSS_DIR=/nss \
+        NSS_TARGET=Release \
+        NSS_PREBUILT=1 \
+        NSPR_DIR=/nspr \
+        LD_LIBRARY_PATH=/dist/Release/lib
+
+RUN set -eux; \
+        git clone --depth=1 https://github.com/nss-dev/nspr "$NSPR_DIR"; \
+        git clone --depth=1 https://github.com/nss-dev/nss "$NSS_DIR"
+
+RUN "$NSS_DIR"/build.sh --static -Ddisable_tests=1 -o
 
 RUN git clone --depth 1 https://github.com/mozilla/neqo neqo
 WORKDIR $SRC
