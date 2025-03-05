@@ -20,7 +20,7 @@ RUN rustup default nightly
 RUN rustup component add --toolchain nightly rust-src
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libclang-dev gyp ninja-build python-is-python3 \
+        libclang-dev gyp ninja-build python-is-python3 zlib1g-dev \
         && apt-get autoremove -y && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/*
 
@@ -36,7 +36,10 @@ RUN set -eux; \
         git clone --depth=1 https://github.com/nss-dev/nspr "$NSPR_DIR"; \
         git clone --depth=1 https://github.com/nss-dev/nss "$NSS_DIR"
 
-RUN "$NSS_DIR"/build.sh --static -Ddisable_tests=1 -o
+# FIXME: Optimized NSS build fails with assembler errors.
+# Maybe not critical since the fuzzer uses AeadNull.
+# If this gets fixed, change "Debug" to "Release" in the ENV statement above.
+RUN CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" "$NSS_DIR"/build.sh --static -Ddisable_tests=1
 
 RUN git clone --depth 1 https://github.com/mozilla/neqo neqo
 WORKDIR $SRC
