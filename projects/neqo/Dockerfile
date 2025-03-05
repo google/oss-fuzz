@@ -27,10 +27,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # We unfortunately need to build NSS from source, because the Debian package
 # in the base distribution is too old.
 ENV NSS_DIR=/nss \
-        NSS_TARGET=Release \
+        NSS_TARGET=Debug \
         NSS_PREBUILT=1 \
         NSPR_DIR=/nspr \
-        LD_LIBRARY_PATH=/dist/Release/lib
+        LD_LIBRARY_PATH=/dist/Debug/lib
 
 RUN set -eux; \
         git clone --depth=1 https://github.com/nss-dev/nspr "$NSPR_DIR"; \
