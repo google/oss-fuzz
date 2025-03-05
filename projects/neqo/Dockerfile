@@ -16,9 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-ENV RUSTUP_TOOLCHAIN stable
-RUN rustup -v default stable
-RUN ls -l /rust/rustup/toolchains
+RUN rustup default stable
+RUN rustup component add --toolchain stable rust-src
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libnss3-dev pkg-config \
