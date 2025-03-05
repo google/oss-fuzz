@@ -18,11 +18,11 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone --depth 1 https://github.com/mozilla/neqo neqo
 RUN rustup default stable
+RUN find /rust -ls
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libnss3-dev pkg-config \
         && apt-get autoremove -y && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/*
-ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR $SRC
 COPY build.sh $SRC/

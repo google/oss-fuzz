@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+find /rust -ls
 cd "$SRC/neqo"
 cargo +stable fuzz build -O --debug-assertions
 
