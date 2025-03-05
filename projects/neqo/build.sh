@@ -16,7 +16,7 @@
 ################################################################################
 
 cd "$SRC/neqo"
-cargo fuzz build -O --debug-assertions
+cargo +stable fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs; do
