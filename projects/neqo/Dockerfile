@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN rustup update
+RUN rustup default nightly
+RUN rustup component add --toolchain nightly rust-src
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libnss3-dev pkg-config \
