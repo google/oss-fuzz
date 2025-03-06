@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-ARG glib_tag=2.78.4
-RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build  \
-    libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
-    libattr1 libattr1-dev libcap-ng-dev pkg-config
-
-Run python3 -m pip install meson tomli
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_tag && \
-  meson setup _build glib --prefix=/usr -Ddefault_library=shared -Dtests=false && \
-  meson install -C _build && \
-  rm -rf glib _build
-
-RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
-WORKDIR qemu
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config wget libsodium-dev
+RUN git clone --depth 1 https://github.com/BehaviorTree/BehaviorTree.CPP.git behaviortreecpp
+WORKDIR behaviortreecpp
 COPY build.sh $SRC/
