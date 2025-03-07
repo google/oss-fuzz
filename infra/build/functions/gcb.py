@@ -70,12 +70,12 @@ def exec_command_from_github(pull_request_number, repo, branch):
   the most recent command on |pull_request_number|."""
   comments = get_comments(pull_request_number)
   full_command = get_latest_gcbrun_command(comments)
-  command_file = full_command[0]
-  command = full_command[1:]
 
-  if command is None:
+  if full_command is None:
     logging.info('Trial build not requested.')
     return None
+  command_file = full_command[0]
+  command = full_command[1:]
 
   command.extend(['--repo', repo])
 

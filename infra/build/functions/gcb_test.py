@@ -96,6 +96,14 @@ class ExecCommandFromGithubTest(unittest.TestCase):
             ]),
             "trial_build_called": True,
         },
+        {
+            "comments": ['/gcbrun trial_build.py my_project'],
+            "latest_command": None,
+            "expected_command": ([
+                'my_project', '--repo', 'test_repo', '--branch', 'test_branch'
+            ]),
+            "trial_build_called": True,
+        },
     ]
     for i, test_case in enumerate(test_cases):
       with self.subTest(i=i):
@@ -110,11 +118,16 @@ class ExecCommandFromGithubTest(unittest.TestCase):
 
           gcb.exec_command_from_github(0, "test_repo", "test_branch")
 
-          if test_case["trial_build_called"]:
-            mock_trial_build_trial_build_main.assert_called_once_with(
-                test_case["expected_command"], local_base_build=False)
-            mock_oss_fuzz_on_demand.assert_not_called()
-          else:
+          if test_case["latest_command"] == None:
             mock_trial_build_trial_build_main.assert_not_called()
-            mock_oss_fuzz_on_demand.assert_called_once_with(
-                test_case["expected_command"])
+            mock_oss_fuzz_on_demand.assert_not_called()
+
+          else:
+            if test_case["trial_build_called"]:
+              mock_trial_build_trial_build_main.assert_called_once_with(
+                  test_case["expected_command"], local_base_build=False)
+              mock_oss_fuzz_on_demand.assert_not_called()
+            else:
+              mock_trial_build_trial_build_main.assert_not_called()
+              mock_oss_fuzz_on_demand.assert_called_once_with(
+                  test_case["expected_command"])
