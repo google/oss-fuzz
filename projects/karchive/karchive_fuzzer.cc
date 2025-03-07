@@ -65,7 +65,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     QBuffer b;
     b.setData(QByteArray((const char *)data, size));
-    std::cout << "size: " << size << std::endl;
 
     std::unique_ptr<KCompressionDevice> gzipKD(new KCompressionDevice(&b, false, KCompressionDevice::GZip));
     std::unique_ptr<KCompressionDevice> bzipKD(new KCompressionDevice(&b, false, KCompressionDevice::BZip2));
