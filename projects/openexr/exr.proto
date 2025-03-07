@@ -1,0 +1,57 @@
+syntax = "proto2";
+// Very simple proto description of the EXR format,
+// described at https://openexr.com/en/latest/OpenEXRFileLayout.html
+
+// we will calculate xMax and yMax from with width & height
+message Exr_box2i {
+  required int32 xMin = 1;
+  required int32 yMin = 2;
+  required int32 w = 3;
+  required int32 h = 4;
+}
+
+message Exr_channel {
+    required string chname = 1;
+    required int32 pixel_type = 2;
+    required uint32 pLinear = 3;
+    // here there should be three \x00 chars
+    required int32 xSampling = 4;
+    required int32 ySampling = 5;
+}
+
+message Exr_chlist {
+  // this should be null terminated
+  repeated Exr_channel channels = 1;
+}
+
+message Exr_compression {
+  required uint32 compression = 1;
+}
+
+message Exr_v2f {
+  required float f1 = 1;
+  required float f2 = 2;
+}
+
+message Exr_lineOrder {
+  required uint32 lineOrder = 1;
+}
+
+message ExrHeader {
+  required Exr_chlist channel_list = 1;
+  required Exr_compression compression = 2;
+  required Exr_box2i dataWindow = 3;
+  required Exr_box2i displayWindow = 4;
+  required Exr_lineOrder lineOrder = 5;
+  required float pixelAspectRatio = 6;
+  required Exr_v2f screenWindowCenter = 7;
+  required float screenWindowWidth = 8;
+  required bytes other_attr = 9;
+}
+
+message ExrProto {
+  required ExrHeader header = 1;
+  required bytes scanlines = 2;
+}
+
+// package fuzzer_examples;
