@@ -67,6 +67,7 @@ class GetLatestGCBrunCommandTest(unittest.TestCase):
     actual_command = gcb.get_latest_gcbrun_command(comments)
     self.assertEqual(expected_command, actual_command)
 
+
 class ExecCommandFromGithubTest(unittest.TestCase):
   """Tests for exec_command_from_github."""
 
@@ -76,20 +77,23 @@ class ExecCommandFromGithubTest(unittest.TestCase):
         {
             "comments": [('/gcbrun oss_fuzz_on_demand.py aiohttp --sanitizer'
                           'coverage address --fuzzing-engine libfuzzer')],
-            "latest_command": ['oss_fuzz_on_demand.py', 'aiohttp',
-                               '--sanitizer', 'coverage', 'address',
-                               '--fuzzing-engine', 'libfuzzer'],
-            "expected_command": ['aiohttp', '--sanitizer', 'coverage',
-                                 'address', '--fuzzing-engine', 'libfuzzer',
-                                 '--repo', 'test_repo', '--branch',
-                                 'test_branch'],
+            "latest_command": [
+                'oss_fuzz_on_demand.py', 'aiohttp', '--sanitizer', 'coverage',
+                'address', '--fuzzing-engine', 'libfuzzer'
+            ],
+            "expected_command": [
+                'aiohttp', '--sanitizer', 'coverage', 'address',
+                '--fuzzing-engine', 'libfuzzer', '--repo', 'test_repo',
+                '--branch', 'test_branch'
+            ],
             "trial_build_called": False,
         },
         {
             "comments": ['/gcbrun trial_build.py my_project'],
             "latest_command": ['trial_build.py', 'my_project'],
-            "expected_command": (['my_project', '--repo', 'test_repo',
-                                  '--branch', 'test_branch']),
+            "expected_command": ([
+                'my_project', '--repo', 'test_repo', '--branch', 'test_branch'
+            ]),
             "trial_build_called": True,
         },
     ]
@@ -114,4 +118,3 @@ class ExecCommandFromGithubTest(unittest.TestCase):
             mock_trial_build_trial_build_main.assert_not_called()
             mock_oss_fuzz_on_demand.assert_called_once_with(
                 test_case["expected_command"])
-                

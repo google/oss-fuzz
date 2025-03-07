@@ -18,8 +18,10 @@
 import sys
 import logging
 
+
 def oss_fuzz_on_demand_main(args=None):
   """Main function for OSS-Fuzz on demand."""
+
 
 def main():
   """Build OSS-Fuzz projects with FuzzBench fuzzing engines."""
