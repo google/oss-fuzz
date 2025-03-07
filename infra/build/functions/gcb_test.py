@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-"""Tests for ci_trial_build.py."""
+"""Tests for gcb.py."""
 import unittest
 from unittest import mock
 
-import ci_trial_build
+import gcb
 
 
 class GetLatestGCBrunCommandTest(unittest.TestCase):
@@ -33,7 +33,7 @@ class GetLatestGCBrunCommandTest(unittest.TestCase):
         'trial_build.py', 'aiohttp', '--sanitizer', 'coverage', 'address',
         '--fuzzing-engine', 'libfuzzer'
     ]
-    actual_command = ci_trial_build.get_latest_gcbrun_command(comments)
+    actual_command = gcb.get_latest_gcbrun_command(comments)
     self.assertEqual(expected_command, actual_command)
 
   def test_last_comment(self):
@@ -50,7 +50,7 @@ class GetLatestGCBrunCommandTest(unittest.TestCase):
         'trial_build.py', 'skcms', '--sanitizer', 'coverage', 'address',
         '--fuzzing-engine', 'libfuzzer'
     ]
-    actual_command = ci_trial_build.get_latest_gcbrun_command(comments)
+    actual_command = gcb.get_latest_gcbrun_command(comments)
     self.assertEqual(expected_command, actual_command)
 
   def test_oss_fuzz_on_demand_command_parsing(self):
@@ -64,7 +64,7 @@ class GetLatestGCBrunCommandTest(unittest.TestCase):
         'oss_fuzz_on_demand.py', 'aiohttp', '--sanitizer', 'coverage',
         'address', '--fuzzing-engine', 'libfuzzer'
     ]
-    actual_command = ci_trial_build.get_latest_gcbrun_command(comments)
+    actual_command = gcb.get_latest_gcbrun_command(comments)
     self.assertEqual(expected_command, actual_command)
 
 class ExecCommandFromGithubTest(unittest.TestCase):
@@ -95,16 +95,16 @@ class ExecCommandFromGithubTest(unittest.TestCase):
     ]
     for i, test_case in enumerate(test_cases):
       with self.subTest(i=i):
-        with mock.patch('ci_trial_build.get_comments',
+        with mock.patch('gcb.get_comments',
                         return_value=test_case["comments"]), \
-             mock.patch('ci_trial_build.get_latest_gcbrun_command',
+             mock.patch('gcb.get_latest_gcbrun_command',
                         return_value=test_case["latest_command"]), \
              mock.patch('oss_fuzz_on_demand.oss_fuzz_on_demand_main') as (
                  mock_oss_fuzz_on_demand), \
              mock.patch('trial_build.trial_build_main') as (
                  mock_trial_build_trial_build_main):
 
-          ci_trial_build.exec_command_from_github(0, "test_repo", "test_branch")
+          gcb.exec_command_from_github(0, "test_repo", "test_branch")
 
           if test_case["trial_build_called"]:
             mock_trial_build_trial_build_main.assert_called_once_with(
