@@ -90,3 +90,7 @@ cd $SRC/openssl31/
 build_fuzzers "_31"
 cd $SRC/openssl32/
 build_fuzzers "_32"
+cd $SRC/openssl-ml-kem
+build_fuzzers "_ml-kem"
+cd $SRC/openssl-quic-server
+build_fuzzers "_quic-server"
