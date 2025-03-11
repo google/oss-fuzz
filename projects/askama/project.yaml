@@ -1,5 +1,5 @@
-homepage: "https://rinja.readthedocs.io/"
-main_repo: "https://github.com/rinja-rs/rinja"
+homepage: "https://askama.readthedocs.io/"
+main_repo: "https://github.com/askama-rs/askama"
 language: rust
 primary_contact: "rene.kijewski@fu-berlin.de"
 auto_ccs:
@@ -10,4 +10,4 @@ fuzzing_engines:
   - libfuzzer
 coverage_extra_args: >
   -ignore-filename-regex=.*/rustc/.*
-  -ignore-filename-regex=.*/rust/.
+  -ignore-filename-regex=.*/rust/.*

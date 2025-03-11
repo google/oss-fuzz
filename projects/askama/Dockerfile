@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rinja-rs/rinja.git rinja
-WORKDIR rinja/fuzzing
+RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/askama-rs/askama.git askama
+WORKDIR askama/fuzzing
 COPY build.sh $SRC/
