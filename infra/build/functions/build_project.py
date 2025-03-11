@@ -596,7 +596,7 @@ def run_build(oss_fuzz_project,
                              experiment=experiment)
 
 
-def get_args(description):
+def get_args(description, args):
   """Parses command line arguments and returns them. Suitable for a build
   script."""
   parser = argparse.ArgumentParser(sys.argv[0], description=description)
@@ -624,7 +624,7 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Configuration for experiments.')
-  return parser.parse_args()
+  return parser.parse_args(args)
 
 
 def create_config(args, build_type):
@@ -639,12 +639,15 @@ def create_config(args, build_type):
                 build_type=build_type)
 
 
-def build_script_main(script_description, get_build_steps_func, build_type):
+def build_script_main(script_description,
+                      get_build_steps_func,
+                      build_type,
+                      args=None):
   """Gets arguments from command line using |script_description| as helpstring
   description. Gets build_steps using |get_build_steps_func| and then runs those
   steps on GCB, tagging the builds with |build_type|. Returns 0 on success, 1 on
   failure."""
-  args = get_args(script_description)
+  args = get_args(script_description, args)
   logging.basicConfig(level=logging.INFO)
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()

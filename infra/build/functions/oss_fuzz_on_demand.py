@@ -18,9 +18,18 @@
 import sys
 import logging
 
+import fuzzbench, build_project
+
+FUZZBENCH_BUILD_TYPE = 'coverage'
+
 
 def oss_fuzz_on_demand_main(args=None):
   """Main function for OSS-Fuzz on demand."""
+  print("Fui chamada em")
+  args = args[:1] + args[-2:]
+  return build_project.build_script_main('Does a FuzzBench run.',
+                                         fuzzbench.get_build_steps,
+                                         FUZZBENCH_BUILD_TYPE, args)
 
 
 def main():

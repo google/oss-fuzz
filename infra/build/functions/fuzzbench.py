@@ -98,12 +98,9 @@ def get_build_fuzzers_step(fuzzing_engine, project, env, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, project_yaml, dockerfile_lines, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
-  del base_images_project
-  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
-                                  image_project)
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
