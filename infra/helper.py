@@ -242,6 +242,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = introspector(args)
   elif args.command == 'reproduce':
     result = reproduce(args)
+    if args.propagate_exit_codes:
+      return result
   elif args.command == 'shell':
     result = shell(args)
   elif args.command == 'pull_images':
@@ -482,6 +484,14 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   reproduce_parser.add_argument('--valgrind',
                                 action='store_true',
                                 help='run with valgrind')
+  reproduce_parser.add_argument('--propagate_exit_codes',
+                                action='store_true',
+                                default=False,
+                                help='return underlying exit codes instead of True/False.')
+  reproduce_parser.add_argument('--err_result', 
+                                help='exit code override for missing harness / fuzz targets '
+                                '(default err_result = 1).',
+                                type=int)
   reproduce_parser.add_argument('project',
                                 help='name of the project or path (external)')
   reproduce_parser.add_argument('fuzzer_name', help='name of the fuzzer')
@@ -717,7 +727,7 @@ def prepare_aarch64_emulation():
   subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
 
-def docker_run(run_args, print_output=True, architecture='x86_64'):
+def docker_run(run_args, print_output=True, architecture='x86_64', propagate_exit_codes=False):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
@@ -740,12 +750,14 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
   if not print_output:
     stdout = open(os.devnull, 'w')
 
+  exit_code = 0
+
   try:
     subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError:
-    return False
-
-  return True
+  except subprocess.CalledProcessError as e:
+    print(f'subprocess command returned a non-zero exit status: {e.returncode}')
+    exit_code = e.returncode
+  return exit_code if propagate_exit_codes else exit_code == 0
 
 
 def docker_build(build_args):
@@ -1532,7 +1544,8 @@ def fuzzbench_measure(args):
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
-                        args.fuzzer_args, args.testcase_path, args.architecture)
+                        args.fuzzer_args, args.testcase_path, args.architecture, 
+                        args.propagate_exit_codes, args.err_result)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
@@ -1543,14 +1556,16 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     fuzzer_args,
     testcase_path,
     architecture='x86_64',
-    run_function=docker_run,
-    err_result=False):
+    propagate_exit_codes=False,
+    err_result=1,
+    run_function=docker_run):
   """Reproduces a testcase in the container."""
+
   if not check_project_exists(project):
-    return err_result
+    return err_result if propagate_exit_codes else False
 
   if not _check_fuzzer_exists(project, fuzzer_name, architecture):
-    return err_result
+    return err_result if propagate_exit_codes else False
 
   debugger = ''
   env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
@@ -1578,7 +1593,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       '-runs=100',
   ] + fuzzer_args
 
-  return run_function(run_args, architecture=architecture)
+  return run_function(run_args, architecture=architecture, propagate_exit_codes=propagate_exit_codes)
 
 
 def _validate_project_name(project_name):
