@@ -42,10 +42,8 @@ def get_env(project, build):
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
   env.append('OUT=/workspace/out')
-  env.extend([
-      'FUZZ_TARGET=vulnerable', f'BENCHMARK={project.name}',
-      'EXPERIMENT_TYPE=bug'
-  ])
+  env.extend(
+      ['FUZZ_TARGET=', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
   return env
 
 
@@ -109,7 +107,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                 config.branch, config.parallel, config.upload)
 
   # TODO(metzman): Make this a command line argument
-  fuzzing_engine = 'libfuzzer'
+  fuzzing_engine = 'libafl'
 
   steps = [
       {
