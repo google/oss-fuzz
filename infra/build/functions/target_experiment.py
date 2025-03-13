@@ -21,6 +21,7 @@ import os
 import sys
 
 import google.auth
+from google.oauth2 import service_account
 
 import build_lib
 import build_project
@@ -118,6 +119,9 @@ def run_experiment(project_name,
       }
       steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
+  # TODO(Dongge): Split Builder and Runner:
+  # Make the rest steps optional, based on the corresponding path args.
+  # Allow runners to take a fuzz target binary built by OFG agents.
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
   env.append('CORPUS_DIR=' + local_corpus_path)
@@ -297,7 +301,24 @@ def run_experiment(project_name,
       ],
   })
 
+  # Check if GOOGLE_APPLICATION_CREDENTIALS is set.
+  creds_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+  if creds_path:
+    print(f'GOOGLE_APPLICATION_CREDENTIALS is set to: {creds_path}.')
+    if creds_path and os.path.exists(creds_path):
+      print('GOOGLE_APPLICATION_CREDENTIALS exists.')
+    else:
+      print('GOOGLE_APPLICATION_CREDENTIALS does not exist.')
+  else:
+    print('GOOGLE_APPLICATION_CREDENTIALS is not set.')
   credentials, _ = google.auth.default()
+  # Check if the service account credential is set.
+  print(f'Obtained credentials: {credentials}')
+  if isinstance(credentials, service_account.Credentials):
+    print(f'Service account email: {credentials.service_account_email}')
+  else:
+    print(f'Credential is not from a service account: {type(credentials)}.')
+
   # Empirically, 3 hours is more than enough for 30-minute fuzzing cloud builds.
   build_lib.BUILD_TIMEOUT = 3 * 60 * 60
   build_id = build_project.run_build(
