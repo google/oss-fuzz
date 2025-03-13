@@ -23,13 +23,26 @@ import fuzzbench, build_project
 FUZZBENCH_BUILD_TYPE = 'coverage'
 
 
+def get_build_script_args(args):
+  if not args:
+    return None
+
+  build_script_args = [args[0]]
+  for i in range(len(args)):
+    if args[i] in ['--branch']:
+      build_script_args.append(args[i])
+      build_script_args.append(args[i + 1])
+
+  return build_script_args
+
+
 def oss_fuzz_on_demand_main(args=None):
   """Main function for OSS-Fuzz on demand."""
-  print("Fui chamada em")
-  args = args[:1] + args[-2:]
+  build_script_args = get_build_script_args(args)
   return build_project.build_script_main('Does a FuzzBench run.',
                                          fuzzbench.get_build_steps,
-                                         FUZZBENCH_BUILD_TYPE, args)
+                                         FUZZBENCH_BUILD_TYPE,
+                                         build_script_args)
 
 
 def main():
