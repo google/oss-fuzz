@@ -7,7 +7,7 @@ auto_ccs:
   - "kershaw@mozilla.com"
 sanitizers:
   - address
-  - memory
-  - undefined
+fuzzing_engines:
+  - libfuzzer
 main_repo: 'https://github.com/mozilla/neqo.git'
 file_github_issue: true
