@@ -29,7 +29,7 @@ def get_build_script_args(args):
 
   build_script_args = [args[0]]
   for i in range(len(args)):
-    if args[i] in ['--branch']:
+    if args[i] in ['--branch', '--fuzzing-engine']:
       build_script_args.append(args[i])
       build_script_args.append(args[i + 1])
 

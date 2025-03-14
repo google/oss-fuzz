@@ -151,6 +151,8 @@ class ExecCommandFromGithubTest(unittest.TestCase):
 
     mock_trial_build_main.assert_not_called()
 
-    build_script_main_args = ['aiohttp', '--branch', 'test_branch']
+    build_script_main_args = [
+        'aiohttp', '--fuzzing-engine', 'libfuzzer', '--branch', 'test_branch'
+    ]
     mock_build_script_main.assert_called_once_with(mock.ANY, mock.ANY, mock.ANY,
                                                    build_script_main_args)

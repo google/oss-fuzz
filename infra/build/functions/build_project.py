@@ -76,6 +76,7 @@ class Config:
   # TODO(ochang): This should be different per engine+sanitizer combination.
   upload_build_logs: str = None
   build_type: str = None
+  fuzzing_engine: str = None
 
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
@@ -624,6 +625,10 @@ def get_args(description, args):
                       required=False,
                       default=False,
                       help='Configuration for experiments.')
+  parser.add_argument('--fuzzing-engine',
+                      required=False,
+                      default='libafl',
+                      help='Fuzzing engine name.')
   return parser.parse_args(args)
 
 
@@ -636,7 +641,8 @@ def create_config(args, build_type):
                 parallel=args.parallel,
                 upload=upload,
                 experiment=args.experiment,
-                build_type=build_type)
+                build_type=build_type,
+                fuzzing_engine=args.fuzzing_engine)
 
 
 def build_script_main(script_description,
