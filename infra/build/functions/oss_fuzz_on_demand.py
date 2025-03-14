@@ -18,9 +18,14 @@
 import sys
 import logging
 
+import fuzzbench, build_project
+
 
 def oss_fuzz_on_demand_main(args=None):
   """Main function for OSS-Fuzz on demand."""
+  return build_project.build_script_main('Does a FuzzBench run.',
+                                         fuzzbench.get_build_steps,
+                                         fuzzbench.FUZZBENCH_BUILD_TYPE, args)
 
 
 def main():
