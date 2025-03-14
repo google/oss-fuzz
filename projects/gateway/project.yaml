@@ -1,0 +1,11 @@
+homepage: "https://gateway.envoyproxy.io/"
+main_repo: "https://github.com/envoyproxy/gateway.git"
+primary_contact: "envoy-gateway-security@googlegroups.com"
+auto_ccs :
+  - "tnareddy@confluent.io"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+
