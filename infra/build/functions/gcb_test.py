@@ -137,8 +137,8 @@ class ExecCommandFromGithubTest(unittest.TestCase):
                              'coverage address --fuzzing-engine libfuzzer')])
   @mock.patch('gcb.get_latest_gcbrun_command',
               return_value=[
-                  'oss_fuzz_on_demand.py', 'aiohttp', '--sanitizer', 'coverage',
-                  'address', '--fuzzing-engine', 'libfuzzer'
+                  'oss_fuzz_on_demand.py', 'aiohttp', '--fuzzing-engine',
+                  'libfuzzer'
               ])
   @mock.patch('trial_build.trial_build_main')
   @mock.patch('build_project.build_script_main', return_value=0)
@@ -152,7 +152,8 @@ class ExecCommandFromGithubTest(unittest.TestCase):
     mock_trial_build_main.assert_not_called()
 
     build_script_main_args = [
-        'aiohttp', '--fuzzing-engine', 'libfuzzer', '--branch', 'test_branch'
+        'aiohttp', '--fuzzing-engine', 'libfuzzer', '--repo', 'test_repo',
+        '--branch', 'test_branch'
     ]
     mock_build_script_main.assert_called_once_with(mock.ANY, mock.ANY, mock.ANY,
                                                    build_script_main_args)

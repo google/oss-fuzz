@@ -611,6 +611,10 @@ def get_args(description, args):
                       required=False,
                       default=None,
                       help='Use testing base-images.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
