@@ -163,6 +163,13 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   }
   steps.append(run_fuzzer_step)
 
+  timestamp = "200101010000" #testing
+  upload_steps = build_project.get_upload_steps(project=project,
+                                                build=build,
+                                                timestamp=timestamp,
+                                                testing=True)
+  steps += upload_steps
+
   build = build_project.Build('coverage', 'address', 'x86_64')
   env = get_env(project, build)
   env.append(f'FUZZER={config.fuzzing_engine}')

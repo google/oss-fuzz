@@ -86,6 +86,10 @@ ENGINE_INFO = {
         EngineInfo(upload_bucket='clusterfuzz-builds-centipede',
                    supported_sanitizers=['address', 'none'],
                    supported_architectures=['x86_64']),
+    'libafl':
+        EngineInfo(upload_bucket='clusterfuzz-builds-libafl',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
 }
 
 OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
@@ -150,6 +154,8 @@ def get_upload_bucket(engine, architecture, testing):
     bucket += '-' + architecture
   if testing:
     bucket += '-testing'
+  else:
+    raise Exception("Should be a test!!")
   return bucket
 
 
