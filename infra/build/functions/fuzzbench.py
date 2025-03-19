@@ -145,6 +145,20 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   env = get_env(project, build)
 
   steps += get_build_fuzzers_step(config.fuzzing_engine, project, env, build)
+
+  steps.extend([
+            {
+                'name':
+                    build_lib.get_runner_image_name(config.test_image_suffix),
+                'env':
+                    env,
+                'args': [
+                    'bash', '-c',
+                    f'targets_list > /workspace/{build.targets_list_filename}'
+                ],
+            }
+        ])
+
   run_fuzzer_step = {
       'name':
           get_engine_project_image(config.fuzzing_engine, project),
