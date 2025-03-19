@@ -22,3 +22,4 @@ WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fix.diff $SRC/
 COPY targets $SRC/mysql-server/fuzz
+RUN cd mysql-server && git apply ../fix.diff

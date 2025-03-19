@@ -17,7 +17,6 @@
 ################################################################################
 
 cd mysql-server
-git apply ../fix.diff
 mkdir build
 cd build
 if [[ $SANITIZER = *undefined* ]]; then
