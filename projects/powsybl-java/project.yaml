@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://www.powsybl.org/
+language: jvm
+main_repo: https://github.com/powsybl/powsybl-core
+sanitizers:
+  - address
+vendor_ccs:
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+  - "arthur.chan@adalogics.com"
