@@ -146,19 +146,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_build_fuzzers_step(config.fuzzing_engine, project, env, build)
 
-  steps.extend([
-            {
-                'name':
-                    build_lib.get_runner_image_name(config.test_image_suffix),
-                'env':
-                    env,
-                'args': [
-                    'bash', '-c',
-                    f'targets_list > /workspace/{build.targets_list_filename}'
-                ],
-            }
-        ])
-
   run_fuzzer_step = {
       'name':
           get_engine_project_image(config.fuzzing_engine, project),
@@ -176,13 +163,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   }
   steps.append(run_fuzzer_step)
-
-  timestamp = "200101010000" #testing
-  upload_steps = build_project.get_upload_steps(project=project,
-                                                build=build,
-                                                timestamp=timestamp,
-                                                testing=True)
-  steps += upload_steps
 
 #   build = build_project.Build('coverage', 'address', 'x86_64')
 #   env = get_env(project, build)
