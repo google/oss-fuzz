@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rinja-rs/rinja.git rinja
-WORKDIR rinja/fuzzing
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
+
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-core 
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-diagram
+
 COPY build.sh $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/
