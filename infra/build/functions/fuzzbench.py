@@ -41,7 +41,6 @@ def get_env(project, build):
   env.append('FORCE_LOCAL=1')
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
-#   env.append('OUT=/workspace/out')
   env.extend(
       ['FUZZ_TARGET=', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
   return env
@@ -163,20 +162,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   }
   steps.append(run_fuzzer_step)
-
-#   build = build_project.Build('coverage', 'address', 'x86_64')
-#   env = get_env(project, build)
-#   env.append(f'FUZZER={config.fuzzing_engine}')
-#   steps += get_build_fuzzers_step('coverage', project, env, build)
-#   steps += [{
-#       'args': ['fuzzbench_measure'],
-#       'env': env,
-#       'name': get_engine_project_image('coverage', project),
-#       'volumes': [{
-#           'name': 'fuzzbench_path',
-#           'path': FUZZBENCH_PATH,
-#       }],
-#   }]
   return steps
 
 
