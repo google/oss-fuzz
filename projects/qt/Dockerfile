@@ -36,6 +36,8 @@ RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
 RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 WORKDIR $SRC/qt/qtqa
-RUN git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/34/633834/1 && git cherry-pick FETCH_HEAD
+RUN git config user.name rob \
+    git config user.email rob@oss-fuzz \
+    git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/34/633834/1 && git cherry-pick FETCH_HEAD
 WORKDIR $SRC/qt
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
